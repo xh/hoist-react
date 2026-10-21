@@ -476,6 +476,22 @@ for the full list of supported props and conversion details.
 | `createObservableRef()` | Create a ref that works as both a React ref object and callback ref, with a MobX-observable `current` property |
 | `elementFromContent(content, addProps?)` | Create a React element from a `Content` value (element, HoistComponent, or render function) |
 
+## Internal Utilities
+
+Import from `@xh/hoist/utils/impl`. These helpers are marked `@internal` - for use within
+hoist-react only, not by applications. Check here, alongside lodash, before writing a loop or
+closure that does the same job.
+
+| Function | Description |
+|----------|-------------|
+| `shallowEqualArrays(a, b)` | True if both arrays have the same length and identical (`===`) items in order |
+| `shallowEqualObjects(a, b)` | True if both objects have the same keys with identical (`===`) values |
+| `isOmitted(obj)` | Resolve an `omit` flag or thunk on a config object |
+| `isMenuSeparator(it)` | True if a menu entry is a textless separator, in any supported form |
+| `filterConsecutiveMenuSeparators()` | `Array.filter()` function dropping consecutive separators in Blueprint and AG Grid menus |
+| `filterConsecutiveToolbarSeparators()` | `Array.filter()` function dropping consecutive toolbar separators |
+| `fmtTimeZone(name, offset)` | Format a time zone name with its UTC offset |
+
 ## Common Pitfalls
 
 ### LocalDate `new` construction

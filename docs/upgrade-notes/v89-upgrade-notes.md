@@ -1,10 +1,11 @@
 # Hoist React v89 Upgrade Notes
 
-> **From:** v88.x → v89.0.0 | **Released:** TBD | **Difficulty:** 🟢 LOW
+> **From:** v88.x → v89.0.0 | **Released:** 2026-10-13 | **Difficulty:** 🟢 LOW
 
 ## Overview
 
-Hoist React v89 is a light upgrade with five required changes and one strongly recommended change.
+Hoist React v89 is a light upgrade. Most steps apply only to apps that use the affected API, and
+the move to TypeScript 7 is strongly recommended.
 
 - **TypeScript 7 (strongly recommended)** - Hoist now builds and type-checks with TypeScript 7, the
   native port of the TypeScript compiler. Apps should move to it with this release. It takes a
@@ -16,11 +17,22 @@ Hoist React v89 is a light upgrade with five required changes and one strongly r
   switch to `Icon.getCatalog()` - see Step 6.
 - **Icon `faName` (required if used)** - Icon elements carry their FA name as `props.faName`, not
   `props.iconName` - see Step 7.
-- **Column `renderer` reads (required if used)** - The built-in number and date column specs set
-  `formatter`, not `renderer`. Code that calls `col.renderer(...)` on such a column now throws.
-  Fall back to `col.formatter` - see Step 9.
+- **Icons added via `library.add()` (recommended)** - Register them with `Icon.register()` so
+  `IconPicker` offers them - see Step 8.
+- **Grid rendering defaults (review)** - Column virtualisation is now on, and columns without a
+  `renderer` render plain text with no wrapper span. React element values in those columns need a
+  `renderer` - see Step 9.
 - **Badge spacing (required if used)** - `Badge` no longer has a 5px left margin. Badges that
   follow text need a space or a container `gap` - see Step 10.
+- **Column Library config (required if used)** - `ColLibraryConfig.autoExpandOnFilter` is gone.
+  Remove the key from any `columnLibrary` config - see Step 11.
+- **App option presets (required if used)** - Desktop `themeAppOption()` and
+  `sizingModeAppOption()` now render a `RadioCardInput`. Apps passing `SegmentedControl` props via
+  `inputProps` should add `previewCards: false` - see Step 12.
+- **`agOptions.groupDefaultExpanded` (required if used)** - `Grid` now ignores it. Set
+  `GridModel.expandLevel` instead - see Step 13.
+- **`disableScrollOptimization` flag (required if used)** - `GridExperimentalFlags` no longer has
+  this flag. An app that sets it fails to compile - see Step 14.
 
 Apps can also stay on TypeScript 5.9. Hoist v89 type-checks under 5.9, 6, and 7, so the TypeScript
 move does not have to ship with the Hoist bump. We still recommend that you take both together.
@@ -219,6 +231,9 @@ Before v89, a spec for any one field disabled filters on all other `filterable` 
 grep -rn "fieldSpecs" client-app/src/
 ```
 
+Only `fieldSpecs` in a grid's `filterModel` config (a `GridFilterModelConfig`) changed.
+`FilterChooserModel` also takes `fieldSpecs`, and those hits need no change.
+
 For each grid that sets `fieldSpecs`, check the columns that the list omits. If a column should
 have no filter, set `filterable: false` on it.
 
@@ -356,10 +371,41 @@ dragonIcon();
 Icons added via `library.add()` still render. `Icon.get()` logs a one-time warning for each one it
 looks up by name.
 
+Register icons in one app-level module imported by `Bootstrap.ts`, so they are registered before
+the app renders. A registration runs when its module loads, so one left in a lazily loaded tab is
+missing from `IconPicker` and from `Icon.get()` until that tab loads. Toolbox keeps its icons in
+`client-app/src/core/Icons.ts`.
+
+Put that import below the import of `@xh/hoist/core` in `Bootstrap.ts`. Hoist's packages import each
+other in cycles that resolve only when `core` loads first. If `@xh/hoist/icon` is the first Hoist
+module to load, the app crashes at startup. Typecheck, lint and app-level cycle checks do not catch
+this, because the cycles are inside Hoist. See
+[Import `@xh/hoist/core` First](../lifecycle-app.md#import-xhhoistcore-first).
+
+```typescript
+// client-app/src/core/Icons.ts - imported by Bootstrap.ts, below @xh/hoist/core
+import {faGithub} from '@fortawesome/free-brands-svg-icons';
+import {faFaceFrown, faFaceSmile} from '@fortawesome/pro-regular-svg-icons';
+import {Icon} from '@xh/hoist/icon';
+
+export const githubIcon = Icon.register({name: 'github', defs: faGithub});
+
+export const [faceFrownIcon, faceSmileIcon] = Icon.registerAll([
+    {name: 'faceFrown', defs: faFaceFrown},
+    {name: 'faceSmile', defs: faFaceSmile}
+]);
+```
+
+- **Use the returned factory.** Registered names are added to `Icon` at runtime only, so
+  `Icon.github()` does not type-check. Call `githubIcon()`, or `Icon.get('github')` by name.
+- **Check the built-in set first.** Registering a name that `Icon` already has keeps the existing
+  icon and logs a warning. Use the built-in factory, register under another name, or pass
+  `replace: true` to override it.
+
 ### 9. Review Grid Rendering Defaults
 
-Three `Grid` rendering defaults changed for performance. Most apps need no change, but check the
-three cases below.
+Two `Grid` rendering defaults changed for performance. Most apps need no change, but check the
+two cases below.
 
 **Column virtualisation is on by default.** `GridModel.useVirtualColumns` now defaults to `true`,
 so a grid renders cells only for the columns within or near its viewport (ag-Grid's own default).
@@ -378,7 +424,7 @@ new GridModel({
 written by ag-Grid, with no React component and no `xh-cell-inner-wrapper` span in the cell. The
 cell carries an `xh-cell--plain` class. Columns with a `renderer`, tree columns, and columns with
 an ag-Grid `cellRenderer` via `agOptions` are unchanged. A renderer-less column with an
-`agOptions.valueFormatter` now displays the formatted value.
+`agOptions.valueFormatter` now displays the formatted value, as its export already did.
 
 **Find affected styles and selectors:**
 
@@ -405,53 +451,43 @@ After:
 }
 ```
 
-**Built-in number and date columns are plain.** The `number`, `date`, `dateTime`, `dateTimeSec`,
-`time`, `compactDate` and `localDate` column specs now set a `Column.formatter` in place of a
-`renderer`. A formatter returns the cell's display text, and ag-Grid writes it into a plain cell.
-Grids built on these specs get plain cells with no change. A `renderer` set on top of a spec still
-wins, so `{...number, renderer: myRenderer}` works as before. Two side effects remain:
+**Element values need a renderer.** ag-Grid writes a plain cell's value as text, so a React
+element value now shows as `[object Object]`. The usual source is a `getValueFn` that calls a Hoist
+formatter. `fmtNumber` and its variants return an element for options such as `label`, `ledger`,
+`colorSpec` and `tooltip`. Have the `getValueFn` return the raw value, and format it in a
+`renderer`. Sorting, filtering and export also read the raw value.
 
-- App code that reads `renderer` from one of these specs, or from a `Column` built on one, finds
-  none. Fall back to the formatter, as in `col.renderer ?? col.formatter`.
-- Client-side exports (`GridModel.localExport` and the `exportLocal` menu item) write the display
-  text of a formatter column, where they wrote the raw value. An Excel file still gets a number
-  as a raw number. Copy still sends the value, and `GridModel.exportAsync` still sends it with its
-  Excel format.
-
-**Find code that reads a column's renderer:**
+**Find affected columns:**
 
 ```bash
-# Matches `col.renderer` and `const {renderer} = col`
-grep -rnE "\.renderer\b|\{[^}]*\brenderer\b[^}]*\}\s*=" client-app/src/
+grep -rn "getValueFn" client-app/src/
 ```
-
-**Other formatted columns can be plain too.** Switch them to the `numberFormatter`, `dateFormatter`
-and sibling factories in `@xh/hoist/format` as you touch them. Each takes the options of its
-renderer counterpart, less those that need markup. The compiler rejects those options.
 
 Before:
 
 ```typescript
-{field: 'pnl', renderer: numberRenderer({precision: 0, ledger: true, colorSpec: true})}
+{
+    field: 'elapsed',
+    getValueFn: ({record}) => {
+        const {startTime, endTime} = record.data;
+        if (!startTime || !endTime) return '-';
+        return fmtNumber((endTime - startTime) / 1000, {precision: 2, label: 's'});
+    }
+}
 ```
 
 After:
 
 ```typescript
-{field: 'pnl', formatter: numberFormatter({precision: 0, ledger: true, colorSpec: true})}
+{
+    field: 'elapsed',
+    getValueFn: ({record}) => {
+        const {startTime, endTime} = record.data;
+        return startTime && endTime ? (endTime - startTime) / 1000 : null;
+    },
+    renderer: numberRenderer({precision: 2, label: 's', nullDisplay: '-'})
+}
 ```
-
-A formatter cell shows the same text, sign colors and alignment as the renderer cell it replaces.
-These differences remain:
-
-- `colorSpec` classes such as `xh-pos-val` sit on the cell, not on an inner span.
-- A `label` is plain text, with no `xh-units-label` span to style. Keep the renderer if the label
-  needs its own style.
-- Ledger alignment is a hidden `::after` on the cell. The cell text no longer ends in a hidden `)`.
-
-Keep the renderer where a cell needs an element, such as an icon or nested layout. Also keep it for
-`withSignGlyph`, `labelCls`, or a `colorSpec` with inline styles. A `tooltip` option does not need
-the renderer. Move it to `Column.tooltip`, for example `tooltip: v => fmtNumberTooltip(v)`.
 
 ### 10. Space Badges from Preceding Text
 
@@ -482,6 +518,119 @@ After:
 span('Alerts ', badge({item: count, intent: 'danger'}))
 ```
 
+### 11. Remove `ColLibraryConfig.autoExpandOnFilter`
+
+The Column Library now expands every group with a match while a search is active, so the
+threshold no longer applies. An app that still passes the key fails to compile.
+
+**Find affected code:**
+
+```bash
+grep -rn "autoExpandOnFilter" client-app/src/
+```
+
+Remove the key.
+
+Before:
+
+```typescript
+colChooserModel: {columnLibrary: {collapseGroups: true, autoExpandOnFilter: 3}}
+```
+
+After:
+
+```typescript
+colChooserModel: {columnLibrary: {collapseGroups: true}}
+```
+
+### 12. Review App Option `inputProps`
+
+Desktop `themeAppOption()` and `sizingModeAppOption()` now show their choices as `RadioCardInput`
+cards, each with a mini preview. Their `inputProps` go to that input. An app that passes
+`SegmentedControl` props there should set `previewCards: false` to keep the segmented control.
+
+**Find affected code:**
+
+```bash
+grep -rnE "(themeAppOption|sizingModeAppOption)\(\{" client-app/src/
+```
+
+Calls with no `inputProps` need no change. They get the new cards.
+
+Before:
+
+```typescript
+themeAppOption({inputProps: {outlined: true}})
+```
+
+After:
+
+```typescript
+themeAppOption({previewCards: false, inputProps: {outlined: true}})
+```
+
+### 13. Replace `agOptions.groupDefaultExpanded` with `expandLevel`
+
+`Grid` now opens group rows with ag-Grid's `isGroupOpenByDefault` callback, driven by
+`GridModel.expandLevel`. ag-Grid checks that callback before `groupDefaultExpanded`, so a grid
+that sets `groupDefaultExpanded` in `agOptions` now ignores it. Such a grid logs a console warning
+and opens only one level, the default `expandLevel` for grouped grids.
+
+**Find affected code:**
+
+```bash
+grep -rn "groupDefaultExpanded" client-app/src/
+```
+
+Move the value to `expandLevel` on the `GridModel`.
+
+Before:
+
+```typescript
+grid({agOptions: {groupDefaultExpanded: 2}})
+```
+
+After:
+
+```typescript
+new GridModel({groupBy: ['region', 'desk'], expandLevel: 2, ...})
+```
+
+### 14. Remove `GridExperimentalFlags.disableScrollOptimization`
+
+The post-load row height pass this flag disabled now runs only for grids whose rows vary in height,
+so the flag is gone. An app that still sets it fails to compile.
+
+**Find affected code:**
+
+```bash
+grep -rn "disableScrollOptimization" client-app/src/
+```
+
+Remove the key from the grid's `experimental` config, and from any `xhGridExperimental` soft
+config.
+
+## Other Changes to Review
+
+These need no code change in most apps.
+
+- **`@bindable`, `@bindableRef` and `@persist` are typed as `accessor` decorators.** `tsc` now
+  reports one of them on a plain field. Such a field never worked: it threw in development and was
+  not observable in production builds. Add the `accessor` keyword where `tsc` asks.
+- **`Store` patches small changes by default.** With `experimental.maxPatchRatio` now 0.1, records
+  added by a small change, or newly passing a filter, are appended rather than placed at their
+  source position. Grids with no
+  sort may show new rows in a different order. Set a sort, or set `maxPatchRatio: 0` in the
+  store's `experimental` config to restore the old behavior.
+- **Filters that read outside state need `refreshFilter()`.** A patched change re-tests only the
+  records it touches. A `FunctionFilter` that reads state other than the record, such as a model
+  property, no longer re-runs on the other records when data changes. Call
+  `store.refreshFilter()` when that state changes. v88 hid a missing call by re-filtering every
+  record on each change.
+- **`PUT` requests default to a form-encoded body.** `FetchService` now labels every `PUT` without
+  an explicit `Content-Type` as `application/x-www-form-urlencoded`, as it does for `POST`. v88
+  sent `text/plain`. A `PUT` that sends a raw `body` should set its own `Content-Type`.
+
 ## Verification Checklist
 
 After completing all steps:
@@ -498,9 +647,11 @@ After completing all steps:
 - [ ] Wide grids scroll as expected, and any automation reading offscreen cells sets
       `useVirtualColumns: false`.
 - [ ] Styles targeting `xh-cell-inner-wrapper` still apply where intended.
-- [ ] Styles on `xh-units-label` or on sign color classes inside grid cells still apply.
-- [ ] Code that reads `Column.renderer` handles columns built on the number and date specs.
 - [ ] Badges that follow a label are spaced from it.
+- [ ] No `columnLibrary` config sets `autoExpandOnFilter`.
+- [ ] The Options dialog shows theme and sizing choices as intended - cards, or a segmented
+      control where `previewCards: false` is set.
+- [ ] No grid sets `agOptions.groupDefaultExpanded`, and grouped grids open to the intended level.
 
 ## Reference
 

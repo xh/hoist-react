@@ -242,6 +242,21 @@ describe('HoistBase', () => {
             expect(b.isDestroyed).toBe(true);
             expect(resource.destroy).toHaveBeenCalledOnce();
         });
+
+        it('destroys the rest of its managed objects when one throws, and logs the error', () => {
+            const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {}),
+                owner = new TestModel(),
+                before = new TestModel(),
+                after = new TestModel();
+            owner.markManaged(before);
+            owner.markManaged({destroy: () => throwError()});
+            owner.markManaged(after);
+
+            expect(() => owner.destroy()).not.toThrow();
+            expect(before.isDestroyed).toBe(true);
+            expect(after.isDestroyed).toBe(true);
+            expect(consoleError).toHaveBeenCalledOnce();
+        });
     });
 
     describe('markManaged', () => {
@@ -271,6 +286,10 @@ describe('HoistBase', () => {
 //------------------
 // Helpers
 //------------------
+function throwError(): never {
+    throw new Error('Destroy failed');
+}
+
 class TestModel extends HoistBase {
     @bindable accessor x = 0;
     @bindable accessor y = 0;

@@ -5,7 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {span} from '@xh/hoist/cmp/layout';
-import {throwIf} from '@xh/hoist/utils/js';
+import {apiRemoved, throwIf} from '@xh/hoist/utils/js';
 import {
     clamp,
     defaults,
@@ -21,8 +21,6 @@ import {
     isUndefined,
     round
 } from 'lodash';
-import Numbro from 'numbro';
-import numbro from 'numbro';
 import {CSSProperties, ReactNode} from 'react';
 import {IntRange} from 'type-fest';
 import {fmtSpan, FormatOptions} from './FormatMisc';
@@ -65,8 +63,8 @@ export interface NumberFormatOptions extends Omit<FormatOptions<number>, 'toolti
      */
     forceLedgerAlign?: boolean;
 
-    /** A valid numbro format object or string. */
-    formatConfig?: Numbro.Format | string;
+    /** Removed in v90 - use `precision`, `zeroPad` and `withCommas`. */
+    formatConfig?: never;
 
     /**
      * Label to append to value, or true to append a default label for the formatter -
@@ -177,9 +175,8 @@ export interface ColorClassSpec {
 /**
  * Standard number formatting for Hoist
  *
- * This method delegates to numbro, @see http://numbrojs.com for more details.
+ * Formats digits with `Intl.NumberFormat` (`en-US`). Ties round half away from zero.
  *
- * Hierarchy of params is by specificity: formatPattern, precision.
  * If no options are given, a heuristic based auto-rounding will occur.
  *
  * @returns a ReactNode.  For an HTML string use `asHtml = true`.
@@ -188,7 +185,7 @@ export function fmtNumber(v: number, opts?: NumberFormatOptions): ReactNode {
     let {
         nullDisplay = '',
         zeroDisplay = null,
-        formatConfig = null,
+        formatConfig,
         precision,
         zeroPad,
         ledger = false,
@@ -206,6 +203,10 @@ export function fmtNumber(v: number, opts?: NumberFormatOptions): ReactNode {
         asHtml = false,
         originalValue = v
     } = opts ?? ({} as NumberFormatOptions);
+    apiRemoved('formatConfig', {
+        test: formatConfig,
+        msg: "Use 'precision', 'zeroPad' and 'withCommas'"
+    });
     if (isInvalidInput(v)) return nullDisplay;
 
     // Resolve precision: null means full precision, other non-integers (e.g. undefined) mean 'auto'.
@@ -219,9 +220,9 @@ export function fmtNumber(v: number, opts?: NumberFormatOptions): ReactNode {
     // Default zeroPad to pad only for a fixed precision - 'auto' and full precision trim zeros.
     if (isNil(zeroPad)) zeroPad = precision != 'auto' && !fullPrecision;
 
-    formatConfig =
-        formatConfig || buildFormatConfig(v, precision, zeroPad, withCommas, omitFourDigitComma);
-    const str = numbro(v).format(formatConfig).replace('-', '');
+    // Show 'auto' digits below 1e-6 as zero, keeping v for sign and strictZero handling.
+    const digitsVal = precision === 'auto' && Math.abs(v) < 1e-6 ? 0 : v,
+        str = fmtDigits(digitsVal, precision, zeroPad, withCommas, omitFourDigitComma);
     let sign = null;
 
     // Tests for zero strings at various precisions
@@ -522,12 +523,12 @@ function calcStyleFromColorSpec(v: number, colorSpec: ColorSpec | boolean): CSSP
 }
 
 /**
- * Resolve a precisionSpec to a concrete number of decimal places. A fixed precision is used as-is
- * (capped at max), while 'auto' is derived from the scale of the value.
+ * Resolve a precisionSpec to a concrete number of decimal places. A fixed precision is clamped to
+ * 0-12, while 'auto' is derived from the scale of the value.
  */
 function parsePrecision(v: number, precisionSpec: Precision): number {
-    // Fixed precision - use requested, capped at max.
-    if (precisionSpec !== 'auto') return Math.min(precisionSpec, MAX_NUMERIC_PRECISION);
+    // Fixed precision - use requested, clamped to the supported range.
+    if (precisionSpec !== 'auto') return clamp(precisionSpec, 0, MAX_NUMERIC_PRECISION);
 
     // 'auto' - derive from the scale of the value.
     const absVal = Math.abs(v);
@@ -549,61 +550,51 @@ function calcFullPrecision(v: number): NumericPrecision {
     return clamp(MAX_SIGNIFICANT_DIGITS - intDigits, 0, MAX_NUMERIC_PRECISION) as NumericPrecision;
 }
 
-function buildFormatConfig(
+// Cached Intl.NumberFormat instances, keyed by minFD, maxFD and useGrouping.
+const digitFormats = new Map<number, Intl.NumberFormat>();
+
+/** Format the unsigned digits of a value. The caller adds sign, prefix, label and parentheses. */
+function fmtDigits(
     v: number,
     precisionSpec: Precision,
     zeroPad: ZeroPad,
     withCommas: boolean,
     omitFourDigitComma: boolean
-): Numbro.Format {
-    const absVal = Math.abs(v),
-        config: Numbro.Format = {};
+): string {
+    let absVal = Math.abs(v);
+    const maxFD = parsePrecision(v, precisionSpec),
+        // A numeric zeroPad sets the minimum places, floored (as Intl does) to keep the key unique.
+        minFD = isNumber(zeroPad) ? clamp(Math.floor(zeroPad), 0, maxFD) : zeroPad ? maxFD : 0,
+        // Group thousands unless omitFourDigitComma applies - a value under 10,000 shown whole.
+        useGrouping =
+            withCommas &&
+            !(
+                omitFourDigitComma &&
+                absVal < 10000 &&
+                (maxFD === 0 || (!zeroPad && Number.isInteger(absVal)))
+            );
 
-    const precision = parsePrecision(v, precisionSpec);
-
-    // If zeroPad gte precision, treat as `true` to pad out to (but not beyond) full precision.
-    // We don't support applying some precision (rounding) then padding out zeroes after that.
-    if (isNumber(zeroPad) && zeroPad >= precision) {
-        zeroPad = true;
+    // Round near-ties with lodash `round`, whose decimal shift absorbs float error - e.g. 1.15 * 3
+    // (3.4499999999999997) gives 3.5. Past 15 significant digits, Intl rounds the value as stored.
+    const shifted = absVal * 10 ** maxFD;
+    if (
+        shifted < 1e15 &&
+        Math.abs(shifted - Math.floor(shifted) - 0.5) < shifted * 2 * Number.EPSILON
+    ) {
+        absVal = round(absVal, maxFD);
     }
 
-    // Calculate numbro mantissa and trimMantissa options based on precision and zeroPad settings.
-    if (isNumber(zeroPad)) {
-        // Specific zeroPad set - we want to show at least this much precision, but not more unless
-        // the value actually has more precision. Note, we round to requested *max* precision first,
-        // then determine the value's actual precision. This avoids issues where values resulting
-        // from floating point operations have spurious precision that would defeat this routine.
-        const requiredPrecision = countDecimalPlaces(round(absVal, precision));
-
-        // Then set mantissa to higher of required precision vs. requested zeroPad.
-        // Ensures we display all of the requested/available precision + extra zeros if needed.
-        config.mantissa = Math.max(requiredPrecision, zeroPad);
-        config.trimMantissa = false;
-    } else {
-        // Without a specific (numeric) zeroPad set, we can set mantissa to precision then
-        // optionally enable trimMantissa option to remove trailing zeroes if requested.
-        // No need to measure actual precision of number.
-        config.mantissa = precision;
-        config.trimMantissa = !zeroPad && precision != 0;
+    const key = minFD * 32 + maxFD * 2 + (useGrouping ? 1 : 0);
+    let fmt = digitFormats.get(key);
+    if (!fmt) {
+        fmt = new Intl.NumberFormat('en-US', {
+            minimumFractionDigits: minFD,
+            maximumFractionDigits: maxFD,
+            useGrouping
+        });
+        digitFormats.set(key, fmt);
     }
-
-    // Apply comma-separation unless contradicted by omitFourDigitComma, which should apply only to
-    // whole number values between 1000 and 9999, where we are not displaying any decimal places.
-    config.thousandSeparated =
-        withCommas &&
-        !(
-            omitFourDigitComma &&
-            absVal < 10000 &&
-            (config.mantissa == 0 || (!zeroPad && Number.isInteger(absVal)))
-        );
-
-    return config;
-}
-
-function countDecimalPlaces(number: number): number {
-    const numStr = number.toString(),
-        dpIdx = numStr.indexOf('.');
-    return dpIdx === -1 ? 0 : numStr.length - dpIdx - 1;
+    return fmt.format(absVal);
 }
 
 function isInvalidInput(v) {
@@ -735,18 +726,12 @@ function createNumberFormatter<O extends NumberFormatterOptions = NumberFormatte
 
         // True if `strictZero: false` shows the value as zero. This formats the value, so it keeps
         // the last result - AG Grid tests a cell's rules one after another with the same value.
-        // A value that numbro cannot format (e.g. 'N/A') is not zero: a rule that threw would
-        // take down the grid, where the formatter itself shows '#ERROR'.
         let lastTested: any, lastRoundsToZero: boolean;
         const roundsToZero = (v: any): boolean => {
             if (!Object.is(v, lastTested)) {
                 lastTested = v;
-                try {
-                    const digits = (fmt(v, digitsOpts) as string).replace('-', '');
-                    lastRoundsToZero = ROUNDED_ZERO.test(digits);
-                } catch {
-                    lastRoundsToZero = false;
-                }
+                const digits = (fmt(v, digitsOpts) as string).replace('-', '');
+                lastRoundsToZero = ROUNDED_ZERO.test(digits);
             }
             return lastRoundsToZero;
         };

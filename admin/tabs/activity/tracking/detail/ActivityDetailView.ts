@@ -5,7 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {naSpan, valOrNa} from '@xh/hoist/admin/AdminUtils';
-import {badgeRenderer} from '@xh/hoist/admin/columns';
+import {badgeRenderer, elapsedRenderer} from '@xh/hoist/admin/columns';
 import {form} from '@xh/hoist/cmp/form';
 import {grid, gridCountLabel} from '@xh/hoist/cmp/grid';
 import {a, br, div, filler, h3, hframe, placeholder, span} from '@xh/hoist/cmp/layout';
@@ -16,7 +16,7 @@ import {gridFindField} from '@xh/hoist/desktop/cmp/grid';
 import {jsonInput, textInput} from '@xh/hoist/desktop/cmp/input';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
-import {dateTimeSecRenderer, numberRenderer} from '@xh/hoist/format';
+import {dateTimeSecRenderer} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon/Icon';
 import {tooltip} from '@xh/hoist/kit/blueprint';
 import {isNil} from 'lodash';
@@ -100,11 +100,7 @@ const detailRecForm = hoistCmp.factory<ActivityDetailModel>(({model}) => {
                           formField({field: 'msg'}),
                           formField({
                               field: 'elapsed',
-                              readonlyRenderer: numberRenderer({
-                                  label: 'ms',
-                                  nullDisplay: '-',
-                                  formatConfig: {thousandSeparated: false, mantissa: 0}
-                              }),
+                              readonlyRenderer: elapsedRenderer,
                               omit: isNil(formModel.values.elapsed)
                           }),
                           formField({

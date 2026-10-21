@@ -59,7 +59,8 @@ Most of Hoist depends on the hoist-core server. `Store` reads a soft config, `Gr
 to user prefs, and nearly every service loads data on init. Tests therefore need a server.
 
 `test-support/hoistCore.ts` provides one. It is a small, in-memory stand-in for hoist-core's
-`XhController` endpoints: auth status, environment, configs, prefs, and activity tracking. It
+`XhController` endpoints: auth status, environment, configs, prefs, activity tracking, and
+JsonBlobs. It also serves the `XhViewController` endpoints that `ViewManagerModel` calls. It
 answers in the exact JSON shapes hoist-core renders, and names the server source of each shape.
 Hoist's real `fetch` calls reach it through [MSW](https://mswjs.io), so the code under test runs
 unchanged, from `FetchService` down.
@@ -114,7 +115,7 @@ Test the behavior apps rely on, through the public API:
 Do not test:
 
 - Rendering, layout, and styling. jsdom has no layout engine. Leave these to Playwright.
-- Third-party libraries such as AG Grid, Blueprint, or numbro.
+- Third-party libraries such as AG Grid, Blueprint, or Highcharts.
 - Trivial getters, or values that only restate the code.
 - Private implementation details. If a test breaks when the code is refactored with no change in
   behavior, it is testing the wrong thing.
@@ -176,6 +177,9 @@ describe('PrefService', () => {
 - A file boots once. To test a different boot outcome, such as access denied, use a separate spec
   file. `initTestAppAsync()` rejects, naming `XH.appState`, if boot stops before `RUNNING`. That
   includes `LOGIN_REQUIRED`, where an app with a login form waits for the user to sign in.
+- `initTestAppAsync()` also rejects if boot triggers a problem that the kit's guards catch, such as
+  a request the fake does not handle. It waits for the requests that boot started, so none lands in
+  the first test's request log. It logs any error that the app handles during boot.
 
 Tests that do not touch services, such as `LocalDate` or filter tests, do not need to boot.
 
@@ -257,6 +261,26 @@ variables read as set. See `cmp/grid/Grid.spec.ts`.
 Write the test for the correct behavior. If the fix belongs in a separate change, mark the test
 `it.fails()` and add a `// BUG:` comment that describes the problem. The suite stays green, and the
 test starts failing once the bug is fixed, as a reminder to remove the marker.
+
+`it.fails()` cannot mark a promise that rejects with nothing to handle it, such as a load started
+without an `await`. Vitest reports that rejection as an error of the whole run, not of a test, and
+fails the run on purpose. Fix the code to await or catch the promise. If the fix must wait, filter
+that one error with Vitest's [`onUnhandledError`](https://vitest.dev/config/onunhandlederror)
+option. The filter applies to every spec, so match the error narrowly:
+
+```typescript
+// vitest.config.mts
+export default defineConfig(
+    mergeConfig(configureVitest({appCode: 'myApp'}), {
+        test: {
+            onUnhandledError(e) {
+                // BUG: OrderService.refreshAsync() leaves a rejection when the server is down.
+                if (e.message?.includes('Orders unavailable')) return false;
+            }
+        }
+    })
+);
+```
 
 ### Desktop and mobile
 
@@ -357,8 +381,35 @@ it('flags orders over the configured limit', () => {
 - A path can also be an absolute URL, for an external API the app calls.
 - A request that the fake does not serve fails the test, and the failure names the URL.
 - A file boots once, so test each role set or user in its own spec file.
-- The fake returns canned data. It does not enforce the server's business rules or role scoping.
-  Test those against a real server.
+- The fake returns canned data. It does not enforce the server's business rules or role scoping,
+  except for which JsonBlobs a user can read - see [Views and JsonBlobs](#views-and-jsonblobs).
+  Test those rules against a real server.
+
+### Views and JsonBlobs
+
+The fake keeps an in-memory JsonBlob store, `hoistCore.jsonBlobs`. It serves `XH.jsonBlobService`
+and the endpoints that `ViewManagerModel` calls. The store starts empty. An app model that creates a
+view manager at boot therefore needs no setup: the view manager loads no views and selects its
+in-code default. Seed views and the user's view state to test anything else:
+
+```typescript
+const {jsonBlobs} = hoistCore;
+jsonBlobs.addView({type: 'portfolioGrid', name: 'My Positions', value: {sortBy: 'pnl'}});
+jsonBlobs.addView({type: 'portfolioGrid', name: 'Firm Standard', isGlobal: true, token: 'firm'});
+jsonBlobs.addView({type: 'portfolioGrid', name: 'Risk', owner: 'bsmith', isShared: true});
+jsonBlobs.setViewState('portfolioGrid', {currentView: 'firm', autoSave: true});
+jsonBlobs.add({type: 'appNotes', name: 'notes', value: {text: 'Hello'}}); // a plain JsonBlob
+```
+
+- `jsonBlobs.get(token)` returns the stored blob, so a test can assert on what the client saved.
+  Change the blob to model an edit made elsewhere, such as a later `lastUpdated`.
+- `jsonBlobs.viewState(type)` returns the user's state for a view type, as the client receives it.
+- Blobs last for the whole file, like prefs. `jsonBlobs.clear()` removes them all.
+- A user reads only the blobs they own and the blobs shared with all users, as on the server. The
+  fake sends `manageGlobal` from `hoistCore.roles` and `jsonBlobs.globalWriteRoles`. Those roles
+  default to `HOIST_ADMIN`, as in hoist-core's `xhJsonBlobConfig`.
+- The fake does not check write access or duplicate names. To test the error for one of those,
+  serve the endpoint with `hoistCore.route()` and `hoistError()`.
 
 ### Server state for every spec
 

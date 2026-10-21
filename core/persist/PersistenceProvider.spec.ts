@@ -163,6 +163,23 @@ describe('PersistenceProvider', () => {
             model.provider.pushStateToTarget();
             expect(model.size).toBe(100);
         });
+
+        it('drops a pending write, so it cannot overwrite the state it pushes', async () => {
+            vi.useFakeTimers();
+            const store = new MemoryStore(),
+                // A settleTime skips the write of the pushed state, which would otherwise replace
+                // the pending one.
+                model = createModel({...store.options, settleTime: 1000});
+            await vi.advanceTimersByTimeAsync(1001);
+
+            model.size = 300;
+            store.data = {layout: {size: 500}};
+            model.provider.pushStateToTarget();
+            await vi.advanceTimersByTimeAsync(250);
+
+            expect(model.size).toBe(500);
+            expect(store.data).toEqual({layout: {size: 500}});
+        });
     });
 
     describe('destroy', () => {
@@ -173,6 +190,37 @@ describe('PersistenceProvider', () => {
             model.destroy();
             model.size = 300;
             expect(store.setData).not.toHaveBeenCalled();
+        });
+
+        it('writes a change still pending when its owner is destroyed', async () => {
+            vi.useFakeTimers();
+            const store = new MemoryStore(),
+                model = createModel(store.options);
+
+            model.size = 300;
+            model.destroy();
+            expect(store.data).toEqual({layout: {size: 300}});
+
+            await vi.advanceTimersByTimeAsync(250);
+            expect(store.setData).toHaveBeenCalledOnce();
+        });
+
+        it('logs a pending write that fails when its owner is destroyed, and still stops writing', async () => {
+            vi.useFakeTimers();
+            const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {}),
+                setData = vi.fn(() => {
+                    throw new Error('Storage quota exceeded');
+                }),
+                model = createModel({getData: () => ({}), setData});
+
+            model.size = 300;
+            model.destroy();
+            expect(setData).toHaveBeenCalledOnce();
+            expect(consoleError).toHaveBeenCalled();
+
+            model.size = 400;
+            await vi.advanceTimersByTimeAsync(250);
+            expect(setData).toHaveBeenCalledOnce();
         });
     });
 });

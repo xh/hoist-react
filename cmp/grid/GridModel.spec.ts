@@ -71,6 +71,18 @@ describe('GridModel', () => {
         });
     });
 
+    describe('isCurrentExpandLevel', () => {
+        it('marks the deepest level label as current when expanded to all levels', () => {
+            const gridModel = createGridModel({
+                groupBy: ['region', 'name'],
+                levelLabels: ['R', 'N']
+            });
+
+            gridModel.expandToLevel(-1);
+            expect([0, 1].map(idx => gridModel.isCurrentExpandLevel(idx))).toEqual([false, true]);
+        });
+    });
+
     describe('columns and store', () => {
         it('applies Store field metadata to columns, with column config taking precedence', () => {
             const gridModel = createGridModel({

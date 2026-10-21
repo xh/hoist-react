@@ -210,6 +210,23 @@ Every entry point begins with `import '../Bootstrap'`. This `Bootstrap.ts` file 
 This import must come first (or at least before `XH.renderApp()`) to ensure all registrations and
 type augmentations are in place before the framework initializes.
 
+### Import `@xh/hoist/core` First
+
+Within `Bootstrap.ts`, import `@xh/hoist/core` before any other Hoist module, including app modules
+that import Hoist themselves. Hoist's packages import each other in cycles that resolve only when
+`core` loads first. If another package loads first - `@xh/hoist/icon` via an app's icon
+registrations, for example - the app crashes at startup with an error such as
+`TypeError: span is not a function`. Typecheck, lint and app-level cycle checks do not catch this,
+because the cycles are inside Hoist.
+
+```typescript
+// Bootstrap.ts
+import {XH} from '@xh/hoist/core'; // First Hoist import
+import {installAgGrid} from '@xh/hoist/kit/ag-grid';
+// ...
+import './core/Icons'; // App modules that import Hoist come after core
+```
+
 ## Key Source Files
 
 | File | Contents |

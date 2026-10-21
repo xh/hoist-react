@@ -294,12 +294,6 @@ export interface ColLibraryConfig {
     collapseGroups?: boolean;
 
     /**
-     * Max number of matching columns for a library group to be expanded while the chooser's filter
-     * is active (default 5). Set to 0 to disable.
-     */
-    autoExpandOnFilter?: number;
-
-    /**
      * Fixed width of the Column Library panel (default 250).
      */
     libraryWidth?: number;

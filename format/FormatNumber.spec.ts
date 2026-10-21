@@ -33,9 +33,9 @@ import {describe, expect, it, vi} from 'vitest';
 
 /**
  * Number formatters render the numbers in nearly every Hoist grid and display. These tests pin the
- * logic Hoist adds on top of numbro: precision and zero padding, signs and ledger format, colors by
- * sign, unit scaling and tooltips, the string-or-element return contract, shorthand parsing, and
- * the string formatters that grid columns use.
+ * logic Hoist adds on top of `Intl.NumberFormat`: precision, rounding and zero padding, signs and
+ * ledger format, colors by sign, unit scaling and tooltips, the string-or-element return contract,
+ * shorthand parsing, and the string formatters that grid columns use.
  */
 
 /** Markup of a rendered element, or a string as-is. */
@@ -82,7 +82,10 @@ describe('fmtNumber', () => {
             [1.2, {precision: 4, zeroPad: 2}, '1.20'],
             [1.234, {precision: 4, zeroPad: 2}, '1.234'],
             [1.23456, {precision: 4, zeroPad: 2}, '1.2346'],
-            [5, {zeroPad: 2}, '5.00']
+            [5, {zeroPad: 2}, '5.00'],
+            [12345.678, {zeroPad: 2}, '12,346'],
+            [Math.PI, {precision: 2, zeroPad: 4}, '3.14'],
+            [1234.5, {precision: 0, zeroPad: 2}, '1,235']
         ] as const)('formats %s with %o as "%s"', (v, opts, expected) => {
             expect(fmtNumber(v, opts)).toBe(expected);
         });
@@ -95,6 +98,100 @@ describe('fmtNumber', () => {
         it('keeps the trailing zeros of whole numbers when trimming', () => {
             expect(fmtNumber(123450, {precision: 0, zeroPad: false})).toBe('123,450');
             expect(fmtNumber(100, {precision: null})).toBe('100');
+        });
+
+        // A computed zeroPad can be fractional. Its call must not change how other calls format.
+        it('formats a fractional zeroPad without affecting other calls', () => {
+            const v = 1.23456789012;
+            expect(fmtNumber(v, {precision: 4, zeroPad: 1.5 as any})).toBe('1.2346');
+            expect(fmtNumber(v, {precision: 12, zeroPad: 1})).toBe('1.23456789012');
+        });
+
+        it('treats a zeroPad of 0 as false', () => {
+            const opts: NumberFormatOptions = {precision: 2, omitFourDigitComma: true};
+            expect(fmtNumber(1234, {...opts, zeroPad: 0})).toBe('1234');
+            expect(fmtNumber(1234.0001, {...opts, zeroPad: 0})).toBe('1,234');
+            expect(fmtNumber(1234.0001, {...opts, zeroPad: false})).toBe('1,234');
+        });
+    });
+
+    describe('withCommas and omitFourDigitComma', () => {
+        it.each([
+            [1234.5, {withCommas: false, precision: 2}, '1234.50'],
+            [1500, {omitFourDigitComma: true}, '1500'],
+            [10000, {omitFourDigitComma: true}, '10,000'],
+            [1234.5, {omitFourDigitComma: true, precision: 0}, '1235'],
+            [1500, {omitFourDigitComma: true, precision: 2}, '1,500.00'],
+            [1500, {omitFourDigitComma: true, precision: 2, zeroPad: false}, '1500']
+        ] as const)('formats %s with %o as "%s"', (v, opts, expected) => {
+            expect(fmtNumber(v, opts)).toBe(expected);
+        });
+    });
+
+    describe('rounding', () => {
+        // A tie rounds half away from zero on its decimal digits, though 1.005 is stored as
+        // 1.00499999999999989...
+        it.each([
+            [1.005, 2, '1.01'],
+            [2.675, 2, '2.68'],
+            [0.285, 2, '0.29'],
+            [99.995, 2, '100.00'],
+            [1.45, 1, '1.5'],
+            [9999.5, 0, '10,000'],
+            [-2.5, 0, '-3'],
+            [-1.005, 2, '-1.01']
+        ] as const)('rounds the tie %s with precision %s to "%s"', (v, precision, expected) => {
+            expect(fmtNumber(v, {precision})).toBe(expected);
+        });
+
+        // Arithmetic can leave a value one float step from a tie: 1.15 * 3 is 3.4499999999999997.
+        it.each([
+            [1.15 * 3, 1, '3.5'],
+            [-(1.15 * 3), 1, '-3.5'],
+            [1.7954999999999999, 3, '1.796'],
+            [224845.94999999998, 1, '224,846.0'],
+            [(512345678901.21 + 512345678901.22) / 2, 2, '512,345,678,901.22']
+        ] as const)(
+            'rounds %s with precision %s to "%s", as the arithmetic intended',
+            (v, p, expected) => {
+                expect(fmtNumber(v, {precision: p})).toBe(expected);
+            }
+        );
+
+        it('rounds a percent that scaling by 100 left one float step from a tie', () => {
+            expect(fmtPercent(0.0045, {precision: 1})).toBe('0.5%');
+            expect(fmtPercent(-0.0045, {precision: 1})).toBe('-0.5%');
+        });
+
+        it('shows values below 1e-6 as zero at auto precision', () => {
+            expect(fmtNumber(5e-7)).toBe('0');
+            expect(fmtNumber(1e-6)).toBe('0.000001');
+            expect(fmtMillions(0.5, {label: true, labelCls: null})).toBe('0m');
+            expect(fmtMillions(1.5, {label: true, labelCls: null})).toBe('0.000002m');
+        });
+
+        it('rounds values below 1e-6 like any other at fixed precision', () => {
+            expect(fmtNumber(9.9999999e-7, {precision: 6})).toBe('0.000001');
+        });
+
+        it('keeps the sign of a value below 1e-6 at auto precision', () => {
+            expect(fmtNumber(-5e-7)).toBe('-0');
+            expect(fmtNumber(5e-7, {withPlusSign: true})).toBe('+0');
+            expect(fmtNumber(-5e-7, {ledger: true, forceLedgerAlign: false})).toBe('(0)');
+            expect(html(fmtNumber(-5e-7, {colorSpec: true}))).toBe(
+                '<span class="xh-neg-val">-0</span>'
+            );
+        });
+
+        it('shows a value past 15 significant digits as stored, without float noise', () => {
+            expect(fmtNumber(2390421244, {precision: 12})).toBe('2,390,421,244.000000000000');
+            expect(fmtNumber(-307720365289.33826, {precision: 4})).toBe('-307,720,365,289.3383');
+            expect(fmtNumber(486868540.05791247, {precision: 8})).toBe('486,868,540.05791247');
+        });
+
+        it('clamps precision to 0-12', () => {
+            expect(fmtNumber(5.5, {precision: -1 as any})).toBe('6');
+            expect(fmtNumber(1 / 3, {precision: 20 as any})).toBe('0.333333333333');
         });
     });
 
@@ -135,6 +232,11 @@ describe('fmtNumber', () => {
             );
         });
 
+        it('returns zeroDisplay for a value below 1e-6 at auto precision only when strictZero is false', () => {
+            expect(fmtNumber(5e-7, {zeroDisplay: '-'})).toBe('0');
+            expect(fmtNumber(-5e-7, {zeroDisplay: '-', strictZero: false})).toBe('-');
+        });
+
         it('returns zeroDisplay for zero', () => {
             expect(fmtNumber(0, {zeroDisplay: '-'})).toBe('-');
         });
@@ -145,6 +247,36 @@ describe('fmtNumber', () => {
         expect(fmtNumber(null, {nullDisplay: '-'})).toBe('-');
         expect(fmtNumber(undefined, {nullDisplay: '-'})).toBe('-');
         expect(fmtNumber('' as any, {nullDisplay: '-'})).toBe('-');
+    });
+
+    it('renders Infinity as ∞, with the sign and ledger format of other values', () => {
+        expect(fmtNumber(Infinity)).toBe('∞');
+        expect(fmtNumber(-Infinity, {ledger: true, forceLedgerAlign: false})).toBe('(∞)');
+    });
+
+    it('renders NaN as NaN and -0 as zero', () => {
+        expect(fmtNumber(NaN)).toBe('NaN');
+        expect(fmtNumber(-0, {precision: 2})).toBe('0.00');
+    });
+
+    // Apps should parse formatted text with parseNumber() first.
+    it('reads a string as Number() does', () => {
+        expect(fmtNumber('-1234.5' as any, {precision: 2})).toBe('-1,234.50');
+        expect(fmtNumber('1,234.5' as any, {precision: 2})).toBe('NaN');
+        expect(fmtNumber('N/A' as any)).toBe('NaN');
+    });
+
+    it('rejects the removed formatConfig option, at compile time and when called', () => {
+        // Each call is a compile error - `pnpm typecheck` fails if one stops being one.
+        const msg = "Use 'precision', 'zeroPad' and 'withCommas'",
+            formatConfig = {thousandSeparated: false, mantissa: 0},
+            opts = {formatConfig};
+        // @ts-expect-error - formatConfig
+        expect(() => fmtNumber(1234, {formatConfig})).toThrow(msg);
+        // @ts-expect-error - formatConfig, by variable
+        expect(() => fmtNumber(1234, opts)).toThrow(msg);
+        // @ts-expect-error - formatConfig, by spread, for a null value
+        expect(() => fmtNumber(null, {...opts, ledger: true})).toThrow('formatConfig');
     });
 
     // Apps interpolate formatter output into strings, e.g. chart tooltips and labels. Output must

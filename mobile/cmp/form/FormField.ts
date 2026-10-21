@@ -9,18 +9,10 @@ import {
     FormContext,
     FormContextType,
     BaseFormFieldProps,
-    FormFieldSetModel
+    FormFieldSetContext
 } from '@xh/hoist/cmp/form';
 import {box, div, span} from '@xh/hoist/cmp/layout';
-import {
-    DefaultHoistProps,
-    hoistCmp,
-    HoistProps,
-    TestSupportProps,
-    useContextModel,
-    uses,
-    XH
-} from '@xh/hoist/core';
+import {DefaultHoistProps, hoistCmp, HoistProps, TestSupportProps, uses, XH} from '@xh/hoist/core';
 import {instanceManager} from '@xh/hoist/core/impl/InstanceManager';
 import {maxSeverity} from '@xh/hoist/data';
 import {fmtDate, fmtDateTime, fmtNumber} from '@xh/hoist/format';
@@ -77,7 +69,7 @@ export const [FormField, formField] = hoistCmp.withFactory<FormFieldProps>({
         model = model || (formModel && field ? formModel.fields[field] : null);
 
         // If within a FormFieldSet, register with its model for validation grouping
-        const fieldSetModel = useContextModel(FormFieldSetModel);
+        const fieldSetModel = useContext(FormFieldSetContext);
         useEffect(() => {
             if (fieldSetModel && model) {
                 fieldSetModel.registerChildFieldModel(model);

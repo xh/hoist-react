@@ -6,12 +6,11 @@
  */
 import {box, div, hframe, span} from '@xh/hoist/cmp/layout';
 import {TabContainerModel, TabModel} from '@xh/hoist/cmp/tab';
-import {TabSwitcherProps} from '@xh/hoist/cmp/tab/Types';
+import {TabSwitcherMenuContext, TabSwitcherProps} from '@xh/hoist/cmp/tab/Types';
 import {hoistCmp, HoistModel, useLocalModel, uses} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import '@xh/hoist/desktop/register';
 import {contextMenu} from '@xh/hoist/desktop/cmp/contextmenu';
-import {getContextMenuItem} from '@xh/hoist/desktop/cmp/tab/impl/TabContextMenuItems';
 import {Icon} from '@xh/hoist/icon';
 import {
     menu,
@@ -137,11 +136,10 @@ export const [TabSwitcher, tabSwitcher] = hoistCmp.withFactory<TabSwitcherProps>
                 }),
                 onContextMenu: e => {
                     const domRect = e.currentTarget.getBoundingClientRect(),
-                        menuItems = (switcherConfig.extraMenuItems ?? []).map(it =>
-                            getContextMenuItem(it, {contextMenuEvent: e, tab})
-                        );
+                        menuItems = switcherConfig.extraMenuItems ?? [];
                     if (isEmpty(menuItems)) return;
-                    showContextMenu(contextMenu({menuItems}), {
+                    const context: TabSwitcherMenuContext = {contextMenuEvent: e, tab};
+                    showContextMenu(contextMenu({menuItems, context}), {
                         left: orientation === 'left' ? domRect.right : domRect.left,
                         top: orientation === 'top' ? domRect.bottom : domRect.top
                     });

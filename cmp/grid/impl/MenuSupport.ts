@@ -5,7 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {isEmpty, isFunction, isNil, isString, uniq} from 'lodash';
-import {copyToClipboard} from '@xh/hoist/utils/js';
+import {copyToClipboard, TEST_ID} from '@xh/hoist/utils/js';
 import {hoistCmp, type HoistProps, isMenuHeading, type Some, XH} from '@xh/hoist/core';
 import {Column, GridModel} from '@xh/hoist/cmp/grid';
 import {
@@ -399,23 +399,32 @@ const RecordActionMenuItem = hoistCmp<RecordActionMenuItemProps>({
             configureDefaults: () => true
         });
 
-        return div(
-            span({className: 'ag-menu-option-part ag-menu-option-icon', item: displaySpec.icon}),
-            span({className: 'ag-menu-option-part ag-menu-option-text', item: displaySpec.text}),
-            span({
-                className: 'ag-menu-option-part ag-menu-option-shortcut',
-                item: displaySpec.secondaryText
-            }),
-            span({
-                className: 'ag-menu-option-part ag-menu-option-popup-pointer',
-                item: subMenu
-                    ? span({
-                          className: 'ag-icon ag-icon-small-right',
-                          unselectable: 'on',
-                          role: 'presentation'
-                      })
-                    : ''
-            })
-        );
+        return div({
+            [TEST_ID]: displaySpec.testId,
+            items: [
+                span({
+                    className: 'ag-menu-option-part ag-menu-option-icon',
+                    item: displaySpec.icon
+                }),
+                span({
+                    className: 'ag-menu-option-part ag-menu-option-text',
+                    item: displaySpec.text
+                }),
+                span({
+                    className: 'ag-menu-option-part ag-menu-option-shortcut',
+                    item: displaySpec.secondaryText
+                }),
+                span({
+                    className: 'ag-menu-option-part ag-menu-option-popup-pointer',
+                    item: subMenu
+                        ? span({
+                              className: 'ag-icon ag-icon-small-right',
+                              unselectable: 'on',
+                              role: 'presentation'
+                          })
+                        : ''
+                })
+            ]
+        });
     }
 });

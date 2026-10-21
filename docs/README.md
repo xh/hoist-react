@@ -64,6 +64,7 @@ See [`docs-roadmap.md`](./planning/docs-roadmap.md) for documentation coverage t
 | Configure local development environment | [Development Environment](./development-environment.md)                                                             |
 | Write or run unit tests, in an app or hoist-react | [Unit Testing](./unit-testing.md) |
 | Use MCP tools with AI assistants | [`/mcp/`](../mcp/README.md)                                                                                         |
+| Serve a Hoist library's docs through the MCP tools | [Companion Library Docs](./companion-library-docs.md) |
 | Customize colors, fonts, spacing, or theme | [`/styles/`](../styles/README.md)                                                                                   |
 | Follow XH coding conventions | [Coding Conventions](./coding-conventions.md)                                                                       |
 | Check hoist-react / hoist-core / hoist-dev-utils version compatibility | [Version Compatibility](./version-compatibility.md)                                              |
@@ -158,6 +159,7 @@ for planned coverage:
 | Tool | Description |
 |------|-------------|
 | [MCP Server](../mcp/README.md) | Model Context Protocol server providing AI assistants with structured access to documentation, TypeScript types, and code generation prompts |
+| [Companion Library Docs](./companion-library-docs.md) | How a library that builds on Hoist serves its docs through the MCP server and `hoist-docs` CLI, using a `hoist.docRegistry` field in its `package.json` |
 
 ## Upgrade Notes
 
@@ -172,7 +174,8 @@ breaking changes, before/after code examples, and verification checklists.
 
 | Version | Released | Difficulty | Key Changes |
 |---------|----------|------------|-------------|
-| [v89](./upgrade-notes/v89-upgrade-notes.md) | TBD | 🟢 LOW | TypeScript 7 (strongly recommended), `GridFilterModelConfig.fieldSpecs` no longer an allow-list |
+| [v90](./upgrade-notes/v90-upgrade-notes.md) | TBD | 🟢 LOW | numbro removed - `NumberFormatOptions.formatConfig` no longer supported |
+| [v89](./upgrade-notes/v89-upgrade-notes.md) | 2026-10-13 | 🟢 LOW | TypeScript 7 (strongly recommended), `GridFilterModelConfig.fieldSpecs` no longer an allow-list |
 | [v88](./upgrade-notes/v88-upgrade-notes.md) | 2026-09-28 | 🔴 HIGH | TC39 decorators (`accessor`, no `makeObservable`) + dev-utils 16 / Rsbuild, MobX 7 named exports, AG Grid 36 + Theming API, React 19.3, v86 scheduled removals |
 | [v87](./upgrade-notes/v87-upgrade-notes.md) | TBD | 🟠 MEDIUM | React 19 + Floating UI popovers, data-layer perf overhaul (`leafMap`, `getCubeLeaves`, `StoreRecord.data` access), new column chooser + `RowDragModule`, hoist-core >= 40.5.0 |
 | [v86](./upgrade-notes/v86-upgrade-notes.md) | 2026-06-12 | 🟠 MEDIUM | AG Grid 34→35, CodeInput → CodeMirror v6 (`mode`→`language`), FileChooser redesign, mobile DateInput native picker, `Runner` API + `withSpan` deprecation |
