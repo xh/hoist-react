@@ -10,8 +10,7 @@ import {HoistService, XH} from '@xh/hoist/core';
  * Service to provide simple key/value access to browser local/session storage, appropriately
  * namespaced by application code and username.
  *
- * In the unexpected case that the core apis are not available, will provide a transient in-memory
- * storage to support its operations and API.
+ * If browser storage is unavailable, values are held in memory for the life of the page.
  */
 export abstract class BaseStorageService extends HoistService {
     /** Browser storage, accessed as a plain key/value object, or an in-memory stand-in. */
@@ -19,15 +18,12 @@ export abstract class BaseStorageService extends HoistService {
 
     constructor() {
         super();
-        this.area = this.probeBrowserStorage() ?? {};
-        if (this.isFake) {
-            XH.handleException(
-                XH.exception(
-                    'Requested Storage is not supported in this browser. Transient in-memory storage ' +
-                        'will be used as a fallback.  All data stored will be lost when page is closed.'
-                ),
-                {showAlert: false}
+        this.area = this.probeBrowserStorage();
+        if (!this.area) {
+            this.logWarn(
+                'Browser storage is unavailable - values will be held in memory and lost when the page closes.'
             );
+            this.area = {};
         }
     }
 
@@ -67,11 +63,6 @@ export abstract class BaseStorageService extends HoistService {
         return Object.keys(this.area)
             .filter(it => it.startsWith(prefix))
             .map(it => it.substring(prefix.length));
-    }
-
-    /** True if browser storage is unavailable and values are held in memory for this page only. */
-    get isFake(): boolean {
-        return !(this.area instanceof Storage);
     }
 
     //------------------

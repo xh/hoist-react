@@ -27,7 +27,8 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 * `LocalStorageService` and `SessionStorageService` now read and write browser storage directly.
   Keys and JSON values are stored exactly as before. A value that is not valid JSON now reads as
   missing rather than as a raw string. A custom subclass of `BaseStorageService` now implements
-  the `browserStorage` getter in place of `storeInstance`.
+  the `browserStorage` getter in place of `storeInstance`. Removed the unused `isFake` getter - when
+  storage is unavailable the service logs a warning and holds values in memory, as before.
 
 ### 📚 Libraries
 
