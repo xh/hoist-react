@@ -10,7 +10,6 @@ import {fmtDate} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
 import {isLocalDate, SECONDS} from '@xh/hoist/utils/datetime';
 import {downloadBlob, withDefault} from '@xh/hoist/utils/js';
-import {StatusCodes} from 'http-status-codes';
 import {
     castArray,
     countBy,
@@ -139,7 +138,7 @@ export class GridExportService extends HoistService {
                 ctx
             );
 
-            const blob = response.status === StatusCodes.NO_CONTENT ? null : await response.blob(),
+            const blob = response.status === 204 ? null : await response.blob(),
                 fileExt = this.getFileExtension(type);
 
             if (blob) downloadBlob(blob, `${filename}${fileExt}`);
