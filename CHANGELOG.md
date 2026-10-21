@@ -22,6 +22,17 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 * Removed `NumberFormatOptions.formatConfig`, which took a numbro format. Use `precision`, `zeroPad`
   and `withCommas` instead.
 
+### ⚙️ Technical
+
+* `LocalStorageService` and `SessionStorageService` now read and write browser storage directly.
+  Keys and JSON values are stored exactly as before. A value that is not valid JSON now reads as
+  missing rather than as a raw string. A custom subclass of `BaseStorageService` now implements
+  the `browserStorage` getter in place of `storeInstance`.
+
+### 📚 Libraries
+
+* store2 `removed`
+
 
 ## 89.3.0 - 2026-10-21
 

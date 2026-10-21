@@ -7,7 +7,6 @@
 import type {Some} from '@xh/hoist/core';
 import {Exception} from '@xh/hoist/exception';
 import {castArray, isUndefined} from 'lodash';
-import store from 'store2';
 import {intersperse, type NameSource, parseNameSource} from './LangUtils';
 
 /**
@@ -77,8 +76,8 @@ export function setLogLevel(level: LogLevel, persistMins: number = -1) {
         console.warn(`Client logging set to level '${level}'.`);
     }
     if (persistMins > 0) {
-        store.local.set('xhLogLevel', level);
-        store.local.set('xhLogLevelExpire', Date.now() + persistMins * 60 * 1000);
+        writeLocal('xhLogLevel', level);
+        writeLocal('xhLogLevelExpire', Date.now() + persistMins * 60 * 1000);
         console.warn(`Logging level '${level}' will persist for ${persistMins} minutes.`);
     }
 }
@@ -275,6 +274,23 @@ function parseSource(source: NameSource): string {
 let _logLevel: LogLevel = 'info';
 const _severity: Record<LogLevel, number> = {error: 3, warn: 2, info: 1, debug: 0};
 
-const level = store.local.get('xhLogLevel'),
-    expire = store.local.get('xhLogLevelExpire');
+const level = readLocal('xhLogLevel'),
+    expire = readLocal('xhLogLevelExpire');
 setLogLevel(level && expire > Date.now() ? level : 'info');
+
+// Direct localStorage access, as this runs at module load, before any service is available.
+function readLocal(key: string): any {
+    try {
+        return JSON.parse(window.localStorage.getItem(key));
+    } catch {
+        return null;
+    }
+}
+
+function writeLocal(key: string, value: any) {
+    try {
+        window.localStorage.setItem(key, JSON.stringify(value));
+    } catch {
+        // Storage unavailable - the level still applies for this page load.
+    }
+}

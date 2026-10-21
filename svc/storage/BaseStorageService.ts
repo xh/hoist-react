@@ -5,8 +5,6 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {HoistService, XH} from '@xh/hoist/core';
-import {throwIf} from '@xh/hoist/utils/js';
-import {StoreType} from 'store2';
 
 /**
  * Service to provide simple key/value access to browser local/session storage, appropriately
@@ -16,8 +14,12 @@ import {StoreType} from 'store2';
  * storage to support its operations and API.
  */
 export abstract class BaseStorageService extends HoistService {
+    /** Browser storage, accessed as a plain key/value object, or an in-memory stand-in. */
+    private readonly area: Record<string, string>;
+
     constructor() {
         super();
+        this.area = this.probeBrowserStorage() ?? {};
         if (this.isFake) {
             XH.handleException(
                 XH.exception(
@@ -29,27 +31,25 @@ export abstract class BaseStorageService extends HoistService {
         }
     }
 
+    /** Returns the stored value, or the default (else null) if missing or not valid JSON. */
     get(key: string, defaultValue?: any): any {
-        const storage = this.storeInstance,
-            val = storage.get(key, defaultValue);
-
-        throwIf(val === undefined, `Key '${key}' not found`);
-        return val;
+        try {
+            return JSON.parse(this.area[this.prefix + key]) ?? defaultValue ?? null;
+        } catch {
+            return defaultValue ?? null;
+        }
     }
 
     set(key: string, value: any) {
-        this.storeInstance.set(key, value, true);
+        this.area[this.prefix + key] = JSON.stringify(value);
     }
 
     apply(key: string, newProps: object) {
-        const val = this.get(key, {}),
-            newVal = Object.assign(val, newProps);
-
-        this.set(key, newVal);
+        this.set(key, Object.assign(this.get(key, {}), newProps));
     }
 
     remove(key: string) {
-        this.storeInstance.remove(key);
+        delete this.area[this.prefix + key];
     }
 
     removeIf(predicateFn: (s: string) => boolean) {
@@ -59,19 +59,41 @@ export abstract class BaseStorageService extends HoistService {
     }
 
     clear() {
-        this.storeInstance.clear();
+        this.keys().forEach(key => this.remove(key));
     }
 
     keys(): string[] {
-        return this.storeInstance.keys();
+        const {prefix} = this;
+        return Object.keys(this.area)
+            .filter(it => it.startsWith(prefix))
+            .map(it => it.substring(prefix.length));
     }
 
+    /** True if browser storage is unavailable and values are held in memory for this page only. */
     get isFake(): boolean {
-        return this.storeInstance.isFake();
+        return !(this.area instanceof Storage);
     }
 
     //------------------
     //  Implementation
     //------------------
-    protected abstract get storeInstance(): StoreType;
+    /** The browser storage area to use. Access can throw when storage is disabled. */
+    protected abstract get browserStorage(): Storage;
+
+    /** The browser storage area, confirmed to accept writes, or null if unavailable. */
+    private probeBrowserStorage(): Storage {
+        try {
+            const ret = this.browserStorage,
+                testKey = '_xhStorageProbe';
+            ret.setItem(testKey, 'ok');
+            ret.removeItem(testKey);
+            return ret;
+        } catch {
+            return null;
+        }
+    }
+
+    private get prefix(): string {
+        return `${XH.appCode}.${XH.getUsername()}.`;
+    }
 }
