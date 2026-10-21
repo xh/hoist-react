@@ -38,10 +38,7 @@ import {
     isObject,
     isUndefined,
     lowerCase,
-    omit,
-    pick,
     remove,
-    union,
     uniqBy
 } from 'lodash';
 import {ReactNode} from 'react';
@@ -66,10 +63,6 @@ export interface ViewUserState {
     userPinned: Record<string, boolean>;
     autoSave: boolean;
 }
-
-/** User state a refresh applies from the server - see {@link ViewManagerModel.doLoadAsync}. */
-type RefreshedStateKey = 'userPinned' | 'autoSave';
-const REFRESHED_STATE_KEYS: RefreshedStateKey[] = ['userPinned', 'autoSave'];
 
 /**
  * Configuration for a {@link ViewManagerModel} - persists and manages named user views
@@ -279,10 +272,11 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
     private viewLoadCount = 0;
 
     /**
-     * Pin and auto-save state the server is known to hold, as of the last load or write. A local
-     * change not yet written here is kept over the state a refresh fetches.
+     * Pin and auto-save state as of the last load or write attempt. While a local change is not
+     * yet written here, a refresh leaves both values alone. A failed write still advances this,
+     * so the next refresh resyncs from the server rather than shielding the value forever.
      */
-    private serverState: Pick<ViewUserState, RefreshedStateKey> = {userPinned: {}, autoSave: false};
+    private savedUserState: ViewUserState = {userPinned: {}, autoSave: false};
 
     /** Data access for persisting views. */
     private dataAccess: DataAccess<T>;
@@ -406,16 +400,15 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
         await this.runner({loadSpec})
             .span('refresh')
             .run(async ctx => {
-                // 1) Update views and related state. Keep a local pin or auto-save change that is
-                // unsaved when the fetch is sent or when it returns - its write is debounced or in
-                // flight, and the fetch may have been answered without it.
-                const unsavedKeys = this.unsavedStateKeys,
+                // 1) Update views and related state. Skip user state if a local change was
+                // unsaved at send or return - its pending write will land after this fetch.
+                const hadUnsavedState = this.hasUnsavedState,
                     {views, state, manageGlobal} = await dataAccess.fetchDataAsync(ctx);
                 if (loadSpec.isStale) return;
                 runInAction(() => {
                     this.views = views;
                     this.serverManageGlobal = manageGlobal ?? null;
-                    this.applyServerState(omit(state, union(unsavedKeys, this.unsavedStateKeys)));
+                    if (!hadUnsavedState && !this.hasUnsavedState) this.applyUserState(state);
                 });
 
                 // Fast-forward the current view if it was updated elsewhere.
@@ -654,7 +647,7 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
                 runInAction(() => {
                     this.views = views;
                     this.serverManageGlobal = manageGlobal ?? null;
-                    this.applyServerState(state);
+                    this.applyUserState(state);
                     if (this.preserveUnsavedChanges) {
                         this.pendingValue = XH.sessionStorageService.get(pendingValueStorageKey);
                     }
@@ -714,8 +707,11 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
             this.runner()
                 .span(spanName)
                 .run(async ctx => {
-                    await this.dataAccess.updateStateAsync(update, ctx);
-                    this.serverState = {...this.serverState, ...pick(update, REFRESHED_STATE_KEYS)};
+                    try {
+                        await this.dataAccess.updateStateAsync(update, ctx);
+                    } finally {
+                        this.savedUserState = {...this.savedUserState, ...update};
+                    }
                 });
         return [
             {
@@ -736,18 +732,21 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
         ];
     }
 
-    /** Keys of pin and auto-save state changed locally since the server last held them. */
-    private get unsavedStateKeys(): RefreshedStateKey[] {
-        const {serverState} = this;
-        return REFRESHED_STATE_KEYS.filter(key => !isEqual(this[key], serverState[key]));
+    /** True if pin or auto-save state has changed locally since the server last held it. */
+    private get hasUnsavedState(): boolean {
+        const {savedUserState} = this;
+        return (
+            this.autoSave !== savedUserState.autoSave ||
+            !isEqual(this.userPinned, savedUserState.userPinned)
+        );
     }
 
     /** Install pin and auto-save state fetched from the server, and record that it holds it. */
     @action
-    private applyServerState(state: Partial<ViewUserState>) {
-        if ('userPinned' in state) this.userPinned = state.userPinned;
-        if ('autoSave' in state) this.autoSave = state.autoSave;
-        this.serverState = {...this.serverState, ...pick(state, REFRESHED_STATE_KEYS)};
+    private applyUserState(state: ViewUserState) {
+        this.userPinned = state.userPinned;
+        this.autoSave = state.autoSave;
+        this.savedUserState = state;
     }
 
     private async loadViewAsync(
