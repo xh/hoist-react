@@ -9,8 +9,10 @@ import {Cube, Store, View} from '@xh/hoist/data';
 import {action, observable, observableRef, bindableRef} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 import {Timer} from '@xh/hoist/utils/async';
-import {SECONDS} from '@xh/hoist/utils/datetime';
+import {HOURS, SECONDS} from '@xh/hoist/utils/datetime';
+import {parseNameSource} from '@xh/hoist/utils/js';
 import {instanceManager} from '@xh/hoist/core/impl/InstanceManager';
+import {isFunction} from 'lodash';
 
 /**
  * Developer/Admin focused service to provide additional processing and stats related to the
@@ -21,9 +23,9 @@ import {instanceManager} from '@xh/hoist/core/impl/InstanceManager';
  * (with a minimal throttle) on each change to the Hoist registry, as well as an array of model
  * count / memory usage stats, also updated on model changes and periodically in the background.
  *
- * When running in a Desktop application, activating this service will trigger the display of the
- * Hoist Inspector UI - {@link inspectorPanel}. A built-in control to activate/deactivate this
- * service is provided within the Desktop versionBar component.
+ * When running in a Desktop application, activating this service will open the Hoist Inspector UI
+ * - {@link inspectorPanel} - in a separate browser window. A built-in control to activate/deactivate
+ * this service is provided within the Desktop versionBar component.
  *
  * This service may be completely disabled via an optional `xhInspectorConfig` appConfig, although
  * note that this config does *not* disable the backing registry within XH. Access to Inspector can
@@ -53,7 +55,7 @@ export class InspectorService extends HoistService {
     /** Info on current services/models/stores (when active). */
     @bindableRef accessor activeInstances: InspectorInstanceData[] = [];
 
-    /** Timestamped model counts w/memory usage (when active). */
+    /** Timestamped model counts w/memory usage (when active). Last hour persisted per tab. */
     @observableRef accessor stats: InspectorStat[] = [];
 
     @managed
@@ -61,6 +63,11 @@ export class InspectorService extends HoistService {
 
     private _syncRun: number = 0;
     private _idToSyncRun = new Map<string, number>();
+
+    constructor() {
+        super();
+        this.markPersist('stats', {localStorageKey: `xhInspector.${XH.clientAppCode}.${XH.tabId}`});
+    }
 
     override async initAsync(ctx: InitContext) {
         // Ensure deactivated if not enabled - active could be persisted to true.
@@ -113,7 +120,6 @@ export class InspectorService extends HoistService {
     deactivate() {
         this.active = false;
         this.activeInstances = [];
-        this.clearStats();
     }
 
     @action
@@ -127,10 +133,11 @@ export class InspectorService extends HoistService {
             now = Date.now();
 
         this.stats = [
-            ...this.stats,
+            ...this.stats.filter(it => it.timestamp > now - STATS_RETENTION),
             {
                 id: now,
                 timestamp: now,
+                loadId: XH.loadId,
                 modelCount,
                 modelCountChange: modelCount - prevModelCount,
                 totalJSHeapSize,
@@ -148,14 +155,19 @@ export class InspectorService extends HoistService {
         this.stats = [];
     }
 
-    async restoreDefaultsAsync() {
-        if (
-            !(await XH.confirm({
-                message: "Reset Inspector's layout and options to their defaults?"
-            }))
-        )
-            return;
+    /** True if the browser exposes `window.gc` - Chrome launched with `--js-flags=--expose-gc`. */
+    get canForceGC(): boolean {
+        return isFunction((window as any).gc);
+    }
 
+    /** Force a garbage collection, then snapshot stats to show its effect. */
+    forceGC() {
+        (window as any).gc();
+        this.updateStats();
+    }
+
+    /** Clear all persisted Inspector state and reopen the Inspector. Callers should confirm first. */
+    async restoreDefaultsAsync() {
         XH.localStorageService.removeIf(it => it.startsWith(`xhInspector.${XH.clientAppCode}`));
         this.deactivate();
         await wait();
@@ -193,6 +205,7 @@ export class InspectorService extends HoistService {
 
                 return {
                     id: xhId,
+                    label: parseNameSource(inst),
                     className: inst.constructor.name,
                     xhName: inst.xhName,
                     created: inst._created,
@@ -232,6 +245,10 @@ export class InspectorService extends HoistService {
 }
 
 interface InspectorInstanceData {
+    /** The instance's `xhId`. */
+    id: string;
+    /** Display label - matches the source label used by `LogUtils`. */
+    label: string;
     className: string;
     xhName: string;
     created: number;
@@ -251,6 +268,8 @@ interface InspectorInstanceData {
 interface InspectorStat {
     id: number;
     timestamp: number;
+    /** `XH.loadId` of the page load that recorded this stat. */
+    loadId: string;
     modelCount: number;
     modelCountChange: number;
     totalJSHeapSize: number;
@@ -267,3 +286,5 @@ interface NonStandardPerformance extends Performance {
         jsHeapSizeLimit: number;
     };
 }
+
+const STATS_RETENTION = HOURS;
