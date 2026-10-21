@@ -2,15 +2,14 @@
  * MCP resource registrations for hoist-react documentation.
  *
  * Registers static resources for the doc index and coding conventions, plus a
- * URI template resource that serves any document by ID. All content is loaded
- * on-demand from the document registry built in `../data/doc-registry.ts`.
+ * URI template resource that serves any document by ID, companion library docs included. All
+ * content is loaded on-demand from the document registry built in `../data/doc-registry.ts`.
  */
 import {McpServer, ResourceTemplate} from '@modelcontextprotocol/sdk/server/mcp.js';
 
-import {buildRegistry, loadDocContent} from '../data/doc-registry.js';
+import {loadDocContent, loadRegistry, type RegistryData} from '../data/doc-registry.js';
 import {resolveDocId} from '../data/doc-id-resolver.js';
 import {log} from '../util/logger.js';
-import {resolveRepoRoot} from '../util/paths.js';
 
 /**
  * Register all documentation resources on the given MCP server.
@@ -18,9 +17,11 @@ import {resolveRepoRoot} from '../util/paths.js';
  * - `doc-index` (static): The docs/README.md index -- start here.
  * - `conventions` (static): The coding conventions doc.
  * - `hoist-doc` (template): Read any doc by ID via `hoist://docs/{+docId}`.
+ *
+ * Pass `data` to serve a specific registry (specs do). By default, loads the shared registry.
  */
-export function registerDocResources(server: McpServer): void {
-    const {entries: registry} = buildRegistry(resolveRepoRoot());
+export function registerDocResources(server: McpServer, data: RegistryData = loadRegistry()): void {
+    const {entries: registry} = data;
 
     const indexEntry = registry.find(e => e.id === 'docs/README.md');
     const conventionsEntry = registry.find(e => e.id === 'docs/coding-conventions.md');
@@ -81,7 +82,8 @@ export function registerDocResources(server: McpServer): void {
     // Resource template: hoist-doc
     //------------------------------------------------------------------
     // Uses {+docId} (RFC 6570 reserved expansion) so slashes in doc IDs
-    // (e.g. "cmp/grid/README.md") are preserved rather than percent-encoded.
+    // (e.g. "cmp/grid/README.md") are preserved rather than percent-encoded. The `@` that
+    // starts a scoped companion library id is a reserved character, so it passes through too.
     const template = new ResourceTemplate('hoist://docs/{+docId}', {
         list: async () => ({
             resources: registry.map(entry => ({
@@ -102,7 +104,7 @@ export function registerDocResources(server: McpServer): void {
         {
             title: 'Hoist Documentation',
             description:
-                'Read any hoist-react doc by ID. Use the list to discover available document IDs.',
+                'Read any hoist-react doc by ID, or a companion library doc by its package-prefixed ID. Use the list to discover available document IDs.',
             mimeType: 'text/markdown'
         },
         async (uri, variables) => {

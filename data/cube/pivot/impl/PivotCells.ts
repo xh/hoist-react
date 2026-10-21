@@ -228,7 +228,7 @@ export class PivotCells {
     newCellRowData(): PlainObject {
         const {view} = this,
             ret = view._rowDataGenerator.newCellRowData();
-        view.assignDigest(ret as ViewRowData);
+        BaseRow.assignDigest(ret as ViewRowData);
         return ret;
     }
 
@@ -343,8 +343,7 @@ export class PivotCells {
             cell.staleAggs = true;
 
             const {data} = cell.ownerRow;
-            if (clearCellSlots(cell, data, EMPTY_NAMES))
-                this.view.assignDigest(data as ViewRowData);
+            if (clearCellSlots(cell, data, EMPTY_NAMES)) BaseRow.assignDigest(data as ViewRowData);
         });
     }
 
@@ -513,7 +512,7 @@ export class PivotCells {
             }
         }
 
-        if (changed) this.view.assignDigest(ownerData as ViewRowData);
+        if (changed) BaseRow.assignDigest(ownerData as ViewRowData);
     }
 
     /** A miss means a cached cell outlived its path - `buildCellRows` should have rebound it. */

@@ -439,7 +439,7 @@ this.addReaction({
     run: count => {
         const alertsTab = this.tabModel.findTab('alerts');
         alertsTab.title = count > 0
-            ? hbox('Alerts ', badge({item: count, intent: 'danger'}))
+            ? span('Alerts ', badge({item: count, intent: 'danger'}))
             : 'Alerts';
     },
     fireImmediately: true  // Set initial title from current count

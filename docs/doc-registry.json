@@ -236,8 +236,8 @@
             "title": "Icon System",
             "mcpCategory": "package",
             "viewerCategory": "supporting",
-            "description": "Factory-based icon system wrapping FontAwesome Pro.",
-            "keywords": ["Icon singleton", "IconProps", "intent coloring", "size variants", "asHtml", "fileIcon"]
+            "description": "Factory-based icon system wrapping FontAwesome Pro, including registration of custom app icons and a user-facing icon picker.",
+            "keywords": ["Icon singleton", "IconProps", "intent coloring", "size variants", "asHtml", "fileIcon", "Icon.register", "custom icons", "IconPicker", "Icon.get", "icon catalog"]
         },
         {
             "id": "security/README.md",
@@ -286,6 +286,14 @@
             "viewerCategory": "devops",
             "description": "Model Context Protocol server providing AI assistants with documentation search, TypeScript type exploration, and code generation prompts.",
             "keywords": ["MCP", "Model Context Protocol", "AI assistant", "Claude Code", "tools", "resources", "prompts", "search", "symbols", "documentation"]
+        },
+        {
+            "id": "docs/companion-library-docs.md",
+            "title": "Companion Library Docs",
+            "mcpCategory": "devops",
+            "viewerCategory": "devops",
+            "description": "How a library that builds on Hoist, such as hoist-chat-kit or a client firm's shared package, serves its docs through the hoist-react MCP server and hoist-docs CLI.",
+            "keywords": ["companion library", "hoist.docRegistry", "docRegistry", "package.json", "client package", "overrides", "sidecar", "HOIST_MCP_APP_ROOT", "package-prefixed doc ids", "library docs"]
         },
         {
             "id": "docs/lifecycle-app.md",
@@ -373,7 +381,7 @@
             "mcpCategory": "devops",
             "viewerCategory": "devops",
             "description": "GitHub Actions workflows for linting, CodeQL analysis, and npm publishing of hoist-react.",
-            "keywords": ["CI", "CD", "GitHub Actions", "lint", "CodeQL", "npm", "publish", "snapshot", "release"]
+            "keywords": ["CI", "CD", "GitHub Actions", "lint", "CodeQL", "npm", "publish", "snapshot", "release", "dist-tag", "experimental"]
         },
         {
             "id": "docs/build-and-deploy-app.md",
@@ -550,6 +558,14 @@
             "viewerCategory": "upgrade",
             "description": "Upgrade guide from v88.x to v89.0.0. Low difficulty. Covers the move to TypeScript 7.",
             "keywords": ["upgrade", "migration", "breaking changes", "v89", "v88"]
+        },
+        {
+            "id": "docs/upgrade-notes/v90-upgrade-notes.md",
+            "title": "v90 Upgrade Notes",
+            "mcpCategory": "devops",
+            "viewerCategory": "upgrade",
+            "description": "Upgrade guide from v89.x to v90.0.0. Low difficulty. Covers the removal of numbro and NumberFormatOptions.formatConfig.",
+            "keywords": ["upgrade", "migration", "breaking changes", "v90", "v89", "numbro", "formatConfig"]
         }
     ]
 }

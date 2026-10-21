@@ -124,6 +124,34 @@ IntelliJ rewrites its own entry in `.mcp.json` on startup. Take its changes rath
 them, or it will keep prompting. Note that it hardcodes the default port `64342`, so a second IDE
 instance on another port needs a local override.
 
+### Chrome DevTools MCP Server (`chrome-devtools`)
+
+Google's [chrome-devtools-mcp](https://github.com/ChromeDevTools/chrome-devtools-mcp) lets an agent
+drive and inspect a Chrome window: navigate, click, type, read the console and network requests, and
+take screenshots. Use it to check a change in a real browser, with Toolbox running against this
+checkout as described in
+[Running Toolbox against this checkout](#running-toolbox-against-this-checkout).
+
+The server connects to a Chrome that you start yourself, with remote debugging on port 9222:
+
+```bash
+/Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome \
+  --remote-debugging-port=9222 --user-data-dir="$HOME/.chrome-debug-profile"
+```
+
+The separate `--user-data-dir` is required. Chrome ignores the debugging flags on its default
+profile. A fixed folder keeps logins between sessions and keeps the agent out of your everyday
+profile. To check that the port is open, run `curl -s http://127.0.0.1:9222/json/version`.
+
+**Not enabled by default** - add `"chrome-devtools"` to `enabledMcpjsonServers` in
+`.claude/settings.local.json` to enable it for yourself:
+
+```json
+{
+  "enabledMcpjsonServers": ["hoist-react", "chrome-devtools"]
+}
+```
+
 ### hoist-ai plugin (`xh@hoist-ai`)
 
 The shared `.claude/settings.json` enables XH's `xh@hoist-ai` plugin, the same plugin that Hoist
@@ -320,8 +348,18 @@ important guidelines to internalize:
   Balance DRY against readability — extract when a genuine, stable pattern exists, not prematurely.
 - **Clear, descriptive naming** — Names should convey intent and read naturally. Be descriptive but
   not verbose (`selectedRecord`, not `r` or `theCurrentlySelectedRecordFromTheStore`).
-- **Prefer lodash** for collection/object utilities — it's null-safe, battle-tested, and aids
-  readability. Use native JS only when equally expressive (e.g., `array.map()`, `array.filter()`).
+- **Don't hand-roll collection manipulation** - Before writing or approving a loop or inline
+  closure that compares, searches, groups, partitions, dedupes, sorts, merges or reshapes arrays
+  and objects, check lodash and `@xh/hoist/utils` (including `utils/impl` for framework code) for
+  an existing helper. Lodash is null-safe, battle-tested, and aids readability. Use native JS only
+  when equally expressive (e.g., `array.map()`, `array.filter()`). See
+  [Prefer Lodash for Utility Operations](docs/coding-conventions.md#prefer-lodash-for-utility-operations).
+- **Match the existing pattern** - Before special-casing one member of a family (one option, prop,
+  config key or override), check how its siblings are handled and do the same. If the pattern
+  itself seems wrong, raise it rather than changing one case. A drive-by fix to a single member
+  leaves the codebase inconsistent. When consolidating code, keep every condition the old code
+  checked. See
+  [Match the Existing Pattern](docs/coding-conventions.md#match-the-existing-pattern).
 - **Keep code concise** — Favor direct, compact expression over verbose or ceremonial patterns.
   Use Hoist's own utilities (`withDefault`, `throwIf`, element factories) to reduce boilerplate.
 - **Named exports only** — No default exports. Components export `[Component, factory]` pairs
@@ -463,3 +501,36 @@ When working on hoist-react library code or documentation, reference Toolbox for
 of how features are used in applications. Note that the local checkout is specific to the Hoist
 development environment and would not be available to general application developers who have
 hoist-react as a dependency.
+
+### Running Toolbox against this checkout
+
+To see a hoist-react change in a real browser, run Toolbox with this checkout compiled inline:
+
+- **Client** - `cd ../toolbox/client-app && pnpm startWithHoist` serves `http://localhost:3000`
+  and rebuilds when files here change. Reload the page after a rebuild.
+- **Server** - `cd ../toolbox && ./gradlew bootRun` serves the Grails API on port 8080, against
+  the developer's MySQL and login by default.
+
+Check first whether both are already running (`curl -s -o /dev/null -w '%{http_code}'
+http://localhost:3000/admin/` and the same for `:8080`). Leave servers you did not start running
+when you finish - another session may depend on them.
+
+If you need to log in yourself and have no session to use, never enter the developer's
+credentials. Start the server on a throwaway in-memory H2 database with a temporary admin instead:
+
+```bash
+cd ../toolbox
+APP_TOOLBOX_USE_H2=true APP_TOOLBOX_OAUTH_PROVIDER=NONE \
+APP_TOOLBOX_BOOTSTRAP_ADMIN_USER=agent@xh.io \
+APP_TOOLBOX_BOOTSTRAP_ADMIN_PASSWORD=localDevOnly ./gradlew bootRun
+```
+
+Always use exactly `agent@xh.io` / `localDevOnly`, never a generated password. Then the developer
+and other agents can sign in to any throwaway server they find. The user exists only in a local
+in-memory database, so the password protects nothing.
+
+Startup logs `Local admin user available as per instanceConfig`. Then log in by POSTing the
+credentials to `/api/xh/login` from a page on `localhost:3000` (a form fill can be blocked by
+password-manager overlays) and reload. The database starts empty and is discarded on stop, so
+features that depend on stored data may not work. Full details, including the login snippet, are in
+`../toolbox/docs/running-locally.md` under "Agent-driven sessions with a throwaway database".

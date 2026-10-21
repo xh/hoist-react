@@ -192,8 +192,6 @@ export class View
     _pivot: PivotCells = null;
     // Stores minted by `createStore`, whose summary-row flag follows the query's `includeRoot`.
     private _ownStores = new WeakSet<Store>();
-    // Monotonic source for cubeRowDigest stamps - safe-integer headroom spans centuries of use.
-    _rowDigest = 0;
     // Fields eligible for aggregation at each level of the query - i.e. those with an aggregator
     // that are not themselves an applied dimension there - and useful subsets of same. Indexed by
     // row depth, with entry 0 (no dimensions applied) holding the superset for the whole query.
@@ -416,7 +414,7 @@ export class View
      */
     newParentRowData(id: string): ViewRowData {
         const ret = this._rowDataGenerator.newParentRowData(id);
-        this.assignDigest(ret);
+        BaseRow.assignDigest(ret);
         return ret;
     }
 
@@ -426,12 +424,8 @@ export class View
      */
     newLeafRowData(id: string, src: PlainObject): ViewRowData {
         const ret = this._rowDataGenerator.newLeafRowData(id, src);
-        this.assignDigest(ret);
+        BaseRow.assignDigest(ret);
         return ret;
-    }
-
-    assignDigest(data: ViewRowData) {
-        data.cubeRowDigest = ++this._rowDigest;
     }
 
     /** Derive the per-query lookup tables. Runs at construction and on every `updateQuery`. */
@@ -514,7 +508,7 @@ export class View
             _leafMap.get(rec.id)?.applyLeafDataUpdate(rec, checkFields, changed);
         });
 
-        changed.rows.forEach(row => this.assignDigest(row.data as ViewRowData));
+        changed.rows.forEach(row => BaseRow.assignDigest(row.data as ViewRowData));
 
         this.createAggregationContext();
 

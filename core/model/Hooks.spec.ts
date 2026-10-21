@@ -118,6 +118,43 @@ describe('useModelLinker', () => {
         rerender(dashboardPanel(tradesPanel({title: 'Open trades', modelRef: tradesRef})));
         expect(titles).toEqual(['Open trades']);
     });
+
+    it('links a model created at the root once, however often it renders', () => {
+        // Without an ancestor model, every render re-ran onLinked and re-added its reactions.
+        const ordersRef = createRef<OrdersModel>(),
+            {rerender} = render(ordersPanel({title: 'Orders', modelRef: ordersRef}));
+        rerender(ordersPanel({title: 'Open orders', modelRef: ordersRef}));
+        rerender(ordersPanel({title: 'Closed orders', modelRef: ordersRef}));
+
+        const orders = ordersRef.current;
+        act(() => {
+            orders.status = 'Loaded';
+        });
+        expect(orders.log).toEqual(['onLinked', 'Loaded']);
+        expect(orders.componentProps.title).toBe('Closed orders');
+    });
+
+    it('does not re-render when state read by onLinked changes', () => {
+        // The read subscribed the component, which then re-rendered once on the first change.
+        const trades = new TradesModel();
+        onTestFinished(() => trades.destroy());
+        let renders = 0;
+        const statusView = hoistCmp.factory<StatusModel>({
+            model: creates(() => new StatusModel(trades)),
+            render({model}) {
+                renders++;
+                return span(model.status);
+            }
+        });
+
+        const {container} = render(statusView());
+        act(() => {
+            trades.status = 'Loaded';
+        });
+
+        expect(container.textContent).toBe('Pending');
+        expect(renders).toBe(1);
+    });
 });
 
 describe('useLocalModel', () => {
@@ -145,6 +182,30 @@ describe('useLocalModel', () => {
 
         unmount();
         expect(trades.isDestroyed).toBe(true);
+    });
+
+    it('does not re-render when state read while creating the model changes', () => {
+        const trades = new TradesModel();
+        onTestFinished(() => trades.destroy());
+        let renders = 0;
+        const dashboardView = hoistCmp.factory<DashboardModel>({
+            model: creates(DashboardModel),
+            render() {
+                renders++;
+                const chart = useLocalModel(() =>
+                    Object.assign(new ChartModel(), {title: trades.status})
+                );
+                return span(chart.title);
+            }
+        });
+
+        const {container} = render(dashboardView());
+        act(() => {
+            trades.status = 'Loaded';
+        });
+
+        expect(container.textContent).toBe('Pending');
+        expect(renders).toBe(1);
     });
 });
 
@@ -205,6 +266,30 @@ class TradesModel extends HoistModel {
     }
 }
 
+/** Adds a reaction to its own status when linked. */
+class OrdersModel extends HoistModel {
+    @bindable accessor status = 'Pending';
+    log: string[] = [];
+
+    override onLinked() {
+        this.log.push('onLinked');
+        this.addReaction({track: () => this.status, run: status => this.log.push(status)});
+    }
+}
+
+/** Copies the status of another model when linked. */
+class StatusModel extends HoistModel {
+    status: string = null;
+
+    constructor(readonly source: TradesModel) {
+        super();
+    }
+
+    override onLinked() {
+        this.status = this.source.status;
+    }
+}
+
 class ChartModel extends HoistModel {
     title = 'Positions';
 }
@@ -224,6 +309,11 @@ const tradesPanel = hoistCmp.factory<TradesModel>({
         model.log.push('render');
         return span(`${title}: ${model.status}`);
     }
+});
+
+const ordersPanel = hoistCmp.factory<OrdersModel>({
+    model: creates(OrdersModel),
+    render: ({title}) => span(title)
 });
 
 const tradesView = hoistCmp.factory<TradesModel>({

@@ -7,7 +7,6 @@
 import {ColumnState, GridModel} from '@xh/hoist/cmp/grid';
 import type {Some} from '@xh/hoist/core';
 import {hoistCmp, HoistModel, managed} from '@xh/hoist/core';
-import type {Filter} from '@xh/hoist/data';
 import {StoreRecordId} from '@xh/hoist/data';
 import type {GridOptions, IRowNode, RowDragEndEvent} from '@xh/hoist/kit/ag-grid';
 import {castArray} from 'lodash';
@@ -40,11 +39,9 @@ export class ColLibraryModel extends HoistModel implements ColChooserDropPartici
 
     private readonly collapseGroups: boolean;
 
-    private readonly autoExpandOnFilter: number;
+    private unfilteredExpanded = new Map<string, boolean>();
 
-    private preFilterExpanded: Set<string> = null;
-
-    private lastFilter: Filter = null;
+    private wasFiltered = false;
 
     private seenGroupKeys = new Set<string>();
 
@@ -69,19 +66,10 @@ export class ColLibraryModel extends HoistModel implements ColChooserDropPartici
         };
     }
 
-    constructor({
-        parent,
-        collapseGroups,
-        autoExpandOnFilter
-    }: {
-        parent: ColChooserModel;
-        collapseGroups: boolean;
-        autoExpandOnFilter: number;
-    }) {
+    constructor({parent, collapseGroups}: {parent: ColChooserModel; collapseGroups: boolean}) {
         super();
         this.parent = parent;
         this.collapseGroups = collapseGroups;
-        this.autoExpandOnFilter = autoExpandOnFilter;
         this.chooserGridModel = this.createGridModel();
 
         this.addReaction({
@@ -200,15 +188,13 @@ export class ColLibraryModel extends HoistModel implements ColChooserDropPartici
     private libraryEmptyText = hoistCmp.factory(() => this.emptyText);
 
     private syncGroupExpandState() {
-        const {autoExpandOnFilter, chooserGridModel} = this,
-            {agApi, store} = chooserGridModel;
-        if (!autoExpandOnFilter) return;
+        const {agApi, store} = this.chooserGridModel;
 
         // Grid unmounted (library hidden / chooser closed) - drop our bookkeeping so the next open
         // starts from the configured default rather than restoring a prior session's expansions.
         if (!agApi || agApi.isDestroyed()) {
-            this.preFilterExpanded = null;
-            this.lastFilter = null;
+            this.unfilteredExpanded = new Map();
+            this.wasFiltered = false;
             this.seenGroupKeys = new Set();
             return;
         }
@@ -218,34 +204,34 @@ export class ColLibraryModel extends HoistModel implements ColChooserDropPartici
             if (node.group) groups.push(node);
         });
 
-        const {filter} = store,
-            filterChanged = filter !== this.lastFilter;
-        this.lastFilter = filter;
+        const isFiltered = !!store.filter,
+            filterToggled = isFiltered !== this.wasFiltered;
+        this.wasFiltered = isFiltered;
 
-        if (!filter) {
-            // Unfiltered - restore the user's own expansions on the way out of a filter, then keep
-            // tracking them (the reaction watches expandState) as the baseline for the next one.
-            const restore = this.preFilterExpanded;
-            if (filterChanged && restore) {
-                this.setGroupsExpanded(groups, node => restore.has(node.key));
-            }
-            this.preFilterExpanded = new Set(
-                groups.filter(node => node.expanded).map(node => node.key)
-            );
-        } else {
-            // Rows are filtered out of the Store, not by ag-grid, so allChildrenCount is post-filter.
+        if (!isFiltered) {
+            // Unfiltered - restore the user's expansions on leaving a filter, and track them as the
+            // baseline for the next. Merged, not replaced - a group the filter removed returns later.
+            const remembered = this.unfilteredExpanded;
             this.setGroupsExpanded(groups, node =>
-                this.shouldReDerive(node, filterChanged)
-                    ? node.allChildrenCount <= autoExpandOnFilter
+                this.shouldReDerive(node, filterToggled)
+                    ? (remembered.get(node.key) ?? !this.collapseGroups)
                     : node.expanded
+            );
+            groups.forEach(node => remembered.set(node.key, node.expanded));
+        } else {
+            // Rows are filtered out of the Store, so every remaining group holds a match. Expand on
+            // entering a search only, so a group the user collapses stays shut as the query changes.
+            this.setGroupsExpanded(
+                groups,
+                node => node.expanded || this.shouldReDerive(node, filterToggled)
             );
         }
 
         this.seenGroupKeys = new Set(groups.map(node => node.key));
     }
 
-    private shouldReDerive(node: IRowNode, filterChanged: boolean): boolean {
-        return filterChanged || !this.seenGroupKeys.has(node.key);
+    private shouldReDerive(node: IRowNode, filterToggled: boolean): boolean {
+        return filterToggled || !this.seenGroupKeys.has(node.key);
     }
 
     private setGroupsExpanded(groups: IRowNode[], expandedFn: (node: IRowNode) => boolean) {

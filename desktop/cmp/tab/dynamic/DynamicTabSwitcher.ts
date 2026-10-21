@@ -6,7 +6,7 @@
  */
 import {box, div, hframe} from '@xh/hoist/cmp/layout';
 import {TabContainerModel, TabModel} from '@xh/hoist/cmp/tab';
-import {TabSwitcherProps} from '@xh/hoist/cmp/tab/Types';
+import {TabSwitcherMenuContext, TabSwitcherProps} from '@xh/hoist/cmp/tab/Types';
 import {
     hoistCmp,
     HoistModel,
@@ -163,12 +163,11 @@ const tabCmp = hoistCmp.factory<TabProps>(({tab, index, localModel, model}) => {
                     if (!disabled) model.activate(tab.id);
                 },
                 onContextMenu: e => {
-                    const domRect = e.currentTarget.getBoundingClientRect();
+                    const domRect = e.currentTarget.getBoundingClientRect(),
+                        context: TabSwitcherMenuContext = {contextMenuEvent: e, tab};
                     consumeEvent(e);
                     showContextMenu(
-                        contextMenu({
-                            menuItems: model.getContextMenuItems(e, tab)
-                        }),
+                        contextMenu({menuItems: model.getContextMenuItems(tab), context}),
                         {
                             left: props.orientation === 'left' ? domRect.right : domRect.left,
                             top: props.orientation === 'top' ? domRect.bottom : domRect.top

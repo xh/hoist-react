@@ -169,7 +169,7 @@ export abstract class ParentRow extends BaseRow {
             changed = this.recomputeAggregatesForContextChange(this.recomputeCanAggregate());
         }
 
-        if (changed) view.assignDigest(this.data as ViewRowData);
+        if (changed) BaseRow.assignDigest(this.data as ViewRowData);
         return this;
     }
 

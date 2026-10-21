@@ -131,6 +131,28 @@ describe('hoistCmp', () => {
             expect(texts('.title')).toEqual(['Risk']);
             expect(chartRenders).toBe(1);
         });
+
+        it('does not re-render when state read while creating its model changes', () => {
+            // The read subscribed the component, which then re-rendered once on the first change.
+            const chart = new ChartModel({title: 'Positions'});
+            onTestFinished(() => chart.destroy());
+            let renders = 0;
+            const frameView = hoistCmp.factory<FrameModel>({
+                model: creates(() => Object.assign(new FrameModel(), {title: chart.title})),
+                render({model}) {
+                    renders++;
+                    return span({className: 'frame', item: model.title});
+                }
+            });
+
+            render(frameView());
+            act(() => {
+                chart.title = 'Orders';
+            });
+
+            expect(texts('.frame')).toEqual(['Positions']);
+            expect(renders).toBe(1);
+        });
     });
 
     describe('uses', () => {

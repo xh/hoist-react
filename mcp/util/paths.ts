@@ -1,8 +1,9 @@
 /**
  * Path utilities for the Hoist MCP server.
  *
- * Provides repo root resolution (via `import.meta.url`) and safe path
- * construction that prevents directory traversal outside the repository.
+ * Provides repo root resolution (via `import.meta.url`), app root and installed package lookup
+ * for companion library discovery, and safe path construction that prevents directory traversal
+ * outside a package root.
  */
 import {existsSync, readFileSync} from 'node:fs';
 import {resolve, dirname, sep} from 'node:path';
@@ -74,6 +75,88 @@ export function resolveHoistVersion(): string {
     const pkg = JSON.parse(readFileSync(pkgPath, 'utf8')) as {version?: string};
     cachedHoistVersion = pkg.version ?? 'unknown';
     return cachedHoistVersion;
+}
+
+//------------------------------------------------------------------
+// Consuming package (app root) and its dependencies
+//------------------------------------------------------------------
+
+/** The subset of a package.json the tools read. */
+export interface PackageJson {
+    name?: string;
+    version?: string;
+    description?: string;
+    dependencies?: Record<string, string>;
+    devDependencies?: Record<string, string>;
+    peerDependencies?: Record<string, string>;
+    hoist?: {docRegistry?: string};
+}
+
+/** Read `<dir>/package.json`, or return null if it is missing or unreadable. */
+export function readPackageJson(dir: string): PackageJson | null {
+    const path = resolve(dir, 'package.json');
+    if (!existsSync(path)) return null;
+    try {
+        return JSON.parse(readFileSync(path, 'utf8'));
+    } catch {
+        return null;
+    }
+}
+
+/**
+ * Resolve the root of the package that consumes `@xh/hoist` - the anchor for companion library
+ * discovery. The server cannot find companion libraries from its own location, because under
+ * pnpm `@xh/hoist` lives in the `.pnpm` store and does not depend on them.
+ *
+ * Checks, in order:
+ *  1. The `HOIST_MCP_APP_ROOT` env var, if set. Used as given.
+ *  2. `cwd` and `cwd/client-app` (the standard Hoist app layout), then the same pair in each
+ *     parent folder. The first package.json that is `@xh/hoist` or depends on it wins, so a run
+ *     from deep inside an app (e.g. `client-app/src`) still finds it.
+ *  3. Else the first package.json in `cwd` or `cwd/client-app`.
+ *
+ * Returns null when no package.json is found. Params exist for specs - callers pass none.
+ */
+export function resolveAppRoot(
+    cwd: string = process.cwd(),
+    env: Record<string, string | undefined> = process.env
+): string | null {
+    if (env.HOIST_MCP_APP_ROOT) return resolve(cwd, env.HOIST_MCP_APP_ROOT);
+
+    const start = resolve(cwd);
+    let fallback: string | null = null;
+    for (let dir = start; ; dir = dirname(dir)) {
+        for (const candidate of [dir, resolve(dir, 'client-app')]) {
+            const pkg = readPackageJson(candidate);
+            if (!pkg) continue;
+            if (usesHoist(pkg)) return candidate;
+            if (dir === start) fallback ??= candidate;
+        }
+        if (dirname(dir) === dir) return fallback;
+    }
+}
+
+/** True if `pkg` is `@xh/hoist` or depends on it. */
+function usesHoist(pkg: PackageJson): boolean {
+    const deps = {...pkg.dependencies, ...pkg.devDependencies, ...pkg.peerDependencies};
+    return pkg.name === '@xh/hoist' || '@xh/hoist' in deps;
+}
+
+/**
+ * Find an installed package by walking up from `fromDir` through each `node_modules/<name>`,
+ * as Node does. Returns its `node_modules` path, which under pnpm is a link into the store, or
+ * null if not installed. Reads the folder directly rather than `require.resolve()`, which fails
+ * for packages whose `exports` map hides `package.json`.
+ */
+export function findInstalledPackage(fromDir: string, name: string): string | null {
+    let dir = resolve(fromDir);
+    while (true) {
+        const candidate = resolve(dir, 'node_modules', name);
+        if (existsSync(resolve(candidate, 'package.json'))) return candidate;
+        const parent = dirname(dir);
+        if (parent === dir) return null;
+        dir = parent;
+    }
 }
 
 /**

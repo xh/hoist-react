@@ -48,11 +48,28 @@ if (!window.screen.orientation) {
     });
 }
 
+// jsdom has no ResizeObserver, which the useOnResize hook creates. jsdom has no layout either, so
+// an element never resizes - observe nothing.
+globalThis.ResizeObserver ??= class {
+    observe() {}
+    unobserve() {}
+    disconnect() {}
+};
+
+// Onsen UI, loaded by the mobile platform, throws "Invalid state" at import unless the root
+// element's computed style lists a transition property. jsdom lists only the properties set on it.
+document.documentElement.style.transitionDuration = '0s';
+
 //------------------------------------------------------------------
 // Guards - problems are collected as they happen, then fail the
 // test when it finishes, with a message naming the cause.
 //------------------------------------------------------------------
 const problems: string[] = [];
+
+// Every guard reports through hoistCore.onProblem(), so that initTestAppAsync() can collect the
+// problems raised during boot and fail the boot instead. The fake also reports an error thrown by a
+// route added with hoistCore.route() - the client sees a 500.
+hoistCore.onProblem = msg => problems.push(msg);
 
 // A request or WebSocket with no handler. Hoist services often catch and log network errors, so a
 // failed request alone would not fail the test. Throwing makes MSW fail the request - a callback
@@ -63,7 +80,7 @@ function onUnhandledFrame({frame}: {frame: {data: unknown}}): never {
             ? `${request.method} ${request.url}`
             : `WebSocket ${connection.client.url}`,
         msg = `Not handled by fake hoist-core: ${target}`;
-    problems.push(msg);
+    hoistCore.onProblem(msg);
     throw new Error(msg);
 }
 
@@ -73,21 +90,21 @@ interface FrameData {
     connection?: {client: {url: URL}};
 }
 
-// An error thrown by a route added with hoistCore.route(). The client sees a 500.
-hoistCore.onProblem = msg => problems.push(msg);
-
 // An error thrown inside a MobX reaction or autorun. MobX catches and logs these.
-onReactionError(e => problems.push(`Error in MobX reaction: ${e}`));
+onReactionError(e => hoistCore.onProblem(`Error in MobX reaction: ${e}`));
 
 // A MobX strict-mode warning - Hoist sets `enforceActions: 'observed'`, so this flags observable
 // state changed outside an action.
 const consoleWarn = console.warn;
 console.warn = (...args: any[]) => {
-    if (String(args[0]).startsWith('[MobX]')) problems.push(String(args[0]));
+    if (String(args[0]).startsWith('[MobX]')) hoistCore.onProblem(String(args[0]));
     consoleWarn(...args);
 };
 
-beforeAll(() => server.listen({onUnhandledFrame}));
+beforeAll(() => {
+    server.listen({onUnhandledFrame});
+    hoistCore.trackFetch();
+});
 
 beforeEach(({onTestFinished}) => {
     // Routes added from here on - in beforeEach() or in the test - last only for this test.
@@ -96,10 +113,10 @@ beforeEach(({onTestFinished}) => {
     hoistCore.clearRequests();
     // Not an afterEach(): Vitest skips the remaining after-hooks once one throws, so an app's
     // failing afterEach() would leak this test's timers, routes and components into the next.
-    onTestFinished(endTest);
+    onTestFinished(endTestAsync);
 });
 
-function endTest() {
+async function endTestAsync() {
     // Unmount anything rendered by React Testing Library - its auto-cleanup needs Vitest globals.
     // Report an unmount error as a problem, so the resets below still run.
     try {
@@ -108,6 +125,13 @@ function endTest() {
         problems.push(`Error unmounting rendered components: ${e}`);
     }
     vi.useRealTimers();
+    // Let requests the test started without awaiting finish now, before its routes are removed -
+    // otherwise they land in the next test's request log. Includes any sent by an unmount above.
+    try {
+        await hoistCore.settleAsync();
+    } catch (e) {
+        problems.push(e.message);
+    }
     server.resetHandlers();
     hoistCore.endTest();
 

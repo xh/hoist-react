@@ -5,6 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {XH} from '@xh/hoist/core';
+import {Exception} from '@xh/hoist/exception';
 import {FetchService} from '@xh/hoist/svc';
 import {hoistCore, initTestAppAsync, server, xhUrl} from '@xh/hoist/test-support';
 import {LocalDate, MINUTES, SECONDS} from '@xh/hoist/utils/datetime';
@@ -170,10 +171,11 @@ describe('FetchService', () => {
         it('rejects with a Fetch Timeout after 30 seconds by default, and aborts the request', async () => {
             let notifyArrival: () => void;
             const arrived = new Promise<void>(resolve => (notifyArrival = resolve)),
-                sent = serve(xhUrl('test/report'), () => {
-                    notifyArrival();
-                    return hang();
-                });
+                signals = spyFetchSignals('test/report');
+            serve(xhUrl('test/report'), () => {
+                notifyArrival();
+                return hang();
+            });
 
             vi.useFakeTimers();
             const result = XH.fetchJson({url: 'test/report'}),
@@ -187,7 +189,7 @@ describe('FetchService', () => {
             await arrived;
             await vi.advanceTimersByTimeAsync(30 * SECONDS);
             await assertion;
-            expect(sent[0].signal.aborted).toBe(true);
+            expect(signals[0].aborted).toBe(true);
         });
 
         it('never times out when timeout is null', async () => {
@@ -214,13 +216,14 @@ describe('FetchService', () => {
             // after the latest one.
             let notifyArrival: () => void;
             const nextArrival = () => new Promise<void>(resolve => (notifyArrival = resolve)),
-                sent = serve(xhUrl('test/search'), req => {
-                    notifyArrival();
-                    const q = req.url.searchParams.get('q');
-                    return q === 'abc' ? HttpResponse.json({q}) : hang();
-                }),
+                signals = spyFetchSignals('test/search'),
                 search = (q: string) =>
                     XH.getJson({url: 'test/search', params: {q}, autoAbortKey: 'search'});
+            serve(xhUrl('test/search'), req => {
+                notifyArrival();
+                const q = req.url.searchParams.get('q');
+                return q === 'abc' ? HttpResponse.json({q}) : hang();
+            });
 
             let arrived = nextArrival();
             const a = search('a');
@@ -239,7 +242,120 @@ describe('FetchService', () => {
             const abAborted = expect(ab).rejects.toMatchObject({isFetchAborted: true});
             expect(await search('abc')).toEqual({q: 'abc'});
             await abAborted;
-            expect(sent.map(it => it.signal.aborted)).toEqual([true, true, false]);
+            expect(signals.map(it => it.aborted)).toEqual([true, true, false]);
+        });
+
+        it('stays registered while a stream is read, so abort() stops it', async () => {
+            serve(xhUrl('test/stream'), () => openStream());
+            const {lines} = XH.fetchNdjson({url: 'test/stream', autoAbortKey: 'chat'});
+            expect(await lines.next()).toEqual({done: false, value: {id: 1}});
+
+            expect(XH.fetchService.abort('chat')).toBe(true);
+            await expect(lines.next()).rejects.toMatchObject({isFetchAborted: true});
+        });
+
+        it('aborts a stream still being read when a new request uses the same key', async () => {
+            serve(xhUrl('test/stream'), () => openStream());
+            const first = XH.fetchNdjson({url: 'test/stream', autoAbortKey: 'chat'}).lines;
+            await first.next();
+
+            const second = XH.fetchNdjson({url: 'test/stream', autoAbortKey: 'chat'}).lines;
+            await expect(first.next()).rejects.toMatchObject({isFetchAborted: true});
+            expect(await second.next()).toEqual({done: false, value: {id: 1}});
+            XH.fetchService.abort('chat');
+            await second.next().catch(() => {});
+        });
+    });
+
+    describe('fetchOpts.signal', () => {
+        it('aborts the request when the caller aborts it', async () => {
+            serve(xhUrl('test/report'), () => hang());
+            const controller = new AbortController(),
+                result = XH.fetchJson({url: 'test/report', fetchOpts: {signal: controller.signal}});
+
+            controller.abort();
+            await expect(result).rejects.toMatchObject({name: 'Fetch Aborted'});
+        });
+
+        it('leaves the timeout able to abort the request', async () => {
+            let notifyArrival: () => void;
+            const arrived = new Promise<void>(resolve => (notifyArrival = resolve)),
+                signals = spyFetchSignals('test/report'),
+                controller = new AbortController();
+            serve(xhUrl('test/report'), () => {
+                notifyArrival();
+                return hang();
+            });
+
+            vi.useFakeTimers();
+            const result = XH.fetchJson({
+                    url: 'test/report',
+                    fetchOpts: {signal: controller.signal}
+                }),
+                assertion = expect(result).rejects.toMatchObject({isFetchTimeout: true});
+
+            await arrived;
+            await vi.advanceTimersByTimeAsync(30 * SECONDS);
+            await assertion;
+            expect(signals[0].aborted).toBe(true);
+            expect(controller.signal.aborted).toBe(false);
+        });
+
+        it('reports an abort with a custom reason as Fetch Aborted', async () => {
+            serve(xhUrl('test/report'), () => hang());
+            serve(xhUrl('test/stream'), () => openStream());
+            const request = new AbortController(),
+                stream = new AbortController(),
+                result = XH.fetchJson({url: 'test/report', fetchOpts: {signal: request.signal}}),
+                {lines} = XH.fetchNdjson({url: 'test/stream', fetchOpts: {signal: stream.signal}});
+            await lines.next();
+
+            request.abort('User stopped');
+            stream.abort('User stopped');
+            await expect(result).rejects.toMatchObject({isFetchAborted: true});
+            await expect(lines.next()).rejects.toMatchObject({isFetchAborted: true});
+        });
+
+        it('wraps an abort reason that is a Hoist exception as the cause', async () => {
+            serve(xhUrl('test/report'), () => hang());
+            serve(xhUrl('test/stream'), () => openStream());
+            const reason = Exception.create({name: 'Chat Stopped', message: 'Stopped by user'}),
+                request = new AbortController(),
+                stream = new AbortController(),
+                result = XH.fetchJson({url: 'test/report', fetchOpts: {signal: request.signal}}),
+                {lines} = XH.fetchNdjson({url: 'test/stream', fetchOpts: {signal: stream.signal}});
+            await lines.next();
+
+            request.abort(reason);
+            stream.abort(reason);
+            await expect(result).rejects.toMatchObject({isFetchAborted: true, cause: reason});
+            await expect(lines.next()).rejects.toMatchObject({isFetchAborted: true, cause: reason});
+        });
+
+        it('aborts a stream mid-read', async () => {
+            serve(xhUrl('test/stream'), () => openStream());
+            const controller = new AbortController(),
+                {lines} = XH.fetchNdjson({
+                    url: 'test/stream',
+                    fetchOpts: {signal: controller.signal}
+                });
+            await lines.next();
+
+            controller.abort();
+            await expect(lines.next()).rejects.toMatchObject({isFetchAborted: true});
+        });
+    });
+
+    describe('fetchNdjson', () => {
+        it('cancels the response body when the consumer stops reading early', async () => {
+            // MSW does not relay a cancel to the handler's stream, so check it on the client.
+            const cancel = vi.spyOn(ReadableStreamDefaultReader.prototype, 'cancel');
+            serve(xhUrl('test/stream'), () => openStream());
+            const {lines} = XH.fetchNdjson({url: 'test/stream'});
+            await lines.next();
+
+            await lines.return(undefined);
+            expect(cancel).toHaveBeenCalledOnce();
         });
     });
 });
@@ -252,7 +368,6 @@ interface SentRequest {
     url: URL;
     headers: Headers;
     body: string;
-    signal: AbortSignal;
 }
 
 /**
@@ -269,8 +384,7 @@ function serve(
             const req = {
                 url: new URL(request.url),
                 headers: request.headers,
-                body: await request.text(),
-                signal: request.signal
+                body: await request.text()
             };
             ret.push(req);
             return respond(req);
@@ -279,7 +393,29 @@ function serve(
     return ret;
 }
 
+/**
+ * The abort signal that FetchService passes to `fetch()` for each request to `path`, in order. Specs
+ * check the abort that FetchService controls here, not how MSW passes it on to a handler.
+ */
+function spyFetchSignals(path: string): AbortSignal[] {
+    const ret: AbortSignal[] = [],
+        fetch = globalThis.fetch;
+    vi.spyOn(globalThis, 'fetch').mockImplementation((input, init) => {
+        if (String(input).includes(path)) ret.push(init?.signal);
+        return fetch(input, init);
+    });
+    return ret;
+}
+
 /** A response that never arrives. */
 function hang(): Promise<Response> {
     return new Promise(() => {});
+}
+
+/** An NDJSON response that sends one record, then stays open. */
+function openStream(): Response {
+    const body = new ReadableStream({
+        start: c => c.enqueue(new TextEncoder().encode('{"id":1}\n'))
+    });
+    return new HttpResponse(body, {headers: {'Content-Type': 'application/x-ndjson'}});
 }

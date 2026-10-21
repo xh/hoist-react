@@ -28,7 +28,8 @@ export interface DashViewSpec {
 
     /**
      * Group name to display within the add view component. The default context menu will
-     * automatically group its available views if provided.
+     * automatically group its available views if provided. Separate names with '/' to nest
+     * groups - e.g. `Charts/Line`.
      */
     groupName?: string;
 
