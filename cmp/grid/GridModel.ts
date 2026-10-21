@@ -532,10 +532,9 @@ export class GridModel extends HoistModel {
             'exportExcel',
             'exportCsv',
             '-',
-            'restoreDefaults',
-            '-',
             'colChooser',
-            'autosizeColumns'
+            'autosizeColumns',
+            'restoreDefaults'
         ],
         headerContextMenu: [
             'sortAsc',
