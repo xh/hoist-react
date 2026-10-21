@@ -18,7 +18,7 @@ export abstract class BaseStorageService extends HoistService {
 
     constructor() {
         super();
-        this.area = this.probeBrowserStorage();
+        this.area = this.loadStorageOrNull();
         if (!this.area) {
             this.logWarn(
                 'Browser storage is unavailable - values will be held in memory and lost when the page closes.'
@@ -72,7 +72,7 @@ export abstract class BaseStorageService extends HoistService {
     protected abstract get browserStorage(): Storage;
 
     /** The browser storage area, confirmed to accept writes, or null if unavailable. */
-    private probeBrowserStorage(): Storage {
+    private loadStorageOrNull(): Storage {
         try {
             const ret = this.browserStorage,
                 testKey = '_xhStorageProbe';
