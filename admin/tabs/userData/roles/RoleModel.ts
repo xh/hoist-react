@@ -96,7 +96,6 @@ export class RoleModel extends HoistModel {
             .span('list')
             .run(async ctx => {
                 const {data} = await XH.fetchJson({url: 'roleAdmin/list'}, ctx);
-                if (loadSpec.isStale) return;
 
                 runInAction(() => {
                     this.allRoles = this.processRolesFromServer(data);
@@ -104,12 +103,12 @@ export class RoleModel extends HoistModel {
                 this.displayRoles(loadSpec.isRefresh);
                 this.loadDirectoryGroupInfoAsync();
                 await this.gridModel.preSelectFirstAsync();
-            })
-            .catch(e => {
-                if (loadSpec.isStale) return;
-                XH.handleException(e);
-                this.clear();
             });
+    }
+
+    override handleLoadException(e: unknown) {
+        XH.handleException(e);
+        this.clear();
     }
 
     async selectRoleAsync(name: string) {

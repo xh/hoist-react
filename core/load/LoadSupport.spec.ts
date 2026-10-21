@@ -141,15 +141,16 @@ describe('LoadSupport', () => {
     });
 
     describe('load status', () => {
-        it('records a failed load, and rethrows its exception to the caller', async () => {
-            muteConsoleErrors();
+        it('records a failed load, and routes its exception to handleLoadException', async () => {
             const model = new LoadableModel(),
+                handler = vi.spyOn(model, 'handleLoadException').mockImplementation(() => {}),
                 error = new Error('Server unavailable'),
                 load = model.loadAsync();
 
             model.lastLoad.reject(error);
 
-            await expect(load).rejects.toBe(error);
+            await expect(load).resolves.toBeUndefined();
+            expect(handler).toHaveBeenCalledWith(error, model.lastLoad.loadSpec);
             expect(model.lastLoadException).toBe(error);
             expect(model.lastLoadCompleted).toBeInstanceOf(Date);
         });

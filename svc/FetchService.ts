@@ -333,9 +333,9 @@ export class FetchService extends HoistService {
             ret = runner.run(ctx => {
                 opts = this.withCorrelationId(opts);
                 opts = this.withTraceId(opts, ctx.span);
-                return this.withResolvedHeadersAsync(opts, ctx.span).then(opts =>
-                    this.managedFetchAsync(opts, ctx, streamAborter)
-                );
+                return this.withResolvedHeadersAsync(opts, ctx.span)
+                    .then(opts => this.managedFetchAsync(opts, ctx, streamAborter))
+                    .tap(() => ctx.loadSpec?.abortIfNeeded());
             });
 
         // 2) Apply tracking
@@ -739,7 +739,7 @@ export class FetchService extends HoistService {
             name: 'Fetch Aborted',
             message: `Fetch request aborted, url: "${fetchOptions.url}"`,
             isRoutine: true,
-            isFetchAborted: true,
+            isAborted: true,
             fetchOptions,
             callContext,
             cause
@@ -834,7 +834,7 @@ export class FetchService extends HoistService {
         const traceId: string = fetchOptions?.traceId ?? null;
 
         return Exception.create({
-            isFetchAborted: false,
+            isAborted: false,
             httpStatus: 0, // native fetch doesn't put status on its Error
             serverDetails: null,
             stack: null, // server-sourced exceptions do not include, neither should client, not relevant
@@ -1085,9 +1085,10 @@ export interface FetchException extends HoistException {
     traceId: string;
 
     /**
-     * True if exception resulted from the fetch being aborted by fetchService, or the application.
+     * True if exception resulted from the fetch being aborted by fetchService, or the
+     * application. Also set on `LoadAbortedException` thrown when a load is superseded.
      * @see FetchService.abort
      * @see FetchOptions.autoAbortKey
      */
-    isFetchAborted: boolean;
+    isAborted: boolean;
 }
