@@ -41,12 +41,15 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 
 ### 📚 Libraries
 
+* router5 `7.0 → 8.0`
+* router5-plugin-browser `7.0 → 8.0`
 * http-status-codes `removed`
 * inflection `added` - replaces lodash-inflection behind `pluralize`, `singularize` and `ordinalize`
 * lodash-inflection `removed`
 * short-unique-id `removed`
 * store2 `removed`
 * numbro `removed`
+
 
 ## 89.3.1 - 2026-10-21
 

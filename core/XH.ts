@@ -38,7 +38,6 @@ import {
 import {genRandomId, getLogLevel, logError, LogLevel, setLogLevel} from '@xh/hoist/utils/js';
 import {camelCase, flatten, isString, uniqueId} from 'lodash';
 import {Router, State} from 'router5';
-import {CancelFn} from 'router5/types/types/base';
 import {SetOptional} from 'type-fest';
 import {AppContainerModel} from '../appcontainer/AppContainerModel';
 import {BannerModel} from '../appcontainer/BannerModel';
@@ -83,6 +82,9 @@ declare const xhAppBuild: string;
 declare const xhBaseUrl: string;
 declare const xhClientApps: string[];
 declare const xhIsDevelopmentMode: boolean;
+
+/** Returned by `navigate` and its siblings to cancel a transition in progress. */
+type CancelFn = ReturnType<Router['navigate']>;
 
 /**
  * Top-level Singleton model for Hoist. This is the main entry point for the API.

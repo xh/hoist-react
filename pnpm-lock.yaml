@@ -311,11 +311,11 @@ importers:
         specifier: ~4.0.1
         version: 4.0.1(supports-color@10.2.2)
       router5:
-        specifier: ~7.0.2
-        version: 7.0.2
+        specifier: ~8.0.1
+        version: 8.0.1
       router5-plugin-browser:
-        specifier: ~7.0.2
-        version: 7.0.2(router5@7.0.2)
+        specifier: ~8.0.1
+        version: 8.0.1(router5@8.0.1)
       sass-material-colors:
         specifier: ~0.0.5
         version: 0.0.5
@@ -3380,8 +3380,8 @@ packages:
   path-parse@1.0.7:
     resolution: {integrity: sha512-LDJzPVEEEPR+y48z93A0Ed0yXb8pAByGWo/k5YYdYgpY2/2EsOsksJrq7lOHxryrVOn1ejG6oAp8ahvOIQD8sw==}
 
-  path-parser@4.2.0:
-    resolution: {integrity: sha512-MPPZiWTTp2I72VXmGQQfsn2ohrbd9QTbZSLYNS+HXsnQ37VbiLR/szO2R7DHaZA1V1scYxuxgyQerj+6kMTXtA==}
+  path-parser@6.1.0:
+    resolution: {integrity: sha512-nAB6J73z2rFcQP+870OHhpkHFj5kO4rPLc2Ol4Y3Ale7F6Hk1/cPKp7cQ8RznKF8FOSvu+YR9Xc6Gafk7DlpYA==}
 
   path-to-regexp@8.4.2:
     resolution: {integrity: sha512-qRcuIdP69NPm4qbACK+aDogI5CBDMi1jKe0ry5rSQJz8JVLsC7jV8XpiJjGRLLol3N+R5ihGYcrPLTno6pAdBA==}
@@ -3691,21 +3691,21 @@ packages:
     engines: {node: ^20.19.0 || >=22.12.0}
     hasBin: true
 
-  route-node@3.4.2:
-    resolution: {integrity: sha512-MDIllr+xwmzSKQh49Ls1g66LIH9JisXh15WXyu4hAYW95mrTSRWr7bqc23hcrjZpehTmSNOb64ZiHBgsHUArog==}
+  route-node@4.1.1:
+    resolution: {integrity: sha512-bJVDVEQvXYqTC/LQ/2ohNZ2gPRO4+3ZvHeafuCyRZAd63qH17yspVfxOBzasE/t7SmSO30sT/yPSEMuPDGHhSQ==}
 
-  router5-plugin-browser@7.0.2:
-    resolution: {integrity: sha512-iDrHIDVj6wyvJBKo6fTTkrQor8/vKOXOJQD30HnFcWMHP0Amiu3vzEi6HwM3HjTr5L1AKVzMINBI3fonsdINkw==}
+  router5-plugin-browser@8.0.1:
+    resolution: {integrity: sha512-RuArnalkREtQj0ROD1RnITWwL+Fl8rbkFspDxRTt3aFG9k5bPOE0HfJRvGsd4TY9Je/kW3hvntvFXSx8Bl745w==}
     peerDependencies:
-      router5: ^7.0.0
+      router5: ^8.0.0
 
-  router5-transition-path@7.0.1:
-    resolution: {integrity: sha512-ZAiz78ey4T1CDjgFiOUK4fX6AF5ZC8tuw4jCpfsfHWFt5r6URtx/2Sc1ENFPkA6Yrl2crUCGxVWUZCBFwtH9GA==}
+  router5-transition-path@8.0.1:
+    resolution: {integrity: sha512-l7MFEUmasEhe1emrO79t7BkCqQQRZdenz4c3qJmZpe8V6BCerZQR+SYbZL5zmQ3hazY7nR264jCWuNed+cMD2A==}
     peerDependencies:
-      router5: ^7.0.0
+      router5: ^8.0.0
 
-  router5@7.0.2:
-    resolution: {integrity: sha512-QPTKHjJVn8pozHoPvVREGTogo06M/1dY6UHMMUyoAc7gG3UMx5QBMjyiREnqtac0U0Cp4T5RsZ0bkBXNsSjfYg==}
+  router5@8.0.1:
+    resolution: {integrity: sha512-LBLQAYd2ZI1FiiBqGf82oC+LRD0PUABrZqTzd6OmyK+t5N8wRs3hbIxeiy/9Zy+xI8Fdf/0WM68P41W6MH8pdQ==}
 
   router@2.2.0:
     resolution: {integrity: sha512-nLTrUKm2UyiL7rlhapu/Zl45FwNgkZGaCpZbIHajDYgwlJCOzLSk+cIPAnsEqV955GjILJnKbdQC1nVPz+gAYQ==}
@@ -3852,8 +3852,8 @@ packages:
   scheduler@0.28.0:
     resolution: {integrity: sha512-juorfCmIkIw8tT+p5BXSm6PJjQF/ycEYmKyzURCIt/RaZIhL+PulbQ9Yu2z1HdOJDdqDTlxA1+xKBmHXJsczAw==}
 
-  search-params@2.1.3:
-    resolution: {integrity: sha512-hHxU9ZGWpZ/lrFBIHndSnQae2in7ra+m+tBSoeAahSWDDgOgpZqs4bfaTZpljgNgAgTbjiQoJtZW6FKSsfEcDA==}
+  search-params@3.0.0:
+    resolution: {integrity: sha512-8CYNl/bjkEhXWbDTU/K7c2jQtrnqEffIPyOLMqygW/7/b+ym8UtQumcAZjOfMLjZKR6AxK5tOr9fChbQZCzPqg==}
 
   selfsigned@5.5.0:
     resolution: {integrity: sha512-ftnu3TW4+3eBfLRFnDEkzGxSF/10BJBkaLJuBHZX0kiPS7bRdlpZGu6YGt4KngMkdTwJE6MbjavFpqHvqVt+Ew==}
@@ -7746,9 +7746,10 @@ snapshots:
 
   path-parse@1.0.7: {}
 
-  path-parser@4.2.0:
+  path-parser@6.1.0:
     dependencies:
-      search-params: 2.1.3
+      search-params: 3.0.0
+      tslib: 1.14.1
 
   path-to-regexp@8.4.2: {}
 
@@ -8096,23 +8097,24 @@ snapshots:
       '@rolldown/binding-win32-arm64-msvc': 1.2.13
       '@rolldown/binding-win32-x64-msvc': 1.2.13
 
-  route-node@3.4.2:
+  route-node@4.1.1:
     dependencies:
-      path-parser: 4.2.0
-      search-params: 2.1.3
+      path-parser: 6.1.0
+      search-params: 3.0.0
+      tslib: 1.14.1
 
-  router5-plugin-browser@7.0.2(router5@7.0.2):
+  router5-plugin-browser@8.0.1(router5@8.0.1):
     dependencies:
-      router5: 7.0.2
+      router5: 8.0.1
 
-  router5-transition-path@7.0.1(router5@7.0.2):
+  router5-transition-path@8.0.1(router5@8.0.1):
     dependencies:
-      router5: 7.0.2
+      router5: 8.0.1
 
-  router5@7.0.2:
+  router5@8.0.1:
     dependencies:
-      route-node: 3.4.2
-      router5-transition-path: 7.0.1(router5@7.0.2)
+      route-node: 4.1.1
+      router5-transition-path: 8.0.1(router5@8.0.1)
       symbol-observable: 1.2.0
 
   router@2.2.0(supports-color@10.2.2):
@@ -8239,7 +8241,7 @@ snapshots:
 
   scheduler@0.28.0: {}
 
-  search-params@2.1.3: {}
+  search-params@3.0.0: {}
 
   selfsigned@5.5.0:
     dependencies:
