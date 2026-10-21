@@ -21,6 +21,7 @@
 * Fixed a `FetchOptions.fetchOpts.signal` replacing `FetchService`'s own, which left `timeout` and
   `autoAbortKey` unable to abort the request. The two signals are now joined, and an abort with a
   custom reason reports as "Fetch Aborted".
+* Fixed oversized pinned column zones in the desktop column chooser. They now fit their columns.
 
 
 ## 89.2.0 - 2026-10-20
