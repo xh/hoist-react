@@ -32,6 +32,7 @@ export type {
     ColDef,
     ColGroupDef,
     GetContextMenuItemsParams,
+    GetMainMenuItemsParams,
     GridReadyEvent,
     IHeaderGroupParams,
     IHeaderParams,

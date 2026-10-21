@@ -396,6 +396,16 @@ Headings are also accepted by the desktop and mobile menus that take `MenuItemLi
 a dropdown attached to a button. Those menus supply no record context, so a `displayFn` there is
 called with no argument.
 
+#### Header Context Menu
+
+`GridModel.headerContextMenu` configures a second menu, shown on right-click of a column header on
+desktop. It takes the same entries and tokens as `contextMenu`, with no row in context: actions
+receive the clicked `column` but no `record`, so row-specific ones hide themselves. The default
+menu sorts, pins, hides and autosizes the clicked column, then opens the column chooser. Tokens
+for the clicked column (`sortAsc`, `sortDesc`, `pinColumn`, `hideColumn`, `autosizeColumn`) hide
+over a column group header. Set `false` to show no header menu. The menu is ag-Grid's column menu
+and needs its `ColumnMenuModule`, which `MenuModule` includes.
+
 ## Column Properties Reference
 
 Every column within a `GridModel` must resolve to a **unique ID**. The `colId` defaults to `field`

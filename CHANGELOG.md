@@ -22,6 +22,14 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 * Removed `NumberFormatOptions.formatConfig`, which took a numbro format. Use `precision`, `zeroPad`
   and `withCommas` instead.
 
+### 🎁 New Features
+
+* Added `GridModel.headerContextMenu`, a context menu shown on right-click of a desktop grid column
+  header. By default it sorts, pins, hides and autosizes the clicked column and opens the column
+  chooser. Set `false` to show none. Requires ag-Grid's `ColumnMenuModule` (part of `MenuModule`).
+* Added `sortAsc`, `sortDesc`, `pinColumn`, `hideColumn` and `autosizeColumn` grid menu tokens, which
+  act on the clicked column, and `Column.availableSorts`.
+
 
 ## 89.3.0 - 2026-10-21
 

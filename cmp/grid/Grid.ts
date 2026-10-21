@@ -43,6 +43,7 @@ import type {
     ColDef,
     ColGroupDef,
     GetContextMenuItemsParams,
+    GetMainMenuItemsParams,
     GridOptions,
     GridReadyEvent,
     ProcessCellForExportParams
@@ -344,7 +345,8 @@ export class GridLocalModel extends HoistModel {
             ret = {
                 ...ret,
                 allowContextMenuWithControlKey: true,
-                getContextMenuItems: this.getContextMenuItems as any
+                getContextMenuItems: this.getContextMenuItems as any,
+                getMainMenuItems: this.getHeaderContextMenuItems as any
             };
         }
 
@@ -385,10 +387,15 @@ export class GridLocalModel extends HoistModel {
             if (!record) selModel.clear();
         }
 
-        const ret = getAgGridMenuItems(params, model, contextMenu);
-        if (isEmpty(ret)) return [];
+        return getAgGridMenuItems(params, model, contextMenu) ?? [];
+    };
 
-        return ret;
+    // ag-Grid shows its column menu on header right-click, with these as its items.
+    getHeaderContextMenuItems = (params: GetMainMenuItemsParams) => {
+        const {model} = this,
+            {headerContextMenu} = model;
+        if (!headerContextMenu || model.isEditing) return [];
+        return getAgGridMenuItems(params, model, headerContextMenu) ?? [];
     };
 
     //------------------------

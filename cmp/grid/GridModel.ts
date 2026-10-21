@@ -121,7 +121,11 @@ import {
 import {createRef, ReactNode, RefObject} from 'react';
 import {GridAutosizeOptions} from './GridAutosizeOptions';
 import {GridModelDiagnostics} from './impl/GridModelDiagnostics';
-import {GridContextMenuItemLike, GridContextMenuSpec} from './GridContextMenu';
+import {
+    GridContextMenuItemLike,
+    GridContextMenuSpec,
+    GridHeaderContextMenuSpec
+} from './GridContextMenu';
 import {GridSorter, GridSorterLike} from './GridSorter';
 import {computeSortedRecords} from './impl/RecordSortUtils';
 import {initPersist} from './impl/InitPersist';
@@ -354,6 +358,13 @@ export interface GridConfig {
     contextMenu?: GridContextMenuSpec | false;
 
     /**
+     * Items for the context menu shown on right-click of a column header, as for `contextMenu`,
+     * or false to show none. Desktop only. Defaults to column-focused items for the clicked column
+     * plus the column chooser. Requires ag-Grid's `ColumnMenuModule` (part of `MenuModule`).
+     */
+    headerContextMenu?: GridHeaderContextMenuSpec | false;
+
+    /**
      * True (default) to render cells only for the columns within or near the visible scroll area,
      * as ag-Grid does by default - the cost of rendering and scrolling then follows the visible
      * column count rather than the total. Hoist's autosizing measures values without rendered
@@ -451,6 +462,7 @@ export interface GridModelDefaults {
     colChooserModel?: Omit<ColChooserConfig, 'gridModel'> | ColChooserMode | boolean | null;
     colDefaults?: Partial<ColumnSpec> | null;
     contextMenu?: GridContextMenuItemLike[];
+    headerContextMenu?: GridContextMenuItemLike[];
     emptyText?: ReactNode | null;
     enableColumnPinning?: boolean;
     enableExport?: boolean;
@@ -525,6 +537,18 @@ export class GridModel extends HoistModel {
             'colChooser',
             'autosizeColumns'
         ],
+        headerContextMenu: [
+            'sortAsc',
+            'sortDesc',
+            '-',
+            'pinColumn',
+            'hideColumn',
+            'autosizeColumn',
+            '-',
+            'colChooser',
+            'autosizeColumns',
+            'restoreDefaults'
+        ],
         emptyText: null,
         enableColumnPinning: true,
         enableExport: false,
@@ -556,6 +580,7 @@ export class GridModel extends HoistModel {
     rowClassFn: RowClassFn;
     rowClassRules: Record<string, RowClassRuleFn>;
     contextMenu: GridContextMenuSpec;
+    headerContextMenu: GridHeaderContextMenuSpec;
     groupRowHeight: number;
     groupRowRenderer: GroupRowRenderer;
     groupSortFn: GridGroupSortFn;
@@ -709,6 +734,7 @@ export class GridModel extends HoistModel {
             onCellContextMenu,
             clicksToExpand = GridModel.defaults.clicksToExpand ?? (XH.isMobileApp ? 1 : 2),
             contextMenu,
+            headerContextMenu,
             useVirtualColumns = true,
             autosizeOptions = {},
             restoreDefaultsFn,
@@ -745,6 +771,10 @@ export class GridModel extends HoistModel {
         this.showGroupRowCounts = showGroupRowCounts;
         this.contextMenu =
             contextMenu === false ? [] : withDefault(contextMenu, GridModel.defaults.contextMenu);
+        this.headerContextMenu =
+            headerContextMenu === false
+                ? []
+                : withDefault(headerContextMenu, GridModel.defaults.headerContextMenu);
         this.useVirtualColumns = useVirtualColumns;
         this.externalSort = externalSort;
         apiDeprecated('GridModel.enableFullWidthScroll', {
