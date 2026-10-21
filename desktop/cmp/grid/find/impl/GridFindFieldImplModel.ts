@@ -241,7 +241,8 @@ export class GridFindFieldImplModel extends HoistModel {
             if (!cols) return [];
 
             return cols.map(column => {
-                const {renderer, getValueFn} = column;
+                const {getValueFn} = column,
+                    renderer = column.renderer ?? column.formatter;
                 return (record: StoreRecord) => {
                     const ctx = {
                             record,

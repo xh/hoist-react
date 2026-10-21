@@ -14,13 +14,38 @@
 
 ## 90.0.0-SNAPSHOT - unreleased
 
-### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW - number `formatConfig`)
+### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW - number `formatConfig`, built-in column specs)
 
 See [`docs/upgrade-notes/v90-upgrade-notes.md`](docs/upgrade-notes/v90-upgrade-notes.md) for
 detailed, step-by-step upgrade instructions with before/after code examples.
 
 * Removed `NumberFormatOptions.formatConfig`, which took a numbro format. Use `precision`, `zeroPad`
   and `withCommas` instead.
+* The built-in `number`, `date`, `dateTime`, `dateTimeSec`, `time`, `compactDate` and `localDate`
+  column specs now set a `formatter` in place of a `renderer`. Their cells are plain, and code that
+  reads their `renderer` finds none. Client-side exports (`GridModel.localExport` and the
+  `exportLocal` menu item) write their display text in place of the raw value. Excel still gets a
+  number as a number.
+
+### 🎁 New Features
+
+* Added `Column.formatter`, a function that returns a cell's display text. AG Grid writes the text
+  into a plain cell, with no React component. The `numberFormatter`, `dateFormatter` and sibling
+  factories in `@xh/hoist/format` build one, with `colorSpec` and ledger alignment as cell classes.
+* Added `ColorClassSpec`, a `colorSpec` type that holds class names only. Renderer and formatter
+  factories both accept it, so apps can share one spec between them.
+
+### 🐞 Bug Fixes
+
+* Fixed `GridModel.localExport` calling a column's `agOptions.valueFormatter` with a bare value
+  instead of AG Grid's params.
+* Fixed a column's `agOptions.cellClassRules` replacing its own `cellClassRules`, flags and editable
+  styling. They now add to them, and win for a class that both define.
+
+### ✨ Styles
+
+* Moved the selected grid row's text color from its cells to the row. A cell with its own color
+  class, such as a formatter's sign color, now keeps that color when its row is selected.
 
 
 ## 89.3.0 - 2026-10-21
