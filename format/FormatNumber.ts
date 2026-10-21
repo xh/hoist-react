@@ -200,7 +200,9 @@ export function fmtNumber(v: number, opts?: NumberFormatOptions): ReactNode {
     // Default zeroPad to pad only for a fixed precision - 'auto' and full precision trim zeros.
     if (isNil(zeroPad)) zeroPad = precision != 'auto' && !fullPrecision;
 
-    const str = fmtDigits(v, precision, zeroPad, withCommas, omitFourDigitComma);
+    // Show 'auto' digits below 1e-6 as zero, keeping v for sign and strictZero handling.
+    const digitsVal = precision === 'auto' && Math.abs(v) < 1e-6 ? 0 : v,
+        str = fmtDigits(digitsVal, precision, zeroPad, withCommas, omitFourDigitComma);
     let sign = null;
 
     // Tests for zero strings at various precisions

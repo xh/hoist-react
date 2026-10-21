@@ -153,10 +153,24 @@ describe('fmtNumber', () => {
             expect(fmtPercent(-0.0045, {precision: 1})).toBe('-0.5%');
         });
 
-        it('rounds values below 1e-6 like any other', () => {
-            expect(fmtNumber(5e-7)).toBe('0.000001');
+        it('shows values below 1e-6 as zero at auto precision', () => {
+            expect(fmtNumber(5e-7)).toBe('0');
+            expect(fmtNumber(1e-6)).toBe('0.000001');
+            expect(fmtMillions(0.5, {label: true, labelCls: null})).toBe('0m');
+            expect(fmtMillions(1.5, {label: true, labelCls: null})).toBe('0.000002m');
+        });
+
+        it('rounds values below 1e-6 like any other at fixed precision', () => {
             expect(fmtNumber(9.9999999e-7, {precision: 6})).toBe('0.000001');
-            expect(fmtMillions(0.5, {label: true, labelCls: null})).toBe('0.000001m');
+        });
+
+        it('keeps the sign of a value below 1e-6 at auto precision', () => {
+            expect(fmtNumber(-5e-7)).toBe('-0');
+            expect(fmtNumber(5e-7, {withPlusSign: true})).toBe('+0');
+            expect(fmtNumber(-5e-7, {ledger: true, forceLedgerAlign: false})).toBe('(0)');
+            expect(html(fmtNumber(-5e-7, {colorSpec: true}))).toBe(
+                '<span class="xh-neg-val">-0</span>'
+            );
         });
 
         it('shows a value past 15 significant digits as stored, without float noise', () => {
@@ -206,6 +220,11 @@ describe('fmtNumber', () => {
             expect(html(fmtNumber(-0.0001, {...opts, colorSpec: true}))).toBe(
                 '<span class="xh-neutral-val">0.00</span>'
             );
+        });
+
+        it('returns zeroDisplay for a value below 1e-6 at auto precision only when strictZero is false', () => {
+            expect(fmtNumber(5e-7, {zeroDisplay: '-'})).toBe('0');
+            expect(fmtNumber(-5e-7, {zeroDisplay: '-', strictZero: false})).toBe('-');
         });
 
         it('returns zeroDisplay for zero', () => {
