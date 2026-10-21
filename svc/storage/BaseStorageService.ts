@@ -14,12 +14,11 @@ import {HoistService, XH} from '@xh/hoist/core';
  * storage to support its operations and API.
  */
 export abstract class BaseStorageService extends HoistService {
-    /** Browser storage, accessed as a plain key/value object, or an in-memory stand-in. */
-    private readonly area: Record<string, string>;
+    private readonly area: Storage;
 
     constructor() {
         super();
-        this.area = this.probeBrowserStorage() ?? {};
+        this.area = this.probeBrowserStorage() ?? new MemoryStorage();
         if (this.isFake) {
             XH.handleException(
                 XH.exception(
@@ -32,25 +31,23 @@ export abstract class BaseStorageService extends HoistService {
     }
 
     get(key: string, defaultValue?: any): any {
-        const raw = this.area[this.prefix + key];
-        if (raw == null) return defaultValue ?? null;
-        try {
-            return JSON.parse(raw);
-        } catch {
-            return raw;
-        }
+        const raw = this.area.getItem(this.prefix + key);
+        return raw != null ? parseStored(raw) : (defaultValue ?? null);
     }
 
     set(key: string, value: any) {
-        this.area[this.prefix + key] = JSON.stringify(value);
+        this.area.setItem(this.prefix + key, JSON.stringify(value));
     }
 
     apply(key: string, newProps: object) {
-        this.set(key, Object.assign(this.get(key, {}), newProps));
+        const val = this.get(key, {}),
+            newVal = Object.assign(val, newProps);
+
+        this.set(key, newVal);
     }
 
     remove(key: string) {
-        delete this.area[this.prefix + key];
+        this.area.removeItem(this.prefix + key);
     }
 
     removeIf(predicateFn: (s: string) => boolean) {
@@ -64,15 +61,18 @@ export abstract class BaseStorageService extends HoistService {
     }
 
     keys(): string[] {
-        const {prefix} = this;
-        return Object.keys(this.area)
-            .filter(it => it.startsWith(prefix))
-            .map(it => it.substring(prefix.length));
+        const {area, prefix} = this,
+            ret = [];
+        for (let i = 0; i < area.length; i++) {
+            const key = area.key(i);
+            if (key.startsWith(prefix)) ret.push(key.substring(prefix.length));
+        }
+        return ret;
     }
 
     /** True if browser storage is unavailable and values are held in memory for this page only. */
     get isFake(): boolean {
-        return !(this.area instanceof Storage);
+        return this.area instanceof MemoryStorage;
     }
 
     //------------------
@@ -96,5 +96,38 @@ export abstract class BaseStorageService extends HoistService {
 
     private get prefix(): string {
         return `${XH.appCode}.${XH.getUsername()}.`;
+    }
+}
+
+/** Values are stored as JSON. A value that does not parse is returned as the raw string. */
+function parseStored(raw: string): any {
+    try {
+        return JSON.parse(raw);
+    } catch {
+        return raw;
+    }
+}
+
+/** In-memory stand-in for a browser Storage area. */
+class MemoryStorage implements Storage {
+    private items = new Map<string, string>();
+
+    get length() {
+        return this.items.size;
+    }
+    key(i: number) {
+        return [...this.items.keys()][i] ?? null;
+    }
+    getItem(k: string) {
+        return this.items.get(k) ?? null;
+    }
+    setItem(k: string, v: string) {
+        this.items.set(k, String(v));
+    }
+    removeItem(k: string) {
+        this.items.delete(k);
+    }
+    clear() {
+        this.items.clear();
     }
 }
