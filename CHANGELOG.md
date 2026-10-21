@@ -27,6 +27,15 @@ detailed, step-by-step upgrade instructions with before/after code examples.
   within 5 seconds of boot. The kit now sends pending pref, activity, metric and span pushes before
   it closes the fake hoist-core, and the fake's `xhSizingMode` default no longer makes boot save it.
 
+### ⚙️ Technical
+* `LocalStorageService` and `SessionStorageService` now read and write browser storage directly.
+  Keys and JSON values are stored exactly as before.  Removed the unused `isFake` getter - when
+  storage is unavailable the service logs a warning and holds values in memory, as before.
+
+### 📚 Libraries
+
+* store2 `removed`
+
 ## 89.3.1 - 2026-10-21
 
 ### 🐞 Bug Fixes
