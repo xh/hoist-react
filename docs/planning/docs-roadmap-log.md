@@ -555,6 +555,14 @@
   (Done), and `docs/doc-registry.json`; cross-linked from the `/cmp/` and `/desktop/` README
   package tables.
 
+### 2026-10-01
+- Added `cmp/pdfviewer/README.md` covering the new `PdfViewer` and `PdfViewerModel`: install via
+  the optional `pdfjs-dist` peer, document sources, toolbar tokens, the model API, CSS variables,
+  how the lazy-loaded pdf.js integration works, and current limitations.
+- Indexed in `docs/README.md` (Quick Reference and Components), the roadmap Priority 2 table
+  (Done), and `docs/doc-registry.json`; cross-linked from the `/cmp/` catalog and the `/kit/`
+  README.
+
 ### 2026-10-04
 - Added `docs/unit-testing.md`, covering the new Vitest unit test suite: how it runs, the fake
   hoist-core server and `initTestAppAsync()`, conventions for writing tests, the test reports, CI,
