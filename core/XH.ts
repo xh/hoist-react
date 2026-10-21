@@ -38,7 +38,7 @@ import {
 import {getLogLevel, logError, LogLevel, setLogLevel} from '@xh/hoist/utils/js';
 import {camelCase, flatten, isString, uniqueId} from 'lodash';
 import {Router, State} from 'router5';
-import {CancelFn} from 'router5/types/types/base';
+import {CancelFn} from 'router5/dist/types/base';
 import ShortUniqueId from 'short-unique-id';
 import {SetOptional} from 'type-fest';
 import {AppContainerModel} from '../appcontainer/AppContainerModel';

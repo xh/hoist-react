@@ -22,6 +22,16 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 * Removed `NumberFormatOptions.formatConfig`, which took a numbro format. Use `precision`, `zeroPad`
   and `withCommas` instead.
 
+### 🐞 Bug Fixes
+
+* Fixed `XH.navigate()` throwing when a path param value contains `/`, `&`, `=`, `?` or `#`. Such
+  values are now percent-encoded in the URL and decoded back into `XH.routerState.params`.
+
+### 📚 Libraries
+
+* router5 `7.0 → 8.0`
+* router5-plugin-browser `7.0 → 8.0`
+
 
 ## 89.3.0 - 2026-10-21
 
