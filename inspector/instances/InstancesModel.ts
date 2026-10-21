@@ -4,14 +4,14 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {boolCheckCol, GridModel} from '@xh/hoist/cmp/grid';
+import {boolCheck, GridModel} from '@xh/hoist/cmp/grid';
 import {TabContainerModel} from '@xh/hoist/cmp/tab';
 import {HoistBase, HoistModel, managed, persist, XH} from '@xh/hoist/core';
 import {StoreRecord} from '@xh/hoist/data';
 import {PanelModel} from '@xh/hoist/desktop/cmp/panel';
 import {fmtDate} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
-import {bindable, makeObservable, runInAction} from '@xh/hoist/mobx';
+import {bindable, runInAction} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 import {compact, head} from 'lodash';
 import {StatsModel} from '../stats/StatsModel';
@@ -48,9 +48,9 @@ export class InstancesModel extends HoistModel {
     }
 
     // Persisted storeFilterField (convenient across frequent page refreshes when developing)
-    @bindable @persist instancesStoreFilter;
+    @bindable @persist accessor instancesStoreFilter;
 
-    @bindable @persist instQuickFilters: string[] = ['showInGroups'];
+    @bindable @persist accessor instQuickFilters: string[] = ['showInGroups'];
     get showInGroups() {
         return this.instQuickFilters?.includes('showInGroups');
     }
@@ -74,7 +74,6 @@ export class InstancesModel extends HoistModel {
 
     constructor() {
         super();
-        makeObservable(this);
 
         this.navTabModel = new TabContainerModel({
             persistWith: {...this.persistWith, path: 'navTabs'},
@@ -267,7 +266,7 @@ export class InstancesModel extends HoistModel {
                     field: 'isLinked',
                     headerName: Icon.link(),
                     headerTooltip: 'Linked model',
-                    ...boolCheckCol,
+                    ...boolCheck,
                     width: 40,
                     tooltip: v => (v ? 'Linked model' : ''),
                     renderer: v => (v ? Icon.link() : null),

@@ -26,7 +26,7 @@ import {
     reactSelect,
     reactWindowedSelect
 } from '@xh/hoist/kit/react-select';
-import {action, bindable, makeObservable, observable, override} from '@xh/hoist/mobx';
+import {action, observable, bindableRef} from '@xh/hoist/mobx';
 import {debouncePromise, wait, waitFor} from '@xh/hoist/promise';
 import {elemWithin, getTestId, mergeDeep, TEST_ID, throwIf, withDefault} from '@xh/hoist/utils/js';
 import {createObservableRef, getLayoutProps} from '@xh/hoist/utils/react';
@@ -251,9 +251,9 @@ class SelectInputModel extends HoistInputModel {
 
     // Normalized collection of selectable options. Passed directly to synchronous select.
     // Maintained for (but not passed to) async select to resolve value string <> option objects.
-    @bindable.ref internalOptions = [];
+    @bindableRef accessor internalOptions = [];
 
-    @observable windowedMenuWidth: number = null;
+    @observable accessor windowedMenuWidth: number = null;
 
     // Prop-backed convenience getters
     get asyncMode(): boolean {
@@ -301,15 +301,10 @@ class SelectInputModel extends HoistInputModel {
 
     // Managed value for underlying text input under certain conditions
     // This is a workaround for rs-select issue described in hoist-react #880
-    @observable inputValue: string = null;
+    @observable accessor inputValue: string = null;
     inputValueChangedSinceSelect = false;
     get manageInputValue(): boolean {
         return this.filterMode && !this.multiMode;
-    }
-
-    constructor() {
-        super();
-        makeObservable(this);
     }
 
     override onLinked() {
@@ -404,7 +399,7 @@ class SelectInputModel extends HoistInputModel {
         }
     };
 
-    @override
+    @action
     override noteFocused() {
         if (this.manageInputValue) {
             const {renderValue} = this;
@@ -419,24 +414,42 @@ class SelectInputModel extends HoistInputModel {
         super.noteFocused();
     }
 
-    private selectText() {
-        const {reactSelect} = this;
-        if (!reactSelect) return;
+    /**
+     * Enter text into the search input and open the menu, as if typed by the user.
+     * Ignored if the select is not searchable.
+     */
+    enterSearchText(text: string) {
+        // Delay to run after the text selection scheduled by `noteFocused()`.
+        wait().then(() => {
+            const selectComp = this.innerSelect;
+            if (!this.hasFocus || !selectComp?.props.isSearchable) return;
 
-        // Unwrap the HOCs added by AsyncSelect / Creatable / WindowedSelect (each exposes the
-        // inner Select via `.select`) to reach the underlying Select that owns the inputRef.
-        let selectComp = reactSelect;
+            selectComp.props.onInputChange(text, {
+                action: 'input-change',
+                prevInputValue: selectComp.props.inputValue ?? ''
+            });
+            selectComp.openMenu('first');
+        });
+    }
+
+    // Unwrap the HOCs added by AsyncSelect / Creatable / WindowedSelect (each exposes the inner
+    // Select via `.select`) to reach the underlying Select that owns the inputRef.
+    private get innerSelect() {
+        let selectComp = this.reactSelect;
         while (selectComp && !selectComp.inputRef) {
             selectComp = selectComp.select;
         }
-        const inputElem = selectComp?.inputRef;
+        return selectComp;
+    }
 
+    private selectText() {
+        const inputElem = this.innerSelect?.inputRef;
         if (this.hasFocus && inputElem && document.activeElement === inputElem) {
             inputElem.select();
         }
     }
 
-    @override
+    @action
     override setInternalValue(val) {
         const changed = !isEqual(val, this.internalValue);
         super.setInternalValue(val);
@@ -631,18 +644,21 @@ class SelectInputModel extends HoistInputModel {
     //------------------------
     // Other Implementation
     //------------------------
-    // cache to avoid re-renders and focus issues, note this "freezes" leftIcon
+    // Cache to avoid re-renders and focus issues. Reads leftIcon from react-select's
+    // `selectProps` at render time, so the icon can change without replacing the component.
     _valueContainerCmp = null;
     getValueContainerCmp() {
         if (!this._valueContainerCmp) {
-            const {leftIcon} = this.componentProps;
-            this._valueContainerCmp = leftIcon
-                ? props =>
-                      fragment(
+            this._valueContainerCmp = props => {
+                const {leftIcon} = props.selectProps,
+                    valueContainer = createElement(components.ValueContainer, props);
+                return leftIcon
+                    ? fragment(
                           span({className: 'xh-select__control__left-icon', item: leftIcon}),
-                          createElement(components.ValueContainer, props)
+                          valueContainer
                       )
-                : components.ValueContainer;
+                    : valueContainer;
+            };
         }
 
         return this._valueContainerCmp;
@@ -788,6 +804,9 @@ const cmp = hoistCmp.factory<SelectInputModel>(({model, className, ...props}, re
             placeholder: withDefault(props.placeholder, 'Select...'),
             tabIndex: props.tabIndex,
 
+            // Not a react-select prop - read by our custom ValueContainer via `selectProps`.
+            leftIcon: props.leftIcon,
+
             // Minimize (or hide) bulky dropdown
             components: {
                 DropdownIndicator: model.getDropdownIndicatorCmp(),
@@ -875,6 +894,7 @@ const cmp = hoistCmp.factory<SelectInputModel>(({model, className, ...props}, re
             }
         },
         testId: props.testId,
+        domAttrs: props.domAttrs,
         ...layoutProps,
         width: withDefault(width, 200),
         height: height,

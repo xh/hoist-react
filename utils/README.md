@@ -200,10 +200,10 @@ Import from `@xh/hoist/utils/js`.
 
 ### Decorators
 
-Hoist uses **legacy (Stage 2) decorators** via Babel (configured in `hoist-dev-utils`), with
-TypeScript's `experimentalDecorators` flag enabled. This is the `(target, key, descriptor)`
-API, not the newer TC39 Stage 3 standard. Most application code simply uses the decorators
-below, but anyone writing a custom decorator must use the legacy signature.
+Hoist uses **TC39 Stage 3 modern decorators** (the `2023-11` spec revision, transpiled by SWC). TypeScript's
+`experimentalDecorators` flag is **off**. This is the two-argument `(value, context)` API — any
+custom decorator must use this signature. `@observable` and `@bindable` fields require the
+`accessor` keyword; method/getter decorators below do not.
 
 Class method decorators for common patterns:
 
@@ -213,7 +213,6 @@ Class method decorators for common patterns:
 | `@computeOnce` | Cache the result of a zero-argument method or getter lazily. Ideal for immutable objects (used extensively by `LocalDate`) |
 | `@logWithInfo` | Wrap method with `withInfo()` — times execution and logs to `console.log` |
 | `@logWithDebug` | Wrap method with `withDebug()` — times execution and logs to `console.debug` |
-| `@enumerable` | Mark a getter as enumerable (getters default to non-enumerable) |
 | `@abstract` | Method throws if called directly — must be overridden by subclass |
 | `@sharePendingPromise` | Concurrent calls to a Promise-returning method with the same arguments share a single pending Promise. Arguments must be JSON-serializable |
 
@@ -423,7 +422,7 @@ const priceFeed = hoistCmp.factory<PriceFeedModel>({
 
 // Model — react to visibility changes
 class PriceFeedModel extends HoistModel {
-    @bindable visible = false;
+    @bindable accessor visible = false;
 
     override onLinked() {
         this.addReaction({
@@ -476,6 +475,22 @@ for the full list of supported props and conversion details.
 |----------|-------------|
 | `createObservableRef()` | Create a ref that works as both a React ref object and callback ref, with a MobX-observable `current` property |
 | `elementFromContent(content, addProps?)` | Create a React element from a `Content` value (element, HoistComponent, or render function) |
+
+## Internal Utilities
+
+Import from `@xh/hoist/utils/impl`. These helpers are marked `@internal` - for use within
+hoist-react only, not by applications. Check here, alongside lodash, before writing a loop or
+closure that does the same job.
+
+| Function | Description |
+|----------|-------------|
+| `shallowEqualArrays(a, b)` | True if both arrays have the same length and identical (`===`) items in order |
+| `shallowEqualObjects(a, b)` | True if both objects have the same keys with identical (`===`) values |
+| `isOmitted(obj)` | Resolve an `omit` flag or thunk on a config object |
+| `isMenuSeparator(it)` | True if a menu entry is a textless separator, in any supported form |
+| `filterConsecutiveMenuSeparators()` | `Array.filter()` function dropping consecutive separators in Blueprint and AG Grid menus |
+| `filterConsecutiveToolbarSeparators()` | `Array.filter()` function dropping consecutive toolbar separators |
+| `fmtTimeZone(name, offset)` | Format a time zone name with its UTC offset |
 
 ## Common Pitfalls
 

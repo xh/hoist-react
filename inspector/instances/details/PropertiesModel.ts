@@ -5,7 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {persist, XH} from '@xh/hoist/core';
-import {bindable, makeObservable} from '@xh/hoist/mobx';
+import {bindable} from '@xh/hoist/mobx';
 import {compact, forIn} from 'lodash';
 import {BasePropsModel} from './BasePropsModel';
 import type {InstancesModel} from '../InstancesModel';
@@ -19,7 +19,7 @@ import type {InstancesModel} from '../InstancesModel';
 export class PropertiesModel extends BasePropsModel {
     override persistWith = {localStorageKey: `xhInspector.${XH.clientAppCode}.instances`};
 
-    @bindable @persist quickFilters: string[] = [];
+    @bindable @persist accessor quickFilters: string[] = [];
     get showUnderscoreProps() {
         return this.quickFilters?.includes('showUnderscoreProps');
     }
@@ -35,7 +35,6 @@ export class PropertiesModel extends BasePropsModel {
 
     constructor(parent: InstancesModel) {
         super(parent, false);
-        makeObservable(this);
 
         const {gridModel} = this;
 

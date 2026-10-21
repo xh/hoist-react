@@ -5,7 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {HoistModel, managed, PlainObject, Theme} from '@xh/hoist/core';
-import {action, observable, computed, makeObservable} from '@xh/hoist/mobx';
+import {action, observable, computed} from '@xh/hoist/mobx';
 import {throwIf, withDefault} from '@xh/hoist/utils/js';
 import {StoreRecord, StoreRecordId} from '@xh/hoist/data';
 import {ReactNode} from 'react';
@@ -53,11 +53,10 @@ export class SplitTreeMapModel extends HoistModel {
     //------------------------
     // Observable API
     //------------------------
-    @observable orientation: SplitTreeMapOrientation;
+    @observable accessor orientation: SplitTreeMapOrientation;
 
     constructor(config: SplitTreeMapConfig) {
         super();
-        makeObservable(this);
 
         const {
             mapFilter,

@@ -8,7 +8,7 @@ import {FormModel} from '@xh/hoist/cmp/form';
 import {HoistModel, lookup, managed} from '@xh/hoist/core';
 import {StoreRecord} from '@xh/hoist/data';
 import {RestGridModel} from '@xh/hoist/desktop/cmp/rest';
-import {computed, makeObservable} from '@xh/hoist/mobx';
+import {computed} from '@xh/hoist/mobx';
 
 /**
  * Backs a {@link restDetailPanel}. Resolves the host RestGridModel via `@lookup` - the model of an
@@ -33,11 +33,6 @@ export class RestDetailModel extends HoistModel {
 
     get readonly(): boolean {
         return this.gridModel.readonly;
-    }
-
-    constructor() {
-        super();
-        makeObservable(this);
     }
 
     override onLinked() {

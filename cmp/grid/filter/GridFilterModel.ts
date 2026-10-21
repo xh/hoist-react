@@ -18,10 +18,11 @@ import {
     FieldFilter,
     Filter,
     FilterLike,
-    flattenFilter
+    flattenFilter,
+    parseFilter
 } from '@xh/hoist/data';
 import {Icon} from '@xh/hoist/icon';
-import {action, bindable, makeObservable, observable} from '@xh/hoist/mobx';
+import {action, bindable, observable} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 import {castArray, compact, every, find, isNil, isString, uniq} from 'lodash';
 import {ReactElement} from 'react';
@@ -45,7 +46,7 @@ export class GridFilterModel extends HoistModel {
 
     gridModel: GridModel;
     bind: GridFilterBindTarget;
-    @bindable commitOnChange: boolean;
+    @bindable accessor commitOnChange: boolean;
     @managed fieldSpecs: GridFilterFieldSpec[] = [];
     activeFilterIcon: ReactElement;
 
@@ -54,7 +55,7 @@ export class GridFilterModel extends HoistModel {
     }
 
     // Open state for filter dialog
-    @observable dialogOpen = false;
+    @observable accessor dialogOpen = false;
 
     // Display for nil or empty values
     static BLANK_PLACEHOLDER = '[blank]';
@@ -71,13 +72,20 @@ export class GridFilterModel extends HoistModel {
         gridModel: GridModel
     ) {
         super();
-        makeObservable(this);
         this.xhName = xhName;
         this.gridModel = gridModel;
         this.bind = bind;
         this.commitOnChange = commitOnChange;
         this.activeFilterIcon = activeFilterIcon ?? GridFilterModel.defaults.activeFilterIcon;
         this.fieldSpecs = this.parseFieldSpecs(fieldSpecs, fieldSpecDefaults);
+
+        // Ensure every filterable column has a spec, including columns or View fields added later.
+        // Columns are typically still empty here - the reaction covers the GridModel's setColumns().
+        this.addReaction({
+            track: () => [gridModel.columns, this.bind.fieldNames],
+            run: () => this.addColumnFieldSpecs(fieldSpecDefaults),
+            fireImmediately: true
+        });
     }
 
     /**
@@ -99,17 +107,25 @@ export class GridFilterModel extends HoistModel {
      */
     @action
     mergeColumnFilters(field: string, filter: FilterLike) {
-        let newFilter: any = filter;
-        const {op} = newFilter;
-        if (FieldFilter.ARRAY_OPERATORS.includes(op)) {
-            const currFilters = flattenFilter(this.filter),
-                match = find(currFilters, {field, op}) as any;
+        let newFilter = parseFilter(filter);
+        if (
+            newFilter instanceof FieldFilter &&
+            FieldFilter.ARRAY_OPERATORS.includes(newFilter.op)
+        ) {
+            const {op, value} = newFilter,
+                currFilters = flattenFilter(this.filter),
+                match = find(currFilters, {field, op}) as FieldFilter;
 
+            // Build a new filter - the one passed in may be frozen, and is not ours to mutate.
             if (match) {
-                newFilter.value = uniq([...castArray(newFilter.value), ...castArray(match.value)]);
+                newFilter = parseFilter({
+                    field: newFilter.field,
+                    op,
+                    value: uniq([...castArray(value), ...castArray(match.value)])
+                });
             }
         }
-        this.setColumnFilters(field, filter);
+        this.setColumnFilters(field, newFilter);
     }
 
     @action
@@ -170,12 +186,29 @@ export class GridFilterModel extends HoistModel {
 
         return specs.map(spec => {
             if (isString(spec)) spec = {field: spec};
-            return new GridFilterFieldSpec({
-                filterModel: this,
-                source: bind,
-                ...fieldSpecDefaults,
-                ...spec
-            });
+            return this.createFieldSpec(spec, fieldSpecDefaults);
+        });
+    }
+
+    // Add default specs for filterable columns not covered by the configured specs.
+    private addColumnFieldSpecs(fieldSpecDefaults: Omit<GridFilterFieldSpecConfig, 'field'>) {
+        const {fieldNames} = this.bind;
+        this.gridModel.getLeafColumns().forEach(({filterable, field}) => {
+            if (filterable && fieldNames.includes(field) && !this.getFieldSpec(field)) {
+                this.fieldSpecs.push(this.createFieldSpec({field}, fieldSpecDefaults));
+            }
+        });
+    }
+
+    private createFieldSpec(
+        spec: GridFilterFieldSpecConfig,
+        fieldSpecDefaults: Omit<GridFilterFieldSpecConfig, 'field'>
+    ): GridFilterFieldSpec {
+        return new GridFilterFieldSpec({
+            filterModel: this,
+            source: this.bind,
+            ...fieldSpecDefaults,
+            ...spec
         });
     }
 

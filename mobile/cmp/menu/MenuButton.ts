@@ -4,12 +4,21 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {hoistCmp, HoistModel, useLocalModel, MenuItemLike} from '@xh/hoist/core';
+import {
+    hoistCmp,
+    HoistModel,
+    type MenuContext,
+    type MenuItemLike,
+    type Thunkable,
+    useLocalModel
+} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {button, ButtonProps} from '@xh/hoist/mobile/cmp/button';
 import {popover, PopoverProps} from '@xh/hoist/mobile/cmp/popover';
 import '@xh/hoist/mobile/register';
-import {makeObservable, bindable} from '@xh/hoist/mobx';
+import {bindable, bindableRef} from '@xh/hoist/mobx';
+import {executeIfFunction, getTestId} from '@xh/hoist/utils/js';
+import {isFunction} from 'lodash';
 import {ReactNode} from 'react';
 import {menu} from './impl/Menu';
 
@@ -17,8 +26,17 @@ export interface MenuButtonProps extends Omit<ButtonProps, 'title'> {
     /** Optional additional classname to apply to the menu element itself. */
     menuClassName?: string;
 
-    /** Array of MenuItems or spacers. */
-    menuItems?: MenuItemLike[];
+    /**
+     * Items to display, or a function producing them from the menu's context. As with a
+     * `ContextMenuSpec`, a function is called each time the menu opens.
+     */
+    menuItems?: MenuItemLike[] | ((context: MenuContext) => MenuItemLike[]);
+
+    /**
+     * Contextual data passed to each item's `actionFn` and `prepareFn`, or a function producing
+     * it each time the menu opens.
+     */
+    context?: Thunkable<MenuContext>;
 
     /** Position of menu relative to button */
     menuPosition?:
@@ -47,7 +65,8 @@ export interface MenuButtonProps extends Omit<ButtonProps, 'title'> {
 }
 
 /**
- * Convenience Button preconfigured for use as a trigger for a dropdown menu operation.
+ * Convenience Button preconfigured for use as a trigger for a dropdown menu operation. A `testId`
+ * lands on the button, and the open menu gets `${testId}-menu`.
  */
 export const [MenuButton, menuButton] = hoistCmp.withFactory<MenuButtonProps>({
     displayName: 'MenuButton',
@@ -56,11 +75,13 @@ export const [MenuButton, menuButton] = hoistCmp.withFactory<MenuButtonProps>({
     render({
         menuClassName,
         menuItems,
+        context,
         menuPosition = 'auto',
         title,
         disabled,
         popoverProps,
         icon = Icon.menu(),
+        testId,
         ...props
     }) {
         const impl = useLocalModel(MenuButtonLocalModel);
@@ -69,14 +90,16 @@ export const [MenuButton, menuButton] = hoistCmp.withFactory<MenuButtonProps>({
             isOpen: impl.isOpen,
             position: menuPosition,
             disabled: disabled,
-            item: button({icon, disabled, ...props}),
+            item: button({icon, disabled, testId, ...props}),
             content: menu({
-                menuItems,
+                menuItems: isFunction(menuItems) ? impl.menuItems : menuItems,
+                context: isFunction(context) ? impl.context : context,
                 className: menuClassName,
                 title,
+                testId: getTestId(testId, 'menu'),
                 onDismiss: () => (impl.isOpen = false)
             }),
-            onInteraction: nextOpenState => (impl.isOpen = nextOpenState),
+            onInteraction: nextOpenState => impl.setOpen(nextOpenState, menuItems, context),
             backdrop: true,
             ...popoverProps
         });
@@ -86,10 +109,19 @@ export const [MenuButton, menuButton] = hoistCmp.withFactory<MenuButtonProps>({
 class MenuButtonLocalModel extends HoistModel {
     override xhImpl = true;
 
-    @bindable isOpen = false;
+    @bindable accessor isOpen = false;
+    @bindableRef accessor menuItems: MenuItemLike[] = null;
+    @bindableRef accessor context: MenuContext = null;
 
-    constructor() {
-        super();
-        makeObservable(this);
+    setOpen(
+        isOpen: boolean,
+        menuItems: MenuButtonProps['menuItems'],
+        context: MenuButtonProps['context']
+    ) {
+        if (isOpen) {
+            this.context = executeIfFunction(context) ?? {};
+            this.menuItems = isFunction(menuItems) ? menuItems(this.context) : null;
+        }
+        this.isOpen = isOpen;
     }
 }

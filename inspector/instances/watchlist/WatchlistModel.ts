@@ -18,7 +18,7 @@ import {
 import {StoreRecord} from '@xh/hoist/data';
 import {fmtDate} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
-import {bindable, computed, makeObservable, runInAction} from '@xh/hoist/mobx';
+import {bindableRef, computed, runInAction} from '@xh/hoist/mobx';
 import {formatInstanceLabel} from '@xh/hoist/utils/js';
 import {compact, find, without} from 'lodash';
 import type {InstancesModel} from '../InstancesModel';
@@ -40,10 +40,10 @@ export class WatchlistModel extends HoistModel {
     @managed propsModel: WatchlistPropsModel;
 
     /** Watched instances, as keys from {@link instanceKey}. */
-    @bindable.ref instanceKeys: string[] = [];
+    @bindableRef accessor instanceKeys: string[] = [];
 
     /** Watched properties, as `{instanceKey, property, isGetter}`. */
-    @bindable.ref props: PlainObject[] = [];
+    @bindableRef accessor props: PlainObject[] = [];
 
     @computed
     get count(): number {
@@ -52,7 +52,6 @@ export class WatchlistModel extends HoistModel {
 
     constructor(parent: InstancesModel) {
         super();
-        makeObservable(this);
         this.parent = parent;
         this.instancesGridModel = this.createInstancesGridModel();
         this.propsModel = new WatchlistPropsModel(parent);

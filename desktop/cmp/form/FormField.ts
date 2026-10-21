@@ -5,7 +5,13 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {PopoverPosition, PopperBoundary} from '@blueprintjs/core';
-import {BaseFormFieldProps, FieldModel, FormContext, FormContextType} from '@xh/hoist/cmp/form';
+import {
+    BaseFormFieldProps,
+    FieldModel,
+    FormContext,
+    FormContextType,
+    FormFieldSetContext
+} from '@xh/hoist/cmp/form';
 import {box, div, label as labelEl, li, span, ul} from '@xh/hoist/cmp/layout';
 import {
     DefaultHoistProps,
@@ -13,14 +19,12 @@ import {
     HoistProps,
     HSide,
     TestSupportProps,
-    useContextModel,
     uses,
     XH
 } from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {instanceManager} from '@xh/hoist/core/impl/InstanceManager';
 import {maxSeverity, ValidationResult} from '@xh/hoist/data';
-import {FormFieldSetModel} from '@xh/hoist/cmp/form/formfieldset/FormFieldSetModel';
 import {fmtDate, fmtDateTime, fmtJson, fmtNumber} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
 import {tooltip} from '@xh/hoist/kit/blueprint';
@@ -34,7 +38,17 @@ import {
     useOnUnmount
 } from '@xh/hoist/utils/react';
 import classNames from 'classnames';
-import {first, isBoolean, isDate, isEmpty, isFinite, isNil, isUndefined, kebabCase} from 'lodash';
+import {
+    first,
+    isDate,
+    isEmpty,
+    isFinite,
+    isNil,
+    isObjectLike,
+    isString,
+    isUndefined,
+    kebabCase
+} from 'lodash';
 import {
     Children,
     cloneElement,
@@ -135,7 +149,7 @@ export const [FormField, formField] = hoistCmp.withFactory<FormFieldProps>({
         }
 
         // If within a FormFieldSet, register with its model for validation grouping
-        const fieldSetModel = useContextModel(FormFieldSetModel);
+        const fieldSetModel = useContext(FormFieldSetContext);
         useEffect(() => {
             if (fieldSetModel && model) {
                 fieldSetModel.registerChildFieldModel(model);
@@ -273,11 +287,15 @@ export const [FormField, formField] = hoistCmp.withFactory<FormFieldProps>({
             className: classNames(className, classes),
             ...getLayoutProps(props),
             testId,
+            domAttrs: props.domAttrs,
             items: [
                 labelEl({
                     omit: !label,
                     className: 'xh-form-field__label',
                     items: [label, requiredIndicator],
+                    // Id lets inputs that are not labelable elements (e.g. RadioCardInput) name
+                    // themselves via `aria-labelledby`.
+                    id: `${childId}-label`,
                     htmlFor: clickableLabel ? childId : null,
                     style: {
                         textAlign: labelTextAlign,
@@ -379,17 +397,24 @@ const editableChild = hoistCmp.factory<FieldModel>({
 // Helper Functions
 //---------------------------------
 export function defaultReadonlyRenderer(value: any): ReactNode {
+    // First try type-specific formatting
     if (isLocalDate(value)) return fmtDate(value);
     if (isDate(value)) return fmtDateTime(value);
     if (isFinite(value)) return fmtNumber(value);
-    if (isBoolean(value)) return value.toString();
+    if (isObjectLike(value)) return fmtJson(value);
 
-    // format JSON, but fail and ignore on plain text
-    try {
-        value = fmtJson(value);
-    } catch (e) {}
+    // ... pretty printing json strings as well.
+    if (isString(value)) {
+        const trimmed = value.trim();
+        if (trimmed.startsWith('{') || trimmed.startsWith('[')) {
+            try {
+                value = fmtJson(trimmed);
+            } catch {}
+        }
+    }
 
-    return span(value != null ? value.toString() : null);
+    // Otherwise just fall back to string rendering
+    return span(value?.toString());
 }
 
 const blockChildren = ['CodeInput', 'JsonInput', 'Select', 'TextInput'];

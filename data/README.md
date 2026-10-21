@@ -183,9 +183,10 @@ Providing it is an assertion: the updates change record values only (no parent/s
 and no field outside the set changed. Hoist carries the set through to the `Grid` transaction sync,
 which uses it to prove that an update cannot affect row order and skip ag-Grid's re-sort entirely -
 a major win for high-frequency updates into large sorted grids. Cube `View`s supply `changedFields`
-automatically on streaming updates, so view-connected stores get this for free. Producers that
-cannot cheaply determine the set should simply omit it - the grid falls back to comparing sorted
-field values record-by-record where possible.
+automatically on streaming updates, so view-connected stores get this for free - and consume it on
+the way in, diffing only the declared fields on each updated leaf when a `Cube.updateDataAsync()`
+transaction supplies the set. Producers that cannot cheaply determine the set should simply omit
+it - the grid falls back to comparing sorted field values record-by-record where possible.
 
 **`loadDataAsync(rawData)`** - Streaming counterpart to `loadData()`. It accepts a sync or async
 iterable that yields raw records, and creates records incrementally without buffering the complete
@@ -269,8 +270,9 @@ store.count;         // Filtered record count
 store.allCount;      // Total record count
 ```
 
-Store re-filters automatically whenever record data changes. Call `refreshFilter()` only when the
-state behind a `FunctionFilter` changes without any change to the records themselves.
+Store re-filters automatically whenever record data changes, but a patched change (the default for
+small changes) re-tests only the records it touches. Call `refreshFilter()` when the state behind a
+`FunctionFilter` changes without any change to the records themselves.
 
 ### Observable Properties
 
@@ -1000,22 +1002,20 @@ natural source. `Cube.loadDataAsync()` accepts a streaming source too. See
 
 ### Incremental Patching for Large Datasets
 
-By default, every Store change - a transaction, reload, or refilter - rebuilds the affected
-record collections in full, an O(total records) cost however small the change. For large stores
-receiving small, frequent changes, the experimental `maxPatchRatio` config expresses changes as
-small *patch layers* over a shared base collection instead, making transaction, filtering, and
-grid-sync costs scale with the size of the change:
+Store expresses small changes - transactions, partial reloads, and refilters - as *patch layers*
+over a shared base collection, so their cost scales with the size of the change rather than the
+size of the store. A patch that grows past a fraction of total records, set by the experimental
+`maxPatchRatio` config (default `0.1`, clamped to `[0, 0.5]`), is flattened into a fresh base. Set
+it to `0` to disable patching, so every change rebuilds the affected collections in full:
 
 ```typescript
 const store = new Store({
-    experimental: {maxPatchRatio: 0.1} // patches capped at 10% of total records
+    experimental: {maxPatchRatio: 0} // disable patching - every change copies the full collection
 });
 ```
 
-A patch that grows past the configured fraction of total records is flattened away (clamped to
-`[0, 0.5]` - the default of `0` disables patching). The ratio is read live on each operation, so it
-may also be changed on an existing Store at any time, and can be applied app-wide via the
-`xhStoreExperimental` soft-config. Two behavioral notes:
+The ratio is read live on each operation, so it may also be changed on an existing Store at any
+time, and can be applied app-wide via the `xhStoreExperimental` soft-config. Two behavioral notes:
 
 - Record order becomes stable-by-incumbency rather than source-order: existing records keep their
   positions and additions append, including adds within partial reloads and records entering a
@@ -1239,14 +1239,14 @@ problem when the app must persist the filter (e.g. via `@persist`):
 ```typescript
 class MyModel extends HoistModel {
     // ❌ Problem: Hoist cannot serialize a FunctionFilter for persistence
+    @observableRef
     @persist
-    @observable.ref
-    filter: Filter = new FunctionFilter({testFn: r => r.data.custom > 0});
+    accessor filter: Filter = new FunctionFilter({testFn: r => r.data.custom > 0});
 
     // ✅ Correct: FieldFilter/CompoundFilter are serializable
+    @observableRef
     @persist
-    @observable.ref
-    filter: Filter = parseFilter({field: 'custom', op: '>', value: 0});
+    accessor filter: Filter = parseFilter({field: 'custom', op: '>', value: 0});
 }
 ```
 

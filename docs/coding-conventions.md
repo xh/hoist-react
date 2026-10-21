@@ -62,6 +62,53 @@ const items = castArray(itemOrItems);            // normalize to array
 const valid = compact(results);                  // remove falsy values
 ```
 
+Before writing a loop or closure that compares, searches, groups, partitions, dedupes, sorts,
+merges or reshapes collections, check lodash and `@xh/hoist/utils` for an existing helper.
+Framework code can also use the `@internal` helpers in `@xh/hoist/utils/impl` - see
+[Internal Utilities](../utils/README.md#internal-utilities).
+
+```typescript
+// ❌ Hand-rolled - each of these already exists
+const changed = a.length !== b.length || a.some((it, idx) => it !== b[idx]);
+const byId = {};
+records.forEach(r => (byId[r.id] = r));
+const done = items.filter(it => it.done),
+    todo = items.filter(it => !it.done);
+
+// ✅ Existing helpers
+import {keyBy, partition} from 'lodash';
+import {shallowEqualArrays} from '@xh/hoist/utils/impl'; // framework code only
+
+const changed = !shallowEqualArrays(a, b);
+const byId = keyBy(records, 'id');
+const [done, todo] = partition(items, 'done');
+```
+
+### Match the Existing Pattern
+
+Code that handles one member of a family - one grid option, one prop, one config key - should
+treat it the way its siblings are treated. Before adding a special case, find how the
+neighbouring cases work and follow them. A one-off rule surprises readers and callers, who learn
+the general rule and then find it does not hold.
+
+If the pattern itself seems wrong, raise it as a separate change that covers the whole family. Do
+not improve a single member in passing.
+
+For example, `Grid` merges an app's `agOptions` over Hoist's defaults, so the app's value wins for
+any option, with no warning:
+
+```typescript
+// ❌ One option treated differently from every other agOptions override
+warnIf(agOptions.groupDefaultExpanded != null, 'groupDefaultExpanded is ignored.');
+this.agOptions = merge(defaults, omit(agOptions, 'groupDefaultExpanded'));
+
+// ✅ Same rule as every other option - the app's value wins
+this.agOptions = merge(defaults, agOptions);
+```
+
+When inlining or consolidating code, carry over every condition the old code checked. A merged
+helper that drops one check can quietly change behaviour for the cases that check covered.
+
 ### Keep Code Concise
 
 Favor direct, compact expression over verbose or ceremonial patterns. Hoist's own utilities
@@ -74,13 +121,13 @@ construction.
 The following config files define mechanically enforced style rules. Do not duplicate these rules
 in code reviews or conventions discussions — the tooling handles them:
 
-- **`.prettierrc.json`** — Formatting: single quotes, 4-space indent (2 for SCSS/JSON), 100-char
+- **`.prettierrc.json`** - Formatting: single quotes, 4-space indent (2 for SCSS/JSON), 100-char
   print width, trailing commas off, arrow parens avoided
-- **`eslint.config.js`** — Linting: `@xh/eslint-config` base rules + TSDoc syntax checking via
+- **`eslint.config.js`** - Linting: `@xh/eslint-config` base rules + TSDoc syntax checking via
   `eslint-plugin-tsdoc` + Prettier integration
-- **`tsconfig.json`** — TypeScript: `experimentalDecorators`, `noImplicitOverride`,
+- **`tsconfig.json`** - TypeScript: `noImplicitOverride`,
   `useDefineForClassFields`, `moduleResolution: "bundler"`, ES2022 target
-- **`.stylelintrc.json`** — SCSS linting (if present)
+- **`.stylelintrc.json`** - SCSS linting (if present)
 
 Run `pnpm lint` to check all rules. Run `pnpm lint:code` for JS/TS only or `pnpm lint:styles`
 for SCSS only. Type-checking is a separate gate — run `pnpm typecheck` (`tsc --noEmit`), which
@@ -109,7 +156,7 @@ import {ReactNode} from 'react';
 import {frame, vbox} from '@xh/hoist/cmp/layout';
 import {HoistModel, hoistCmp, uses, XH} from '@xh/hoist/core';
 import {Store} from '@xh/hoist/data';
-import {action, bindable, makeObservable, observable} from '@xh/hoist/mobx';
+import {action, bindable, observable} from '@xh/hoist/mobx';
 
 // Relative imports
 import {MyHelper} from './impl/MyHelper';
@@ -302,6 +349,30 @@ private fieldMap: Map<string, Field>;
 
 ## Class Structure
 
+### File Ordering
+
+Readers should meet the public API first. Within a file, exported interfaces, types, and classes
+come directly after the imports. Module-private constants and helper functions — anything not
+exported — go at the bottom, after the last export:
+
+```typescript
+import {...} from '...';
+
+export interface FooConfig { ... }
+
+export class FooModel extends HoistModel {
+    constructor() {
+        this.params = DEFAULT_PARAMS;   // resolved at runtime, so the declaration below is fine
+    }
+}
+
+// Implementation detail - not part of the public API.
+const DEFAULT_PARAMS = { ... };
+```
+
+A `const` used only inside constructors or methods can safely be declared below the class, as it is
+read at call time rather than at module evaluation.
+
 ### Member Ordering
 
 Hoist classes follow a canonical ordering for readability and consistency. Not every class has
@@ -336,12 +407,11 @@ export class MyModel extends HoistModel {
     //---------------------
     // Observable State
     //---------------------
-    @observable selectedId: string = null;
-    @bindable filter: string = '';
+    @observable accessor selectedId: string = null;
+    @bindable accessor filter: string = '';
 
     constructor(config: MyModelConfig) {
         super();
-        makeObservable(this);
         // ...
     }
 
@@ -363,13 +433,12 @@ for visual balance.
 
 ### Constructor Pattern
 
-Model constructors call `super()`, then `makeObservable(this)`, then initialize properties from
-config:
+Model constructors call `super()`, then initialize properties from config. TC39 decorators handle
+observable registration at class-definition time, so no `makeObservable` call is needed:
 
 ```typescript
 constructor(config: MyModelConfig) {
     super();
-    makeObservable(this);
     const {name, sortable = true, defaultFilter = ''} = config;
     this.name = name;
     this.sortable = sortable;
@@ -533,8 +602,8 @@ particularly common when destructuring alongside additional computed variables:
 ```typescript
 const {store, treeMode, filterModel} = model,
     impl = useLocalModel(GridLocalModel),
-    maxDepth = impl.isHierarchical ? store.maxDepth : null,
-    container = enableFullWidthScroll ? vframe : frame;
+    platformColChooser = XH.isMobileApp ? mobileColChooser : desktopColChooser,
+    maxDepth = impl.isHierarchical ? store.maxDepth : null;
 ```
 
 This pattern keeps related declarations together as a single logical group.
@@ -547,8 +616,8 @@ Hoist uses `null` (not `undefined`) as the conventional "no value" sentinel for 
 properties and return values. Properties are initialized to `null` rather than left `undefined`:
 
 ```typescript
-@observable selectedId: string = null;
-@observable.ref lastResponse: Response = null;
+@observable accessor selectedId: string = null;
+@observableRef accessor lastResponse: Response = null;
 ```
 
 ### `== null` Pattern
@@ -649,7 +718,7 @@ When a property's observable behavior is significant to callers, annotate it in 
 
 ```typescript
 /** Currently selected record, or null if none. (observable) */
-@observable.ref selectedRecord: StoreRecord = null;
+@observableRef accessor selectedRecord: StoreRecord = null;
 ```
 
 ### Step-Numbered Comments
@@ -664,6 +733,21 @@ const filtered = this.applyFilters(records);
 // 3) Update the store
 this.store.loadData(filtered);
 ```
+
+### Links in Markdown Docs
+
+Use reference-style links for long URLs in prose. They keep the URL out of the sentence, so the
+Markdown source wraps cleanly and stays readable. Put all definitions at the end of the doc:
+
+```markdown
+See the [TypeScript 7.0 announcement][ts7] for Microsoft's benchmarks.
+
+[ts7]: https://devblogs.microsoft.com/typescript/announcing-typescript-7-0/
+```
+
+Keep inline links for short relative paths and `#anchor` links, for example
+`[Grid](../cmp/grid/README.md)`. Every label must have a definition. An undefined label does not
+fail a build. It renders as the literal text `[text][label]`.
 
 ## Async Patterns
 
@@ -709,16 +793,39 @@ async fetchUsersAsync(): Promise<User[]> {
 `try/catch`, where `return await` is required for the local `catch` to handle rejections
 (a plain `return` passes the promise through unwrapped, bypassing the `catch`).
 
+### The Runner Chain
+
+For work that needs masking, activity tracking, or trace spans, use the `Runner` chain from
+`HoistBase.runner()`. It composes those concerns with the fetch call in one chain, and passes
+the `CallContext` (span and `loadSpec`) through to the request automatically. This is the
+standard load pattern for new code:
+
+```typescript
+async doLoadAsync(loadSpec: LoadSpec) {
+    const data = await this.runner({loadSpec})
+        .linkTo(this.loadTask)
+        .track({category: 'Users', message: 'Loaded users'})
+        .fetchJson({url: 'api/users'});
+    this.store.loadData(data);
+}
+```
+
+Use `.run(fn)` as the terminal when the work is more than a single fetch. See
+[The Runner chain](./telemetry.md#the-runner-chain) for the full builder and terminal API.
+
 ### Promise Extensions
 
-Hoist extends the Promise prototype with chainable methods. The most common:
+Hoist extends the Promise prototype with chainable methods. These are the lower-level API that
+the `Runner` wraps - prefer the `Runner` for masking, tracking, and spans in new code, and reach
+for these directly on promises the `Runner` does not produce:
 
 - **`.catchDefault()`** — catches and passes to `XH.handleException()` with default options
-- **`.track({model, category})`** — links to a `TaskObserver` for loading masks/indicators
+- **`.track({category, message})`** — records the call and its timing via Hoist activity tracking
 - **`.timeout(ms)`** — rejects if not settled within the given time
-- **`.linkTo(observable)`** — writes resolved value to an observable property
+- **`.linkTo(taskObserver)`** — links to a `TaskObserver` for loading masks and progress messages
 
-See [`/promise/README.md`](../promise/README.md) for the full API.
+`.catchDefault()` and `.timeout()` still apply to the promise a `Runner` terminal returns. See
+[`/promise/README.md`](../promise/README.md) for the full API.
 
 ### `Timer.create()`
 

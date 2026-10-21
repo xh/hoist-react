@@ -3,3 +3,14 @@
   background-color: var(--xh-panel-bg);
   border: var(--xh-panel-border-width-px) solid var(--xh-panel-border-color);
 }
+
+// Separate banners from the panel contents they sit above or below.
+.xh-panel__banner {
+  &--top {
+    border-bottom: 1px solid var(--xh-tbar-border-color);
+  }
+
+  &--bottom {
+    border-top: 1px solid var(--xh-tbar-border-color);
+  }
+}

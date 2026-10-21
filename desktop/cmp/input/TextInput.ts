@@ -4,7 +4,13 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {HoistInputModel, HoistInputProps, useHoistInputModel} from '@xh/hoist/cmp/input';
+import {
+    getPasswordManagerAttrs,
+    HoistInputModel,
+    HoistInputProps,
+    PasswordManagerSupportProps,
+    useHoistInputModel
+} from '@xh/hoist/cmp/input';
 import {div} from '@xh/hoist/cmp/layout';
 import {hoistCmp, HoistProps, LayoutProps, StyleProps} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
@@ -17,7 +23,8 @@ import type {Property} from 'csstype';
 import {isEmpty} from 'lodash';
 import {FocusEvent, KeyboardEventHandler, ReactElement, ReactNode, Ref} from 'react';
 
-export interface TextInputProps extends HoistProps, HoistInputProps, LayoutProps, StyleProps {
+export interface TextInputProps
+    extends HoistProps, HoistInputProps, PasswordManagerSupportProps, LayoutProps, StyleProps {
     value?: string;
 
     /**
@@ -74,6 +81,14 @@ export interface TextInputProps extends HoistProps, HoistInputProps, LayoutProps
     /** True to allow browser spell check, default false. */
     spellCheck?: boolean;
 
+    /**
+     * True to trim leading/trailing whitespace from this input's value as committed to any bound
+     * model and reported to `onChange` / `onCommit`. Default true, except for `password` type
+     * inputs, where such whitespace can be intentional. A value that trims away to nothing commits
+     * null, as per an input the user cleared.
+     */
+    trimWhitespace?: boolean;
+
     /** Underlying HTML <input> element type. */
     type?: 'text' | 'password';
 }
@@ -98,6 +113,17 @@ export class TextInputModel extends HoistInputModel {
 
     override get commitOnChange() {
         return withDefault(this.componentProps.commitOnChange, false);
+    }
+
+    override get trimWhitespace() {
+        const {trimWhitespace, type} = this.componentProps;
+        // Passwords can legitimately carry leading/trailing whitespace - never trim by default.
+        return withDefault(trimWhitespace, type !== 'password');
+    }
+
+    override toExternal(internal: string): string {
+        // Normalize a value that trims away to nothing to null, as per an input the user cleared.
+        return super.toExternal(internal) || null;
     }
 
     onChange = ev => {
@@ -155,6 +181,8 @@ const cmp = hoistCmp.factory<TextInputProps & {model: TextInputModel}>(
                     textAlign: withDefault(props.textAlign, 'left')
                 },
                 [TEST_ID]: props.testId,
+                ...getPasswordManagerAttrs(props.enablePasswordManagers),
+                ...props.domAttrs,
                 onChange: model.onChange,
                 onKeyDown: model.onKeyDown
             }),

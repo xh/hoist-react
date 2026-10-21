@@ -4,35 +4,70 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
+import {div} from '@xh/hoist/cmp/layout';
 import {XH} from '@xh/hoist/core';
-import {segmentedControl, SegmentedControlProps} from '@xh/hoist/desktop/cmp/input';
+import {
+    radioCardInput,
+    RadioCardInputProps,
+    segmentedControl,
+    SegmentedControlProps
+} from '@xh/hoist/desktop/cmp/input';
 import {Icon} from '@xh/hoist/icon/Icon';
 import {FormFieldProps} from '@xh/hoist/desktop/cmp/form';
 import '@xh/hoist/desktop/register';
+import type {ReactElement} from 'react';
+import './ThemeAppOption.scss';
 
 interface ThemeAppOptionSpec {
     /** Props for nested FormField */
     formFieldProps?: Partial<FormFieldProps>;
-    /** Props for nested SegmentedControl */
-    inputProps?: Partial<SegmentedControlProps>;
+    /** Props for nested RadioCardInput, or SegmentedControl if `previewCards` is false. */
+    inputProps?: Partial<SegmentedControlProps> | Partial<RadioCardInputProps>;
+    /**
+     * True (default) to render the choices as a RadioCardInput, with each card showing a small
+     * preview of an app window in that theme. Set false for a compact SegmentedControl.
+     */
+    previewCards?: boolean;
 }
+
+type ThemeValue = 'light' | 'dark' | 'system';
+
+const THEMES: {value: ThemeValue; label: string; icon: () => ReactElement}[] = [
+    {value: 'light', label: 'Light', icon: () => Icon.sun()},
+    {value: 'dark', label: 'Dark', icon: () => Icon.moon()},
+    {value: 'system', label: 'System', icon: () => Icon.sync()}
+];
 
 /**
  * Convenience configuration for the `theme` AppOption.
  */
-export const themeAppOption = ({formFieldProps, inputProps}: ThemeAppOptionSpec = {}) => {
+export const themeAppOption = ({
+    formFieldProps,
+    inputProps,
+    previewCards = true
+}: ThemeAppOptionSpec = {}) => {
     return {
         name: 'theme',
         formField: {
             label: 'Theme',
-            item: segmentedControl({
-                options: [
-                    {value: 'light', label: 'Light', icon: Icon.sun()},
-                    {value: 'dark', label: 'Dark', icon: Icon.moon()},
-                    {value: 'system', label: 'System', icon: Icon.sync()}
-                ],
-                ...inputProps
-            }),
+            item: previewCards
+                ? radioCardInput({
+                      options: THEMES.map(({value, label}) => ({
+                          value,
+                          label,
+                          preview: themePreview(value)
+                      })),
+                      ...(inputProps as Partial<RadioCardInputProps>)
+                  })
+                : segmentedControl({
+                      options: THEMES.map(({value, label, icon}) => ({
+                          value,
+                          label,
+                          icon: icon()
+                      })),
+                      fill: false,
+                      ...(inputProps as Partial<SegmentedControlProps>)
+                  }),
             ...formFieldProps
         },
         refreshRequired: false,
@@ -40,3 +75,27 @@ export const themeAppOption = ({formFieldProps, inputProps}: ThemeAppOptionSpec 
         valueSetter: v => XH.setTheme(v)
     };
 };
+
+/**
+ * A mini app window drawn in fixed light or dark colors, so each card shows its theme regardless
+ * of the active one. 'system' splits the window diagonally.
+ */
+function themePreview(theme: ThemeValue): ReactElement {
+    return div({
+        className: `xh-theme-preview xh-theme-preview--${theme}`,
+        items: [
+            div({
+                className: 'xh-theme-preview__chrome',
+                items: [0, 1, 2].map(i => div({key: i, className: 'xh-theme-preview__dot'}))
+            }),
+            div({
+                className: 'xh-theme-preview__content',
+                items: [
+                    div({className: 'xh-theme-preview__accent'}),
+                    div({className: 'xh-theme-preview__line'}),
+                    div({className: 'xh-theme-preview__line xh-theme-preview__line--short'})
+                ]
+            })
+        ]
+    });
+}

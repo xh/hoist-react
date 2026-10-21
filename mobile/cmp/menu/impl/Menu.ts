@@ -5,10 +5,24 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {div, hspacer, vbox} from '@xh/hoist/cmp/layout';
-import {hoistCmp, HoistModel, useLocalModel, MenuItemLike, isMenuItem} from '@xh/hoist/core';
+import {
+    hoistCmp,
+    HoistModel,
+    useLocalModel,
+    type MenuContext,
+    MenuItemLike,
+    isMenuHeading,
+    isMenuItem
+} from '@xh/hoist/core';
 import {listItem} from '@xh/hoist/kit/onsen';
-import {makeObservable, bindable} from '@xh/hoist/mobx';
-import {filterConsecutiveMenuSeparators, isOmitted} from '@xh/hoist/utils/impl';
+import {bindable} from '@xh/hoist/mobx';
+import {filterConsecutiveMenuSeparators} from '@xh/hoist/utils/impl';
+import {TEST_ID} from '@xh/hoist/utils/js';
+import {
+    filterMenuHeadings,
+    isVisibleMenuEntry,
+    resolveMenuHeading
+} from '@xh/hoist/cmp/menu/impl/Menus';
 import classNames from 'classnames';
 import {clone, isEmpty} from 'lodash';
 import {ReactNode, useEffect} from 'react';
@@ -28,9 +42,9 @@ export const menu = hoistCmp.factory({
     displayName: 'Menu',
     className: 'xh-menu',
 
-    render({menuItems, onDismiss, title, ...props}, ref) {
-        const impl = useLocalModel(LocalMenuModel),
-            items = impl.parseMenuItems(menuItems, onDismiss);
+    render({menuItems, context, onDismiss, title, ...props}, ref) {
+        const impl = useLocalModel(MenuLocalModel),
+            items = impl.parseMenuItems(menuItems, context, onDismiss);
 
         useEffect(() => {
             if (isEmpty(items)) onDismiss();
@@ -54,36 +68,46 @@ export const menu = hoistCmp.factory({
     }
 });
 
-class LocalMenuModel extends HoistModel {
+class MenuLocalModel extends HoistModel {
     override xhImpl = true;
 
-    @bindable pressedIdx: number;
+    @bindable accessor pressedIdx: number;
 
-    constructor() {
-        super();
-        makeObservable(this);
-    }
-
-    parseMenuItems(items: MenuItemLike[], onDismiss: () => void): ReactNode[] {
+    parseMenuItems(
+        items: MenuItemLike[],
+        context: MenuContext,
+        onDismiss: () => void
+    ): ReactNode[] {
         const {pressedIdx} = this;
 
         items = items.map(item => {
+            if (isMenuHeading(item)) return resolveMenuHeading(item, context);
             if (!isMenuItem(item)) return item;
 
             item = clone(item);
-            item.prepareFn?.(item);
+            item.prepareFn?.(item, context);
             return item;
         });
 
         return items
-            .filter(it => !isMenuItem(it) || (!it.hidden && !isOmitted(it)))
+            .filter(isVisibleMenuEntry)
+            .filter(filterMenuHeadings(isMenuHeading))
             .filter(filterConsecutiveMenuSeparators())
             .map((item, idx) => {
-                // Process dividers
+                // Process dividers and headings
+                if (item === '-') return div({key: idx, className: 'xh-menu__list__divider'});
+                if (isMenuHeading(item)) {
+                    return div({
+                        key: idx,
+                        className: classNames('xh-menu__list__heading', item.className),
+                        item: item.heading
+                    });
+                }
                 if (!isMenuItem(item)) return item;
 
                 // Process items
-                const {text, icon, className, actionFn, hidden} = item,
+                const {text, icon, className, actionFn, hidden, active, keepMenuOpen, testId} =
+                        item,
                     labelItems = icon ? [icon, hspacer(10), text] : [text];
 
                 return listItem({
@@ -92,16 +116,18 @@ class LocalMenuModel extends HoistModel {
                     className: classNames(
                         'xh-menu__list__item',
                         idx === pressedIdx ? 'xh-menu__list__item--pressed' : null,
+                        active ? 'xh-menu__list__item--active' : null,
                         className
                     ),
                     item: div({className: 'center', items: labelItems}),
                     omit: hidden,
+                    [TEST_ID]: testId,
                     onTouchStart: () => (this.pressedIdx = idx),
                     onTouchEnd: () => (this.pressedIdx = null),
                     onClick: e => {
                         this.pressedIdx = null;
-                        if (actionFn) actionFn(e);
-                        onDismiss();
+                        if (actionFn) actionFn(e, context);
+                        if (!keepMenuOpen) onDismiss();
                     }
                 });
             });

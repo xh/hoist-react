@@ -10,7 +10,7 @@ import {HoistBase, hoistCmp, HoistModel, managed, PlainObject, XH} from '@xh/hoi
 import {Cube, StoreRecord, View} from '@xh/hoist/data';
 import {actionCol, calcActionColWidth} from '@xh/hoist/desktop/cmp/grid';
 import {Icon} from '@xh/hoist/icon';
-import {action, bindable, isObservableProp, makeObservable} from '@xh/hoist/mobx';
+import {action, bindableRef, isObservableProp} from '@xh/hoist/mobx';
 import {parseNameSource, trimToDepth} from '@xh/hoist/utils/js';
 import {find} from 'lodash';
 import type {InstancesModel} from '../InstancesModel';
@@ -29,11 +29,10 @@ export abstract class BasePropsModel extends HoistModel {
     @managed gridModel: GridModel;
 
     /** Getters evaluated on demand, as `{instanceXhId, property}`. */
-    @bindable.ref loadedGetters: PlainObject[] = [];
+    @bindableRef accessor loadedGetters: PlainObject[] = [];
 
     protected constructor(parent: InstancesModel, isWatchlist: boolean) {
         super();
-        makeObservable(this);
         this.parent = parent;
         this.gridModel = this.createGridModel(isWatchlist);
     }

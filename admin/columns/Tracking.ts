@@ -156,7 +156,8 @@ export const deviceIcon: ColumnSpec = {
 export const elapsedRenderer = numberRenderer({
     label: 'ms',
     nullDisplay: '-',
-    formatConfig: {thousandSeparated: false, mantissa: 0}
+    precision: 0,
+    withCommas: false
 });
 
 export const elapsed: ColumnSpec = {

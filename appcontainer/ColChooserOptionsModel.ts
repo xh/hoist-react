@@ -5,7 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {HoistModel} from '@xh/hoist/core';
-import {bindable, makeObservable} from '@xh/hoist/mobx';
+import {bindable} from '@xh/hoist/mobx';
 
 /**
  * Shared display options for the grid column chooser, held as a single {@link AppContainerModel}
@@ -18,13 +18,8 @@ export class ColChooserOptionsModel extends HoistModel {
     override xhName = 'colChooserOptionsModel';
     override persistWith = {localStorageKey: 'xhColChooser'};
 
-    @bindable showGroups: boolean = true;
-    @bindable showLibrary: boolean = true;
-
-    constructor() {
-        super();
-        makeObservable(this);
-    }
+    @bindable accessor showGroups: boolean = true;
+    @bindable accessor showLibrary: boolean = true;
 
     init() {
         // Bind persistence here rather than via @persist - this singleton is constructed during

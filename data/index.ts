@@ -12,6 +12,7 @@ export * from './RecordAction';
 export * from './StoreSelectionModel';
 export * from './UrlStore';
 
+export * from './filter/BaseFilterFieldSpec';
 export * from './filter/Filter';
 export * from './filter/CompoundFilter';
 export * from './filter/FieldFilter';
@@ -32,12 +33,16 @@ export * from './cube/aggregate/SingleAggregator';
 export * from './cube/aggregate/SumAggregator';
 export * from './cube/aggregate/SumStrictAggregator';
 export * from './cube/aggregate/UniqueAggregator';
+export * from './cube/aggregate/WeightedAverageAggregator';
 
+export * from './cube/BucketSpec';
 export * from './cube/Cube';
 export * from './cube/CubeField';
 export * from './cube/Query';
 export * from './cube/View';
+export * from './cube/ViewRow';
 export * from './cube/ViewRowData';
+export * from './cube/row/RowUpdate';
 
 export * from './validation/constraints';
 export * from './validation/Rule';

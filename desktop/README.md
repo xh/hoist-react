@@ -107,9 +107,11 @@ Desktop form inputs with Blueprint styling:
 | `DateInput` | Date picker with calendar popup |
 | `Select` | Dropdown/autocomplete selection |
 | `Picker` | Popover-based option picker for space-constrained areas |
+| `IconPicker` | Popover-based picker for choosing a Hoist/FontAwesome icon |
 | `Checkbox` | Boolean checkbox |
 | `SwitchInput` | Toggle switch |
 | `RadioInput` | Radio button group |
+| `RadioCardInput` | Radio group of cards, each with a visual preview - e.g. a theme or layout picker |
 | `Slider` | Range slider |
 | `ButtonGroupInput` | Segmented button selection |
 | `SegmentedControl` | Toggle group for mutually exclusive options with strong visual differentiation of the active selection |
@@ -154,6 +156,25 @@ picker({
     placeholder: 'Regions...'
 })
 ```
+
+`IconPicker` lets end users choose an icon. It renders a trigger button that opens a searchable
+grid. Its options come from `Icon.getCatalog()`: Hoist's built-in set plus any icons the app
+registered with `Icon.register()`. Its value is the FontAwesome name of the selected icon, or an
+`Icon` name with `valueField: 'name'`. Apps can persist either and render it back with `Icon.get()`.
+
+```typescript
+import {iconPicker} from '@xh/hoist/desktop/cmp/input';
+
+formField({
+    field: 'icon',
+    item: iconPicker({compact: true})
+})
+
+// Render the persisted choice
+Icon.get(view.icon)
+```
+
+See [`/icon/README.md`](../icon/README.md) for icon registration and the full `Icon` API.
 
 ### Panel (`/cmp/panel/`)
 
@@ -385,7 +406,7 @@ can be included unconditionally in the parent's item list.
 ```typescript
 // TaskDialogModel.ts - manages dialog open/closed state and form data
 export class TaskDialogModel extends HoistModel {
-    @observable isOpen = false;
+    @observable accessor isOpen = false;
 
     @managed formModel = new FormModel({
         fields: [{name: 'description', rules: [required]}]

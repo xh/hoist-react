@@ -22,11 +22,11 @@ import {
 } from '@xh/hoist/cmp/layout';
 import {getRelativeTimestamp, relativeTimestamp} from '@xh/hoist/cmp/relativetimestamp';
 import {creates, hoistCmp, XH} from '@xh/hoist/core';
-import {banner} from '@xh/hoist/desktop/appcontainer/Banner';
+import {appBanner} from '@xh/hoist/desktop/appcontainer/AppBanner';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {formField} from '@xh/hoist/desktop/cmp/form';
 import {
-    buttonGroupInput,
+    iconPicker,
     dateInput,
     intentInput,
     select,
@@ -117,16 +117,7 @@ const formPanel = hoistCmp.factory<AlertBannerModel>(({model}) => {
                         }),
                         formField({
                             field: 'iconName',
-                            item: buttonGroupInput({
-                                enableClear: true,
-                                outlined: true,
-                                items: model.iconOptions.map(iconName =>
-                                    button({
-                                        icon: Icon.icon({iconName}),
-                                        value: iconName
-                                    })
-                                )
-                            })
+                            item: iconPicker({icons: model.iconOptions, width: 200})
                         }),
                         formField({
                             field: 'enableClose',
@@ -231,7 +222,7 @@ const previewPanel = hoistCmp.factory<AlertBannerModel>(({model}) => {
         compactHeader: true,
         className: `${baseClassName}__preview-panel xh-tiled-bg`,
         items: [
-            banner({
+            appBanner({
                 omit: !bannerModel,
                 key: bannerModel?.xhId,
                 model: bannerModel
@@ -264,9 +255,9 @@ const presetMenuItem = hoistCmp.factory<AlertBannerModel>({
         const {iconName, intent, message, dateCreated, createdBy, clientApps} = preset;
 
         return menuItem({
-            icon: iconName
-                ? Icon.icon({iconName, intent, prefix: 'fas', size: 'lg'})
-                : Icon.placeholder({size: 'lg'}),
+            icon:
+                (iconName ? Icon.get(iconName, {intent, prefix: 'fas', size: 'lg'}) : null) ??
+                Icon.placeholder({size: 'lg'}),
             text: vbox({
                 items: [
                     span({item: message, className: 'xh-text-overflow-ellipsis'}),

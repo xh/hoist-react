@@ -10,7 +10,7 @@ import {HoistModel, managed, XH} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {instancesPanel} from '@xh/hoist/inspector/instances/InstancesPanel';
 import {statsPanel} from '@xh/hoist/inspector/stats/StatsPanel';
-import {action, makeObservable, observable} from '@xh/hoist/mobx';
+import {action, observableRef} from '@xh/hoist/mobx';
 
 /**
  * Manages the separate browser window that hosts the Inspector UI. The window can be moved to a
@@ -36,8 +36,7 @@ export class InspectorModel extends HoistModel {
      * UI itself and for any popups its components spawn (grid menus, tooltips, dropdowns) - popups
      * portaled to the main `document.body` would otherwise render within the wrong window entirely.
      */
-    @observable.ref
-    windowContainer: HTMLElement = null;
+    @observableRef accessor windowContainer: HTMLElement = null;
 
     /** Top-level Objects / Memory tabs, switched from the Inspector header. */
     @managed
@@ -57,11 +56,6 @@ export class InspectorModel extends HoistModel {
     private childWindow: Window = null;
     private headObserver: MutationObserver = null;
     private bodyClassObserver: MutationObserver = null;
-
-    constructor() {
-        super();
-        makeObservable(this);
-    }
 
     override afterLinked() {
         // Open/close the window as the service is activated/deactivated. Runs after first render

@@ -46,10 +46,9 @@ export interface RecordSetDelta {
     changedFields?: Set<string>;
 }
 
-// Default cap on patch size as a fraction of base - 0 disables the patch layer entirely, with
-// every change flattening into a fresh base. Overridable via
-// `StoreConfig.experimental.maxPatchRatio`.
-const DEFAULT_MAX_PATCH_RATIO = 0;
+// Default cap on patch size as a fraction of base. Overridable via
+// `StoreConfig.experimental.maxPatchRatio` - 0 disables the patch layer entirely.
+const DEFAULT_MAX_PATCH_RATIO = 0.1;
 
 // Upper clamp on the configurable ratio. Past ~half the store a patch stops being meaningfully
 // incremental, while worst-case tombstone retention grows as ratio/(1-ratio) of the live set.
@@ -70,10 +69,10 @@ const MAX_PATCH_RATIO = 0.5;
  * crossing the cap flatten into a fresh base (amortized O(n)); reloads changing more than it
  * simply adopt the incoming map as a new base.
  *
- * The ratio defaults to 0, disabling the patch layer entirely - every change flattens
- * immediately, preserving classic full-copy behavior and source-order records. The ratio is read
+ * The ratio defaults to 0.1. A ratio of 0 disables the patch layer entirely - every change
+ * flattens immediately, preserving full-copy behavior and source-order records. The ratio is read
  * live on each operation, so it may be set on an existing Store at any time. See
- * {@link StoreConfig.experimental} for the ordering implications of enabling patching.
+ * {@link StoreConfig.experimental} for the ordering implications of patching.
  *
  * @internal
  */

@@ -6,7 +6,7 @@
  */
 import {HoistService, InitContext, managed, persist, XH} from '@xh/hoist/core';
 import {Cube, Store, View} from '@xh/hoist/data';
-import {action, bindable, makeObservable, observable} from '@xh/hoist/mobx';
+import {action, observable, observableRef, bindableRef} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 import {Timer} from '@xh/hoist/utils/async';
 import {HOURS, SECONDS} from '@xh/hoist/utils/datetime';
@@ -50,15 +50,13 @@ export class InspectorService extends HoistService {
     /** True to start processing model stats and show the Inspector UI. */
     @observable
     @persist
-    active: boolean = false;
+    accessor active: boolean = false;
 
     /** Info on current services/models/stores (when active). */
-    @bindable.ref
-    activeInstances: InspectorInstanceData[] = [];
+    @bindableRef accessor activeInstances: InspectorInstanceData[] = [];
 
     /** Timestamped model counts w/memory usage (when active). Last hour persisted per tab. */
-    @observable.ref
-    stats: InspectorStat[] = [];
+    @observableRef accessor stats: InspectorStat[] = [];
 
     @managed
     statsUpdateTimer: Timer;
@@ -68,7 +66,6 @@ export class InspectorService extends HoistService {
 
     constructor() {
         super();
-        makeObservable(this);
         this.markPersist('stats', {localStorageKey: `xhInspector.${XH.clientAppCode}.${XH.tabId}`});
     }
 

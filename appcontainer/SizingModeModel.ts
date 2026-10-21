@@ -5,7 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {HoistModel, XH, SizingMode} from '@xh/hoist/core';
-import {action, observable, makeObservable} from '@xh/hoist/mobx';
+import {action, observable} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
 import {values, isPlainObject} from 'lodash';
 
@@ -16,13 +16,7 @@ export class SizingModeModel extends HoistModel {
     override xhImpl = true;
     override xhName = 'sizingModeModel';
 
-    @observable
-    sizingMode: SizingMode = null;
-
-    constructor() {
-        super();
-        makeObservable(this);
-    }
+    @observable accessor sizingMode: SizingMode = null;
 
     @action
     setSizingMode(sizingMode: SizingMode) {

@@ -10,18 +10,17 @@ import * as Col from '@xh/hoist/admin/columns';
 import {HoistModel, LoadSpec, managed, XH} from '@xh/hoist/core';
 import {FieldSpec} from '@xh/hoist/data';
 import {addAction, deleteAction, editAction, RestGridModel} from '@xh/hoist/desktop/cmp/rest';
-import {bindable, makeObservable} from '@xh/hoist/mobx';
+import {bindable} from '@xh/hoist/mobx';
 
 export class UserPreferenceModel extends HoistModel {
     override persistWith = {localStorageKey: 'xhAdminUserPreferenceState'};
 
     @managed gridModel: RestGridModel;
 
-    @bindable showEditorDialog: boolean = false;
+    @bindable accessor showEditorDialog: boolean = false;
 
     constructor() {
         super();
-        makeObservable(this);
 
         const required = true,
             hidden = true;

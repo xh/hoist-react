@@ -9,7 +9,7 @@ import {div} from '@xh/hoist/cmp/layout';
 import {elementFactory, hoistCmp, HoistProps, Intent} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
-import {computed, makeObservable} from '@xh/hoist/mobx';
+import {computed} from '@xh/hoist/mobx';
 import {getTestId, TEST_ID} from '@xh/hoist/utils/js';
 import {getLayoutProps, getNonLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
@@ -94,11 +94,6 @@ class IntentInputModel extends HoistInputModel {
         return filter(btns, (b: HTMLButtonElement) => !b.disabled) as HTMLButtonElement[];
     }
 
-    constructor() {
-        super();
-        makeObservable(this);
-    }
-
     onSwatchClick = (intent: Intent) => {
         this.noteValueChange(intent);
     };
@@ -148,6 +143,7 @@ const cmp = hoistCmp.factory<IntentInputModel>(({model, className, ...props}, re
         compact,
         showNames,
         testId,
+        domAttrs,
         // Remainder passed to the container div
         ...rest
     } = getNonLayoutProps(props);
@@ -168,6 +164,7 @@ const cmp = hoistCmp.factory<IntentInputModel>(({model, className, ...props}, re
         onKeyDown: disabled ? null : model.onKeyDown,
         ...getLayoutProps(props),
         [TEST_ID]: testId,
+        ...domAttrs,
         items: model.options.map(intent => {
             const isSelected = renderValue === intent,
                 isNull = intent == null,

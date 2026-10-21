@@ -23,14 +23,14 @@ import {
 } from '@xh/hoist/data';
 import {ViewRowData} from '@xh/hoist/data/cube/ViewRowData';
 import {ViewDiagnostics} from './impl/ViewDiagnostics';
-import {action, makeObservable, observable} from '@xh/hoist/mobx';
+import {action, observable, observableRef} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
 import {castArray, forEach, groupBy, isEmpty, isNil, map} from 'lodash';
 import {AggregationContext} from './aggregate/AggregationContext';
 import {RowCache} from './impl/RowCache';
 import {RowDataGenerator} from './impl/RowDataGenerator';
 import {BaseRow} from './row/BaseRow';
-import {ExposedLeafRow, HiddenLeafRow, LeafRow} from './row/LeafRow';
+import {ExposedLeafRow, HiddenLeafRow, LeafRow, LeafUpdateChanges} from './row/LeafRow';
 import {AggregateRow, BucketRow} from './row/ParentRow';
 import {RecordSet, RecordSetDelta} from '../impl/RecordSet';
 
@@ -116,30 +116,25 @@ export class View
     readonly isFilterValueSource = true;
 
     /** Query defining this View. Update via {@link updateQuery}. */
-    @observable.ref
-    query: Query = null;
+    @observableRef accessor query: Query = null;
 
     /**
      * Results of this view, an observable object with a `rows` property containing an array of
      * hierarchical {@link ViewRowData} objects.
      */
-    @observable.ref
-    result: ViewResult = null;
+    @observableRef accessor result: ViewResult = null;
 
     /** Stores to which results of this view should be (re)loaded. */
     stores: Store[] = null;
 
     /** The source {@link Cube.info} as of the last time the view was updated. */
-    @observable.ref
-    info: PlainObject = null;
+    @observableRef accessor info: PlainObject = null;
 
     /** The source {@link Cube.lastUpdated} as of the last time the view was updated. */
-    @observable
-    cubeUpdated: number;
+    @observable accessor cubeUpdated: number;
 
     /** Timestamp (ms) when the view was last updated. */
-    @observable
-    lastUpdated: number;
+    @observable accessor lastUpdated: number;
 
     /** @internal */
     readonly diagnostics = new ViewDiagnostics(this);
@@ -154,8 +149,6 @@ export class View
 
     private _fieldsByName: Map<string, CubeField> = null;
     private _rowDataGenerator: RowDataGenerator = null;
-    // Monotonic source for cubeRowDigest stamps - safe-integer headroom spans centuries of use.
-    _rowDigest = 0;
     // Fields eligible for aggregation at each level of the query - i.e. those with an aggregator
     // that are not themselves an applied dimension there - and useful subsets of same. Indexed by
     // row depth, with entry 0 (no dimensions applied) holding the superset for the whole query.
@@ -169,7 +162,6 @@ export class View
     /** @internal - applications should use {@link Cube.createView} */
     constructor(config: ViewConfig) {
         super();
-        makeObservable(this);
 
         const start = performance.now(),
             {query, stores = [], connect = false, xhName = null} = config;
@@ -310,7 +302,7 @@ export class View
         if (!simpleUpdates) {
             this.fullUpdate('update', start);
         } else if (!isEmpty(simpleUpdates)) {
-            this.dataOnlyUpdate(simpleUpdates, start);
+            this.dataOnlyUpdate(simpleUpdates, changes.changedFields, start);
         } else {
             this.dataUnchangedUpdate(start);
         }
@@ -341,7 +333,7 @@ export class View
      */
     newParentRowData(id: string): ViewRowData {
         const ret = this._rowDataGenerator.newParentRowData(id);
-        this.assignDigest(ret);
+        BaseRow.assignDigest(ret);
         return ret;
     }
 
@@ -351,12 +343,8 @@ export class View
      */
     newLeafRowData(id: string, src: PlainObject): ViewRowData {
         const ret = this._rowDataGenerator.newLeafRowData(id, src);
-        this.assignDigest(ret);
+        BaseRow.assignDigest(ret);
         return ret;
-    }
-
-    assignDigest(data: ViewRowData) {
-        data.cubeRowDigest = ++this._rowDigest;
     }
 
     private buildIndices() {
@@ -409,29 +397,32 @@ export class View
         }
     }
 
-    private dataOnlyUpdate(updates: StoreRecord[], start: number) {
-        const {_leafMap, stores} = this,
-            updatedRowDatas = new Set<ViewRowData>(),
-            changedFields = new Set<string>();
+    // Apply value changes to leaves already in the view, adjusting ancestor aggregates in place.
+    private dataOnlyUpdate(updates: StoreRecord[], changedFields: Set<string>, start: number) {
+        const {_leafMap, stores, fields} = this,
+            changed: LeafUpdateChanges = {rows: new Set(), fields: new Set()};
+
+        // Fields to diff at each leaf - those that changed, plus any aggregated from them.
+        const isChanged = name => changedFields.has(name),
+            checkFields = changedFields
+                ? fields.filter(f => isChanged(f.name) || f.aggregator?.dependsOn?.some(isChanged))
+                : fields;
 
         // `_records` left stale by design - simple updates never touch filter/dim/bucket fields.
         updates.forEach(rec => {
-            const leaf = _leafMap.get(rec.id);
-            leaf?.applyLeafDataUpdate(rec, updatedRowDatas, changedFields);
+            _leafMap.get(rec.id)?.applyLeafDataUpdate(rec, checkFields, changed);
         });
 
-        updatedRowDatas.forEach(rowData => this.assignDigest(rowData));
+        changed.rows.forEach(rowData => BaseRow.assignDigest(rowData));
 
         this.createAggregationContext();
 
         stores.forEach(store => {
             const recordUpdates = [];
-            updatedRowDatas.forEach(rowData => {
+            changed.rows.forEach(rowData => {
                 if (store.getById(rowData.id)) recordUpdates.push(rowData);
             });
-            // Parents only rewrite fields reported changed by leaves, so the leaf-level union
-            // covers every value written - and this path never touches structure.
-            store.updateData({update: recordUpdates, changedFields});
+            store.updateData({update: recordUpdates, changedFields: changed.fields});
         });
         this.updateResults();
         this.diagnostics.noteUpdate('dataOnly', start);

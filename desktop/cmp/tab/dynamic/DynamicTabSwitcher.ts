@@ -6,7 +6,7 @@
  */
 import {box, div, hframe} from '@xh/hoist/cmp/layout';
 import {TabContainerModel, TabModel} from '@xh/hoist/cmp/tab';
-import {TabSwitcherProps} from '@xh/hoist/cmp/tab/Types';
+import {TabSwitcherMenuContext, TabSwitcherProps} from '@xh/hoist/cmp/tab/Types';
 import {
     hoistCmp,
     HoistModel,
@@ -28,7 +28,7 @@ import {consumeEvent, getTestId} from '@xh/hoist/utils/js';
 import {composeRefs, getLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import {first, isFinite, last} from 'lodash';
-import {computed} from 'mobx';
+import {computed} from '@xh/hoist/mobx';
 import {CSSProperties, ReactElement, Ref, useEffect, useRef} from 'react';
 import {DynamicTabSwitcherModel} from './DynamicTabSwitcherModel';
 import './DynamicTabSwitcher.scss';
@@ -97,6 +97,8 @@ const tabs = hoistCmp.factory<TabsProps>({
                             className: classNames('bp6-tabs', isVertical && 'bp6-vertical'),
                             item: div({
                                 className: 'bp6-tab-list',
+                                role: 'tablist',
+                                'aria-orientation': isVertical ? 'vertical' : 'horizontal',
                                 items: [
                                     visibleTabs.map((tab, index) =>
                                         tabCmp({key: tab.id, localModel, tab, index})
@@ -161,12 +163,11 @@ const tabCmp = hoistCmp.factory<TabProps>(({tab, index, localModel, model}) => {
                     if (!disabled) model.activate(tab.id);
                 },
                 onContextMenu: e => {
-                    const domRect = e.currentTarget.getBoundingClientRect();
+                    const domRect = e.currentTarget.getBoundingClientRect(),
+                        context: TabSwitcherMenuContext = {contextMenuEvent: e, tab};
                     consumeEvent(e);
                     showContextMenu(
-                        contextMenu({
-                            menuItems: model.getContextMenuItems(e, tab)
-                        }),
+                        contextMenu({menuItems: model.getContextMenuItems(tab), context}),
                         {
                             left: props.orientation === 'left' ? domRect.right : domRect.left,
                             top: props.orientation === 'top' ? domRect.bottom : domRect.top
@@ -177,9 +178,14 @@ const tabCmp = hoistCmp.factory<TabProps>(({tab, index, localModel, model}) => {
                 testId: tabTestId,
                 ...provided.draggableProps,
                 ...provided.dragHandleProps,
+                // Focusable drag handle is the tab itself - override dnd's default `button` role.
+                role: 'tab',
+                'aria-selected': isActive,
+                'aria-disabled': disabled,
                 style: getStyles(isVertical, provided.draggableProps.style),
                 items: [
                     div({
+                        // Styling hooks shared with Blueprint tabs - see Tabs.scss.
                         'aria-selected': isActive,
                         'aria-disabled': disabled,
                         className: 'bp6-tab',

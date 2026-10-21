@@ -52,6 +52,7 @@ export const loginPanel = hoistCmp.factory({
                                         bind: 'username',
                                         leftIcon: Icon.user(),
                                         autoComplete: 'username',
+                                        enablePasswordManagers: true,
                                         autoCapitalize: 'none',
                                         commitOnChange: true,
                                         testId: 'xh-login-username'
@@ -64,6 +65,7 @@ export const loginPanel = hoistCmp.factory({
                                         leftIcon: Icon.lock(),
                                         type: 'password',
                                         autoComplete: 'current-password',
+                                        enablePasswordManagers: true,
                                         commitOnChange: true,
                                         testId: 'xh-login-password'
                                     })

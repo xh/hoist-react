@@ -127,13 +127,11 @@
     height: fit-content;
     min-height: 40px;
 
+    // Shrink ag-grid's auto-height body floor (150px by default) to match our compact drop strip.
+    --ag-auto-height-min-body-height: 40px;
+
     // Match the unpinned bucket's reserved gutter, so action-column checkboxes share a right edge.
     padding-right: var(--xh-scrollbar-size-px);
-
-    // Override ag-grid's 50px auto-height viewport floor to match our compact drop strip.
-    .ag-layout-auto-height .ag-center-cols-viewport {
-      min-height: 40px;
-    }
 
     .ag-overlay-no-rows-wrapper {
       // ag-grid's inline centering padding-top is computed against a pre-layout (~0) auto-height
@@ -300,11 +298,9 @@
 }
 
 // Blueprint portals the popover to the document body, so these rules must live outside .xh-col-chooser.
+// Colors, border and radius come from the standard `--xh-tooltip-*` styling.
 .xh-col-chooser__meta-popover.bp6-tooltip .bp6-popover-content {
   padding: 0;
-  background: var(--xh-bg);
-  border: var(--xh-border-solid);
-  border-radius: var(--xh-border-radius-px);
 }
 
 .xh-col-chooser__meta-tip {

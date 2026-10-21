@@ -6,14 +6,14 @@
  */
 import {HoistModel, XH} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon/Icon';
-import {action, bindable, makeObservable, observable} from '@xh/hoist/mobx';
+import {action, bindable, observable} from '@xh/hoist/mobx';
 import {uniq} from 'lodash';
 
 export class RegroupDialogModel extends HoistModel {
     private parent;
 
-    @bindable groupName = null;
-    @observable isOpen = false;
+    @bindable accessor groupName = null;
+    @observable accessor isOpen = false;
 
     regroupAction = {
         text: 'Change Group',
@@ -29,7 +29,6 @@ export class RegroupDialogModel extends HoistModel {
 
     constructor(parent) {
         super();
-        makeObservable(this);
         this.parent = parent;
     }
 

@@ -7,7 +7,7 @@
 import bpPkg from '@blueprintjs/core/package.json';
 import {HoistService, InitContext, XH} from '@xh/hoist/core';
 import {agGridVersion} from '@xh/hoist/kit/ag-grid';
-import {action, makeObservable, observable} from '@xh/hoist/mobx';
+import {action, observable} from '@xh/hoist/mobx';
 import hoistPkg from '@xh/hoist/package.json';
 import {Timer} from '@xh/hoist/utils/async';
 import {MINUTES, SECONDS} from '@xh/hoist/utils/datetime';
@@ -30,22 +30,19 @@ export class EnvironmentService extends HoistService {
      * Version of this application currently running on the Hoist UI server.
      * Unlike most other EnvironmentService state, this is refreshed on a timer and observable.
      */
-    @observable
-    serverVersion: string;
+    @observable accessor serverVersion: string;
 
     /**
      * Build of this application currently running on the Hoist UI server.
      * Unlike most other EnvironmentService state, this is refreshed on a timer and observable.
      */
-    @observable
-    serverBuild: string;
+    @observable accessor serverBuild: string;
 
     /**
      * Instance of Hoist UI server currently delivering content to this client.
      * Unlike most other EnvironmentService state, this is refreshed on a timer and observable.
      */
-    @observable
-    serverInstance: string;
+    @observable accessor serverInstance: string;
 
     private data = {};
     private pollConfig: PollConfig;
@@ -60,7 +57,7 @@ export class EnvironmentService extends HoistService {
                     clientTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone ?? 'Unknown',
                     clientTimeZoneOffset = new Date().getTimezoneOffset() * -1 * MINUTES;
 
-                // Favor client-side data injected via Webpack build or otherwise determined locally,
+                // Favor client-side data injected via Rsbuild build or otherwise determined locally,
                 // then apply all other env data sourced from the server.
                 this.data = deepFreeze(
                     defaults(
@@ -160,16 +157,11 @@ export class EnvironmentService extends HoistService {
     //------------------------------
     // Implementation
     //------------------------------
-    constructor() {
-        super();
-        makeObservable(this);
-    }
-
     private ensureVersionRunnable() {
         const hcVersion = this.get('hoistCoreVersion'),
             // This app version value is sourced by the network call to 'xh/environment'.
             serverAppVersion = this.get('appVersion'),
-            // This app version value is packaged from configureWebpack -> appVersion.
+            // This app version value is packaged from configureRsbuild -> appVersion.
             clientAppVersion = this.get('clientVersion');
 
         // Check for client/server mismatch version.  It's an ok transitory state *during* the
@@ -221,13 +213,7 @@ export class EnvironmentService extends HoistService {
  * runtime on any built/deployed instances of the app, including on Dev/UAT servers.
  */
 export type AppEnvironment =
-    | 'Production'
-    | 'Beta'
-    | 'Staging'
-    | 'Development'
-    | 'Test'
-    | 'UAT'
-    | 'BCP';
+    'Production' | 'Beta' | 'Staging' | 'Development' | 'Test' | 'UAT' | 'BCP';
 
 interface PollConfig {
     interval: number;

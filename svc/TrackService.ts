@@ -143,7 +143,7 @@ export class TrackService extends HoistService {
             loadId: XH.loadId,
             tabId: XH.tabId,
             url: window.location.href,
-            timestamp: Date.now()
+            timestamp: options.timestamp
         };
 
         if (options.category) ret.category = options.category;

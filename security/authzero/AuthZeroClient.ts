@@ -79,7 +79,9 @@ export class AuthZeroClient extends BaseOAuthClient<AuthZeroClientConfig, AuthZe
             const {appState} = await client.handleRedirectCallback();
             this.restoreRedirectState(appState);
             await this.noteUserAuthenticatedAsync();
-            return this.fetchAllTokensAsync({eagerOnly: true});
+            const ret = await this.fetchAllTokensAsync({eagerOnly: true});
+            this.noteAuthComplete('loginRedirect');
+            return ret;
         }
 
         // 1) If we are logged in, try to just reload tokens silently.  This is the happy path on
@@ -87,18 +89,22 @@ export class AuthZeroClient extends BaseOAuthClient<AuthZeroClientConfig, AuthZe
         if (await client.isAuthenticated()) {
             try {
                 this.logDebug('Attempting silent token load.');
-                return await this.fetchAllTokensAsync({eagerOnly: true});
+                const ret = await this.fetchAllTokensAsync({eagerOnly: true});
+                this.noteAuthComplete('acquireSilent');
+                return ret;
             } catch (e) {
                 this.logDebug('Failed to load tokens on init, fall back to login', e.message ?? e);
             }
         }
 
-        // 2) otherwise full-login
+        // 2) otherwise full login.
         this.logDebug('Logging in');
         await this.loginAsync();
 
-        // 3) return tokens
-        return this.fetchAllTokensAsync({eagerOnly: true});
+        // 2a) ... and a redirect never returns above, so this was a popup.
+        const ret = await this.fetchAllTokensAsync({eagerOnly: true});
+        this.noteAuthComplete('loginPopup');
+        return ret;
     }
 
     protected override async doLoginRedirectAsync(): Promise<void> {

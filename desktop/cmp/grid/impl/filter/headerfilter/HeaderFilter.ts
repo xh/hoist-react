@@ -88,7 +88,7 @@ const switcher = hoistCmp.factory<HeaderFilterModel>(({model}) => {
     return buttonGroup({
         omit: !enableValues || fieldType === 'bool',
         className: 'xh-column-header-filter__tab-switcher',
-        items: tabs.map(it => switcherButton({...it}))
+        items: tabs.map(it => switcherButton({id: it.id, title: it.title}))
     });
 });
 

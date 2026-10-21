@@ -19,7 +19,7 @@ import {
     RestGridModel
 } from '@xh/hoist/desktop/cmp/rest';
 import {Icon} from '@xh/hoist/icon';
-import {action, makeObservable, observable} from '@xh/hoist/mobx';
+import {action, observableRef} from '@xh/hoist/mobx';
 import {pluralize} from '@xh/hoist/utils/js';
 import {isNil, truncate} from 'lodash';
 import {DifferModel} from '../../../differ/DifferModel';
@@ -36,12 +36,11 @@ export class ConfigPanelModel extends HoistModel {
     gridModel: RestGridModel;
 
     @managed
-    @observable.ref
-    differModel: DifferModel;
+    @observableRef
+    accessor differModel: DifferModel;
 
     constructor() {
         super();
-        makeObservable(this);
 
         const {regroupAction} = this.regroupDialogModel,
             required = true,
@@ -184,6 +183,8 @@ export class ConfigPanelModel extends HoistModel {
             entityName: 'config',
             columnFields: ['name', {field: 'valueType', headerName: 'Type'}],
             matchFields: ['name'],
+            // Derived from each instance's typedClass code, not its stored config data.
+            ignoreFields: ['resolvedValue', 'defaultValue'],
             valueRenderer: v => {
                 if (isNil(v)) return '';
                 return v.valueType === 'pwd'

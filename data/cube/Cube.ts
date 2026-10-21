@@ -7,8 +7,9 @@
 
 import {AnyIterable, HoistBase, managed, PlainObject, Some} from '@xh/hoist/core';
 import {instanceManager} from '@xh/hoist/core/impl/InstanceManager';
-import {action, makeObservable, observable} from '@xh/hoist/mobx';
+import {action, observableRef} from '@xh/hoist/mobx';
 import {forEachAsync} from '@xh/hoist/utils/async';
+import {throwIf} from '@xh/hoist/utils/js';
 import {defaultsDeep, isArray, isEmpty} from 'lodash';
 import {Store, StoreConfig, StoreRecordIdSpec, StoreTransaction} from '../Store';
 import {RecordSetDelta} from '../impl/RecordSet';
@@ -16,8 +17,7 @@ import {StoreRecord} from '../StoreRecord';
 import {BucketSpec} from './BucketSpec';
 import {CubeField, CubeFieldSpec} from './CubeField';
 import {Query, QueryConfig} from './Query';
-import {BaseRow} from './row/BaseRow';
-import {AggregateRow, BucketRow} from './row/ParentRow';
+import {ViewRow} from './ViewRow';
 import {View} from './View';
 import {ViewRowData} from './ViewRowData';
 
@@ -112,19 +112,19 @@ export type CubeStoreConfig = Omit<
 >;
 
 /**
- * Function to be called for each node to aggregate to determine if it should be "locked",
+ * Function to be called for each aggregate or bucket row to determine if it should be "locked",
  * preventing drilldown into its children. If true returned for a node, no drilldown will be
  * allowed, and the row will be marked with a boolean "locked" property.
  */
-export type LockFn = (row: AggregateRow | BucketRow) => boolean;
+export type LockFn = (row: ViewRow) => boolean;
 
 /**
- * Function to be called for each node during row generation to determine if it should be
- * skipped in tree output.  Useful for removing aggregates that are degenerate due to context.
+ * Function to be called for each aggregate or bucket row during row generation to determine if
+ * it should be skipped in tree output.  Useful for removing aggregates that are degenerate due to context.
  * Note that skipping in this way has no effect on aggregations -- all children of this node are
  * simply promoted to their parent node.
  */
-export type OmitFn = (row: AggregateRow | BucketRow) => boolean;
+export type OmitFn = (row: ViewRow) => boolean;
 
 /**
  * Function to be called for rows making up an aggregated dimension to determine if the children of
@@ -138,7 +138,7 @@ export type OmitFn = (row: AggregateRow | BucketRow) => boolean;
  * @param rows - the rows being checked for bucketing
  * @returns {@link BucketSpec} for dynamic sub-aggregations, or null to perform no bucketing.
  */
-export type BucketSpecFn = (rows: BaseRow[]) => BucketSpec;
+export type BucketSpecFn = (rows: ViewRow[]) => BucketSpec;
 
 /**
  * Client-side OLAP-style data structure for multi-dimensional grouping and aggregation.
@@ -175,8 +175,7 @@ export class Cube extends HoistBase {
     bucketSpecFn: BucketSpecFn;
     omitFn: OmitFn;
 
-    @observable.ref
-    info: any = null;
+    @observableRef accessor info: any = null;
 
     _connectedViews: Set<View> = new Set();
 
@@ -194,7 +193,6 @@ export class Cube extends HoistBase {
         xhName = null
     }: CubeConfig) {
         super();
-        makeObservable(this);
         this.xhName = xhName;
         this.store = new Store({
             xhName: this.childXhName('store'),
@@ -205,6 +203,7 @@ export class Cube extends HoistBase {
             freezeData: false,
             idEncodesTreePath: true
         });
+        this.validateFields();
         this.store.loadData(data);
         this.info = info;
         this.lockFn = lockFn;
@@ -436,6 +435,19 @@ export class Cube extends HoistBase {
     @action
     private setInfo(info: PlainObject) {
         this.info = Object.freeze(info);
+    }
+
+    private validateFields() {
+        const {fields} = this,
+            names = new Set(fields.map(it => it.name));
+        fields.forEach(field => {
+            field.aggregator?.dependsOn?.forEach(dep => {
+                throwIf(
+                    !names.has(dep),
+                    `Aggregator for CubeField '${field.name}' depends on unknown field '${dep}'.`
+                );
+            });
+        });
     }
 
     private parseFields(fields = [], defaults) {

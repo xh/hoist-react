@@ -6,13 +6,15 @@
  */
 
 import {olderThan} from '@xh/hoist/utils/datetime';
-import {apiDeprecated, logDebug, logError, throwIf} from '@xh/hoist/utils/js';
+import {logDebug, logError, throwIf} from '@xh/hoist/utils/js';
 import {
     cloneDeep,
     debounce as lodashDebounce,
+    DebouncedFunc,
     get,
     isArray,
     isEmpty,
+    isFunction,
     isNumber,
     isObject,
     isString,
@@ -20,10 +22,10 @@ import {
     set,
     toPath
 } from 'lodash';
-import {IReactionDisposer, reaction} from 'mobx';
+import {IReactionDisposer, reaction} from '@xh/hoist/mobx';
 import {Class} from 'type-fest';
 import {DebounceSpec, HoistBase, Persistable, PersistableState} from '../';
-import {PersistenceProviderType, PersistOptions, persistOptions} from './PersistOptions';
+import {PersistenceProviderType, PersistOptions} from './PersistOptions';
 
 export type PersistenceProviderConfig<S = any> = {
     persistOptions: PersistOptions;
@@ -115,18 +117,6 @@ export abstract class PersistenceProvider<S = any> {
         }
     }
 
-    /** @deprecated Use the {@link persistOptions} function instead. */
-    static mergePersistOptions(
-        defaults: PersistOptions,
-        ...overrides: PersistOptions[]
-    ): PersistOptions {
-        apiDeprecated('PersistenceProvider.mergePersistOptions', {
-            v: 'v87',
-            msg: "Use the 'persistOptions' function instead."
-        });
-        return persistOptions(defaults, ...overrides);
-    }
-
     /** Read persisted state at this provider's path. */
     read(): PersistableState<S> {
         const state = get(this.readRaw(), this.path);
@@ -146,6 +136,11 @@ export abstract class PersistenceProvider<S = any> {
     /** Clear any persisted data at a path. Also clears any parent objects that become empty. */
     clear() {
         logDebug('Clearing state', this.owner);
+
+        // Drop any debounced write still pending - it holds pre-clear state and would otherwise
+        // land after this call and resurrect it.
+        this.cancelPendingWrite();
+
         const obj = cloneDeep(this.readRaw()),
             path = toPath(this.path);
         do {
@@ -159,10 +154,12 @@ export abstract class PersistenceProvider<S = any> {
 
     destroy() {
         this.disposer?.();
+        this.debouncedWrite?.flush(); // write any pending change now
     }
 
     /** Push the current state of this provider to its target. */
     pushStateToTarget() {
+        this.cancelPendingWrite(); // stale - would overwrite pushed state
         const state = this.read();
         this.target.setPersistableState(state ? state : this.defaultState);
     }
@@ -229,6 +226,11 @@ export abstract class PersistenceProvider<S = any> {
         return null;
     }
 
+    /** Drop any debounced write still pending. */
+    protected cancelPendingWrite() {
+        this.debouncedWrite?.cancel();
+    }
+
     /**
      * Resolve the PersistenceProvider class that the given options would produce, applying the
      * same precedence used by {@link create}. Throws if the options do not resolve to a known
@@ -258,6 +260,12 @@ export abstract class PersistenceProvider<S = any> {
         throwIf(!ret, `Unknown Persistence Provider: ${type}`);
 
         return ret;
+    }
+
+    // The debounced write function, or null if writes are not debounced - see constructor.
+    private get debouncedWrite(): DebouncedFunc<(data: S) => void> {
+        const ret = this.writeInternal as DebouncedFunc<(data: S) => void>;
+        return isFunction(ret.cancel) ? ret : null;
     }
 
     private ensureValid() {

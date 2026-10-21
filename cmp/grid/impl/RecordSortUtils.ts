@@ -63,7 +63,8 @@ function sortRecords(
     const {agApi} = gridModel,
         decorated = records.map(record => ({
             record,
-            node: agApi?.getRowNode(record.agId),
+            // With no rendered row, stand in a minimal node - Column comparators read its `data`.
+            node: agApi?.getRowNode(record.agId) ?? {data: record},
             values: sorters.map(({getValueFn, ctx}) => getValueFn({record, ...ctx}))
         }));
 
@@ -85,7 +86,7 @@ function getColumnSorters(gridModel: GridModel): RecordSorter[] {
             const column = gridModel.getColumn(colId);
             if (!column) return null;
 
-            const compFn = (column.getAgSpec().comparator as Function).bind(column),
+            const compFn = column.getAgComparator() as Function,
                 direction = sort === 'desc' ? -1 : 1;
 
             return {

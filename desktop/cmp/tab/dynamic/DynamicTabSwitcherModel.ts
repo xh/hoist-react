@@ -11,12 +11,9 @@ import {
     TabSwitcherMenuContext
 } from '@xh/hoist/cmp/tab/Types';
 import {HoistModel, MenuItemLike, MenuToken, ReactionSpec, XH} from '@xh/hoist/core';
-import {getContextMenuItem} from '@xh/hoist/desktop/cmp/tab/impl/TabContextMenuItems';
 import {Icon} from '@xh/hoist/icon';
-import {makeObservable} from '@xh/hoist/mobx';
 import {compact, find} from 'lodash';
-import {action, computed, observable, when} from 'mobx';
-import React from 'react';
+import {action, computed, when, observableRef} from '@xh/hoist/mobx';
 
 /**
  * State management for the DynamicTabSwitcher component.
@@ -27,7 +24,7 @@ export class DynamicTabSwitcherModel extends HoistModel implements IDynamicTabSw
 
     private readonly extraMenuItems: Array<MenuItemLike<MenuToken, TabSwitcherMenuContext>>;
     private readonly tabContainerModel: TabContainerModel;
-    @observable.ref private visibleTabState: TabState[];
+    @observableRef private accessor visibleTabState: TabState[];
 
     @computed
     get favoriteTabIds(): string[] {
@@ -49,7 +46,6 @@ export class DynamicTabSwitcherModel extends HoistModel implements IDynamicTabSw
         tabContainerModel: TabContainerModel
     ) {
         super();
-        makeObservable(this);
 
         this.extraMenuItems = extraMenuItems;
         this.tabContainerModel = tabContainerModel;
@@ -101,10 +97,7 @@ export class DynamicTabSwitcherModel extends HoistModel implements IDynamicTabSw
         this.visibleTabState = this.visibleTabState.filter(it => it.tabId !== tabId);
     }
 
-    getContextMenuItems(
-        e: React.MouseEvent<HTMLDivElement, MouseEvent>,
-        tab: TabModel
-    ): Array<MenuItemLike<MenuToken, TabSwitcherMenuContext>> {
+    getContextMenuItems(tab: TabModel): Array<MenuItemLike<MenuToken, TabSwitcherMenuContext>> {
         const isFavorite = this.isTabFavorite(tab.id);
         return [
             {
@@ -112,7 +105,7 @@ export class DynamicTabSwitcherModel extends HoistModel implements IDynamicTabSw
                 text: isFavorite ? 'Remove from Favorites' : 'Add to Favorites',
                 actionFn: () => this.toggleTabFavorite(tab.id)
             },
-            ...this.extraMenuItems.map(item => getContextMenuItem(item, {contextMenuEvent: e, tab}))
+            ...this.extraMenuItems
         ];
     }
 
