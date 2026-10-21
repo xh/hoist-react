@@ -49,6 +49,9 @@ export const [SelectEditor, selectEditor] = hoistCmp.withFactory<SelectEditorPro
             }
         };
 
-        return useInlineEditorModel(select, props, ref);
+        // A select's value holds an option, so enter the key that started the edit as search text.
+        return useInlineEditorModel(select, props, ref, (input, key) =>
+            (input as any).enterSearchText(key)
+        );
     }
 });

@@ -183,6 +183,8 @@ export class ConfigPanelModel extends HoistModel {
             entityName: 'config',
             columnFields: ['name', {field: 'valueType', headerName: 'Type'}],
             matchFields: ['name'],
+            // Derived from each instance's typedClass code, not its stored config data.
+            ignoreFields: ['resolvedValue', 'defaultValue'],
             valueRenderer: v => {
                 if (isNil(v)) return '';
                 return v.valueType === 'pwd'

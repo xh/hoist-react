@@ -21,7 +21,7 @@ import {AgGridReact, GridOptions} from '@xh/hoist/kit/ag-grid';
 import {logError} from '@xh/hoist/utils/js';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
-import {isNil} from 'lodash';
+import type {CSSProperties} from 'react';
 import './AgGrid.scss';
 import {AgGridModel} from './AgGridModel';
 
@@ -54,7 +54,7 @@ export const [AgGrid, agGrid] = hoistCmp.withFactory<AgGridProps>({
             return placeholder('ag-Grid library not available.');
         }
 
-        const [layoutProps, agGridProps] = splitLayoutProps(props),
+        const [layoutProps, agProps] = splitLayoutProps(props),
             {
                 sizingMode,
                 showHover,
@@ -71,6 +71,10 @@ export const [AgGrid, agGrid] = hoistCmp.withFactory<AgGridProps>({
 
         return frame({
             ref,
+            style: {
+                '--ag-row-height': `${impl.rowHeight}px`,
+                '--ag-header-height': `${impl.headerHeight}px`
+            } as CSSProperties,
             className: classNames(
                 className,
                 `xh-ag-grid--${sizingMode}`,
@@ -84,12 +88,14 @@ export const [AgGrid, agGrid] = hoistCmp.withFactory<AgGridProps>({
             ...layoutProps,
             testId,
             item: createElement(AgGridReact, {
-                ...AgGrid['DEFAULT_PROPS'],
+                ...AgGridCmp.DEFAULT_PROPS,
                 // Default some ag-grid props, but allow overriding.
                 theme: agTheme,
                 getRowHeight: impl.getRowHeight,
+                rowHeight: impl.rowHeight,
+                headerHeight: impl.headerHeight,
                 // Pass others on directly.
-                ...agGridProps,
+                ...agProps,
 
                 // These handlers are overridden, but also delegate to props passed
                 onGridReady: impl.noteGridReady
@@ -136,38 +142,38 @@ export const [AgGrid, agGrid] = hoistCmp.withFactory<AgGridProps>({
     AgGrid.DEFAULT_PROPS = {};
 })(AgGrid);
 
+const AgGridCmp = AgGrid as any;
+
 class AgGridLocalModel extends HoistModel {
     override xhImpl = true;
 
     @lookup(AgGridModel) model: AgGridModel;
 
-    get headerHeight() {
-        const {hideHeaders, sizingMode} = this.model,
-            AgGridCmp = AgGrid as any;
-
-        return hideHeaders ? 0 : AgGridCmp.getHeaderHeightForSizingMode(sizingMode);
+    get rowHeight(): number {
+        const {rowHeight} = this.componentProps;
+        return rowHeight ?? AgGridCmp.getRowHeightForSizingMode(this.model.sizingMode);
     }
 
-    override onLinked() {
-        const {model} = this;
-
-        // manage header height if was not explicitly provided to component
-        if (isNil(this.componentProps.headerHeight)) {
-            this.addReaction({
-                track: () => [model.agApi, this.headerHeight],
-                run: ([api, headerHeight]) => api?.updateGridOptions({headerHeight})
-            });
-        }
+    get headerHeight(): number {
+        const {headerHeight} = this.componentProps,
+            {hideHeaders, sizingMode} = this.model;
+        return (
+            headerHeight ?? (hideHeaders ? 0 : AgGridCmp.getHeaderHeightForSizingMode(sizingMode))
+        );
     }
 
-    getRowHeight = ({node}) => {
-        const {sizingMode} = this.model,
-            {groupDisplayType} = this.componentProps,
-            AgGridCmp = AgGrid as any;
-        return node.group && groupDisplayType === 'groupRows'
-            ? AgGridCmp.getGroupRowHeightForSizingMode(sizingMode)
-            : AgGridCmp.getRowHeightForSizingMode(sizingMode);
-    };
+    // Only full-width group rows differ from `rowHeight` - otherwise pass no function, so ag-Grid
+    // sizes every row from `rowHeight` without per-row calls or estimated heights.
+    get getRowHeight(): GridOptions['getRowHeight'] {
+        return this.componentProps.groupDisplayType === 'groupRows'
+            ? this.groupRowsGetRowHeight
+            : null;
+    }
+
+    private groupRowsGetRowHeight = ({node}) =>
+        node.group
+            ? AgGridCmp.getGroupRowHeightForSizingMode(this.model.sizingMode)
+            : this.rowHeight;
 
     noteGridReady = agParams => {
         this.model.handleGridReady(agParams);

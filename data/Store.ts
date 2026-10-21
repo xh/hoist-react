@@ -232,13 +232,13 @@ export interface StoreConfig {
      *  Flags for experimental features. These features are designed for early client-access and
      *  testing, but are not yet part of the Hoist API. Currently includes:
      *   - `maxPatchRatio` - max size of a RecordSet patch layer as a fraction of total records,
-     *     clamped to [0, 0.5] (default 0, disabling patching). Set to e.g. 0.1 to make
-     *     transaction, filtering, and grid-sync costs scale with the size of the change rather
-     *     than the size of the store. Note record order then becomes stable-by-incumbency rather
-     *     than source-order: existing records keep their positions and additions append, including
-     *     records entering a filter incrementally and adds within partial reloads. Apply a grid
-     *     sort where deterministic order matters. The ratio is read live on each operation, so
-     *     it may also be changed on an existing Store at any time.
+     *     clamped to [0, 0.5] (default 0.1). Patching makes transaction, filtering, and grid-sync
+     *     costs scale with the size of the change rather than the size of the store. Note record
+     *     order is then stable-by-incumbency rather than source-order: existing records keep their
+     *     positions and additions append, including records entering a filter incrementally and
+     *     adds within partial reloads. Apply a grid sort where deterministic order matters, or set
+     *     0 to disable patching. The ratio is read live on each operation, so it may also be
+     *     changed on an existing Store at any time.
      */
     experimental?: PlainObject;
 

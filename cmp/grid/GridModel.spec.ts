@@ -18,6 +18,13 @@ import {beforeAll, describe, expect, it, onTestFinished, vi} from 'vitest';
 describe('GridModel', () => {
     beforeAll(() => initTestAppAsync());
 
+    describe('defaults', () => {
+        it('virtualises columns', () => {
+            expect(createGridModel().useVirtualColumns).toBe(true);
+            expect(createGridModel({useVirtualColumns: false}).useVirtualColumns).toBe(false);
+        });
+    });
+
     describe('setSortBy', () => {
         it('accepts strings, specs and GridSorters, alone or in a list', () => {
             const gridModel = createGridModel();
@@ -60,6 +67,18 @@ describe('GridModel', () => {
 
             gridModel.setGroupBy(['name', 'removedCol']);
             expect(gridModel.groupBy).toEqual([]);
+        });
+    });
+
+    describe('isCurrentExpandLevel', () => {
+        it('marks the deepest level label as current when expanded to all levels', () => {
+            const gridModel = createGridModel({
+                groupBy: ['region', 'name'],
+                levelLabels: ['R', 'N']
+            });
+
+            gridModel.expandToLevel(-1);
+            expect([0, 1].map(idx => gridModel.isCurrentExpandLevel(idx))).toEqual([false, true]);
         });
     });
 

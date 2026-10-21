@@ -646,7 +646,7 @@ export class DashContainerModel
             if (icon) {
                 const currentIcon = tabEl.querySelector(iconSelector) as HTMLElement | null,
                     currentIconType = currentIcon?.dataset.icon ?? null,
-                    newIconType = (icon.props as ResolvedIconProps).iconName;
+                    newIconType = (icon.props as ResolvedIconProps).faName;
 
                 if (currentIconType !== newIconType) {
                     const iconSvg = convertIconToHtml(icon);

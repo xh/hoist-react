@@ -5,7 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {hoistCore, initTestAppAsync} from '@xh/hoist/test-support';
-import {HOURS, LocalDate} from '@xh/hoist/utils/datetime';
+import {LocalDate} from '@xh/hoist/utils/datetime';
 import {beforeAll, describe, expect, it, vi} from 'vitest';
 
 /**
@@ -20,9 +20,7 @@ describe('LocalDate', () => {
     beforeAll(async () => {
         Object.assign(hoistCore.environment, {
             appTimeZone: 'Asia/Tokyo',
-            appTimeZoneOffset: 9 * HOURS,
-            serverTimeZone: 'America/Los_Angeles',
-            serverTimeZoneOffset: -7 * HOURS
+            serverTimeZone: 'America/Los_Angeles'
         });
 
         // Boot on a summer date, so EnvironmentService reads the browser offset as EDT (-4h).

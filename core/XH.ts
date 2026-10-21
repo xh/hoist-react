@@ -35,7 +35,7 @@ import {
     TraceService,
     WebSocketService
 } from '@xh/hoist/svc';
-import {getLogLevel, LogLevel, setLogLevel} from '@xh/hoist/utils/js';
+import {getLogLevel, logError, LogLevel, setLogLevel} from '@xh/hoist/utils/js';
 import {camelCase, flatten, isString, uniqueId} from 'lodash';
 import {Router, State} from 'router5';
 import {CancelFn} from 'router5/types/types/base';
@@ -671,10 +671,10 @@ export class XHApi {
      * this method will resolve immediately to their previously saved response, without showing
      * a dialog. This also applies to the `alert`, `confirm`, and `prompt` variants below.
      *
-     * @returns true if user confirms, false if user cancels. If an input is provided, the
-     * returned Promise will resolve to the input value if user confirms, false if user cancels.
-     * Resolves to null if the message is closed without a choice - e.g. by a route change or
-     * when replaced by a later message with the same `messageKey`.
+     * @returns true if the user confirms, or the input value if an input is provided. Resolves
+     * false for any other outcome - a cancel, a dismiss, or a close without a choice, e.g. by a
+     * route change or a later message with the same `messageKey`. With an input, test the result
+     * with `!== false`, as null and an empty string are valid confirmed values.
      */
     message<T = unknown>(config: MessageSpec): Promise<T | boolean> {
         return this.acm.messageSourceModel.message(config);
@@ -690,7 +690,7 @@ export class XHApi {
 
     /**
      * Show a modal 'confirm' dialog with message and default 'OK'/'Cancel' buttons.
-     * @returns true if user confirms, false if user cancels.
+     * @returns true if user confirms, false otherwise. See {@link message} for details.
      */
     confirm(config: MessageSpec): Promise<boolean> {
         return this.acm.messageSourceModel.confirm(config);
@@ -705,7 +705,8 @@ export class XHApi {
      *   3. onKeyDown handler to confirm on <enter> (same as clicking 'OK') (desktop only)
      * Applications may also provide a custom HoistInput, in which all props must be set.
      *
-     * @returns value of input if user confirms, false if user cancels.
+     * @returns value of input if user confirms, false otherwise. See {@link message} for details.
+     * Test the result with `!== false`, as null and an empty string are valid confirmed values.
      */
     prompt<T = unknown>(config: MessageSpec): Promise<T | false> {
         return this.acm.messageSourceModel.prompt(config);
@@ -914,7 +915,8 @@ export class XHApi {
 
     /**
      * Helper method to destroy resources safely (e.g. child HoistModels). Will quietly skip args
-     * that are null / undefined or that do not implement destroy().
+     * that are null / undefined or that do not implement destroy(). Logs, rather than throws, an
+     * error from any destroy(), so the remaining args are still destroyed.
      *
      * @param args - objects to be destroyed. If any argument is an array, each top-level element
      *      in the array will be destroyed. (Note this is *not* done recursively.)
@@ -923,7 +925,11 @@ export class XHApi {
         if (args) {
             args = flatten(args);
             args.forEach(it => {
-                it?.destroy?.();
+                try {
+                    it?.destroy?.();
+                } catch (e) {
+                    logError(['Error destroying object', e], it);
+                }
             });
         }
     }

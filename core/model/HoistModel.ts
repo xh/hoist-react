@@ -137,9 +137,11 @@ export abstract class HoistModel extends HoistBase implements Loadable {
 
     // Internal State
     // - `_componentProps` is only set for linked models and mirrors the current React props.
-    // - `_modelLookup` is injected by Hoist when this model is linked into a component hierarchy.
+    // - `_linked` is set by Hoist when this model is linked into a component hierarchy.
+    // - `_modelLookup` is injected on link, and is null for a model linked at the root.
     // - `_created` is basic lifecycle metadata (useful for diagnostics/ordering).
     @observableRef accessor _componentProps: DefaultHoistProps | null = null;
+    _linked: boolean = false;
     _modelLookup: any = null;
     _created: number = Date.now();
 
@@ -209,7 +211,7 @@ export abstract class HoistModel extends HoistBase implements Loadable {
     // Linked model support
     //---------------------------
     get isLinked(): boolean {
-        return !!this._modelLookup;
+        return this._linked;
     }
 
     /**

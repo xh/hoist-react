@@ -29,7 +29,7 @@ describe('IdentityService', () => {
         hoistCore.authUser = {username: 'admin', displayName: 'Admin User', active: true};
         hoistCore.authUserRoles = ['APP_USER', 'HOIST_ADMIN', 'HOIST_IMPERSONATOR'];
         hoistCore.configs.xhEnableImpersonation = true;
-        hoistCore.prefs.pageSize = {type: 'int', value: 100, defaultValue: 50, isSet: true};
+        hoistCore.prefs.pageSize = {type: 'int', defaultValue: 50, value: 100};
         // The impersonation bar, shown while impersonating, loads the users to switch to.
         server.use(
             http.get(xhUrl('xh/impersonationTargets'), () =>

@@ -414,18 +414,36 @@ class SelectInputModel extends HoistInputModel {
         super.noteFocused();
     }
 
-    private selectText() {
-        const {reactSelect} = this;
-        if (!reactSelect) return;
+    /**
+     * Enter text into the search input and open the menu, as if typed by the user.
+     * Ignored if the select is not searchable.
+     */
+    enterSearchText(text: string) {
+        // Delay to run after the text selection scheduled by `noteFocused()`.
+        wait().then(() => {
+            const selectComp = this.innerSelect;
+            if (!this.hasFocus || !selectComp?.props.isSearchable) return;
 
-        // Unwrap the HOCs added by AsyncSelect / Creatable / WindowedSelect (each exposes the
-        // inner Select via `.select`) to reach the underlying Select that owns the inputRef.
-        let selectComp = reactSelect;
+            selectComp.props.onInputChange(text, {
+                action: 'input-change',
+                prevInputValue: selectComp.props.inputValue ?? ''
+            });
+            selectComp.openMenu('first');
+        });
+    }
+
+    // Unwrap the HOCs added by AsyncSelect / Creatable / WindowedSelect (each exposes the inner
+    // Select via `.select`) to reach the underlying Select that owns the inputRef.
+    private get innerSelect() {
+        let selectComp = this.reactSelect;
         while (selectComp && !selectComp.inputRef) {
             selectComp = selectComp.select;
         }
-        const inputElem = selectComp?.inputRef;
+        return selectComp;
+    }
 
+    private selectText() {
+        const inputElem = this.innerSelect?.inputRef;
         if (this.hasFocus && inputElem && document.activeElement === inputElem) {
             inputElem.select();
         }
@@ -626,18 +644,21 @@ class SelectInputModel extends HoistInputModel {
     //------------------------
     // Other Implementation
     //------------------------
-    // cache to avoid re-renders and focus issues, note this "freezes" leftIcon
+    // Cache to avoid re-renders and focus issues. Reads leftIcon from react-select's
+    // `selectProps` at render time, so the icon can change without replacing the component.
     _valueContainerCmp = null;
     getValueContainerCmp() {
         if (!this._valueContainerCmp) {
-            const {leftIcon} = this.componentProps;
-            this._valueContainerCmp = leftIcon
-                ? props =>
-                      fragment(
+            this._valueContainerCmp = props => {
+                const {leftIcon} = props.selectProps,
+                    valueContainer = createElement(components.ValueContainer, props);
+                return leftIcon
+                    ? fragment(
                           span({className: 'xh-select__control__left-icon', item: leftIcon}),
-                          createElement(components.ValueContainer, props)
+                          valueContainer
                       )
-                : components.ValueContainer;
+                    : valueContainer;
+            };
         }
 
         return this._valueContainerCmp;
@@ -782,6 +803,9 @@ const cmp = hoistCmp.factory<SelectInputModel>(({model, className, ...props}, re
             openMenuOnFocus: props.openMenuOnFocus,
             placeholder: withDefault(props.placeholder, 'Select...'),
             tabIndex: props.tabIndex,
+
+            // Not a react-select prop - read by our custom ValueContainer via `selectProps`.
+            leftIcon: props.leftIcon,
 
             // Minimize (or hide) bulky dropdown
             components: {
