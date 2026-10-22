@@ -352,8 +352,9 @@ export interface GridConfig {
     clicksToExpand?: number;
 
     /**
-     * Array of RecordActions, dividers, or token strings with which to create a context menu.
-     * May also be specified as a function returning same or false to omit context menu from grid.
+     * Items for the context menu shown on right-click of a row or cell, as actions, headings and
+     * tokens, or a function returning them, or false to show none. Desktop only. Defaults to
+     * filter, copy, expand / collapse, export and column items - see `GridModel.defaults`.
      */
     contextMenu?: GridContextMenuSpec | false;
 
