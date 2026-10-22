@@ -403,8 +403,9 @@ desktop. It takes the same entries and tokens as `contextMenu`, with no row in c
 receive the clicked `column` but no `record`, so row-specific ones hide themselves. The default
 menu sorts, pins, hides and autosizes the clicked column, then ends as `contextMenu` does. Tokens
 for the clicked column (`sortAsc`, `sortDesc`, `pinColumn`, `hideColumn`, `autosizeColumn`) hide
-over a column group header. Set `false` to show no header menu. The menu is ag-Grid's column menu
-and needs its `ColumnMenuModule`, which `MenuModule` includes.
+over a column group header. Set `false` to show no header menu; a grid that disables `contextMenu`
+gets none by default. The menu is ag-Grid's column menu and needs its `ColumnMenuModule`, which
+`MenuModule` includes.
 
 ## Column Properties Reference
 

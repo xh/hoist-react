@@ -361,7 +361,7 @@ export interface GridConfig {
     /**
      * Items for the context menu shown on right-click of a column header, as for `contextMenu`,
      * or false to show none. Desktop only. Defaults to column-focused items for the clicked column
-     * plus the column chooser. Requires ag-Grid's `ColumnMenuModule` (part of `MenuModule`).
+     * plus the column chooser, or to none when `contextMenu` is disabled.
      */
     headerContextMenu?: GridHeaderContextMenuSpec | false;
 
@@ -771,12 +771,8 @@ export class GridModel extends HoistModel {
         this.groupRowRenderer = managedRenderer(groupRowRenderer, 'GROUP_ROW');
         this.groupSortFn = withDefault(groupSortFn, this.defaultGroupSortFn);
         this.showGroupRowCounts = showGroupRowCounts;
-        this.contextMenu =
-            contextMenu === false ? [] : withDefault(contextMenu, GridModel.defaults.contextMenu);
-        this.headerContextMenu =
-            headerContextMenu === false
-                ? []
-                : withDefault(headerContextMenu, GridModel.defaults.headerContextMenu);
+        this.contextMenu = this.parseContextMenu(contextMenu);
+        this.headerContextMenu = this.parseHeaderContextMenu(headerContextMenu, contextMenu);
         this.useVirtualColumns = useVirtualColumns;
         this.externalSort = externalSort;
         apiDeprecated('GridModel.enableFullWidthScroll', {
@@ -2278,6 +2274,23 @@ export class GridModel extends HoistModel {
             ...XH.getConf('xhGridExperimental', {}),
             ...experimental
         };
+    }
+
+    private parseContextMenu(spec: GridConfig['contextMenu']): GridContextMenuSpec {
+        return spec === false ? [] : withDefault(spec, GridModel.defaults.contextMenu);
+    }
+
+    /** A grid with no context menu gets no header menu either, unless one is set explicitly. */
+    private parseHeaderContextMenu(
+        spec: GridConfig['headerContextMenu'],
+        contextMenu: GridConfig['contextMenu']
+    ): GridHeaderContextMenuSpec {
+        if (spec === false) return [];
+        const dflt =
+            contextMenu === false || contextMenu === null
+                ? []
+                : GridModel.defaults.headerContextMenu;
+        return withDefault(spec, dflt);
     }
 
     private parseChooserModel(chooserModel: GridConfig['colChooserModel']): IColChooserModel {

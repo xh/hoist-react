@@ -34,8 +34,8 @@ import type {
     GridHeaderContextMenuSpec
 } from '../GridContextMenu';
 
-/** ag-Grid params for a cell context menu, or for a column header one (which carry no row). */
-type GridMenuAgParams = GetContextMenuItemsParams | GetMainMenuItemsParams;
+/** ag-Grid params for a cell context menu, or for a column header one, which carries no row. */
+type GridMenuAgParams = GetContextMenuItemsParams | (GetMainMenuItemsParams & {node?: never});
 
 /**
  * @internal
@@ -45,14 +45,11 @@ export function getAgGridMenuItems(
     model: GridModel,
     spec: GridContextMenuSpec | GridHeaderContextMenuSpec
 ): Array<string | MenuItemDef> {
-    // A spec function takes whichever params fit its menu - the cast satisfies both signatures.
-    let menuItems: GridContextMenuItemLike[] = isFunction(spec)
-        ? spec(params as GetContextMenuItemsParams & GetMainMenuItemsParams, model)
-        : spec;
+    let menuItems: GridContextMenuItemLike[] = isFunction(spec) ? spec(params as any, model) : spec;
 
     if (isEmpty(menuItems)) return null;
 
-    const record = 'node' in params ? params.node?.data : null,
+    const record = params.node?.data ?? null,
         colId = params.column?.getColId(),
         column = !isNil(colId) ? model.getColumn(colId) : null;
 
@@ -367,6 +364,10 @@ function createSortItem(gridModel: GridModel, sort: 'asc' | 'desc'): RecordActio
         displayFn: ({column}) => {
             const sorter = sorterFor(column);
             if (!sorter) return {hidden: true};
+            // A check marks the sort already in effect, as the pin items do for the pinned side.
+            if (gridModel.sortBy.some(it => it.toString() === sorter.toString())) {
+                return {icon: Icon.check()};
+            }
             const icon =
                 sort === 'asc'
                     ? sorter.abs

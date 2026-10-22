@@ -6,6 +6,7 @@
  */
 import {type GridConfig, GridModel} from '@xh/hoist/cmp/grid';
 import type {GetMainMenuItemsParams, MenuItemDef} from '@xh/hoist/kit/ag-grid';
+import {Icon} from '@xh/hoist/icon';
 import {initTestAppAsync} from '@xh/hoist/test-support';
 import {beforeAll, describe, expect, it, onTestFinished} from 'vitest';
 import {getAgGridMenuItems} from './MenuSupport';
@@ -61,6 +62,14 @@ describe('Grid header context menu', () => {
         expect(gridModel.sortBy.map(it => it.toString())).toEqual(['pnl|asc']);
     });
 
+    it('marks the sort in effect with a check', () => {
+        const gridModel = createGridModel({sortBy: 'pnl|desc|abs'}),
+            items = headerItems(gridModel, 'pnl');
+
+        expect(icon(items, 'Sort Descending')).toEqual(Icon.check());
+        expect(icon(items, 'Sort Ascending')).toEqual(Icon.sortAsc());
+    });
+
     it('hides the sort items for a column that is not sortable', () => {
         const gridModel = createGridModel({
                 columns: [{field: 'name'}, {field: 'region', sortable: false}]
@@ -108,6 +117,15 @@ describe('Grid header context menu', () => {
         expect(gridModel.headerContextMenu).toEqual([]);
     });
 
+    it('shows no header menu by default when the context menu is disabled', () => {
+        expect(createGridModel({contextMenu: false}).headerContextMenu).toEqual([]);
+        expect(createGridModel({contextMenu: null}).headerContextMenu).toEqual([]);
+        expect(
+            createGridModel({contextMenu: false, headerContextMenu: ['colChooser']})
+                .headerContextMenu
+        ).toEqual(['colChooser']);
+    });
+
     it('passes the clicked column to a header menu function', () => {
         const gridModel = createGridModel({
                 headerContextMenu: (params, model) => [
@@ -150,6 +168,10 @@ function item(items: Array<string | MenuItemDef>, text: string): MenuItemDef {
     const ret = items.find(it => typeof it !== 'string' && texts([it])[0] === text);
     expect(ret, `menu item '${text}'`).toBeDefined();
     return ret as MenuItemDef;
+}
+
+function icon(items: Array<string | MenuItemDef>, text: string) {
+    return item(items, text).menuItemParams.displaySpec.icon;
 }
 
 function action(items: Array<string | MenuItemDef>, text: string): () => void {
