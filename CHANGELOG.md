@@ -28,6 +28,8 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 
 ### 🐞 Bug Fixes
 
+* Fixed grid row borders and the row drag drop line stopping at the last column when the columns
+  do not fill the grid's width. Both now span the full row, as they did before AG Grid 36.
 * Fixed a spec file in `@xh/hoist/test-support` failing with an unhandled error when it ended
   within 5 seconds of boot. The kit now sends pending pref, activity, metric and span pushes before
   it closes the fake hoist-core, and the fake's `xhSizingMode` default no longer makes boot save it.
