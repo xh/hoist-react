@@ -33,6 +33,8 @@ detailed, step-by-step upgrade instructions with before/after code examples.
   it closes the fake hoist-core, and the fake's `xhSizingMode` default no longer makes boot save it.
 * Fixed desktop `Select` waiting on its selected option after its menu closed or it unmounted. The
   wait could scroll another select's menu, or leave an unhandled rejection after five seconds.
+* Fixed `ViewManagerModel` refreshes reverting a pin or auto-save change whose write was still
+  debounced or in flight.
 
 ### ⚙️ Technical
 
