@@ -68,11 +68,18 @@
   // Row colors come from params - these are the states with no param equivalent: selected-row *text*
   // color, and group rows.
   .ag-row {
-    // Extend the row's background and hover / selection overlay across ag-Grid's filler after
-    // the last column. ag-Grid paints the overlay only on the cell containers.
-    &::after {
-      background-color: var(--ag-internal-row-overlay-color, transparent);
-      background-image: var(--ag-internal-row-overlay-image, none);
+    // ag-Grid sizes the scrolling container to its columns and fills the rest of the row with an
+    // `::after` filler. Row borders, the hover / selection overlay and the row drag drop line are
+    // all drawn on the cell containers, so grow the scrolling container into the filler to carry
+    // them across the full row when columns don't fill the grid.
+    &:where(:not(.ag-full-width-row)) {
+      > .ag-grid-scrolling-cells {
+        flex-grow: 1;
+      }
+
+      &::after {
+        flex-grow: 0;
+      }
     }
 
     &.ag-row-selected .ag-cell {

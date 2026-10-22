@@ -266,6 +266,81 @@ describe('ViewManagerModel', () => {
 
             expect(vmm.view.token).toBe('west');
         });
+
+        it('applies pins and auto-save changed elsewhere', async () => {
+            setState({currentView: 'east'});
+            const vmm = await createAsync();
+
+            setState({userPinned: {west: false}, autoSave: true});
+            await vmm.refreshAsync();
+
+            expect(vmm.isUserPinned(findView(vmm, 'west'))).toBe(false);
+            expect(vmm.autoSave).toBe(true);
+        });
+
+        it('keeps a pin made just before a refresh, and saves it after 1s', async () => {
+            setState({currentView: 'east'});
+            const vmm = await createAsync();
+            vi.useFakeTimers();
+
+            vmm.userUnpin(findView(vmm, 'west'));
+            await vmm.refreshAsync();
+            expect(vmm.isUserPinned(findView(vmm, 'west'))).toBe(false);
+
+            await vi.advanceTimersByTimeAsync(1000);
+            await vi.waitFor(() =>
+                expect(jsonBlobs.viewState(TYPE).userPinned).toEqual({west: false})
+            );
+            expect(hoistCore.requestsTo('xhView/updateState').map(it => it.json)).toEqual([
+                {userPinned: {west: false}}
+            ]);
+        });
+
+        it('keeps a pin made while a refresh fetch is in flight', async () => {
+            setState({currentView: 'east'});
+            const vmm = await createAsync();
+
+            const {arrived, release} = holdRequests('xhView/allData'),
+                refresh = vmm.refreshAsync();
+            await arrived;
+            vmm.userUnpin(findView(vmm, 'west'));
+            release();
+            await refresh;
+
+            expect(vmm.isUserPinned(findView(vmm, 'west'))).toBe(false);
+        });
+
+        it('keeps a pin whose write is in flight when a refresh fetch is sent', async () => {
+            setState({currentView: 'east'});
+            const vmm = await createAsync();
+            vi.useFakeTimers();
+
+            const {arrived, release} = holdRequests('xhView/updateState');
+            vmm.userUnpin(findView(vmm, 'west'));
+            await vi.advanceTimersByTimeAsync(1000);
+            await arrived;
+            await vmm.refreshAsync();
+            release();
+            await hoistCore.settleAsync();
+
+            expect(vmm.isUserPinned(findView(vmm, 'west'))).toBe(false);
+            expect(jsonBlobs.viewState(TYPE).userPinned).toEqual({west: false});
+        });
+
+        it('keeps an auto-save change whose write is in flight when a refresh is sent', async () => {
+            setState({currentView: 'east'});
+            const vmm = await createAsync();
+
+            const {arrived, release} = holdRequests('xhView/updateState');
+            vmm.autoSave = true;
+            await arrived;
+            await vmm.refreshAsync();
+            release();
+            await hoistCore.settleAsync();
+
+            expect(vmm.autoSave).toBe(true);
+            expect(jsonBlobs.viewState(TYPE).autoSave).toBe(true);
+        });
     });
 
     describe('saveAsync', () => {
