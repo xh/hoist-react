@@ -45,6 +45,14 @@ savePrefix: '^'
 minimumReleaseAgeExclude:
   - '@xh/*'
 
+# Keep pnpm-lock.yaml a single YAML document. By default pnpm 12 records the pinned pnpm version in
+# a leading lockfile document, and GitHub's dependency graph reads only that first document - so it
+# sees none of our real deps and Dependabot raises no security alerts. With `ignore`, pnpm runs
+# whatever version is installed rather than switching to the `packageManager` pin. CI still installs
+# the pinned version via pnpm/setup. Remove once GitHub parses multi-document lockfiles - see
+# https://github.com/dependabot/dependabot-core/issues/15904.
+pmOnFail: ignore
+
 # Adding an `overrides` entry for a package that is also a direct dep? Put its version in a
 # `catalog:` entry and point both `package.json` and the override at `catalog:`. pnpm validates a
 # lockfile against the override but `pnpm update` writes the raw package.json specifier, so if the
