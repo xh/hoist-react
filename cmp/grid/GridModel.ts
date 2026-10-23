@@ -1605,22 +1605,6 @@ export class GridModel extends HoistModel {
         return this.getLeafColumns().filter(it => this.isColumnVisible(it.colId));
     }
 
-    /** Return all leaf-level columns within a ColumnGroup that renders edge borders. */
-    getGroupBorderedLeafColumns(): Column[] {
-        const ret: Column[] = [],
-            walk = (cols: ColumnOrGroup[], bordered: boolean) => {
-                cols.forEach(col => {
-                    if (col instanceof ColumnGroup) {
-                        walk(col.children, bordered || col.borders);
-                    } else if (bordered) {
-                        ret.push(col);
-                    }
-                });
-            };
-        walk(this.columns, false);
-        return ret;
-    }
-
     /**
      * Determine whether or not a given leaf-level column is currently visible.
      *
