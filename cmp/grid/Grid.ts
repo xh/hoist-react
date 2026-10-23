@@ -813,10 +813,8 @@ export class GridLocalModel extends HoistModel {
         }
     };
 
-    // Column group edge borders depend on each column's position - re-evaluate on any change.
-    onDisplayedColumnsChanged = ev => {
-        if (this.model.getColumnGroups().some(g => g.borders)) ev.api.refreshCells();
-    };
+    // Cell class rules such as column group borders can depend on column position - re-evaluate.
+    onDisplayedColumnsChanged = ev => ev.api.refreshCells();
 
     // Fires for our own writes too (no `source` on this event) - model's equality check stops the loop.
     onColumnGroupOpened = ev => {
