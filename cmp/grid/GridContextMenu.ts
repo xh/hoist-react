@@ -41,7 +41,7 @@ export type GridContextMenuItemLike =
  *          `pinColumn` - sub menu to pin the clicked column left or right, or unpin it.
  *          `restoreDefaults` - restore column, sorting, and grouping configs and clear any
  *              persistent grid state. See {@link GridModel.restoreDefaults}
- *          `sortAsc` / `sortDesc` - sort the grid by the clicked column.
+ *          `sort` - one item per sort the clicked column offers, per `Column.sortingOrder`.
  *
  * The clicked-column tokens hide themselves when no column is in context, e.g. on a right-click
  * over a column group header.
@@ -61,8 +61,7 @@ export type GridContextMenuToken =
     | 'hideColumn'
     | 'pinColumn'
     | 'restoreDefaults'
-    | 'sortAsc'
-    | 'sortDesc'
+    | 'sort'
     | MenuToken;
 
 /**

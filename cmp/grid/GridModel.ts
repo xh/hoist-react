@@ -539,8 +539,7 @@ export class GridModel extends HoistModel {
             'autosizeColumns'
         ],
         headerContextMenu: [
-            'sortAsc',
-            'sortDesc',
+            'sort',
             '-',
             'pinColumn',
             'hideColumn',

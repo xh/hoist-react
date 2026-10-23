@@ -4,7 +4,7 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {isEmpty, isFunction, isNil, isString, uniq} from 'lodash';
+import {isEmpty, isFunction, isNil, isString, sortBy, uniq} from 'lodash';
 import {copyToClipboard, TEST_ID} from '@xh/hoist/utils/js';
 import {hoistCmp, type HoistProps, type HSide, isMenuHeading, type Some, XH} from '@xh/hoist/core';
 import {Column, GridModel} from '@xh/hoist/cmp/grid';
@@ -65,7 +65,7 @@ function buildMenuItems(
 ) {
     // Transform to actions, headings, or ag-Grid ready strings.
     const actions: Array<RecordAction | RecordActionHeading | string> = menuItems.flatMap(it => {
-        if (isString(it)) return replaceHoistToken(it, gridModel);
+        if (isString(it)) return replaceHoistToken(it, gridModel, column);
         if (it instanceof RecordAction) return it;
         if (isMenuHeading(it)) return it;
         return new RecordAction(it);
@@ -139,7 +139,11 @@ function buildMenuItems(
 }
 
 /** Pre-process hoist tokens to RecordActions, leaving ag-Grid token in place. */
-function replaceHoistToken(token: string, gridModel: GridModel): Some<RecordAction | string> {
+function replaceHoistToken(
+    token: string,
+    gridModel: GridModel,
+    column: Column
+): Some<RecordAction | string> {
     switch (token) {
         case '-':
             return 'separator';
@@ -321,10 +325,8 @@ function replaceHoistToken(token: string, gridModel: GridModel): Some<RecordActi
                 icon: Icon.reset(),
                 actionFn: () => gridModel.restoreDefaultsAsync()
             });
-        case 'sortAsc':
-            return createSortItem(gridModel, 'asc');
-        case 'sortDesc':
-            return createSortItem(gridModel, 'desc');
+        case 'sort':
+            return createSortItems(gridModel, column);
         default:
             return token;
     }
@@ -348,37 +350,24 @@ function createPinColumnItem(gridModel: GridModel): RecordAction {
     });
 }
 
-function createSortItem(gridModel: GridModel, sort: 'asc' | 'desc'): RecordAction {
-    // The column's own sort of this direction, preferring the abs variant on an absSort column.
-    const sorterFor = (column: Column) => {
-        const sorts = column?.availableSorts ?? [];
-        return (
-            sorts.find(it => it.sort === sort && it.abs === column.absSort) ??
-            sorts.find(it => it.sort === sort) ??
-            null
-        );
-    };
-
-    return new RecordAction({
-        text: sort === 'asc' ? 'Sort Ascending' : 'Sort Descending',
-        displayFn: ({column}) => {
-            const sorter = sorterFor(column);
-            if (!sorter) return {hidden: true};
-            // A check marks the sort already in effect, as the pin items do for the pinned side.
-            if (gridModel.sortBy.some(it => it.toString() === sorter.toString())) {
-                return {icon: Icon.check()};
-            }
-            const icon =
-                sort === 'asc'
-                    ? sorter.abs
-                        ? Icon.sortAbsAsc()
-                        : Icon.sortAsc()
-                    : sorter.abs
-                      ? Icon.sortAbsDesc()
-                      : Icon.sortDesc();
-            return {icon};
-        },
-        actionFn: ({column}) => gridModel.setSortBy(sorterFor(column))
+function createSortItems(gridModel: GridModel, column: Column): RecordAction[] {
+    // One item per sort the column offers: ascending then descending, each abs variant after
+    // its standard sort.
+    const sorts = sortBy(column?.availableSorts ?? [], [it => it.sort !== 'asc', it => it.abs]);
+    return sorts.map(sorter => {
+        const asc = sorter.sort === 'asc',
+            icon = asc
+                ? sorter.abs
+                    ? Icon.sortAbsAsc()
+                    : Icon.sortAsc()
+                : sorter.abs
+                  ? Icon.sortAbsDesc()
+                  : Icon.sortDesc();
+        return new RecordAction({
+            text: `Sort ${asc ? 'Ascending' : 'Descending'}${sorter.abs ? ' (Abs)' : ''}`,
+            icon,
+            actionFn: () => gridModel.setSortBy(sorter)
+        });
     });
 }
 

@@ -27,8 +27,9 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 * Added `GridModel.headerContextMenu`, a context menu shown on right-click of a desktop grid column
   header. By default it sorts, pins, hides and autosizes the clicked column and opens the column
   chooser. Set `false` to show none. Grids that disable `contextMenu` get no header menu by default.
-* Added `sortAsc`, `sortDesc`, `pinColumn`, `hideColumn` and `autosizeColumn` grid menu tokens,
-  which act on the clicked column, and `Column.availableSorts`.
+* Added `sort`, `pinColumn`, `hideColumn` and `autosizeColumn` grid menu tokens, which act on the
+  clicked column, and `Column.availableSorts`. The `sort` token offers one item per sort the column
+  offers.
 * Added `genRandomId()` to `@xh/hoist/utils/js` for short random alphanumeric IDs.
 
 ### 🐞 Bug Fixes

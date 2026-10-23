@@ -26,6 +26,7 @@ describe('Grid header context menu', () => {
         expect(texts(items)).toEqual([
             'Sort Ascending',
             'Sort Descending',
+            'Sort Descending (Abs)',
             'separator',
             'Pin Column',
             'Hide Column',
@@ -51,23 +52,57 @@ describe('Grid header context menu', () => {
         );
     });
 
-    it('sorts by the clicked column, preferring its absolute-value sort', () => {
+    it('offers the sorts the column has, ordered asc then desc with each abs variant after its standard sort', () => {
+        const gridModel = createGridModel({
+            columns: [
+                {field: 'name'},
+                {field: 'qty', sortingOrder: ['desc', 'asc']},
+                {field: 'pnl', absSort: true},
+                {
+                    field: 'ret',
+                    absSort: true,
+                    sortingOrder: [{sort: 'desc', abs: true}, 'desc', {sort: 'asc', abs: true}]
+                }
+            ]
+        });
+
+        const sortItems = colId =>
+            texts(headerItems(gridModel, colId)).filter(it => it.startsWith('Sort'));
+        expect(sortItems('name')).toEqual(['Sort Ascending', 'Sort Descending']);
+        expect(sortItems('qty')).toEqual(['Sort Ascending', 'Sort Descending']);
+        expect(sortItems('pnl')).toEqual([
+            'Sort Ascending',
+            'Sort Descending',
+            'Sort Descending (Abs)'
+        ]);
+        expect(sortItems('ret')).toEqual([
+            'Sort Ascending (Abs)',
+            'Sort Descending',
+            'Sort Descending (Abs)'
+        ]);
+    });
+
+    it('sorts by the clicked column', () => {
         const gridModel = createGridModel(),
             items = headerItems(gridModel, 'pnl');
 
-        action(items, 'Sort Descending')();
+        action(items, 'Sort Descending (Abs)')();
         expect(gridModel.sortBy.map(it => it.toString())).toEqual(['pnl|desc|abs']);
+
+        action(items, 'Sort Descending')();
+        expect(gridModel.sortBy.map(it => it.toString())).toEqual(['pnl|desc']);
 
         action(items, 'Sort Ascending')();
         expect(gridModel.sortBy.map(it => it.toString())).toEqual(['pnl|asc']);
     });
 
-    it('marks the sort in effect with a check', () => {
+    it('shows a direction icon on each sort item, with no mark for the sort in effect', () => {
         const gridModel = createGridModel({sortBy: 'pnl|desc|abs'}),
             items = headerItems(gridModel, 'pnl');
 
-        expect(icon(items, 'Sort Descending')).toEqual(Icon.check());
         expect(icon(items, 'Sort Ascending')).toEqual(Icon.sortAsc());
+        expect(icon(items, 'Sort Descending')).toEqual(Icon.sortDesc());
+        expect(icon(items, 'Sort Descending (Abs)')).toEqual(Icon.sortAbsDesc());
     });
 
     it('hides the sort items for a column that is not sortable', () => {
