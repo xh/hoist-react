@@ -707,7 +707,7 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
             track: () => this.userState,
             run: state => this.writeStateAsync(state),
             equals: compareStructural,
-            debounce: STATE_WRITE_DEBOUNCE,
+            debounce: 500,
             fireImmediately: !!initialState && this.view?.token !== initialState.currentView
         };
     }
@@ -908,6 +908,3 @@ interface PendingValue<T> {
     baseUpdated: number;
     value: Partial<T>;
 }
-
-/** Delay before user state is written, so a burst of changes goes out as one write. */
-const STATE_WRITE_DEBOUNCE = 500;
