@@ -274,9 +274,6 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
     /** The in-flight `xhView/updateState` write, if any. */
     private stateWrite: Promise<unknown> = null;
 
-    /** Bumped as each state write starts and ends, so a refresh can tell if one overlapped it. */
-    private stateWriteSeq = 0;
-
     /** True if user state changed while a write was in flight, so another must follow. */
     private stateDirty = false;
 
@@ -403,16 +400,14 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
             .span('refresh')
             .run(async ctx => {
                 // 1) Update views and related state. Skip user state if a write was in flight
-                // at any point during the fetch - the response may predate it.
-                const writeSeq = this.stateWriteSeq,
+                // as the fetch was sent or returned - the response may predate it.
+                const wasWriting = !!this.stateWrite,
                     {views, state, manageGlobal} = await dataAccess.fetchDataAsync(ctx);
                 if (loadSpec.isStale) return;
                 runInAction(() => {
                     this.views = views;
                     this.serverManageGlobal = manageGlobal ?? null;
-                    if (!this.stateWrite && writeSeq === this.stateWriteSeq) {
-                        this.applyUserState(state);
-                    }
+                    if (!wasWriting && !this.stateWrite) this.applyUserState(state);
                 });
 
                 // Fast-forward the current view if it was updated elsewhere.
@@ -735,7 +730,6 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
         }
         do {
             this.stateDirty = false;
-            this.stateWriteSeq++;
             this.stateWrite = this.runner()
                 .span('updateState')
                 .run(ctx => this.dataAccess.updateStateAsync(this.userState, ctx))
@@ -743,7 +737,6 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
             await this.stateWrite;
         } while (this.stateDirty);
         this.stateWrite = null;
-        this.stateWriteSeq++;
     }
 
     /** Install pin and auto-save state fetched from the server. */
