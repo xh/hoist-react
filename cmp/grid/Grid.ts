@@ -298,6 +298,7 @@ export class GridLocalModel extends HoistModel {
             onColumnRowGroupChanged: this.onColumnRowGroupChanged,
             onColumnPinned: this.onColumnPinned,
             onColumnVisible: this.onColumnVisible,
+            onDisplayedColumnsChanged: this.onDisplayedColumnsChanged,
             onColumnGroupOpened: this.onColumnGroupOpened,
             onCellEditingStarted: model.onCellEditingStarted,
             onCellEditingStopped: model.onCellEditingStopped,
@@ -810,6 +811,13 @@ export class GridLocalModel extends HoistModel {
         if (ev.source !== 'api' && ev.source !== 'uiColumnDragged') {
             this.model.noteAgColumnStateChanged(ev.api.getColumnState());
         }
+    };
+
+    // Column group edge borders are cell classes computed from each column's position within its
+    // group, so re-evaluate them whenever columns are reordered, shown, hidden or pinned.
+    onDisplayedColumnsChanged = ev => {
+        const columns = this.model.getGroupBorderedLeafColumns().map(it => it.colId);
+        if (!isEmpty(columns)) ev.api.refreshCells({columns});
     };
 
     // Fires for our own writes too (no `source` on this event) - model's equality check stops the loop.

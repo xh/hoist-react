@@ -62,7 +62,6 @@ import {
     CellDoubleClickedEvent,
     CellEditingStartedEvent,
     CellEditingStoppedEvent,
-    ColumnEvent,
     RowClickedEvent,
     RowDoubleClickedEvent
 } from '@xh/hoist/kit/ag-grid';
@@ -1606,6 +1605,22 @@ export class GridModel extends HoistModel {
         return this.getLeafColumns().filter(it => this.isColumnVisible(it.colId));
     }
 
+    /** Return all leaf-level columns within a ColumnGroup that renders edge borders. */
+    getGroupBorderedLeafColumns(): Column[] {
+        const ret: Column[] = [],
+            walk = (cols: ColumnOrGroup[], bordered: boolean) => {
+                cols.forEach(col => {
+                    if (col instanceof ColumnGroup) {
+                        walk(col.children, bordered || col.borders);
+                    } else if (bordered) {
+                        ret.push(col);
+                    }
+                });
+            };
+        walk(this.columns, false);
+        return ret;
+    }
+
     /**
      * Determine whether or not a given leaf-level column is currently visible.
      *
@@ -2343,15 +2358,6 @@ export class GridModel extends HoistModel {
     ): ColumnCellClassRuleFn {
         return ({api, column, ...ctx}) => {
             if (!api || !column) return false;
-
-            // Re-evaluate cell class rules when column is re-ordered
-            // See https://www.ag-grid.com/javascript-data-grid/column-object/#reference-events
-            if (!column['xhAppliedGroupBorderListener']) {
-                column['xhAppliedGroupBorderListener'] = true;
-                column.addEventListener('leftChanged', ({api, columns, source}: ColumnEvent) => {
-                    if (source === 'uiColumnMoved') api.refreshCells({columns});
-                });
-            }
 
             // Don't render a left-border if col is first or if prev col already has right-border
             if (side === 'left') {

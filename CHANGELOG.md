@@ -34,6 +34,9 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 
 ### 🐞 Bug Fixes
 
+* Fixed column group edge borders staying on their original columns after the columns were
+  reordered, shown or hidden via the column chooser or any other programmatic column state change.
+  Only header drags had moved them.
 * Fixed grid row borders and the row drag drop line stopping at the last column when the columns
   do not fill the grid's width. Both now span the full row, as they did before AG Grid 36.
 * Fixed a spec file in `@xh/hoist/test-support` failing with an unhandled error when it ended
