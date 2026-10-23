@@ -298,6 +298,7 @@ export class GridLocalModel extends HoistModel {
             onColumnRowGroupChanged: this.onColumnRowGroupChanged,
             onColumnPinned: this.onColumnPinned,
             onColumnVisible: this.onColumnVisible,
+            onDisplayedColumnsChanged: this.onDisplayedColumnsChanged,
             onColumnGroupOpened: this.onColumnGroupOpened,
             onCellEditingStarted: model.onCellEditingStarted,
             onCellEditingStopped: model.onCellEditingStopped,
@@ -811,6 +812,9 @@ export class GridLocalModel extends HoistModel {
             this.model.noteAgColumnStateChanged(ev.api.getColumnState());
         }
     };
+
+    // Cell class rules such as column group borders can depend on column position - re-evaluate.
+    onDisplayedColumnsChanged = ev => ev.api.refreshCells();
 
     // Fires for our own writes too (no `source` on this event) - model's equality check stops the loop.
     onColumnGroupOpened = ev => {
