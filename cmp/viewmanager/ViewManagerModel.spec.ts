@@ -343,6 +343,75 @@ describe('ViewManagerModel', () => {
         });
     });
 
+    describe('user state writes', () => {
+        beforeEach(() => addDeskViews());
+
+        it('sends one write at a time, merging changes made while one is in flight', async () => {
+            setState({currentView: 'east'});
+            const vmm = await createAsync();
+            vi.useFakeTimers();
+
+            const {arrived, release} = holdRequests('xhView/updateState');
+            vmm.autoSave = true;
+            await arrived;
+            vmm.userUnpin(findView(vmm, 'west'));
+            await vi.advanceTimersByTimeAsync(1000);
+            vmm.autoSave = false;
+            release();
+            await hoistCore.settleAsync();
+
+            expect(hoistCore.requestsTo('xhView/updateState').map(it => it.json)).toEqual([
+                {autoSave: true},
+                {userPinned: {west: false}, autoSave: false}
+            ]);
+            expect(jsonBlobs.viewState(TYPE)).toMatchObject({
+                userPinned: {west: false},
+                autoSave: false
+            });
+        });
+
+        it('requeues a failed write and sends it with the next', async () => {
+            setState({currentView: 'east'});
+            const vmm = await createAsync();
+            vi.useFakeTimers();
+
+            failNextStateWrite();
+            vmm.autoSave = true;
+            await hoistCore.settleAsync();
+            expect(vmm.autoSave).toBe(true);
+            expect(jsonBlobs.viewState(TYPE).autoSave).toBe(false);
+
+            vmm.userUnpin(findView(vmm, 'west'));
+            await vi.advanceTimersByTimeAsync(1000);
+            await hoistCore.settleAsync();
+
+            // The fake logs only the requests it served - the failed write is not among them.
+            expect(hoistCore.requestsTo('xhView/updateState').map(it => it.json)).toEqual([
+                {autoSave: true, userPinned: {west: false}}
+            ]);
+            expect(jsonBlobs.viewState(TYPE)).toMatchObject({
+                userPinned: {west: false},
+                autoSave: true
+            });
+        });
+
+        it('resends a failed write on refresh, keeping the local value meanwhile', async () => {
+            setState({currentView: 'east'});
+            const vmm = await createAsync();
+
+            failNextStateWrite();
+            vmm.autoSave = true;
+            await hoistCore.settleAsync();
+            expect(jsonBlobs.viewState(TYPE).autoSave).toBe(false);
+
+            await vmm.refreshAsync();
+            await hoistCore.settleAsync();
+
+            expect(vmm.autoSave).toBe(true);
+            expect(jsonBlobs.viewState(TYPE).autoSave).toBe(true);
+        });
+    });
+
     describe('saveAsync', () => {
         it('writes unsaved changes to the current view', async () => {
             setState({currentView: 'mine'});
@@ -718,6 +787,18 @@ function setState(state: PlainObject) {
 function failLoads() {
     hoistCore.route('POST', 'xhView/allData', () =>
         hoistError(500, {message: 'Database unavailable'})
+    );
+}
+
+/** Answer the next `xhView/updateState` with a server error. */
+function failNextStateWrite() {
+    let failed = false;
+    server.use(
+        http.post(xhUrl('xhView/updateState'), () => {
+            if (failed) return;
+            failed = true;
+            return hoistError(500, {message: 'Database unavailable'});
+        })
     );
 }
 

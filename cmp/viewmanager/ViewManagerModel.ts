@@ -32,6 +32,7 @@ import {ONE_SECOND, SECONDS} from '@xh/hoist/utils/datetime';
 import {executeIfFunction, pluralize, throwIf} from '@xh/hoist/utils/js';
 import {
     find,
+    isEmpty,
     isEqual,
     isNil,
     isNull,
@@ -272,11 +273,16 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
     private viewLoadCount = 0;
 
     /**
-     * Pin and auto-save state as of the last load or write attempt. While a local change is not
-     * yet written here, a refresh leaves both values alone. A failed write still advances this,
-     * so the next refresh resyncs from the server rather than shielding the value forever.
+     * Pin and auto-save state as of the last load or successful write. While a local change is
+     * not yet written here, a refresh leaves both values alone.
      */
     private savedUserState: ViewUserState = {userPinned: {}, autoSave: false};
+
+    /** State changed locally and not yet sent, including keys requeued from a failed write. */
+    private pendingState: Partial<ViewUserState> = {};
+
+    /** The in-flight `xhView/updateState` write, if any. */
+    private stateWrite: Promise<void> = null;
 
     /** Data access for persisting views. */
     private dataAccess: DataAccess<T>;
@@ -402,6 +408,7 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
             .run(async ctx => {
                 // 1) Update views and related state. Skip user state if a local change was
                 // unsaved at send or return - its pending write will land after this fetch.
+                this.flushStateWrites();
                 const hadUnsavedState = this.hasUnsavedState,
                     {views, state, manageGlobal} = await dataAccess.fetchDataAsync(ctx);
                 if (loadSpec.isStale) return;
@@ -703,33 +710,59 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
     }
 
     private stateReactions(initialState: ViewUserState): ReactionSpec[] {
-        const updateState = (spanName: string, update: Partial<ViewUserState>) =>
-            this.runner()
-                .span(spanName)
-                .run(async ctx => {
-                    try {
-                        await this.dataAccess.updateStateAsync(update, ctx);
-                    } finally {
-                        this.savedUserState = {...this.savedUserState, ...update};
-                    }
-                });
         return [
             {
                 track: () => this.userPinned,
-                run: userPinned => updateState('updateUserPinned', {userPinned}),
+                run: userPinned => this.queueStateWrite({userPinned}),
                 equals: compareStructural,
                 debounce: ONE_SECOND
             },
             {
                 track: () => this.autoSave,
-                run: autoSave => updateState('updateAutoSave', {autoSave})
+                run: autoSave => this.queueStateWrite({autoSave})
             },
             {
                 track: () => this.view?.token,
-                run: tkn => updateState('updateCurrentView', {currentView: tkn}),
+                run: tkn => this.queueStateWrite({currentView: tkn}),
                 fireImmediately: !!initialState && this.view?.token !== initialState.currentView
             }
         ];
+    }
+
+    /** Merge a change into the pending state and send it, unless a write is already in flight. */
+    private queueStateWrite(update: Partial<ViewUserState>) {
+        Object.assign(this.pendingState, update);
+        this.flushStateWrites();
+    }
+
+    /** Send pending state, if any and no write is in flight. */
+    private flushStateWrites() {
+        if (!this.stateWrite && !isEmpty(this.pendingState)) {
+            this.stateWrite = this.writeStateAsync();
+        }
+    }
+
+    /**
+     * Write pending state in one POST at a time, so writes never overlap and each carries every
+     * key changed since the last. A failed write requeues its keys, under any changed again since,
+     * for the next write - the next change or refresh sends them.
+     */
+    private async writeStateAsync() {
+        while (!isEmpty(this.pendingState)) {
+            const update = this.pendingState;
+            this.pendingState = {};
+            try {
+                await this.runner()
+                    .span('updateState')
+                    .run(ctx => this.dataAccess.updateStateAsync(update, ctx));
+                this.savedUserState = {...this.savedUserState, ...update};
+            } catch (e) {
+                this.pendingState = {...update, ...this.pendingState};
+                this.handleException(e, {showAlert: false});
+                break;
+            }
+        }
+        this.stateWrite = null;
     }
 
     /** True if pin or auto-save state has changed locally since the server last held it. */
