@@ -80,7 +80,7 @@ describe('ViewManagerModel', () => {
 
             const [req] = hoistCore.requestsTo('xhView/updateState');
             expect(req.query).toEqual({type: 'portfolioGrid', viewInstance: 'default'});
-            expect(req.json).toMatchObject({currentView: 'firm'});
+            expect(req.json).toEqual({currentView: 'firm'});
         });
 
         it('installs the default view and reports the error when views fail to load', async () => {
@@ -358,8 +358,27 @@ describe('ViewManagerModel', () => {
             await vi.advanceTimersByTimeAsync(100);
             await hoistCore.settleAsync();
             expect(hoistCore.requestsTo('xhView/updateState').map(it => it.json)).toEqual([
-                {currentView: 'east', userPinned: {west: false}, autoSave: true}
+                {userPinned: {west: false}, autoSave: true}
             ]);
+        });
+
+        it('writes only the keys that changed, keeping a pin made in another tab', async () => {
+            setState({currentView: 'east'});
+            const vmm = await createAsync();
+            vi.useFakeTimers();
+
+            setState({currentView: 'east', userPinned: {west: false}});
+            vmm.autoSave = true;
+            await vi.advanceTimersByTimeAsync(500);
+            await hoistCore.settleAsync();
+
+            expect(hoistCore.requestsTo('xhView/updateState').map(it => it.json)).toEqual([
+                {autoSave: true}
+            ]);
+            expect(jsonBlobs.viewState(TYPE)).toMatchObject({
+                userPinned: {west: false},
+                autoSave: true
+            });
         });
 
         it('logs a failed write, and the next refresh applies the server value', async () => {
@@ -613,7 +632,7 @@ describe('ViewManagerModel', () => {
 
             const reqs = hoistCore.requestsTo('xhView/updateState');
             expect(reqs).toHaveLength(1);
-            expect(reqs[0].json).toMatchObject({userPinned: {firm: false, bobs: true}});
+            expect(reqs[0].json).toEqual({userPinned: {firm: false, bobs: true}});
         });
     });
 

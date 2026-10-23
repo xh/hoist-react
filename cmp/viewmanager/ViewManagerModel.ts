@@ -32,12 +32,14 @@ import {SECONDS} from '@xh/hoist/utils/datetime';
 import {executeIfFunction, pluralize, throwIf} from '@xh/hoist/utils/js';
 import {
     find,
+    isEmpty,
     isEqual,
     isNil,
     isNull,
     isObject,
     isUndefined,
     lowerCase,
+    pickBy,
     remove,
     uniqBy
 } from 'lodash';
@@ -720,11 +722,17 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
         };
     }
 
-    /** Write user state. A failed write is logged and dropped - the next refresh resyncs. */
+    /**
+     * Write the keys of user state that changed since the server last held it. The server merges
+     * keys, so an unchanged key is left out rather than overwrite a change made in another tab.
+     * A failed write is logged and dropped - the next refresh resyncs.
+     */
     private async writeStateAsync(state: ViewUserState) {
+        const update = pickBy(state, (v, k) => !isEqual(v, this.savedUserState[k]));
+        if (isEmpty(update)) return;
         await this.runner()
             .span('updateState')
-            .run(ctx => this.dataAccess.updateStateAsync(state, ctx))
+            .run(ctx => this.dataAccess.updateStateAsync(update, ctx))
             .catch(e => this.handleException(e, {showAlert: false}));
         this.savedUserState = state;
     }
