@@ -28,16 +28,18 @@ import {
     observableRef,
     compareStructural
 } from '@xh/hoist/mobx';
-import {ONE_SECOND, SECONDS} from '@xh/hoist/utils/datetime';
+import {SECONDS} from '@xh/hoist/utils/datetime';
 import {executeIfFunction, pluralize, throwIf} from '@xh/hoist/utils/js';
 import {
     find,
+    isEmpty,
     isEqual,
     isNil,
     isNull,
     isObject,
     isUndefined,
     lowerCase,
+    pickBy,
     remove,
     uniqBy
 } from 'lodash';
@@ -683,7 +685,7 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
         this.addReaction(
             this.preserveUnsavedChanges ? this.unsavedChangesReaction() : null,
             this.autoSaveReaction(),
-            ...this.stateReactions(initialState)
+            this.stateReaction(initialState)
         );
     }
 
@@ -702,34 +704,37 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
         };
     }
 
-    private stateReactions(initialState: ViewUserState): ReactionSpec[] {
-        const updateState = (spanName: string, update: Partial<ViewUserState>) =>
-            this.runner()
-                .span(spanName)
-                .run(async ctx => {
-                    try {
-                        await this.dataAccess.updateStateAsync(update, ctx);
-                    } finally {
-                        this.savedUserState = {...this.savedUserState, ...update};
-                    }
-                });
-        return [
-            {
-                track: () => this.userPinned,
-                run: userPinned => updateState('updateUserPinned', {userPinned}),
-                equals: compareStructural,
-                debounce: ONE_SECOND
-            },
-            {
-                track: () => this.autoSave,
-                run: autoSave => updateState('updateAutoSave', {autoSave})
-            },
-            {
-                track: () => this.view?.token,
-                run: tkn => updateState('updateCurrentView', {currentView: tkn}),
-                fireImmediately: !!initialState && this.view?.token !== initialState.currentView
-            }
-        ];
+    private stateReaction(initialState: ViewUserState): ReactionSpec {
+        return {
+            track: () => this.userState,
+            run: state => this.writeStateAsync(state),
+            equals: compareStructural,
+            debounce: 500,
+            fireImmediately: !!initialState && this.view?.token !== initialState.currentView
+        };
+    }
+
+    private get userState(): ViewUserState {
+        return {
+            currentView: this.view?.token,
+            userPinned: this.userPinned,
+            autoSave: this.autoSave
+        };
+    }
+
+    /**
+     * Write the keys of user state that changed since the server last held it. The server merges
+     * keys, so an unchanged key is left out rather than overwrite a change made in another tab.
+     * A failed write is logged and dropped - the next refresh resyncs.
+     */
+    private async writeStateAsync(state: ViewUserState) {
+        const update = pickBy(state, (v, k) => !isEqual(v, this.savedUserState[k]));
+        if (isEmpty(update)) return;
+        await this.runner()
+            .span('updateState')
+            .run(ctx => this.dataAccess.updateStateAsync(update, ctx))
+            .catch(e => this.handleException(e, {showAlert: false}));
+        this.savedUserState = state;
     }
 
     /** True if pin or auto-save state has changed locally since the server last held it. */

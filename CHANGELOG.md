@@ -42,6 +42,8 @@ detailed, step-by-step upgrade instructions with before/after code examples.
   wait could scroll another select's menu, or leave an unhandled rejection after five seconds.
 * Fixed `ViewManagerModel` refreshes reverting a pin or auto-save change whose write was still
   debounced or in flight.
+* Fixed `ViewManagerModel` sending overlapping user state writes, which could fail on the server
+  and lose a pin, auto-save or current view change. It now sends one write per burst of changes.
 
 ### ⚙️ Technical
 
