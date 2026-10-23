@@ -813,8 +813,7 @@ export class GridLocalModel extends HoistModel {
         }
     };
 
-    // Column group edge borders are cell classes computed from each column's position within its
-    // group, so re-evaluate them whenever columns are reordered, shown, hidden or pinned.
+    // Column group edge borders depend on each column's position - re-evaluate on any change.
     onDisplayedColumnsChanged = ev => {
         const columns = this.model.getGroupBorderedLeafColumns().map(it => it.colId);
         if (!isEmpty(columns)) ev.api.refreshCells({columns});
