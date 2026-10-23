@@ -1,0 +1,208 @@
+/*
+ * Styles for Hoist's mobile components, extracted from Onsen UI 2.12.9
+ * (onsenui/css/onsenui.css). Layout and behavior rules for the custom elements themselves.
+ *
+ * Regenerate with `node scripts/extractOnsenCss.mjs` - do not edit by hand while Onsen remains a
+ * dependency. Only the rules for the Onsen components Hoist renders are included.
+ *
+ * Copyright 2013-2017 ASIAL CORPORATION. Licensed under the Apache License, Version 2.0 - see
+ * https://www.apache.org/licenses/LICENSE-2.0 and the LICENSE file in the onsenui package.
+ */
+/* stylelint-disable */
+ons-page,
+ons-tabbar,
+ons-gesture-detector {
+  display: block;
+  touch-action: manipulation;
+}
+ons-tabbar,
+ons-dialog,
+ons-toast {
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+  overflow: hidden;
+  touch-action: manipulation;
+}
+ons-toast {
+  pointer-events: none;
+}
+ons-toast .toast {
+  pointer-events: auto;
+}
+ons-tab {
+  -webkit-transform: translate3d(0, 0, 0);
+  transform: translate3d(0, 0, 0);
+}
+ons-page,
+ons-tabbar,
+ons-dialog,
+ons-toast {
+  z-index: 2;
+}
+.page,
+.page__content,
+.page--material,
+.page--material__content {
+  background-color: transparent !important;
+  background: transparent !important;
+}
+.page__content {
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
+  z-index: 0;
+  -ms-touch-action: pan-y;
+}
+.page.overflow-visible,
+.page.overflow-visible .page,
+.page.overflow-visible .page__content {
+  overflow: visible;
+}
+.page.overflow-visible .page__content.content-swiping,
+.page.overflow-visible .page__content.content-swiping .page,
+.page.overflow-visible .page__content.content-swiping .page__content {
+  overflow: auto;
+}
+.page[status-bar-fill] > .page__content {
+  top: 20px;
+}
+ons-tabbar[status-bar-fill] > .tabbar--top__content {
+  top: 71px;
+}
+ons-tabbar[status-bar-fill] > .tabbar--top {
+  padding-top: 22px;
+}
+ons-tabbar[position='top'] .page[status-bar-fill] > .page__content {
+  top: 0px;
+}
+.page__content > .list:not(.list--material):first-child {
+  margin-top: -1px;
+}
+.page--wrapper > .page__background {
+  display: none;
+}
+ons-dialog[disabled] {
+  pointer-events: none;
+  opacity: 0.75;
+}
+ons-list-item[disabled] {
+  pointer-events: none;
+}
+.ons-ios-scroll-fix .page:not(.page--wrapper)[shown] > .page__content {
+  overflow-y: hidden;
+}
+ons-input,
+ons-checkbox,
+ons-search-input {
+  display: inline-block;
+  position: relative;
+}
+ons-input .text-input,
+ons-search-input .search-input {
+  width: 100%;
+  display: inline-block;
+}
+ons-input .text-input__label:not(.text-input--material__label) {
+  display: none;
+}
+ons-input:not([float]) .text-input--material__label--active {
+  display: none;
+}
+ons-input[disabled],
+ons-checkbox[disabled],
+ons-search-input[disabled] {
+  opacity: 0.5;
+  pointer-events: none;
+}
+ons-input input.text-input--material::-webkit-input-placeholder {
+  color: transparent;
+}
+ons-input input.text-input--material::-moz-placeholder {
+  color: transparent;
+}
+ons-input input.text-input--material:-ms-input-placeholder {
+  color: transparent;
+}
+.ripple {
+  display: block;
+  position: absolute;
+  overflow: hidden;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+}
+.ripple__background {
+  background: rgba(255, 255, 255, 0.2);
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+.ripple__wave {
+  background: rgba(255, 255, 255, 0.2);
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+ons-list-item .ripple__wave,
+ons-list-item .ripple__background,
+.button--material--flat .ripple__wave,
+.button--material--flat .ripple__background {
+  background: rgba(189, 189, 189, 0.3);
+}
+.ripple--light-gray__wave,
+.ripple--light-gray__background {
+  background: rgba(189, 189, 189, 0.3);
+}
+.ons-swiper {
+  overflow: hidden;
+  display: block;
+  box-sizing: border-box;
+}
+.ons-swiper-target {
+  display: -webkit-flex;
+  display: flex;
+  height: 100%;
+  z-index: 1;
+  -webkit-flex-direction: row;
+  flex-direction: row;
+}
+.ons-swiper-target--vertical {
+  -webkit-flex-direction: column;
+  flex-direction: column;
+}
+.ons-swiper-target > * {
+  height: inherit;
+  -webkit-flex-shrink: 0;
+  flex-shrink: 0;
+  box-sizing: border-box;
+  width: 100%;
+  position: relative !important;
+}
+.ons-swiper-target.active:not(.swiping) > .page:not([shown]) {
+  visibility: hidden;
+}
+.ons-swiper-tabbar .tabbar--material__button:after {
+  display: none;
+}
+.ons-swiper-blocker {
+  display: block;
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  pointer-events: none;
+}

@@ -8,32 +8,14 @@
   --button-text-color: initial;
 }
 
-// Override styles provided in onsenui.css and onsen-css-components.css to use variable declarations
+// Override styles provided in mobile/styles/onsen to use variable declarations
 body.xh-app.xh-mobile {
   // Background
-  .textarea {
-    background-color: var(--xh-bg);
-  }
-
-  .bottom-bar,
   .tabbar {
     background-color: var(--xh-bg-alt);
   }
 
-  // Title bars
-  .toolbar,
-  .toolbar__bg {
-    background-color: var(--xh-title-bg);
-  }
-
-  .toolbar,
-  .toolbar__center,
-  .toolbar__title {
-    color: var(--xh-title-text-color);
-  }
-
   // Borders
-  .toolbar,
   .tabbar,
   .list,
   .list-item,
@@ -43,78 +25,33 @@ body.xh-app.xh-mobile {
     background-image: none;
   }
 
-  .toolbar {
-    border-bottom: var(--xh-border-solid);
-  }
-
-  .textarea {
-    border: var(--xh-border-solid);
-  }
-
-  .select-input {
-    border-color: var(--xh-border-color);
-  }
-
-  .bottom-bar > .button {
-    margin: 6px 4px;
-    line-height: 26px;
-  }
-
   // Accented
-  .alert-dialog-button,
   :checked + .tabbar__button {
     color: var(--xh-accent-color);
   }
 
-  .fab,
-  .fab:active,
-  .fab--material,
   .button--cta,
   .button--cta:active,
   .tabbar__border,
-  :checked + .checkbox__checkmark::before,
-  .range__input::-ms-fill-lower {
+  :checked + .checkbox__checkmark::before {
     background-color: var(--xh-accent-color);
   }
 
   .checkbox--noborder__checkmark::after,
-  .radio-button__checkmark::after,
   :checked + .tabbar--top-border__button {
     border-color: var(--xh-accent-color);
   }
 
-  // Spinners
-  .progress-bar__primary,
-  .progress-bar__secondary,
-  .progress-bar--indeterminate::before,
-  .progress-bar--indeterminate::after {
-    background-color: var(--xh-accent-color);
-  }
-
-  .progress-circular__primary,
-  .progress-circular__secondary {
-    stroke: var(--xh-accent-color);
-  }
-
   // Text
   .page,
-  .list-header,
   .dialog-container,
   .dialog-container--material,
-  .popover--material__content,
-  .bottom-bar,
   .tabbar,
   .search-input,
   .text-input,
   .text-input:invalid,
   .text-input--underbar,
-  .text-input--underbar:invalid,
-  .textarea,
-  .textarea--transparent,
-  .select-input,
-  .select-input:invalid,
-  .select-input--material,
-  .select-input--underbar:invalid {
+  .text-input--underbar:invalid {
     color: var(--xh-text-color);
   }
 

@@ -52,6 +52,13 @@ detailed, step-by-step upgrade instructions with before/after code examples.
   Keys and JSON values are stored exactly as before.  Removed the unused `isFake` getter - when
   storage is unavailable the service logs a warning and holds values in memory, as before.
 
+### ✨ Styles
+
+* Mobile apps now load only the Onsen UI styles for the components Hoist renders, extracted into
+  `mobile/styles/onsen/`. Onsen's full stylesheet and its icon fonts are no longer bundled. An app
+  that styled its own markup with Onsen classes Hoist does not use (e.g. `.toolbar`, `.fab`) must
+  now supply those styles itself.
+
 ### 📚 Libraries
 
 * router5 `7.0 → 8.0`

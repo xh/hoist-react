@@ -6,8 +6,8 @@
  */
 import {ElementFactory, elementFactory, HoistModel} from '@xh/hoist/core';
 import onsen from 'onsenui';
-import 'onsenui/css/onsen-css-components.css';
-import 'onsenui/css/onsenui.css';
+import '../../mobile/styles/onsen/components.scss';
+import '../../mobile/styles/onsen/core.scss';
 import {
     createElement,
     ForwardedRef,
