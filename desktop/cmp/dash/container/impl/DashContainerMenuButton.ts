@@ -5,10 +5,9 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {hoistCmp} from '@xh/hoist/core';
-import {button} from '@xh/hoist/desktop/cmp/button';
+import {baseUiMenuButton} from '@xh/hoist/desktop/cmp/menu/impl/BaseUiMenu';
 import {Icon} from '@xh/hoist/icon';
-import {popover, Position} from '@xh/hoist/kit/blueprint';
-import {dashContainerContextMenu} from './DashContainerContextMenu';
+import {createDashContainerMenuItems} from './DashContainerContextMenu';
 
 /**
  * Button and popover for displaying the context menu. Apps can control whether this button is
@@ -23,13 +22,11 @@ export const dashContainerMenuButton = hoistCmp.factory({
     render({stack, dashContainerModel, className}) {
         if (dashContainerModel.contentLocked || !dashContainerModel.showMenuButton) return null;
 
-        return popover({
-            position: Position.BOTTOM,
-            item: button({
-                icon: Icon.ellipsisVertical(),
-                className
-            }),
-            content: dashContainerContextMenu({stack, dashContainerModel})
+        return baseUiMenuButton({
+            icon: Icon.ellipsisVertical(),
+            className,
+            menuItems: () => createDashContainerMenuItems({stack, dashContainerModel}),
+            menuAlign: 'center'
         });
     }
 });

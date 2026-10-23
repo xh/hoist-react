@@ -82,49 +82,59 @@ export function parseMenuItems(
         ...submenuPopoverProps
     };
 
-    items = items.map(item => {
-        if (isMenuHeading(item)) return resolveMenuHeading(item, context);
+    return prepareMenuItems(items, context).map(item => {
+        // Process dividers and headings
+        if (item === '-') return menuDivider();
+        if (isMenuHeading(item)) {
+            return menuDivider({title: item.heading, className: item.className});
+        }
         if (!isMenuItem(item)) return item;
 
-        item = clone(item);
-        item.items = clone(item.items);
-        item.prepareFn?.(item, context);
-        return item;
-    });
+        const {actionFn} = item;
 
+        // Create menuItem from config
+        const cfg: ElementSpec<MenuItemProps> = {
+            text: item.text,
+            icon: item.icon,
+            intent: item.intent,
+            className: item.className,
+            onClick: actionFn ? e => wait().then(() => actionFn(e, context)) : null, // do async to allow menu to close
+            disabled: item.disabled,
+            active: item.active,
+            shouldDismissPopover: !item.keepMenuOpen,
+            [TEST_ID]: item.testId
+        };
+
+        // Recursively parse any submenus
+        if (!isEmpty(item.items)) {
+            cfg.items = parseMenuItems(item.items, opts);
+            cfg.popoverProps = popoverProps;
+        }
+
+        return menuItem(cfg);
+    });
+}
+
+/**
+ * Prepare MenuItem configs for display. Runs each item's `prepareFn` on a copy of the item, then
+ * drops hidden items, headings with no items below them, and stray separators.
+ *
+ * Shared by every renderer of Hoist menu configs, so each applies the same rules.
+ *
+ * @internal
+ */
+export function prepareMenuItems<T extends MenuItemLike>(items: T[], context?: MenuContext): T[] {
     return items
-        .filter(isVisibleMenuEntry)
-        .filter(filterMenuHeadings(isMenuHeading))
-        .filter(filterConsecutiveMenuSeparators())
         .map(item => {
-            // Process dividers and headings
-            if (item === '-') return menuDivider();
-            if (isMenuHeading(item)) {
-                return menuDivider({title: item.heading, className: item.className});
-            }
+            if (isMenuHeading(item)) return resolveMenuHeading(item, context);
             if (!isMenuItem(item)) return item;
 
-            const {actionFn} = item;
-
-            // Create menuItem from config
-            const cfg: ElementSpec<MenuItemProps> = {
-                text: item.text,
-                icon: item.icon,
-                intent: item.intent,
-                className: item.className,
-                onClick: actionFn ? e => wait().then(() => actionFn(e, context)) : null, // do async to allow menu to close
-                disabled: item.disabled,
-                active: item.active,
-                shouldDismissPopover: !item.keepMenuOpen,
-                [TEST_ID]: item.testId
-            };
-
-            // Recursively parse any submenus
-            if (!isEmpty(item.items)) {
-                cfg.items = parseMenuItems(item.items, opts);
-                cfg.popoverProps = popoverProps;
-            }
-
-            return menuItem(cfg);
-        });
+            const ret = clone(item);
+            ret.items = clone(ret.items);
+            ret.prepareFn?.(ret, context);
+            return ret;
+        })
+        .filter(isVisibleMenuEntry)
+        .filter(filterMenuHeadings(isMenuHeading))
+        .filter(filterConsecutiveMenuSeparators()) as T[];
 }

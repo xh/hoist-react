@@ -253,7 +253,7 @@
             "mcpCategory": "package",
             "viewerCategory": "components",
             "description": "Centralized wrappers for third-party libraries used by Hoist.",
-            "keywords": ["installAgGrid", "installHighcharts", "Blueprint", "Onsen", "GoldenLayout", "react-select"]
+            "keywords": ["installAgGrid", "installHighcharts", "Blueprint", "Base UI", "Onsen", "GoldenLayout", "react-select"]
         },
         {
             "id": "kit/blueprint/README.md",

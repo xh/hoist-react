@@ -45,6 +45,13 @@ export interface DashConfig<VSPEC extends DashViewSpec, VSTATE extends DashViewS
     addViewButtonText?: string;
 
     /**
+     * Minimum count of view specs that a menu for adding or replacing views must list, across its
+     * nested groups, to show a filter atop it. Set 0 to always show the filter. Defaults to 20 -
+     * see `DashContainerModel.defaults` and `DashCanvasModel.defaults`.
+     */
+    addViewFilterThreshold?: number;
+
+    /**
      * Array of RecordActions, configs or token strings, with which to create additional dash
      * context menu items. Extra menu items will appear in the menu section below the 'Add' action,
      * including when the dash container is empty.
