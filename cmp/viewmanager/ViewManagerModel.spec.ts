@@ -278,15 +278,17 @@ describe('ViewManagerModel', () => {
             expect(vmm.autoSave).toBe(true);
         });
 
-        it('keeps a pin made just before a refresh', async () => {
+        it('keeps a pin made just before a refresh, and saves it after 500ms', async () => {
             setState({currentView: 'east'});
             const vmm = await createAsync();
+            vi.useFakeTimers();
 
             vmm.userUnpin(findView(vmm, 'west'));
             await vmm.refreshAsync();
-            await hoistCore.settleAsync();
-
             expect(vmm.isUserPinned(findView(vmm, 'west'))).toBe(false);
+
+            await vi.advanceTimersByTimeAsync(500);
+            await hoistCore.settleAsync();
             expect(jsonBlobs.viewState(TYPE).userPinned).toEqual({west: false});
         });
 
@@ -307,9 +309,11 @@ describe('ViewManagerModel', () => {
         it('keeps a pin whose write is in flight when a refresh fetch is sent', async () => {
             setState({currentView: 'east'});
             const vmm = await createAsync();
+            vi.useFakeTimers();
 
             const {arrived, release} = holdRequests('xhView/updateState');
             vmm.userUnpin(findView(vmm, 'west'));
+            await vi.advanceTimersByTimeAsync(500);
             await arrived;
             await vmm.refreshAsync();
             release();
@@ -322,9 +326,11 @@ describe('ViewManagerModel', () => {
         it('keeps an auto-save change whose write is in flight when a refresh is sent', async () => {
             setState({currentView: 'east'});
             const vmm = await createAsync();
+            vi.useFakeTimers();
 
             const {arrived, release} = holdRequests('xhView/updateState');
             vmm.autoSave = true;
+            await vi.advanceTimersByTimeAsync(500);
             await arrived;
             await vmm.refreshAsync();
             release();
@@ -338,34 +344,33 @@ describe('ViewManagerModel', () => {
     describe('user state writes', () => {
         beforeEach(() => addDeskViews());
 
-        it('sends one write at a time, and one more for changes made while it is in flight', async () => {
+        it('writes changes made within 500ms of each other as one', async () => {
             setState({currentView: 'east'});
             const vmm = await createAsync();
+            vi.useFakeTimers();
 
-            const {arrived, release} = holdRequests('xhView/updateState');
             vmm.autoSave = true;
-            await arrived;
+            await vi.advanceTimersByTimeAsync(400);
             vmm.userUnpin(findView(vmm, 'west'));
-            vmm.autoSave = false;
-            release();
-            await hoistCore.settleAsync();
+            await vi.advanceTimersByTimeAsync(400);
+            expect(hoistCore.requestsTo('xhView/updateState')).toHaveLength(0);
 
+            await vi.advanceTimersByTimeAsync(100);
+            await hoistCore.settleAsync();
             expect(hoistCore.requestsTo('xhView/updateState').map(it => it.json)).toEqual([
-                {currentView: 'east', userPinned: {}, autoSave: true},
-                {currentView: 'east', userPinned: {west: false}, autoSave: false}
+                {currentView: 'east', userPinned: {west: false}, autoSave: true}
             ]);
-            expect(jsonBlobs.viewState(TYPE)).toMatchObject({
-                userPinned: {west: false},
-                autoSave: false
-            });
         });
 
         it('logs a failed write, and the next refresh applies the server value', async () => {
             setState({currentView: 'east'});
             const vmm = await createAsync();
 
+            vi.useFakeTimers();
+
             failNextStateWrite();
             vmm.autoSave = true;
+            await vi.advanceTimersByTimeAsync(500);
             await hoistCore.settleAsync();
             expect(vmm.autoSave).toBe(true);
             expect(jsonBlobs.viewState(TYPE).autoSave).toBe(false);
@@ -593,13 +598,17 @@ describe('ViewManagerModel', () => {
             expect(vmm.views.find(it => it.token === 'desk').group).toBe('Desks/Rates');
         });
 
-        it('pins owned and global views by default, and saves user pins', async () => {
+        it('pins owned and global views by default, and saves user pins after 500ms', async () => {
             setState({currentView: 'mine', userPinned: {firm: false}});
             const vmm = await createAsync();
             expect(names(vmm.pinnedViews)).toEqual(['My Positions']);
 
+            vi.useFakeTimers();
             vmm.userPin(vmm.views.find(it => it.token === 'bobs'));
             expect(names(vmm.pinnedViews)).toEqual(['My Positions', 'Bob Risk']);
+            await vi.advanceTimersByTimeAsync(499);
+            expect(hoistCore.requestsTo('xhView/updateState')).toHaveLength(0);
+            await vi.advanceTimersByTimeAsync(1);
             await hoistCore.settleAsync();
 
             const reqs = hoistCore.requestsTo('xhView/updateState');

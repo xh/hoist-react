@@ -271,8 +271,12 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
     /** Count of calls to {@link loadViewAsync}, used to identify the latest. */
     private viewLoadCount = 0;
 
-    /** The in-flight `xhView/updateState` write, if any. */
-    private stateWrite: Promise<unknown> = null;
+    /**
+     * Pin and auto-save state as of the last load or write attempt. While a local change is not
+     * yet written here, a refresh leaves both values alone. A failed write still advances this,
+     * so the next refresh resyncs from the server rather than shielding the value forever.
+     */
+    private savedUserState: ViewUserState = {userPinned: {}, autoSave: false};
 
     /** Data access for persisting views. */
     private dataAccess: DataAccess<T>;
@@ -396,15 +400,15 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
         await this.runner({loadSpec})
             .span('refresh')
             .run(async ctx => {
-                // 1) Update views and related state. Skip user state if a write was in flight
-                // as the fetch was sent or returned - the response may predate it.
-                const wasWriting = !!this.stateWrite,
+                // 1) Update views and related state. Skip user state if a local change was
+                // unsaved at send or return - its pending write will land after this fetch.
+                const hadUnsavedState = this.hasUnsavedState,
                     {views, state, manageGlobal} = await dataAccess.fetchDataAsync(ctx);
                 if (loadSpec.isStale) return;
                 runInAction(() => {
                     this.views = views;
                     this.serverManageGlobal = manageGlobal ?? null;
-                    if (!wasWriting && !this.stateWrite) this.applyUserState(state);
+                    if (!hadUnsavedState && !this.hasUnsavedState) this.applyUserState(state);
                 });
 
                 // Fast-forward the current view if it was updated elsewhere.
@@ -701,8 +705,9 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
     private stateReaction(initialState: ViewUserState): ReactionSpec {
         return {
             track: () => this.userState,
-            run: () => this.writeState(),
+            run: state => this.writeStateAsync(state),
             equals: compareStructural,
+            debounce: STATE_WRITE_DEBOUNCE,
             fireImmediately: !!initialState && this.view?.token !== initialState.currentView
         };
     }
@@ -715,29 +720,30 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
         };
     }
 
-    /**
-     * Write user state, one POST at a time. A write that lands behind a further change is
-     * followed by one more, so writes never overlap and bursts coalesce. A failed write is
-     * logged and dropped - the next refresh resyncs from the server.
-     */
-    private writeState() {
-        if (this.stateWrite) return;
-        const state = this.userState;
-        this.stateWrite = this.runner()
+    /** Write user state. A failed write is logged and dropped - the next refresh resyncs. */
+    private async writeStateAsync(state: ViewUserState) {
+        await this.runner()
             .span('updateState')
             .run(ctx => this.dataAccess.updateStateAsync(state, ctx))
-            .catch(e => this.handleException(e, {showAlert: false}))
-            .finally(() => {
-                this.stateWrite = null;
-                if (!isEqual(state, this.userState)) this.writeState();
-            });
+            .catch(e => this.handleException(e, {showAlert: false}));
+        this.savedUserState = state;
     }
 
-    /** Install pin and auto-save state fetched from the server. */
+    /** True if pin or auto-save state has changed locally since the server last held it. */
+    private get hasUnsavedState(): boolean {
+        const {savedUserState} = this;
+        return (
+            this.autoSave !== savedUserState.autoSave ||
+            !isEqual(this.userPinned, savedUserState.userPinned)
+        );
+    }
+
+    /** Install pin and auto-save state fetched from the server, and record that it holds it. */
     @action
     private applyUserState(state: ViewUserState) {
         this.userPinned = state.userPinned;
         this.autoSave = state.autoSave;
+        this.savedUserState = state;
     }
 
     private async loadViewAsync(
@@ -902,3 +908,6 @@ interface PendingValue<T> {
     baseUpdated: number;
     value: Partial<T>;
 }
+
+/** Delay before user state is written, so a burst of changes goes out as one write. */
+const STATE_WRITE_DEBOUNCE = 500;
