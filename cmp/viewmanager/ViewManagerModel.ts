@@ -274,9 +274,6 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
     /** The in-flight `xhView/updateState` write, if any. */
     private stateWrite: Promise<unknown> = null;
 
-    /** True if user state changed while a write was in flight, so another must follow. */
-    private stateDirty = false;
-
     /** Data access for persisting views. */
     private dataAccess: DataAccess<T>;
 
@@ -704,7 +701,7 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
     private stateReaction(initialState: ViewUserState): ReactionSpec {
         return {
             track: () => this.userState,
-            run: () => this.writeStateAsync(),
+            run: () => this.writeState(),
             equals: compareStructural,
             fireImmediately: !!initialState && this.view?.token !== initialState.currentView
         };
@@ -719,24 +716,21 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
     }
 
     /**
-     * Write user state, one POST at a time. A change made while a write is in flight is sent by
-     * one more write after it, so writes never overlap and bursts coalesce. A failed write is
+     * Write user state, one POST at a time. A write that lands behind a further change is
+     * followed by one more, so writes never overlap and bursts coalesce. A failed write is
      * logged and dropped - the next refresh resyncs from the server.
      */
-    private async writeStateAsync() {
-        if (this.stateWrite) {
-            this.stateDirty = true;
-            return;
-        }
-        do {
-            this.stateDirty = false;
-            this.stateWrite = this.runner()
-                .span('updateState')
-                .run(ctx => this.dataAccess.updateStateAsync(this.userState, ctx))
-                .catch(e => this.handleException(e, {showAlert: false}));
-            await this.stateWrite;
-        } while (this.stateDirty);
-        this.stateWrite = null;
+    private writeState() {
+        if (this.stateWrite) return;
+        const state = this.userState;
+        this.stateWrite = this.runner()
+            .span('updateState')
+            .run(ctx => this.dataAccess.updateStateAsync(state, ctx))
+            .catch(e => this.handleException(e, {showAlert: false}))
+            .finally(() => {
+                this.stateWrite = null;
+                if (!isEqual(state, this.userState)) this.writeState();
+            });
     }
 
     /** Install pin and auto-save state fetched from the server. */
