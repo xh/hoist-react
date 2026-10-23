@@ -44,7 +44,7 @@ detailed, step-by-step upgrade instructions with before/after code examples.
   debounced or in flight.
 * Fixed `ViewManagerModel` sending overlapping `xhView/updateState` writes, which could fail on
   the server and lose a pin, auto-save or current view change. It now sends one write at a time,
-  merging changes made meanwhile, and resends a failed write with the next change or refresh.
+  merging changes made meanwhile, and logs a failed write instead of leaving it unhandled.
 * Removed an unused `isPinned` value from the desktop view manager's Save As form.
 
 ### ⚙️ Technical

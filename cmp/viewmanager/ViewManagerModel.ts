@@ -273,12 +273,13 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
     private viewLoadCount = 0;
 
     /**
-     * Pin and auto-save state as of the last load or successful write. While a local change is
-     * not yet written here, a refresh leaves both values alone.
+     * Pin and auto-save state as of the last load or write attempt. While a local change is not
+     * yet written here, a refresh leaves both values alone. A failed write still advances this,
+     * so the next refresh resyncs from the server rather than shielding the value forever.
      */
     private savedUserState: ViewUserState = {userPinned: {}, autoSave: false};
 
-    /** State changed locally and not yet sent, including keys requeued from a failed write. */
+    /** State changed locally and not yet sent. */
     private pendingState: Partial<ViewUserState> = {};
 
     /** The in-flight `xhView/updateState` write, if any. */
@@ -408,7 +409,6 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
             .run(async ctx => {
                 // 1) Update views and related state. Skip user state if a local change was
                 // unsaved at send or return - its pending write will land after this fetch.
-                this.flushStateWrites();
                 const hadUnsavedState = this.hasUnsavedState,
                     {views, state, manageGlobal} = await dataAccess.fetchDataAsync(ctx);
                 if (loadSpec.isStale) return;
@@ -732,35 +732,22 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
     /** Merge a change into the pending state and send it, unless a write is already in flight. */
     private queueStateWrite(update: Partial<ViewUserState>) {
         Object.assign(this.pendingState, update);
-        this.flushStateWrites();
-    }
-
-    /** Send pending state, if any and no write is in flight. */
-    private flushStateWrites() {
-        if (!this.stateWrite && !isEmpty(this.pendingState)) {
-            this.stateWrite = this.writeStateAsync();
-        }
+        this.stateWrite ??= this.writeStateAsync();
     }
 
     /**
      * Write pending state in one POST at a time, so writes never overlap and each carries every
-     * key changed since the last. A failed write requeues its keys, under any changed again since,
-     * for the next write - the next change or refresh sends them.
+     * key changed since the last. A failed write is logged and dropped - the next refresh resyncs.
      */
     private async writeStateAsync() {
         while (!isEmpty(this.pendingState)) {
             const update = this.pendingState;
             this.pendingState = {};
-            try {
-                await this.runner()
-                    .span('updateState')
-                    .run(ctx => this.dataAccess.updateStateAsync(update, ctx));
-                this.savedUserState = {...this.savedUserState, ...update};
-            } catch (e) {
-                this.pendingState = {...update, ...this.pendingState};
-                this.handleException(e, {showAlert: false});
-                break;
-            }
+            await this.runner()
+                .span('updateState')
+                .run(ctx => this.dataAccess.updateStateAsync(update, ctx))
+                .catch(e => this.handleException(e, {showAlert: false}));
+            this.savedUserState = {...this.savedUserState, ...update};
         }
         this.stateWrite = null;
     }

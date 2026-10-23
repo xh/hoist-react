@@ -370,45 +370,18 @@ describe('ViewManagerModel', () => {
             });
         });
 
-        it('requeues a failed write and sends it with the next', async () => {
+        it('logs a failed write, and the next refresh applies the server value', async () => {
             setState({currentView: 'east'});
             const vmm = await createAsync();
-            vi.useFakeTimers();
 
             failNextStateWrite();
             vmm.autoSave = true;
             await hoistCore.settleAsync();
             expect(vmm.autoSave).toBe(true);
-            expect(jsonBlobs.viewState(TYPE).autoSave).toBe(false);
-
-            vmm.userUnpin(findView(vmm, 'west'));
-            await vi.advanceTimersByTimeAsync(1000);
-            await hoistCore.settleAsync();
-
-            // The fake logs only the requests it served - the failed write is not among them.
-            expect(hoistCore.requestsTo('xhView/updateState').map(it => it.json)).toEqual([
-                {autoSave: true, userPinned: {west: false}}
-            ]);
-            expect(jsonBlobs.viewState(TYPE)).toMatchObject({
-                userPinned: {west: false},
-                autoSave: true
-            });
-        });
-
-        it('resends a failed write on refresh, keeping the local value meanwhile', async () => {
-            setState({currentView: 'east'});
-            const vmm = await createAsync();
-
-            failNextStateWrite();
-            vmm.autoSave = true;
-            await hoistCore.settleAsync();
             expect(jsonBlobs.viewState(TYPE).autoSave).toBe(false);
 
             await vmm.refreshAsync();
-            await hoistCore.settleAsync();
-
-            expect(vmm.autoSave).toBe(true);
-            expect(jsonBlobs.viewState(TYPE).autoSave).toBe(true);
+            expect(vmm.autoSave).toBe(false);
         });
     });
 
