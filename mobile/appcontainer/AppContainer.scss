@@ -35,24 +35,25 @@ html {
       outline: none;
     }
   }
+}
 
-  h1 {
-    font-size: 36px;
-  }
+// Heading sizes at tag specificity, so any app rule on a heading wins, as it always has.
+:where(.xh-app.xh-mobile) h1 {
+  font-size: 36px;
+}
 
-  h2 {
-    font-size: 30px;
-  }
+:where(.xh-app.xh-mobile) h2 {
+  font-size: 30px;
+}
 
-  h3 {
-    font-size: 24px;
-  }
+:where(.xh-app.xh-mobile) h3 {
+  font-size: 24px;
+}
 
-  h4,
-  h5,
-  h6 {
-    font-size: 18px;
-  }
+:where(.xh-app.xh-mobile) h4,
+:where(.xh-app.xh-mobile) h5,
+:where(.xh-app.xh-mobile) h6 {
+  font-size: 18px;
 }
 
 //--------------------
