@@ -5,8 +5,9 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {HoistInputModel, HoistInputProps, useHoistInputModel} from '@xh/hoist/cmp/input';
+import {div, hbox, input} from '@xh/hoist/cmp/layout';
 import {hoistCmp, HoistProps} from '@xh/hoist/core';
-import {searchInput as onsenSearchInput} from '@xh/hoist/kit/onsen';
+import {Icon} from '@xh/hoist/icon';
 import '@xh/hoist/mobile/register';
 import {TEST_ID, withDefault} from '@xh/hoist/utils/js';
 import {getLayoutProps} from '@xh/hoist/utils/react';
@@ -18,9 +19,6 @@ export interface SearchInputProps extends HoistProps, HoistInputProps {
 
     /** True to commit on every change/keystroke, default false. */
     commitOnChange?: boolean;
-
-    /** Onsen modifier string */
-    modifier?: string;
 
     /** Text to display when control is empty */
     placeholder?: string;
@@ -87,29 +85,35 @@ class SearchInputModel extends HoistInputModel {
 const cmp = hoistCmp.factory<SearchInputModel>(({model, className, ...props}, ref) => {
     const {width, ...layoutProps} = getLayoutProps(props);
 
-    return onsenSearchInput({
-        value: model.renderValue || '',
-
-        disabled: props.disabled,
-        modifier: props.modifier,
-        placeholder: props.placeholder,
-        spellCheck: withDefault(props.spellCheck, false),
-        tabIndex: props.tabIndex,
-
+    return hbox({
+        ref,
         className,
         style: {
             ...props.style,
             ...layoutProps,
-            width: withDefault(width, null),
-            textAlign: withDefault(props.textAlign, 'left')
+            width: withDefault(width, null)
         },
-        [TEST_ID]: props.testId,
-        ...props.domAttrs,
+        items: [
+            div({className: 'xh-search-input__icon', item: Icon.search()}),
+            input({
+                className: 'xh-search-input__input',
+                type: 'search',
+                value: model.renderValue || '',
 
-        onInput: model.onChange,
-        onKeyDown: model.onKeyDown,
-        onBlur: model.onBlur,
-        onFocus: model.onFocus,
-        ref
+                disabled: props.disabled,
+                placeholder: props.placeholder,
+                spellCheck: withDefault(props.spellCheck, false),
+                tabIndex: props.tabIndex,
+
+                style: {textAlign: withDefault(props.textAlign, 'left')},
+                [TEST_ID]: props.testId,
+                ...props.domAttrs,
+
+                onChange: model.onChange,
+                onKeyDown: model.onKeyDown,
+                onBlur: model.onBlur,
+                onFocus: model.onFocus
+            })
+        ]
     });
 });

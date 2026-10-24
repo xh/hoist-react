@@ -96,7 +96,7 @@ See [`docs-roadmap.md`](./planning/docs-roadmap.md) for documentation coverage t
 | [`/desktop/`](../desktop/README.md) | Desktop-specific components and app container | Desktop components, Blueprint wrappers, desktop navigation |
 | [`/desktop/cmp/dash/`](../desktop/cmp/dash/README.md) | Configurable dashboard system with draggable, resizable widgets | DashContainerModel, DashCanvasModel, DashViewSpec, DashViewModel, widget persistence, ViewManager integration |
 | [`/desktop/cmp/panel/`](../desktop/cmp/panel/README.md) | Desktop panel container with toolbars, banners, masks, and collapsible behavior | Panel, PanelModel, Toolbar, Banner, mask, collapse/resize, persistence, modal support |
-| [`/mobile/`](../mobile/README.md) | Mobile-specific components built on Onsen UI | AppContainer, NavigatorModel, Panel, AppBar, mobile inputs, touch navigation, swipeable tabs |
+| [`/mobile/`](../mobile/README.md) | Mobile-specific components for touch devices | AppContainer, NavigatorModel, Panel, AppBar, mobile inputs, touch navigation, tabs |
 
 ### Utilities
 

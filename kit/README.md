@@ -103,8 +103,9 @@ built-in icons when upgrading the library.
 
 ### Onsen UI
 
-[Onsen UI](https://onsen.io/) provides mobile-specific components used by Hoist's `/mobile/`
-package — buttons, pages, tabs, toolbars, dialogs, and navigation.
+[Onsen UI](https://onsen.io/) provided the custom elements behind Hoist's `/mobile/` components.
+The mobile components now render native elements and no longer import this kit. It remains only
+until the library is removed from the package.
 
 Kit wraps Onsen components to:
 - **Strip HoistModel props** — Onsen internally serializes component props to JSON, which fails on

@@ -1,5 +1,53 @@
+/*
+ * This file belongs to Hoist, an application development toolkit
+ * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
+ *
+ * Copyright © 2026 Extremely Heavy Industries Inc.
+ */
+
+//--------------------------------------------------------------------
+// Touch-device defaults. Hoist's mobile components render native
+// elements and rely on these in place of a browser's desktop defaults.
+//--------------------------------------------------------------------
+.xh-app.xh-mobile {
+  // Remove the delay browsers add to a tap while they wait for a possible double-tap zoom.
+  touch-action: manipulation;
+
+  * {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  // Focus is shown by the on-screen keyboard - no focus rings on controls.
+  input,
+  textarea,
+  select,
+  button {
+    &:focus {
+      outline: none;
+    }
+  }
+
+  h1 {
+    font-size: 36px;
+  }
+
+  h2 {
+    font-size: 30px;
+  }
+
+  h3 {
+    font-size: 24px;
+  }
+
+  h4,
+  h5,
+  h6 {
+    font-size: 18px;
+  }
+}
+
 //--------------------
-// XH Components
+// Inputs
 //--------------------
 .xh-input {
   input,
@@ -42,6 +90,9 @@
   }
 }
 
+//--------------------
+// Grid
+//--------------------
 .xh-grid .ag-body-vertical-scroll-viewport::-webkit-scrollbar {
   display: none;
 }

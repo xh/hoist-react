@@ -4,19 +4,22 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {div, placeholder} from '@xh/hoist/cmp/layout';
-import {HoistModel, useLocalModel, XH} from '@xh/hoist/core';
-import {page, tab as onsenTab, tabbar as onsenTabbar} from '@xh/hoist/kit/onsen';
+import {div, placeholder, vbox} from '@xh/hoist/cmp/layout';
+import {TabContainerProps, TabSwitcherProps} from '@xh/hoist/cmp/tab';
 import '@xh/hoist/mobile/register';
-import {debounced, getTestId, TEST_ID, throwIf} from '@xh/hoist/utils/js';
+import {getTestId, throwIf} from '@xh/hoist/utils/js';
+import {getLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import {isEmpty, isNull, isObject} from 'lodash';
 import {tab} from './Tab';
+import {tabSwitcher} from './TabSwitcher';
 import './Tabs.scss';
-import {TabContainerProps, TabModel, TabSwitcherProps} from '@xh/hoist/cmp/tab';
 
 /**
- * Mobile Implementation of TabContainer.
+ * Mobile implementation of TabContainer.
+ *
+ * Renders every tab's content in its own wrapper, showing the active one, with the switcher docked
+ * at the top or bottom.
  *
  * @internal
  */
@@ -28,37 +31,46 @@ export function tabContainerImpl({
     ...props
 }: TabContainerProps) {
     const switcherProps = getSwitcherProps(props),
-        {activeTab} = model,
-        tabs = model.tabs.filter(it => !it.excludeFromSwitcher),
-        impl = useLocalModel(TabContainerLocalModel);
+        layoutProps = getLayoutProps(props),
+        orientation = switcherProps?.orientation,
+        {tabs, activeTabId} = model;
 
     throwIf(
-        switcherProps && !['top', 'bottom'].includes(switcherProps.orientation),
+        switcherProps && !['top', 'bottom'].includes(orientation),
         "Mobile TabContainer tab switcher orientation must be 'top', or 'bottom'"
     );
 
     if (isEmpty(tabs)) {
-        return page({
-            [TEST_ID]: testId,
-            ...domAttrs,
-            className: 'xh-tab-page',
-            item: placeholder(model.emptyText)
+        return vbox({
+            ...layoutProps,
+            className,
+            testId,
+            domAttrs,
+            item: div({className: 'xh-tab-wrapper', item: placeholder(model.emptyText)})
         });
     }
 
-    return onsenTabbar({
-        [TEST_ID]: testId,
-        ...domAttrs,
-        className: classNames(className, `xh-tab-container--${switcherProps?.orientation}`),
-        position: switcherProps?.orientation,
-        activeIndex: activeTab ? tabs.indexOf(activeTab) : 0,
-        renderTabs: (idx, ref) => {
-            impl.setSwiper(ref);
-            return tabs.map(tabModel => renderTabModel(tabModel, testId));
-        },
-        onPreChange: e => model.setActiveTabId(tabs[e.index].id),
-        hideTabs: !switcherProps,
-        ...switcherProps
+    const switcher = switcherProps
+        ? tabSwitcher({key: 'switcher', testId: getTestId(testId, 'switcher'), ...switcherProps})
+        : null;
+
+    return vbox({
+        ...layoutProps,
+        className: classNames(className, orientation ? `xh-tab-container--${orientation}` : null),
+        testId,
+        domAttrs,
+        items: [
+            orientation === 'top' ? switcher : null,
+            ...tabs.map(tabModel =>
+                div({
+                    key: tabModel.id,
+                    className: 'xh-tab-wrapper',
+                    style: tabModel.id !== activeTabId ? hideStyle : undefined,
+                    item: tab({model: tabModel, testId: getTestId(testId, tabModel.id)})
+                })
+            ),
+            orientation === 'bottom' ? switcher : null
+        ]
     });
 }
 
@@ -70,39 +82,4 @@ function getSwitcherProps(tabContainerProps: TabContainerProps): TabSwitcherProp
     return ret;
 }
 
-function renderTabModel(tabModel: TabModel, containerTestId?: string) {
-    const {id, title, icon} = tabModel,
-        tabTestId = getTestId(containerTestId, id);
-
-    return {
-        content: tab({key: id, model: tabModel, testId: tabTestId}),
-        tab: onsenTab({
-            key: id,
-            className: 'xh-tab',
-            items: [icon, div({className: 'xh-tab__label', item: title, omit: !title})]
-        })
-    };
-}
-
-class TabContainerLocalModel extends HoistModel {
-    override xhImpl = true;
-
-    swiper;
-
-    // Due to currently unknown reasons, this event handler sometimes gets removed. See: #2842
-    constructor() {
-        super();
-        this.addReaction({
-            track: () => XH.isPortrait,
-            run: () => this.swiper?.onResize()
-        });
-    }
-
-    // Capture a reference to the underlying Onsen Swiper from the Tabbar ref.
-    // We must debounce as the first time this method is called the Tabbar's constructor has not completed.
-    @debounced(1)
-    setSwiper(ref) {
-        if (this.swiper) return;
-        this.swiper = ref?._tabbar?._swiper;
-    }
-}
+const hideStyle = {display: 'none'};

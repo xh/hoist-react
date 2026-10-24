@@ -14,13 +14,22 @@
 
 ## 90.0.0-SNAPSHOT - unreleased
 
-### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW - number `formatConfig`)
+### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW - number `formatConfig`, mobile styling)
 
 See [`docs/upgrade-notes/v90-upgrade-notes.md`](docs/upgrade-notes/v90-upgrade-notes.md) for
 detailed, step-by-step upgrade instructions with before/after code examples.
 
 * Removed `NumberFormatOptions.formatConfig`, which took a numbro format. Use `precision`, `zeroPad`
   and `withCommas` instead.
+* Mobile components no longer render Onsen UI custom elements. `Button`, `TextInput`,
+  `NumberInput`, `SearchInput`, `Checkbox`, `SwitchInput`, `Dialog`, `DialogPanel`, `Toast`,
+  `TabContainer` and `MenuButton` menus render native elements under `xh-` class names. App SCSS
+  that targeted Onsen's class names (`.button`, `.text-input`, `.dialog`, `.tabbar`, `.toast`,
+  `.page__content` and others) or its CSS variables must target Hoist's instead.
+* Removed the `modifier` prop from mobile `Button`, `TextInput`, `NumberInput`, `SearchInput`,
+  `Checkbox` and `SwitchInput`. It passed an Onsen modifier string and has no equivalent.
+* Mobile `Checkbox` and `SwitchInput` now put their `testId` on the native `<input>` rather than
+  on a wrapper, as on desktop.
 
 ### 🎁 New Features
 
@@ -31,6 +40,8 @@ detailed, step-by-step upgrade instructions with before/after code examples.
   clicked column, and `Column.availableSorts`. The `sort` token offers one item per sort the column
   offers.
 * Added `genRandomId()` to `@xh/hoist/utils/js` for short random alphanumeric IDs.
+* Mobile `TabContainer` now applies `${testId}-switcher` to its switcher and
+  `${testId}-switcher-${tabId}` to each switcher button, as on desktop.
 
 ### 🐞 Bug Fixes
 
@@ -45,19 +56,24 @@ detailed, step-by-step upgrade instructions with before/after code examples.
   debounced or in flight.
 * Fixed `ViewManagerModel` sending overlapping user state writes, which could fail on the server
   and lose a pin, auto-save or current view change. It now sends one write per burst of changes.
+* Fixed mobile `TabContainer` not rendering a tab with `excludeFromSwitcher`, so activating one
+  showed nothing. Such tabs now render as on desktop, only without a switcher button.
+* Fixed mobile `TextInput`, `NumberInput` and `SearchInput` applying `domAttrs` to a wrapper
+  element rather than to the `<input>` itself.
 
 ### ⚙️ Technical
 
 * `LocalStorageService` and `SessionStorageService` now read and write browser storage directly.
   Keys and JSON values are stored exactly as before.  Removed the unused `isFake` getter - when
   storage is unavailable the service logs a warning and holds values in memory, as before.
+* The mobile toolkit no longer uses Onsen UI at runtime. Each mobile component now owns its DOM
+  and styles. The `onsenui` and `react-onsenui` packages remain installed only until their removal.
 
 ### ✨ Styles
 
-* Mobile apps now load only the Onsen UI styles for the components Hoist renders, extracted into
-  `mobile/styles/onsen/`. Onsen's full stylesheet and its icon fonts are no longer bundled. An app
-  that styled its own markup with Onsen classes Hoist does not use (e.g. `.toolbar`, `.fab`) must
-  now supply those styles itself.
+* Mobile apps no longer load Onsen UI's stylesheet or its icon fonts. Touch-device defaults that
+  the Onsen stylesheet supplied - no tap highlight, no focus rings on controls, `touch-action:
+  manipulation`, and heading sizes - are now set by the mobile `AppContainer` stylesheet.
 
 ### 📚 Libraries
 

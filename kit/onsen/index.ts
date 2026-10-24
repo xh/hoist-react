@@ -20,7 +20,6 @@ import {
 } from 'react';
 import * as ons from 'react-onsenui';
 import {isFunction, mapKeys, omitBy, pickBy} from 'lodash';
-import './styles.scss';
 import './theme.scss';
 
 onsen.disableAutoStyling();

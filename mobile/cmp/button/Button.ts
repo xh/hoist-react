@@ -7,6 +7,7 @@
 import {hspacer} from '@xh/hoist/cmp/layout';
 import {
     DomAttrsProps,
+    elementFactory,
     LayoutProps,
     StyleProps,
     hoistCmp,
@@ -15,7 +16,6 @@ import {
     TestSupportProps,
     Intent
 } from '@xh/hoist/core';
-import {button as onsenButton} from '@xh/hoist/kit/onsen';
 import '@xh/hoist/mobile/register';
 import {TEST_ID} from '@xh/hoist/utils/js';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
@@ -34,13 +34,11 @@ export interface ButtonProps<M extends HoistModel = HoistModel>
     outlined?: boolean;
     text?: ReactNode;
     value?: any;
-    modifier?: string;
     tabIndex?: number;
 }
 
 /**
- * Wrapper around Onsen's Button component. Adds layout support for top-level sizing and
- * margin/padding props. Relays all other props supported by Onsen's Button.
+ * Button component for mobile. Renders a native `<button>`, styled for touch.
  */
 export const [Button, button] = hoistCmp.withFactory<ButtonProps>({
     displayName: 'Button',
@@ -59,14 +57,15 @@ export const [Button, button] = hoistCmp.withFactory<ButtonProps>({
             domAttrs,
             icon,
             intent,
+            minimal,
             onClick,
+            outlined,
             style,
             testId,
             text,
             ...rest
         } = nonLayoutProps;
 
-        let {outlined, minimal} = nonLayoutProps;
         if (disabled) {
             classes.push('xh-button--disabled');
         } else {
@@ -92,8 +91,9 @@ export const [Button, button] = hoistCmp.withFactory<ButtonProps>({
             items.push(text);
         }
 
-        return onsenButton({
+        return htmlButton({
             ref,
+            type: 'button',
             items,
             onClick,
             disabled,
@@ -108,3 +108,5 @@ export const [Button, button] = hoistCmp.withFactory<ButtonProps>({
         });
     }
 });
+
+const htmlButton = elementFactory('button');

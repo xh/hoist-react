@@ -1,0 +1,68 @@
+/*
+ * This file belongs to Hoist, an application development toolkit
+ * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
+ *
+ * Copyright © 2026 Extremely Heavy Industries Inc.
+ */
+
+.xh-dialog {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  // Above the app's viewport, below toasts.
+  z-index: 20;
+  overflow: hidden;
+  animation: xh-dialog-fade-in 0.2s ease-in-out;
+
+  &__mask {
+    position: absolute;
+    top: var(--xh-pad-safe-top);
+    right: var(--xh-pad-safe-right);
+    bottom: var(--xh-pad-safe-bottom);
+    left: var(--xh-pad-safe-left);
+    background-color: var(--xh-backdrop-bg);
+  }
+
+  // Centered, and constrained to the safe area so the dialog never sits under the OS bars.
+  &__frame {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    display: flex;
+    flex-direction: column;
+    min-width: 320px;
+    min-height: 100px;
+    max-height: calc(100dvh - var(--xh-pad-double-px));
+    overflow: hidden;
+    text-align: left;
+  }
+
+  &__container {
+    display: flex;
+    flex-direction: column;
+    height: inherit;
+    min-height: inherit;
+    max-width: calc(100svw - var(--xh-pad-double-px));
+    margin: var(--xh-pad-safe-all);
+    overflow: hidden;
+    border: var(--xh-popup-border-width-px) solid var(--xh-popup-border-color);
+    border-radius: 4px;
+    // Deliberately the *border* color - avoids small but noticeable gaps around the edges. The
+    // dialog's own content defines the background for its body.
+    background-color: var(--xh-popup-border-color);
+    color: var(--xh-text-color);
+  }
+}
+
+@keyframes xh-dialog-fade-in {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
