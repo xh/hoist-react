@@ -4,10 +4,9 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {hspacer} from '@xh/hoist/cmp/layout';
+import {div, hspacer} from '@xh/hoist/cmp/layout';
 import {
     DomAttrsProps,
-    elementFactory,
     LayoutProps,
     StyleProps,
     hoistCmp,
@@ -38,7 +37,10 @@ export interface ButtonProps<M extends HoistModel = HoistModel>
 }
 
 /**
- * Button component for mobile. Renders a native `<button>`, styled for touch.
+ * Button component for mobile.
+ *
+ * Renders a div with the button role rather than a native button, so it lays out as a block that
+ * fills its container and as a content-sized item in a flex row, like other Hoist containers.
  */
 export const [Button, button] = hoistCmp.withFactory<ButtonProps>({
     displayName: 'Button',
@@ -91,12 +93,12 @@ export const [Button, button] = hoistCmp.withFactory<ButtonProps>({
             items.push(text);
         }
 
-        return buttonEl({
+        return div({
             ref,
-            type: 'button',
+            role: 'button',
+            'aria-disabled': disabled || null,
             items,
-            onClick,
-            disabled,
+            onClick: disabled ? null : onClick,
             className: classNames(className, classes),
             style: {
                 ...style,
@@ -108,5 +110,3 @@ export const [Button, button] = hoistCmp.withFactory<ButtonProps>({
         });
     }
 });
-
-const buttonEl = elementFactory('button');

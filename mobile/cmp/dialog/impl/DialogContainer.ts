@@ -8,6 +8,7 @@ import {div} from '@xh/hoist/cmp/layout';
 import {hoistCmp, HoistProps} from '@xh/hoist/core';
 import '@xh/hoist/mobile/register';
 import {useEffect} from 'react';
+import {createPortal} from 'react-dom';
 import './DialogContainer.scss';
 
 export interface DialogContainerProps extends HoistProps {
@@ -19,6 +20,9 @@ export interface DialogContainerProps extends HoistProps {
 /**
  * Full-screen backdrop with a centered frame for a dialog's content. `Dialog` and `DialogPanel`
  * render their content within this container - it has no chrome of its own.
+ *
+ * Renders into a portal on the document body, so the overlay covers the viewport wherever the
+ * dialog sits in the component tree.
  *
  * @internal
  */
@@ -40,15 +44,18 @@ export const dialogContainer = hoistCmp.factory<DialogContainerProps>({
             return () => document.removeEventListener('keydown', onKeyDown);
         }, [cancel]);
 
-        return div({
-            className,
-            items: [
-                div({className: 'xh-dialog__mask', onClick: cancel}),
-                div({
-                    className: 'xh-dialog__frame',
-                    item: div({className: 'xh-dialog__container', items: children})
-                })
-            ]
-        });
+        return createPortal(
+            div({
+                className,
+                items: [
+                    div({className: 'xh-dialog__mask', onClick: cancel}),
+                    div({
+                        className: 'xh-dialog__frame',
+                        item: div({className: 'xh-dialog__container', items: children})
+                    })
+                ]
+            }),
+            document.body
+        );
     }
 });

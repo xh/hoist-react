@@ -11,17 +11,16 @@ import {fireEvent, render, screen} from '@testing-library/react';
 import {beforeAll, describe, expect, it, vi} from 'vitest';
 
 /**
- * The mobile Button renders a native `<button>`. These guard the contract apps rely on - clicks,
- * disabling, and the style classes that app SCSS targets.
+ * The mobile Button renders a div with the button role. These guard the contract apps rely on -
+ * clicks, disabling, and the style classes that app SCSS targets.
  */
 describe('Button (mobile)', () => {
     beforeAll(() => initTestAppAsync({isMobileApp: true}));
 
-    it('renders a native button with its text and icon', () => {
+    it('renders a button-role element with its text and icon', () => {
         render(button({text: 'Save', icon: Icon.save(), testId: 'save'}));
         const el = screen.getByTestId('save');
-        expect(el.tagName).toBe('BUTTON');
-        expect(el.getAttribute('type')).toBe('button');
+        expect(el.getAttribute('role')).toBe('button');
         expect(el.textContent).toBe('Save');
         expect(el.querySelector('svg')).not.toBeNull();
     });
@@ -36,8 +35,8 @@ describe('Button (mobile)', () => {
     it('does not call onClick when disabled', () => {
         const onClick = vi.fn();
         render(button({text: 'Go', onClick, disabled: true, testId: 'go'}));
-        const el = screen.getByTestId('go') as HTMLButtonElement;
-        expect(el.disabled).toBe(true);
+        const el = screen.getByTestId('go');
+        expect(el.getAttribute('aria-disabled')).toBe('true');
         fireEvent.click(el);
         expect(onClick).not.toHaveBeenCalled();
     });

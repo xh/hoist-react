@@ -20,10 +20,6 @@
     border-radius: var(--xh-button-border-radius-px);
     height: var(--xh-button-height);
     overflow: hidden;
-    appearance: none;
-    background: none;
-    color: inherit;
-    font: inherit;
     font-size: var(--xh-button-font-size-px);
     line-height: 32px;
     white-space: nowrap;
@@ -33,6 +29,7 @@
     &--disabled,
     &--disabled:active {
       opacity: var(--xh-button-disabled-opacity);
+      pointer-events: none;
     }
 
     // Shaded/filled-in (non-minimal) mode.

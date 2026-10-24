@@ -25,7 +25,7 @@ describe('Toast (mobile)', () => {
 
     it('dismisses its model when the close button is clicked', () => {
         const {container, model} = renderToast({message: 'Saved'});
-        const buttons = container.querySelectorAll('button');
+        const buttons = container.querySelectorAll('.xh-button');
         fireEvent.click(buttons[buttons.length - 1]);
         expect(model.isOpen).toBe(false);
     });

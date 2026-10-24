@@ -88,6 +88,7 @@ const cmp = hoistCmp.factory<SearchInputModel>(({model, className, ...props}, re
     return hbox({
         ref,
         className,
+        display: 'inline-flex',
         style: {
             ...props.style,
             ...layoutProps,

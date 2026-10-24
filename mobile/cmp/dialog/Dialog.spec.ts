@@ -20,8 +20,14 @@ describe('Dialog (mobile)', () => {
     beforeAll(() => initTestAppAsync({isMobileApp: true}));
 
     it('renders nothing when closed', () => {
-        const {container} = renderDialog({isOpen: false});
-        expect(container.innerHTML).toBe('');
+        renderDialog({isOpen: false});
+        expect(document.querySelector('.xh-dialog')).toBeNull();
+    });
+
+    it('renders into a portal on the body when open', () => {
+        const {container} = renderDialog();
+        expect(container.querySelector('.xh-dialog')).toBeNull();
+        expect(document.body.querySelector('.xh-dialog')).not.toBeNull();
     });
 
     it('renders its title, content and buttons when open', () => {
@@ -32,9 +38,9 @@ describe('Dialog (mobile)', () => {
     });
 
     it('cancels when the backdrop is tapped', () => {
-        const onCancel = vi.fn(),
-            {container} = renderDialog({onCancel});
-        fireEvent.click(container.querySelector('.xh-dialog__mask'));
+        const onCancel = vi.fn();
+        renderDialog({onCancel});
+        fireEvent.click(mask());
         expect(onCancel).toHaveBeenCalledOnce();
     });
 
@@ -46,9 +52,9 @@ describe('Dialog (mobile)', () => {
     });
 
     it('does not cancel when not cancelable', () => {
-        const onCancel = vi.fn(),
-            {container} = renderDialog({onCancel, isCancelable: false});
-        fireEvent.click(container.querySelector('.xh-dialog__mask'));
+        const onCancel = vi.fn();
+        renderDialog({onCancel, isCancelable: false});
+        fireEvent.click(mask());
         fireEvent.keyDown(document, {key: 'Escape'});
         expect(onCancel).not.toHaveBeenCalled();
     });
@@ -72,6 +78,10 @@ describe('Dialog (mobile)', () => {
 //------------------
 // Helpers
 //------------------
+function mask(): HTMLElement {
+    return document.querySelector('.xh-dialog__mask');
+}
+
 function renderDialog(props: Partial<DialogProps> = {}) {
     return render(
         dialog({

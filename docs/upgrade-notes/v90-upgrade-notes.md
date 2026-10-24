@@ -101,7 +101,7 @@ itself, must replace them with Hoist's mobile components or its own.
 
 | Component | Onsen selector (v89) | Hoist selector (v90) |
 |---|---|---|
-| `Button` | `ons-button`, `.button` | `button.xh-button` |
+| `Button` | `ons-button`, `.button` | `.xh-button` |
 | `TextInput` | `ons-input`, `.text-input` | `.xh-text-input`, `.xh-text-input__input` |
 | `NumberInput` | `ons-input`, `.text-input` | `.xh-number-input`, `.xh-number-input__input` |
 | `SearchInput` | `ons-search-input`, `.search-input` | `.xh-search-input`, `.xh-search-input__input` |
@@ -122,6 +122,12 @@ applies `${testId}-switcher` and `${testId}-switcher-${tabId}`, which were deskt
 
 **Behavior to note:**
 
+- Mobile components render in the app font (`--xh-font-family`). Onsen applied the system font
+  (`-apple-system`, Helvetica Neue) to its buttons, dialogs, tabs, menus and toasts. To keep the
+  system font for buttons, set `font-family` on `.xh-button` in app SCSS.
+- Mobile `Button` renders a `div` with `role="button"`, as Onsen's element was in effect, so it
+  still fills a block container and sizes to its content in a flex row.
+- Mobile `Dialog` and `DialogPanel` render into a portal on the document body.
 - Mobile `TabContainer` renders every tab's content, including tabs with `excludeFromSwitcher`,
   which it previously left out. Inactive tabs are hidden with `display: none`, as on desktop,
   rather than laid out off-screen.

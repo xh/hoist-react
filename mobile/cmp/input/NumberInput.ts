@@ -286,6 +286,7 @@ const cmp = hoistCmp.factory<NumberInputModel>(
         return hbox({
             ref,
             className,
+            display: 'inline-flex',
             style: {
                 ...props.style,
                 ...layoutProps,
