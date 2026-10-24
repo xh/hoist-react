@@ -15,13 +15,22 @@ import {DateRangePickerModel} from '@xh/hoist/cmp/daterange';
 import {FilterChooserModel} from '@xh/hoist/cmp/filter';
 import {FormModel} from '@xh/hoist/cmp/form';
 import {ColumnRenderer, ColumnSpec, GridModel, TreeStyle} from '@xh/hoist/cmp/grid';
+import {PivotGridModel} from '@xh/hoist/cmp/pivotgrid';
 import {GroupingChooserModel} from '@xh/hoist/cmp/grouping';
-import {HoistModel, LoadSpec, managed, PlainObject, XH} from '@xh/hoist/core';
-import {Cube, CubeFieldSpec, FieldSpec, getCubeLeaves, ViewRowData} from '@xh/hoist/data';
+import {HoistModel, LoadSpec, managed, PlainObject, SelectOption, XH} from '@xh/hoist/core';
+import {
+    Cube,
+    CubeFieldSpec,
+    FieldSpec,
+    getCubeLeaves,
+    QueryConfig,
+    View,
+    ViewRowData
+} from '@xh/hoist/data';
 import {dateRenderer, dateTimeSecRenderer, numberRenderer} from '@xh/hoist/format';
-import {action, computed, observable, observableRef} from '@xh/hoist/mobx';
+import {action, bindable, computed, observable, observableRef} from '@xh/hoist/mobx';
 import {LocalDate} from '@xh/hoist/utils/datetime';
-import {compact, get, isEmpty, isEqual, round} from 'lodash';
+import {compact, get, isEmpty, isEqual, mapValues, round} from 'lodash';
 import moment from 'moment';
 import {ActivityDetailProvider} from './detail/ActivityDetailModel';
 
@@ -40,6 +49,16 @@ export class ActivityTrackingModel extends HoistModel implements ActivityDetailP
     @managed @observableRef accessor filterChooserModel: FilterChooserModel;
     @managed @observableRef accessor gridModel: GridModel;
     @managed dataFieldsEditorModel: DataFieldsEditorModel;
+
+    /** Dimension to pivot into columns, or null for the standard grouped grid. */
+    @bindable accessor pivotBy: string = null;
+
+    /** Measure shown per pivot column. */
+    @bindable accessor pivotMeasure: string = 'entryCount';
+
+    /** Pivoted presentation of the aggregate grid - null unless `pivotBy` is set. */
+    @managed @observableRef accessor pivotGridModel: PivotGridModel = null;
+    @managed private pivotView: View = null;
 
     /**
      * Optional spec for fields to be extracted from additional `data` returned by track entries
@@ -67,6 +86,50 @@ export class ActivityTrackingModel extends HoistModel implements ActivityDetailP
 
     get dimensions(): string[] {
         return this.groupingChooserModel.value;
+    }
+
+    /** The grid currently shown - the pivot grid's when pivoting, else the standard grid. */
+    get activeGridModel(): GridModel {
+        return this.pivotGridModel?.gridModel ?? this.gridModel;
+    }
+
+    /**
+     * Dimensions available to pivot on, carrying their distinct value count in the loaded data.
+     * Those already grouping the rows are left out; those too wide to pivot are disabled.
+     */
+    @computed
+    get pivotByOptions(): SelectOption[] {
+        const {dimensions, pivotCardinality} = this;
+        return this.cube.dimensions
+            .filter(it => PIVOT_DIMENSIONS.includes(it.name) && !dimensions.includes(it.name))
+            .map(it => {
+                const count = pivotCardinality[it.name] ?? 0;
+                return {
+                    value: it.name,
+                    label: `${it.displayName} (${count})`,
+                    displayName: it.displayName,
+                    isDisabled: count > PIVOT_MAX_PATHS
+                };
+            });
+    }
+
+    /** Distinct value count per pivotable dimension, over the records currently loaded. */
+    @computed
+    private get pivotCardinality(): Record<string, number> {
+        const sets: Record<string, Set<any>> = {};
+        PIVOT_DIMENSIONS.forEach(name => (sets[name] = new Set()));
+        this.cube.records.forEach(({data}) => {
+            PIVOT_DIMENSIONS.forEach(name => sets[name].add(data[name]));
+        });
+        return mapValues(sets, it => it.size);
+    }
+
+    get pivotMeasureOptions(): SelectOption[] {
+        return [
+            {value: 'entryCount', label: 'Entries'},
+            {value: 'elapsed', label: 'Elapsed (avg)'},
+            {value: 'elapsedMax', label: 'Elapsed (max)'}
+        ];
     }
 
     @computed
@@ -118,6 +181,8 @@ export class ActivityTrackingModel extends HoistModel implements ActivityDetailP
 
         this.dataFieldsEditorModel = new DataFieldsEditorModel(this);
         this.markPersist('dataFields');
+        this.markPersist('pivotBy');
+        this.markPersist('pivotMeasure');
 
         this.addReaction(
             {
@@ -136,7 +201,12 @@ export class ActivityTrackingModel extends HoistModel implements ActivityDetailP
                 debounce: 100
             },
             {
-                track: () => this.gridModel.selectedRecords,
+                track: () => [this.cube, this.dimensions, this.pivotBy, this.pivotMeasure],
+                run: () => this.syncPivot(),
+                fireImmediately: true
+            },
+            {
+                track: () => this.activeGridModel.selectedRecords,
                 run: recs =>
                     (this.trackLogs = recs.flatMap(r => getCubeLeaves(r.raw as ViewRowData))),
                 debounce: 100
@@ -263,6 +333,81 @@ export class ActivityTrackingModel extends HoistModel implements ActivityDetailP
             maxRows: this.formModel.values.maxRows,
             filters: this.filterChooserModel.value
         };
+    }
+
+    //------------------------
+    // Impl - pivot
+    //------------------------
+    /**
+     * Create, requery or drop the pivot view and grid to match `pivotBy`. The view stays connected
+     * to the Cube, so data loads reach it without the reload the standard grid needs.
+     */
+    @action
+    private syncPivot() {
+        const {cube, pivotBy, dimensions} = this,
+            pivot = pivotBy && !dimensions.includes(pivotBy) ? pivotBy : null;
+
+        if (!pivot) {
+            XH.safeDestroy(this.pivotGridModel, this.pivotView);
+            this.pivotGridModel = this.pivotView = null;
+            return;
+        }
+
+        const query = this.pivotQuery(pivot);
+        try {
+            if (this.pivotView?.cube === cube) {
+                this.pivotView.updateQuery(query);
+                return;
+            }
+
+            XH.safeDestroy(this.pivotGridModel, this.pivotView);
+            this.pivotView = cube.createView({query, connect: true});
+            this.pivotGridModel = this.createPivotGridModel(this.pivotView);
+        } catch (e) {
+            // Most likely the path cap - a pivot on `day` outgrows it as the period widens.
+            this.logWarn('Unable to pivot', e);
+            XH.warningToast(
+                `Too many distinct ${this.getDisplayName(pivot)} values to pivot on - narrow the period or choose another dimension.`
+            );
+            this.pivotBy = null;
+        }
+    }
+
+    private pivotQuery(pivotBy: string): QueryConfig {
+        return {
+            dimensions: this.dimensions,
+            includeRoot: true,
+            provideLeaves: true,
+            pivot: {
+                dimensions: [pivotBy],
+                valueFields: [this.pivotMeasure],
+                maxPivotPaths: PIVOT_MAX_PATHS
+            }
+        };
+    }
+
+    private createPivotGridModel(view: View): PivotGridModel {
+        return new PivotGridModel({
+            view,
+            rowSummary: 'right',
+            valueSummary: 'top',
+            valueColumnSpecs: {
+                entryCount: {width: 80},
+                elapsed: {width: 100, renderer: elapsedRenderer},
+                elapsedMax: {width: 100, renderer: elapsedRenderer}
+            },
+            gridConfig: {
+                selModel: 'multiple',
+                enableExport: true,
+                treeStyle: TreeStyle.HIGHLIGHTS_AND_BORDERS,
+                autosizeOptions: {mode: 'managed', includeCollapsedChildren: true},
+                exportOptions: {filename: exportFilename('activity-pivot')},
+                emptyText: 'No activity reported.',
+                sortBy: ['cubeLabel'],
+                expandLevel: 1,
+                levelLabels: () => ['Total', ...this.groupingChooserModel.valueDisplayNames]
+            }
+        });
     }
 
     //------------------------
@@ -468,3 +613,22 @@ export class ActivityTrackingModel extends HoistModel implements ActivityDetailP
         }
     }
 }
+
+/** Dimensions offered for pivoting - those with a bounded set of values. */
+const PIVOT_DIMENSIONS = [
+    'day',
+    'month',
+    'appEnvironment',
+    'appVersion',
+    'browser',
+    'category',
+    'clientAppCode',
+    'device',
+    'errorName',
+    'instance',
+    'severity',
+    'username'
+];
+
+/** Widest pivot offered - beyond this the grid is unreadable long before it is slow. */
+const PIVOT_MAX_PATHS = 30;

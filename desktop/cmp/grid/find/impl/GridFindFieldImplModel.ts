@@ -5,6 +5,8 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {Column, GridModel} from '@xh/hoist/cmp/grid';
+import {PivotGridModel} from '@xh/hoist/cmp/pivotgrid';
+import {isGridLikeModel} from '@xh/hoist/cmp/store/impl/StoreFilterFieldImplModel';
 import {ZoneGridModel} from '@xh/hoist/cmp/zoneGrid';
 import {HoistModel} from '@xh/hoist/core';
 import type {FilterMatchMode, StoreRecord} from '@xh/hoist/data';
@@ -84,23 +86,20 @@ export class GridFindFieldImplModel extends HoistModel {
         return !isNil(this.results) && !isEmpty(this.results);
     }
 
-    /** GridModel or ZoneGridModel to search - from props, or the nearest found in context. */
+    /** Model to search - from props, or the nearest found in context. */
     @computed
-    get boundModel(): GridModel | ZoneGridModel {
-        return (
-            this.componentProps.gridModel ??
-            this.lookupModel(it => it instanceof GridModel || it instanceof ZoneGridModel)
-        );
+    get boundModel(): GridModel | ZoneGridModel | PivotGridModel {
+        return this.componentProps.gridModel ?? this.lookupModel(isGridLikeModel);
     }
 
     //------------------------------------------------------------------
     // Trampoline value to grid
     //------------------------------------------------------------------
     override onLinked() {
-        const {boundModel} = this;
+        const {boundModel, innerGridModel} = this;
         if (!boundModel) {
             this.logError("No GridModel available. Provide via a 'gridModel' prop, or context.");
-        } else if (!boundModel.selModel?.isEnabled) {
+        } else if (!innerGridModel.selModel?.isEnabled) {
             this.logError('GridFindField must be bound to GridModel with selection enabled.');
         }
 
@@ -267,15 +266,15 @@ export class GridFindFieldImplModel extends HoistModel {
 
     private get innerGridModel(): GridModel {
         const {boundModel} = this;
-        return boundModel instanceof ZoneGridModel ? boundModel.gridModel : boundModel;
+        return boundModel instanceof GridModel ? boundModel : (boundModel?.gridModel ?? null);
     }
 
     // See corresponding method in StoreFilterFieldImplModel.
     private getSearchColumns(): Column[] {
-        const {boundModel} = this;
+        const {boundModel, innerGridModel} = this;
         if (!boundModel) return [];
         return boundModel instanceof ZoneGridModel
             ? boundModel.getMappedColumns()
-            : boundModel.getVisibleLeafColumns();
+            : innerGridModel.getVisibleLeafColumns();
     }
 }

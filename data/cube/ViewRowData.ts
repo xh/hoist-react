@@ -5,6 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {Some} from '@xh/hoist/core';
+import type {FieldSpec} from '@xh/hoist/data';
 import {flatMap} from 'lodash';
 
 /**
@@ -28,6 +29,17 @@ export interface ViewRowData {
 
     /** Dimension on which this row was computed, or null for leaf rows. */
     cubeDimension: string;
+
+    /**
+     * Raw, typed value behind {@link cubeLabel} - the row's own dimension or bucket value, and the
+     * source record id for a leaf. Null on the synthetic root.
+     *
+     * `cubeLabel` is stringified for display, so sorting a tree column on it orders numbers and dates
+     * lexically. Bind a grid's label column with `sortValue: 'cubeLabelValue'` instead: it sorts by
+     * the underlying value *and*, being a plain field rather than a function, lets
+     * `GridTransactionManager` prove a tick cannot reorder rows.
+     */
+    cubeLabelValue: any;
 
     /**
      * Buckets this row appears in
@@ -57,6 +69,22 @@ export interface ViewRowData {
      */
     [key: string]: any;
 }
+
+/**
+ * Store Field specs for the non-implementation members of {@link ViewRowData} - what a Store loaded
+ * from a View needs declared to render or filter on them. Excludes `id` and `children`, which Store
+ * consumes structurally, and `cubeRowDigest`, which it reads as a digest rather than as a field.
+ *
+ * @internal
+ */
+export const VIEW_ROW_DATA_FIELDS: FieldSpec[] = [
+    {name: 'cubeRowType', type: 'string'},
+    {name: 'cubeLabel', type: 'string'},
+    {name: 'cubeDimension', type: 'string'},
+    {name: 'cubeLabelValue', type: 'auto'},
+    {name: 'cubeBuckets', type: 'auto'},
+    {name: 'isCubeLeaf', type: 'bool'}
+];
 
 /**
  * All visible (i.e. non-locked) cube leaves associated with a row.
