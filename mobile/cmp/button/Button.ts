@@ -91,7 +91,7 @@ export const [Button, button] = hoistCmp.withFactory<ButtonProps>({
             items.push(text);
         }
 
-        return htmlButton({
+        return buttonEl({
             ref,
             type: 'button',
             items,
@@ -109,4 +109,4 @@ export const [Button, button] = hoistCmp.withFactory<ButtonProps>({
     }
 });
 
-const htmlButton = elementFactory('button');
+const buttonEl = elementFactory('button');
