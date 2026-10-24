@@ -93,7 +93,7 @@ jobs:
           id: snapshot
           # Pinned to commit SHA of xh/hoist-dev-utils master at time of pinning.
           # Bumped by Dependabot when newer versions of the action are released.
-          uses: xh/hoist-dev-utils/.github/actions/prepare-npm-snapshot-version@f62ac663d8eaa6d1b371157e7796a74277d9bf82 # master
+          uses: xh/hoist-dev-utils/.github/actions/prepare-npm-snapshot-version@c65099c640ff360d0e7b068de6a3417421be9264 # master
           with:
               version: ${{ inputs.version }}
 
