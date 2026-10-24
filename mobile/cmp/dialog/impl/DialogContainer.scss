@@ -11,7 +11,7 @@
   right: 0;
   bottom: 0;
   left: 0;
-  // Above the app's viewport, below toasts.
+  // Below toasts.
   z-index: 20;
   overflow: hidden;
   animation: xh-dialog-fade-in 0.2s ease-in-out;
@@ -25,7 +25,6 @@
     background-color: var(--xh-backdrop-bg);
   }
 
-  // Centered, and constrained to the safe area so the dialog never sits under the OS bars.
   &__frame {
     position: absolute;
     top: 50%;
@@ -50,8 +49,7 @@
     overflow: hidden;
     border: var(--xh-popup-border-width-px) solid var(--xh-popup-border-color);
     border-radius: 4px;
-    // Deliberately the *border* color - avoids small but noticeable gaps around the edges. The
-    // dialog's own content defines the background for its body.
+    // The border color, to avoid hairline gaps at the edges - the content paints its own bg.
     background-color: var(--xh-popup-border-color);
     color: var(--xh-text-color);
   }

@@ -1,5 +1,3 @@
-// A toast overlays the whole screen so its content can sit at the bottom, within the safe area.
-// Only the content takes taps - the overlay lets them through to the app.
 .xh-toast {
   position: fixed;
   top: 0;
@@ -16,8 +14,7 @@
     right: 8px;
     bottom: 0;
     left: 8px;
-    // Respect the safe area for full-screen apps, so the toast never overlaps the iOS task
-    // switcher, and pick it up off the very bottom of the screen.
+    // Keep clear of the safe area (e.g. the iOS task switcher) and off the very bottom edge.
     margin: var(--xh-pad-safe-all);
     margin-bottom: calc(var(--xh-pad-safe-bottom) + var(--xh-pad-px));
     padding: var(--xh-pad-px);

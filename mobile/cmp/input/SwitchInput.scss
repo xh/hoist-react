@@ -1,5 +1,4 @@
-// A sliding toggle. The native checkbox covers the control, invisibly, so it gets the taps and the
-// focus - the toggle and handle divs draw the state.
+// The invisible native checkbox covers the control and takes the taps - the divs draw the state.
 .xh-input.xh-switch-input {
   position: relative;
   display: inline-block;

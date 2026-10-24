@@ -1,5 +1,4 @@
-// A round, iOS-style checkbox. The native input covers the control, invisibly, so it gets the taps
-// and the focus - the checkmark span draws the state.
+// The invisible native input covers the control and takes the taps - the span draws the state.
 .xh-input.xh-check-box {
   position: relative;
   display: inline-block;
