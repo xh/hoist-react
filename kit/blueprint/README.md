@@ -43,12 +43,13 @@ app: the package entry statically re-exports all per-icon React components and (
 every icon path module - roughly 0.5MB gzipped of dead weight, since Hoist's Blueprint usage
 touches only a couple dozen icons.
 
-`@xh/hoist-dev-utils` (v14.0.1+) neutralizes this at build time. Its `configureWebpack()`
-generates stub modules that re-export only a whitelisted icon set - see
-`generateBlueprintIconStubs()` and the `requiredBlueprintIcons` list in that repo's
-`configureWebpack.js` - and swaps them in for the icon package's entry point and path barrels via
-`NormalModuleReplacementPlugin`. Apps can opt out (restoring the full set) with the
-`loadAllBlueprintJsIcons` webpack env flag.
+`@xh/hoist-dev-utils` neutralizes this at build time - via `configureWebpack()` in v14.0.1 and
+v15, and via `configureRsbuild()` from v16. Both generate stub modules that re-export only a
+whitelisted icon set - see `generateBlueprintIconStubs()` and the `requiredBlueprintIcons` list
+(in `lib/common.js` from v16, `configureWebpack.js` before) - and swap them in for the icon
+package's entry point and path barrels via `NormalModuleReplacementPlugin` (webpack's, or
+Rspack's from v16). Apps can opt out, restoring the full set, with `loadAllBlueprintJsIcons` - a
+`configureRsbuild()` option from v16, or a webpack `--env` flag before.
 
 The whitelist must cover every icon the Blueprint components used by Hoist actually render. Two
 failure modes when it does not:

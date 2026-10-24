@@ -10,13 +10,14 @@ import {contextMenu} from '@xh/hoist/desktop/cmp/contextmenu/ContextMenu';
 import {Icon} from '@xh/hoist/icon';
 import {popover} from '@xh/hoist/kit/blueprint';
 import {isEmpty} from 'lodash';
+import {createViewSpecMenuItems} from '../../impl/DashUtils';
 import {DashContainerModel} from '../DashContainerModel';
 
 /**
  * Context menu for title bar/tabs of a stack in a DashContainer.
  *
  * Available view specs are listed in their defined order, optionally
- * grouped by their `groupName` property
+ * grouped by their `groupName` property into (nested) submenus.
  *
  * @internal
  */
@@ -103,8 +104,7 @@ function createMenuItems(props): MenuItemLike[] {
 
 // Convert any available viewSpecs into menu items
 function createAddMenuItems(props) {
-    let {dashContainerModel, stack, index} = props,
-        ret = [];
+    const {dashContainerModel, stack, index} = props;
 
     const addableSpecs = dashContainerModel.viewSpecs.filter(viewSpec => {
         if (!viewSpec.allowAdd) return false;
@@ -115,40 +115,9 @@ function createAddMenuItems(props) {
         return true;
     });
 
-    if (isEmpty(addableSpecs)) return [];
-
-    let hasUngrouped;
-    addableSpecs.forEach(viewSpec => {
-        const {id, title, icon, groupName} = viewSpec,
-            item = {
-                text: title,
-                icon: icon,
-                actionFn: () => dashContainerModel.addView(id, stack, index + 1)
-            };
-
-        // Group if necessary
-        if (groupName) {
-            let groupSpec = ret.find(it => it.groupName === groupName);
-            if (!groupSpec) {
-                groupSpec = {groupName, text: groupName, items: []};
-                ret.push(groupSpec);
-            }
-            groupSpec.items.push(item);
-        } else {
-            ret.push(item);
-            hasUngrouped = true;
-        }
-    });
-
-    // Convert groups into nested menu items
-    return ret.map(item => {
-        if (!item.groupName) return item;
-
-        // If we have any ungrouped root items (i.e. in a 'mixed mode'),
-        // insert a hidden icon to align the item text.
-        const icon = hasUngrouped ? Icon.angleRight({style: {visibility: 'hidden'}}) : undefined,
-            {text, items} = item;
-
-        return {icon, text, items};
-    });
+    return createViewSpecMenuItems(addableSpecs, ({id, title, icon}) => ({
+        text: title,
+        icon: icon,
+        actionFn: () => dashContainerModel.addView(id, stack, index + 1)
+    }));
 }

@@ -4,7 +4,7 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {HoistModel, managed, TaskObserver, XH} from '@xh/hoist/core';
+import {HoistModel, TaskObserver, XH} from '@xh/hoist/core';
 import {bindable, computed} from '@xh/hoist/mobx';
 import {debounced} from '@xh/hoist/utils/js';
 
@@ -18,7 +18,6 @@ export class LoginPanelModel extends HoistModel {
     @bindable accessor warning = '';
     @bindable accessor loginInProgress = false;
 
-    @managed
     loginTask = TaskObserver.trackLast();
 
     @computed
@@ -42,7 +41,7 @@ export class LoginPanelModel extends HoistModel {
                 .loginWithCredentialsAsync(username, password)
                 .linkTo(loginTask)
                 .catchDefault({
-                    hideParams: ['password']
+                    redactPaths: ['password']
                 });
 
             if (identity) {

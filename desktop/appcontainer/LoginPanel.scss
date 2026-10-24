@@ -6,17 +6,69 @@
  */
 
 .xh-login {
+  width: 380px;
+  padding: 40px;
+  background-color: var(--xh-bg);
   border: var(--xh-border-solid);
-  border-radius: var(--xh-border-radius);
+  border-radius: 10px;
+  box-shadow: 0 4px 16px rgb(0 0 0 / 8%);
 
-  .bp6-input-group {
-    margin: 0 var(--xh-spacing) var(--xh-spacing) var(--xh-spacing);
+  &__icon {
+    align-self: center;
+    align-items: center;
+    justify-content: center;
+    width: 64px;
+    height: 64px;
+    margin-bottom: var(--xh-spacing-double);
+    font-size: 26px;
+    color: var(--xh-intent-primary);
+    background-color: var(--xh-intent-primary-trans1);
+    border-radius: 10px;
+  }
+
+  &__title {
+    color: var(--xh-text-color);
+    font-size: calc(var(--xh-font-size) * 1.5);
+    font-weight: 500;
+    text-align: center;
+  }
+
+  &__subtitle {
+    color: var(--xh-text-color-muted);
+    margin: 3px 0 var(--xh-spacing-double);
+    text-align: center;
+  }
+
+  &__field {
+    margin-bottom: var(--xh-spacing);
+  }
+
+  &__field-label {
+    margin-bottom: var(--xh-spacing-half);
+    color: var(--xh-text-color-muted);
+  }
+
+  // Taller than the desktop default, with the left icon re-centered to match.
+  .xh-text-input {
+    width: 100%;
+
+    .bp6-input {
+      height: 36px;
+    }
+
+    .bp6-input:not(:first-child) {
+      padding-left: 34px;
+    }
+
+    .xh-icon {
+      margin: 10px;
+    }
   }
 
   &__warning,
   &__message {
     text-align: center;
-    margin: 0 var(--xh-spacing) var(--xh-spacing) var(--xh-spacing);
+    margin-bottom: var(--xh-spacing);
     padding: var(--xh-spacing);
     border-radius: var(--xh-border-radius);
   }
@@ -28,5 +80,11 @@
 
   &__message {
     background-color: var(--xh-bg-alt);
+  }
+
+  &__submit {
+    width: 100%;
+    height: 36px;
+    margin-top: var(--xh-spacing);
   }
 }

@@ -12,7 +12,7 @@ import {DashCanvasViewModel, DashCanvasViewSpec, DashConfig, DashViewState, Dash
 import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
 import {action, bindable, observableRef, computedStruct, bindableRef} from '@xh/hoist/mobx';
-import {ensureUniqueBy, observeResize, throwIf} from '@xh/hoist/utils/js';
+import {ensureUniqueBy, throwIf} from '@xh/hoist/utils/js';
 import {isOmitted} from '@xh/hoist/utils/impl';
 import {createObservableRef} from '@xh/hoist/utils/react';
 import {
@@ -305,18 +305,6 @@ export class DashCanvasModel
             run: () => (this.state = this.buildState()),
             fireImmediately: true
         });
-
-        // Used to make the height of RGL available to the gridBackground component
-        this.addReaction({
-            when: () => !!this.ref.current,
-            run: () => {
-                this.rglResizeObserver = observeResize(
-                    rect => (this.rglHeight = rect.height),
-                    this.ref.current.querySelector('.react-grid-layout'),
-                    {debounce: 100}
-                );
-            }
-        });
     }
 
     /** Remove all views from the canvas. */
@@ -575,8 +563,6 @@ export class DashCanvasModel
     //------------------------
     // Implementation
     //------------------------
-    private rglResizeObserver: ResizeObserver;
-
     private getLayoutFromPosition(position: string, specId: string) {
         switch (position) {
             case 'first':

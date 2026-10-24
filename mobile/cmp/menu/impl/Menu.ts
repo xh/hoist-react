@@ -17,6 +17,7 @@ import {
 import {listItem} from '@xh/hoist/kit/onsen';
 import {bindable} from '@xh/hoist/mobx';
 import {filterConsecutiveMenuSeparators} from '@xh/hoist/utils/impl';
+import {TEST_ID} from '@xh/hoist/utils/js';
 import {
     filterMenuHeadings,
     isVisibleMenuEntry,
@@ -105,7 +106,8 @@ class MenuLocalModel extends HoistModel {
                 if (!isMenuItem(item)) return item;
 
                 // Process items
-                const {text, icon, className, actionFn, hidden, active} = item,
+                const {text, icon, className, actionFn, hidden, active, keepMenuOpen, testId} =
+                        item,
                     labelItems = icon ? [icon, hspacer(10), text] : [text];
 
                 return listItem({
@@ -119,12 +121,13 @@ class MenuLocalModel extends HoistModel {
                     ),
                     item: div({className: 'center', items: labelItems}),
                     omit: hidden,
+                    [TEST_ID]: testId,
                     onTouchStart: () => (this.pressedIdx = idx),
                     onTouchEnd: () => (this.pressedIdx = null),
                     onClick: e => {
                         this.pressedIdx = null;
                         if (actionFn) actionFn(e, context);
-                        onDismiss();
+                        if (!keepMenuOpen) onDismiss();
                     }
                 });
             });

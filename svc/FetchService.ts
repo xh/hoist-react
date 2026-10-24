@@ -19,11 +19,9 @@ import {
 import {Exception, HoistException, TimeoutException} from '@xh/hoist/exception';
 import {PromiseTimeoutSpec} from '@xh/hoist/promise';
 import {isLocalDate, SECONDS} from '@xh/hoist/utils/datetime';
-import {warnIf} from '@xh/hoist/utils/js';
-import {StatusCodes} from 'http-status-codes';
+import {genRandomId, warnIf} from '@xh/hoist/utils/js';
 import {isDate, isFunction, isNil, isObject, isString, noop, omit, omitBy, truncate} from 'lodash';
 import {IStringifyOptions, stringify} from 'qs';
-import ShortUniqueId from 'short-unique-id';
 import {NdjsonResultImpl} from './impl/NdjsonResultImpl';
 import {StringInterner} from './impl/StringInterner';
 
@@ -31,6 +29,7 @@ export interface FetchServiceDefaults {
     autoGenCorrelationIds?: boolean | ((opts: FetchOptions) => boolean);
     correlationIdHeaderKey?: string;
     genCorrelationId?: () => string;
+    propagateTrace?: boolean | ((opts: FetchOptions) => boolean);
 }
 
 /**
@@ -48,6 +47,8 @@ export interface FetchServiceDefaults {
  * - Configurable timeouts (default 30s) via {@link FetchOptions.timeout}
  * - Auto-abort of duplicate in-flight requests via {@link FetchOptions.autoAbortKey}
  * - Optional correlation IDs for request tracking (see `defaults.autoGenCorrelationIds`)
+ * - W3C `traceparent` headers when tracing is enabled, sent by default only to the app's own
+ *   server (see `defaults.propagateTrace` and {@link FetchOptions.propagateTrace})
  * - Request/response interceptors via {@link addInterceptor}
  * - Default headers for all requests via {@link addDefaultHeaders}
  * - Rich exception handling with HTTP status, server messages, and trace IDs
@@ -63,10 +64,27 @@ export class FetchService extends HoistService {
     static defaults: FetchServiceDefaults = {
         autoGenCorrelationIds: false,
         correlationIdHeaderKey: 'X-Correlation-ID',
-        genCorrelationId: () => FetchService.defaultIdGenerator.rnd()
+        genCorrelationId: () => genRandomId(16),
+        propagateTrace: opts => FetchService.isHoistServerUrl(opts.url)
     };
 
-    NO_JSON_RESPONSES = [StatusCodes.NO_CONTENT, StatusCodes.RESET_CONTENT];
+    /**
+     * Does a request url target the app's own server? True for relative and root-relative urls,
+     * and for absolute urls on the origin of the page or of {@link XH.baseUrl}.
+     */
+    static isHoistServerUrl(url: string): boolean {
+        if (!url?.includes('//')) return true;
+        try {
+            const {origin} = window.location,
+                target = new URL(url, origin).origin;
+            return target === origin || target === new URL(XH.baseUrl, origin).origin;
+        } catch {
+            return false;
+        }
+    }
+
+    /** Response statuses carrying no body - No Content and Reset Content. */
+    NO_JSON_RESPONSES = [204, 205];
 
     /**
      * Regex applied during failed response handling to determine if contentType indicates JSON.
@@ -194,18 +212,23 @@ export class FetchService extends HoistService {
         // The runner will manage the lifecycle, but we won't await it here -- return
         // the result straight away. Also stifle telemetry exception. Stream already produces them.
         let ret: NdjsonResultImpl;
+        const aborter = new AbortController();
         runner
             .run(async innerCtx => {
                 ret = new NdjsonResultImpl(
-                    this.fetchInternalAsync(opts, innerCtx, true),
+                    this.fetchInternalAsync(opts, innerCtx, aborter),
                     opts,
                     this.getInterner(opts.internStrings),
                     (cause, response) =>
-                        cause?.name === 'AbortError'
+                        this.isAborted(opts, aborter)
                             ? this.abortedException(opts, innerCtx, cause)
                             : this.streamFailedException(opts, innerCtx, response, cause)
                 );
-                await ret.whenCompleteAsync();
+                try {
+                    await ret.whenCompleteAsync();
+                } finally {
+                    this.releaseAutoAbortKey(opts.autoAbortKey, aborter);
+                }
             })
             .catch(noop);
         return ret;
@@ -289,18 +312,18 @@ export class FetchService extends HoistService {
     //-----------------------
     // Implementation
     //-----------------------
-    private static readonly defaultIdGenerator = new ShortUniqueId({length: 16});
-
     /**
-     * @param forStreaming - true when called by fetchNdjson, which applies its own span and
-     *      track across the full stream lifetime - suppresses both here.
+     * @param streamAborter - aborter for a stream, set by fetchNdjson. It applies its own span and
+     *      track across the full stream lifetime - suppresses both here - and releases any
+     *      autoAbortKey once the stream completes.
      */
     private async fetchInternalAsync(
         opts: FetchOptions,
         ctx?: CallContextLike,
-        forStreaming: boolean = false
+        streamAborter: AbortController = null
     ): Promise<any> {
         ctx ??= {};
+        const forStreaming = !!streamAborter;
 
         let spanConfig = forStreaming ? null : this.createSpanConfig(opts),
             runner = spanConfig ? this.runner(ctx).span(spanConfig) : this.runner(ctx),
@@ -308,7 +331,7 @@ export class FetchService extends HoistService {
                 opts = this.withCorrelationId(opts);
                 opts = this.withTraceId(opts, ctx.span);
                 return this.withResolvedHeadersAsync(opts, ctx.span).then(opts =>
-                    this.managedFetchAsync(opts, ctx)
+                    this.managedFetchAsync(opts, ctx, streamAborter)
                 );
             });
 
@@ -372,7 +395,7 @@ export class FetchService extends HoistService {
 
     private async withResolvedHeadersAsync(opts: FetchOptions, span: Span): Promise<FetchOptions> {
         const method = opts.method ?? (opts.params ? 'POST' : 'GET'),
-            isPost = method === 'POST';
+            isForm = ['POST', 'PUT'].includes(method);
 
         const defaultHeaders = {};
         for (const h of this.defaultHeaders) {
@@ -380,10 +403,10 @@ export class FetchService extends HoistService {
         }
 
         const headers = {
-            'Content-Type': isPost ? 'application/x-www-form-urlencoded' : 'text/plain',
+            'Content-Type': isForm ? 'application/x-www-form-urlencoded' : 'text/plain',
             ...defaultHeaders,
             ...(opts.asJson ? {Accept: 'application/json'} : {}),
-            ...(span
+            ...(span && this.shouldPropagateTrace(opts)
                 ? {traceparent: formatTraceparent(span.traceId, span.spanId, span.sampled)}
                 : {}),
             ...opts.headers
@@ -403,15 +426,25 @@ export class FetchService extends HoistService {
         return {...opts, method, headers};
     }
 
-    private async managedFetchAsync(opts: FetchOptions, callCtx: CallContext): Promise<any> {
+    private shouldPropagateTrace(opts: FetchOptions): boolean {
+        if (!isNil(opts.propagateTrace)) return opts.propagateTrace;
+        const {propagateTrace} = FetchService.defaults;
+        return isFunction(propagateTrace) ? propagateTrace(opts) : propagateTrace;
+    }
+
+    private async managedFetchAsync(
+        opts: FetchOptions,
+        callCtx: CallContext,
+        streamAborter: AbortController
+    ): Promise<any> {
         // Prepare auto-aborter
         const {autoAborters, defaultTimeout} = this,
             {autoAbortKey, timeout = defaultTimeout} = opts,
-            aborter = new AbortController();
+            aborter = streamAborter ?? new AbortController();
 
         // autoAbortKey handling.  Abort anything running under this key, and mark this run
         if (autoAbortKey) {
-            autoAborters[autoAbortKey]?.abort();
+            this.abort(autoAbortKey);
             autoAborters[autoAbortKey] = aborter;
         }
 
@@ -430,17 +463,24 @@ export class FetchService extends HoistService {
                 throw this.timeoutException(opts, callCtx, e, msg);
             }
 
-            if (!e.isHoistException) {
-                // Just two other cases where we expect this to *throw* -- Typically we get a fail status
-                throw e.name === 'AbortError'
-                    ? this.abortedException(opts, callCtx, e)
-                    : this.serverUnavailableException(opts, callCtx, e);
-            }
-            throw e;
+            if (this.isAborted(opts, aborter)) throw this.abortedException(opts, callCtx, e);
+            if (e.isHoistException) throw e;
+
+            // Any other error means the server could not be reached.
+            throw this.serverUnavailableException(opts, callCtx, e);
         } finally {
-            if (autoAborters[autoAbortKey] === aborter) {
-                delete autoAborters[autoAbortKey];
-            }
+            if (!streamAborter) this.releaseAutoAbortKey(autoAbortKey, aborter);
+        }
+    }
+
+    // Fetch listens to both signals, joined - check each, as a custom abort reason is no AbortError.
+    private isAborted(opts: FetchOptions, aborter: AbortController): boolean {
+        return aborter.signal.aborted || !!opts.fetchOpts?.signal?.aborted;
+    }
+
+    private releaseAutoAbortKey(autoAbortKey: string, aborter: AbortController) {
+        if (autoAbortKey && this.autoAborters[autoAbortKey] === aborter) {
+            delete this.autoAborters[autoAbortKey];
         }
     }
 
@@ -453,16 +493,17 @@ export class FetchService extends HoistService {
         let {url, method, headers, body, params} = opts;
         url = this.resolveUrl(url);
 
-        // 2) Prepare options for fetch API
-        const fetchOpts: RequestInit = {
-            signal: aborter.signal,
-            credentials: 'include',
-            redirect: 'follow',
-            headers: new Headers(omitBy(headers, isNil)),
-            method,
-            body,
-            ...opts.fetchOpts
-        };
+        // 2) Prepare options for fetch API. Join any caller signal with ours, so either aborts.
+        const {signal, ...callerFetchOpts} = opts.fetchOpts ?? {},
+            fetchOpts: RequestInit = {
+                credentials: 'include',
+                redirect: 'follow',
+                headers: new Headers(omitBy(headers, isNil)),
+                method,
+                body,
+                ...callerFetchOpts,
+                signal: signal ? AbortSignal.any([aborter.signal, signal]) : aborter.signal
+            };
 
         // 3) Preprocess and apply params
         if (params) {
@@ -861,8 +902,24 @@ export interface FetchOptions {
     correlationId?: string | boolean;
 
     /**
+     * True to send a W3C `traceparent` header with this request, false to omit it. Applies only
+     * when tracing is enabled. The request still records a client span either way, but only a
+     * server that receives the header can join the trace. Defaults to
+     * `FetchService.defaults.propagateTrace`, which sends the header only to the app's own server.
+     *
+     * Note `traceparent` is not a CORS-safelisted header. A cross-origin server must list it in
+     * `Access-Control-Allow-Headers`, or the browser blocks the request.
+     */
+    propagateTrace?: boolean;
+
+    /**
      * Parameters to encode and append as a query string, or send with the request body
      * (for POSTs/PUTs sending form-url-encoded).
+     *
+     * If `method` is not specified, a request with params is sent as a POST, with the params in a
+     * form-url-encoded body, or on the query string if `Content-Type` is JSON. `fetch`,
+     * `fetchJson`, and `fetchNdjson` follow this rule, while `getJson`, `postJson`, `putJson`,
+     * `patchJson`, and `deleteJson` set the method themselves.
      */
     params?: PlainObject;
 

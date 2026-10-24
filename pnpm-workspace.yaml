@@ -45,6 +45,14 @@ savePrefix: '^'
 minimumReleaseAgeExclude:
   - '@xh/*'
 
+# Keep pnpm-lock.yaml a single YAML document. By default pnpm 12 records the pinned pnpm version in
+# a leading lockfile document, and GitHub's dependency graph reads only that first document - so it
+# sees none of our real deps and Dependabot raises no security alerts. With `ignore`, pnpm runs
+# whatever version is installed rather than switching to the `packageManager` pin. CI still installs
+# the pinned version via pnpm/setup. Remove once GitHub parses multi-document lockfiles - see
+# https://github.com/dependabot/dependabot-core/issues/15904.
+pmOnFail: ignore
+
 # Adding an `overrides` entry for a package that is also a direct dep? Put its version in a
 # `catalog:` entry and point both `package.json` and the override at `catalog:`. pnpm validates a
 # lockfile against the override but `pnpm update` writes the raw package.json specifier, so if the
@@ -56,7 +64,18 @@ minimumReleaseAgeExclude:
 # Several transitive deps (react-popper, react-onsenui, react-windowed-select) still declare
 # react/react-dom peer ranges capped at 18. Hoist v87 runs React 19 - acknowledge that here
 # rather than surfacing unmet-peer warnings on every install.
+#
+# eslint-plugin-tsdoc pins `@typescript-eslint/utils` ~8.56, whose packages cap their TypeScript peer
+# below 6. The plugin reads doc comments only, and lint passes with TypeScript 7 at the root.
+#
+# @vitest/mocker caps its optional msw peer below 3. Only Vitest's browser mode uses msw there, and
+# the unit tests run in jsdom, mocking the server with msw 3 directly.
 peerDependencyRules:
   allowedVersions:
     react: '19'
     react-dom: '19'
+    '@typescript-eslint/utils>typescript': '7'
+    '@typescript-eslint/typescript-estree>typescript': '7'
+    '@typescript-eslint/project-service>typescript': '7'
+    '@typescript-eslint/tsconfig-utils>typescript': '7'
+    '@vitest/mocker>msw': '3'

@@ -139,6 +139,6 @@ async function processFile(filePath) {
         formACount += localFormA;
         formBCount += localFormB;
         if (!DRY) await fs.writeFile(filePath, content);
-        console.log(`  ${path.relative(REPO_ROOT, filePath)} — form A=${localFormA}, form B=${localFormB}`);
+        console.log(`  ${path.relative(process.cwd(), filePath)} — form A=${localFormA}, form B=${localFormB}`);
     }
 }

@@ -62,7 +62,6 @@ import {
     CellDoubleClickedEvent,
     CellEditingStartedEvent,
     CellEditingStoppedEvent,
-    ColumnEvent,
     RowClickedEvent,
     RowDoubleClickedEvent
 } from '@xh/hoist/kit/ag-grid';
@@ -115,12 +114,17 @@ import {
     omit,
     pick,
     pull,
-    take
+    take,
+    uniqBy
 } from 'lodash';
 import {createRef, ReactNode, RefObject} from 'react';
 import {GridAutosizeOptions} from './GridAutosizeOptions';
 import {GridModelDiagnostics} from './impl/GridModelDiagnostics';
-import {GridContextMenuItemLike, GridContextMenuSpec} from './GridContextMenu';
+import {
+    GridContextMenuItemLike,
+    GridContextMenuSpec,
+    GridHeaderContextMenuSpec
+} from './GridContextMenu';
 import {GridSorter, GridSorterLike} from './GridSorter';
 import {computeSortedRecords} from './impl/RecordSortUtils';
 import {initPersist} from './impl/InitPersist';
@@ -212,8 +216,9 @@ export interface GridConfig {
     groupBy?: Some<string>;
 
     /**
-     * Depth level to expand to on initial load. 0 = all collapsed, 1 = top level expanded, etc.
-     * Defaults to 0 for tree grids (i.e. treeMode = true), 1 for standard grouped grids.
+     * Depth level to expand to on initial load. 0 = all collapsed, 1 = top level expanded, etc.,
+     * and -1 = all levels expanded. Defaults to 0 for tree grids (i.e. treeMode = true), 1 for
+     * standard grouped grids.
      */
     expandLevel?: number;
 
@@ -346,17 +351,27 @@ export interface GridConfig {
     clicksToExpand?: number;
 
     /**
-     * Array of RecordActions, dividers, or token strings with which to create a context menu.
-     * May also be specified as a function returning same or false to omit context menu from grid.
+     * Items for the context menu shown on right-click of a row or cell, as actions, headings and
+     * tokens, or a function returning them, or false to show none. Desktop only. Defaults to
+     * filter, copy, expand / collapse, export and column items - see `GridModel.defaults`.
      */
     contextMenu?: GridContextMenuSpec | false;
 
     /**
-     * Governs if the grid should reuse a limited set of DOM elements for columns visible in the
-     * scroll area (versus rendering all columns).  Consider this performance optimization for
-     * grids with a very large number of columns obscured by horizontal scrolling. Note that
-     * setting this value to true may limit the ability of the grid to autosize offscreen columns
-     * effectively. Default false.
+     * Items for the context menu shown on right-click of a column header, as for `contextMenu`,
+     * or false to show none. Desktop only. Defaults to column-focused items for the clicked column
+     * plus the column chooser, or to none when `contextMenu` is disabled.
+     */
+    headerContextMenu?: GridHeaderContextMenuSpec | false;
+
+    /**
+     * True (default) to render cells only for the columns within or near the visible scroll area,
+     * as ag-Grid does by default - the cost of rendering and scrolling then follows the visible
+     * column count rather than the total. Hoist's autosizing measures values without rendered
+     * cells, so it is unaffected.
+     *
+     * Set false to render the cells of every column, e.g. for test automation that must find
+     * offscreen cells in the DOM. Expect scrolling to slow with the total number of columns.
      */
     useVirtualColumns?: boolean;
 
@@ -415,13 +430,6 @@ export interface GridConfig {
 
 interface GridExperimentalFlags {
     /**
-     * Set to true to disable scroll optimization for large grids, where we proactively update the
-     * row heights in ag-grid whenever the data changes to avoid hitching while quickly scrolling
-     * through large grids.
-     */
-    disableScrollOptimization?: boolean;
-
-    /**
      * Percentage [0-90] of changed rows above which a managed re-sort runs a full sort rather
      * than an ag-Grid delta sort. Delta cost is ~linear in changed rows while full cost is ~flat
      * in them, with measured break-even near 55% on nested cube grids - erring toward delta
@@ -454,6 +462,7 @@ export interface GridModelDefaults {
     colChooserModel?: Omit<ColChooserConfig, 'gridModel'> | ColChooserMode | boolean | null;
     colDefaults?: Partial<ColumnSpec> | null;
     contextMenu?: GridContextMenuItemLike[];
+    headerContextMenu?: GridContextMenuItemLike[];
     emptyText?: ReactNode | null;
     enableColumnPinning?: boolean;
     enableExport?: boolean;
@@ -528,6 +537,18 @@ export class GridModel extends HoistModel {
             'colChooser',
             'autosizeColumns'
         ],
+        headerContextMenu: [
+            'sort',
+            '-',
+            'pinColumn',
+            'hideColumn',
+            'autosizeColumn',
+            '-',
+            'restoreDefaults',
+            '-',
+            'colChooser',
+            'autosizeColumns'
+        ],
         emptyText: null,
         enableColumnPinning: true,
         enableExport: false,
@@ -559,6 +580,7 @@ export class GridModel extends HoistModel {
     rowClassFn: RowClassFn;
     rowClassRules: Record<string, RowClassRuleFn>;
     contextMenu: GridContextMenuSpec;
+    headerContextMenu: GridHeaderContextMenuSpec;
     groupRowHeight: number;
     groupRowRenderer: GroupRowRenderer;
     groupSortFn: GridGroupSortFn;
@@ -659,10 +681,10 @@ export class GridModel extends HoistModel {
     }
 
     /** Tracks execution of filtering operations.*/
-    @managed filterTask = TaskObserver.trackAll();
+    filterTask = TaskObserver.trackAll();
 
     /** Tracks execution of autosize operations. */
-    @managed autosizeTask = TaskObserver.trackAll();
+    autosizeTask = TaskObserver.trackAll();
 
     /** @internal */
     readonly diagnostics = new GridModelDiagnostics(this);
@@ -712,7 +734,8 @@ export class GridModel extends HoistModel {
             onCellContextMenu,
             clicksToExpand = GridModel.defaults.clicksToExpand ?? (XH.isMobileApp ? 1 : 2),
             contextMenu,
-            useVirtualColumns = false,
+            headerContextMenu,
+            useVirtualColumns = true,
             autosizeOptions = {},
             restoreDefaultsFn,
             restoreDefaultsWarning = GridModel.defaults.restoreDefaultsWarning,
@@ -746,8 +769,8 @@ export class GridModel extends HoistModel {
         this.groupRowRenderer = managedRenderer(groupRowRenderer, 'GROUP_ROW');
         this.groupSortFn = withDefault(groupSortFn, this.defaultGroupSortFn);
         this.showGroupRowCounts = showGroupRowCounts;
-        this.contextMenu =
-            contextMenu === false ? [] : withDefault(contextMenu, GridModel.defaults.contextMenu);
+        this.contextMenu = this.parseContextMenu(contextMenu);
+        this.headerContextMenu = this.parseHeaderContextMenu(headerContextMenu, contextMenu);
         this.useVirtualColumns = useVirtualColumns;
         this.externalSort = externalSort;
         apiDeprecated('GridModel.enableFullWidthScroll', {
@@ -1258,31 +1281,29 @@ export class GridModel extends HoistModel {
         this.expandToLevel(0);
     }
 
-    /** Expand all parent rows in grouped or tree grid to the specified level. */
+    /** Expand all parent rows in grouped or tree grid to the specified level, or all for -1. */
     @action
     expandToLevel(level: number) {
         this.expandLevel = level;
 
-        // 0) Not rendered, we are done.
-        const {agApi, store} = this;
+        const {agApi} = this;
         if (!agApi) return;
 
-        // 1) Update rendered grid.
-        agApi.setGridOption('groupDefaultExpanded', level);
-        if (level == 0 || level >= this.maxDepth) {
-            level == 0 ? agApi.collapseAll() : agApi.expandAll();
-        } else {
-            // Update raw nodes for efficiency
-            // This approach documented in agGrids onGroupExpandedOrCollapsed() docs (2025)
-            store.records.forEach(rec => {
-                const node = agApi.getRowNode(rec.agId);
-                if (node) {
-                    node.expanded = rec.depth < level;
-                }
-            });
-            agApi.onGroupExpandedOrCollapsed();
-        }
+        // Bulk approach per ag-Grid's `onGroupExpandedOrCollapsed()` docs.
+        agApi.forEachNode(node => {
+            if (node.group) node.expanded = this.isLevelExpanded(node.level);
+        });
+        agApi.onGroupExpandedOrCollapsed();
         this.noteAgExpandStateChange();
+    }
+
+    /**
+     * @internal - true if the current `expandLevel` opens a group row at the given depth. A
+     * negative level opens every depth.
+     */
+    isLevelExpanded(depth: number): boolean {
+        const {expandLevel} = this;
+        return expandLevel < 0 || depth < expandLevel;
     }
 
     /**
@@ -1298,12 +1319,13 @@ export class GridModel extends HoistModel {
     /**
      * True if the given `resolvedLevelLabels` index is the grid's current expand level - used to
      * mark the active item in the "Expand to..." menu. The deepest labelled level counts as current
-     * whenever the grid is expanded to or beyond it.
+     * whenever the grid is expanded to or beyond it, including to all levels with -1.
      */
     isCurrentExpandLevel(idx: number): boolean {
         const {expandLevel, resolvedLevelLabels} = this,
-            lastIdx = resolvedLevelLabels?.length - 1;
-        return expandLevel === idx || (idx === lastIdx && expandLevel > lastIdx);
+            lastIdx = resolvedLevelLabels?.length - 1,
+            expandedPastLast = expandLevel < 0 || expandLevel > lastIdx;
+        return expandLevel === idx || (idx === lastIdx && expandedPastLast);
     }
 
     /**
@@ -1443,7 +1465,7 @@ export class GridModel extends HoistModel {
                 return {
                     colId,
                     pinned: isBoolean(pinned) ? (pinned ? 'left' : null) : pinned,
-                    hidden: !!hide,
+                    hidden: this.isColumnHiddenByGrouping(colId) ? null : !!hide,
                     width: col.flex ? undefined : width
                 };
             }
@@ -1592,6 +1614,19 @@ export class GridModel extends HoistModel {
     isColumnVisible(colId: string): boolean {
         const state = this.getStateForColumn(colId);
         return state ? !state.hidden : false;
+    }
+
+    /**
+     * True if ag-Grid is hiding this column because the grid is grouped by it. Hoist leaves the
+     * visibility of such a column to ag-Grid, keeping its own `hidden` state for after ungrouping.
+     * @internal
+     */
+    isColumnHiddenByGrouping(colId: string): boolean {
+        const {agApi} = this;
+        if (!agApi || !this.groupBy.includes(colId)) return false;
+
+        const suppress = agApi.getGridOption('suppressGroupChangesColumnVisibility');
+        return suppress !== true && suppress !== 'suppressHideOnGroup';
     }
 
     setColumnVisible(colId: string, visible: boolean) {
@@ -1857,11 +1892,6 @@ export class GridModel extends HoistModel {
         return a.localeCompare(b);
     };
 
-    /** @internal */
-    get disableScrollOptimization() {
-        return !!this.experimental.disableScrollOptimization;
-    }
-
     //-----------------------
     // Implementation
     //-----------------------
@@ -2034,8 +2064,12 @@ export class GridModel extends HoistModel {
         const gridCols = this.getLeafColumns();
 
         // REMOVE any state columns that are no longer found in the grid. These were likely saved
-        // under a prior release of the app and have since been removed from the code.
-        let ret = columnState.filter(({colId}) => this.getColumn(colId));
+        // under a prior release of the app and have since been removed from the code. Also
+        // REMOVE any repeated columns, keeping the first.
+        let ret = uniqBy<any>(
+            columnState.filter(({colId}) => this.getColumn(colId)),
+            'colId'
+        );
 
         // ADD any grid columns that are not found in state. These are newly added to the code.
         // Insert these columns in position based on the index at which they are defined.
@@ -2240,6 +2274,23 @@ export class GridModel extends HoistModel {
         };
     }
 
+    private parseContextMenu(spec: GridConfig['contextMenu']): GridContextMenuSpec {
+        return spec === false ? [] : withDefault(spec, GridModel.defaults.contextMenu);
+    }
+
+    /** A grid with no context menu gets no header menu either, unless one is set explicitly. */
+    private parseHeaderContextMenu(
+        spec: GridConfig['headerContextMenu'],
+        contextMenu: GridConfig['contextMenu']
+    ): GridHeaderContextMenuSpec {
+        if (spec === false) return [];
+        const dflt =
+            contextMenu === false || contextMenu === null
+                ? []
+                : GridModel.defaults.headerContextMenu;
+        return withDefault(spec, dflt);
+    }
+
     private parseChooserModel(chooserModel: GridConfig['colChooserModel']): IColChooserModel {
         if (!chooserModel) return null;
 
@@ -2291,15 +2342,6 @@ export class GridModel extends HoistModel {
     ): ColumnCellClassRuleFn {
         return ({api, column, ...ctx}) => {
             if (!api || !column) return false;
-
-            // Re-evaluate cell class rules when column is re-ordered
-            // See https://www.ag-grid.com/javascript-data-grid/column-object/#reference-events
-            if (!column['xhAppliedGroupBorderListener']) {
-                column['xhAppliedGroupBorderListener'] = true;
-                column.addEventListener('leftChanged', ({api, columns, source}: ColumnEvent) => {
-                    if (source === 'uiColumnMoved') api.refreshCells({columns});
-                });
-            }
 
             // Don't render a left-border if col is first or if prev col already has right-border
             if (side === 'left') {

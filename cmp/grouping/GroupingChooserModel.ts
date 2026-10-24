@@ -259,7 +259,7 @@ export class GroupingChooserModel extends HoistModel {
                 value,
                 label: this.getValueLabel(value)
             })),
-            it => it.label[0]
+            'label'
         );
     }
 

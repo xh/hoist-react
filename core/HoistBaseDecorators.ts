@@ -43,22 +43,29 @@ export function managed(_value: any, context: FieldOrAccessorOrGetterContext): a
  * This decorator provides the same functionality as {@link HoistBase.markPersist}. See that method
  * for more details.
  *
- * This decorator should always be applied "after" the mobx decorator, i.e. second in file line
- * order: `@bindable @persist accessor fooBarFlag = true`
+ * Write `@persist` after the MobX decorator in source order: `@bindable @persist accessor foo`.
+ * Decorators apply innermost first, so `@persist` only registers an init hook; init hooks then
+ * run outermost first, so MobX makes the field observable before the persist hook reads it.
  *
  * See also `@persist.with`, a higher-order version of this decorator that allows for setting
  * property-specific persistence options.
  */
-export const persist: any = (_value: any, context: ClassAccessorDecoratorContext) => {
+export function persist<This, V>(
+    _value: ClassAccessorDecoratorTarget<This, V>,
+    context: ClassAccessorDecoratorContext<This, V>
+): ClassAccessorDecoratorResult<This, V> {
     return createPersistResult(context, null);
-};
+}
 
 /**
  * Decorator to make a class property persistent. This is a higher-order version of `@persist`.
  * Use this variant as a function to provide custom PersistOptions.
  */
-persist.with = function (options: PersistOptions): any {
-    return function (_value: any, context: ClassAccessorDecoratorContext) {
+persist.with = function (options: PersistOptions) {
+    return function <This, V>(
+        _value: ClassAccessorDecoratorTarget<This, V>,
+        context: ClassAccessorDecoratorContext<This, V>
+    ): ClassAccessorDecoratorResult<This, V> {
         return createPersistResult(context, options);
     };
 };

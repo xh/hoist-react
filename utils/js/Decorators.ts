@@ -82,19 +82,9 @@ export function sharePendingPromise<T extends AnyFn>(
 ): T {
     const name = context.name as string;
     return function () {
+        let cacheKey: string;
         try {
-            const cacheKey = '_xh_' + name + JSON.stringify(arguments);
-            return getOrCreate(this, cacheKey, () => {
-                const ret = fn.apply(this, arguments);
-                if (!(ret instanceof Promise)) {
-                    logWarn(
-                        `@sharePendingPromise applied to non-Promise-returning method: ${name}`,
-                        this.constructor.name
-                    );
-                    return ret;
-                }
-                return ret.finally(() => delete this[cacheKey]);
-            });
+            cacheKey = '_xh_' + name + JSON.stringify(arguments);
         } catch (e: any) {
             logWarn(
                 [
@@ -105,5 +95,16 @@ export function sharePendingPromise<T extends AnyFn>(
             );
             return fn.apply(this, arguments);
         }
+        return getOrCreate(this, cacheKey, () => {
+            const ret = fn.apply(this, arguments);
+            if (!(ret instanceof Promise)) {
+                logWarn(
+                    `@sharePendingPromise applied to non-Promise-returning method: ${name}`,
+                    this.constructor.name
+                );
+                return ret;
+            }
+            return ret.finally(() => delete this[cacheKey]);
+        });
     } as any as T;
 }

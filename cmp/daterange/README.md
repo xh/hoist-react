@@ -85,7 +85,6 @@ class ReportModel extends HoistModel {
 
     constructor() {
         super();
-        makeObservable(this);
         this.addReaction({
             track: () => this.periodModel.currentRangeFilter,
             run: filter => this.gridModel.store.setFilter(filter),

@@ -8,7 +8,6 @@ import {
     CallContextLike,
     HoistBase,
     LoadSpecConfig,
-    managed,
     PlainObject,
     RefreshContextModel,
     TaskObserver
@@ -32,7 +31,6 @@ export class LoadSupport extends HoistBase implements Loadable {
     lastRequested: LoadSpec = null;
     lastSucceeded: LoadSpec = null;
 
-    @managed
     loadObserver: TaskObserver = TaskObserver.trackLast();
 
     @observableRef accessor lastLoadRequested: Date = null;

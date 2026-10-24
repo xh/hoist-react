@@ -13,7 +13,7 @@ import {
     GridModel,
     TreeStyle
 } from '@xh/hoist/cmp/grid';
-import {fragment, hbox, p, strong} from '@xh/hoist/cmp/layout';
+import {fragment, p, span, strong} from '@xh/hoist/cmp/layout';
 import {TabContainerModel} from '@xh/hoist/cmp/tab';
 import {
     buildViewGroupTree,
@@ -1063,23 +1063,23 @@ export class ManageDialogModel extends HoistModel {
     }
 
     private get ownedTabTitle(): ReactNode {
-        return hbox(
-            `My ${startCase(pluralize(this.viewManagerModel.typeDisplayName))}`,
+        return span(
+            `My ${startCase(pluralize(this.viewManagerModel.typeDisplayName))} `,
             badge(this.viewCount(this.ownedGridModel))
         );
     }
 
     private get globalTabTitle(): ReactNode {
         const {globalDisplayName, typeDisplayName} = this.viewManagerModel;
-        return hbox(
-            `${startCase(globalDisplayName)} ${startCase(pluralize(typeDisplayName))}`,
+        return span(
+            `${startCase(globalDisplayName)} ${startCase(pluralize(typeDisplayName))} `,
             badge(this.viewCount(this.globalGridModel))
         );
     }
 
     private get sharedTabTitle(): ReactNode {
-        return hbox(
-            `Shared ${startCase(pluralize(this.viewManagerModel.typeDisplayName))}`,
+        return span(
+            `Shared ${startCase(pluralize(this.viewManagerModel.typeDisplayName))} `,
             badge(this.viewCount(this.sharedGridModel))
         );
     }

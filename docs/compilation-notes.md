@@ -7,25 +7,26 @@ contains the TypeScript files, along with package metadata, and nothing is pre-t
 
 ## Application Compilation Process
 
-Each Hoist application handles compilation using the `configureWebpack()` function from
-[hoist-dev-utils](https://github.com/xh/hoist-dev-utils). This standardized Webpack configuration
-instructs Babel to transpile both application code and Hoist React source from `node_modules`. The
-app build is the point at which TypeScript is converted to JavaScript.
+Each Hoist application handles compilation using the `configureRsbuild()` function from
+[hoist-dev-utils](https://github.com/xh/hoist-dev-utils). This standardized
+[Rsbuild](https://rsbuild.rs) configuration instructs SWC to transpile both application code and
+Hoist React source from `node_modules`, including Hoist's TC39 (`2023-11`) decorators. The app
+build is the point at which TypeScript is converted to JavaScript.
 
-For application developers, this is all built-in—there's no need to configure Babel or Webpack
+For application developers, this is all built-in. There is no need to configure Rsbuild or SWC
 directly unless implementing custom build requirements.
 
 ## Why This Approach?
 
 We chose this approach because we maintain a standardized build pipeline across all Hoist projects.
-By centralizing the Webpack configuration in hoist-dev-utils, we ensure consistent compilation
+By centralizing the Rsbuild configuration in hoist-dev-utils, we ensure consistent compilation
 behavior, avoid bundling complexity within the library itself, and keep the source transparent and
 debuggable for application developers.
 
 ## See Also
 
-- [hoist-dev-utils](https://github.com/xh/hoist-dev-utils) - Webpack configuration and build tooling
-- [Toolbox webpack.config.js](https://github.com/xh/toolbox/blob/develop/client-app/webpack.config.js) - Example configuration in a Hoist application
+- [hoist-dev-utils](https://github.com/xh/hoist-dev-utils) - Rsbuild configuration and build tooling
+- [Toolbox rsbuild.config.mjs](https://github.com/xh/toolbox/blob/develop/client-app/rsbuild.config.mjs) - Example configuration in a Hoist application
 
 
 ------------------------------------------

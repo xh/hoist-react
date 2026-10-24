@@ -8,7 +8,7 @@
 import type {StoreRecord} from '@xh/hoist/data';
 import {isEqual, map} from 'lodash';
 import type {Query} from '../Query';
-import type {BaseRow} from '../row/BaseRow';
+import {BaseRow} from '../row/BaseRow';
 import {ExposedLeafRow, type LeafRow} from '../row/LeafRow';
 import type {ParentRow} from '../row/ParentRow';
 import type {View} from '../View';
@@ -93,7 +93,7 @@ export class RowCache {
     beginGeneration() {
         const {view} = this;
         this.pruneForQueryChange(view.query);
-        this.genStartDigest = view._rowDigest;
+        this.genStartDigest = BaseRow.currentDigest;
         this.exposedLeaves = view.exposesLeaves;
         this.reused = this.rebuilt = this.created = 0;
     }

@@ -23,7 +23,6 @@ export class OptionsDialogModel extends HoistModel {
     @observable accessor isOpen: boolean = false;
     @observableRef accessor options: AppOption[] = [];
 
-    @managed
     loadTask: TaskObserver = TaskObserver.trackLast();
 
     @managed

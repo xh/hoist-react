@@ -292,9 +292,13 @@ export class QueryEngine {
         operatorRegs.push('\\bends\\b');
         operatorRegs.push('\\bis\\b');
 
-        let [field = '', op = '', value = ''] = raw
-            .split(new RegExp('(' + operatorRegs.join('|') + ')', 'i'))
-            .map(s => s.trim());
+        // Split on the first operator only - the value may itself contain operator words or symbols.
+        const match = new RegExp(operatorRegs.join('|'), 'i').exec(raw),
+            opStart = match ? match.index : raw.length,
+            opEnd = match ? opStart + match[0].length : raw.length;
+        let field = raw.slice(0, opStart).trim(),
+            op = raw.slice(opStart, opEnd).trim(),
+            value = raw.slice(opEnd).trim();
 
         // Catch special case where some partial operator bits being interpreted as field
         if (!op && field) {

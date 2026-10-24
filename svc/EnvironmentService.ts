@@ -57,7 +57,7 @@ export class EnvironmentService extends HoistService {
                     clientTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone ?? 'Unknown',
                     clientTimeZoneOffset = new Date().getTimezoneOffset() * -1 * MINUTES;
 
-                // Favor client-side data injected via Webpack build or otherwise determined locally,
+                // Favor client-side data injected via Rsbuild build or otherwise determined locally,
                 // then apply all other env data sourced from the server.
                 this.data = deepFreeze(
                     defaults(
@@ -161,7 +161,7 @@ export class EnvironmentService extends HoistService {
         const hcVersion = this.get('hoistCoreVersion'),
             // This app version value is sourced by the network call to 'xh/environment'.
             serverAppVersion = this.get('appVersion'),
-            // This app version value is packaged from configureWebpack -> appVersion.
+            // This app version value is packaged from configureRsbuild -> appVersion.
             clientAppVersion = this.get('clientVersion');
 
         // Check for client/server mismatch version.  It's an ok transitory state *during* the
@@ -213,13 +213,7 @@ export class EnvironmentService extends HoistService {
  * runtime on any built/deployed instances of the app, including on Dev/UAT servers.
  */
 export type AppEnvironment =
-    | 'Production'
-    | 'Beta'
-    | 'Staging'
-    | 'Development'
-    | 'Test'
-    | 'UAT'
-    | 'BCP';
+    'Production' | 'Beta' | 'Staging' | 'Development' | 'Test' | 'UAT' | 'BCP';
 
 interface PollConfig {
     interval: number;

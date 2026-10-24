@@ -9,6 +9,7 @@ import {BaseFieldConfig} from '@xh/hoist/cmp/form/field/BaseFieldModel';
 import {RuleLike} from '@xh/hoist/data';
 import {isNil, isString} from 'lodash';
 import {isValidElement, MouseEvent, ReactElement, ReactNode} from 'react';
+import type {TestSupportProps} from '../HoistProps';
 import {Intent, Thunkable} from './Types';
 
 //------------------------
@@ -217,14 +218,14 @@ export interface MessageSpec {
      * displayed, or use a preconfigured helper such as `XH.alert()` or `XH.confirm()` for default
      * buttons.
      */
-    confirmProps?: any;
+    confirmProps?: MessageButtonSpec;
 
     /**
      * Props for secondary cancel button. Must provide either text or icon for button to be
      * displayed, or use a preconfigured helper such as `XH.alert()` or `XH.confirm()` for default
      * buttons.
      */
-    cancelProps?: any;
+    cancelProps?: MessageButtonSpec;
 
     /**
      * Specify 'left' to place the Cancel button (if shown) on the left edge of the dialog toolbar,
@@ -254,6 +255,34 @@ export interface MessageSpecInput {
 
     /** Initial value for the input. */
     initialValue?: any;
+}
+
+/**
+ * Props for a button shown in a modal message - see {@link MessageSpec.confirmProps} and
+ * {@link MessageSpec.cancelProps}. The button is displayed only if `text` or `icon` is set.
+ *
+ * Extra props pass through to the platform `button` component, e.g. `outlined` or `minimal`.
+ * Do not set `onClick` - it is ignored in favor of the message's built-in handlers. Use
+ * {@link MessageSpec.onConfirm} and {@link MessageSpec.onCancel} instead.
+ */
+export interface MessageButtonSpec {
+    /** Label for the button. */
+    text?: ReactNode;
+
+    /** Icon for the button. */
+    icon?: ReactElement;
+
+    /** Visual intent for the button, e.g. 'danger' for a destructive action. */
+    intent?: Intent;
+
+    /**
+     * True to focus this button when the message opens. If neither button sets this and the
+     * message has no `input`, the confirm button is focused by default.
+     */
+    autoFocus?: boolean;
+
+    /** Other props for the platform `button` component. */
+    [key: string]: any;
 }
 
 /**
@@ -305,9 +334,10 @@ export interface MenuContext {
 /**
  * Basic interface for a MenuItem to appear in a menu.
  *
- * MenuItems can be displayed within a context menu, or shown when clicking on a button.
+ * MenuItems can be displayed within a context menu, or shown when clicking on a button. A
+ * `testId` renders as a `data-testid` attribute on the item's element.
  */
-export interface MenuItem<T = MenuToken, C = MenuContext> {
+export interface MenuItem<T = MenuToken, C = MenuContext> extends TestSupportProps {
     /** Label to be displayed. */
     text: ReactNode;
 
@@ -334,6 +364,15 @@ export interface MenuItem<T = MenuToken, C = MenuContext> {
 
     /** True to render this item as active - e.g. to mark the current selection. */
     active?: boolean;
+
+    /**
+     * True to leave the menu open when the user clicks this item, so they can toggle several
+     * items in turn. Default false.
+     *
+     * The open menu re-runs each `prepareFn` when the observable state it reads changes, so set
+     * properties such as `active` there to keep them current while the menu stays open.
+     */
+    keepMenuOpen?: boolean;
 
     /** True to hide this item. May be set dynamically via prepareFn. */
     hidden?: boolean;

@@ -44,8 +44,7 @@ export class SaveAsDialogModel extends HoistModel {
             name,
             // Do not copy description or visibility from source view
             description: null,
-            visibility: 'private',
-            isPinned: !!src.info?.isPinned
+            visibility: 'private'
         });
         this.groupFieldModel.init(src.group);
 

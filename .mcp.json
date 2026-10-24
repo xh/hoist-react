@@ -2,10 +2,9 @@
   "mcpServers": {
     "hoist-react": {
       "type": "stdio",
-      "command": "npx",
+      "command": "node",
       "args": [
-        "tsx",
-        "mcp/server.ts"
+        "bin/hoist-mcp.mjs"
       ],
       "env": {}
     },
@@ -19,6 +18,13 @@
     "idea": {
       "url": "http://127.0.0.1:64342/stream",
       "type": "http"
+    },
+    "chrome-devtools": {
+      "command": "npx",
+      "args": [
+        "chrome-devtools-mcp@latest",
+        "--browser-url=http://127.0.0.1:9222"
+      ]
     }
   }
 }

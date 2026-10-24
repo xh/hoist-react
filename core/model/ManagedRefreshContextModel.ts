@@ -22,6 +22,7 @@ export class ManagedRefreshContextModel extends RefreshContextModel {
 
     model: ManagedRefreshTarget;
     refreshPending: boolean = false;
+    private pendingIsAutoRefresh: boolean = false;
 
     constructor(model: ManagedRefreshTarget) {
         super();
@@ -42,6 +43,9 @@ export class ManagedRefreshContextModel extends RefreshContextModel {
         }
 
         if (mode === 'onShowLazy') {
+            // Replay as an auto-refresh only if every missed refresh was one.
+            this.pendingIsAutoRefresh =
+                loadSpec.isAutoRefresh && (!this.refreshPending || this.pendingIsAutoRefresh);
             this.refreshPending = true;
         }
     }
@@ -53,7 +57,7 @@ export class ManagedRefreshContextModel extends RefreshContextModel {
                 this.refreshAsync();
             } else if (mode === 'onShowLazy' && this.refreshPending) {
                 this.refreshPending = false;
-                this.refreshAsync();
+                this.pendingIsAutoRefresh ? this.autoRefreshAsync() : this.refreshAsync();
             }
         }
     }

@@ -15,14 +15,6 @@
 }
 
 .xh-mobile {
-  // ag-grid adds these when the center viewport has overflow, so that the space taken by the scrollbar is consistent in
-  // the top and bottom pinned-row divs. On mobile we do not render scrollbars for the center viewport, so force hiding
-  // in the top and bottom pinned-row divs.
-  .ag-grid-pinned-top-rows-container,
-  .ag-grid-pinned-bottom-rows-container {
-    overflow-y: hidden !important;
-  }
-
   // Prevent the "bounce" overscroll effect for horizontal scrolling on mobile devices, as it
   // conflicts with the drag management in the Navigator.
   .ag-body-horizontal-scroll-viewport {
@@ -76,6 +68,20 @@
   // Row colors come from params - these are the states with no param equivalent: selected-row *text*
   // color, and group rows.
   .ag-row {
+    // ag-Grid sizes the scrolling container to its columns and fills the rest of the row with an
+    // `::after` filler. Row borders, the hover / selection overlay and the row drag drop line are
+    // all drawn on the cell containers, so grow the scrolling container into the filler to carry
+    // them across the full row when columns don't fill the grid.
+    &:where(:not(.ag-full-width-row)) {
+      > .ag-grid-scrolling-cells {
+        flex-grow: 1;
+      }
+
+      &::after {
+        flex-grow: 0;
+      }
+    }
+
     &.ag-row-selected .ag-cell {
       color: var(--xh-grid-row-selected-text-color);
     }
@@ -163,10 +169,14 @@
   }
 
   // ag-Grid also hovers full-width group rows and pinned (summary) rows - Hoist never has.
-  .ag-row-hover.ag-full-width-row.ag-row-group::before,
-  .ag-row-hover.ag-row-pinned::before {
+  .ag-row-hover.ag-full-width-row.ag-row-group::before {
     background-color: transparent;
     background-image: none;
+  }
+
+  .ag-row-hover.ag-row-pinned {
+    --ag-internal-row-overlay-color: transparent;
+    --ag-internal-row-overlay-image: none;
   }
 
   //------------------------
@@ -198,9 +208,13 @@
     display: none;
   }
 
-  // We use flexbox to consistently vertically center cell contents across
-  // the different sizing modes. See https://github.com/xh/hoist-react/issues/1949
-  .ag-cell-value {
+  // We use flexbox to consistently vertically center rendered cell contents across the different
+  // sizing modes. See https://github.com/xh/hoist-react/issues/1949
+  // Plain-text cells (`xh-cell--plain` - columns with no renderer) are excluded. ag-Grid writes
+  // their value into the cell as a bare text node, centers it by line-height and ellipsizes it
+  // itself. As an anonymous flex item that text could not be ellipsized. `:where()` keeps this
+  // rule's specificity unchanged; the second argument covers cells with an `.ag-cell-wrapper`.
+  .ag-cell-value:where(:not(.xh-cell--plain, .xh-cell--plain *)) {
     display: flex;
     align-items: center;
 
@@ -215,9 +229,20 @@
       text-overflow: ellipsis;
       min-width: 0;
     }
-    .ag-row-group {
-      align-items: center;
-    }
+  }
+
+  .ag-cell-value .ag-row-group {
+    align-items: center;
+  }
+
+  // Plain-text cells (columns with no renderer) hold a bare text node that ag-Grid sizes by
+  // line-height and ellipsizes itself, so it cannot be flex-centered like rendered content.
+  // ag-Grid's line-height is also 2px short whenever a `getRowHeight` function is in use (Hoist's
+  // always is), and never exceeds the grid's default row height, so taller rows (`autoHeight`
+  // columns, a custom `getRowHeight`) would leave the text at the top. Center the line box in the
+  // cell instead, which holds for any row height and keeps ag-Grid's line spacing for wrapped text.
+  .ag-cell.xh-cell--plain {
+    align-content: center;
   }
 
   // Vertical lines between columns, from the `columnBorder` param. Horizontal lines belong to
@@ -236,8 +261,8 @@
   &--no-cell-focus {
     --ag-range-selection-border-color: transparent;
 
-    // ag-Grid drops the pinned-column border on a focused cell, and outranks the group borders in
-    // Grid.scss. Restore both, or they vanish as focus moves across the grid.
+    // ag-Grid's 1px focus border overrides the column, pinned and group borders, and re-adds the
+    // top/bottom borders that `--row-borders` removes. Restore them so focus doesn't shift cells.
     .ag-cell-focus:not(.ag-cell-range-selected):focus-within {
       &.ag-cell-last-left-pinned {
         border-right: var(--ag-pinned-column-border);
@@ -254,6 +279,32 @@
       &.xh-cell--group-border-right {
         @include group-border(right);
       }
+    }
+
+    :where(.ag-ltr) .ag-cell-focus:not(.ag-cell-range-selected):focus-within {
+      border-right: var(--ag-column-border);
+    }
+
+    :where(.ag-rtl) .ag-cell-focus:not(.ag-cell-range-selected):focus-within {
+      border-left: var(--ag-column-border);
+    }
+
+    // Keep ag-Grid's hidden last-column border hidden when columns fill the grid.
+    :where(.ag-ltr)
+      :where(.ag-body-horizontal-content-no-gap)
+      .ag-column-last.ag-cell-focus:not(.ag-cell-range-selected):focus-within {
+      border-right-color: transparent;
+    }
+
+    :where(.ag-rtl)
+      :where(.ag-body-horizontal-content-no-gap)
+      .ag-column-last.ag-cell-focus:not(.ag-cell-range-selected):focus-within {
+      border-left-color: transparent;
+    }
+
+    &.xh-ag-grid--row-borders .ag-cell-focus:not(.ag-cell-range-selected):focus-within {
+      border-top: none;
+      border-bottom: none;
     }
   }
 

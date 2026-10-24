@@ -580,11 +580,13 @@ body {
   --xh-grid-row-selected-text-color: var(--xh-grid-text-color);
   --xh-grid-summary-row-border-color: var(--xh-grid-border-color);
   --xh-grid-text-color: var(--xh-text-color);
-  --xh-grid-tooltip-bg: var(--xh-bg-alt);
-  --xh-grid-tooltip-border: var(--xh-border-solid);
-  --xh-grid-tooltip-border-radius: var(--xh-border-radius);
-  --xh-grid-tooltip-max-width: 400px;
-  --xh-grid-tooltip-padding: var(--xh-spacing-half);
+  --xh-grid-tooltip-bg: var(--xh-tooltip-bg);
+  --xh-grid-tooltip-border: #{(var(--xh-border-width) solid var(--xh-tooltip-border-color))};
+  --xh-grid-tooltip-border-radius: var(--xh-tooltip-border-radius);
+  --xh-grid-tooltip-shadow: var(--xh-tooltip-shadow);
+  --xh-grid-tooltip-font-size: var(--xh-tooltip-font-size);
+  --xh-grid-tooltip-max-width: var(--xh-tooltip-max-width);
+  --xh-grid-tooltip-padding: var(--xh-tooltip-padding);
   --xh-grid-tree-indent: 1.2em;
   --xh-grid-tree-icon-size: 10px;
 
@@ -678,6 +680,15 @@ body {
     // Tray bg follows --xh-bg-alt in both themes - no dark-mode override needed.
     --xh-segmented-control-selected-bg: #{mc('blue-grey', '700')};
   }
+
+  //------------------------
+  // Radio Card Input
+  //------------------------
+  --xh-radio-card-input-bg: var(--xh-bg-alt);
+  --xh-radio-card-input-border-radius: 10px;
+  --xh-radio-card-input-gap: var(--xh-spacing);
+  --xh-radio-card-input-card-width: 88px;
+  --xh-radio-card-input-selected-color: var(--xh-intent-primary);
 
   //------------------------
   // Intent Input
@@ -859,6 +870,17 @@ body {
   --xh-tab-switcher-vertical-item-active-bg: var(--xh-bg-highlight);
   --xh-tab-switcher-vertical-item-font-weight: 500;
   --xh-tab-switcher-vertical-item-active-font-weight: 600;
+  // Display-only group headers, rendered above runs of tabs sharing a `TabConfig.group`.
+  --xh-tab-switcher-vertical-group-gap: var(--xh-spacing);
+  --xh-tab-switcher-vertical-group-border: var(--xh-border-solid);
+  --xh-tab-switcher-vertical-group-header-padding: var(--xh-spacing-half) var(--xh-spacing);
+  --xh-tab-switcher-vertical-group-header-bg: transparent;
+  --xh-tab-switcher-vertical-group-header-border-radius: var(--xh-tab-switcher-vertical-item-border-radius);
+  --xh-tab-switcher-vertical-group-header-text-color: var(--xh-text-color);
+  --xh-tab-switcher-vertical-group-header-font-size: var(--xh-font-size-small);
+  --xh-tab-switcher-vertical-group-header-font-weight: 600;
+  --xh-tab-switcher-vertical-group-header-letter-spacing: 0.05em;
+  --xh-tab-switcher-vertical-group-header-text-transform: uppercase;
 
   &:where(.xh-dark) {
     --xh-tab-active-text-color: var(--xh-intent-primary-lighter);
@@ -932,6 +954,24 @@ body {
     &:where(.xh-dark) {
       --xh-toolbar-bg: #{mc('blue-grey', '900')};
     }
+  }
+
+  //------------------------
+  // Tooltips (Blueprint) - follow the app theme, rather than BP's inverted light/dark colors.
+  //------------------------
+  --xh-tooltip-bg: var(--xh-bg);
+  --xh-tooltip-border-color: var(--xh-border-color);
+  --xh-tooltip-border-radius: var(--xh-border-radius);
+  --xh-tooltip-shadow: #{drop-shadow(0 2px 6px rgba(0, 0, 0, 0.15))};
+  --xh-tooltip-font-size: calc(var(--xh-font-size) * 0.9);
+  --xh-tooltip-max-width: 400px;
+  --xh-tooltip-padding: 6px 10px;
+  --xh-tooltip-text-color: var(--xh-text-color);
+
+  // Dark theme sets tooltips on the alt background, a step lighter than the page.
+  &:where(.xh-dark) {
+    --xh-tooltip-bg: var(--xh-bg-alt);
+    --xh-tooltip-shadow: #{drop-shadow(0 2px 6px rgba(0, 0, 0, 0.5))};
   }
 
   //------------------------

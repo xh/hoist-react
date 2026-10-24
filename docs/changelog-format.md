@@ -135,6 +135,16 @@ list.
 - Group only Breaking Changes. Other sections (New Features, Bug Fixes) stay flat, since readers scan
   them rather than work through them.
 
+### Deprecations and Removals
+
+Keep them together so a reader can see every scheduled removal in one place:
+
+- **Removals of previously deprecated APIs** go in a `Scheduled Removals` sub-list under Breaking
+  Changes, one sub-bullet per removal, naming the version that deprecated it and the replacement.
+- **New deprecations** that keep the API working go under Technical, and say what replaces the
+  deprecated API. Put one under Breaking Changes only when it accompanies the change that replaces
+  it and apps must act now.
+
 ### Difficulty Ratings
 
 When upgrade notes exist for a major version, include a difficulty rating:
@@ -177,6 +187,11 @@ Use abbreviated versions where the minor/patch isn't significant (e.g. `6.3` not
   Include one only when explicitly requested, or when it points to extensive context that genuinely
   doesn't fit the changelog's scope. Issue/PR references normally belong in the commit message and
   PR description, not the changelog.
+- **Relevance test**: Include a fact only if a developer or agent upgrading an app needs it to adopt
+  the release well. Exact counts, timings, token figures, and enumerations of CSS variables or
+  similar fine-grained additions fail that test; acknowledge such additions in general terms.
+- **Library names**: In prose, name third-party libraries by their product name (AG Grid, Blueprint,
+  MobX). Package names and import paths keep their own spelling inside code spans.
 - **Punctuation**: End each bullet with a period.
 - **Line wrapping**: Hard-wrap list item text at 100 characters. Use two-space indentation for
   continuation lines. This keeps the raw Markdown readable in editors and diffs.

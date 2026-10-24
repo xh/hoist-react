@@ -114,7 +114,7 @@ try {
 | `showAlert` | `boolean` | `true` (false for auto-refresh and aborted fetches) | Display any alert to the user |
 | `alertType` | `'dialog' \| 'toast'` | `'dialog'` | How to display the error. Configurable app-wide via `ExceptionHandler.defaults.alertType` |
 | `requireReload` | `boolean` | `false` (true for session mismatches) | Force user to reload the app to dismiss the error |
-| `hideParams` | `string[]` | none | Parameter names to redact from the exception log and alert display |
+| `redactPaths` | `string[]` | none | Additional values to redact - see [Sensitive Data Redaction](#sensitive-data-redaction) |
 
 ### Smart Defaults
 
@@ -125,7 +125,7 @@ options in most cases:
 |--------------------------|---------------|---------------|-------------|-----------------|
 | Standard exception | `true` | `true` | `true` | `false` |
 | `isRoutine: true` | `false` | `false` | `true` | `false` |
-| Auto-refresh failure (`fetchOptions.loadSpec.isAutoRefresh`) | (unchanged) | `false` | `false` | `false` |
+| Auto-refresh failure (`callContext.loadSpec.isAutoRefresh`) | (unchanged) | `false` | `false` | `false` |
 | Aborted fetch (`isFetchAborted`) | (unchanged) | (unchanged) | `false` | `false` |
 | Session mismatch (`SessionMismatchException`) | (unchanged) | (unchanged) | (unchanged) | `true` |
 
@@ -486,6 +486,7 @@ The logged payload includes:
 - HTTP status and server details (for fetch exceptions)
 - Distributed trace ID, when tracing is enabled (for correlation with server-side traces)
 - Fetch request details (URL, params, headers -- with sensitive values redacted)
+- Load type and number, for a fetch made with a `loadSpec` in its call context
 - App version, username, and browser metadata
 - Whether the user was shown an alert
 - An optional user-provided message (via the "Report" dialog)
@@ -501,21 +502,30 @@ The logged payload includes:
 
 ### Sensitive Data Redaction
 
-The handler automatically redacts values at paths listed in
-`ExceptionHandler.defaults.redactPaths`. By default this includes `Authorization` headers. Applications
-can add additional paths:
+The handler redacts values listed in `ExceptionHandler.defaults.redactPaths` from logged,
+displayed, and reported exceptions. Entries come in two forms:
+
+- **Key names** (e.g. `password`, `Authorization`) match case-insensitively at any depth within
+  the `params`, `body`, and `headers` of an exception's `fetchOptions`. JSON bodies are redacted
+  key by key; any other body is redacted in full. Common secret names are included by default.
+- **Paths** (containing `.` or `[`) redact one exact location in the serialized exception - e.g.
+  `serverDetails.accountPin`.
 
 ```typescript
-ExceptionHandler.defaults.redactPaths.push('fetchOptions.params.apiKey');
+ExceptionHandler.defaults.redactPaths.push('secretPin', 'serverDetails.accountPin');
 ```
 
-The `hideParams` option provides per-call redaction of specific request parameters:
+The `redactPaths` option adds per-call entries, with the same matching (`hideParams` is a
+deprecated alias):
 
 ```typescript
 XH.handleException(e, {
-    hideParams: ['password', 'ssn']
+    redactPaths: ['ssn']
 });
 ```
+
+Redaction is by key only. It does not scrub values echoed within the text of an exception's
+`message` or `serverDetails` - avoid putting sensitive values into exception messages.
 
 ### User Error Reports
 
@@ -635,19 +645,21 @@ resolved value -- button click handlers or standalone save calls.
 
 ### Using catchDefault Before Other Promise Extensions
 
-`catchDefault()` should be the _last_ handler in a promise chain. Placing it before `.track()`
-means the tracking extension never sees the failure:
+`catchDefault()` should be the _last_ handler in a promise chain. With the `Runner` chain, apply it
+to the promise the terminal returns. Applied earlier, e.g. within a `run()` fn, it handles the
+failure before `track()` sees it:
 
 ```typescript
-// ❌ Don't: track() won't capture failures
-fetchAsync()
-    .catchDefault()
-    .track('Loaded data');
+// ❌ Don't: catchDefault() runs first, so track() records a success
+this.runner()
+    .track('Loaded data')
+    .run(ctx => XH.fetchJson({url: 'api/data'}, ctx).catchDefault());
 
-// ✅ Do: catchDefault last
-fetchAsync()
+// ✅ Do: catchDefault last, on the promise the chain returns
+this.runner()
     .linkTo(this.loadTask)
     .track('Loaded data')
+    .fetchJson({url: 'api/data'})
     .catchDefault();
 ```
 

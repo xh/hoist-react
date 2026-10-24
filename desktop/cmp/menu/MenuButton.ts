@@ -18,7 +18,7 @@ import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
 import {popover} from '@xh/hoist/kit/blueprint';
 import {bindable, bindableRef} from '@xh/hoist/mobx';
-import {executeIfFunction} from '@xh/hoist/utils/js';
+import {executeIfFunction, getTestId} from '@xh/hoist/utils/js';
 import {isFunction} from 'lodash';
 import {menu, swallowContextMenu} from './Menu';
 
@@ -49,7 +49,10 @@ export interface MenuButtonProps extends ButtonProps {
  * Button preconfigured as the trigger for a dropdown {@link Menu}.
  *
  * It takes the same {@link MenuItemLike} entries as `Menu` - item configs, `'-'` separators, and
- * {@link MenuHeading} entries. It also takes Button props directly, for its own display.
+ * {@link MenuHeading} entries. It also takes Button props directly, for its own display. A
+ * `testId` lands on the button, and the open menu gets `${testId}-menu`.
+ *
+ * To title the whole menu, start it with a {@link MenuHeading}.
  *
  * For the app-level menu in the header, use {@link AppMenuButton}. For a right-click menu, use
  * {@link useContextMenu} or {@link PanelProps.contextMenu}.
@@ -67,6 +70,7 @@ export const [MenuButton, menuButton] = hoistCmp.withFactory<MenuButtonProps>({
         popoverProps,
         icon = Icon.menu(),
         disabled,
+        testId,
         ...rest
     }) {
         const impl = useLocalModel(MenuButtonLocalModel);
@@ -77,11 +81,19 @@ export const [MenuButton, menuButton] = hoistCmp.withFactory<MenuButtonProps>({
             disabled,
             position: menuPosition,
             minimal: true,
-            item: button({className, icon, disabled, onContextMenu: swallowContextMenu, ...rest}),
+            item: button({
+                className,
+                icon,
+                disabled,
+                testId,
+                onContextMenu: swallowContextMenu,
+                ...rest
+            }),
             content: menu({
                 menuItems: isFunction(menuItems) ? impl.menuItems : menuItems,
                 context: isFunction(context) ? impl.context : context,
-                className: menuClassName
+                className: menuClassName,
+                testId: getTestId(testId, 'menu')
             }),
             ...popoverProps
         });

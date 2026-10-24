@@ -56,7 +56,17 @@ import {
 import {Icon} from '@xh/hoist/icon';
 import {action, observableRef, bindableRef} from '@xh/hoist/mobx';
 import {executeIfFunction, throwIf, withDefault} from '@xh/hoist/utils/js';
-import {castArray, find, forOwn, isEmpty, isFinite, isPlainObject, isString} from 'lodash';
+import {
+    castArray,
+    find,
+    flatMap,
+    forOwn,
+    isEmpty,
+    isFinite,
+    isPlainObject,
+    isString,
+    uniq
+} from 'lodash';
 import {ReactNode} from 'react';
 import {initPersist} from './impl/InitPersist';
 import {ZoneMapperConfig, ZoneMapperModel} from './impl/ZoneMapperModel';
@@ -265,11 +275,10 @@ export interface ZoneGridConfig {
     contextMenu?: GridContextMenuSpec;
 
     /**
-     * Governs if the grid should reuse a limited set of DOM elements for columns visible in the
-     * scroll area (versus rendering all columns).  Consider this performance optimization for
-     * grids with a very large number of columns obscured by horizontal scrolling. Note that
-     * setting this value to true may limit the ability of the grid to autosize offscreen columns
-     * effectively. Default false.
+     * True (default) to render cells only for the columns within or near the visible scroll area,
+     * as ag-Grid does by default. Set false to render the cells of every column, e.g. for test
+     * automation that must find offscreen cells in the DOM.
+     * See {@link GridConfig.useVirtualColumns}.
      */
     useVirtualColumns?: boolean;
 
@@ -443,6 +452,17 @@ export class ZoneGridModel extends HoistModel {
     setMappings(mappings: Record<Zone, Some<string | ZoneMapping>>) {
         this.mappings = this.parseMappings(mappings, false);
         this.gridModel.setColumns(this.getColumns());
+    }
+
+    /**
+     * Columns backing the fields currently mapped to any zone. These columns are hidden within the
+     * underlying GridModel, but their fields are what the user sees rendered within each row.
+     */
+    getMappedColumns(): Column[] {
+        const fields = uniq(
+            flatMap(this.mappings, zoneMappings => zoneMappings.map(it => it.field))
+        );
+        return this.gridModel.getLeafColumns().filter(col => fields.includes(col.field));
     }
 
     getDefaultContextMenu = (): GridContextMenuItemLike[] => [

@@ -4,7 +4,7 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {HoistModel, managed, TaskObserver} from '@xh/hoist/core';
+import {HoistModel, TaskObserver} from '@xh/hoist/core';
 import {
     genDisplayName,
     required,
@@ -119,7 +119,6 @@ export abstract class BaseFieldModel extends HoistModel {
     // null.
     @observable private accessor validationResultsInternal: ValidationResult[][];
 
-    @managed
     private validationTask = TaskObserver.trackLast();
     private validationRunId = 0;
 

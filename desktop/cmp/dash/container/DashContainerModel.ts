@@ -6,7 +6,6 @@
  */
 import {frame} from '@xh/hoist/cmp/layout';
 import {
-    managed,
     Persistable,
     PersistableState,
     PersistenceProvider,
@@ -31,7 +30,6 @@ import {
     isEqual,
     isFinite,
     isNil,
-    last,
     partition,
     reject,
     startCase
@@ -188,7 +186,7 @@ export class DashContainerModel
     //----------------------------
     @observableRef accessor goldenLayout: GoldenLayout;
     containerRef = createObservableRef<HTMLElement>();
-    @managed loadingStateTask = TaskObserver.trackLast();
+    loadingStateTask = TaskObserver.trackLast();
 
     private isDestroyingGoldenLayout = false;
 
@@ -263,6 +261,16 @@ export class DashContainerModel
             {
                 track: () => this.viewState,
                 run: () => this.updateState()
+            },
+            {
+                // ViewModels are created async as GL's React roots render, after GL has fired its
+                // own active item events. Sync active state and tab headers once they exist.
+                track: () => [this.goldenLayout, this.viewModels],
+                run: () => {
+                    this.refreshActiveViews();
+                    this.updateTabHeaders();
+                },
+                debounce: 0
             }
         );
     }
@@ -337,13 +345,8 @@ export class DashContainerModel
                     this.destroyGoldenLayout();
                     this.goldenLayout = this.createGoldenLayout(containerEl, stateWithViewModelIds);
                 })
-                // Since React v18, it's necessary to wait a short while for ViewModels to be available.
+                // Hold the mask briefly while GL's React roots render and views settle.
                 .wait(500)
-                .then(() => {
-                    if (refIsStale()) return;
-                    this.refreshActiveViews();
-                    this.updateTabHeaders();
-                })
                 .linkTo(this.loadingStateTask)
         );
     }
@@ -379,8 +382,6 @@ export class DashContainerModel
 
         if (!isFinite(index)) index = container.contentItems.length;
         container.addChild(goldenLayoutConfig(viewSpec, this.genViewId(specId)), index);
-        const stack = container.isStack ? container : last(container.contentItems);
-        wait(1).then(() => this.onStackActiveItemChange(stack));
     }
 
     /**
@@ -448,6 +449,10 @@ export class DashContainerModel
     private publishState() {
         const {goldenLayout} = this;
         if (!goldenLayout) return;
+
+        // View models are created as GL's React roots render, which can trail a GL rebuild. Skip
+        // until every view has one - addViewModel() triggers another publish once they all exist.
+        if (this.getItems().some(it => !this.getViewModel(getViewModelId(it)))) return;
 
         try {
             const newState = convertGLToState(goldenLayout, this);
@@ -641,7 +646,7 @@ export class DashContainerModel
             if (icon) {
                 const currentIcon = tabEl.querySelector(iconSelector) as HTMLElement | null,
                     currentIconType = currentIcon?.dataset.icon ?? null,
-                    newIconType = (icon.props as ResolvedIconProps).iconName;
+                    newIconType = (icon.props as ResolvedIconProps).faName;
 
                 if (currentIconType !== newIconType) {
                     const iconSvg = convertIconToHtml(icon);
@@ -754,7 +759,7 @@ export class DashContainerModel
                         track: () => model.fullTitle,
                         run: () => {
                             // Item lookup requires a mounted react component and can miss during
-                            // a GL (re)build - loadStateAsync calls updateTabHeaders to cover.
+                            // a GL (re)build - the viewModels reaction in the constructor covers it.
                             const item = this.getItemByViewModel(viewModelId);
                             if (!item?.tab) return;
 

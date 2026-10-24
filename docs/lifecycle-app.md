@@ -10,7 +10,7 @@ covering the entry point system, `AppSpec` configuration, and the initialization
 
 ## The `apps/` Folder — Entry Points and Bundles
 
-Each file in a project's `client-app/src/apps/` directory defines an entry point for a Webpack
+Each file in a project's `client-app/src/apps/` directory defines an entry point for an Rsbuild
 bundle. The build system (`hoist-dev-utils`) reads this folder to determine what bundles to build —
 **one file = one independently deployable application bundle**.
 
@@ -68,8 +68,8 @@ rule. The remaining properties are optional and default to sensible values.
 | `containerClass` | Yes | Platform container — import from `@xh/hoist/desktop/appcontainer` or `@xh/hoist/mobile/appcontainer`. Nearly all apps use the default `AppContainer` shipped with Hoist. |
 | `isMobileApp` | Yes | `true` for mobile apps, `false` for desktop. |
 | `checkAccess` | Yes | A role string (e.g. `'ACCESS_APP'`) or a function `(user) => boolean \| {hasAccess, message}`. |
-| `clientAppCode` | No | Short code identifying this client app. Defaults to the Webpack `appCode`. |
-| `clientAppName` | No | Display name for this client app. Defaults to the Webpack `appName`. |
+| `clientAppCode` | No | Short code identifying this client app. Defaults to the Rsbuild config `appCode`. |
+| `clientAppName` | No | Display name for this client app. Defaults to the Rsbuild config `appName`. |
 | `authModelClass` | No | Custom `HoistAuthModel` subclass for OAuth or other auth flows. Defaults to `HoistAuthModel` (suitable only for transparent SSO like NTLM). |
 | `enableLoginForm` | No | `true` to show a login form when not authenticated. Default `false` — most apps use OAuth/SSO. |
 | `enableLogout` | No | `true` to show logout options. Default `false`. |
@@ -209,6 +209,23 @@ Every entry point begins with `import '../Bootstrap'`. This `Bootstrap.ts` file 
 
 This import must come first (or at least before `XH.renderApp()`) to ensure all registrations and
 type augmentations are in place before the framework initializes.
+
+### Import `@xh/hoist/core` First
+
+Within `Bootstrap.ts`, import `@xh/hoist/core` before any other Hoist module, including app modules
+that import Hoist themselves. Hoist's packages import each other in cycles that resolve only when
+`core` loads first. If another package loads first - `@xh/hoist/icon` via an app's icon
+registrations, for example - the app crashes at startup with an error such as
+`TypeError: span is not a function`. Typecheck, lint and app-level cycle checks do not catch this,
+because the cycles are inside Hoist.
+
+```typescript
+// Bootstrap.ts
+import {XH} from '@xh/hoist/core'; // First Hoist import
+import {installAgGrid} from '@xh/hoist/kit/ag-grid';
+// ...
+import './core/Icons'; // App modules that import Hoist come after core
+```
 
 ## Key Source Files
 

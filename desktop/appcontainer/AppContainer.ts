@@ -37,7 +37,7 @@ import {elementFromContent, useOnMount} from '@xh/hoist/utils/react';
 import {isEmpty} from 'lodash';
 import {ReactElement} from 'react';
 import {aboutDialog} from './AboutDialog';
-import {banner} from './Banner';
+import {appBanner} from './AppBanner';
 import {exceptionDialog} from './ExceptionDialog';
 import {feedbackDialog} from './FeedbackDialog';
 import {impersonationBar} from './ImpersonationBar';
@@ -189,7 +189,7 @@ const bannerList = hoistCmp.factory<AppContainerModel>({
         const {bannerModels} = model.bannerSourceModel;
         if (isEmpty(bannerModels)) return null;
         return fragment({
-            items: bannerModels.map(model => banner({model}))
+            items: bannerModels.map(model => appBanner({model}))
         });
     }
 });

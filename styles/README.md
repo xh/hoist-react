@@ -161,7 +161,7 @@ The `vars.scss` file organizes ~410 CSS custom properties into these categories:
 
 Components with dedicated variable sets include: AppBar, Badge, Button, Card, Chart, Form Field,
 Grid (including Large, Compact, Tiny, and ZoneGrid variants), Input, Loading Indicator, Mask, Menu,
-Panel, Popup, Resizable Splitter, Scrollbar, Tab, Title, Toolbar, and Viewport.
+Panel, Popup, Resizable Splitter, Scrollbar, Tab, Title, Toolbar, Tooltip, and Viewport.
 
 ### Units
 
@@ -509,13 +509,16 @@ body.xh-app {
         --ag-header-column-resize-handle-color: var(--xh-border-color);
     }
 
-    // Blueprint tooltip tweaks
-    .bp6-tooltip .bp6-popover-content {
-        background-color: var(--xh-bg);
-        color: var(--xh-text-color);
+    // Blueprint integration - style elements Hoist does not theme with the shared vars.
+    .bp6-callout {
+        border: var(--xh-border-solid);
     }
 }
 ```
+
+Hoist already themes Blueprint tooltips. To change their look, set the `--xh-tooltip-*` vars on
+`body.xh-app`, such as `--xh-tooltip-bg` or `--xh-tooltip-border-color`, rather than targeting
+`.bp6-tooltip`.
 
 ## Related Packages
 
@@ -554,8 +557,8 @@ body.xh-app { --xh-font-size: 14px; }
 
 A bare number is not a valid length, so it silently breaks every property and derived variable
 that uses it - e.g. `calc(var(--xh-font-size) * 1.2)` for `--xh-font-size-large`. Hoist versions
-before v88 used unitless size variables; see the
-[v88 upgrade notes](../docs/upgrade-notes/v88-upgrade-notes.md) for the migration.
+before v90 used unitless size variables; see the
+[v90 upgrade notes](../docs/upgrade-notes/v90-upgrade-notes.md) for the migration.
 
 ### High-Specificity Selectors
 

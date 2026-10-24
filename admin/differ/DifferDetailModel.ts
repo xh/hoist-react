@@ -8,6 +8,7 @@ import {HoistModel} from '@xh/hoist/core';
 import {action, observableRef} from '@xh/hoist/mobx';
 import {DifferModel} from './DifferModel';
 import {StoreRecord} from '@xh/hoist/data';
+import {isEqual} from 'lodash';
 
 /**
  * @internal
@@ -34,7 +35,7 @@ export class DifferDetailModel extends HoistModel {
 
     createDiffClass(field, local, remote) {
         if (!remote) return;
-        if (!local || local[field] !== remote[field]) return 'diff';
+        if (!local || !isEqual(local[field], remote[field])) return 'diff';
     }
 
     confirmApplyRemote() {

@@ -119,7 +119,7 @@ and clear naming keeps them distinct.
 | `enableAutoSave` | `boolean` | Allow auto-save for owned views |
 | `enableGlobal` | `boolean` | Enable global (admin-managed) views |
 | `enableSharing` | `boolean` | Allow sharing personal views |
-| `manageGlobal` | `boolean` | Can user create/edit global views? (default false) |
+| `manageGlobal` | `boolean` | `false` to hide global view management even if the server allows it. Defaults to the server's answer - see [Global views](#sharing-and-visibility). |
 | `preserveUnsavedChanges` | `boolean` | Preserve pending changes across refresh |
 | `defaultDisplayName` | `string` | Label for in-code default option |
 | `globalDisplayName` | `string` | Label for global views |
@@ -228,15 +228,37 @@ pin them for quick access. Only the owner can edit a shared view. Requires `enab
 **Global views** (`isGlobal: true, owner: null`) - Not owned by any user and visible to all.
 Global views are typically curated by administrators and represent canonical/standard
 configurations. They appear pinned on all users' menus by default (users can unpin them).
-Only users with `manageGlobal: true` can create or edit global views - apps typically gate
-this on a role. Requires `enableGlobal: true`.
+Requires `enableGlobal: true`.
+
+The server decides who can create or edit global views. Hoist Core v42+ enforces this in
+`JsonBlobService`, using roles from the `xhJsonBlobConfig.globalWriteRoles` soft config. The config
+is keyed by view `type`, with `*` as the fallback, and defaults to `HOIST_ADMIN` only:
+
+```json
+{
+  "globalWriteRoles": {
+    "portfolioGridView": ["MANAGE_GRID_VIEWS"],
+    "*": ["HOIST_ADMIN"]
+  }
+}
+```
+
+The server returns its answer for the current user with the model's views, and
+`ViewManagerModel.manageGlobal` reflects it - apps don't need to repeat the role on the client. The
+`manageGlobal` config can only restrict: set it to `false` to hide global view management on a
+particular model. That's mainly useful when several models share a `type`, since the server applies
+one role list per type. With Hoist Core before v42, the server sends no answer and `manageGlobal`
+falls back to the config value, defaulting to `false`.
+
+See the
+[hoist-core JsonBlob documentation](https://github.com/xh/hoist-core/blob/develop/docs/jsonblob.md#configuration)
+for the full server-side access rules.
 
 ```typescript
 const vmModel = await ViewManagerModel.createAsync({
     type: 'portfolioGridView',
     enableGlobal: true,
     enableSharing: true,
-    manageGlobal: () => XH.getUser().hasRole('MANAGE_GRID_VIEWS'),
     globalDisplayName: 'Acme Corp'  // Customizable label (default "global")
 });
 
@@ -390,18 +412,14 @@ class ViewManagers {
     async initAsync(ctx: InitContext) {
         [this.portfolioGridView, this.portfolioDashboard] = await Promise.all([
             ViewManagerModel.createAsync(
-                {
-                    type: 'portfolioGridView',
-                    manageGlobal: () => XH.getUser().hasRole('MANAGE_GRID_VIEWS')
-                },
+                {type: 'portfolioGridView'},
                 ctx
             ),
             ViewManagerModel.createAsync(
                 {
                     type: 'portfolioDashboard',
                     typeDisplayName: 'dashboard',
-                    enableSharing: false,
-                    manageGlobal: () => XH.getUser().hasRole('MANAGE_DASHBOARDS')
+                    enableSharing: false
                 },
                 ctx
             )

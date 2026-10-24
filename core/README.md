@@ -106,7 +106,7 @@ class MyModel extends HoistModel {
     override persistWith = {prefKey: 'MyModelState'};
 
     // Decorator form - syncs with configured PersistenceProvider
-    @persist @bindable accessor showAdvanced = false;
+    @bindable @persist accessor showAdvanced = false;
 
     // Or programmatic form for custom timing
     constructor() {
@@ -171,7 +171,7 @@ Models can operate in two modes:
 
 ```typescript
 import {HoistModel, LoadSpec, managed, XH} from '@xh/hoist/core';
-import {bindable, observable, runInAction} from '@xh/hoist/mobx';
+import {bindable, observableRef, runInAction} from '@xh/hoist/mobx';
 
 class UserListModel extends HoistModel {
     // Observable state
@@ -324,10 +324,10 @@ Services are installed in your `AppModel.initAsync()`:
 
 ```typescript
 class AppModel extends HoistAppModel {
-    override async initAsync() {
+    override async initAsync(ctx: InitContext) {
         // Install custom services - multiple calls for ordered initialization
-        await XH.installServicesAsync(TradeService, PortfolioService);
-        await XH.installServicesAsync(ReportService);  // Depends on above
+        await XH.installServicesAsync([TradeService, PortfolioService], ctx);
+        await XH.installServicesAsync([ReportService], ctx);  // Depends on above
     }
 }
 ```
@@ -910,11 +910,13 @@ override async doLoadAsync(loadSpec: LoadSpec) {
 ### Forgetting the `accessor` Keyword on Observables
 
 TC39 decorators require the `accessor` keyword on properties decorated with `@observable`,
-`@observableRef`, `@bindable`, or `@bindableRef`. Without `accessor`, the decorator cannot
-intercept the property and observables silently won't react.
+`@observableRef`, `@bindable`, `@bindableRef`, or `@persist`. Without `accessor`, the decorator
+cannot intercept the property. `tsc` reports the error for `@bindable`, `@bindableRef`, and
+`@persist`, but not for the MobX `@observable` decorators. A dev build then throws when the class
+loads. A production build skips that check, and the property silently stops being observable.
 
 ```typescript
-// ❌ Wrong: Missing accessor — observables won't react
+// ❌ Wrong: Missing accessor - throws in dev, silently not observable in production
 class MyModel extends HoistModel {
     @observable data = null;
 }

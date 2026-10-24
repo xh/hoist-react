@@ -10,10 +10,11 @@ import {LocalDate} from '@xh/hoist/utils/datetime';
 import {logWarn, throwIf} from '@xh/hoist/utils/js';
 import {
     castArray,
-    difference,
+    differenceBy,
     escapeRegExp,
     first,
     isArray,
+    isDate,
     isEmpty,
     isEqual,
     isNil,
@@ -226,27 +227,27 @@ export class FieldFilter extends Filter {
                 break;
             case 'like':
                 regExps = value.map(v => new RegExp(escapeRegExp(v), 'i'));
-                opFn = v => regExps.some(re => re.test(v));
+                opFn = v => !isNil(v) && regExps.some(re => re.test(v));
                 break;
             case 'not like':
                 regExps = value.map(v => new RegExp(escapeRegExp(v), 'i'));
-                opFn = v => regExps.every(re => !re.test(v));
+                opFn = v => isNil(v) || regExps.every(re => !re.test(v));
                 break;
             case 'begins':
                 regExps = value.map(v => new RegExp('^' + escapeRegExp(v), 'i'));
-                opFn = v => regExps.some(re => re.test(v));
+                opFn = v => !isNil(v) && regExps.some(re => re.test(v));
                 break;
             case 'not begins':
                 regExps = value.map(v => new RegExp('^' + escapeRegExp(v), 'i'));
-                opFn = v => regExps.every(re => !re.test(v));
+                opFn = v => isNil(v) || regExps.every(re => !re.test(v));
                 break;
             case 'ends':
                 regExps = value.map(v => new RegExp(escapeRegExp(v) + '$', 'i'));
-                opFn = v => regExps.some(re => re.test(v));
+                opFn = v => !isNil(v) && regExps.some(re => re.test(v));
                 break;
             case 'not ends':
                 regExps = value.map(v => new RegExp(escapeRegExp(v) + '$', 'i'));
-                opFn = v => regExps.every(re => !re.test(v));
+                opFn = v => isNil(v) || regExps.every(re => !re.test(v));
                 break;
             case 'includes':
                 lookup = new Set(value);
@@ -306,10 +307,7 @@ export class FieldFilter extends Filter {
             other instanceof FieldFilter &&
             other.field === this.field &&
             other.op === this.op &&
-            (isArray(other.value) && isArray(this.value)
-                ? other.value.length === this.value.length &&
-                  difference(other.value, this.value).length === 0
-                : other.value === this.value)
+            valuesEqual(other.value, this.value)
         );
     }
 
@@ -341,4 +339,14 @@ export class FieldFilter extends Filter {
     private lookupSet(values: any[]): Set<any> {
         return values.some(isObject) ? null : new Set(values);
     }
+}
+
+// Scalars must match; arrays must hold the same values, in any order.
+function valuesEqual(a: unknown, b: unknown): boolean {
+    // Compare values by key, so Dates match by time - a filter restored from JSON holds new instances.
+    const valueKey = v => (isDate(v) ? v.getTime() : v);
+
+    return isArray(a) && isArray(b)
+        ? a.length === b.length && isEmpty(differenceBy(a, b, valueKey))
+        : valueKey(a) === valueKey(b);
 }

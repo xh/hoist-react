@@ -5,8 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {PopperBoundary, PopperModifierOverrides} from '@blueprintjs/core';
-import {TimePickerProps} from '@blueprintjs/datetime';
-import {ReactDayPickerSingleProps} from '@blueprintjs/datetime/src/common/reactDayPickerProps';
+import {DatePickerProps, TimePickerProps} from '@blueprintjs/datetime';
 import {HoistInputModel, HoistInputProps, useHoistInputModel} from '@xh/hoist/cmp/input';
 import {div, hbox} from '@xh/hoist/cmp/layout';
 import {hoistCmp, HoistProps, LayoutProps, Some} from '@xh/hoist/core';
@@ -23,6 +22,7 @@ import {consumeEvent, getTestId, withDefault} from '@xh/hoist/utils/js';
 import {getLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import type {Property} from 'csstype';
+import enUS from 'date-fns/locale/en-US';
 import {assign, castArray, clone, isEmpty, trim} from 'lodash';
 import moment from 'moment';
 import {createRef, ReactElement, ReactNode} from 'react';
@@ -35,7 +35,7 @@ export interface DateInputProps extends HoistProps, LayoutProps, HoistInputProps
     commitOnChange?: boolean;
 
     /** Props passed to ReactDayPicker component, as per DayPicker docs. */
-    dayPickerProps?: ReactDayPickerSingleProps['dayPickerProps'];
+    dayPickerProps?: DatePickerProps['dayPickerProps'];
 
     /** Enable using the DatePicker popover. Default true. */
     enablePicker?: boolean;
@@ -431,6 +431,8 @@ const cmp = hoistCmp.factory<DateInputProps & {model: DateInputModel}>(
                     initialMonth,
                     showActionsBar: props.showActionsBar,
                     dayPickerProps: assign({fixedWeeks: true}, props.dayPickerProps),
+                    // Pass the fixed en locale directly. BPs default loader fails w/date-fns v4
+                    locale: enUS,
                     timePrecision: model.timePrecision,
                     timePickerProps: model.timePrecision
                         ? assign({selectAllOnFocus: true}, props.timePickerProps)

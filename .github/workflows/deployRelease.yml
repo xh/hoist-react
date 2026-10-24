@@ -33,11 +33,16 @@ jobs:
         runs-on: ubuntu-latest
         permissions:
             contents: write
+            # Allows the job to mint a short-lived OIDC token, which pnpm exchanges with npm for
+            # a scoped publish token (npm "trusted publishing"). Grants nothing on npm by itself -
+            # the registry only honors it if a trusted publisher is configured for the package
+            # naming this repo and workflow file. Also what lets npm attach a provenance
+            # attestation to the published tarball.
+            id-token: write
         # Placeholder NODE_AUTH_TOKEN: setup-node writes an .npmrc referencing ${NODE_AUTH_TOKEN},
         # which every subsequent npm/pnpm invocation reads - pnpm warns when the var is
-        # unresolvable, so supply a job-wide placeholder to keep logs clean. The real token is
-        # provided to the publish step alone (step env overrides job env), keeping it out of
-        # dependency lifecycle scripts during install.
+        # unresolvable, so supply a job-wide placeholder to keep logs clean. No real npm token is
+        # provided - the publish step authenticates via OIDC trusted publishing.
         env:
             NODE_AUTH_TOKEN: 'unused-outside-publish'
 
@@ -51,18 +56,21 @@ jobs:
         - name: Validate release version
           # Pinned to commit SHA of xh/hoist-dev-utils master at time of pinning.
           # Bumped by Dependabot when newer versions of the action are released.
-          uses: xh/hoist-dev-utils/.github/actions/validate-release-version@0abc3a0453e92a258cef156856a5e0670017c088 # master
+          uses: xh/hoist-dev-utils/.github/actions/validate-release-version@f62ac663d8eaa6d1b371157e7796a74277d9bf82 # master
           with:
               version: ${{ inputs.version }}
               is-hotfix: ${{ inputs.is-hotfix }}
 
         # Installs the pnpm version pinned via the packageManager field in package.json.
         - name: Setup pnpm
-          uses: pnpm/setup@v2
+          uses: pnpm/setup@v3
           with:
               # `install: false` - this workflow runs its own install step below, after
               # Font Awesome registry auth, and with --frozen-lockfile.
               install: false
+              # `node-version-file: false` - v3 auto-installs Node from .nvmrc. Skip that, as
+              # actions/setup-node below owns Node (and registry auth for publish).
+              node-version-file: false
 
         - name: Setup Node.js
           uses: actions/setup-node@v7
@@ -81,6 +89,9 @@ jobs:
 
         - name: Lint
           run: pnpm lint:all
+
+        - name: Unit tests
+          run: pnpm test
 
         # Note the version is passed positionally. The legacy `--new-version` flag is no longer
         # recognized by npm/pnpm and warns as an unknown config - it only appeared to work because
@@ -101,9 +112,17 @@ jobs:
         # branch other than master/main (which prompts interactively, hanging a non-TTY runner).
         # Release safety is enforced instead by the job-level `if:` guard and the
         # validate-release-version action above.
+        #
+        # Auth is OIDC trusted publishing only, with no NPM_TOKEN fallback. If the OIDC exchange
+        # fails, pnpm falls back to the job's placeholder token, which npm rejects - so a
+        # misconfigured trusted publisher fails the release rather than publishing it without
+        # provenance. This step runs before the tag and GitHub release are created, so a failed
+        # run can be re-run once the config is fixed.
+        #
+        # No `--provenance` flag needed: under trusted publishing the registry's token-exchange
+        # response tells pnpm to attach a provenance attestation.
         - name: Publish release to npm
           env:
-              NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
               IS_HOTFIX: ${{ inputs.is-hotfix }}
           run: |
               TAG_ARGS=()
@@ -118,7 +137,7 @@ jobs:
         # the correct release version — the tag is just a pointer to the source commit.
         # Checkout is required to be called with `fetch-depth: 0` and `fetch-tags: true`.
         - name: Create tag and GitHub release
-          uses: xh/hoist-dev-utils/.github/actions/create-tag-and-github-release@0abc3a0453e92a258cef156856a5e0670017c088 # master
+          uses: xh/hoist-dev-utils/.github/actions/create-tag-and-github-release@f62ac663d8eaa6d1b371157e7796a74277d9bf82 # master
           with:
               version: ${{ inputs.version }}
               is-hotfix: ${{ inputs.is-hotfix }}

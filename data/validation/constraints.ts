@@ -32,7 +32,7 @@ export const required: Constraint = ({value, displayName}) => {
  * Validate a single email address in a field that expects only one email address.
  */
 export const validEmail: Constraint<string> = ({value, displayName}) => {
-    if (isNil(value)) return null;
+    if (isNil(value) || (isString(value) && value.trim().length === 0)) return null;
 
     const isValid = emailRegEx.test(value);
     if (!isValid) return `${displayName} is not a properly formatted email address.`;

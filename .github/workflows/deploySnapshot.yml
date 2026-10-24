@@ -1,8 +1,12 @@
 # Deploy Snapshot — Publishes a SNAPSHOT build to npm on every push to develop.
 #
 # Snapshots are mutable development builds (version from package.json, e.g. 82.0.0-SNAPSHOT).
-# They are published with the `next` dist-tag so they don't affect `latest`. For numbered
-# releases, see Deploy Release.
+# They are published with the `next` dist-tag so they don't affect `latest`, then trigger a Toolbox
+# snapshot build + deploy, as Toolbox tracks `next`. For numbered releases, see Deploy Release.
+#
+# Manual runs of a non-develop branch with breaking or experimental changes should tick the
+# `experimental` input, which publishes with the `experimental` dist-tag instead and skips the
+# Toolbox trigger - leaving `next` and the deployed Toolbox snapshot undisturbed.
 
 name: Deploy Snapshot
 
@@ -16,6 +20,11 @@ on:
                 required: false
                 default: ''
                 type: string
+            experimental:
+                description: 'Tag as "experimental" - publish with the `experimental` dist-tag instead of `next`, and do NOT trigger a Toolbox snapshot build + deploy. Tick when building a branch with breaking or experimental changes.'
+                required: false
+                default: false
+                type: boolean
 
 # Debounce builds by branch. Newer runs from a branch will cancel the current run and start over.
 concurrency:
@@ -36,22 +45,28 @@ jobs:
             id-token: write
         # Placeholder NODE_AUTH_TOKEN: setup-node writes an .npmrc referencing ${NODE_AUTH_TOKEN},
         # which every subsequent npm/pnpm invocation reads - pnpm warns when the var is
-        # unresolvable, so supply a job-wide placeholder to keep logs clean. The real token is
-        # provided to the publish step alone (step env overrides job env), keeping it out of
-        # dependency lifecycle scripts during install.
+        # unresolvable, so supply a job-wide placeholder to keep logs clean. No real npm token is
+        # provided - the publish step authenticates via OIDC trusted publishing.
+        #
+        # DIST_TAG: push events carry no inputs, so `inputs.experimental` is null there and pushes
+        # to develop always publish as `next`.
         env:
             NODE_AUTH_TOKEN: 'unused-outside-publish'
+            DIST_TAG: ${{ inputs.experimental && 'experimental' || 'next' }}
 
         steps:
         - uses: actions/checkout@v7
 
         # Installs the pnpm version pinned via the packageManager field in package.json.
         - name: Setup pnpm
-          uses: pnpm/setup@v2
+          uses: pnpm/setup@v3
           with:
               # `install: false` - this workflow runs its own install step below, after
               # Font Awesome registry auth, and with --frozen-lockfile.
               install: false
+              # `node-version-file: false` - v3 auto-installs Node from .nvmrc. Skip that, as
+              # actions/setup-node below owns Node (and registry auth for publish).
+              node-version-file: false
 
         - name: Setup Node.js
           uses: actions/setup-node@v7
@@ -71,11 +86,14 @@ jobs:
         - name: Lint
           run: pnpm lint:all
 
+        - name: Unit tests
+          run: pnpm test
+
         - name: Prepare snapshot version
           id: snapshot
           # Pinned to commit SHA of xh/hoist-dev-utils master at time of pinning.
           # Bumped by Dependabot when newer versions of the action are released.
-          uses: xh/hoist-dev-utils/.github/actions/prepare-npm-snapshot-version@0abc3a0453e92a258cef156856a5e0670017c088 # master
+          uses: xh/hoist-dev-utils/.github/actions/prepare-npm-snapshot-version@f62ac663d8eaa6d1b371157e7796a74277d9bf82 # master
           with:
               version: ${{ inputs.version }}
 
@@ -84,21 +102,17 @@ jobs:
         # interactively, hanging a non-TTY runner), and the shallow checkout above reads as
         # out-of-date against the remote.
         #
-        # Auth prefers OIDC trusted publishing, falling back to NODE_AUTH_TOKEN. pnpm tries the
-        # OIDC exchange first and uses the resulting token when it succeeds; if no trusted
-        # publisher is configured, or the config does not match this repo/workflow, it falls back
-        # to the static token. That fallback keeps a misconfiguration from breaking snapshot
-        # builds - drop the token here (and delete the NPM_TOKEN secret) only once every publish
-        # path uses OIDC and npm is set to disallow tokens.
+        # Auth is OIDC trusted publishing only, with no NPM_TOKEN fallback. If the OIDC exchange
+        # fails, pnpm falls back to the job's placeholder token, which npm rejects - so a
+        # misconfigured trusted publisher fails the build rather than publishing without
+        # provenance.
         #
-        # No `--provenance` flag: under trusted publishing the registry's token-exchange response
-        # tells pnpm to attach a provenance attestation, and pnpm only defaults to that response
-        # (`provenance ??= ...`). Forcing the flag would also demand provenance on the token
-        # fallback path, turning a graceful degradation into a failed publish.
+        # No `--provenance` flag needed: under trusted publishing the registry's token-exchange
+        # response tells pnpm to attach a provenance attestation.
+        #
+        # Always pass an explicit `--tag` - an untagged publish defaults to `latest`.
         - name: Publish snapshot to npm
-          env:
-              NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-          run: pnpm publish --no-git-checks --tag next
+          run: pnpm publish --no-git-checks --tag "$DIST_TAG"
 
         - name: Write job summary
           # Best-effort only - a summary glitch must never fail an otherwise-good publish.
@@ -110,6 +124,12 @@ jobs:
                 echo "### 📦 Snapshot published to npm"
                 echo ""
                 echo "Version: [\`$SNAPSHOT_VERSION\`](https://www.npmjs.com/package/@xh/hoist/v/$SNAPSHOT_VERSION)"
+                echo ""
+                if [ "$DIST_TAG" = "next" ]; then
+                    echo "Dist-tag: \`next\` - Toolbox snapshot build triggered."
+                else
+                    echo "Dist-tag: \`$DIST_TAG\` - \`next\` unchanged, Toolbox snapshot build NOT triggered."
+                fi
 
                 # Pack stats are a nice-to-have - skip the table silently if anything throws.
                 # Deliberately `npm pack`, not `pnpm pack`: pnpm's --json output is a different
@@ -134,22 +154,40 @@ jobs:
         # previous snapshot rather than erroring, and Toolbox deploys without the changes this run
         # was meant to carry. Poll until the registry itself resolves `next` to this run's version
         # before dispatching, so the deploy is not "done" until Toolbox can actually consume it.
+        # Experimental runs poll their own tag, so the run still confirms the build is installable.
+        #
+        # npm can take 10+ minutes to make a new version resolvable. If it has not done so within
+        # 30 minutes, the step warns and skips the Toolbox trigger rather than failing the job - the
+        # build itself passed and published, so the commit should not show a red X. The step
+        # timeout and `continue-on-error` are a backstop for a hung `npm view`.
         - name: Wait for snapshot to be resolvable on npm
-          timeout-minutes: 10
+          id: wait-npm
+          timeout-minutes: 35
+          continue-on-error: true
           env:
               SNAPSHOT_VERSION: ${{ steps.snapshot.outputs.snapshot-version }}
           run: |
-              echo "Waiting for @xh/hoist@next to resolve to $SNAPSHOT_VERSION..."
-              until [ "$(npm view @xh/hoist@next version 2>/dev/null)" = "$SNAPSHOT_VERSION" ]; do
+              echo "Waiting for @xh/hoist@$DIST_TAG to resolve to $SNAPSHOT_VERSION..."
+              until [ "$(npm view "@xh/hoist@$DIST_TAG" version 2>/dev/null)" = "$SNAPSHOT_VERSION" ]; do
+                  if [ "$SECONDS" -ge 1800 ]; then
+                      MSG="@xh/hoist@$DIST_TAG did not resolve to $SNAPSHOT_VERSION within 30 minutes - Toolbox snapshot build NOT triggered."
+                      echo "::warning::$MSG"
+                      printf '\n⚠️ %s\n' "$MSG" >> "$GITHUB_STEP_SUMMARY"
+                      exit 0
+                  fi
                   echo "Not yet available - retrying in 10s"
                   sleep 10
               done
-              echo "Confirmed: @xh/hoist@next now resolves to $SNAPSHOT_VERSION"
+              echo "Confirmed: @xh/hoist@$DIST_TAG now resolves to $SNAPSHOT_VERSION"
+              echo "resolved=true" >> "$GITHUB_OUTPUT"
 
         # Mint a short-lived installation token for the org-owned "XH Build Bot" GitHub App, scoped
         # to the toolbox repo with Contents: write (required by the repository_dispatch endpoint).
         # Credentials live in the team 1Password vault under "GitHub App: XH Build Bot".
+        # This step and the trigger below are skipped for experimental runs - Toolbox tracks `next` -
+        # and when the wait above gave up.
         - name: Mint Toolbox dispatch token
+          if: ${{ !inputs.experimental && steps.wait-npm.outputs.resolved == 'true' }}
           id: toolbox-token
           uses: actions/create-github-app-token@v3
           with:
@@ -160,6 +198,7 @@ jobs:
               permission-contents: write
 
         - name: Trigger Toolbox snapshot build
+          if: ${{ !inputs.experimental && steps.wait-npm.outputs.resolved == 'true' }}
           env:
               GH_TOKEN: ${{ steps.toolbox-token.outputs.token }}
           run: |

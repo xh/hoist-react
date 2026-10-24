@@ -8,7 +8,7 @@ import {HoistModel, Theme, XH} from '@xh/hoist/core';
 import {action, observable} from '@xh/hoist/mobx';
 
 /**
- * Size variables that held unitless numbers before v88 and now require a length (e.g. `8px`).
+ * Size variables that held unitless numbers before v90 and now require a length (e.g. `8px`).
  * Checked in development mode to catch app overrides left in the old form, which silently break
  * every size derived from them.
  */
@@ -44,12 +44,14 @@ const LENGTH_VARS = [
     '--xh-grid-tiny-font-size',
     '--xh-grid-tiny-header-font-size',
     '--xh-grid-tiny-header-padding-inline',
+    '--xh-grid-tooltip-font-size',
     '--xh-input-font-size',
     '--xh-input-label-font-size',
     '--xh-panel-border-width',
     '--xh-panel-title-font-size',
     '--xh-popup-border-width',
     '--xh-popup-title-font-size',
+    '--xh-radio-card-input-border-radius',
     '--xh-resizable-border-width',
     '--xh-resizable-size',
     '--xh-segmented-control-border-radius',
@@ -69,6 +71,8 @@ const LENGTH_VARS = [
     '--xh-toolbar-font-size',
     '--xh-toolbar-item-spacing',
     '--xh-toolbar-min-size',
+    '--xh-tooltip-border-radius',
+    '--xh-tooltip-font-size',
     '--xh-zone-grid-bottom-font-size',
     '--xh-zone-grid-top-font-size'
 ];
@@ -170,7 +174,7 @@ export class ThemeModel extends HoistModel {
 
     /**
      * Warn about any size variable resolving to a bare number - almost always an app override not
-     * yet migrated to v88, where these variables carry units. Checks the current theme only.
+     * yet migrated to v90, where these variables carry units. Checks the current theme only.
      */
     private warnOnUnitlessLengthVars() {
         const style = window.getComputedStyle(document.body),
@@ -179,9 +183,9 @@ export class ThemeModel extends HoistModel {
             );
         if (unitless.length) {
             this.logWarn(
-                `CSS size variables must include a unit as of Hoist v88 (e.g. '8px', not '8'). ` +
+                `CSS size variables must include a unit as of Hoist v90 (e.g. '8px', not '8'). ` +
                     `Unitless values found for: ${unitless.join(', ')}. ` +
-                    `See docs/upgrade-notes/v88-upgrade-notes.md.`
+                    `See docs/upgrade-notes/v90-upgrade-notes.md.`
             );
         }
     }

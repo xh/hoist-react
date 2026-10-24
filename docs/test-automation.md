@@ -31,7 +31,8 @@ provided, the component renders a `data-testid` attribute on an appropriate DOM 
 |---|---|
 | `BoxProps` | All layout components (`Box`, `VBox`, `HBox`, `Frame`, etc.) accept `testId` |
 | `HoistInputProps` | All input components (`TextInput`, `Select`, `Checkbox`, etc.) accept `testId` |
-| `RecordActionSpec` | Record actions (`RecordAction`) accept `testId` for action buttons |
+| `RecordActionSpec` | Record actions (`RecordAction`) accept `testId` for action buttons and grid context menu items |
+| `MenuItem` | Config-driven menu items accept `testId` for their rendered element |
 | Component-specific props | `ButtonProps`, `PanelProps`, `GridProps`, `AppBarProps`, `TabSwitcherProps`, `FormProps`, `ChartProps`, `DataViewProps`, `BadgeProps`, `FormFieldSetProps`, and many others |
 
 Because `BoxProps` extends `TestSupportProps`, and nearly every Hoist layout component is built on
@@ -216,6 +217,11 @@ with spaces or special characters are included as-is — for example, an option 
 `label: 'High Risk'` would generate `data-testid="my-radio-High Risk"`. This can be surprising
 for test authors expecting normalized or slugified identifiers.
 
+### RadioCardInput (Cards)
+
+`RadioCardInput` generates testIds for each card: `${testId}-${value}`, using the option's
+stringified `value` (not its label). A "None" option with `value: null` gets `${testId}-null`.
+
 ### GroupingChooser (Popover)
 
 `GroupingChooser` generates testIds for its editor panel (`${testId}-editor`), favorites panel
@@ -224,7 +230,23 @@ for test authors expecting normalized or slugified identifiers.
 ### RecordAction (Per-Record Buttons)
 
 When a `RecordAction` has a `testId` and is rendered as an action column button, each row's button
-gets `${testId}-${recordId}`.
+gets `${testId}-${recordId}`. In a grid context menu, the item gets the `testId` as given.
+
+### Menu and MenuButton
+
+Each `MenuItem` with a `testId` renders it on its element, as given. This applies to the desktop
+`Menu`, `MenuButton`, and context menus, and to the mobile `MenuButton`. A `MenuButton` on either
+platform puts its own `testId` on the button and generates `${testId}-menu` for the open menu.
+
+```typescript
+menuButton({
+    testId: 'group-by',
+    menuItems: [
+        {heading: 'Group By'},
+        {text: 'Region', testId: 'group-by-region', actionFn: () => model.groupBy('region')}
+    ]
+});
+```
 
 ### RestGrid (Built-in Actions)
 
@@ -233,6 +255,41 @@ gets `${testId}-${recordId}`.
 `edit-action-button`, `view-action-button`, `clone-action-button`, and `delete-action-button`.
 The `RestForm` also passes its `testId` to the internal `Form`, enabling automatic field-level
 testIds.
+
+### ViewManager (Menu and Dialogs)
+
+Desktop `ViewManager` renders its `testId` on its outer element. It also generates testIds for:
+
+- The menu button: `${testId}-menu-btn`
+- The inline save and revert buttons: `${testId}-save-btn` and `${testId}-revert-btn`
+- The view menu: `${testId}-menu`
+- Each view in the menu: `${testId}-menu-view-${token}`, using the view's token. The default view
+  gets `${testId}-menu-view-default`.
+- The menu actions: `${testId}-menu-save`, `${testId}-menu-save-as`, `${testId}-menu-revert`,
+  and `${testId}-menu-manage`. The Auto Save switch gets `${testId}-menu-auto-save`.
+- The Save As dialog: `${testId}-save-as-dialog`, with `${testId}-save-as-dialog-save-btn` and
+  `${testId}-save-as-dialog-cancel-btn`. Its fields derive their testIds from the dialog's, for
+  example `${testId}-save-as-dialog-name-input`.
+- The Manage dialog: `${testId}-manage-dialog`, with `${testId}-manage-dialog-close-btn` and
+  `${testId}-manage-dialog-activate-btn`.
+
+The menu and dialogs render in portals, outside the outer element.
+
+View tokens are random 8-character ids that the server assigns. They differ across environments
+and databases, and a test cannot know the token of a view it just saved. To pick a view by name,
+query the menu by role. For a `ViewManager` with `testId: 'vm'`:
+
+```typescript
+await page.getByTestId('vm-menu').getByRole('menuitem', {name: 'My Positions'}).click();
+```
+
+Group and shared-owner submenus get no testId, because their names are user-entered text. A test
+opens such a submenu by hovering its text, then picks the view inside. Views rendered by a custom
+`viewMenuItemFn` get no testId.
+
+`ViewManager` registers its `ViewManagerModel` for `XH.getModelByTestId()`. Test code can read view
+tokens from `ViewManagerModel.views` and switch views with `selectViewAsync()`. The Save As form
+registers its `FormModel` under the dialog's testId, `${testId}-save-as-dialog`.
 
 ## XH.getModelByTestId()
 
@@ -252,6 +309,7 @@ of supported model types when their component receives a `testId`:
 | `DataViewModel` |
 | `FormModel` |
 | `TabModel` |
+| `ViewManagerModel` |
 
 Registration happens when the component mounts and is cleaned up on unmount.
 
@@ -466,9 +524,9 @@ ambiguous selectors and unreliable test results.
 ### getModelByTestId Only Works for Certain Model Types
 
 `XH.getModelByTestId()` only finds models of types registered with `InstanceManager`:
-`GridModel`, `DataViewModel`, `FormModel`, and `TabModel`. Calling it with a `testId` assigned
-to a `Button` or `Panel` will return `null`, because those components do not register their
-models (or have no models at all).
+`GridModel`, `DataViewModel`, `FormModel`, `TabModel`, and `ViewManagerModel`. Calling it with a
+`testId` assigned to a `Button` or `Panel` will return `null`, because those components do not
+register their models (or have no models at all).
 
 ## Key Source Files
 
@@ -483,9 +541,11 @@ models (or have no models at all).
 | [`desktop/cmp/input/TextInput.ts`](../desktop/cmp/input/TextInput.ts) | Input with sub-testId on clear button |
 | [`desktop/cmp/input/Select.ts`](../desktop/cmp/input/Select.ts) | Input with sub-testId on dropdown menu and clear button |
 | [`desktop/cmp/input/RadioInput.ts`](../desktop/cmp/input/RadioInput.ts) | Input with sub-testIds derived from option labels |
+| [`desktop/cmp/input/RadioCardInput.ts`](../desktop/cmp/input/RadioCardInput.ts) | Input with sub-testIds derived from option values |
 | [`desktop/cmp/tab/impl/TabContainer.ts`](../desktop/cmp/tab/impl/TabContainer.ts) | TabContainer with sub-testIds for tabs and switcher |
 | [`desktop/cmp/rest/RestGrid.ts`](../desktop/cmp/rest/RestGrid.ts) | RestGrid with sub-testIds for inner grid and form |
 | [`desktop/cmp/grouping/GroupingChooser.ts`](../desktop/cmp/grouping/GroupingChooser.ts) | GroupingChooser with sub-testIds for editor and favorites |
+| [`desktop/cmp/viewmanager/ViewManager.ts`](../desktop/cmp/viewmanager/ViewManager.ts) | ViewManager with sub-testIds for its buttons, menu, views, and dialogs |
 | [`core/impl/InstanceManager.ts`](../core/impl/InstanceManager.ts) | Registers models by testId for `XH.getModelByTestId()` |
 | [`core/XH.ts`](../core/XH.ts) | `getModelByTestId()` API on the `XH` singleton |
 | [`desktop/cmp/rest/Actions.ts`](../desktop/cmp/rest/Actions.ts) | RestGrid built-in actions with pre-defined testIds |

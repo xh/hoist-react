@@ -14,17 +14,25 @@ import {observable, runInAction, observableRef} from 'mobx';
  * This decorator is especially useful for creating observable properties that are intended to be
  * bound to UI components that will both display and set the property.
  *
+ * Apply to an `accessor` field: `@bindable accessor foo = null`.
+ *
  * Use `@bindableRef` for a version of the decorator that will mark the property as observable by
  * reference. This will use the similarly named `@observableRef` decorator in the core MobX API.
  */
-export const bindable: any = (value: any, context: ClassAccessorDecoratorContext) => {
+export function bindable<This, V>(
+    value: ClassAccessorDecoratorTarget<This, V>,
+    context: ClassAccessorDecoratorContext<This, V>
+): ClassAccessorDecoratorResult<This, V> {
     return createBindable(value, context, false);
-};
+}
 
 /** Reference-only variant of {@link bindable} - see `@observableRef`. */
-export const bindableRef: any = (value: any, context: ClassAccessorDecoratorContext) => {
+export function bindableRef<This, V>(
+    value: ClassAccessorDecoratorTarget<This, V>,
+    context: ClassAccessorDecoratorContext<This, V>
+): ClassAccessorDecoratorResult<This, V> {
     return createBindable(value, context, true);
-};
+}
 
 //-----------------
 // Implementation

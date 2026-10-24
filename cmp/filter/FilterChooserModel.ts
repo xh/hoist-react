@@ -175,7 +175,7 @@ export class FilterChooserModel extends HoistModel {
     persistFavorites: boolean = false;
 
     /** Tracks execution of filtering operation on bound object.*/
-    @managed filterTask = TaskObserver.trackAll();
+    filterTask = TaskObserver.trackAll();
 
     // Implementation fields for Control
     @managed queryEngine: QueryEngine;

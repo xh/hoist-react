@@ -54,6 +54,14 @@ export interface TabConfig {
     showRemoveAction?: boolean;
 
     /**
+     * Optional group key. Vertical (left/right) desktop TabSwitchers render a display-only header
+     * above each contiguous run of tabs sharing a group - declare grouped tabs adjacent to one
+     * another. Titles and icons for headers can be provided via {@link TabSwitcherConfig.groups}.
+     * Ignored by horizontal switchers, the dynamic switcher, and mobile.
+     */
+    group?: string;
+
+    /**
      * Item to be rendered by this tab, or specification for a child tab container for this tab.
      */
     content?: Content | TabConfig[] | TabContainerConfig;
@@ -95,6 +103,7 @@ export class TabModel extends HoistModel {
     @observable accessor disabled: boolean;
     @bindable accessor excludeFromSwitcher: boolean;
     showRemoveAction: boolean;
+    group: string;
     content: Content;
 
     containerModel: TabContainerModel;
@@ -119,6 +128,7 @@ export class TabModel extends HoistModel {
             disabled = false,
             excludeFromSwitcher = false,
             showRemoveAction = false,
+            group = null,
             content,
             refreshMode,
             renderMode,
@@ -143,6 +153,7 @@ export class TabModel extends HoistModel {
         this.disabled = !!disabled;
         this.excludeFromSwitcher = excludeFromSwitcher;
         this.showRemoveAction = showRemoveAction;
+        this.group = group;
         this.containerModel = containerModel;
         this._renderMode = renderMode;
         this._refreshMode = refreshMode;
