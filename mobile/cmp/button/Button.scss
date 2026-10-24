@@ -13,18 +13,23 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: var(--xh-button-font-size-px);
-    height: var(--xh-button-height);
+    position: relative;
+    margin: 0;
+    padding: 4px 10px;
+    border: 0;
     border-radius: var(--xh-button-border-radius-px);
-
-    // Override Onsen's semi-transparency while pressed
-    &:active {
-      opacity: 1;
-    }
+    height: var(--xh-button-height);
+    overflow: hidden;
+    font-size: var(--xh-button-font-size-px);
+    line-height: 32px;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    user-select: none;
 
     &--disabled,
     &--disabled:active {
       opacity: var(--xh-button-disabled-opacity);
+      pointer-events: none;
     }
 
     // Shaded/filled-in (non-minimal) mode.

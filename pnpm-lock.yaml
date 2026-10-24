@@ -119,9 +119,6 @@ importers:
       moment:
         specifier: ~2.31.0
         version: 2.31.0
-      onsenui:
-        specifier: ~2.12.9
-        version: 2.12.9
       qs:
         specifier: ^6.16.1
         version: 6.16.1
@@ -134,9 +131,6 @@ importers:
       react-markdown:
         specifier: ~10.1.0
         version: 10.1.0(@types/react@19.3.0)(react@19.3.1)(supports-color@10.2.2)
-      react-onsenui:
-        specifier: ~1.13.3
-        version: 1.13.3(onsenui@2.12.9)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
       react-select:
         specifier: ~5.10.2
         version: 5.10.2(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)(supports-color@10.2.2)
@@ -3163,10 +3157,6 @@ packages:
   once@1.4.0:
     resolution: {integrity: sha512-lNaJgI+2Q5URQBkccEKHTQOPaXdUxnZZElQTZY0MFUAuaEqe1E+Nyvgdz/aIyNi6Z9MzO5dv1H8n58/GELp3+w==}
 
-  onsenui@2.12.9:
-    resolution: {integrity: sha512-eKaO0emfw56Cugh0P2EV5l7ckAbhU/kULgos08IqkuVSmGNt4LJMls2tBUdgz3mZwbGLDq0hQiuhxIreP3Plug==}
-    engines: {node: '>= 4.0.0'}
-
   openid-client@6.8.8:
     resolution: {integrity: sha512-ZsucJA5Ad04Uv7YN4ql+s4GXNmb9uAYQwyJTsJx7CH/MX3JZioLE2pVKi1SC+YrbSLA4Px3Gi30dMjgOZtb6pA==}
 
@@ -3406,13 +3396,6 @@ packages:
     peerDependencies:
       '@types/react': '>=18'
       react: '>=18'
-
-  react-onsenui@1.13.3:
-    resolution: {integrity: sha512-3CvaI1moF8fqz5VJ8LmpVbWzekCHfHkm2QSeBzu7IpkkcINMJHFpgcfKe2+nMovEIi7IE0UCbrt3nj/Duf/FTQ==}
-    peerDependencies:
-      onsenui: ~2.12.8
-      react: ^18.0.0
-      react-dom: ^18.0.0
 
   react-popper@2.3.0:
     resolution: {integrity: sha512-e1hj8lL3uM+sgSR4Lxzn5h1GxBlpa4CQz0XLF8kx4MDrDRWY0Ena4c97PUeSX9i5W3UAfDP0z0FXCTQkoXUl3Q==}
@@ -7518,8 +7501,6 @@ snapshots:
     dependencies:
       wrappy: 1.0.2
 
-  onsenui@2.12.9: {}
-
   openid-client@6.8.8:
     dependencies:
       jose: 6.2.13
@@ -7772,13 +7753,6 @@ snapshots:
       vfile: 6.0.3
     transitivePeerDependencies:
       - supports-color
-
-  react-onsenui@1.13.3(onsenui@2.12.9)(react-dom@19.3.1(react@19.3.1))(react@19.3.1):
-    dependencies:
-      onsenui: 2.12.9
-      prop-types: 15.8.1
-      react: 19.3.1
-      react-dom: 19.3.1(react@19.3.1)
 
   react-popper@2.3.0(@popperjs/core@2.11.8)(react-dom@19.3.1(react@19.3.1))(react@19.3.1):
     dependencies:

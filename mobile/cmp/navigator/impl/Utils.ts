@@ -32,11 +32,6 @@ export function isScrollableEl(el: HTMLElement, axis: 'horizontal' | 'vertical')
         return true;
     }
 
-    // Ignore Onsen "swiper" elements created by tab container (even without swiping enabled)
-    if (el.classList.contains('ons-swiper') || el.classList.contains('ons-swiper-target')) {
-        return false;
-    }
-
     const {overflowX, overflowY} = window.getComputedStyle(el);
     if (
         axis === 'horizontal' &&
