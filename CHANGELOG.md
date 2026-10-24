@@ -66,8 +66,8 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 * `LocalStorageService` and `SessionStorageService` now read and write browser storage directly.
   Keys and JSON values are stored exactly as before.  Removed the unused `isFake` getter - when
   storage is unavailable the service logs a warning and holds values in memory, as before.
-* The mobile toolkit no longer uses Onsen UI at runtime. Each mobile component now owns its DOM
-  and styles. The `onsenui` and `react-onsenui` packages remain installed only until their removal.
+* Removed Onsen UI from the mobile toolkit, with the `@xh/hoist/kit/onsen` wrappers. Each mobile
+  component now owns its DOM and styles.
 
 ### ✨ Styles
 
@@ -85,6 +85,8 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 * short-unique-id `removed`
 * store2 `removed`
 * numbro `removed`
+* onsenui `removed`
+* react-onsenui `removed`
 
 
 ## 89.3.1 - 2026-10-21

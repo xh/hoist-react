@@ -61,7 +61,7 @@ pmOnFail: ignore
 # present skips the check and reports "Already up to date". Note also that an override must name
 # the dep's exact range to dedupe it; restating a broader range does nothing.
 
-# Several transitive deps (react-popper, react-onsenui, react-windowed-select) still declare
+# Several transitive deps (react-popper, react-windowed-select) still declare
 # react/react-dom peer ranges capped at 18. Hoist v87 runs React 19 - acknowledge that here
 # rather than surfacing unmet-peer warnings on every install.
 #

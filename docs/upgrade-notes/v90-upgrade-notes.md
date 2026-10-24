@@ -89,6 +89,10 @@ not. An app that styled Onsen's class names, or passed the `modifier` prop, need
 grep -rnE "modifier:|\.(button|text-input|search-input|checkbox|switch|list-item|page|dialog|dialog-container|dialog-mask|toast|tabbar)(__|--|[^a-z-])|ons-|--(highlight-color|text-color|tabbar-height|font-size)\b" client-app/src/
 ```
 
+**Remove imports from `@xh/hoist/kit/onsen`.** The kit is gone along with the `onsenui` and
+`react-onsenui` packages. An app that imported Onsen components through it, or installed Onsen
+itself, must replace them with Hoist's mobile components or its own.
+
 **Remove the `modifier` prop.** Mobile `Button`, `TextInput`, `NumberInput`, `SearchInput`,
 `Checkbox` and `SwitchInput` no longer accept it. It carried an Onsen modifier string such as
 `'large'` or `'underbar'`; there is no equivalent. Style the component's `className` instead.
@@ -134,8 +138,8 @@ After completing all steps:
 - [ ] `pnpm typecheck` / `npx tsc --noEmit` passes.
 - [ ] The application builds and loads without console errors.
 - [ ] No code passes `formatConfig` to a number formatter or renderer.
-- [ ] No mobile SCSS targets Onsen class names or CSS variables, and no mobile input or button
-      passes `modifier`.
+- [ ] No mobile SCSS targets Onsen class names or CSS variables, no mobile input or button passes
+      `modifier`, and nothing imports from `@xh/hoist/kit/onsen`.
 - [ ] Mobile screens with inputs, tabs, dialogs, toasts and menus look as they did on v89.
 
 ## Reference
