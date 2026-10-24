@@ -111,11 +111,11 @@ importers:
         specifier: ^7.2.0
         version: 7.2.0
       mobx:
-        specifier: ~7.0.6
-        version: 7.0.6
+        specifier: ~7.1.0
+        version: 7.1.0
       mobx-react-lite:
         specifier: ~5.1.0
-        version: 5.1.0(mobx@7.0.6)(react@19.3.1)
+        version: 5.1.0(mobx@7.1.0)(react@19.3.1)
       moment:
         specifier: ~2.31.0
         version: 2.31.0
@@ -141,8 +141,8 @@ importers:
         specifier: ~5.10.2
         version: 5.10.2(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)(supports-color@10.2.2)
       react-window:
-        specifier: ~2.3.4
-        version: 2.3.4(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
+        specifier: ~2.4.1
+        version: 2.4.1(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
       react-windowed-select:
         specifier: ~5.2.0
         version: 5.2.0(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)(supports-color@10.2.2)
@@ -3079,8 +3079,8 @@ packages:
       mobx: ^7.0.0
       react: ^18 || ^19
 
-  mobx@7.0.6:
-    resolution: {integrity: sha512-VJwjVS5K/rojqPSOoDYlXaYl38Lj+gDfLOFeJ/3Pbdh5ITbAO4ks9RgL0TeRI0bydRZ7b/7WrtPPb9Onuj/pcA==}
+  mobx@7.1.0:
+    resolution: {integrity: sha512-5eGlbA7iJ7bUwtdLaUTu7g9DDQsTo3bhtVkWD/Rii24zhjhSPdTXJ5sjKVd9n7AaJ/h6xlmUvUsyO6B1zK9HVQ==}
 
   moment@2.31.0:
     resolution: {integrity: sha512-0acOTfMiWOheYS4eoWb80yYMb/JLvVv9SHbs2PehaDzfUG0Bw855SKyk0IKTnPGa5+U2bmi3W68l1+sGLX/pvw==}
@@ -3462,8 +3462,8 @@ packages:
       react: ^15.0.0 || ^16.0.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
       react-dom: ^15.0.0 || ^16.0.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
 
-  react-window@2.3.4:
-    resolution: {integrity: sha512-CnRWoRg+ZnQkLcULSNdbgKJnfcexy9x+9ELOATmDlDv3ZoADyLJc22vN3JRvMV651A6gFwYBlxllU9X+H9dyhQ==}
+  react-window@2.4.1:
+    resolution: {integrity: sha512-pBzmfSYYAFbxHU9r6L0vlPZqobI12VWrlM17QG5vtTQ0ohd1JCfZWkqsQKrAYHfrn5wISIs6yjrNOL+7fDuBrg==}
     peerDependencies:
       react: ^18.0.0 || ^19.0.0
       react-dom: ^18.0.0 || ^19.0.0
@@ -7444,12 +7444,12 @@ snapshots:
 
   minisearch@7.2.0: {}
 
-  mobx-react-lite@5.1.0(mobx@7.0.6)(react@19.3.1):
+  mobx-react-lite@5.1.0(mobx@7.1.0)(react@19.3.1):
     dependencies:
-      mobx: 7.0.6
+      mobx: 7.1.0
       react: 19.3.1
 
-  mobx@7.0.6: {}
+  mobx@7.1.0: {}
 
   moment@2.31.0: {}
 
@@ -7839,7 +7839,7 @@ snapshots:
       react: 19.3.1
       react-dom: 19.3.1(react@19.3.1)
 
-  react-window@2.3.4(react-dom@19.3.1(react@19.3.1))(react@19.3.1):
+  react-window@2.4.1(react-dom@19.3.1(react@19.3.1))(react@19.3.1):
     dependencies:
       react: 19.3.1
       react-dom: 19.3.1(react@19.3.1)
