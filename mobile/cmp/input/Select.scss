@@ -24,7 +24,7 @@
     &__control {
       background: var(--xh-input-bg);
       border: none;
-      min-height: var(--xh-mobile-input-height-px);
+      min-height: var(--xh-input-height);
     }
 
     &__placeholder {
@@ -45,7 +45,7 @@
       padding: 0 8px 0 0;
       width: 20px;
       color: var(--xh-text-color-muted);
-      font-size: var(--xh-font-size-large-px);
+      font-size: var(--xh-font-size-large);
     }
 
     &__indicator-separator {
@@ -80,7 +80,7 @@
 
       > * {
         // Default padding for the inner option element
-        padding: var(--xh-pad-px);
+        padding: var(--xh-spacing);
       }
 
       &--is-disabled {
@@ -107,7 +107,7 @@
   z-index: 22;
 
   .xh-select {
-    margin: var(--xh-pad-px);
+    margin: var(--xh-spacing);
 
     &__fullscreen-wrapper {
       position: absolute !important;
@@ -121,11 +121,11 @@
 
     &__fullscreen-toolbar {
       background-color: var(--xh-appbar-bg);
-      color: var(--xh-appbar-title-color);
-      padding: var(--xh-pad-half-px) var(--xh-pad-px) var(--xh-pad-half-px) 0;
+      color: var(--xh-appbar-title-text-color);
+      padding: var(--xh-spacing-half) var(--xh-spacing) var(--xh-spacing-half) 0;
 
       & > span {
-        font-size: var(--xh-appbar-title-font-size-px);
+        font-size: var(--xh-appbar-title-font-size);
         flex: 1;
         overflow: hidden;
         white-space: nowrap;
@@ -134,7 +134,7 @@
 
       .xh-button {
         background: transparent !important;
-        color: var(--xh-appbar-title-color) !important;
+        color: var(--xh-appbar-title-text-color) !important;
       }
     }
   }

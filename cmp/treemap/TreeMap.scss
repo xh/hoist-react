@@ -36,7 +36,7 @@
   .highcharts-data-label text {
     font-family: var(--xh-font-family);
     // Use of !important overrides default styles applied inline to the label elements by HC.
-    font-size: var(--xh-font-size-small-px) !important;
+    font-size: var(--xh-font-size-small) !important;
     font-weight: normal !important;
   }
 
@@ -54,23 +54,23 @@
   min-width: 150px;
 
   &__label {
-    padding: var(--xh-pad-half-px);
+    padding: var(--xh-spacing-half);
     background: var(--xh-bg-alt);
-    font-size: var(--xh-font-size-small-px);
+    font-size: var(--xh-font-size-small);
   }
 
   &__row {
     display: flex;
     background: var(--xh-bg);
     border-top: var(--xh-border-solid);
-    font-size: var(--xh-font-size-small-px);
+    font-size: var(--xh-font-size-small);
 
     & > div {
-      padding: var(--xh-pad-half-px);
+      padding: var(--xh-spacing-half);
 
       &:first-of-type {
         flex: 1;
-        padding-right: var(--xh-pad-px);
+        padding-right: var(--xh-spacing);
         font-weight: bold;
       }
     }

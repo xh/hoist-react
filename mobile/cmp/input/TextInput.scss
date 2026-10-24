@@ -3,8 +3,8 @@
 
   .text-input,
   .text-input__label {
-    height: var(--xh-mobile-input-height-px);
-    padding: 0 var(--xh-pad-px);
+    height: var(--xh-input-height);
+    padding: 0 var(--xh-spacing);
   }
 
   &__input {
@@ -14,7 +14,7 @@
   &__left-icon {
     display: flex;
     align-items: center;
-    padding-left: var(--xh-pad-px);
+    padding-left: var(--xh-spacing);
     color: var(--xh-text-color-muted);
   }
 

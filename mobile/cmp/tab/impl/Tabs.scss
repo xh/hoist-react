@@ -5,11 +5,11 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 .xh-tab {
-  font-size: var(--xh-button-font-size-px);
+  font-size: var(--xh-button-font-size);
 
   // Icon with title
   .xh-icon:not(:last-child) {
-    margin-right: var(--xh-pad-half-px);
+    margin-right: var(--xh-spacing-half);
   }
 
   // Icon without title
@@ -35,7 +35,7 @@
 
 .xh-tab-container {
   // Override Onsen's tabbar height CSS var
-  --tabbar-height: var(--xh-tbar-min-size-px);
+  --tabbar-height: var(--xh-toolbar-min-size);
 
   position: relative;
   flex: auto;
@@ -49,15 +49,15 @@
   }
 
   .tabbar {
-    height: var(--xh-tbar-min-size-px);
-    line-height: var(--xh-tbar-min-size-px);
+    height: var(--xh-toolbar-min-size);
+    line-height: var(--xh-toolbar-min-size);
 
     &__button {
       display: flex;
       align-items: center;
       justify-content: center;
-      height: var(--xh-tbar-min-size-px);
-      line-height: var(--xh-tbar-min-size-px);
+      height: var(--xh-toolbar-min-size);
+      line-height: var(--xh-toolbar-min-size);
       color: var(--xh-text-color);
     }
   }

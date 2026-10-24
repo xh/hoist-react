@@ -7,21 +7,21 @@
 .xh-banner {
   flex: none;
   align-items: center;
-  gap: var(--xh-pad-half-px);
+  gap: var(--xh-spacing-half);
   width: 100%;
-  min-height: var(--xh-tbar-min-size-px);
-  padding: var(--xh-pad-half-px) var(--xh-pad-half-px) var(--xh-pad-half-px) var(--xh-pad-px);
+  min-height: var(--xh-toolbar-min-size);
+  padding: var(--xh-spacing-half) var(--xh-spacing-half) var(--xh-spacing-half) var(--xh-spacing);
 
   // Size buttons to fit the banner, matching mobile toolbars.
-  --xh-button-height: calc(var(--xh-tbar-min-size-px) - 2 * var(--xh-pad-half-px));
-  --xh-button-border-radius-px: var(--xh-border-radius-px);
+  --xh-button-height: calc(var(--xh-toolbar-min-size) - 2 * var(--xh-spacing-half));
+  --xh-button-border-radius: var(--xh-border-radius);
   color: var(--xh-text-color);
   background-color: var(--xh-intent-neutral-trans1);
 
   &__content {
     flex: 1;
     align-items: center;
-    gap: var(--xh-pad-px);
+    gap: var(--xh-spacing);
     min-width: 0;
 
     > .xh-icon {
@@ -83,7 +83,7 @@
     min-height: 32px;
     padding-top: 2px;
     padding-bottom: 2px;
-    font-size: var(--xh-font-size-small-em);
+    font-size: var(--xh-font-size-small-relative);
   }
 
   // Tinted (default) style - intent background tint with intent-colored icon.

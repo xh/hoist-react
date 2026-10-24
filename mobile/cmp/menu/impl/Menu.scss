@@ -11,9 +11,9 @@
   max-height: 80dvh;
 
   &__title {
-    padding: var(--xh-pad-half-px);
-    color: var(--xh-appbar-title-color);
-    font-size: var(--xh-font-size-small-px);
+    padding: var(--xh-spacing-half);
+    color: var(--xh-appbar-title-text-color);
+    font-size: var(--xh-font-size-small);
     text-align: center;
     background-color: var(--xh-appbar-bg);
     border-bottom: var(--xh-border-solid);
@@ -25,14 +25,14 @@
 
     // Textless '-' separator. The item above already draws a rule, so this is just a slim gap.
     &__divider {
-      height: var(--xh-pad-half-px);
+      height: var(--xh-spacing-half);
       background-color: var(--xh-menu-bg);
     }
 
     // Non-interactive heading - see MenuHeading.
     &__heading {
-      padding: var(--xh-pad-px) var(--xh-pad-double-px) var(--xh-pad-half-px) var(--xh-pad-px);
-      font-size: var(--xh-menu-heading-font-size-px);
+      padding: var(--xh-spacing) var(--xh-spacing-double) var(--xh-spacing-half) var(--xh-spacing);
+      font-size: var(--xh-menu-heading-font-size);
       font-weight: var(--xh-menu-heading-font-weight);
       color: var(--xh-menu-heading-text-color);
       background-color: var(--xh-menu-bg);
@@ -41,8 +41,8 @@
 
     &__item {
       margin: 0;
-      padding: 0 var(--xh-pad-double-px) 0 var(--xh-pad-px);
-      font-size: var(--xh-menu-item-font-size-px);
+      padding: 0 var(--xh-spacing-double) 0 var(--xh-spacing);
+      font-size: var(--xh-menu-item-font-size);
       color: var(--xh-menu-item-text-color);
       background-color: var(--xh-menu-bg) !important;
       box-shadow: none !important;
@@ -57,8 +57,8 @@
       }
 
       & > div {
-        padding: var(--xh-pad-half-px) 0;
-        min-height: var(--xh-menu-item-height-px);
+        padding: var(--xh-spacing-half) 0;
+        min-height: var(--xh-menu-item-height);
       }
     }
   }

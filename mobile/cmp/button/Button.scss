@@ -13,9 +13,9 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: var(--xh-button-font-size-px);
+    font-size: var(--xh-button-font-size);
     height: var(--xh-button-height);
-    border-radius: var(--xh-button-border-radius-px);
+    border-radius: var(--xh-button-border-radius);
 
     // Override Onsen's semi-transparency while pressed
     &:active {

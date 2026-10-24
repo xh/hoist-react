@@ -5,7 +5,7 @@
   align-items: center;
   justify-content: center;
   text-align: center;
-  padding: var(--xh-pad-px);
+  padding: var(--xh-spacing);
   color: var(--xh-text-color-muted);
 
   > .xh-icon:first-child {
@@ -15,6 +15,6 @@
   }
 
   & > *:not(:last-child) {
-    margin-bottom: var(--xh-pad-px);
+    margin-bottom: var(--xh-spacing);
   }
 }

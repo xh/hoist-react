@@ -3,32 +3,32 @@
 
   & > .dialog-mask {
     background-color: var(--xh-backdrop-bg);
-    top: var(--xh-pad-safe-top);
-    bottom: var(--xh-pad-safe-bottom);
-    left: var(--xh-pad-safe-left);
-    right: var(--xh-pad-safe-right);
+    top: var(--xh-safe-area-inset-top);
+    bottom: var(--xh-safe-area-inset-bottom);
+    left: var(--xh-safe-area-inset-left);
+    right: var(--xh-safe-area-inset-right);
   }
 
   & > .dialog {
     // Constrain max height on the outer container to safe area.
     display: flex;
     flex-direction: column;
-    max-height: calc(100dvh - var(--xh-pad-double-px));
+    max-height: calc(100dvh - var(--xh-spacing-double));
 
     // Increase min-width from Onsen 270px default. This seems to drive actual width in most cases.
     // and 270px looks a bit cramped.
     min-width: 320px;
 
     .dialog-container {
-      margin: var(--xh-pad-safe-all);
+      margin: var(--xh-safe-area-inset);
       display: flex;
       flex-direction: column;
-      max-width: calc(100svw - var(--xh-pad-double-px));
+      max-width: calc(100svw - var(--xh-spacing-double));
       // Background on inner onsen container deliberately set to *border* color - this avoids small
       // but noticeable gaps around the edges. The dialog body gets a defined background below for
       // the actual contents of the component.
       background-color: var(--xh-popup-border-color);
-      border: var(--xh-popup-border-width-px) solid var(--xh-popup-border-color);
+      border: var(--xh-popup-border-width) solid var(--xh-popup-border-color);
     }
   }
 
@@ -37,28 +37,28 @@
     background-color: var(--xh-popup-title-bg);
     color: var(--xh-popup-title-text-color);
     display: flex;
-    font-size: var(--xh-popup-title-font-size-px);
-    padding: var(--xh-pad-px);
+    font-size: var(--xh-popup-title-font-size);
+    padding: var(--xh-spacing);
 
     svg {
-      margin-right: var(--xh-pad-px);
+      margin-right: var(--xh-spacing);
     }
   }
 
   &__inner {
-    padding: var(--xh-pad-px);
+    padding: var(--xh-spacing);
     background-color: var(--xh-bg);
     overflow-y: auto;
   }
 
   &__toolbar {
     display: flex;
-    padding: var(--xh-pad-half-px) var(--xh-pad-px);
-    border-top: 1px solid var(--xh-tbar-border-color);
-    background-color: var(--xh-tbar-bg);
+    padding: var(--xh-spacing-half) var(--xh-spacing);
+    border-top: 1px solid var(--xh-toolbar-border-color);
+    background-color: var(--xh-toolbar-bg);
 
     .xh-button:not(:last-of-type) {
-      margin-right: var(--xh-pad-px);
+      margin-right: var(--xh-spacing);
     }
   }
 }

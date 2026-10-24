@@ -3,7 +3,7 @@
 
   .text-input,
   .text-input__label {
-    height: var(--xh-mobile-input-height-px);
-    padding: 0 var(--xh-pad-px);
+    height: var(--xh-input-height);
+    padding: 0 var(--xh-spacing);
   }
 }

@@ -44,14 +44,14 @@
   }
 
   &__content {
-    padding: var(--xh-pad-px);
+    padding: var(--xh-spacing);
     flex: 1;
     height: 100%;
     overflow-y: auto;
   }
 
   &__instance-row {
-    padding: var(--xh-pad-half-px);
+    padding: var(--xh-spacing-half);
     margin-top: 5px;
     border-radius: 10px;
   }

@@ -11,7 +11,6 @@ import {Icon} from '@xh/hoist/icon';
 import {button, ButtonProps} from '@xh/hoist/desktop/cmp/button';
 import {withDefault} from '@xh/hoist/utils/js';
 import {ReactElement} from 'react';
-import './CheckboxButton.scss';
 
 export interface CheckboxButtonProps extends Omit<ButtonProps, 'onChange'>, HoistInputProps {
     value?: boolean;
