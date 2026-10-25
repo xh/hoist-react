@@ -58,6 +58,8 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 
 * router5 `7.0 → 8.0`
 * router5-plugin-browser `7.0 → 8.0`
+* mobx `7.0 → 7.1` - `toJS` now includes `@observable accessor` fields, which it previously left out
+* react-window `2.3 → 2.4`
 * http-status-codes `removed`
 * inflection `added` - replaces lodash-inflection behind `pluralize`, `singularize` and `ordinalize`
 * lodash-inflection `removed`
