@@ -18,7 +18,8 @@ import {
     useCallback,
     useEffect,
     useMemo,
-    useRef
+    useRef,
+    useState
 } from 'react';
 import type {MenuListProps} from 'react-select';
 import {List, ListImperativeAPI, useDynamicRowHeight} from 'react-window';
@@ -58,7 +59,7 @@ const reactWindowList = elementFactory(List);
 export function WindowedMenuList(props: MenuListProps) {
     const {children, className, cx, getStyles, innerProps, innerRef, isMulti, maxHeight} = props,
         rows = useMemo(() => toRows(children), [children]),
-        listRef = useRef<ListImperativeAPI>(null),
+        [list, setList] = useState<ListImperativeAPI>(null),
         // Heights by row id rather than index, so a measured option keeps its height when
         // filtering or keyboard navigation re-creates the rows.
         measured = useRef(new WeakMap<object, number>()),
@@ -84,12 +85,12 @@ export function WindowedMenuList(props: MenuListProps) {
     // `componentDidUpdate` - its scroll math assumes options in flow, so it lands at the top.
     const focusedIdx = rows.findIndex(it => it.isFocused);
     useEffect(() => {
-        if (focusedIdx >= 0) listRef.current?.scrollToRow({index: focusedIdx, align: 'auto'});
-    }, [focusedIdx, rows]);
+        if (focusedIdx >= 0) list?.scrollToRow({index: focusedIdx, align: 'auto'});
+    }, [list, focusedIdx, rows]);
 
     const setListRef = useCallback(
         (api: ListImperativeAPI) => {
-            listRef.current = api;
+            setList(api);
             assignRef(innerRef, api?.element ?? null);
         },
         [innerRef]
@@ -99,7 +100,7 @@ export function WindowedMenuList(props: MenuListProps) {
         paddingTop = toPx(menuListStyles.paddingTop),
         paddingBottom = toPx(menuListStyles.paddingBottom),
         rowsHeight = rows.reduce((sum, it, idx) => sum + rowHeight.getRowHeight(idx), 0),
-        height = Math.min(maxHeight, rowsHeight + paddingTop + paddingBottom);
+        height = Math.min(maxHeight - paddingTop - paddingBottom, rowsHeight);
 
     return reactWindowList({
         ...innerProps,
@@ -108,16 +109,22 @@ export function WindowedMenuList(props: MenuListProps) {
         rowComponent: windowedRow,
         rowCount: rows.length,
         rowHeight,
-        rowProps: {rows, paddingTop},
+        rowProps: {rows},
         defaultHeight: height,
-        // Rows are positioned from the top of the padding box, so offset them by the top padding
-        // and reserve both paddings below the last row.
-        style: {height, paddingBottom: paddingTop + paddingBottom}
+        // Padding would sit under the absolutely positioned rows and skew react-window's scroll
+        // offsets, so render it as transparent borders outside the scroll area instead.
+        style: {
+            height,
+            boxSizing: 'content-box',
+            padding: 0,
+            borderTop: `${paddingTop}px solid transparent`,
+            borderBottom: `${paddingBottom}px solid transparent`
+        }
     });
 }
 
-function windowedRow({index, style, rows, paddingTop}: any) {
-    return div({style: {...style, top: paddingTop}, item: rows[index].node});
+function windowedRow({index, style, rows}: any) {
+    return div({style, item: rows[index].node});
 }
 
 /** Flatten react-select's rendered menu children into rows, with each group heading on its own. */
