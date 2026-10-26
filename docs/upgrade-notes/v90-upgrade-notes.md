@@ -9,6 +9,10 @@ affected API.
 
 - **Number `formatConfig` (required if used)** - v90 removes `NumberFormatOptions.formatConfig`
   with numbro. A few number edge cases also changed, such as negative ties - see Step 1.
+- **`WindowedSelect` kit exports (required if used)** - v90 removes the `WindowedSelect` and
+  `reactWindowedSelect` exports from `@xh/hoist/kit/react-select` along with the
+  react-windowed-select library. The `enableWindowed` prop of `Select` works as before - see
+  Step 2.
 
 ## Upgrade Steps
 
@@ -73,6 +77,22 @@ Ordinary values render exactly as before. These edge cases changed:
 Parse formatted text with `parseNumber()` before you format it, and update tests or exports that
 match the text `Infinity`.
 
+### 2. Remove `WindowedSelect` Imports
+
+The desktop `Select` now windows a large option list itself, with react-window 2, so Hoist no
+longer depends on react-windowed-select. Apps that set `enableWindowed` need no change. The menu
+windows once the list has 100 or more options, as before.
+
+**Find affected code:**
+
+```bash
+grep -rn "WindowedSelect\|react-windowed-select" client-app/src/
+```
+
+An app that rendered the kit's `WindowedSelect` or `reactWindowedSelect` directly should use
+`select({enableWindowed: true})` instead, or add react-windowed-select to its own `package.json`.
+Remove any `react-windowed-select` entry from the app's `resolutions` or `overrides`.
+
 ## Verification Checklist
 
 After completing all steps:
@@ -82,6 +102,7 @@ After completing all steps:
 - [ ] `pnpm typecheck` / `npx tsc --noEmit` passes.
 - [ ] The application builds and loads without console errors.
 - [ ] No code passes `formatConfig` to a number formatter or renderer.
+- [ ] No code imports `WindowedSelect` or `reactWindowedSelect` from `@xh/hoist/kit/react-select`.
 
 ## Reference
 

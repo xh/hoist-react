@@ -143,9 +143,6 @@ importers:
       react-window:
         specifier: ~2.4.1
         version: 2.4.1(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
-      react-windowed-select:
-        specifier: ~5.2.0
-        version: 5.2.0(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)(supports-color@10.2.2)
       remark-breaks:
         specifier: ~4.0.0
         version: 4.0.0
@@ -2949,9 +2946,6 @@ packages:
     resolution: {integrity: sha512-yz3xRaG20c6/BOzvYoDaGtPmGscs7YivItZEEqe6GbwNfHuxu9YNmvnEkMzKldAGY4/80pRcQRZSEnhquk9XuQ==}
     engines: {node: '>= 0.8'}
 
-  memoize-one@5.2.1:
-    resolution: {integrity: sha512-zYiwtZUcYyXKo/np96AGZAckk+FWWsUdJ3cHGGmld7+AhvcWmQyGCYUh1hc4Q/pkOhb65dQR/pqCyK0cOaHz4Q==}
-
   memoize-one@6.0.0:
     resolution: {integrity: sha512-rkpe71W0N0c0Xz6QD0eJETuWAJGnJ9afsl1srmwPrI+yBCkge5EycXXbYRyvL29zZVUWQCY7InPRCv3GDXuZNw==}
 
@@ -3455,24 +3449,11 @@ packages:
       react: '>=16.6.0'
       react-dom: '>=16.6.0'
 
-  react-window@1.8.11:
-    resolution: {integrity: sha512-+SRbUVT2scadgFSWx+R1P754xHPEqvcfSfVX10QYg6POOz+WNgkN48pS+BtZNIMGiL1HYrSEiCkwsMS15QogEQ==}
-    engines: {node: '>8.0.0'}
-    peerDependencies:
-      react: ^15.0.0 || ^16.0.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
-      react-dom: ^15.0.0 || ^16.0.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
-
   react-window@2.4.1:
     resolution: {integrity: sha512-pBzmfSYYAFbxHU9r6L0vlPZqobI12VWrlM17QG5vtTQ0ohd1JCfZWkqsQKrAYHfrn5wISIs6yjrNOL+7fDuBrg==}
     peerDependencies:
       react: ^18.0.0 || ^19.0.0
       react-dom: ^18.0.0 || ^19.0.0
-
-  react-windowed-select@5.2.0:
-    resolution: {integrity: sha512-NOdkFj3GKjIdSQicPITjvIMzu2y75JIoCAB1CPiMiRfbLCQRwaf5rH6n4EdP38KpDrv6R2Vt8bVo3PUoB+RspA==}
-    peerDependencies:
-      react: ^16.8.0 || ^17.0.0 || ^18.0.0
-      react-dom: ^16.8.0 || ^17.0.0 || ^18.0.0
 
   react@19.3.1:
     resolution: {integrity: sha512-QNhWdt7nrgVWWQG58QuGsAR3jv3Hbe4mb4vz7w2csnHavciZJgda1CPNaldF6eVxv90ud3jUXpKlHL69gO38yw==}
@@ -7220,8 +7201,6 @@ snapshots:
 
   media-typer@1.1.1: {}
 
-  memoize-one@5.2.1: {}
-
   memoize-one@6.0.0: {}
 
   meow@14.1.0: {}
@@ -7832,27 +7811,10 @@ snapshots:
       react: 19.3.1
       react-dom: 19.3.1(react@19.3.1)
 
-  react-window@1.8.11(react-dom@19.3.1(react@19.3.1))(react@19.3.1):
-    dependencies:
-      '@babel/runtime': 7.29.10
-      memoize-one: 5.2.1
-      react: 19.3.1
-      react-dom: 19.3.1(react@19.3.1)
-
   react-window@2.4.1(react-dom@19.3.1(react@19.3.1))(react@19.3.1):
     dependencies:
       react: 19.3.1
       react-dom: 19.3.1(react@19.3.1)
-
-  react-windowed-select@5.2.0(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)(supports-color@10.2.2):
-    dependencies:
-      react: 19.3.1
-      react-dom: 19.3.1(react@19.3.1)
-      react-select: 5.10.2(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)(supports-color@10.2.2)
-      react-window: 1.8.11(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
-    transitivePeerDependencies:
-      - '@types/react'
-      - supports-color
 
   react@19.3.1: {}
 

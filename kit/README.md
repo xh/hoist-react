@@ -116,7 +116,7 @@ Kit wraps Onsen components to:
 ### react-select
 
 [react-select](https://react-select.com/) powers Hoist's `Select` input component. Kit re-exports
-five variants with element factories:
+four variants with element factories:
 
 | Export | Description |
 |--------|-------------|
@@ -124,7 +124,6 @@ five variants with element factories:
 | `reactCreatableSelect` | Allows creating new options |
 | `reactAsyncSelect` | Loads options asynchronously |
 | `reactAsyncCreatableSelect` | Async + creatable combined |
-| `reactWindowedSelect` | Windowed rendering for large option lists |
 
 ### GoldenLayout
 
