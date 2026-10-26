@@ -182,7 +182,7 @@ export interface SelectProps extends HoistProps, HoistInputProps, LayoutProps {
 }
 
 /**
- * A managed wrapper around the React-Select combobox/dropdown component.
+ * A combobox for choosing a value from a dropdown list of options, with type-ahead filtering.
  *
  * Supports advanced options such as:
  *      + Asynchronous queries

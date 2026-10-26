@@ -221,7 +221,8 @@ export interface SelectProps extends HoistProps, HoistInputProps, LayoutProps {
 }
 
 /**
- * A managed wrapper around the React-Select combobox/dropdown component.
+ * A combobox for choosing one or more values from a dropdown list of options, with type-ahead
+ * filtering.
  *
  * Supports advanced options such as:
  *      + Asynchronous queries
@@ -230,7 +231,7 @@ export interface SelectProps extends HoistProps, HoistInputProps, LayoutProps {
  *      + User-created ad-hoc entries
  *      + Windowed rendering of large option lists, for improved performance.
  *
- * See {@link https://react-select.com|React}
+ * Built on {@link https://react-select.com|react-select}.
  */
 export const [Select, select] = hoistCmp.withFactory<SelectProps>({
     displayName: 'Select',
@@ -264,11 +265,6 @@ class SelectInputModel extends HoistInputModel {
 
     get windowedMode(): boolean {
         return !!this.componentProps.enableWindowed;
-    }
-
-    /** True when the menu renders only its visible options - windowed mode with a large list. */
-    get windowedMenuActive(): boolean {
-        return this.windowedMode && countOptions(this.internalOptions) >= WINDOWED_OPTION_THRESHOLD;
     }
 
     get multiMode(): boolean {
@@ -756,6 +752,13 @@ class SelectInputModel extends HoistInputModel {
             : components.MultiValueLabel;
     }
 
+    // Windowed mode virtualizes the menu only once the list is long enough to need it.
+    getMenuListCmp() {
+        const windowed =
+            this.windowedMode && countOptions(this.internalOptions) >= WINDOWED_OPTION_THRESHOLD;
+        return windowed ? WindowedMenuList : components.MenuList;
+    }
+
     getSingleValueCmp() {
         return this.componentProps.enableTooltips
             ? props => {
@@ -836,7 +839,7 @@ const cmp = hoistCmp.factory<SelectInputModel>(({model, className, ...props}, re
                 ValueContainer: model.getValueContainerCmp(),
                 MultiValueLabel: model.getMultiValueLabelCmp(),
                 SingleValue: model.getSingleValueCmp(),
-                ...(model.windowedMenuActive ? {MenuList: WindowedMenuList} : {})
+                MenuList: model.getMenuListCmp()
             },
 
             // A shared div is created lazily here as needed, appended to the body, and assigned

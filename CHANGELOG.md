@@ -21,8 +21,6 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 
 * Removed `NumberFormatOptions.formatConfig`, which took a numbro format. Use `precision`, `zeroPad`
   and `withCommas` instead.
-* Removed the `WindowedSelect` and `reactWindowedSelect` exports from `@xh/hoist/kit/react-select`.
-  `Select` with `enableWindowed` works as before.
 
 ### 🎁 New Features
 
