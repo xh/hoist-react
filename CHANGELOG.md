@@ -25,9 +25,6 @@ detailed, step-by-step upgrade instructions with before/after code examples.
   already did, and its time picker is Hoist's own 24-hour control. `dayPickerProps` now takes
   react-day-picker 10 props - see the upgrade notes for the renames from v8. Removed
   `timePickerProps`, which took Blueprint `TimePicker` options such as `useAmPm`.
-* Removed `DatePicker` and `datePicker` from `@xh/hoist/kit/blueprint`, along with the
-  `@blueprintjs/datetime` dependency. Apps that rendered them must import a calendar of their own,
-  e.g. `dayPicker` from `@xh/hoist/kit/react-day-picker`.
 
 ### 🎁 New Features
 
