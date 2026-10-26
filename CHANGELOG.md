@@ -22,8 +22,7 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 * Removed `NumberFormatOptions.formatConfig`, which took a numbro format. Use `precision`, `zeroPad`
   and `withCommas` instead.
 * Removed the `WindowedSelect` and `reactWindowedSelect` exports from `@xh/hoist/kit/react-select`.
-  The desktop `Select` now windows its own menu - see Technical below. The `enableWindowed` prop
-  works as before.
+  `Select` with `enableWindowed` works as before.
 
 ### 🎁 New Features
 
@@ -53,10 +52,8 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 
 ### ⚙️ Technical
 
-* Desktop `Select` in windowed mode now renders its menu with react-window 2 directly, via a
-  react-select `MenuList` replacement. As before, the menu windows once the list has 100 or more
-  options. This drops react-windowed-select, which pinned a second copy of react-window 1 into
-  every app.
+* Desktop `Select` now windows large option lists with react-window 2 directly, dropping
+  react-windowed-select and the second copy of react-window it pinned into every app.
 * `LocalStorageService` and `SessionStorageService` now read and write browser storage directly.
   Keys and JSON values are stored exactly as before.  Removed the unused `isFake` getter - when
   storage is unavailable the service logs a warning and holds values in memory, as before.
