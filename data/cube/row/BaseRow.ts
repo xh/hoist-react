@@ -15,15 +15,9 @@ import type {ParentRow} from './ParentRow';
 import type {RowUpdate} from './RowUpdate';
 
 /**
- * Send a set of updates up both aggregation routes.
- *
- * `applyDataUpdate` rewrites each {@link RowUpdate}'s `oldValue` / `newValue` in place as it walks,
- * and `Aggregator.replace` reads them - so when a row has two parents the second must get its own
- * copies, or it would apply the first route's aggregated delta instead of this row's.
- *
- * Copies via `clone()`, never a fresh `RowUpdate`: the latter would reset `oldValue` / `newValue`
- * to the originating leaf's values, discarding this row's aggregated delta.
- *
+ * Send updates up both aggregation routes. `applyDataUpdate` rewrites each {@link RowUpdate}'s
+ * `oldValue` / `newValue` in place, so a second parent needs its own copies - `clone()`, which
+ * keeps this row's aggregated delta where a fresh `RowUpdate` would reset to leaf values.
  * @internal
  */
 export function propagateUpdate(
@@ -68,10 +62,8 @@ export abstract class BaseRow implements ViewRow {
     data: PlainObject;
     parent: ParentRow = null;
     /**
-     * Second aggregation parent, used by pivot views to propagate up the pivot axis in addition to
-     * the group axis. Null for every row in a plain View.
-     *
-     * The two routes must reach disjoint sets of ancestors - see {@link PivotStructure}.
+     * Second aggregation parent, used by pivot views to propagate up the pivot axis. Null in a
+     * plain View. The two routes must reach disjoint ancestors - see {@link PivotStructure}.
      */
     pivotParent: ParentRow = null;
     children: BaseRow[] = null;

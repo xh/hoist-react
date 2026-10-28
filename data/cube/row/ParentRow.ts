@@ -44,12 +44,9 @@ export abstract class ParentRow extends BaseRow {
     locked: boolean = false;
 
     /**
-     * True if this row stopped receiving updates while it sat out a generation, set by whatever
-     * discarded it. {@link reuse} otherwise takes unchanged children as proof that a row's
-     * aggregates are still current - sound only for a row that stayed live throughout.
-     *
-     * Never set in a plain View, where a discarded row keeps its `parent` links and so keeps
-     * receiving updates. See `PivotCells` - cells are discarded outright.
+     * True if this row sat out a generation without receiving updates, so {@link reuse} must
+     * re-aggregate rather than take unchanged children as proof its aggregates are current. Set by
+     * `PivotCells` only - a plain View keeps discarded rows' parent links live.
      */
     staleAggs: boolean = false;
 
@@ -57,8 +54,7 @@ export abstract class ParentRow extends BaseRow {
     protected abstract get dimOrBucketName(): string;
     protected abstract get dimOrBucketVal(): any;
 
-    // Fields this row aggregates, and the subsets needing re-derivation - by default the View's
-    // lists for this row's depth. Pivot cell rows override with their own, narrower lists.
+    // Aggregation field lists for this row's depth; pivot cell rows override with narrower ones.
     protected get aggFields(): CubeField[] {
         return this.view._aggFieldsByDepth[this.depth];
     }
@@ -83,11 +79,7 @@ export abstract class ParentRow extends BaseRow {
         children.forEach(it => (it.parent = this));
     }
 
-    /**
-     * Compute this row's aggregates over its already-assigned `children`, without touching the
-     * children's parent links. Split out for pivot cell rows, whose children do not uniformly treat
-     * them as their group-axis parent.
-     */
+    /** Compute aggregates over the assigned `children` without touching their parent links. */
     protected initData(appliedDimensions: PlainObject, depth: number) {
         Object.assign(this.data, appliedDimensions);
         this.depth = depth;
@@ -289,8 +281,7 @@ export class AggregateRow extends ParentRow {
 
         this.init(children, appliedDimensions, depth);
 
-        // After `init`, which assigns `appliedDimensions` onto data - so this reads the raw, typed
-        // value the View grouped on, rather than the stringified group key in `cubeLabel`.
+        // After `init` assigns `appliedDimensions`, so this reads the raw typed value.
         data.cubeLabelValue = dim ? data[dimName] : null;
     }
 }

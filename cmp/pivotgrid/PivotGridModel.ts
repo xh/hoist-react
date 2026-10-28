@@ -42,9 +42,8 @@ export const RESERVED_VALUE_COLUMN_KEYS = [
 ] as const;
 
 /**
- * Config for a pivot value column. A spec shared with a non-pivot grid still assigns cleanly, as
- * TypeScript checks excess properties on inline literals only - {@link RESERVED_VALUE_COLUMN_KEYS}
- * are an error to write out here, but are stripped silently when they arrive on a shared spec.
+ * Config for a pivot value column. {@link RESERVED_VALUE_COLUMN_KEYS} are an error to write
+ * inline, but a shared spec carrying them assigns cleanly and they are stripped.
  */
 export type PivotValueColumnSpec = Omit<ColumnSpec, (typeof RESERVED_VALUE_COLUMN_KEYS)[number]>;
 
@@ -110,10 +109,9 @@ export interface PivotGridConfig {
  * Grid presentation of a pivoted {@link View} - a tree grid of group rows whose columns are the
  * pivot paths, with optional docked summaries.
  *
- * Takes a view and owns everything downstream of it: the grid Store (minted via
- * {@link View.createStore} and disconnected on destroy), the {@link GridModel}, and the column
- * hierarchy. The view keeps the Store's cell fields in sync itself; this model rebuilds columns when
- * `result.paths` changes identity, which is the data layer's structural-change signal.
+ * Owns everything downstream of the view: the Store (via {@link View.createStore}, disconnected on
+ * destroy), the {@link GridModel} and the column hierarchy, rebuilt when `result.paths` changes
+ * identity.
  *
  * @see PivotGridConfig
  * @mcpHint tree grid rendering a pivoted Cube view, with pivot paths as columns
@@ -180,8 +178,7 @@ export class PivotGridModel extends HoistModel {
         return resolveSide(this.pivotSummary, 'right');
     }
 
-    // `equals: 'shallow'` is load-bearing - the track fn allocates a fresh array per run, so the
-    // default identity comparer would rebuild columns on every view update.
+    // `equals: 'shallow'` - the track fn allocates a fresh array per run.
     private columnsReaction(): ReactionSpec {
         return {
             equals: 'shallow',
@@ -222,9 +219,8 @@ export class PivotGridModel extends HoistModel {
         });
     }
 
-    // `setColumns` resets column and group state alike. Cell field names and path keys are stable
-    // ids, so re-applying the prior state keeps the user's widths, order and collapsed groups;
-    // departed columns and groups drop, and new ones take their defaults.
+    // `setColumns` resets column and group state. Cell field names and path keys are stable ids,
+    // so re-applying the prior state keeps widths, order and collapsed groups.
     @action
     private rebuildColumns() {
         const {gridModel} = this,
@@ -239,15 +235,14 @@ export class PivotGridModel extends HoistModel {
 
         this.indexCellFields(cellFields);
 
-        // Stripped once per rebuild - `buildValueColumn` runs per path *and* value field.
+        // Stripped once per rebuild.
         this._valueSpecs = mapValues(this.valueColumnSpecs, it =>
             omit(it, RESERVED_VALUE_COLUMN_KEYS)
         );
 
         const label = this.buildLabelColumn();
 
-        // Unpivoted, so the value fields are just measures - shown regardless of `rowSummary`, which
-        // off would otherwise leave a grid of labels alone.
+        // Unpivoted - the value fields are plain measures, shown regardless of `rowSummary`.
         if (isEmpty(paths)) return [label, ...this.buildValueColumns(this._rootPath)];
 
         const {rowSummarySide} = this,
@@ -259,7 +254,7 @@ export class PivotGridModel extends HoistModel {
             : [label, ...pathCols, ...summaryCols];
     }
 
-    // Keyed on path *identity*, so a stale path can never resolve a name.
+    // Keyed on path identity.
     private indexCellFields(cellFields: PivotCellField[]) {
         const byPath = new Map<PivotPath, Map<string, string>>();
         let rootPath: PivotPath = null;
@@ -281,9 +276,8 @@ export class PivotGridModel extends HoistModel {
             isTreeColumn: true,
             pinned: false,
             headerName: () => this.query.dimensions.map(it => it.displayName).join(' › '),
-            // Labels are stringified dimension values - sort on the raw value the View publishes
-            // alongside them. A *field* rather than a function, so `GridTransactionManager` can still
-            // prove a tick leaves row order alone and take its cheapest refresh mode.
+            // Sort on the raw value behind the stringified label. A field, not a function, so
+            // `GridTransactionManager` can prove a tick leaves row order alone.
             sortValue: 'cubeLabelValue',
             renderer: v => (isEmpty(v) || v === 'null' ? '(empty)' : v)
         };
@@ -348,7 +342,7 @@ export class PivotGridModel extends HoistModel {
         return {groupId, headerName, headerAlign: 'center', children};
     }
 
-    // Display only - `result.paths` is immutable, and mutating it corrupts the view's own state.
+    // Display only - `result.paths` is immutable.
     private sortPaths(paths: PivotPath[], depth: number): PivotPath[] {
         const spec = this.pivotSortBy[depth] ?? null;
 

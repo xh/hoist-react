@@ -140,14 +140,11 @@ export interface QueryConfig {
 }
 
 /**
- * Pivot axis of a {@link QueryConfig} - extra dimensions sliced into columns rather than rows,
- * and the measures aggregated at each intersection.
- *
- * `QueryConfig.dimensions` keeps its exact meaning as the ordered levels of the visible row
- * hierarchy. The two axes are orthogonal and nothing is concatenated. Results carry the pivot
- * structure as {@link ViewResult.paths} and {@link ViewResult.cellFields}, with each cell value
- * published as a synthetic field on its group row's {@link ViewRowData} - see `PivotGridModel`
- * for the component that renders them.
+ * Pivot axis of a {@link QueryConfig} - extra dimensions sliced into columns rather than rows, and
+ * the measures aggregated at each intersection. `QueryConfig.dimensions` keeps its meaning as the
+ * row hierarchy; the two axes are orthogonal. Results carry the structure as
+ * {@link ViewResult.paths} and {@link ViewResult.cellFields}, with each cell value published as a
+ * synthetic field on its group row - see `PivotGridModel` for rendering.
  */
 export interface PivotSpec {
     /**
@@ -166,11 +163,9 @@ export interface PivotSpec {
     emptyPathLabel?: string;
 
     /**
-     * True to exclude records with a null / blank pivot dimension value entirely. Default false,
-     * which gives such records their own `emptyPathLabel` path segment instead.
-     *
-     * Implemented as an implicit filter, so excluded records leave the *group* aggregates too. That
-     * is the only formulation under which a row total still equals the sum of its pivot columns.
+     * True to exclude records with a null / blank pivot dimension value entirely, via an implicit
+     * filter, so they leave the group aggregates too and a row total still equals the sum of its
+     * cells. Default false, which gives such records their own `emptyPathLabel` path.
      */
     excludeEmptyPivotValues?: boolean;
 
@@ -310,30 +305,27 @@ export class Query {
     }
 
     /**
-     * True if a change from `other` to this query can leave cached parent rows unused - i.e. it moves
-     * the ids those rows are generated under, so retaining them would keep values that no later
-     * generation maintains. See {@link RowCache}.
+     * True if a change from `other` moves the ids cached parent rows are generated under, so
+     * unused rows must be swept. See {@link RowCache}.
      * @internal
      */
     orphansParents(other: Query): boolean {
         return (
             !isEqual(this.dimensions, other.dimensions) ||
-            // Cell row ids are keyed on pivot path, and path keys carry dimension *values* alone -
-            // so a pivot dimension change can even land a stale cell on a live id.
+            // Cell row ids are keyed on pivot path, whose keys carry dimension values alone.
             !isEqual(this.pivot?.dimensions, other.pivot?.dimensions)
         );
     }
 
     /**
-     * True if a change from `other` to this query leaves cached parent rows holding state it no longer
-     * asks for - so they must be rebuilt rather than recomputed in place. See {@link RowCache}.
+     * True if a change from `other` leaves cached parent rows holding state no longer asked for, so
+     * they must be rebuilt. See {@link RowCache}.
      * @internal
      */
     invalidatesParents(other: Query): boolean {
         return (
             this.bucketSpecFn !== other.bucketSpecFn ||
-            // Cell rows aggregate `valueFields` alone, so a measure change moves a field set that
-            // `fields` - and with it RowCache's own field-gain check - can miss entirely.
+            // Cell rows aggregate `valueFields` alone, a set RowCache's own `fields` check cannot see.
             !isEqual(this.pivot?.valueFields, other.pivot?.valueFields)
         );
     }
@@ -419,11 +411,8 @@ export class Query {
     }
 
     /**
-     * Fold `excludeEmptyPivotValues` into the query filter, so exclusion is a real filter.
-     *
-     * FieldFilters rather than a testFn: `FunctionFilter.equals` compares its `testFn` by reference,
-     * so a per-construction closure would make every clone unequal and defeat `View.updateQuery`'s
-     * no-op check. FieldFilter treats null / '' / [] alike as blank, matching the intent.
+     * Fold `excludeEmptyPivotValues` into the query filter as FieldFilters - a `FunctionFilter`
+     * compares its `testFn` by reference, which would defeat `View.updateQuery`'s equality check.
      */
     private applyPivotFilter(filter: Filter): Filter {
         const {pivot} = this;
@@ -446,8 +435,8 @@ export class Query {
         pivot.valueFields.forEach(field => {
             const {name} = field;
             throwIf(!field.aggregator, `Pivot value field '${name}' must specify an aggregator.`);
-            // The root path's cell field *is* the bare value field name, so its projection would
-            // overwrite the group label a grouping dimension puts in that same slot.
+            // The root path's cell field is the bare value field name, which a grouping dimension
+            // would also write.
             throwIf(
                 dimNames.includes(name),
                 `Pivot value field '${name}' cannot also be a grouping dimension of this query.`
@@ -460,9 +449,8 @@ export class Query {
             `Field(s) '${overlap}' cannot be both a grouping and a pivot dimension.`
         );
 
-        // A group node must decompose on exactly one axis. Bucketing leaves leaves an innermost
-        // aggregate holding both LeafRows and BucketRows, which would double count on the pivot
-        // axis - see `PivotStructure`.
+        // A group node must decompose on one axis - bucketing leaves would double count on the
+        // pivot axis. See `PivotStructure`.
         throwIf(
             this.isPivoted && this.bucketSpecFn && this.includeLeaves,
             'Pivoting is not supported alongside `bucketSpecFn` with `includeLeaves` - bucketing ' +

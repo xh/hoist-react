@@ -31,13 +31,9 @@ export interface ViewRowData {
     cubeDimension: string;
 
     /**
-     * Raw, typed value behind {@link cubeLabel} - the row's own dimension or bucket value, and the
-     * source record id for a leaf. Null on the synthetic root.
-     *
-     * `cubeLabel` is stringified for display, so sorting a tree column on it orders numbers and dates
-     * lexically. Bind a grid's label column with `sortValue: 'cubeLabelValue'` instead: it sorts by
-     * the underlying value *and*, being a plain field rather than a function, lets
-     * `GridTransactionManager` prove a tick cannot reorder rows.
+     * Raw, typed value behind {@link cubeLabel} - the dimension or bucket value, or a leaf's record
+     * id; null on the root. Bind a tree column's `sortValue` to it so numbers and dates sort by
+     * value rather than as text.
      */
     cubeLabelValue: any;
 
@@ -71,10 +67,8 @@ export interface ViewRowData {
 }
 
 /**
- * Store Field specs for the non-implementation members of {@link ViewRowData} - what a Store loaded
- * from a View needs declared to render or filter on them. Excludes `id` and `children`, which Store
- * consumes structurally, and `cubeRowDigest`, which it reads as a digest rather than as a field.
- *
+ * Store Field specs for the published members of {@link ViewRowData}. Excludes `id` and
+ * `children`, which Store consumes structurally, and `cubeRowDigest`, read as a digest.
  * @internal
  */
 export const VIEW_ROW_DATA_FIELDS: FieldSpec[] = [

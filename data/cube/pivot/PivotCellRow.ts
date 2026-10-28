@@ -13,31 +13,20 @@ import {BaseRow} from '../row/BaseRow';
 import {ParentRow} from '../row/ParentRow';
 
 /**
- * Row representing one `(group node, pivot path)` cell in a pivoted {@link View} - see `PivotCells`.
+ * Row for one `(group node, pivot path)` cell of a pivoted {@link View} - see `PivotCells`.
  *
- * These are real rows in the aggregation network - which is what lets every existing
- * {@link Aggregator} work on them unmodified, and lets `View`'s incremental machinery maintain them
- * on a tick - but they are never part of the visible row tree and never reach a connected Store.
- * Their values are copied onto their owning group row's data by `PivotCells`.
- *
- * Deliberately not an {@link AggregateRow}: cells never enter `getVisibleDatas`, and keeping them
- * out of that type leaves the `omitFn` / `lockFn` signatures untouched.
- *
- * This is an internal data structure.
+ * A real row in the aggregation network, so aggregators and incremental updates work unmodified,
+ * but never part of the visible tree or a Store - its values are copied onto its owner row. Not an
+ * {@link AggregateRow}, so `omitFn` / `lockFn` never see it. Internal.
  */
 export class PivotCellRow extends ParentRow {
-    // Both are rebound on every reuse from `_rowCache` - the id pins what they *name*, not which
-    // object names it, and PivotCells mints fresh owners and paths on each rebuild. Any state added
-    // here must be in the id, a function of `children`, or reassigned by `PivotCells.buildCellRows`.
+    // Rebound on every reuse from `_rowCache` - the id pins what they name, not which object. Any
+    // state added here must be in the id, derived from `children`, or reassigned by PivotCells.
     /** Group row this cell's value is projected onto. */
     ownerRow: BaseRow;
     path: PivotPath;
 
-    /**
-     * Cell field names last projected onto `ownerRow`, so a later generation writing fewer of them
-     * can null what it no longer covers. Exposed leaves need no equivalent - they read their own
-     * cells through prototype getters.
-     */
+    /** Cell field names last projected onto `ownerRow`, so a later generation can null any it no longer writes. */
     projectedCellNames: string[] = null;
 
     protected get dimOrBucketName(): string {
@@ -48,8 +37,7 @@ export class PivotCellRow extends ParentRow {
         return this.path.value;
     }
 
-    // Cells aggregate the query's value fields alone, which is what keeps cell aggregation
-    // proportional to the measures rather than the full field set.
+    // Cells aggregate the value fields alone.
     protected override get aggFields(): CubeField[] {
         return this.view._pivot.cellAggFields;
     }
@@ -63,8 +51,8 @@ export class PivotCellRow extends ParentRow {
         return this.view._pivot.cellComplexAggFields;
     }
 
-    // `parent` / `pivotParent` are assigned by PivotCells from the structure - a cell's children do not
-    // uniformly treat it as their group-axis parent, and claiming them here would corrupt both axes.
+    // Parent links are assigned by PivotCells - children do not uniformly treat a cell as their
+    // group-axis parent.
     protected override adoptChildren(children: BaseRow[]) {
         this.children = children;
     }

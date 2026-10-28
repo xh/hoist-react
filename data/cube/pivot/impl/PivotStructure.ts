@@ -8,17 +8,11 @@
 import type {PlainObject} from '@xh/hoist/core';
 
 /**
- * Pure combinatorial core of the Cube pivot view: discovers the pivot path tree from a set of
- * records, then plans the structure of `(group node, pivot path)` cells that `PivotCells` materializes
- * as rows in the aggregation network.
+ * Pure combinatorial core of the pivot view: discovers the pivot path tree from a set of records,
+ * then plans the `(group node, pivot path)` cells that `PivotCells` materializes as rows.
  *
- * Deliberately free of any runtime framework dependency - plain data and integer indices only, so
- * it can be exercised in isolation (see `PivotStructure.spec.ts`) and reasoned about
- * without `View`'s lifecycle machinery. Callers hold the mapping from index to row object.
- *
- * Everything is expressed over indices rather than objects to keep planning allocation-light: at
- * the profiles this must support, one plan object per cell would itself be a meaningful fraction
- * of pivot-layer heap.
+ * Framework-free and expressed over integer indices rather than objects - allocation-light, and
+ * testable in isolation (see `PivotStructure.spec.ts`). Callers map index to row object.
  */
 
 /** Separator between path segments, and between a path key and its value field. */
@@ -76,11 +70,8 @@ export interface PivotPathDiscoveryResult {
 export interface PivotStructureSpec {
     groupCount: number;
     /**
-     * Group-axis parent of each group node; -1 for a root node.
-     *
-     * Parents MUST precede their children - `parentOfGroup[g] < g`, which a DFS preorder walk gives
-     * for free. Enforced, because it is what lets the populated-path union and the cell build run as
-     * plain descending index scans rather than needing a depth sort.
+     * Group-axis parent of each group node; -1 for a root. Parents MUST precede their children
+     * (`parentOfGroup[g] < g`), which lets the builds run as descending index scans.
      */
     parentOfGroup: ArrayLike<number>;
     /** 1 where a group's children are leaf rows rather than further groups. */
@@ -102,9 +93,9 @@ export interface PivotStructure {
     /** Group-axis parent cell - `C(parent(G), P)`; -1 if none. */
     cellParent: Int32Array;
     /**
-     * Pivot-axis parent cell - `C(G, parent(P))`; -1 unless G owns leaves and P is at depth 2+.
-     * At depth 1 the pivot parent would be `C(G, rootPath)`, which *is* G - already updated by its
-     * own children. Keeping these routes disjoint is what rules out double counting.
+     * Pivot-axis parent cell `C(G, parent(P))`; -1 unless G owns leaves and P is at depth 2+. At
+     * depth 1 that parent is G itself, already updated by its own children - the two routes stay
+     * disjoint, which rules out double counting.
      */
     cellPivotParent: Int32Array;
     cellChildKind: Uint8Array;
@@ -119,12 +110,9 @@ export interface PivotStructure {
 }
 
 /**
- * Build the global pivot path tree - the union of paths across all records, so that columns are
- * uniform - and stamp each record with its full-depth path index.
- *
- * A null or blank pivot value forms its own path segment rather than being dropped; apps wanting
- * those records gone apply `excludeEmptyPivotValues`, which filters them out upstream of this so
- * they leave the group aggregates too.
+ * Build the global pivot path tree - the union of paths across all records - and stamp each record
+ * with its full-depth path index. A null / blank value forms its own segment;
+ * `excludeEmptyPivotValues` filters such records out upstream.
  */
 export function discoverPivotPaths(
     records: ArrayLike<PivotRecordLike>,
@@ -247,9 +235,8 @@ export function discoverPivotPaths(
 }
 
 /**
- * Synthetic field name a cell's value is written to on its owning group row's data. The root path
- * yields the value field's own name, so row-total columns bind to the plain field and the
- * totals-vs-cells relationship is structural rather than a naming convention.
+ * Synthetic field name a cell's value is written to on its owner row. The root path yields the
+ * value field's own name, so row-total columns bind to the plain field.
  */
 export function pivotCellFieldName(
     pathKey: string,
@@ -260,11 +247,9 @@ export function pivotCellFieldName(
 }
 
 /**
- * Plan the cell structure: which `(group, path)` cells are populated, what each one's children are,
- * and how updates route up the group and pivot axes.
- *
- * Every cell's children are a strict partition of its own leaf set, which is what makes every
- * existing Cube aggregator correct by construction down either axis.
+ * Plan the cell structure: which `(group, path)` cells are populated, each one's children, and how
+ * updates route up the group and pivot axes. Every cell's children partition its own leaf set,
+ * which keeps every aggregator correct down either axis.
  */
 export function buildPivotStructure(spec: PivotStructureSpec): PivotStructure {
     const {
@@ -280,9 +265,8 @@ export function buildPivotStructure(spec: PivotStructureSpec): PivotStructure {
         } = spec,
         leafCount = leafOwnerGroup.length;
 
-    // A group must decompose on exactly one axis. Mixing leaves and child groups at one node -
-    // reachable today only by bucketing leaves under `includeLeaves` - would give a cell two
-    // update routes into the same parent and silently double count.
+    // A group must decompose on exactly one axis - mixing leaves and child groups would give a cell
+    // two update routes into one parent.
     const hasGroupChild = new Uint8Array(groupCount),
         hasLeafChild = new Uint8Array(groupCount);
     for (let g = 0; g < groupCount; g++) {
@@ -307,12 +291,9 @@ export function buildPivotStructure(spec: PivotStructureSpec): PivotStructure {
         }
     }
 
-    // Populated paths per group: prefixes of each leaf's path, unioned up the group axis. Held as
-    // sorted arrays, allocated only where non-empty - a Set per group dominated build time on
-    // profiles with a unique-per-leaf innermost grouping, where there is one group per leaf.
-    //
-    // Descending index order is a valid bottom-up walk given the parents-before-children
-    // precondition, which also makes an explicit depth computation and sort unnecessary.
+    // Populated paths per group: prefixes of each leaf's path, unioned up the group axis as sorted
+    // arrays allocated only where non-empty. Descending index order is bottom-up, per the
+    // parents-before-children precondition.
     const populated: number[][] = new Array(groupCount);
     for (let l = 0; l < leafCount; l++) {
         const g = leafOwnerGroup[l],
@@ -320,8 +301,7 @@ export function buildPivotStructure(spec: PivotStructureSpec): PivotStructure {
         for (let p = leafPathIdx[l]; p > 0; p = pathParentIdx[p]) arr.push(p);
     }
 
-    // Normalize the raw pushes up front, so every `mergeSorted` argument satisfies its precondition -
-    // a group's own array is otherwise still raw when a child merges into it.
+    // Normalize up front, so every `mergeSorted` argument is sorted and unique.
     for (let g = 0; g < groupCount; g++) {
         if (populated[g]) sortedUnique(populated[g]);
     }

@@ -11,9 +11,8 @@ import {CubeField} from '../CubeField';
  * One ordered tuple of pivot dimension values within a pivoted {@link View} result - e.g.
  * `US >> Equity`. Maps to one rendered column or column group.
  *
- * Instances are immutable and identity-stable while the pivot structure is unchanged, which is what
- * lets consumers skip rebuilding columns. Treat the tree as read-only: mutating `children` corrupts
- * the view's own state.
+ * Immutable and identity-stable while the pivot structure is unchanged, so consumers can skip
+ * rebuilding columns. Treat the tree as read-only.
  *
  * @see ViewResult.paths
  */

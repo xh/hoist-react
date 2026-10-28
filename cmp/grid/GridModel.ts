@@ -2127,14 +2127,13 @@ export class GridModel extends HoistModel {
         return this.enhanceColConfigs(colConfigs, storeFieldsByName);
     }
 
-    // Store fields are resolved once and shared across the recursion - rebuilding them per column
-    // group made this O(groups x fields), which a pivot grid hits hard.
+    // Store fields are resolved once and shared across the recursion.
     private enhanceColConfigs(
         colConfigs: ColumnOrGroupSpec[],
         storeFieldsByName: Record<string, Field | FieldSpec>
     ): ColumnOrGroupSpec[] {
-        // Then fill in with any col-level `field` config objects, which remain scoped to their own
-        // level. Copy-on-write so the common case shares the store's map outright.
+        // Col-level `field` configs stay scoped to their own level; copy-on-write so the common
+        // case shares the store's map.
         let fieldsByName = storeFieldsByName;
         colConfigs.forEach(cc => {
             if (

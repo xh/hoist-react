@@ -113,12 +113,8 @@ export class RowCache {
     }
 
     /**
-     * Drop cached exposed leaves, whose data objects were minted against a leaf class that has since
-     * been rebuilt. Parents are retained - the regeneration rewires them onto the fresh leaves and
-     * re-aggregates, as it does for any change of children.
-     *
-     * Modelled on the wholesale clear `pruneForQueryChange` applies on a field gain, for the same
-     * reason: existing leaf data cannot answer for fields its class never declared.
+     * Drop cached exposed leaves, whose data objects were minted against a leaf class since
+     * rebuilt. Parents are retained and rewired onto the fresh leaves on regeneration.
      */
     invalidateExposedLeaves() {
         this.rows.forEach((row, id) => {
@@ -144,8 +140,7 @@ export class RowCache {
             oldFieldNames = new Set(map(oldQuery.fields, 'name')),
             fieldsGained = query.fields.some(it => !oldFieldNames.has(it.name)),
             bucketsRemoved = oldQuery.bucketSpecFn && !query.bucketSpecFn,
-            // Any other change leaving parents holding state the new query does not ask for - a moved
-            // BucketSpec, or pivot cells aggregating measures it no longer names.
+            // Any other change leaving parents holding state the new query does not ask for.
             parentsInvalid = query.invalidatesParents(oldQuery);
 
         // 1) Leaf-mode flips, field gains on exposed leaves, and bucket removal invalidate
@@ -165,8 +160,8 @@ export class RowCache {
 
         // 3) Otherwise retain everything...
 
-        // but where the change moves the ids parents generate under, be sure to throw out any unused
-        // rows at end, when we have already rescued any reusable "upper tree" nodes.
+        // but where the change moves the ids parents generate under, throw out any unused rows at
+        // end, once reusable "upper tree" nodes are rescued.
         if (query.orphansParents(oldQuery)) {
             this.usedParents = new Set();
         }

@@ -121,12 +121,8 @@ export class RowDataGenerator {
     private cellDataTemplate: PlainObject = null;
 
     /**
-     * Create a cell row's data object as a clone of the shared template.
-     *
-     * Cells carry no {@link ViewRowData} members - they never enter the visible tree or reach a
-     * Store - so their template is the digest slot plus the measures they aggregate, a far narrower
-     * shape than a group row's. Cells are the most numerous rows in a pivot, so the fixed-shape
-     * argument pays best here.
+     * Create a cell row's data object from the shared template - the digest slot plus the measures
+     * cells aggregate, far narrower than a group row's shape.
      */
     newCellRowData(): PlainObject {
         return {...this.cellDataTemplate};
@@ -148,10 +144,7 @@ export class RowDataGenerator {
 
     /**
      * Rebuild the exposed-leaf class if the cell field set has moved, returning true if it did.
-     *
-     * `PivotCells` calls this once a generation's pivot structure is known and *before* any leaf is
-     * minted, so the class never lags the cells it has to describe - and drops its cached leaves on
-     * a true, as their data was built against the outgoing class.
+     * Called before any leaf is minted in a generation; the caller drops cached leaves on a true.
      */
     onCellFieldsChange(): boolean {
         if (!this.exposesLeaves || isEqual(this.cellFieldNames, this.cellFieldSignature())) {
@@ -167,23 +160,13 @@ export class RowDataGenerator {
     }
 
     /**
-     * A leaf carries a value for its own full-depth path alone, so a drilled-down row reads as one
-     * populated pivot column rather than a blank one.
-     *
-     * Expressed as prototype getters over an own `_pivotPathIdx` slot rather than as per-leaf
-     * properties. Writing the values instead adds a *different* subset of own properties to each
-     * leaf - one hidden class per distinct full-depth path - and `Column.buildFastValueGetter`
-     * compiles one closure per column that group rows and leaf rows both flow through. A drill-down
-     * would push that call site megamorphic for the whole grid, not only for the leaves.
-     *
-     * Root-path cell fields are deliberately skipped: their name *is* the value field's, so a getter
-     * here would shadow the queried-field getter and blank the leaf's own measure. That getter
-     * already returns exactly what the root path means for a leaf.
+     * A leaf carries a value for its own full-depth path alone, read through prototype getters over
+     * one `_pivotPathIdx` slot so every leaf keeps a single hidden class. Root-path cell fields are
+     * skipped - their name is the value field's, whose getter already answers.
      */
     private buildPivotLeafDataClass(): LeafDataClass {
         class PivotLeafRowData extends BaseLeafRowData {
-            // Index into `PivotCells.allPaths` of this leaf's own full-depth path; -1 until a
-            // generation places it. One own slot on every leaf, so all leaves keep one shape.
+            // Index into `PivotCells.allPaths` of this leaf's full-depth path; -1 until placed.
             _pivotPathIdx: number = -1;
         }
 
@@ -231,8 +214,7 @@ class BaseLeafRowData implements ViewRowData {
     get cubeDimension(): string {
         return null;
     }
-    // A leaf's label is its record id - so is the value behind it. A getter, not an own slot: the
-    // id is already one, and every leaf must keep the same shape.
+    // A getter, not an own slot, so every leaf keeps the same shape.
     get cubeLabelValue(): any {
         return this.id;
     }

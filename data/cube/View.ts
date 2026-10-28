@@ -183,9 +183,8 @@ export class View
     private _bucketDependentFields = new Set<string>();
 
     private _fieldsByName: Map<string, CubeField> = null;
-    // Names of the fields whose values place a record in the row hierarchy - the query's dimensions
-    // and any pivot dimensions. Bucket dependencies are tracked separately, as they are only known
-    // once rows are generated.
+    // Fields whose values place a record in the row hierarchy - query and pivot dimensions. Bucket
+    // dependencies are tracked separately, as they are known only once rows generate.
     private _structuralDimNames: string[] = null;
     _rowDataGenerator: RowDataGenerator = null;
     // Pivot cells - null until the query first pivots, retained thereafter. See PivotCells.
@@ -332,11 +331,11 @@ export class View
 
     /**
      * Create a Store shaped for this view's results - a Field per {@link ViewRowData} member, per
-     * query field, and (for a pivoted query) per {@link ViewResult.cellFields} entry, kept in sync
-     * as the pivot structure changes. Its `loadRootAsSummary` follows the query's `includeRoot`.
+     * query field and, for a pivoted query, per {@link ViewResult.cellFields} entry, kept in sync
+     * as the pivot structure changes. `loadRootAsSummary` follows the query's `includeRoot`.
      *
-     * A convenience factory, not a claim of ownership: the *caller* owns the returned Store, and a
-     * caller passing `connect: true` must call {@link disconnectStore} from its own `destroy()`.
+     * The caller owns the returned Store, and with `connect: true` must call
+     * {@link disconnectStore} from its own `destroy()`.
      */
     createStore(config?: ViewStoreConfig): Store {
         const {connect = false, fields = [], ...rest} = config ?? {};
@@ -351,8 +350,7 @@ export class View
         });
         this._ownStores.add(store);
 
-        // Run `parseStores` either way - it installs the row digest and rejects a conflicting one,
-        // and an unconnected store still loads from this view.
+        // `parseStores` installs the row digest and rejects a conflicting one, connected or not.
         const [parsed] = this.parseStores(store);
         if (connect) this.stores = [...this.stores, parsed];
 
@@ -472,8 +470,7 @@ export class View
         this._pivot?.discoverPaths();
         this.generateRows();
         this._pivot?.generateCells();
-        // Closed after any cells - rows generated there must land inside the generation, or they
-        // are uncounted and the sweep sees the cache as having outgrown a live count.
+        // Closed after cell generation, so cell rows count toward the generation.
         this._rowCache.endGeneration();
         this.loadStores();
         this.updateResults();
@@ -536,8 +533,7 @@ export class View
                 const {data} = row;
                 if (store.getById(data.id)) recordUpdates.push(data);
             });
-            // Parents only rewrite fields reported changed by leaves, so the leaf-level union
-            // covers every value written - and this path never touches structure.
+            // Parents only rewrite fields leaves reported changed, so the leaf-level union is complete.
             store.updateData({update: recordUpdates, changedFields});
         });
     }
@@ -554,8 +550,7 @@ export class View
         const {_leafMap, _rowDatas} = this;
         if (!_leafMap || !_rowDatas) return;
 
-        // A minted store expects exactly the one root node `includeRoot` publishes - keep the two in
-        // step across `updateQuery`. Stores an app passed in are its own to configure.
+        // Keep a minted store's summary flag in step with `includeRoot`; app stores are their own.
         if (this._ownStores.has(store)) store.setLoadRootAsSummary(this.query.includeRoot);
 
         // Skip degenerate root in stores/grids, but preserve in object api.
@@ -762,18 +757,16 @@ export class View
 
         // 2c) Examine the final set of updates for any changes to dimension field values which would
         //     require rebuilding the row hierarchy. `changedFields` covers all of `t.update`, a
-        //     superset of `ret` - so "no structural field moved" still holds for the subset.
+        //     superset of `ret`.
         if (this.hasDimOrBucketUpdates(ret, t.changedFields)) return false;
 
         return ret;
     }
 
     /**
-     * True if any update moves a field that restructures the row hierarchy, forcing a full rebuild.
-     *
-     * `changedFields` is its producer's assertion of every field the transaction touched - when it
-     * names nothing structural, no record need be examined at all. It reaches the *load* path too,
-     * via the delta `Cube.loadDataAsync` derives.
+     * True if any update moves a field that restructures the row hierarchy. `changedFields`, when
+     * given, is the producer's assertion of every field touched - if it names nothing structural,
+     * no record is examined.
      */
     private hasDimOrBucketUpdates(update: StoreRecord[], changedFields?: Set<string>): boolean {
         const dimNames = this._structuralDimNames,

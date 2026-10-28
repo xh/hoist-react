@@ -18,9 +18,8 @@
  *      via disjoint `parent` / `pivotParent` routes. This is the double-counting guard.
  *
  * The built-in aggregators are then run bottom-up over the structure's own children, against the
- * oracle, to prove property 2 is sufficient for them. Their standalone semantics are covered in
- * `aggregate/Aggregator.spec.ts`; routing updates through real `BaseRow` instances needs a browser
- * and lives in the Toolbox tier.
+ * oracle, to show property 2 is sufficient for them. Their semantics through a real View are
+ * covered in `aggregate/Aggregators.spec.ts`.
  */
 import type {Aggregator} from '../../aggregate/Aggregator';
 import {
@@ -79,8 +78,7 @@ function rec(fund: string, strategy: string, region: any, sector: any, ccy?: any
     return {data: {fund, strategy, region, sector, ccy, pnl: 1}};
 }
 
-// Deterministic pseudo-random, so the sparse scenario is reproducible run to run. Uses imul and
-// discards low bits - a plain `s * a` LCG loses precision past 2^53 and collapses to a few values.
+// Deterministic pseudo-random, so the sparse scenario is reproducible. `imul` keeps the LCG exact.
 function lcg(seed: number) {
     let s = seed >>> 0;
     return (n: number) => {
@@ -667,7 +665,7 @@ suite('aggregation composes over the structure', () => {
 });
 
 //------------------
-// CHILD_COUNT on a cell - the plan's "meaningful rather than broken" claim
+// CHILD_COUNT on a cell
 //------------------
 suite('CHILD_COUNT on a cell counts only the children carrying that path', () => {
     const errs: string[] = [];

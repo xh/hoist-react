@@ -464,7 +464,7 @@ export class Store
         this.experimental = this.parseExperimental(experimental);
         this._fieldDefaults = fieldDefaults;
         this.fields = this.parseFields(fields, fieldDefaults);
-        // Immediately after `fields` - `getField()` reads it, and construction below can reach that.
+        // Before anything below that may call `getField()`.
         this._fieldMap = this.createFieldMap();
         this.idSpec = this.parseIdSpec(idSpec);
         this.processRawData = processRawData;
@@ -995,14 +995,10 @@ export class Store
     }
 
     /**
-     * Replace this Store's fields wholesale, rebuilding the derived field map and data defaults.
-     * Any configured `fieldDefaults` are re-applied to the incoming specs.
-     *
-     * Drops all records - existing `data` objects were built against the outgoing defaults, and
-     * callers reload immediately.
-     *
-     * @internal - supports pivoted Views, whose cell fields are only discoverable from data.
-     *      Not an app-facing API for reshaping a Store.
+     * Replace this Store's fields wholesale, re-applying `fieldDefaults` and rebuilding the derived
+     * field map and data defaults. Drops all records, which were built against the outgoing
+     * defaults - callers reload immediately.
+     * @internal - supports pivoted Views, whose cell fields are discovered from data.
      */
     @action
     setFields(fields: Array<string | FieldSpec | Field>) {
