@@ -22,6 +22,7 @@
     "lint:styles": "stylelint \"**/*.s?(a|c)ss\"",
     "lint:mcp": "eslint --config mcp/eslint.config.mjs mcp/ bin/hoist-mcp.mjs bin/hoist-docs.mjs bin/hoist-ts.mjs",
     "check:vendored": "node scripts/check-vendored.mjs",
+    "generate:pdfjs-css": "node scripts/generate-pdfjs-css.mjs",
     "typecheck": "tsc --noEmit && tsc -p mcp/tsconfig.json",
     "test": "vitest run",
     "test:watch": "vitest",
@@ -114,6 +115,7 @@
     "@testing-library/react": "^16.3.3",
     "jsdom": "^30.1.1",
     "msw": "^3.0.2",
+    "pdfjs-dist": "^6.3.0",
     "react": "^19.3.0",
     "react-dom": "^19.3.0",
     "vitest": "^5.0.3"
@@ -129,6 +131,9 @@
       "optional": true
     },
     "msw": {
+      "optional": true
+    },
+    "pdfjs-dist": {
       "optional": true
     },
     "vitest": {
@@ -156,6 +161,7 @@
     "jsdom": "^30.1.3",
     "lint-staged": "^17.6.0",
     "msw": "^3.0.3",
+    "pdfjs-dist": "~6.3.289",
     "postcss": "^8.5.31",
     "prettier": "^3.9.10",
     "react": "^19.3.1",
