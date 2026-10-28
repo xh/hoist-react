@@ -31,6 +31,8 @@ detailed, step-by-step upgrade instructions with before/after code examples.
   clicked column, and `Column.availableSorts`. The `sort` token offers one item per sort the column
   offers.
 * Added `genRandomId()` to `@xh/hoist/utils/js` for short random alphanumeric IDs.
+* Added "Purge Connections" buttons to the Admin Console Connection Pool Monitor, to close all
+  pooled JDBC connections on one instance or across the cluster. Requires hoist-core v44+.
 
 ### 🐞 Bug Fixes
 
