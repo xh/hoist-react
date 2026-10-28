@@ -76,6 +76,8 @@ detailed, step-by-step upgrade instructions with before/after code examples.
   react-day-picker theme, in `@xh/hoist/kit/react-day-picker`, for light and dark modes. Dropping
   Blueprint's date picker also drops the second copies of date-fns and react-day-picker it pulled
   into every app.
+* Desktop `Select` now windows large option lists with react-window 2 directly, dropping
+  react-windowed-select and the second copy of react-window it pinned into every app.
 * `LocalStorageService` and `SessionStorageService` now read and write browser storage directly.
   Keys and JSON values are stored exactly as before.  Removed the unused `isFake` getter - when
   storage is unavailable the service logs a warning and holds values in memory, as before.
@@ -97,6 +99,7 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 * router5-plugin-browser `7.0 → 8.0`
 * mobx `7.0 → 7.1` - `toJS` now includes `@observable accessor` fields, which it previously left out
 * react-window `2.3 → 2.4`
+* react-windowed-select `removed`
 * http-status-codes `removed`
 * inflection `added` - replaces lodash-inflection behind `pluralize`, `singularize` and `ordinalize`
 * lodash-inflection `removed`

@@ -96,7 +96,6 @@
     "react-markdown": "~10.1.0",
     "react-select": "~5.10.2",
     "react-window": "~2.4.1",
-    "react-windowed-select": "~5.2.0",
     "remark-breaks": "~4.0.0",
     "remark-gfm": "~4.0.1",
     "router5": "~8.0.1",

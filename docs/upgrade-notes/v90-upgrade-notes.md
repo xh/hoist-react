@@ -14,7 +14,11 @@ affected APIs.
   that rendered Blueprint's `datePicker` from the kit need another calendar - see Step 2.
 - **Mobile styling (required if an app styled Onsen class names)** - mobile components no longer
   render Onsen UI elements. App SCSS that targeted Onsen's class names or CSS variables, and any
-  use of the `modifier` prop, needs updating - see Step 2.
+  use of the `modifier` prop, needs updating - see Step 3.
+- **`WindowedSelect` kit exports (required if used)** - v90 removes the `WindowedSelect` and
+  `reactWindowedSelect` exports from `@xh/hoist/kit/react-select` along with the
+  react-windowed-select library. The `enableWindowed` prop of `Select` works as before - see
+  Step 4.
 
 ## Upgrade Steps
 
@@ -189,7 +193,7 @@ Ordinary values render exactly as before. These edge cases changed:
 Parse formatted text with `parseNumber()` before you format it, and update tests or exports that
 match the text `Infinity`.
 
-### 2. Update Mobile Styling That Targeted Onsen UI
+### 3. Update Mobile Styling That Targeted Onsen UI
 
 Hoist's mobile components used to render [Onsen UI](https://onsen.io/) custom elements, which
 stamped their own class names into the DOM. In v90 they render native elements under `xh-` class
@@ -248,6 +252,22 @@ applies `${testId}-switcher` and `${testId}-switcher-${tabId}`, which were deskt
 - Pull-down-to-refresh on the `Navigator` and the Escape key on a cancelable `Dialog` work as
   before.
 
+### 4. Remove `WindowedSelect` Imports
+
+The desktop `Select` now windows a large option list itself, with react-window 2, so Hoist no
+longer depends on react-windowed-select. Apps that set `enableWindowed` need no change. The menu
+windows once the list has 100 or more options, as before.
+
+**Find affected code:**
+
+```bash
+grep -rn "WindowedSelect\|react-windowed-select" client-app/src/
+```
+
+An app that rendered the kit's `WindowedSelect` or `reactWindowedSelect` directly should use
+`select({enableWindowed: true})` instead, or add react-windowed-select to its own `package.json`.
+Remove any `react-windowed-select` entry from the app's `resolutions` or `overrides`.
+
 ## Verification Checklist
 
 After completing all steps:
@@ -263,6 +283,7 @@ After completing all steps:
 - [ ] No mobile SCSS targets Onsen class names or CSS variables, no mobile input or button passes
       `modifier`, and nothing imports from `@xh/hoist/kit/onsen`.
 - [ ] Mobile screens with inputs, tabs, dialogs, toasts and menus look as they did on v89.
+- [ ] No code imports `WindowedSelect` or `reactWindowedSelect` from `@xh/hoist/kit/react-select`.
 
 ## Reference
 
