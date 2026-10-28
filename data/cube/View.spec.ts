@@ -87,6 +87,32 @@ describe('View', () => {
             expect(year).toMatchObject({id: 'root>>year=[2024]', cubeLabel: '2024', year: 2024});
         });
 
+        it('publishes the raw dimension value as cubeLabelValue, and the id of a leaf', () => {
+            // Grids sort the tree column on it, so numbers and dates order by value, not as text.
+            const cube = autoDestroy(
+                new Cube({
+                    fields: [
+                        {name: 'year', type: 'int', isDimension: true},
+                        {name: 'qty', type: 'int', aggregator: 'SUM'}
+                    ],
+                    data: [
+                        {id: 1, year: 2024, qty: 10},
+                        {id: 2, year: 2025, qty: 20}
+                    ]
+                })
+            );
+
+            const [root] = cube.executeQuery({
+                    dimensions: ['year'],
+                    includeRoot: true,
+                    includeLeaves: true
+                }),
+                [year] = root.children;
+            expect(root.cubeLabelValue).toBeNull();
+            expect(year).toMatchObject({cubeLabel: '2024', cubeLabelValue: 2024});
+            expect(year.children[0]).toMatchObject({cubeLabel: '1', cubeLabelValue: '1'});
+        });
+
         it('adds a grand total row when includeRoot is set', () => {
             const cube = createCube(),
                 view = createView(cube, {dimensions: ['region'], includeRoot: true});
@@ -268,6 +294,47 @@ describe('View', () => {
         });
     });
 
+    describe('incremental update', () => {
+        it('adjusts aggregates in place for a value tick, and rebuilds when a dimension moves', async () => {
+            const query: QueryConfig = {dimensions: ['region', 'sector']},
+                cube = createCube(),
+                view = createView(cube, query, {connect: true});
+
+            await cube.updateDataAsync([{...TRADES[0], qty: 200}]);
+            expect(view.diagnostics.update.last.type).toBe('dataOnly');
+            expect(rowFor(view, 'US').qty).toBe(525);
+            expectMatchesFreshQuery(view, query);
+
+            await cube.updateDataAsync([{...TRADES[0], region: 'EU'}]);
+            expect(view.diagnostics.update.last.type).toBe('fullUpdate');
+            expect(rowFor(view, 'US').qty).toBe(325);
+            expectMatchesFreshQuery(view, query);
+        });
+
+        it('takes changedFields as a complete assertion of what a tick touched', async () => {
+            // A set naming a dimension forces the rebuild. One that omits it skips the per-record
+            // structural check entirely, so the row hierarchy is left stale - the contract set out
+            // on `StoreTransaction.changedFields`.
+            const query: QueryConfig = {dimensions: ['region', 'sector']},
+                cube = createCube(),
+                view = createView(cube, query, {connect: true});
+
+            await cube.updateDataAsync({
+                update: [{...TRADES[0], region: 'EU'}],
+                changedFields: new Set(['region'])
+            });
+            expect(view.diagnostics.update.last.type).toBe('fullUpdate');
+            expectMatchesFreshQuery(view, query);
+
+            await cube.updateDataAsync({
+                update: [{...TRADES[0], region: 'Asia'}],
+                changedFields: new Set(['qty'])
+            });
+            expect(view.diagnostics.update.last.type).toBe('dataOnly');
+            expect(rowFor(view, 'EU').qty).toBe(600);
+        });
+    });
+
     describe('createStore', () => {
         it('mints a store that treats the grand total as its summary row, following includeRoot', () => {
             const view = createView(createCube(), {dimensions: ['region'], includeRoot: true}),
@@ -323,8 +390,17 @@ function createCube(): Cube {
     );
 }
 
-function createView(cube: Cube, query: QueryConfig, opts: {stores?: Store} = {}): View {
+function createView(
+    cube: Cube,
+    query: QueryConfig,
+    opts: {stores?: Store; connect?: boolean} = {}
+): View {
     return autoDestroy(cube.createView({query, ...opts}));
+}
+
+/** The top-level row for a dimension value. */
+function rowFor(view: View, label: string): ViewRowData {
+    return view.result.rows.find(it => it.cubeLabel === label);
 }
 
 function autoDestroy<T extends {destroy(): void}>(obj: T): T {

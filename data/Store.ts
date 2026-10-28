@@ -288,6 +288,10 @@ export interface StoreTransaction {
      * supply them cheaply. Providing this asserts that updates change record values only - no
      * structural/parent changes - and that no field outside the set changed. Enables downstream
      * consumers (e.g. Grid) to prove a change cannot affect sort order and skip re-sorting.
+     *
+     * Cube Views rely on it too: a set naming no dimension or bucket field lets a View skip its
+     * per-record structural check, so a set that omits a changed dimension leaves the View's row
+     * hierarchy stale.
      */
     changedFields?: Set<string>;
 }

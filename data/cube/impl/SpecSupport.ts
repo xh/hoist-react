@@ -15,9 +15,9 @@ import {SumStrictAggregator} from '../aggregate/SumStrictAggregator';
 import {UniqueAggregator} from '../aggregate/UniqueAggregator';
 
 /**
- * Shared support for the `data/cube` pivot and aggregator specs - matrix-style checks over vitest,
- * plus duck-typed rows and a fake {@link AggregationContext} for exercising `Aggregator` classes
- * without a View. Test-only - kept out of `data/index.ts`, like `PivotReference`.
+ * Shared support for the `data/cube` pivot structure spec - matrix-style checks over vitest, plus
+ * duck-typed rows and a fake {@link AggregationContext} for aggregating over them without a View.
+ * Test-only - kept out of `data/index.ts`, like `PivotReference`.
  */
 
 //------------------
@@ -82,9 +82,6 @@ export const AGG_NAME = new Map<Aggregator, string>([
     [CHILD_COUNT, 'CHILD_COUNT']
 ]);
 
-/** Aggregators reading leaf values recursively, rather than their direct children's values. */
-export const LEAF_DOMAIN = new Set<Aggregator>([AVG, AVG_STRICT]);
-
 function sumOf(vals: any[]): number {
     return vals.reduce((t, v) => (v == null ? t : t + v), 0);
 }
@@ -137,16 +134,6 @@ class FakeAggregationContext {
         }
     }
 
-    replace(agg: Aggregator, rows: AggRow[], currVal: any, update: any, row: AggRow): any {
-        this.activeRow = row;
-        this.activeField = update.field;
-        try {
-            return agg.replace(rows as any, currVal, update, this as any);
-        } finally {
-            this.activeRow = this.activeField = null;
-        }
-    }
-
     setAggState(state: any) {
         (this.activeRow.aggStates ??= {})[this.activeField.name] = state;
     }
@@ -162,39 +149,9 @@ export function leafOf(val: any, field = VF): AggRow {
     return {isLeaf: true, children: null, data: {[field]: val}};
 }
 
-/** Aggregate `rows` for `field` onto `row` - a throwaway parent unless given, as `replace` needs it. */
-export function runAggregate(agg: Aggregator, rows: AggRow[], field = VF, row?: AggRow): any {
-    return CONTEXT.aggregate(agg, rows, field, row ?? {isLeaf: false, children: rows, data: {}});
-}
-
-/** The members of {@link RowUpdate} an aggregator reads. Leaf values default to the direct ones. */
-export interface AggUpdate {
-    oldValue: any;
-    newValue: any;
-    leafOldValue?: any;
-    leafNewValue?: any;
-}
-
-/**
- * Apply a child value change to `row`'s current aggregate. `row` must be the one `runAggregate`
- * wrote its state to - `replace` reads and updates that state in place. Above the leaf level pass
- * the originating leaf values explicitly, as `ParentRow.applyDataUpdate` carries them through.
- */
-export function runReplace(
-    agg: Aggregator,
-    rows: AggRow[],
-    currVal: any,
-    row: AggRow,
-    {oldValue, newValue, leafOldValue = oldValue, leafNewValue = newValue}: AggUpdate,
-    field = VF
-): any {
-    const update = {field: {name: field}, oldValue, newValue, leafOldValue, leafNewValue};
-    return CONTEXT.replace(agg, rows, currVal, update, row);
-}
-
 /** Non-leaf row holding its own aggregate over `children`, as the real network materializes it. */
 export function aggOf(agg: Aggregator, children: AggRow[], field = VF): AggRow {
     const row: AggRow = {isLeaf: false, children, data: {}};
-    row.data[field] = runAggregate(agg, children, field, row);
+    row.data[field] = CONTEXT.aggregate(agg, children, field, row);
     return row;
 }
