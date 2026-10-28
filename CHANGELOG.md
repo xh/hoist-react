@@ -44,6 +44,8 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 * Added `genRandomId()` to `@xh/hoist/utils/js` for short random alphanumeric IDs.
 * Mobile `TabContainer` now applies `${testId}-switcher` to its switcher and
   `${testId}-switcher-${tabId}` to each switcher button, as on desktop.
+* Added "Purge Connections" buttons to the Admin Console Connection Pool Monitor, to close all
+  pooled JDBC connections on one instance or across the cluster. Requires hoist-core v44+.
 
 ### 🐞 Bug Fixes
 
@@ -86,6 +88,8 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 
 * router5 `7.0 → 8.0`
 * router5-plugin-browser `7.0 → 8.0`
+* mobx `7.0 → 7.1` - `toJS` now includes `@observable accessor` fields, which it previously left out
+* react-window `2.3 → 2.4`
 * http-status-codes `removed`
 * inflection `added` - replaces lodash-inflection behind `pluralize`, `singularize` and `ordinalize`
 * lodash-inflection `removed`
