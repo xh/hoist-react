@@ -26,6 +26,7 @@ kit/
 ├── golden-layout/        # GoldenLayout v1.5.9 with React 18 patches
 ├── highcharts/           # Highcharts install function with default config
 ├── react-beautiful-dnd/  # Drag-and-drop re-exports with element factories
+├── react-day-picker/     # Calendar for desktop and mobile DateInput, with shared theme
 ├── react-dropzone/       # File drop zone re-export
 ├── react-markdown/       # Markdown renderer re-export
 ├── react-select/         # Select variants (async, creatable, windowed)
@@ -134,6 +135,7 @@ with several patches applied directly to GoldenLayout's internal classes:
 | Library | Kit Sub-package | Used By | Purpose |
 |---------|-----------------|---------|---------|
 | react-beautiful-dnd | `react-beautiful-dnd/` | DashCanvas widget reordering | Drag-and-drop with `DragDropContext`, `Droppable`, `Draggable` |
+| react-day-picker | `react-day-picker/` | Desktop and mobile DateInput | `DayPicker` calendar (v10) and the stylesheet that themes it for both platforms |
 | react-dropzone | `react-dropzone/` | FileChooser | File drop zone via `Dropzone` component |
 | react-markdown | `react-markdown/` | Markdown display | `ReactMarkdown` component for rendering markdown content |
 | Swiper | `swiper/` | Mobile TabContainer | Touch slider with creative effect for swipeable tabs |

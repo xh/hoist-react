@@ -14,13 +14,16 @@
 
 ## 90.0.0-SNAPSHOT - unreleased
 
-### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW - number `formatConfig`, mobile styling)
-
+### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW - `formatConfig`, `DateInput` props, mobile styling)
 See [`docs/upgrade-notes/v90-upgrade-notes.md`](docs/upgrade-notes/v90-upgrade-notes.md) for
 detailed, step-by-step upgrade instructions with before/after code examples.
 
 * Removed `NumberFormatOptions.formatConfig`, which took a numbro format. Use `precision`, `zeroPad`
   and `withCommas` instead.
+* Desktop `DateInput` now renders its calendar with react-day-picker 10, as the mobile `DateInput`
+  already did, and its time picker is Hoist's own 24-hour control. `dayPickerProps` now takes
+  react-day-picker 10 props - see the upgrade notes for the renames from v8. Removed
+  `timePickerProps`, which took Blueprint `TimePicker` options such as `useAmPm`.
 * Mobile components no longer render Onsen UI custom elements. `Button`, `TextInput`,
   `NumberInput`, `SearchInput`, `Checkbox`, `SwitchInput`, `Dialog`, `DialogPanel`, `Toast`,
   `TabContainer` and `MenuButton` menus render plain elements under `xh-` class names. App SCSS
@@ -69,6 +72,10 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 
 ### ⚙️ Technical
 
+* Desktop and mobile `DateInput` build their calendar props with one shared helper and share one
+  react-day-picker theme, in `@xh/hoist/kit/react-day-picker`, for light and dark modes. Dropping
+  Blueprint's date picker also drops the second copies of date-fns and react-day-picker it pulled
+  into every app.
 * `LocalStorageService` and `SessionStorageService` now read and write browser storage directly.
   Keys and JSON values are stored exactly as before.  Removed the unused `isFake` getter - when
   storage is unavailable the service logs a warning and holds values in memory, as before.
@@ -96,6 +103,8 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 * short-unique-id `removed`
 * store2 `removed`
 * numbro `removed`
+* @blueprintjs/datetime `removed`
+* date-fns `removed`
 * onsenui `removed`
 * react-onsenui `removed`
 
