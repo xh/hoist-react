@@ -25,6 +25,30 @@ export type PdfSource = string | FetchOptions | Blob | ArrayBuffer | Uint8Array;
  */
 export type PdfScale = 'page-width' | 'page-fit' | 'page-actual' | 'auto' | number;
 
+/** Result of {@link PdfViewerModel.findAsync}. */
+export interface PdfFindResult {
+    /**
+     * Outcome of the search:
+     *  - `found` - the query matched, and the viewer scrolled to the selected match.
+     *  - `notFound` - the query matched nowhere in the document, or was empty.
+     *  - `cancelled` - the search ended early, due to a newer find, a source change, a failed
+     *    load, or `destroy()`. Also returned when there is no source to search.
+     */
+    status: 'found' | 'notFound' | 'cancelled';
+
+    /** The query searched for. */
+    query: string;
+
+    /** Count of matches across the document. */
+    matchCount: number;
+
+    /** Index of the selected match across the document, from 1. Zero if none. */
+    matchNumber: number;
+
+    /** Page of the selected match, from 1. Null if none. */
+    pageNumber: number;
+}
+
 /**
  * Built-in toolbar items:
  *  - `pageNav` - previous/next buttons and a page number input.

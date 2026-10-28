@@ -5,10 +5,11 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {filler, fragment, span} from '@xh/hoist/cmp/layout';
+import {PdfFindInputModel} from '@xh/hoist/cmp/pdfviewer/impl/PdfFindInputModel';
 import {getZoomOptions} from '@xh/hoist/cmp/pdfviewer/impl/ZoomOptions';
 import type {PdfViewerToolbarModel} from '@xh/hoist/cmp/pdfviewer/impl/PdfViewerToolbarModel';
 import type {PdfViewerToolbarItem} from '@xh/hoist/cmp/pdfviewer/Types';
-import {hoistCmp, HoistModel, uses} from '@xh/hoist/core';
+import {hoistCmp, HoistModel, useLocalModel, uses} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {numberInput, select, textInput} from '@xh/hoist/desktop/cmp/input';
 import {toolbar, toolbarSep} from '@xh/hoist/desktop/cmp/toolbar';
@@ -119,10 +120,12 @@ const zoom = hoistCmp.factory<PdfViewerToolbarModel>(({model}) => {
 });
 
 const find = hoistCmp.factory<PdfViewerToolbarModel>(({model}) => {
-    const {findQuery, findMatchCount, findMatchNumber, hasDocument} = model;
+    const impl = useLocalModel(() => new PdfFindInputModel(model)),
+        {findQuery, findMatchCount, findMatchNumber, isFinding, hasDocument} = model;
     return fragment(
         textInput({
-            bind: 'findQuery',
+            model: impl,
+            bind: 'query',
             width: 180,
             placeholder: 'Find...',
             leftIcon: Icon.search(),
@@ -131,7 +134,10 @@ const find = hoistCmp.factory<PdfViewerToolbarModel>(({model}) => {
             disabled: !hasDocument,
             onKeyDown: e => {
                 if (e.key !== 'Enter') return;
-                if (e.shiftKey) {
+                if (impl.query !== findQuery) {
+                    // Search now for text still waiting on the typing pause.
+                    model.findAsync(impl.query);
+                } else if (e.shiftKey) {
                     model.findPrevious();
                 } else {
                     model.findNext();
@@ -142,7 +148,9 @@ const find = hoistCmp.factory<PdfViewerToolbarModel>(({model}) => {
             className: 'xh-pdf-viewer__find-count',
             item: findMatchCount
                 ? `${findMatchNumber} / ${findMatchCount}`
-                : span({className: 'xh-text-color-muted', item: 'No results'}),
+                : isFinding
+                  ? null
+                  : span({className: 'xh-text-color-muted', item: 'No results'}),
             omit: !findQuery
         }),
         button({

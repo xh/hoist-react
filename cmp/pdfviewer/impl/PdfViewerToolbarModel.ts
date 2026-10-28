@@ -33,9 +33,11 @@ export interface PdfViewerToolbarModel extends HoistModel {
     zoomOut(): void;
     rotate(degrees?: number): void;
 
-    findQuery: string;
+    readonly findQuery: string;
     readonly findMatchCount: number;
     readonly findMatchNumber: number;
+    readonly isFinding: boolean;
+    findAsync(query: string): Promise<unknown>;
     findNext(): void;
     findPrevious(): void;
 

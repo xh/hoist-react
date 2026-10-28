@@ -6,16 +6,27 @@
  */
 import {HoistModel, LoadSpec, PersistOptions, XH} from '@xh/hoist/core';
 import {loadPdfJsAsync, PdfJs} from '@xh/hoist/kit/pdfjs';
-import {action, bindable, computed, observable, observableRef, runInAction} from '@xh/hoist/mobx';
+import {action, computed, observable, observableRef, runInAction} from '@xh/hoist/mobx';
 import type {FetchOptions} from '@xh/hoist/svc';
 import {downloadBlob, throwIf, withDefault} from '@xh/hoist/utils/js';
 import {createObservableRef} from '@xh/hoist/utils/react';
-import {clamp, isNumber, isString} from 'lodash';
+import {clamp, isNumber, isString, sumBy, times} from 'lodash';
 import type {PDFDocumentLoadingTask, PDFDocumentProxy} from 'pdfjs-dist/legacy/build/pdf.mjs';
-import type {EventBus, PDFLinkService, PDFViewer} from 'pdfjs-dist/legacy/web/pdf_viewer.mjs';
+import type {
+    EventBus,
+    PDFFindController,
+    PDFLinkService,
+    PDFViewer
+} from 'pdfjs-dist/legacy/web/pdf_viewer.mjs';
 import type {ReactNode} from 'react';
 import type {PdfViewerToolbarModel} from './impl/PdfViewerToolbarModel';
-import type {PdfScale, PdfSource, PdfViewerToolbarItem, PdfViewerToolbarSpec} from './Types';
+import type {
+    PdfFindResult,
+    PdfScale,
+    PdfSource,
+    PdfViewerToolbarItem,
+    PdfViewerToolbarSpec
+} from './Types';
 
 export interface PdfViewerConfig {
     /** The document to display. See {@link PdfViewerModel.setSource}. */
@@ -84,8 +95,8 @@ export class PdfViewerModel extends HoistModel implements PdfViewerToolbarModel 
     /** Page rotation in degrees - 0, 90, 180, or 270. */
     @observable accessor rotation: number = 0;
 
-    /** Current find query. Matches are highlighted as the query changes. */
-    @bindable accessor findQuery: string = '';
+    /** Query of the current find, or '' if none. Call {@link findAsync} to change. */
+    @observable accessor findQuery: string = '';
 
     /** Count of find matches across the document. */
     @observable accessor findMatchCount: number = 0;
@@ -113,6 +124,12 @@ export class PdfViewerModel extends HoistModel implements PdfViewerToolbarModel 
         return !!this.pdfDocument;
     }
 
+    /** True while a find is searching the document. */
+    @computed
+    get isFinding(): boolean {
+        return !!this.pendingFind;
+    }
+
     /** True if a document is set, whether or not it has loaded. */
     get hasSource(): boolean {
         return this.source != null;
@@ -125,8 +142,10 @@ export class PdfViewerModel extends HoistModel implements PdfViewerToolbarModel 
     private loadingTask: PDFDocumentLoadingTask = null;
     private viewer: PDFViewer = null;
     private linkService: PDFLinkService = null;
+    private findController: PDFFindController = null;
     private eventBus: EventBus = null;
     private eventsAbort: AbortController = null;
+    @observableRef private accessor pendingFind: PendingFind = null;
 
     constructor(config: PdfViewerConfig = {}) {
         super();
@@ -148,19 +167,23 @@ export class PdfViewerModel extends HoistModel implements PdfViewerToolbarModel 
         this.addReaction(
             {
                 track: () => this.source,
-                // Load errors display inline - see `lastLoadException`.
-                run: () => this.loadAsync().catchDefault({showAlert: false, logOnServer: false}),
+                run: source => {
+                    if (this.pendingFind?.source !== source) this.settleFind('cancelled');
+                    this.loadAsync()
+                        // Load errors display inline - see `lastLoadException`.
+                        .catchDefault({showAlert: false, logOnServer: false})
+                        .then(() => {
+                            if (!this.pdfDocument && this.pendingFind?.source === source) {
+                                this.settleFind('cancelled');
+                            }
+                        });
+                },
                 fireImmediately: true
             },
             {
                 track: () => [this.containerRef.current, this.pdfDocument],
                 run: ([container, doc]) =>
                     this.syncViewer(container as HTMLDivElement, doc as PDFDocumentProxy)
-            },
-            {
-                track: () => this.findQuery,
-                run: () => this.dispatchFind(),
-                debounce: 200
             }
         );
     }
@@ -256,6 +279,50 @@ export class PdfViewerModel extends HoistModel implements PdfViewerToolbarModel 
     //------------------
     // Find
     //------------------
+    /**
+     * Search the document for text, and resolve once every page has been searched. Sets
+     * {@link findQuery}, highlights all matches, and scrolls to the first match at or after the
+     * current page. Pass '' to clear the find.
+     *
+     * Each call runs a new search, even for an unchanged query. A call made before the document
+     * has loaded waits for it to load and display, then searches. A newer find, a source change,
+     * a failed load, or `destroy()` resolves a call still in progress as `cancelled`.
+     *
+     * The query stays set when the source changes, and runs again on the new document.
+     *
+     * Matching is case-insensitive and ignores diacritics. pdf.js normalizes quotes, ligatures,
+     * whitespace, and line breaks, but a match cannot span pages.
+     */
+    findAsync(query: string): Promise<PdfFindResult> {
+        query ??= '';
+        this.settleFind('cancelled');
+        runInAction(() => (this.findQuery = query));
+
+        if (!query || !this.hasSource) {
+            this.dispatchFind();
+            return Promise.resolve(emptyFindResult(query, query ? 'cancelled' : 'notFound'));
+        }
+
+        return new Promise(resolve => {
+            runInAction(() => {
+                this.pendingFind = {
+                    query,
+                    source: this.source,
+                    resolve,
+                    awaitingReset: false,
+                    state: null
+                };
+            });
+            // A no-op until the viewer exists - onPagesInit() dispatches it then.
+            this.dispatchFind();
+        });
+    }
+
+    /** Clear the find query and its highlights. */
+    clearFind() {
+        this.findAsync('');
+    }
+
     /** Select and scroll to the next match for {@link findQuery}. */
     findNext() {
         this.dispatchFind('again', false);
@@ -360,10 +427,12 @@ export class PdfViewerModel extends HoistModel implements PdfViewerToolbarModel 
         eventBus.on('pagechanging', e => this.onPageChanging(e), {signal});
         eventBus.on('scalechanging', e => this.onScaleChanging(e), {signal});
         eventBus.on('updatefindmatchescount', e => this.onFindMatchesCount(e), {signal});
-        eventBus.on('updatefindcontrolstate', e => this.onFindMatchesCount(e), {signal});
+        eventBus.on('updatefindcontrolstate', e => this.onFindControlState(e), {signal});
+        eventBus.on('updatetextlayermatches', e => this.onTextLayerMatches(e), {signal});
 
         this.viewer = viewer;
         this.linkService = linkService;
+        this.findController = findController;
         this.eventBus = eventBus;
         this.eventsAbort = eventsAbort;
     }
@@ -375,6 +444,7 @@ export class PdfViewerModel extends HoistModel implements PdfViewerToolbarModel 
         this.eventsAbort?.abort();
         this.viewer = null;
         this.linkService = null;
+        this.findController = null;
         this.eventBus = null;
         this.eventsAbort = null;
     }
@@ -382,7 +452,12 @@ export class PdfViewerModel extends HoistModel implements PdfViewerToolbarModel 
     private onPagesInit() {
         this.applyScale();
         if (this.rotation) this.viewer.pagesRotation = this.rotation;
-        if (this.findQuery) this.dispatchFind();
+        // Run a find requested before load, or the current query again on a new document.
+        if (this.pendingFind) {
+            this.dispatchFind();
+        } else if (this.findQuery) {
+            this.findAsync(this.findQuery);
+        }
     }
 
     @action
@@ -400,6 +475,79 @@ export class PdfViewerModel extends HoistModel implements PdfViewerToolbarModel 
     private onFindMatchesCount({matchesCount}) {
         this.findMatchCount = matchesCount?.total ?? 0;
         this.findMatchNumber = matchesCount?.current ?? 0;
+    }
+
+    private onFindControlState(e) {
+        // A pending state carries the prior search's counts - dispatchFind() has already reset them.
+        const {FindState} = this.pdfJs.viewer;
+        if (e.state === FindState.PENDING) return;
+
+        this.onFindMatchesCount(e);
+
+        const {pendingFind} = this;
+        if (pendingFind && !pendingFind.awaitingReset && e.rawQuery === pendingFind.query) {
+            pendingFind.state = e.state;
+            this.checkFindDone();
+        }
+    }
+
+    private onTextLayerMatches({pageIndex}) {
+        const {pendingFind} = this;
+        if (!pendingFind) return;
+
+        // pdf.js signals all pages (-1) when it clears prior results to start a new search.
+        if (pageIndex === -1) {
+            pendingFind.awaitingReset = false;
+        } else {
+            this.checkFindDone();
+        }
+    }
+
+    /**
+     * Settle the pending find once its result is final. pdf.js reports not found only after
+     * searching every page, but reports found at the first match - wait for all pages then,
+     * so the count is complete.
+     */
+    private checkFindDone() {
+        const {pendingFind, findController, pageCount} = this;
+        if (pendingFind?.state == null || !findController) return;
+
+        const {FindState} = this.pdfJs.viewer;
+        if (pendingFind.state === FindState.NOT_FOUND) {
+            this.settleFind('notFound');
+            return;
+        }
+
+        // Found with no selection - a query that normalizes to nothing, e.g. only diacritics.
+        const {pageMatches, selected} = findController;
+        if (selected.pageIdx < 0) {
+            this.settleFind('notFound');
+            return;
+        }
+
+        if (times(pageCount).every(i => pageMatches[i])) this.settleFind('found');
+    }
+
+    @action
+    private settleFind(status: PdfFindResult['status']) {
+        const {pendingFind, findController} = this;
+        if (!pendingFind) return;
+        this.pendingFind = null;
+
+        if (status !== 'found') {
+            pendingFind.resolve(emptyFindResult(pendingFind.query, status));
+            return;
+        }
+
+        const {pageMatches, selected} = findController,
+            {pageIdx, matchIdx} = selected;
+        pendingFind.resolve({
+            status,
+            query: pendingFind.query,
+            matchCount: sumBy(pageMatches, m => m?.length ?? 0),
+            matchNumber: sumBy(pageMatches.slice(0, pageIdx), m => m?.length ?? 0) + matchIdx + 1,
+            pageNumber: pageIdx + 1
+        });
     }
 
     private applyScale() {
@@ -420,6 +568,15 @@ export class PdfViewerModel extends HoistModel implements PdfViewerToolbarModel 
             eventBus.dispatch('findbarclose', {source: this});
             this.onFindMatchesCount({matchesCount: null});
             return;
+        }
+
+        // A new search - clear the prior search's counts now, not when pdf.js first reports.
+        if (!type) {
+            this.onFindMatchesCount({matchesCount: null});
+            if (this.pendingFind) {
+                this.pendingFind.awaitingReset = true;
+                this.pendingFind.state = null;
+            }
         }
 
         eventBus.dispatch('find', {
@@ -450,10 +607,26 @@ export class PdfViewerModel extends HoistModel implements PdfViewerToolbarModel 
     }
 
     override destroy() {
+        this.settleFind('cancelled');
         this.destroyViewer();
         this.closeDocumentAsync();
         super.destroy();
     }
+}
+
+interface PendingFind {
+    query: string;
+    /** Source when the find was requested - a change to another source cancels it. */
+    source: PdfSource;
+    resolve: (result: PdfFindResult) => void;
+    /** True from dispatch until pdf.js clears prior results, so their reports are ignored. */
+    awaitingReset: boolean;
+    /** Latest pdf.js `FindState` reported for this search, once it has started. */
+    state: number;
+}
+
+function emptyFindResult(query: string, status: PdfFindResult['status']): PdfFindResult {
+    return {status, query, matchCount: 0, matchNumber: 0, pageNumber: null};
 }
 
 /** Decode a URL path segment for use as a filename, leaving a malformed one as is. */

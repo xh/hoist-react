@@ -8,15 +8,16 @@ import {PdfViewerModel, type PdfViewerConfig} from '@xh/hoist/cmp/pdfviewer';
 import {XH} from '@xh/hoist/core';
 import {wait} from '@xh/hoist/promise';
 import {hoistCore, hoistError, initTestAppAsync} from '@xh/hoist/test-support';
+import {times} from 'lodash';
 import {reaction, when} from 'mobx';
 import {WorkerMessageHandler} from 'pdfjs-dist/legacy/build/pdf.worker.mjs';
 import {beforeAll, describe, expect, it, onTestFinished, vi} from 'vitest';
 
 /**
  * How PdfViewerModel loads documents: each source type, buffer handling, error reporting, and
- * the race between a new source and a load still in progress. These run against real pdf.js,
- * loaded through `loadPdfJsAsync()`. jsdom has no layout or canvas, so the viewer itself - paging,
- * zoom, find - is left to browser tests.
+ * the race between a new source and a load still in progress - plus how `findAsync()` reports
+ * and settles a search. These run against real pdf.js, loaded through `loadPdfJsAsync()`. jsdom
+ * has no layout or canvas, so rendering, paging, and zoom are left to browser tests.
  */
 describe('PdfViewerModel', () => {
     beforeAll(async () => {
@@ -173,6 +174,130 @@ describe('PdfViewerModel', () => {
         expect(model.pdfDocument).toBeNull();
     });
 
+    describe('findAsync', () => {
+        const pages = [
+            ['Rate locks expire', 'after 30 days.'],
+            ['Extend a rate lock', 'for a fee.']
+        ];
+
+        it('resolves with the match count and the page of the selected match', async () => {
+            const model = createDisplayed({source: pdfBytes(pages)});
+            await loadedAsync(model);
+
+            expect(await model.findAsync('rate lock')).toEqual({
+                status: 'found',
+                query: 'rate lock',
+                matchCount: 2,
+                matchNumber: 1,
+                pageNumber: 1
+            });
+            expect(model.findMatchCount).toBe(2);
+        });
+
+        it('resolves as not found once every page is searched', async () => {
+            const model = createDisplayed({source: pdfBytes(pages)});
+            await loadedAsync(model);
+
+            const result = await model.findAsync('escrow');
+            expect(result.status).toBe('notFound');
+            expect(result.pageNumber).toBeNull();
+            expect(model.findMatchCount).toBe(0);
+        });
+
+        it('waits for a document still loading, then searches it', async () => {
+            const model = createDisplayed({source: pdfBytes(pages)});
+
+            expect(model.hasDocument).toBe(false);
+            const result = await model.findAsync('fee');
+            expect(result).toMatchObject({status: 'found', pageNumber: 2});
+        });
+
+        it('runs a new search for a repeated query, clearing the prior count first', async () => {
+            const model = createDisplayed({source: pdfBytes(pages)});
+            await loadedAsync(model);
+            await model.findAsync('rate lock');
+
+            const counts = recordFindMatchCounts(model),
+                result = await model.findAsync('rate lock');
+            expect(result.status).toBe('found');
+            expect(counts[0]).toBe(0);
+            expect(counts.at(-1)).toBe(2);
+        });
+
+        it('cancels a search still in progress when a newer one starts', async () => {
+            const model = createDisplayed({source: pdfBytes(pages)});
+            await loadedAsync(model);
+
+            const first = model.findAsync('rate lock'),
+                second = model.findAsync('fee');
+            expect((await first).status).toBe('cancelled');
+            expect(await second).toMatchObject({status: 'found', matchCount: 1, pageNumber: 2});
+        });
+
+        it('reports isFinding until the search settles', async () => {
+            const model = createDisplayed({source: pdfBytes(pages)});
+            await loadedAsync(model);
+
+            const result = model.findAsync('fee');
+            expect(model.isFinding).toBe(true);
+            await result;
+            expect(model.isFinding).toBe(false);
+        });
+
+        it('runs the query again on a new document', async () => {
+            const model = createDisplayed({source: pdfBytes(pages)});
+            await loadedAsync(model);
+            await model.findAsync('fee');
+
+            model.setSource(pdfBytes([['No fee', 'and no other fee']]));
+            await loadedAsync(model);
+            await when(() => !model.isFinding);
+            expect(model.findQuery).toBe('fee');
+            expect(model.findMatchCount).toBe(2);
+        });
+
+        it('clears the query and its matches on clearFind()', async () => {
+            const model = createDisplayed({source: pdfBytes(pages)});
+            await loadedAsync(model);
+            await model.findAsync('rate lock');
+
+            model.clearFind();
+            expect(model.findQuery).toBe('');
+            expect(model.findMatchCount).toBe(0);
+        });
+
+        it('cancels a search when the source changes', async () => {
+            const model = createDisplayed({source: pdfBytes(pages)});
+            await loadedAsync(model);
+
+            const result = model.findAsync('rate lock');
+            model.setSource(pdfBytes(pages));
+            expect((await result).status).toBe('cancelled');
+        });
+
+        it('cancels a search when the document fails to load', async () => {
+            const model = createDisplayed({source: notAPdf()}),
+                result = model.findAsync('rate lock');
+            expect((await result).status).toBe('cancelled');
+        });
+
+        it('cancels a search when destroyed', async () => {
+            const model = createDisplayed({source: pdfBytes(pages)}),
+                result = model.findAsync('rate lock');
+            model.destroy();
+            expect((await result).status).toBe('cancelled');
+        });
+
+        it('resolves an empty query as not found, and a missing source as cancelled', async () => {
+            const model = createDisplayed({source: pdfBytes(pages)});
+            await loadedAsync(model);
+            expect((await model.findAsync('')).status).toBe('notFound');
+
+            model.setSource(null);
+            expect((await model.findAsync('fee')).status).toBe('cancelled');
+        });
+    });
+
     describe('downloadFilename', () => {
         beforeAll(() => {
             hoistCore.route('*', 'files/:name', () => pdfResponse(1));
@@ -200,6 +325,18 @@ describe('PdfViewerModel', () => {
 function create(config: PdfViewerConfig): PdfViewerModel {
     const model = new PdfViewerModel(config);
     onTestFinished(() => model.destroy());
+    return model;
+}
+
+/** Create a model, and give it a container so it builds its pdf.js viewer, as when displayed. */
+function createDisplayed(config: PdfViewerConfig): PdfViewerModel {
+    const model = create(config),
+        container = document.createElement('div');
+    container.style.position = 'absolute';
+    container.appendChild(document.createElement('div')).className = 'pdfViewer';
+    document.body.appendChild(container);
+    model.containerRef(container);
+    onTestFinished(() => container.remove());
     return model;
 }
 
@@ -235,14 +372,39 @@ function recordPageCounts(model: PdfViewerModel): number[] {
     return ret;
 }
 
-/** A minimal valid PDF with blank pages. */
-function pdfBytes(pageCount: number): Uint8Array<ArrayBuffer> {
-    const pageIds = Array.from({length: pageCount}, (_, i) => i + 3),
+/** Every find match count the model shows, from now until the test ends. */
+function recordFindMatchCounts(model: PdfViewerModel): number[] {
+    const ret: number[] = [],
+        dispose = reaction(
+            () => model.findMatchCount,
+            count => ret.push(count)
+        );
+    onTestFinished(dispose);
+    return ret;
+}
+
+/** A minimal valid PDF - a count of blank pages, or the lines of text on each page. */
+function pdfBytes(pages: number | string[][]): Uint8Array<ArrayBuffer> {
+    const pageLines = typeof pages === 'number' ? times(pages, () => []) : pages,
         objects = [
             '<< /Type /Catalog /Pages 2 0 R >>',
-            `<< /Type /Pages /Kids [${pageIds.map(id => `${id} 0 R`).join(' ')}] /Count ${pageCount} >>`,
-            ...pageIds.map(() => '<< /Type /Page /Parent 2 0 R /MediaBox [0 0 200 200] >>')
-        ];
+            null,
+            '<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>'
+        ],
+        pageIds = [];
+
+    pageLines.forEach(lines => {
+        const content = `BT /F1 12 Tf 14 TL 10 180 Td ${lines.map(l => `(${l}) Tj T*`).join(' ')} ET`;
+        objects.push(`<< /Length ${content.length} >>\nstream\n${content}\nendstream`);
+        objects.push(
+            '<< /Type /Page /Parent 2 0 R /MediaBox [0 0 200 200] ' +
+                `/Resources << /Font << /F1 3 0 R >> >> /Contents ${objects.length} 0 R >>`
+        );
+        pageIds.push(objects.length);
+    });
+    objects[1] =
+        `<< /Type /Pages /Kids [${pageIds.map(id => `${id} 0 R`).join(' ')}] ` +
+        `/Count ${pageIds.length} >>`;
 
     let pdf = '%PDF-1.4\n';
     const offsets = objects.map((obj, i) => {

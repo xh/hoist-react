@@ -5,10 +5,11 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {filler, fragment, span} from '@xh/hoist/cmp/layout';
+import {PdfFindInputModel} from '@xh/hoist/cmp/pdfviewer/impl/PdfFindInputModel';
 import {getZoomOptions} from '@xh/hoist/cmp/pdfviewer/impl/ZoomOptions';
 import type {PdfViewerToolbarModel} from '@xh/hoist/cmp/pdfviewer/impl/PdfViewerToolbarModel';
 import type {PdfViewerToolbarItem} from '@xh/hoist/cmp/pdfviewer/Types';
-import {hoistCmp, HoistModel, uses} from '@xh/hoist/core';
+import {hoistCmp, HoistModel, useLocalModel, uses} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {button} from '@xh/hoist/mobile/cmp/button';
 import {select, textInput} from '@xh/hoist/mobile/cmp/input';
@@ -104,10 +105,12 @@ const zoom = hoistCmp.factory<PdfViewerToolbarModel>(({model}) =>
 );
 
 const find = hoistCmp.factory<PdfViewerToolbarModel>(({model}) => {
-    const {findQuery, findMatchCount, findMatchNumber, hasDocument} = model;
+    const impl = useLocalModel(() => new PdfFindInputModel(model)),
+        {findQuery, findMatchCount, findMatchNumber, isFinding, hasDocument} = model;
     return fragment(
         textInput({
-            bind: 'findQuery',
+            model: impl,
+            bind: 'query',
             flex: 1,
             placeholder: 'Find...',
             enableClear: true,
@@ -118,7 +121,9 @@ const find = hoistCmp.factory<PdfViewerToolbarModel>(({model}) => {
             className: 'xh-pdf-viewer__find-count',
             item: findMatchCount
                 ? `${findMatchNumber} / ${findMatchCount}`
-                : span({className: 'xh-text-color-muted', item: 'No results'}),
+                : isFinding
+                  ? null
+                  : span({className: 'xh-text-color-muted', item: 'No results'}),
             omit: !findQuery
         }),
         button({

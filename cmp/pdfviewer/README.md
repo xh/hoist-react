@@ -128,7 +128,8 @@ state, or you can drive the viewer from code.
 | `scale`, `currentScale` | observable | Requested zoom (preset or number), and the resolved number |
 | `setScale()`, `zoomIn()`, `zoomOut()` | action | Change zoom |
 | `rotation`, `rotate()` | observable, action | Page rotation in degrees, in 90-degree steps |
-| `findQuery` | bindable | Find text. Matches highlight as it changes. |
+| `findAsync()`, `clearFind()` | async, action | Search and resolve with the result, or clear |
+| `findQuery`, `isFinding` | observable | Query of the current find, and true while it searches |
 | `findMatchCount`, `findMatchNumber` | observable | Match total, and the selected match from 1 |
 | `findNext()`, `findPrevious()` | action | Select and scroll to a match |
 | `downloadAsync()` | action | Save the loaded document as `downloadFilename` |
@@ -140,6 +141,38 @@ Zoom presets are `page-width` (the default), `page-fit`, `page-actual`, and `aut
 refits the document whenever the viewer resizes. A number is a fixed scale, where 1 is 100%.
 
 Pass `persistWith` to save the user's zoom level. The model persists `scale` only.
+
+## Searching
+
+`findAsync(query)` runs a search and resolves once pdf.js has searched every page. It is the
+only way to search - the toolbar find input calls it too. Use the result when the app needs to
+know whether text was found, such as to locate a quoted passage:
+
+```typescript
+const result = await pdfViewerModel.findAsync(passage);
+if (result.status === 'found') {
+    // The viewer has scrolled to the match on page result.pageNumber.
+}
+```
+
+The result has a `status`, plus `matchCount`, `matchNumber`, and the `pageNumber` of the
+selected match. The status is one of:
+
+- `found` - the viewer highlighted every match and scrolled to the first one at or after the
+  current page.
+- `notFound` - nothing matched, or the query was empty.
+- `cancelled` - a newer find, a source change, a failed load, or `destroy()` ended the search
+  first. A call with no source also resolves as cancelled.
+
+Each call runs a new search, even for the same query, so a repeated call scrolls back to a
+match. A call made before the document loads waits for it to load and display. Match counts
+reset to zero as soon as a search starts. The query stays set when the source changes, and runs
+again on the new document. Call `clearFind()` to clear it.
+
+Matching is case-insensitive and ignores diacritics. pdf.js normalizes quotes, ligatures,
+whitespace, line breaks, and words hyphenated at a line end. A match cannot span pages, and
+there is no fuzzy matching - trim a truncated passage, such as one ending in "…", before
+searching.
 
 ## Styling
 
