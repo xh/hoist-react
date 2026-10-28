@@ -22,14 +22,68 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 * Removed `NumberFormatOptions.formatConfig`, which took a numbro format. Use `precision`, `zeroPad`
   and `withCommas` instead.
 
+### 🎁 New Features
+
+* Added `GridModel.headerContextMenu`, a context menu shown on right-click of a desktop grid column
+  header. By default it sorts, pins, hides and autosizes the clicked column and opens the column
+  chooser. Set `false` to show none. Grids that disable `contextMenu` get no header menu by default.
+* Added `sort`, `pinColumn`, `hideColumn` and `autosizeColumn` grid menu tokens, which act on the
+  clicked column, and `Column.availableSorts`. The `sort` token offers one item per sort the column
+  offers.
+* Added `genRandomId()` to `@xh/hoist/utils/js` for short random alphanumeric IDs.
+
+### 🐞 Bug Fixes
+
+* Fixed column group borders not following their columns when reordered or hidden via the column
+  chooser.
+* Fixed grid row borders and the row drag drop line stopping at the last column when the columns
+  do not fill the grid's width. Both now span the full row, as they did before AG Grid 36.
+* Fixed a spec file in `@xh/hoist/test-support` failing with an unhandled error when it ended
+  within 5 seconds of boot. The kit now sends pending pref, activity, metric and span pushes before
+  it closes the fake hoist-core, and the fake's `xhSizingMode` default no longer makes boot save it.
+* Fixed desktop `Select` waiting on its selected option after its menu closed or it unmounted. The
+  wait could scroll another select's menu, or leave an unhandled rejection after five seconds.
+* Fixed `ViewManagerModel` refreshes reverting a pin or auto-save change whose write was still
+  debounced or in flight.
+* Fixed `ViewManagerModel` sending overlapping user state writes, which could fail on the server
+  and lose a pin, auto-save or current view change. It now sends one write per burst of changes.
+
+### ⚙️ Technical
+
+* `LocalStorageService` and `SessionStorageService` now read and write browser storage directly.
+  Keys and JSON values are stored exactly as before.  Removed the unused `isFake` getter - when
+  storage is unavailable the service logs a warning and holds values in memory, as before.
+
+### 📚 Libraries
+
+* router5 `7.0 → 8.0`
+* router5-plugin-browser `7.0 → 8.0`
+* mobx `7.0 → 7.1` - `toJS` now includes `@observable accessor` fields, which it previously left out
+* react-window `2.3 → 2.4`
+* http-status-codes `removed`
+* inflection `added` - replaces lodash-inflection behind `pluralize`, `singularize` and `ordinalize`
+* lodash-inflection `removed`
+* short-unique-id `removed`
+* store2 `removed`
+* numbro `removed`
+
+
+## 89.3.1 - 2026-10-21
+
+### 🐞 Bug Fixes
+
+* Fixed pinned columns scrolling out of view in the summary row of mobile grids during horizontal
+  scroll.
 
 ## 89.3.0 - 2026-10-21
 
 ### 🎁 New Features
+
 * `fetchNdjson` streams are now aborted cleanly and fully via the `autoAbortKey` or if the reading
   consumer closes the connection early.
 
 ### 🐞 Bug Fixes
+
 * Fixed a `FetchOptions.fetchOpts.signal` replacing `FetchService`'s own, which left `timeout` and
   `autoAbortKey` unable to abort the request. The two signals are now joined, and an abort with a
   custom reason reports as "Fetch Aborted".
@@ -118,9 +172,6 @@ detailed, step-by-step upgrade instructions with before/after code examples.
   maintainer docs out of apps with `"mcpAudience": "maintainers"`. See
   [Companion Library Docs](docs/companion-library-docs.md).
 
-### 📚 Libraries
-
-* numbro `removed`
 
 ## 89.0.1 - 2026-10-14
 

@@ -28,16 +28,18 @@ import {
     observableRef,
     compareStructural
 } from '@xh/hoist/mobx';
-import {ONE_SECOND, SECONDS} from '@xh/hoist/utils/datetime';
+import {SECONDS} from '@xh/hoist/utils/datetime';
 import {executeIfFunction, pluralize, throwIf} from '@xh/hoist/utils/js';
 import {
     find,
+    isEmpty,
     isEqual,
     isNil,
     isNull,
     isObject,
     isUndefined,
     lowerCase,
+    pickBy,
     remove,
     uniqBy
 } from 'lodash';
@@ -271,6 +273,13 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
     /** Count of calls to {@link loadViewAsync}, used to identify the latest. */
     private viewLoadCount = 0;
 
+    /**
+     * Pin and auto-save state as of the last load or write attempt. While a local change is not
+     * yet written here, a refresh leaves both values alone. A failed write still advances this,
+     * so the next refresh resyncs from the server rather than shielding the value forever.
+     */
+    private savedUserState: ViewUserState = {userPinned: {}, autoSave: false};
+
     /** Data access for persisting views. */
     private dataAccess: DataAccess<T>;
 
@@ -393,14 +402,15 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
         await this.runner({loadSpec})
             .span('refresh')
             .run(async ctx => {
-                // 1) Update views and related state
-                const {views, state, manageGlobal} = await dataAccess.fetchDataAsync(ctx);
+                // 1) Update views and related state. Skip user state if a local change was
+                // unsaved at send or return - its pending write will land after this fetch.
+                const hadUnsavedState = this.hasUnsavedState,
+                    {views, state, manageGlobal} = await dataAccess.fetchDataAsync(ctx);
                 if (loadSpec.isStale) return;
                 runInAction(() => {
                     this.views = views;
-                    this.userPinned = state.userPinned;
-                    this.autoSave = state.autoSave;
                     this.serverManageGlobal = manageGlobal ?? null;
+                    if (!hadUnsavedState && !this.hasUnsavedState) this.applyUserState(state);
                 });
 
                 // Fast-forward the current view if it was updated elsewhere.
@@ -638,9 +648,8 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
                 initialState = state;
                 runInAction(() => {
                     this.views = views;
-                    this.userPinned = state.userPinned;
-                    this.autoSave = state.autoSave;
                     this.serverManageGlobal = manageGlobal ?? null;
+                    this.applyUserState(state);
                     if (this.preserveUnsavedChanges) {
                         this.pendingValue = XH.sessionStorageService.get(pendingValueStorageKey);
                     }
@@ -676,7 +685,7 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
         this.addReaction(
             this.preserveUnsavedChanges ? this.unsavedChangesReaction() : null,
             this.autoSaveReaction(),
-            ...this.stateReactions(initialState)
+            this.stateReaction(initialState)
         );
     }
 
@@ -695,28 +704,54 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
         };
     }
 
-    private stateReactions(initialState: ViewUserState): ReactionSpec[] {
-        const updateState = (spanName: string, update: Partial<ViewUserState>) =>
-            this.runner()
-                .span(spanName)
-                .run(ctx => this.dataAccess.updateStateAsync(update, ctx));
-        return [
-            {
-                track: () => this.userPinned,
-                run: userPinned => updateState('updateUserPinned', {userPinned}),
-                equals: compareStructural,
-                debounce: ONE_SECOND
-            },
-            {
-                track: () => this.autoSave,
-                run: autoSave => updateState('updateAutoSave', {autoSave})
-            },
-            {
-                track: () => this.view?.token,
-                run: tkn => updateState('updateCurrentView', {currentView: tkn}),
-                fireImmediately: !!initialState && this.view?.token !== initialState.currentView
-            }
-        ];
+    private stateReaction(initialState: ViewUserState): ReactionSpec {
+        return {
+            track: () => this.userState,
+            run: state => this.writeStateAsync(state),
+            equals: compareStructural,
+            debounce: 500,
+            fireImmediately: !!initialState && this.view?.token !== initialState.currentView
+        };
+    }
+
+    private get userState(): ViewUserState {
+        return {
+            currentView: this.view?.token,
+            userPinned: this.userPinned,
+            autoSave: this.autoSave
+        };
+    }
+
+    /**
+     * Write the keys of user state that changed since the server last held it. The server merges
+     * keys, so an unchanged key is left out rather than overwrite a change made in another tab.
+     * A failed write is logged and dropped - the next refresh resyncs.
+     */
+    private async writeStateAsync(state: ViewUserState) {
+        const update = pickBy(state, (v, k) => !isEqual(v, this.savedUserState[k]));
+        if (isEmpty(update)) return;
+        await this.runner()
+            .span('updateState')
+            .run(ctx => this.dataAccess.updateStateAsync(update, ctx))
+            .catch(e => this.handleException(e, {showAlert: false}));
+        this.savedUserState = state;
+    }
+
+    /** True if pin or auto-save state has changed locally since the server last held it. */
+    private get hasUnsavedState(): boolean {
+        const {savedUserState} = this;
+        return (
+            this.autoSave !== savedUserState.autoSave ||
+            !isEqual(this.userPinned, savedUserState.userPinned)
+        );
+    }
+
+    /** Install pin and auto-save state fetched from the server, and record that it holds it. */
+    @action
+    private applyUserState(state: ViewUserState) {
+        this.userPinned = state.userPinned;
+        this.autoSave = state.autoSave;
+        this.savedUserState = state;
     }
 
     private async loadViewAsync(

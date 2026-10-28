@@ -25,7 +25,6 @@ import {
 } from 'lodash';
 import classNames from 'classnames';
 
-import {GridSorter} from '../GridSorter';
 import {ReactNode} from 'react';
 
 import type {IHeaderParams, AgColumn} from '@xh/hoist/kit/ag-grid';
@@ -193,7 +192,7 @@ class ColumnHeaderModel extends HoistModel {
         const {xhColumn, agColumn} = this,
             {filterModel} = this.gridModel;
 
-        this.availableSorts = this.parseAvailableSorts();
+        this.availableSorts = xhColumn?.availableSorts ?? [];
 
         if (!XH.isMobileApp && xhColumn?.filterable && filterModel?.getFieldSpec(xhColumn.field)) {
             this.columnHeaderFilterModel = new ColumnHeaderFilterModel(filterModel, xhColumn);
@@ -336,16 +335,5 @@ class ColumnHeaderModel extends HoistModel {
         if (gridModel?.autosizeEnabled) {
             gridModel.autosizeAsync({columns: this.colId, showMask: true});
         }
-    }
-
-    parseAvailableSorts() {
-        const {
-            absSort = false,
-            sortingOrder = absSort ? Column.ABS_DESC_FIRST : Column.ASC_FIRST,
-            colId = this.colId
-        } = this.xhColumn ?? {}; // Note xhColumn may be null for ag-Grid dynamic columns
-
-        const ret = sortingOrder.map(spec => new GridSorter({...spec, colId}));
-        return absSort ? ret : ret.filter(it => !it.abs);
     }
 }

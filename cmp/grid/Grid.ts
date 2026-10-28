@@ -43,6 +43,7 @@ import type {
     ColDef,
     ColGroupDef,
     GetContextMenuItemsParams,
+    GetMainMenuItemsParams,
     GridOptions,
     GridReadyEvent,
     ProcessCellForExportParams
@@ -297,6 +298,7 @@ export class GridLocalModel extends HoistModel {
             onColumnRowGroupChanged: this.onColumnRowGroupChanged,
             onColumnPinned: this.onColumnPinned,
             onColumnVisible: this.onColumnVisible,
+            onDisplayedColumnsChanged: this.onDisplayedColumnsChanged,
             onColumnGroupOpened: this.onColumnGroupOpened,
             onCellEditingStarted: model.onCellEditingStarted,
             onCellEditingStopped: model.onCellEditingStopped,
@@ -344,7 +346,8 @@ export class GridLocalModel extends HoistModel {
             ret = {
                 ...ret,
                 allowContextMenuWithControlKey: true,
-                getContextMenuItems: this.getContextMenuItems as any
+                getContextMenuItems: this.getContextMenuItems as any,
+                getMainMenuItems: this.getHeaderContextMenuItems as any
             };
         }
 
@@ -371,7 +374,7 @@ export class GridLocalModel extends HoistModel {
     getContextMenuItems = (params: GetContextMenuItemsParams) => {
         const {model} = this,
             {contextMenu} = model;
-        if (!contextMenu || XH.isMobileApp || model.isEditing) return [];
+        if (!contextMenu || model.isEditing) return [];
 
         // Manipulate selection if needed.
         if (model.selModel.isEnabled) {
@@ -385,10 +388,15 @@ export class GridLocalModel extends HoistModel {
             if (!record) selModel.clear();
         }
 
-        const ret = getAgGridMenuItems(params, model, contextMenu);
-        if (isEmpty(ret)) return [];
+        return getAgGridMenuItems(params, model, contextMenu) ?? [];
+    };
 
-        return ret;
+    // ag-Grid shows its column menu on header right-click, with these as its items.
+    getHeaderContextMenuItems = (params: GetMainMenuItemsParams) => {
+        const {model} = this,
+            {headerContextMenu} = model;
+        if (!headerContextMenu || model.isEditing) return [];
+        return getAgGridMenuItems(params, model, headerContextMenu) ?? [];
     };
 
     //------------------------
@@ -804,6 +812,9 @@ export class GridLocalModel extends HoistModel {
             this.model.noteAgColumnStateChanged(ev.api.getColumnState());
         }
     };
+
+    // Cell class rules such as column group borders can depend on column position - re-evaluate.
+    onDisplayedColumnsChanged = ev => ev.api.refreshCells();
 
     // Fires for our own writes too (no `source` on this event) - model's equality check stops the loop.
     onColumnGroupOpened = ev => {
