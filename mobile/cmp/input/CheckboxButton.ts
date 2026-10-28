@@ -46,7 +46,7 @@ class CheckboxButtonInputModel extends HoistInputModel {
 const cmp = hoistCmp.factory<CheckboxButtonInputModel>(
     (
         {
-            // HoistInput props - exclude from passthrough to Onsen
+            // HoistInput props - not passed through to the button
             bind,
             value,
             commitOnChange,
@@ -57,7 +57,7 @@ const cmp = hoistCmp.factory<CheckboxButtonInputModel>(
             text,
             checkedIcon,
             uncheckedIcon,
-            // Remainder passed to hoist button & Onsen button
+            // Remainder passed to the button
             ...props
         },
         ref

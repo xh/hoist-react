@@ -13,7 +13,6 @@ import {Icon} from '@xh/hoist/icon';
 import {button} from '@xh/hoist/mobile/cmp/button';
 import {checkbox, select} from '@xh/hoist/mobile/cmp/input';
 import {dialogPanel, panel} from '@xh/hoist/mobile/cmp/panel';
-import {wait} from '@xh/hoist/promise';
 import {intersperse} from '@xh/hoist/utils/js';
 import classNames from 'classnames';
 import './ZoneMapper.scss';
@@ -246,11 +245,5 @@ class ZoneMapperLocalModel extends HoistModel {
 
         // 2) Load into display grid
         this.gridModel.loadData(data);
-
-        // 3) Blur checkboxes. This is a workaround for an Onsen issue on mobile, where the checkbox
-        // will not re-render as long as it has focus.
-        await wait(1);
-        const checkboxes = document.querySelectorAll<HTMLInputElement>('ons-checkbox');
-        checkboxes.forEach(it => it.blur());
     }
 }

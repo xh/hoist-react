@@ -2,9 +2,9 @@
 
 ## Overview
 
-The `/mobile/` package provides Hoist's mobile-specific UI components, built on [Onsen UI](https://onsen.io/).
-These components extend the cross-platform foundation from `/cmp/` with touch-optimized styling,
-gestures, and navigation patterns designed for mobile devices.
+The `/mobile/` package provides Hoist's mobile-specific UI components. They render native
+elements, styled for touch, and extend the cross-platform foundation from `/cmp/` with gestures
+and navigation patterns designed for mobile devices.
 
 Mobile applications use components from both `/mobile/` and `/cmp/` - the mobile package adds
 platform-specific wrappers, inputs, and navigation while leveraging shared models and logic from
@@ -240,7 +240,8 @@ toolbar(
 
 ### Tab Container (`/cmp/tab/`)
 
-Tabbed interface with swipeable content:
+Tabbed interface with a switcher of buttons docked above or below the content (`switcher:
+{orientation: 'top' | 'bottom'}`, default `'bottom'`):
 
 ```typescript
 import {tabContainer} from '@xh/hoist/mobile/cmp/tab';
@@ -481,4 +482,3 @@ import {formField} from '@xh/hoist/desktop/cmp/form';
 - [`/cmp/`](../cmp/README.md) - Cross-platform components and models
 - [`/desktop/`](../desktop/README.md) - Desktop platform components
 - [`/core/`](../core/README.md) - HoistModel, hoistCmp, XH singleton
-- `/kit/onsen/` - Onsen UI library wrappers
