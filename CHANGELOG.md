@@ -69,6 +69,8 @@ detailed, step-by-step upgrade instructions with before/after code examples.
   showed nothing. Such tabs now render as on desktop, only without a switcher button.
 * Fixed mobile `TextInput`, `NumberInput` and `SearchInput` applying `domAttrs` to a wrapper
   element rather than to the `<input>` itself.
+* Fixed `Markdown` rendering "No model found" in place of its content when no Hoist model was in
+  context, such as inside another React library's components.
 
 ### ⚙️ Technical
 
