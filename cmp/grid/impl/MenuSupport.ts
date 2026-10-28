@@ -4,9 +4,9 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {isEmpty, isFunction, isNil, isString, uniq} from 'lodash';
+import {isEmpty, isFunction, isNil, isString, sortBy, uniq} from 'lodash';
 import {copyToClipboard, TEST_ID} from '@xh/hoist/utils/js';
-import {hoistCmp, type HoistProps, isMenuHeading, type Some, XH} from '@xh/hoist/core';
+import {hoistCmp, type HoistProps, type HSide, isMenuHeading, type Some, XH} from '@xh/hoist/core';
 import {Column, GridModel} from '@xh/hoist/cmp/grid';
 import {
     type ActionFnData,
@@ -24,24 +24,32 @@ import {div, span} from '@xh/hoist/cmp/layout';
 import {
     useGridMenuItem,
     type GetContextMenuItemsParams,
+    type GetMainMenuItemsParams,
     type MenuItemDef,
     type CustomMenuItemProps
 } from '@xh/hoist/kit/ag-grid';
-import type {GridContextMenuItemLike, GridContextMenuSpec} from '../GridContextMenu';
+import type {
+    GridContextMenuItemLike,
+    GridContextMenuSpec,
+    GridHeaderContextMenuSpec
+} from '../GridContextMenu';
+
+/** ag-Grid params for a cell context menu, or for a column header one, which carries no row. */
+type GridMenuAgParams = GetContextMenuItemsParams | (GetMainMenuItemsParams & {node?: never});
 
 /**
  * @internal
  */
 export function getAgGridMenuItems(
-    params: GetContextMenuItemsParams,
+    params: GridMenuAgParams,
     model: GridModel,
-    spec: GridContextMenuSpec
+    spec: GridContextMenuSpec | GridHeaderContextMenuSpec
 ): Array<string | MenuItemDef> {
-    let menuItems: GridContextMenuItemLike[] = isFunction(spec) ? spec(params, model) : spec;
+    let menuItems: GridContextMenuItemLike[] = isFunction(spec) ? spec(params as any, model) : spec;
 
     if (isEmpty(menuItems)) return null;
 
-    const record = params.node?.data,
+    const record = params.node?.data ?? null,
         colId = params.column?.getColId(),
         column = !isNil(colId) ? model.getColumn(colId) : null;
 
@@ -53,11 +61,11 @@ function buildMenuItems(
     record: StoreRecord,
     gridModel: GridModel,
     column: Column,
-    agParams: GetContextMenuItemsParams
+    agParams: GridMenuAgParams
 ) {
     // Transform to actions, headings, or ag-Grid ready strings.
     const actions: Array<RecordAction | RecordActionHeading | string> = menuItems.flatMap(it => {
-        if (isString(it)) return replaceHoistToken(it, gridModel);
+        if (isString(it)) return replaceHoistToken(it, gridModel, column);
         if (it instanceof RecordAction) return it;
         if (isMenuHeading(it)) return it;
         return new RecordAction(it);
@@ -131,10 +139,24 @@ function buildMenuItems(
 }
 
 /** Pre-process hoist tokens to RecordActions, leaving ag-Grid token in place. */
-function replaceHoistToken(token: string, gridModel: GridModel): Some<RecordAction | string> {
+function replaceHoistToken(
+    token: string,
+    gridModel: GridModel,
+    column: Column
+): Some<RecordAction | string> {
     switch (token) {
         case '-':
             return 'separator';
+        case 'autosizeColumn':
+            return new RecordAction({
+                text: 'Autosize Column',
+                icon: Icon.magic(),
+                displayFn: ({column}) => ({
+                    hidden: !gridModel.autosizeEnabled || !column?.autosizable || !!column.flex
+                }),
+                actionFn: ({column}) =>
+                    gridModel.autosizeAsync({columns: column.colId, showMask: true})
+            });
         case 'autosizeColumns':
             return new RecordAction({
                 text: 'Autosize Columns',
@@ -288,15 +310,65 @@ function replaceHoistToken(token: string, gridModel: GridModel): Some<RecordActi
                 ]
             });
         }
+        case 'hideColumn':
+            return new RecordAction({
+                text: 'Hide Column',
+                icon: Icon.eyeSlash(),
+                displayFn: ({column}) => ({hidden: !column?.hideable}),
+                actionFn: ({column}) => gridModel.hideColumn(column.colId)
+            });
+        case 'pinColumn':
+            return createPinColumnItem(gridModel);
         case 'restoreDefaults':
             return new RecordAction({
                 text: 'Restore Grid Defaults',
                 icon: Icon.reset(),
                 actionFn: () => gridModel.restoreDefaultsAsync()
             });
+        case 'sort':
+            return createSortItems(gridModel, column);
         default:
             return token;
     }
+}
+
+function createPinColumnItem(gridModel: GridModel): RecordAction {
+    const pinItem = (text: string, side: HSide): RecordActionSpec => ({
+        text,
+        displayFn: ({column}) => {
+            const pinned = gridModel.getColumnPinned(column.colId) ?? null;
+            return side ? {icon: pinned === side ? Icon.check() : null} : {hidden: !pinned};
+        },
+        actionFn: ({column}) => gridModel.updateColumnState([{colId: column.colId, pinned: side}])
+    });
+
+    return new RecordAction({
+        text: 'Pin Column',
+        icon: Icon.pin(),
+        displayFn: ({column}) => ({hidden: !column || !gridModel.enableColumnPinning}),
+        items: [pinItem('Left', 'left'), pinItem('Right', 'right'), pinItem('Unpin', null)]
+    });
+}
+
+function createSortItems(gridModel: GridModel, column: Column): RecordAction[] {
+    // One item per sort the column offers: ascending then descending, each abs variant after
+    // its standard sort.
+    const sorts = sortBy(column?.availableSorts ?? [], [it => it.sort !== 'asc', it => it.abs]);
+    return sorts.map(sorter => {
+        const asc = sorter.sort === 'asc',
+            icon = asc
+                ? sorter.abs
+                    ? Icon.sortAbsAsc()
+                    : Icon.sortAsc()
+                : sorter.abs
+                  ? Icon.sortAbsDesc()
+                  : Icon.sortDesc();
+        return new RecordAction({
+            text: `Sort ${asc ? 'Ascending' : 'Descending'}${sorter.abs ? ' (Abs)' : ''}`,
+            icon,
+            actionFn: () => gridModel.setSortBy(sorter)
+        });
+    });
 }
 
 function createExpandCollapseItem(gridModel: GridModel): RecordAction[] {

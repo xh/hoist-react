@@ -1,9 +1,8 @@
 # Blueprint
 
-Hoist's desktop UI builds on [BlueprintJS](https://blueprintjs.com/) - `@blueprintjs/core` and
-`@blueprintjs/datetime` are direct dependencies of hoist-react, and many desktop components
-(inputs, menus, popovers, dialogs, toasts, hotkeys, the date picker) render Blueprint components
-under the hood.
+Hoist's desktop UI builds on [BlueprintJS](https://blueprintjs.com/) - `@blueprintjs/core` is a
+direct dependency of hoist-react, and many desktop components (inputs, menus, popovers, dialogs,
+toasts, hotkeys) render Blueprint components under the hood.
 
 This kit package is the **single integration point** for Blueprint within Hoist. Both framework
 code and applications should import Blueprint components from `@xh/hoist/kit/blueprint` - never
@@ -33,8 +32,8 @@ Notable wrapper behavior:
 
 Blueprint ships its own set of ~700 SVG icons in `@blueprintjs/icons`. **Hoist does not use them
 for application icons** - Hoist's `Icon` API (see `/icon`) is built on FontAwesome. Blueprint
-icons appear only as internals of Blueprint components: the date picker's month/year carets and
-nav chevrons, submenu carets on `MenuItem`, close buttons on toasts and dialogs, and similar.
+icons appear only as internals of Blueprint components: submenu carets on `MenuItem`, close
+buttons on toasts and dialogs, and similar.
 
 ### Build-time icon stubbing (and how not to regress it)
 
@@ -70,22 +69,17 @@ A Blueprint upgrade can change which icons its components use, so re-verify the 
     ```bash
     # Named icon-component imports - missing entries fail app builds loudly:
     grep -rh 'from "@blueprintjs/icons"' \
-        node_modules/@blueprintjs/{core,datetime,select}/lib/esm --include="*.js" | sort -u
+        node_modules/@blueprintjs/core/lib/esm --include="*.js" | sort -u
 
     # String-name icon usages - missing entries render blank, with no error:
     grep -rhoE 'icon: "[a-z-]+"' \
-        node_modules/@blueprintjs/{core,datetime,select}/lib/esm --include="*.js" | sort -u
+        node_modules/@blueprintjs/core/lib/esm --include="*.js" | sort -u
     ```
-
-    Note `@blueprintjs/select` is included - it is a transitive dependency of datetime and its
-    components (with their `SearchIcon`) are in the bundle graph even though Hoist does not use
-    it directly.
 
 2. Compare the results against `requiredBlueprintIcons` in hoist-dev-utils, and PR any additions
    there.
 
-3. Build and run Toolbox and spot-check the built-in icons: date picker nav chevrons and
-   month/year carets, a menu with a submenu (e.g. ViewManager view groups), toast and dialog
+3. Build and run Toolbox and spot-check the built-in icons: a menu with a submenu (e.g. ViewManager view groups), toast and dialog
    close buttons.
 
 If Blueprint restructures `@blueprintjs/icons` again (entry point or `generated/` layout), the

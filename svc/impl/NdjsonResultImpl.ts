@@ -119,19 +119,24 @@ export class NdjsonResultImpl implements NdjsonResult {
             decoder = new TextDecoder();
         let buffer = '';
 
-        while (true) {
-            const {done, value} = await reader.read();
-            if (done) break;
+        try {
+            while (true) {
+                const {done, value} = await reader.read();
+                if (done) break;
 
-            buffer += decoder.decode(value, {stream: true});
-            const lines = buffer.split('\n');
-            buffer = lines.pop(); // retain any partial trailing line for the next chunk
-            for (const line of lines) {
-                if (!line) continue;
-                const record = JSON.parse(line);
-                interner?.intern(record);
-                yield record;
+                buffer += decoder.decode(value, {stream: true});
+                const lines = buffer.split('\n');
+                buffer = lines.pop(); // retain any partial trailing line for the next chunk
+                for (const line of lines) {
+                    if (!line) continue;
+                    const record = JSON.parse(line);
+                    interner?.intern(record);
+                    yield record;
+                }
             }
+        } finally {
+            // Close the connection if the consumer exits early or a line fails to parse.
+            reader.cancel().catch(noop);
         }
 
         buffer += decoder.decode();

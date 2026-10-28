@@ -35,11 +35,9 @@ import {
     TraceService,
     WebSocketService
 } from '@xh/hoist/svc';
-import {getLogLevel, LogLevel, setLogLevel} from '@xh/hoist/utils/js';
+import {genRandomId, getLogLevel, logError, LogLevel, setLogLevel} from '@xh/hoist/utils/js';
 import {camelCase, flatten, isString, uniqueId} from 'lodash';
 import {Router, State} from 'router5';
-import {CancelFn} from 'router5/types/types/base';
-import ShortUniqueId from 'short-unique-id';
 import {SetOptional} from 'type-fest';
 import {AppContainerModel} from '../appcontainer/AppContainerModel';
 import {BannerModel} from '../appcontainer/BannerModel';
@@ -84,6 +82,9 @@ declare const xhAppBuild: string;
 declare const xhBaseUrl: string;
 declare const xhClientApps: string[];
 declare const xhIsDevelopmentMode: boolean;
+
+/** Returned by `navigate` and its siblings to cancel a transition in progress. */
+type CancelFn = ReturnType<Router['navigate']>;
 
 /**
  * Top-level Singleton model for Hoist. This is the main entry point for the API.
@@ -915,7 +916,8 @@ export class XHApi {
 
     /**
      * Helper method to destroy resources safely (e.g. child HoistModels). Will quietly skip args
-     * that are null / undefined or that do not implement destroy().
+     * that are null / undefined or that do not implement destroy(). Logs, rather than throws, an
+     * error from any destroy(), so the remaining args are still destroyed.
      *
      * @param args - objects to be destroyed. If any argument is an array, each top-level element
      *      in the array will be destroyed. (Note this is *not* done recursively.)
@@ -924,7 +926,11 @@ export class XHApi {
         if (args) {
             args = flatten(args);
             args.forEach(it => {
-                it?.destroy?.();
+                try {
+                    it?.destroy?.();
+                } catch (e) {
+                    logError(['Error destroying object', e], it);
+                }
             });
         }
     }
@@ -947,13 +953,13 @@ export class XHApi {
     }
 
     private genLoadId(): string {
-        return new ShortUniqueId({length: 8}).rnd();
+        return genRandomId();
     }
 
     private genTabId(): string {
         let ret = window.sessionStorage?.getItem('xhTabId');
         if (!ret) {
-            ret = new ShortUniqueId({length: 8}).rnd();
+            ret = genRandomId();
             window.sessionStorage?.setItem('xhTabId', ret);
         }
         return ret;

@@ -154,12 +154,7 @@ export abstract class PersistenceProvider<S = any> {
 
     destroy() {
         this.disposer?.();
-        // Flush pending write now; don't let a failure abort owner's destroy.
-        try {
-            this.debouncedWrite?.flush();
-        } catch (e) {
-            logError(e, this.owner);
-        }
+        this.debouncedWrite?.flush(); // write any pending change now
     }
 
     /** Push the current state of this provider to its target. */

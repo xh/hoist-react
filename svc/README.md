@@ -136,7 +136,8 @@ override async doLoadAsync(loadSpec: LoadSpec) {
 | `params` | object | Query string parameters                                                               |
 | `headers` | object | Additional headers                                                                    |
 | `timeout` | number | Timeout in ms (default 30000)                                                         |
-| `autoAbortKey` | string | Cancel previous requests with same key                                                |
+| `autoAbortKey` | string | Cancel previous requests with same key. For `fetchNdjson`, covers the whole stream    |
+| `fetchOpts` | object | Options for the native `fetch()`. A `signal` here also aborts the request, alongside Hoist's own |
 | `propagateTrace` | boolean | Send a `traceparent` header when tracing is enabled. Overrides `FetchService.defaults.propagateTrace` |
 | `loadSpec` | LoadSpec | Metadata for tracking                                                                 |
 | `span` | Span | Parent span for tracing. Typically supplied via a `Runner` chain (`runner.fetchJson(...)`) rather than set directly |

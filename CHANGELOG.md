@@ -11,12 +11,127 @@
      codebase, or with the symbol itself (`Foo.bar` now ...) when a living API changed behavior.
   3. Plain ASCII punctuation only. Use " - " for in-sentence breaks, never an em dash.
 -->
+
 ## 90.0.0-SNAPSHOT - unreleased
 
-### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW - trace headers on cross-origin fetches)
+### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW - `formatConfig`, `DateInput` props, mobile styling)
+See [`docs/upgrade-notes/v90-upgrade-notes.md`](docs/upgrade-notes/v90-upgrade-notes.md) for
+detailed, step-by-step upgrade instructions with before/after code examples.
 
-* `FetchService` now sends the `traceparent` header only to the app's own server, so cross-origin
-  requests cannot fail a CORS preflight on it. Set `propagateTrace` to send it elsewhere.
+* Removed `NumberFormatOptions.formatConfig`, which took a numbro format. Use `precision`, `zeroPad`
+  and `withCommas` instead.
+* Desktop `DateInput` now renders its calendar with react-day-picker 10, as the mobile `DateInput`
+  already did, and its time picker is Hoist's own 24-hour control. `dayPickerProps` now takes
+  react-day-picker 10 props - see the upgrade notes for the renames from v8. Removed
+  `timePickerProps`, which took Blueprint `TimePicker` options such as `useAmPm`.
+* Mobile components no longer render Onsen UI custom elements. `Button`, `TextInput`,
+  `NumberInput`, `SearchInput`, `Checkbox`, `SwitchInput`, `Dialog`, `DialogPanel`, `Toast`,
+  `TabContainer` and `MenuButton` menus render plain elements under `xh-` class names. App SCSS
+  that targeted Onsen's class names (`.button`, `.text-input`, `.dialog`, `.tabbar`, `.toast`,
+  `.page__content` and others) or its CSS variables must target Hoist's instead.
+* Mobile components now render in the app font. Onsen applied the system font to its buttons,
+  dialogs, tabs, menus and toasts, so any of those an app had not styled change typeface.
+* Removed the `modifier` prop from mobile `Button`, `TextInput`, `NumberInput`, `SearchInput`,
+  `Checkbox` and `SwitchInput`. It passed an Onsen modifier string and has no equivalent.
+* Mobile `Checkbox` and `SwitchInput` now put their `testId` on the native `<input>` rather than
+  on a wrapper, as on desktop.
+
+### 🎁 New Features
+
+* Added `GridModel.headerContextMenu`, a context menu shown on right-click of a desktop grid column
+  header. By default it sorts, pins, hides and autosizes the clicked column and opens the column
+  chooser. Set `false` to show none. Grids that disable `contextMenu` get no header menu by default.
+* Added `sort`, `pinColumn`, `hideColumn` and `autosizeColumn` grid menu tokens, which act on the
+  clicked column, and `Column.availableSorts`. The `sort` token offers one item per sort the column
+  offers.
+* Added `genRandomId()` to `@xh/hoist/utils/js` for short random alphanumeric IDs.
+* Mobile `TabContainer` now applies `${testId}-switcher` to its switcher and
+  `${testId}-switcher-${tabId}` to each switcher button, as on desktop.
+* Added "Purge Connections" buttons to the Admin Console Connection Pool Monitor, to close all
+  pooled JDBC connections on one instance or across the cluster. Requires hoist-core v44+.
+
+### 🐞 Bug Fixes
+
+* Fixed column group borders not following their columns when reordered or hidden via the column
+  chooser.
+* Fixed grid row borders and the row drag drop line stopping at the last column when the columns
+  do not fill the grid's width. Both now span the full row, as they did before AG Grid 36.
+* Fixed a spec file in `@xh/hoist/test-support` failing with an unhandled error when it ended
+  within 5 seconds of boot. The kit now sends pending pref, activity, metric and span pushes before
+  it closes the fake hoist-core, and the fake's `xhSizingMode` default no longer makes boot save it.
+* Fixed desktop `Select` waiting on its selected option after its menu closed or it unmounted. The
+  wait could scroll another select's menu, or leave an unhandled rejection after five seconds.
+* Fixed `ViewManagerModel` refreshes reverting a pin or auto-save change whose write was still
+  debounced or in flight.
+* Fixed `ViewManagerModel` sending overlapping user state writes, which could fail on the server
+  and lose a pin, auto-save or current view change. It now sends one write per burst of changes.
+* Fixed mobile `TabContainer` not rendering a tab with `excludeFromSwitcher`, so activating one
+  showed nothing. Such tabs now render as on desktop, only without a switcher button.
+* Fixed mobile `TextInput`, `NumberInput` and `SearchInput` applying `domAttrs` to a wrapper
+  element rather than to the `<input>` itself.
+
+### ⚙️ Technical
+
+* Desktop and mobile `DateInput` build their calendar props with one shared helper and share one
+  react-day-picker theme, in `@xh/hoist/kit/react-day-picker`, for light and dark modes. Dropping
+  Blueprint's date picker also drops the second copies of date-fns and react-day-picker it pulled
+  into every app.
+* `LocalStorageService` and `SessionStorageService` now read and write browser storage directly.
+  Keys and JSON values are stored exactly as before.  Removed the unused `isFake` getter - when
+  storage is unavailable the service logs a warning and holds values in memory, as before.
+* Removed Onsen UI from the mobile toolkit, with the `@xh/hoist/kit/onsen` wrappers. Each mobile
+  component now owns its DOM and styles.
+
+### ✨ Styles
+
+* Mobile apps no longer load Onsen UI's stylesheet or its icon fonts. Touch-device defaults that
+  the Onsen stylesheet supplied - no tap highlight, no focus rings on controls, `touch-action:
+  manipulation`, heading sizes, and a body sized to the viewport - are now set by the mobile
+  `AppContainer` stylesheet.
+* Mobile `Dialog` and `DialogPanel` render into a portal on the document body, so they cover the
+  viewport wherever they sit in the component tree.
+
+### 📚 Libraries
+
+* router5 `7.0 → 8.0`
+* router5-plugin-browser `7.0 → 8.0`
+* mobx `7.0 → 7.1` - `toJS` now includes `@observable accessor` fields, which it previously left out
+* react-window `2.3 → 2.4`
+* http-status-codes `removed`
+* inflection `added` - replaces lodash-inflection behind `pluralize`, `singularize` and `ordinalize`
+* lodash-inflection `removed`
+* short-unique-id `removed`
+* store2 `removed`
+* numbro `removed`
+* @blueprintjs/datetime `removed`
+* date-fns `removed`
+* onsenui `removed`
+* react-onsenui `removed`
+
+
+## 89.3.1 - 2026-10-21
+
+### 🐞 Bug Fixes
+
+* Fixed pinned columns scrolling out of view in the summary row of mobile grids during horizontal
+  scroll.
+
+## 89.3.0 - 2026-10-21
+
+### 🎁 New Features
+
+* `fetchNdjson` streams are now aborted cleanly and fully via the `autoAbortKey` or if the reading
+  consumer closes the connection early.
+
+### 🐞 Bug Fixes
+
+* Fixed a `FetchOptions.fetchOpts.signal` replacing `FetchService`'s own, which left `timeout` and
+  `autoAbortKey` unable to abort the request. The two signals are now joined, and an abort with a
+  custom reason reports as "Fetch Aborted".
+* Fixed oversized pinned column zones in the desktop column chooser. They now fit their columns.
+
+
+## 89.2.0 - 2026-10-20
 
 ### 🎁 New Features
 
@@ -48,12 +163,17 @@
   change at once.
 * Fixed desktop tab switcher context menus throwing for an `extraMenuItems` entry with a static
   `items` submenu. Items a `prepareFn` adds now also receive the tab in their `actionFn`.
+* Fixed `XH.safeDestroy()` stopping at the first `destroy()` that threw, which left the remaining
+  objects - and the rest of a model's managed children - undestroyed. It now logs the error.
 
 ### ⚙️ Technical
 
 * Added protected `PersistenceProvider.cancelPendingWrite()`. `pushStateToTarget()` now drops any
   pending write. A custom provider that overrides it without calling `super` should call this
   method.
+* `FetchService` now sends the `traceparent` header only to the app's own server, so cross-origin
+  requests cannot fail a CORS preflight on it. Set `propagateTrace` to send it elsewhere.
+
 
 ## 89.1.0 - 2026-10-19
 
@@ -85,6 +205,12 @@
 * Fixed a model created with `creates()` re-running `onLinked()` on every render when its component
   had no Hoist model above it, as in a component test rendered at the root.
 
+### ⚙️ Technical
+
+* `fmtNumber` and the formatters built on it now format digits with a cached `Intl.NumberFormat` in
+  place of numbro. This speeds up bulk formatting such as all-rows grid autosizing. Ordinary values
+  render as before. Edge cases such as negative ties and `Infinity` changed - see the upgrade notes.
+
 ### 🤖 AI Docs + Tooling
 
 * The hoist-react MCP server and `hoist-docs` CLI now serve docs from companion libraries that build
@@ -94,6 +220,7 @@
   agents with `mcpInstructions`, for example which Hoist components it replaces, and keep its
   maintainer docs out of apps with `"mcpAudience": "maintainers"`. See
   [Companion Library Docs](docs/companion-library-docs.md).
+
 
 ## 89.0.1 - 2026-10-14
 

@@ -98,7 +98,7 @@ See [`docs-roadmap.md`](./planning/docs-roadmap.md) for documentation coverage t
 | [`/desktop/`](../desktop/README.md) | Desktop-specific components and app container | Desktop components, Blueprint wrappers, desktop navigation |
 | [`/desktop/cmp/dash/`](../desktop/cmp/dash/README.md) | Configurable dashboard system with draggable, resizable widgets | DashContainerModel, DashCanvasModel, DashViewSpec, DashViewModel, widget persistence, ViewManager integration |
 | [`/desktop/cmp/panel/`](../desktop/cmp/panel/README.md) | Desktop panel container with toolbars, banners, masks, and collapsible behavior | Panel, PanelModel, Toolbar, Banner, mask, collapse/resize, persistence, modal support |
-| [`/mobile/`](../mobile/README.md) | Mobile-specific components built on Onsen UI | AppContainer, NavigatorModel, Panel, AppBar, mobile inputs, touch navigation, swipeable tabs |
+| [`/mobile/`](../mobile/README.md) | Mobile-specific components for touch devices | AppContainer, NavigatorModel, Panel, AppBar, mobile inputs, touch navigation, tabs |
 
 ### Utilities
 
@@ -134,7 +134,7 @@ Cross-cutting documentation that spans multiple packages:
 |---------|-------------|------------|
 | [`/icon/`](../icon/README.md) | Factory-based icon system wrapping FontAwesome Pro | Icon singleton, IconProps, intent coloring, size variants, asHtml, fileIcon, Spinner, SpinnerProps |
 | [`/security/`](../security/README.md) | OAuth 2.0 client abstraction for Auth0 and Microsoft Entra ID (MSAL) | BaseOAuthClient, AuthZeroClient, MsalClient, Token, AccessTokenSpec, auto-refresh, re-login |
-| [`/kit/`](../kit/README.md) | Centralized wrappers for third-party libraries used by Hoist | installAgGrid, installHighcharts, Blueprint, Onsen, GoldenLayout, react-select, version constraints |
+| [`/kit/`](../kit/README.md) | Centralized wrappers for third-party libraries used by Hoist | installAgGrid, installHighcharts, Blueprint, GoldenLayout, react-select, version constraints |
 | [`/kit/blueprint/`](../kit/blueprint/README.md) | Blueprint integration - wrapped components, element factories, and build-time icon stubbing | Blueprint, Popover, Dialog, element factories, blueprint icons, loadAllBlueprintJsIcons, upgrade checklist |
 | [`/inspector/`](../inspector/README.md) | Built-in developer tool for real-time inspection of Hoist instances and memory | InspectorPanel, InspectorModel, StatsModel, InstancesModel, DiagnosticsModel, property watchlist, model leak detection |
 | [`/styles/`](../styles/README.md) | CSS custom properties, theming, BEM naming, SCSS conventions, and utility classes | `--xh-*` CSS vars, vars.scss, XH.scss, dark theme, ThemeModel, BEM, `xh-` prefix, intent colors, utility classes |
@@ -176,6 +176,7 @@ breaking changes, before/after code examples, and verification checklists.
 
 | Version | Released | Difficulty | Key Changes |
 |---------|----------|------------|-------------|
+| [v90](./upgrade-notes/v90-upgrade-notes.md) | TBD | 🟢 LOW | numbro removed - `NumberFormatOptions.formatConfig` no longer supported |
 | [v89](./upgrade-notes/v89-upgrade-notes.md) | 2026-10-13 | 🟢 LOW | TypeScript 7 (strongly recommended), `GridFilterModelConfig.fieldSpecs` no longer an allow-list |
 | [v88](./upgrade-notes/v88-upgrade-notes.md) | 2026-09-28 | 🔴 HIGH | TC39 decorators (`accessor`, no `makeObservable`) + dev-utils 16 / Rsbuild, MobX 7 named exports, AG Grid 36 + Theming API, React 19.3, v86 scheduled removals |
 | [v87](./upgrade-notes/v87-upgrade-notes.md) | TBD | 🟠 MEDIUM | React 19 + Floating UI popovers, data-layer perf overhaul (`leafMap`, `getCubeLeaves`, `StoreRecord.data` access), new column chooser + `RowDragModule`, hoist-core >= 40.5.0 |

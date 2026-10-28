@@ -62,7 +62,6 @@ import {
     CellDoubleClickedEvent,
     CellEditingStartedEvent,
     CellEditingStoppedEvent,
-    ColumnEvent,
     RowClickedEvent,
     RowDoubleClickedEvent
 } from '@xh/hoist/kit/ag-grid';
@@ -121,7 +120,11 @@ import {
 import {createRef, ReactNode, RefObject} from 'react';
 import {GridAutosizeOptions} from './GridAutosizeOptions';
 import {GridModelDiagnostics} from './impl/GridModelDiagnostics';
-import {GridContextMenuItemLike, GridContextMenuSpec} from './GridContextMenu';
+import {
+    GridContextMenuItemLike,
+    GridContextMenuSpec,
+    GridHeaderContextMenuSpec
+} from './GridContextMenu';
 import {GridSorter, GridSorterLike} from './GridSorter';
 import {computeSortedRecords} from './impl/RecordSortUtils';
 import {initPersist} from './impl/InitPersist';
@@ -348,10 +351,18 @@ export interface GridConfig {
     clicksToExpand?: number;
 
     /**
-     * Array of RecordActions, dividers, or token strings with which to create a context menu.
-     * May also be specified as a function returning same or false to omit context menu from grid.
+     * Items for the context menu shown on right-click of a row or cell, as actions, headings and
+     * tokens, or a function returning them, or false to show none. Desktop only. Defaults to
+     * filter, copy, expand / collapse, export and column items - see `GridModel.defaults`.
      */
     contextMenu?: GridContextMenuSpec | false;
+
+    /**
+     * Items for the context menu shown on right-click of a column header, as for `contextMenu`,
+     * or false to show none. Desktop only. Defaults to column-focused items for the clicked column
+     * plus the column chooser, or to none when `contextMenu` is disabled.
+     */
+    headerContextMenu?: GridHeaderContextMenuSpec | false;
 
     /**
      * True (default) to render cells only for the columns within or near the visible scroll area,
@@ -451,6 +462,7 @@ export interface GridModelDefaults {
     colChooserModel?: Omit<ColChooserConfig, 'gridModel'> | ColChooserMode | boolean | null;
     colDefaults?: Partial<ColumnSpec> | null;
     contextMenu?: GridContextMenuItemLike[];
+    headerContextMenu?: GridContextMenuItemLike[];
     emptyText?: ReactNode | null;
     enableColumnPinning?: boolean;
     enableExport?: boolean;
@@ -525,6 +537,18 @@ export class GridModel extends HoistModel {
             'colChooser',
             'autosizeColumns'
         ],
+        headerContextMenu: [
+            'sort',
+            '-',
+            'pinColumn',
+            'hideColumn',
+            'autosizeColumn',
+            '-',
+            'restoreDefaults',
+            '-',
+            'colChooser',
+            'autosizeColumns'
+        ],
         emptyText: null,
         enableColumnPinning: true,
         enableExport: false,
@@ -556,6 +580,7 @@ export class GridModel extends HoistModel {
     rowClassFn: RowClassFn;
     rowClassRules: Record<string, RowClassRuleFn>;
     contextMenu: GridContextMenuSpec;
+    headerContextMenu: GridHeaderContextMenuSpec;
     groupRowHeight: number;
     groupRowRenderer: GroupRowRenderer;
     groupSortFn: GridGroupSortFn;
@@ -709,6 +734,7 @@ export class GridModel extends HoistModel {
             onCellContextMenu,
             clicksToExpand = GridModel.defaults.clicksToExpand ?? (XH.isMobileApp ? 1 : 2),
             contextMenu,
+            headerContextMenu,
             useVirtualColumns = true,
             autosizeOptions = {},
             restoreDefaultsFn,
@@ -743,8 +769,8 @@ export class GridModel extends HoistModel {
         this.groupRowRenderer = managedRenderer(groupRowRenderer, 'GROUP_ROW');
         this.groupSortFn = withDefault(groupSortFn, this.defaultGroupSortFn);
         this.showGroupRowCounts = showGroupRowCounts;
-        this.contextMenu =
-            contextMenu === false ? [] : withDefault(contextMenu, GridModel.defaults.contextMenu);
+        this.contextMenu = this.parseContextMenu(contextMenu);
+        this.headerContextMenu = this.parseHeaderContextMenu(headerContextMenu, contextMenu);
         this.useVirtualColumns = useVirtualColumns;
         this.externalSort = externalSort;
         apiDeprecated('GridModel.enableFullWidthScroll', {
@@ -2248,6 +2274,23 @@ export class GridModel extends HoistModel {
         };
     }
 
+    private parseContextMenu(spec: GridConfig['contextMenu']): GridContextMenuSpec {
+        return spec === false ? [] : withDefault(spec, GridModel.defaults.contextMenu);
+    }
+
+    /** A grid with no context menu gets no header menu either, unless one is set explicitly. */
+    private parseHeaderContextMenu(
+        spec: GridConfig['headerContextMenu'],
+        contextMenu: GridConfig['contextMenu']
+    ): GridHeaderContextMenuSpec {
+        if (spec === false) return [];
+        const dflt =
+            contextMenu === false || contextMenu === null
+                ? []
+                : GridModel.defaults.headerContextMenu;
+        return withDefault(spec, dflt);
+    }
+
     private parseChooserModel(chooserModel: GridConfig['colChooserModel']): IColChooserModel {
         if (!chooserModel) return null;
 
@@ -2299,15 +2342,6 @@ export class GridModel extends HoistModel {
     ): ColumnCellClassRuleFn {
         return ({api, column, ...ctx}) => {
             if (!api || !column) return false;
-
-            // Re-evaluate cell class rules when column is re-ordered
-            // See https://www.ag-grid.com/javascript-data-grid/column-object/#reference-events
-            if (!column['xhAppliedGroupBorderListener']) {
-                column['xhAppliedGroupBorderListener'] = true;
-                column.addEventListener('leftChanged', ({api, columns, source}: ColumnEvent) => {
-                    if (source === 'uiColumnMoved') api.refreshCells({columns});
-                });
-            }
 
             // Don't render a left-border if col is first or if prev col already has right-border
             if (side === 'left') {

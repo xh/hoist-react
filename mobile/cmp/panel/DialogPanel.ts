@@ -5,7 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {hoistCmp} from '@xh/hoist/core';
-import {dialog} from '@xh/hoist/kit/onsen';
+import {dialogContainer} from '@xh/hoist/mobile/cmp/dialog/impl/DialogContainer';
 import '@xh/hoist/mobile/register';
 import './DialogPanel.scss';
 import {panel, PanelProps} from './Panel';
@@ -31,11 +31,10 @@ export const [DialogPanel, dialogPanel] = hoistCmp.withFactory<DialogPanelProps>
     render({className, isOpen, children, ...rest}) {
         if (!isOpen) return null;
 
-        return dialog({
-            isOpen: true,
+        return dialogContainer({
             isCancelable: false,
             className,
-            items: panel({
+            item: panel({
                 items: children,
                 ...rest
             })
