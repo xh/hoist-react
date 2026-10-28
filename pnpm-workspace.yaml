@@ -61,9 +61,9 @@ pmOnFail: ignore
 # present skips the check and reports "Already up to date". Note also that an override must name
 # the dep's exact range to dedupe it; restating a broader range does nothing.
 
-# Several transitive deps (react-popper, react-onsenui) still declare
-# react/react-dom peer ranges capped at 18. Hoist v87 runs React 19 - acknowledge that here
-# rather than surfacing unmet-peer warnings on every install.
+# Transitive deps such as react-popper still declare react/react-dom peer ranges capped at 18.
+# Hoist v87 runs React 19 - acknowledge that here rather than surfacing unmet-peer warnings on
+# every install.
 #
 # eslint-plugin-tsdoc pins `@typescript-eslint/utils` ~8.56, whose packages cap their TypeScript peer
 # below 6. The plugin reads doc comments only, and lint passes with TypeScript 7 at the root.
