@@ -12,6 +12,9 @@ affected APIs.
 - **`DateInput` picker props (required if used)** - the desktop `DateInput` calendar is now
   react-day-picker 10, so `dayPickerProps` takes v10 props, and `timePickerProps` is gone. Apps
   that rendered Blueprint's `datePicker` from the kit need another calendar - see Step 2.
+- **Mobile styling (required if an app styled Onsen class names)** - mobile components no longer
+  render Onsen UI elements. App SCSS that targeted Onsen's class names or CSS variables, and any
+  use of the `modifier` prop, needs updating - see Step 2.
 
 ## Upgrade Steps
 
@@ -186,6 +189,65 @@ Ordinary values render exactly as before. These edge cases changed:
 Parse formatted text with `parseNumber()` before you format it, and update tests or exports that
 match the text `Infinity`.
 
+### 2. Update Mobile Styling That Targeted Onsen UI
+
+Hoist's mobile components used to render [Onsen UI](https://onsen.io/) custom elements, which
+stamped their own class names into the DOM. In v90 they render native elements under `xh-` class
+names, and Onsen's stylesheet and CSS variables are gone. Most apps need no change: Toolbox did
+not. An app that styled Onsen's class names, or passed the `modifier` prop, needs the steps below.
+
+**Find affected code:**
+
+```bash
+grep -rnE "modifier:|\.(button|text-input|search-input|checkbox|switch|list-item|page|dialog|dialog-container|dialog-mask|toast|tabbar)(__|--|[^a-z-])|ons-|--(highlight-color|text-color|tabbar-height|font-size)\b" client-app/src/
+```
+
+**Remove imports from `@xh/hoist/kit/onsen`.** The kit is gone along with the `onsenui` and
+`react-onsenui` packages. An app that imported Onsen components through it, or installed Onsen
+itself, must replace them with Hoist's mobile components or its own.
+
+**Remove the `modifier` prop.** Mobile `Button`, `TextInput`, `NumberInput`, `SearchInput`,
+`Checkbox` and `SwitchInput` no longer accept it. It carried an Onsen modifier string such as
+`'large'` or `'underbar'`; there is no equivalent. Style the component's `className` instead.
+
+**Replace Onsen selectors with Hoist's.** The DOM each component renders is now Hoist's own:
+
+| Component | Onsen selector (v89) | Hoist selector (v90) |
+|---|---|---|
+| `Button` | `ons-button`, `.button` | `.xh-button` |
+| `TextInput` | `ons-input`, `.text-input` | `.xh-text-input`, `.xh-text-input__input` |
+| `NumberInput` | `ons-input`, `.text-input` | `.xh-number-input`, `.xh-number-input__input` |
+| `SearchInput` | `ons-search-input`, `.search-input` | `.xh-search-input`, `.xh-search-input__input` |
+| `Checkbox` | `.checkbox__input`, `.checkbox__checkmark` | `.xh-check-box__input`, `.xh-check-box__checkmark` |
+| `SwitchInput` | `.switch__toggle`, `.switch__handle` | `.xh-switch-input__toggle`, `.xh-switch-input__handle` |
+| Menu items | `ons-list-item`, `.list-item`, `.center` | `.xh-menu__list__item`, `.xh-menu__list__item__content` |
+| `Dialog`, `DialogPanel` | `.dialog-mask`, `.dialog`, `.dialog-container` | `.xh-dialog__mask`, `.xh-dialog__frame`, `.xh-dialog__container` |
+| `Toast` | `ons-toast`, `.toast`, `.toast__message`, `.toast-bg-intent-*` | `.xh-toast`, `.xh-toast__content`, `.xh-toast--intent-*` |
+| `TabContainer` | `ons-tabbar`, `.tabbar`, `.tabbar__button`, `ons-tab` | `.xh-tab-switcher`, `button.xh-tab`, `.xh-tab--active` |
+| Tab content | `ons-page`, `.page`, `.page__content`, `.page__background` | `.xh-tab-wrapper`, `.xh-tab-page` |
+
+Onsen's CSS variables (`--highlight-color`, `--tabbar-height`, `--text-color`, `--font-size` and
+others) are no longer defined. Use the matching `--xh-*` variable from `styles/vars.scss`.
+
+**Review test selectors.** Mobile `Checkbox` and `SwitchInput` now put their `testId` on the
+native `<input>`, as on desktop, rather than on a wrapper element. Mobile `TabContainer` now
+applies `${testId}-switcher` and `${testId}-switcher-${tabId}`, which were desktop-only before.
+
+**Behavior to note:**
+
+- Mobile components render in the app font (`--xh-font-family`). Onsen applied the system font
+  (`-apple-system`, Helvetica Neue) to its buttons, dialogs, tabs, menus and toasts. To keep the
+  system font for buttons, set `font-family` on `.xh-button` in app SCSS.
+- Mobile `Button` renders a `div` with `role="button"`, as Onsen's element was in effect, so it
+  still fills a block container and sizes to its content in a flex row.
+- Mobile `Dialog` and `DialogPanel` render into a portal on the document body.
+- Mobile `TabContainer` renders every tab's content, including tabs with `excludeFromSwitcher`,
+  which it previously left out. Inactive tabs are hidden with `display: none`, as on desktop,
+  rather than laid out off-screen.
+- Mobile `TextInput`, `NumberInput` and `SearchInput` apply `domAttrs` to the `<input>` itself.
+- Pull-down-to-refresh on the `Navigator` and the Escape key on a cancelable `Dialog` work as
+  before.
+
 ## Verification Checklist
 
 After completing all steps:
@@ -198,6 +260,9 @@ After completing all steps:
 - [ ] No code passes `timePickerProps` to a `dateInput`, and `dayPickerProps` keys use
       react-day-picker 10 names.
 - [ ] Nothing imports `datePicker` or `DatePicker` from `@xh/hoist/kit/blueprint`.
+- [ ] No mobile SCSS targets Onsen class names or CSS variables, no mobile input or button passes
+      `modifier`, and nothing imports from `@xh/hoist/kit/onsen`.
+- [ ] Mobile screens with inputs, tabs, dialogs, toasts and menus look as they did on v89.
 
 ## Reference
 

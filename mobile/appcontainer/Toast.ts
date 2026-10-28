@@ -5,11 +5,11 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {ToastModel} from '@xh/hoist/appcontainer/ToastModel';
-import {span} from '@xh/hoist/cmp/layout';
+import {div, span} from '@xh/hoist/cmp/layout';
 import {hoistCmp, uses} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
-import {toast as onsenToast} from '@xh/hoist/kit/onsen';
 import {button} from '@xh/hoist/mobile/cmp/button';
+import classNames from 'classnames';
 import './Toast.scss';
 
 /**
@@ -20,26 +20,27 @@ export const toast = hoistCmp.factory({
     model: uses(ToastModel),
 
     render({model}) {
-        const {icon, message, intent, actionButtonProps} = model,
-            cls = `xh-toast toast-bg-intent-${intent}`;
+        const {icon, message, intent, actionButtonProps} = model;
 
-        return onsenToast({
-            visible: true,
-            className: cls,
-            items: [
-                icon,
-                span(message),
-                button({
-                    omit: !actionButtonProps,
-                    minimal: true,
-                    ...actionButtonProps
-                }),
-                button({
-                    icon: Icon.cross(),
-                    minimal: true,
-                    onClick: () => model.dismiss()
-                })
-            ]
+        return div({
+            className: classNames('xh-toast', intent ? `xh-toast--intent-${intent}` : null),
+            item: div({
+                className: 'xh-toast__content',
+                items: [
+                    icon,
+                    span(message),
+                    button({
+                        omit: !actionButtonProps,
+                        minimal: true,
+                        ...actionButtonProps
+                    }),
+                    button({
+                        icon: Icon.cross(),
+                        minimal: true,
+                        onClick: () => model.dismiss()
+                    })
+                ]
+            })
         });
     }
 });

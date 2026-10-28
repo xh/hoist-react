@@ -13,12 +13,12 @@
 }
 
 .xh-exception-dialog-details {
-  .dialog {
+  .xh-dialog__frame {
     width: 90%;
     height: 90%;
   }
 
-  .dialog-container {
+  .xh-dialog__container {
     height: 100%;
     display: flex;
     flex-direction: column;

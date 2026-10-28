@@ -11,7 +11,7 @@ used by Hoist. It serves two purposes:
    `installHighcharts()` functions that applications call during bootstrap to register these
    libraries with Hoist, along with version constraints to ensure compatibility.
 
-2. **Re-exported component libraries** — Blueprint, Onsen, react-select, GoldenLayout, and several
+2. **Re-exported component libraries** — Blueprint, react-select, GoldenLayout, and several
    other UI libraries are imported by Kit, wrapped as needed (with element factories, prop
    stripping, transition disabling, etc.), and re-exported for use by Hoist's own components. Apps
    typically do not import from Kit directly — they use Hoist's higher-level component wrappers
@@ -25,7 +25,6 @@ kit/
 ├── blueprint/            # Blueprint 6 wrappers, element factories, disabled transitions
 ├── golden-layout/        # GoldenLayout v1.5.9 with React 18 patches
 ├── highcharts/           # Highcharts install function with default config
-├── onsen/                # Onsen UI wrappers with HoistModel prop stripping
 ├── react-beautiful-dnd/  # Drag-and-drop re-exports with element factories
 ├── react-day-picker/     # Calendar for desktop and mobile DateInput, with shared theme
 ├── react-dropzone/       # File drop zone re-export
@@ -101,18 +100,6 @@ Kit wraps Blueprint components to:
 See [`/kit/blueprint/`](./blueprint/README.md) for full coverage, including the build-time icon
 stubbing shared with `@xh/hoist-dev-utils` and the checklist for re-verifying Blueprint's
 built-in icons when upgrading the library.
-
-### Onsen UI
-
-[Onsen UI](https://onsen.io/) provides mobile-specific components used by Hoist's `/mobile/`
-package — buttons, pages, tabs, toolbars, dialogs, and navigation.
-
-Kit wraps Onsen components to:
-- **Strip HoistModel props** — Onsen internally serializes component props to JSON, which fails on
-  complex `HoistModel` instances. Kit's wrapper uses `omitBy` to strip any HoistModel-valued props
-  before passing to Onsen
-- **Disable auto-styling** — `onsen.disableAutoStyling()` is called on import
-- **Provide element factories** — Leaf and container components are wrapped with `elementFactory()`
 
 ### react-select
 
@@ -223,4 +210,4 @@ for jQuery resolution guidance.
 - [`/desktop/cmp/dash/`](../desktop/cmp/dash/README.md) — Dashboard system built on GoldenLayout
   (imported via Kit)
 - [`/desktop/`](../desktop/README.md) — Desktop components built on Blueprint (imported via Kit)
-- [`/mobile/`](../mobile/README.md) — Mobile components built on Onsen UI (imported via Kit)
+- [`/mobile/`](../mobile/README.md) — Mobile components, built on native elements with no Kit library
