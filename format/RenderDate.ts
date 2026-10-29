@@ -7,7 +7,15 @@
 import {isString} from 'lodash';
 import {ReactNode} from 'react';
 import {DateLike, PlainObject} from '../core/types/Types';
-import {fmtCompactDate, fmtDate, fmtDateTime, fmtDateTimeSec, fmtTime} from './FormatDate';
+import {
+    CompactDateFormatOptions,
+    DateFormatOptions,
+    fmtCompactDate,
+    fmtDate,
+    fmtDateTime,
+    fmtDateTimeSec,
+    fmtTime
+} from './FormatDate';
 import {createRenderer, type TextRenderer} from './FormatUtils';
 
 /**
@@ -30,23 +38,14 @@ export const dateTextRenderer = createDateTextRenderer(fmtDate),
     timeTextRenderer = createDateTextRenderer(fmtTime),
     compactDateTextRenderer = createDateTextRenderer(fmtCompactDate);
 
-//---------------
-// Implementation
-//---------------
-function createDateTextRenderer<O extends PlainObject | string>(
-    fmt: (v: DateLike, opts?: O) => ReactNode
-): (opts?: WithoutMarkup<Exclude<O, string>> | Extract<O, string>) => TextRenderer<DateLike> {
-    return opts => {
-        const fmtOpts = isString(opts) ? {fmt: opts} : {...(opts as PlainObject)};
-        return v => fmt(v, fmtOpts as O) as string;
-    };
-}
-
 /**
- * Options of a text renderer: those of its format function, less the options that need markup,
- * which are typed `never`.
+ * Options of {@link dateTextRenderer} and friends: those of the format function, less the options
+ * that need markup, which are typed `never`.
  */
-type WithoutMarkup<O> = Omit<O, 'tooltip' | 'asHtml' | 'nullDisplay' | 'originalValue'> & {
+export type DateTextRendererOptions<O extends PlainObject = DateFormatOptions> = Omit<
+    O,
+    'tooltip' | 'asHtml' | 'nullDisplay' | 'originalValue'
+> & {
     /** Display value for null values. */
     nullDisplay?: string;
 
@@ -56,3 +55,20 @@ type WithoutMarkup<O> = Omit<O, 'tooltip' | 'asHtml' | 'nullDisplay' | 'original
     /** Not supported - a text renderer always returns plain text. */
     asHtml?: never;
 };
+
+/** Options of {@link compactDateTextRenderer}. */
+export type CompactDateTextRendererOptions = DateTextRendererOptions<CompactDateFormatOptions>;
+
+//---------------
+// Implementation
+//---------------
+function createDateTextRenderer<O extends PlainObject | string>(
+    fmt: (v: DateLike, opts?: O) => ReactNode
+): (
+    opts?: DateTextRendererOptions<Exclude<O, string>> | Extract<O, string>
+) => TextRenderer<DateLike> {
+    return opts => {
+        const fmtOpts = isString(opts) ? {fmt: opts} : {...(opts as PlainObject)};
+        return v => fmt(v, fmtOpts as O) as string;
+    };
+}

@@ -16,7 +16,8 @@ import {
     fmtPrice,
     fmtQuantity,
     fmtThousands,
-    NumberFormatOptions
+    NumberFormatOptions,
+    QuantityFormatOptions
 } from './FormatNumber';
 import {createRenderer, type TextRenderer} from './FormatUtils';
 import {DEFAULT_COLOR_SPEC, ROUNDED_ZERO} from './impl/Utils';
@@ -48,15 +49,12 @@ export const numberTextRenderer = createNumberTextRenderer(fmtNumber),
     priceTextRenderer = createNumberTextRenderer(fmtPrice),
     percentTextRenderer = createNumberTextRenderer(fmtPercent);
 
-//---------------
-// Implementation
-//---------------
 /**
- * Options of a text renderer: those of its format function, less the options that need markup,
- * which are typed `never`. `colorSpec` and ledger alignment style the cell through
- * `cellClassRules` instead.
+ * Options of {@link numberTextRenderer} and friends: those of the format function, less the
+ * options that need markup, which are typed `never`. `colorSpec` and ledger alignment style the
+ * cell through `cellClassRules` instead.
  */
-type WithoutMarkup<O extends NumberFormatOptions> = Omit<
+export type NumberTextRendererOptions<O extends NumberFormatOptions = NumberFormatOptions> = Omit<
     O,
     | 'colorSpec'
     | 'tooltip'
@@ -93,17 +91,23 @@ type WithoutMarkup<O extends NumberFormatOptions> = Omit<
     asHtml?: never;
 };
 
+/** Options of {@link quantityTextRenderer}. */
+export type QuantityTextRendererOptions = NumberTextRendererOptions<QuantityFormatOptions>;
+
+//---------------
+// Implementation
+//---------------
 function createNumberTextRenderer<O extends NumberFormatOptions>(
     fmt: (v: number, opts?: O) => ReactNode,
     fmtDefaults: {ledger?: boolean} = {}
-): (opts?: WithoutMarkup<O>) => TextRenderer<number> {
+): (opts?: NumberTextRendererOptions<O>) => TextRenderer<number> {
     return opts => {
         const {
                 colorSpec = false,
                 ledger = fmtDefaults.ledger ?? false,
                 forceLedgerAlign = true,
                 ...rest
-            } = opts ?? ({} as WithoutMarkup<O>),
+            } = opts ?? ({} as NumberTextRendererOptions<O>),
             {strictZero = true, zeroDisplay = null} = rest,
             // Color and ledger alignment come from the cell class rules below, so `fmtNumber`
             // returns plain text.
