@@ -135,9 +135,9 @@ export class ColumnWidthCalculator {
             // A formatter's text is measured as text, and a renderer's markup as HTML.
             render = renderer ?? formatter,
             renderMemo = render && !rendererIsComplex ? new Map() : null,
-            // A formatter's ledger alignment is a hidden `::after`, not part of its text - count
-            // it in the estimate so the widest positives make the sample.
-            ledgerRule = renderer ? null : cellClassRules?.['xh-cell--ledger-align'];
+            // Ledger alignment from a cell class rule is a hidden `::after`, not part of the
+            // text. Count it in the estimate so the widest positives make the sample.
+            ledgerRule = render?.cellClassRules?.['xh-cell--ledger-align'];
 
         await forEachAsync(records, record => {
             if (!record) return;

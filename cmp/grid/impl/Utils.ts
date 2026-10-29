@@ -15,39 +15,26 @@ import type {HeaderClassParams} from '@xh/hoist/kit/ag-grid';
 import {logWarn} from '@xh/hoist/utils/js';
 import {castArray, isFunction} from 'lodash';
 
-/** @internal */
-export function managedRenderer<T extends ColumnRenderer | GroupRowRenderer>(
+/**
+ * Wrap a renderer or formatter so that a throw shows '#ERROR' in its one cell. The wrapper keeps
+ * the function's `cellClassRules`.
+ * @internal
+ */
+export function managedRenderer<T extends ColumnRenderer | ColumnFormatter | GroupRowRenderer>(
     fn: T,
     identifier: string
 ): T {
     if (!isFunction(fn)) return fn;
-    return function (v, ctx) {
+    const ret = (v, ctx) => {
         try {
             return (fn as any)(v, ctx);
         } catch (e) {
             logWarn([`Renderer for '${identifier}' has thrown an error`, e]);
             return '#ERROR';
         }
-    } as unknown as T;
-}
-
-/**
- * Wrap a formatter so that a throw shows '#ERROR' in its one cell, as `managedRenderer` does. The
- * wrapper keeps the formatter's `cellClassRules`.
- * @internal
- */
-export function managedFormatter(fn: ColumnFormatter, identifier: string): ColumnFormatter {
-    if (!isFunction(fn)) return fn;
-    const ret: ColumnFormatter = (v, ctx) => {
-        try {
-            return fn(v, ctx);
-        } catch (e) {
-            logWarn([`Formatter for '${identifier}' has thrown an error`, e]);
-            return '#ERROR';
-        }
     };
-    if (fn.cellClassRules) ret.cellClassRules = fn.cellClassRules;
-    return ret;
+    if ('cellClassRules' in fn) ret.cellClassRules = fn.cellClassRules;
+    return ret as unknown as T;
 }
 
 /**

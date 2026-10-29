@@ -62,7 +62,8 @@ describe('Column.formatter', () => {
         const opts = {ledger: true, precision: 0} as const,
             ledgerCols: ColumnSpec[] = [
                 {field: 'qty', colId: 'fmt', formatter: numberFormatter(opts)},
-                {field: 'qty', colId: 'rnd', renderer: numberRenderer(opts)}
+                {field: 'qty', colId: 'rnd', renderer: numberRenderer(opts)},
+                {field: 'qty', colId: 'fmtAsRnd', renderer: numberFormatter(opts)}
             ].map(it => ({...it, autosizeIncludeHeader: false})),
             gridModel = await renderGridAsync({columns: ledgerCols});
         gridModel.loadData([
@@ -71,11 +72,12 @@ describe('Column.formatter', () => {
         ]);
         stubTextLayout();
 
-        await gridModel.autosizeAsync({columns: ['fmt', 'rnd'], bufferPx: 0});
+        await gridModel.autosizeAsync({columns: ['fmt', 'rnd', 'fmtAsRnd'], bufferPx: 0});
         const width = (colId: string) => gridModel.columnState.find(it => it.colId === colId).width;
 
         expect(width('rnd')).toBe(charsWidth('1,000,000)'));
         expect(width('fmt')).toBe(width('rnd'));
+        expect(width('fmtAsRnd')).toBe(width('rnd'));
     });
 
     it('leaves copy with the typed value, as for a renderer', async () => {

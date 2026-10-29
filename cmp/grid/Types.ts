@@ -366,7 +366,8 @@ export interface CellContext {
 }
 
 /**
- * Renderer function for a grid cell.
+ * Renderer function for a grid cell. May carry `cellClassRules`, which the column applies
+ * beneath its own.
  * @param value - cell data value (column + row).
  * @param context - additional data about the column, row and GridModel.
  *      Note that columns with renderers that access/rely on record fields other than the primary
@@ -374,7 +375,7 @@ export interface CellContext {
  *      re-run whenever the record (and not just the primary value) changes.
  * @returns the formatted value for display.
  */
-export type ColumnRenderer<T = any> = (value: T, context: CellContext) => ReactNode;
+export type ColumnRenderer<T = any> = CellFn<T, ReactNode>;
 
 /**
  * Formatter function for a grid cell - returns the cell's display text.
@@ -390,7 +391,9 @@ export type ColumnRenderer<T = any> = (value: T, context: CellContext) => ReactN
  * @param context - additional data about the column, row and GridModel.
  * @returns the display text, or null for an empty cell.
  */
-export type ColumnFormatter<T = any> = ((value: T, context: CellContext) => string) & {
+export type ColumnFormatter<T = any> = CellFn<T, string>;
+
+type CellFn<T, R> = ((value: T, context: CellContext) => R) & {
     cellClassRules?: Record<string, ColumnCellClassRuleFn>;
 };
 

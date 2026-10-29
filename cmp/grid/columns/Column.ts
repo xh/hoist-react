@@ -46,7 +46,7 @@ import {
 } from 'react';
 import {GridModel} from '../GridModel';
 import {GridSorter} from '../GridSorter';
-import {getAgHeaderClassFn, managedFormatter, managedRenderer} from '../impl/Utils';
+import {getAgHeaderClassFn, managedRenderer} from '../impl/Utils';
 import {
     ColumnCellClassFn,
     ColumnCellClassRuleFn,
@@ -283,7 +283,8 @@ export interface ColumnSpec {
      * formatting.
      *
      * A formatter may carry `cellClassRules` to style the cell by value, applied beneath the
-     * column's own. Set `rendererIsComplex` if the formatter reads other fields of the record.
+     * column's own, as a renderer may. Set `rendererIsComplex` if the formatter reads other
+     * fields of the record.
      *
      * Autosize, `GridModel.localExport`, filters, find and ZoneGrid use the formatted text. Copy
      * and `GridModel.exportAsync` send the cell's value. Ignored when a `renderer` is set.
@@ -692,13 +693,7 @@ export class Column {
         this.headerClass = headerClass;
 
         this.cellClass = cellClass;
-        // A renderer styles its own output, so a formatter's rules apply only without one.
-        this.cellClassRules = {...(renderer ? null : formatter?.cellClassRules), ...cellClassRules};
-        warnIf(
-            !isEmpty((renderer as ColumnFormatter)?.cellClassRules),
-            `Column '${this.colId}' has a formatter set as its renderer, which drops the ` +
-                `formatter's cell classes (e.g. colorSpec, ledger). Set it as 'formatter' instead.`
-        );
+        this.cellClassRules = {...(renderer ?? formatter)?.cellClassRules, ...cellClassRules};
         this.cellFlag = cellFlag;
 
         this.align = align;
@@ -737,7 +732,7 @@ export class Column {
         this.hideable = withDefault(hideable, !this.isTreeColumn);
         this.pinned = this.parsePinned(pinned);
 
-        this.formatter = managedFormatter(formatter, this.displayName);
+        this.formatter = managedRenderer(formatter, this.displayName);
         this.renderer = managedRenderer(renderer, this.displayName);
         this.rendererIsComplex = rendererIsComplex;
         this.highlightOnChange = highlightOnChange;

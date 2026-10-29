@@ -6,7 +6,6 @@
  */
 import {
     type ColumnCellClassRuleFn,
-    type ColumnFormatter,
     GridFilterModel,
     GridFilterRenderer,
     GridFilterSortValueFn,
@@ -306,20 +305,21 @@ export class ValuesTabModel extends HoistModel {
 
         // Default to the column's renderer (or formatter) and sortValue where they apply to a bare
         // value - they are called with the value alone (see below).
-        const renderer =
-                fieldSpec.renderer ??
-                (fieldType !== 'tags'
-                    ? ((column.renderer ?? column.formatter) as GridFilterRenderer)
-                    : null),
+        const colRenderer = fieldType !== 'tags' ? (column.renderer ?? column.formatter) : null,
+            renderer = fieldSpec.renderer ?? (colRenderer as GridFilterRenderer),
             sortValue =
                 fieldSpec.sortValue ??
                 (fieldType !== 'tags' && isFunction(column.sortValue)
                     ? (column.sortValue as GridFilterSortValueFn)
                     : null),
-            // A formatter's `cellClassRules` (e.g. `colorSpec`) apply here as in the grid, called
-            // with the value alone. The ledger rule is dropped - these cells render no placeholder.
+            // The column renderer's `cellClassRules` (e.g. `colorSpec`) apply here as in the grid,
+            // called with the value alone. The ledger rule is dropped - these cells render no
+            // placeholder.
             cellClassRules = mapValues(
-                omit((renderer as ColumnFormatter)?.cellClassRules, 'xh-cell--ledger-align'),
+                omit(
+                    fieldSpec.renderer ? null : colRenderer?.cellClassRules,
+                    'xh-cell--ledger-align'
+                ),
                 (rule): ColumnCellClassRuleFn =>
                     ({value}) => {
                         if (value === BLANK_PLACEHOLDER) return false;

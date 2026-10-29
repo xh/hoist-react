@@ -284,8 +284,8 @@ columns: [
 ]
 ```
 
-- **Styling by value** - a formatter can carry `cellClassRules`, as the factories do for `colorSpec`
-  and ledger alignment. `Column` applies them beneath its own `cellClassRules`.
+- **Styling by value** - a formatter or renderer can carry `cellClassRules`, as the formatter
+  factories do for `colorSpec` and ledger alignment. `Column` applies them beneath its own.
 - **Other record fields** - a formatter that reads them needs `rendererIsComplex`, as a renderer
   does. Autosize relies on it to measure each row's own text.
 - **Group rows** - a group row's label shows its raw group value, as with a renderer. Set

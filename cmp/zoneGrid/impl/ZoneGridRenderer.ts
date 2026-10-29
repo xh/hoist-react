@@ -4,7 +4,7 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {CellContext, Column, ColumnFormatter, ColumnRenderer} from '@xh/hoist/cmp/grid';
+import {CellContext, Column, ColumnRenderer} from '@xh/hoist/cmp/grid';
 import {div, span} from '@xh/hoist/cmp/layout';
 import {StoreRecord} from '@xh/hoist/data';
 import {intersperse, throwIf} from '@xh/hoist/utils/js';
@@ -16,7 +16,7 @@ export interface ZoneGridColConfig {
     subFields: ZoneGridSubField[];
 
     /** Renderer - or formatter - for primary field. */
-    mainRenderer?: ColumnRenderer | ColumnFormatter;
+    mainRenderer?: ColumnRenderer;
 
     /** Separator rendered between consecutive SubFields. */
     delimiter?: string | false;
@@ -78,16 +78,16 @@ export function zoneGridRenderer(value: any, context: CellContext, isLeft: boole
 }
 
 /**
- * Classes that a formatter's `cellClassRules` (e.g. `colorSpec`) give a value.
+ * Classes that a renderer's or formatter's `cellClassRules` (e.g. `colorSpec`) give a value.
  * @internal
  */
-export function getFormatterClasses(
-    renderer: ColumnRenderer | ColumnFormatter,
+export function getCellClasses(
+    renderer: ColumnRenderer,
     value: any,
     record: StoreRecord
 ): string[] {
     const ret: string[] = [];
-    forOwn((renderer as ColumnFormatter)?.cellClassRules, (fn, cls) => {
+    forOwn(renderer?.cellClassRules, (fn, cls) => {
         if (fn({value, data: record} as any)) ret.push(cls);
     });
     return ret;
@@ -96,11 +96,7 @@ export function getFormatterClasses(
 //------------------
 // Implementation
 //------------------
-function renderMainField(
-    value: any,
-    renderer: ColumnRenderer | ColumnFormatter,
-    context: CellContext
-) {
+function renderMainField(value: any, renderer: ColumnRenderer, context: CellContext) {
     const {column} = context;
     const {content, rendererClass} = renderValue(value, renderer, column, context);
     return div({
@@ -146,7 +142,7 @@ function renderSubField({colId, label}: ZoneGridSubField, context: CellContext) 
 
 function renderValue(
     value: string | number,
-    renderer: ColumnRenderer | ColumnFormatter,
+    renderer: ColumnRenderer,
     column: Column,
     context: CellContext
 ): {
@@ -158,7 +154,7 @@ function renderValue(
             ['string', 'number'].includes(typeof ret)
                 ? getStyleClassName('text-container')
                 : getStyleClassName('element-container'),
-            ...getFormatterClasses(renderer, value, context.record)
+            ...getCellClasses(renderer, value, context.record)
         ];
 
     return {

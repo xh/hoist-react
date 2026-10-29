@@ -14,7 +14,7 @@ import {cloneDeep, findIndex, isBoolean, isEmpty, isEqual, isFinite, isString} f
 import {ReactNode} from 'react';
 import {ZoneGridModel} from '../ZoneGridModel';
 import {ZoneField, Zone, ZoneLimit, ZoneMapping} from '../Types';
-import {getFormatterClasses} from './ZoneGridRenderer';
+import {getCellClasses} from './ZoneGridRenderer';
 
 /**
  * Configuration for a ZoneMapperModel - the UI for user-driven customization of zone
@@ -324,7 +324,7 @@ export class ZoneMapperModel extends HoistModel {
                     column: field.column,
                     gridModel: this.zoneGridModel.gridModel
                 });
-                classes = getFormatterClasses(field.renderer, rawValue, sampleRecord);
+                classes = getCellClasses(field.renderer, rawValue, sampleRecord);
             }
         }
 

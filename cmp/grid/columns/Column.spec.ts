@@ -180,6 +180,14 @@ describe('Column.getAgSpec', () => {
             expect(spec.cellClassRules).toEqual({});
         });
 
+        it('keeps its cellClassRules when set as the renderer, like any renderer', () => {
+            const renderer = Object.assign(v => `${v}`, {cellClassRules: {pos: () => true}}),
+                spec = createColumn({renderer}).getAgSpec();
+
+            expect(spec.cellRenderer).toBeTypeOf('function');
+            expect(Object.keys(spec.cellClassRules)).toEqual(['pos']);
+        });
+
         it('shows its text in a tree column, through the group cell renderer', () => {
             const gridModel = createGridModel({treeMode: true}, [
                     {field: 'name', isTreeColumn: true, formatter: v => `${v}!`}
