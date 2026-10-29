@@ -158,10 +158,12 @@ export class ColumnWidthCalculator {
             }
 
             // 1b) Estimate the pixel width of new markup from cached per-character widths.
-            // Strip html tags but include parentheses / units etc. for renderers that may return elements.
+            // Strip html tags from a renderer's markup, keeping parentheses / units etc. A
+            // formatter's text is shown as-is.
             const est = estimatesByValue.get(value);
             if (!est) {
-                let text = isNil(value) ? null : stripTags(value.toString());
+                let text = isNil(value) ? null : value.toString();
+                if (renderer) text = stripTags(text);
                 if (text && ledgerRule?.({value: rawValue, data: record} as CellClassParams)) {
                     text += ')';
                 }

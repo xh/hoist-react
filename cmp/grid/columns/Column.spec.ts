@@ -175,7 +175,7 @@ describe('Column.getAgSpec', () => {
             const formatter = Object.assign(v => `${v}`, {cellClassRules: {pos: () => true}}),
                 spec = createColumn({formatter, renderer: v => v}).getAgSpec();
 
-            expect(spec.valueFormatter).toBeUndefined();
+            expect(spec.valueFormatter).toBeNull();
             expect(spec.cellRenderer).toBeTypeOf('function');
             expect(spec.cellClassRules).toEqual({});
         });

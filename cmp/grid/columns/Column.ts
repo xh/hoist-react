@@ -828,6 +828,7 @@ export class Column {
                 },
                 headerClass: getAgHeaderClassFn(this),
                 headerTooltip: this.headerTooltip,
+                valueFormatter: this.agValueFormatter,
                 // Undefined keeps ag-Grid's current visibility on update.
                 hide: gridModel.isColumnHiddenByGrouping(this.colId) ? undefined : this.hidden,
                 columnGroupShow: toAgColumnGroupShow(this.groupShowMode),
@@ -881,9 +882,10 @@ export class Column {
                 onCellClicked: this.onCellClicked
             };
 
-        // Renderer: Tree cols nest our renderer in ag-Grid's group cell renderer. Plain have none.
-        const {agCellRenderer} = this;
-        if (this.isTreeColumn) {
+        // Rendering: tree cols nest our renderer in ag-Grid's group cell renderer, which hands it
+        // any formatted text as `valueFormatted`. Plain cols have no renderer.
+        const {agCellRenderer, isTreeColumn} = this;
+        if (isTreeColumn) {
             ret.showRowGroup = true;
             ret.cellRenderer = 'agGroupCellRenderer';
             ret.cellRendererParams = {
@@ -893,12 +895,6 @@ export class Column {
             };
         } else if (agCellRenderer) {
             ret.cellRenderer = agCellRenderer;
-        }
-
-        // A formatter supplies the cell's display text through ag-Grid's `valueFormatter`, which
-        // keeps a plain cell plain and reaches a tree column's group renderer as `valueFormatted`.
-        if (this.formatter && !this.renderer) {
-            ret.valueFormatter = this.agValueFormatter;
         }
 
         // Tooltip Handling. ag-Grid shows a tooltip only when `tooltip` returns a value, mounting
@@ -923,7 +919,7 @@ export class Column {
         // provided custom classes. Only a `cellClass` function needs evaluating per cell - ag-Grid
         // calls the function on every cell render and value change, so a static list is emitted
         // as-is otherwise.
-        const {cellClass, isTreeColumn, align} = this,
+        const {cellClass, align} = this,
             fixedClasses: string[] = [];
         if (isTreeColumn) fixedClasses.push('xh-tree-column');
         if (align === 'center' || align === 'right') fixedClasses.push('xh-align-' + align);
@@ -1061,8 +1057,10 @@ export class Column {
         };
     }
 
+    // The column's formatter as ag-Grid's `valueFormatter`. Null without one, or with a renderer.
     @computeOnce
     private get agValueFormatter(): ColDef['valueFormatter'] {
+        if (!this.formatter || this.renderer) return null;
         return (agParams: ValueFormatterParams) => {
             const {formatter, gridModel} = this,
                 {data: record, node, column} = agParams;

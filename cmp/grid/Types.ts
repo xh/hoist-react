@@ -366,27 +366,24 @@ export interface CellContext {
 }
 
 /**
- * Renderer function for a grid cell. May carry `cellClassRules`, which the column applies
- * beneath its own.
+ * Renderer function for a grid cell - returns the cell's content, rendered as a React component.
+ *
+ * May carry `cellClassRules`, which the column applies beneath its own. Set `rendererIsComplex`
+ * on the column if it reads record fields other than its own. A throw shows '#ERROR' in the
+ * cell, and on a row with no record (e.g. an ag-Grid total row) `record` is undefined.
  * @param value - cell data value (column + row).
  * @param context - additional data about the column, row and GridModel.
- *      Note that columns with renderers that access/rely on record fields other than the primary
- *      value should also have their `rendererIsComplex` flag set to true to ensure they are
- *      re-run whenever the record (and not just the primary value) changes.
- * @returns the formatted value for display.
+ * @returns the content for display, or null for an empty cell.
  */
 export type ColumnRenderer<T = any> = CellFn<T, ReactNode>;
 
 /**
- * Formatter function for a grid cell - returns the cell's display text.
+ * Formatter function for a grid cell - returns the cell's display text, written into the cell
+ * with no component. Prefer it over a renderer wherever a string will do.
  *
- * ag-Grid writes the text into the cell directly, with no component per cell, so prefer a
- * formatter over a `renderer` wherever a string will do. The function may carry `cellClassRules`
- * to style the cell by value, as the string formatter factories in `@xh/hoist/format` do for
- * `colorSpec` and ledger alignment.
- *
- * A group row's label shows its raw value, a throw shows '#ERROR' in the cell, and on a row with
- * no record (e.g. an ag-Grid total row) `record` is undefined.
+ * May carry `cellClassRules`, which the column applies beneath its own. Set `rendererIsComplex`
+ * on the column if it reads record fields other than its own. A throw shows '#ERROR' in the
+ * cell, and on a row with no record (e.g. an ag-Grid total row) `record` is undefined.
  * @param value - cell data value (column + row).
  * @param context - additional data about the column, row and GridModel.
  * @returns the display text, or null for an empty cell.

@@ -24,12 +24,12 @@ export function withErrorCell<T extends ColumnRenderer | ColumnFormatter | Group
     fn: T,
     identifier: string
 ): T {
-    if (!isFunction(fn)) return fn;
+    if (!fn) return fn;
     const ret = (v, ctx) => {
         try {
             return (fn as any)(v, ctx);
         } catch (e) {
-            logWarn([`Renderer for '${identifier}' has thrown an error`, e]);
+            logWarn([`Renderer or Formatter for '${identifier}' has thrown an error`, e]);
             return '#ERROR';
         }
     };
