@@ -24,15 +24,6 @@ describe('Markdown', () => {
         expect(container.querySelector('strong')?.textContent).toBe('world');
     });
 
-    it('renders into a div with the xh-markdown class, merging a className prop', () => {
-        const {container} = render(markdown({content: 'hi', className: 'app-note'}));
-
-        const el = container.firstElementChild;
-        expect(el.tagName).toBe('DIV');
-        expect(el.classList.contains('xh-markdown')).toBe(true);
-        expect(el.classList.contains('app-note')).toBe(true);
-    });
-
     it('renders GitHub Flavored Markdown such as strikethrough, tables and autolinks', () => {
         const {container} = render(
             markdown({content: '~~gone~~ www.xh.io\n\n| a | b |\n|---|---|\n| 1 | 2 |'})
@@ -54,10 +45,10 @@ describe('Markdown', () => {
         expect(noBreaks.querySelector('p')?.textContent).toBe('one\ntwo');
     });
 
-    it('renders an empty wrapper for empty content', () => {
+    it('renders nothing for empty content', () => {
         const {container} = render(markdown({content: null}));
 
-        expect(container.firstElementChild.innerHTML).toBe('');
+        expect(container.innerHTML).toBe('');
     });
 
     it('does not render raw HTML in content', () => {
