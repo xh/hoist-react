@@ -6,32 +6,32 @@
  */
 import {ColumnSpec, ExcelFormat} from '@xh/hoist/cmp/grid';
 import {
-    compactDateFormatter,
-    dateFormatter,
-    dateTimeFormatter,
-    dateTimeSecFormatter,
-    timeFormatter
+    compactDateTextRenderer,
+    dateTextRenderer,
+    dateTimeTextRenderer,
+    dateTimeSecTextRenderer,
+    timeTextRenderer
 } from '@xh/hoist/format';
 
 const defaults: ColumnSpec = {align: 'right'};
 
 export const date: ColumnSpec = {
     ...defaults,
-    formatter: dateFormatter(),
+    textRenderer: dateTextRenderer(),
     excelFormat: ExcelFormat.DATE_FMT,
     width: 120
 };
 
 export const time: ColumnSpec = {
     ...defaults,
-    formatter: timeFormatter(),
+    textRenderer: timeTextRenderer(),
     width: 90
 };
 
 export const dateTime: ColumnSpec = {
     ...defaults,
     align: 'left',
-    formatter: dateTimeFormatter(),
+    textRenderer: dateTimeTextRenderer(),
     excelFormat: ExcelFormat.DATETIME_FMT,
     width: 180
 };
@@ -39,14 +39,14 @@ export const dateTime: ColumnSpec = {
 export const dateTimeSec: ColumnSpec = {
     ...defaults,
     align: 'left',
-    formatter: dateTimeSecFormatter(),
+    textRenderer: dateTimeSecTextRenderer(),
     excelFormat: ExcelFormat.DATETIME_FMT,
     width: 190
 };
 
 export const compactDate: ColumnSpec = {
     ...defaults,
-    formatter: compactDateFormatter(),
+    textRenderer: compactDateTextRenderer(),
     excelFormat: ExcelFormat.DATE_FMT,
     width: 100
 };

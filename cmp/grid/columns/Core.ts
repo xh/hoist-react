@@ -4,7 +4,7 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {numberFormatter} from '@xh/hoist/format';
+import {numberTextRenderer} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
 import {tagsRenderer} from '../renderers/TagsRenderer';
 import {ColumnSpec} from './Column';
@@ -19,7 +19,7 @@ export const boolCheck: ColumnSpec = {
 
 export const number: ColumnSpec = {
     align: 'right',
-    formatter: numberFormatter({})
+    textRenderer: numberTextRenderer({})
 };
 
 export const fileExt: ColumnSpec = {

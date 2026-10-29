@@ -4,23 +4,18 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {
-    Column,
-    ColumnFormatter,
-    ColumnOrGroup,
-    ColumnRenderer,
-    GroupRowRenderer
-} from '@xh/hoist/cmp/grid';
+import {Column, ColumnRenderer, ColumnOrGroup, GroupRowRenderer} from '@xh/hoist/cmp/grid';
+import {StoreRecord} from '@xh/hoist/data';
 import type {HeaderClassParams} from '@xh/hoist/kit/ag-grid';
 import {logWarn} from '@xh/hoist/utils/js';
-import {castArray, isFunction} from 'lodash';
+import {castArray, forOwn, isFunction} from 'lodash';
 
 /**
- * Wrap a renderer or formatter so that a throw shows '#ERROR' in its one cell. The wrapper keeps
+ * Wrap a renderer so that a throw shows '#ERROR' in its one cell. The wrapper keeps
  * the function's `cellClassRules`.
  * @internal
  */
-export function withErrorCell<T extends ColumnRenderer | ColumnFormatter | GroupRowRenderer>(
+export function withErrorCell<T extends ColumnRenderer | GroupRowRenderer>(
     fn: T,
     identifier: string
 ): T {
@@ -29,12 +24,28 @@ export function withErrorCell<T extends ColumnRenderer | ColumnFormatter | Group
         try {
             return (fn as any)(v, ctx);
         } catch (e) {
-            logWarn([`Renderer or Formatter for '${identifier}' has thrown an error`, e]);
+            logWarn([`Renderer for '${identifier}' has thrown an error`, e]);
             return '#ERROR';
         }
     };
     if ('cellClassRules' in fn) ret.cellClassRules = fn.cellClassRules;
     return ret as unknown as T;
+}
+
+/**
+ * Classes that a cell function's `cellClassRules` (e.g. `colorSpec`) give a value.
+ * @internal
+ */
+export function getCellClasses(
+    resolvedRenderer: ColumnRenderer,
+    value: any,
+    record: StoreRecord
+): string[] {
+    const ret: string[] = [];
+    forOwn(resolvedRenderer?.cellClassRules, (fn, cls) => {
+        if (fn({value, data: record} as any)) ret.push(cls);
+    });
+    return ret;
 }
 
 /**

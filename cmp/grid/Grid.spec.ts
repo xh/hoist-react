@@ -7,7 +7,7 @@
 import {AgGrid} from '@xh/hoist/cmp/ag-grid';
 import {grid, type GridConfig, GridModel} from '@xh/hoist/cmp/grid';
 import type {PlainObject} from '@xh/hoist/core';
-import {numberFormatter} from '@xh/hoist/format';
+import {numberTextRenderer} from '@xh/hoist/format';
 import {initTestAppAsync} from '@xh/hoist/test-support';
 import {installAgGridForTests} from '@xh/hoist/test-support/agGrid';
 import {act, render, waitFor} from '@testing-library/react';
@@ -144,11 +144,11 @@ describe('Grid', () => {
         expect(qty.querySelector('.xh-cell-inner-wrapper').textContent).toBe('1!');
     });
 
-    it("writes a formatter's text into a plain cell, styled by its cellClassRules", async () => {
+    it("writes a text renderer's text into a plain cell, styled by its cellClassRules", async () => {
         const {container} = await renderGridAsync({
                 columns: [
                     {field: 'name'},
-                    {field: 'qty', formatter: numberFormatter({colorSpec: true})}
+                    {field: 'qty', textRenderer: numberTextRenderer({colorSpec: true})}
                 ]
             }),
             [, qty] = container.querySelectorAll('.ag-row[row-id="ag_1"] .ag-cell');
@@ -159,13 +159,13 @@ describe('Grid', () => {
         expect(qty.classList.contains('xh-pos-val')).toBe(true);
     });
 
-    it("shows '#ERROR' in the cell of a formatter that throws, and renders the other cells", async () => {
+    it("shows '#ERROR' in the cell of a text renderer that throws, and renders the other cells", async () => {
         const {container} = await renderGridAsync({
                 columns: [
                     {field: 'name'},
                     {
                         field: 'qty',
-                        formatter: v => {
+                        textRenderer: v => {
                             if (v === 1) throw new Error('bad value');
                             return `${v}!`;
                         }
@@ -181,16 +181,16 @@ describe('Grid', () => {
         expect(cells('ag_2')).toEqual(['Beta', '2!']);
     });
 
-    // The cell class rules of a `strictZero: false` formatter format the value too, to test for a
+    // The cell class rules of a `strictZero: false` text renderer format the value too, to test for a
     // rounded zero. A string such as 'N/A' formats as NaN, which is neither zero nor signed.
-    it('shows NaN, with no sign class, for a string a strictZero: false formatter cannot parse', async () => {
+    it('shows NaN, with no sign class, for a string a strictZero: false text renderer cannot parse', async () => {
         const {container} = await renderGridAsync(
                 {
                     columns: [
                         {field: 'name'},
                         {
                             field: 'qty',
-                            formatter: numberFormatter({strictZero: false, colorSpec: true})
+                            textRenderer: numberTextRenderer({strictZero: false, colorSpec: true})
                         }
                     ]
                 },

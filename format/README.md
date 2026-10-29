@@ -16,9 +16,9 @@ The package exports three categories of tools for each data type:
   function suitable for use as a grid column `renderer`. Use these for grid columns that need
   markup, and for other declarative configurations.
 
-- **Formatter factories** (e.g. `numberFormatter`) - take options only and return a function that
-  always returns a string, for a grid column `formatter`. Prefer these for grid columns that show
-  text.
+- **Text renderer factories** (e.g. `numberTextRenderer`) - take options only and return a function
+  that always returns a string, for a grid column `textRenderer`. Prefer these for grid columns that
+  show text.
 
 ## Architecture
 
@@ -26,10 +26,12 @@ The package exports three categories of tools for each data type:
 /format/
 ├── FormatNumber.ts   # Number formatting: fmtNumber, fmtPercent, fmtMillions, etc.
 ├── FormatDate.ts     # Date formatting: fmtDate, fmtDateTime, fmtCompactDate, etc.
+├── RenderNumber.ts   # Number cell factories: numberRenderer, numberTextRenderer, etc.
+├── RenderDate.ts     # Date cell factories: dateRenderer, dateTextRenderer, etc.
 ├── FormatMisc.ts     # Utilities: fmtSpan, fmtJson, capitalizeWords
-├── FormatUtils.ts    # createRenderer() - the renderer factory utility, and StringFormatter
+├── FormatUtils.ts    # createRenderer() - the renderer factory utility, and TextRenderer
 └── impl/
-    └── Utils.ts      # Internal helpers (saveOriginal, throwIfMarkupOptions)
+    └── Utils.ts      # Internal helpers (saveOriginal, ROUNDED_ZERO)
 ```
 
 ## Formatters vs Renderers
@@ -59,7 +61,7 @@ const dateStr = fmtDate(trade.settleDate);
 Renderer factories take **options only** and return a pre-configured function `(value) => formattedOutput`.
 This curried pattern is designed for grid column `renderer` props and other declarative configs
 where the formatting options are known at definition time but the value arrives later. For a grid
-column that shows only text, prefer the [formatter factories](#formatter-factories) below.
+column that shows only text, prefer the [text renderer factories](#text-renderer-factories) below.
 
 ```typescript
 import {numberRenderer, dateRenderer, percentRenderer} from '@xh/hoist/format';
@@ -100,30 +102,30 @@ corresponding formatter:
 export const numberRenderer = createRenderer(fmtNumber);
 ```
 
-### Formatter Factories
+### Text Renderer Factories
 
-Formatter factories take **options only**, as renderer factories do, but the function they return
-always returns a **string**. Use it as a grid column's `formatter`. ag-Grid writes the text into the
-cell, with no React component per cell, which makes this the cheaper path for numbers and dates in
-grids. Every renderer factory above has a formatter factory with the same prefix, such as
-`numberFormatter` and `dateFormatter`. The built-in `number` and date column specs in
+Text renderer factories take **options only**, as renderer factories do, but the function they
+return always returns a **string**. Use it as a grid column's `textRenderer`. ag-Grid writes the
+text into the cell, with no React component per cell, which makes this the cheaper path for numbers
+and dates in grids. Every renderer factory above has a text renderer factory with the same prefix,
+such as `numberTextRenderer` and `dateTextRenderer`. The built-in `number` and date column specs in
 `@xh/hoist/cmp/grid` use them.
 
 ```typescript
-import {numberFormatter, millionsFormatter, dateFormatter} from '@xh/hoist/format';
+import {numberTextRenderer, millionsTextRenderer, dateTextRenderer} from '@xh/hoist/format';
 
 columns: [
-    {field: 'pnl', formatter: numberFormatter({precision: 0, ledger: true, colorSpec: true})},
-    {field: 'volume', formatter: millionsFormatter({precision: 1, label: true})},
-    {field: 'tradeDate', formatter: dateFormatter('MMM D')}
+    {field: 'pnl', textRenderer: numberTextRenderer({precision: 0, ledger: true, colorSpec: true})},
+    {field: 'volume', textRenderer: millionsTextRenderer({precision: 1, label: true})},
+    {field: 'tradeDate', textRenderer: dateTextRenderer('MMM D')}
 ]
 ```
 
-A formatter factory takes the options of its renderer counterpart, less those that need markup:
+A text renderer factory takes the options of its renderer counterpart, less those that need markup:
 
-| Option | In a formatter factory |
-|--------|------------------------|
-| `colorSpec` | Class names only. Rules on the formatter color the whole cell. Keep `numberRenderer` for inline styles |
+| Option | In a text renderer factory |
+|--------|----------------------------|
+| `colorSpec` | Class names only. Rules on the text renderer color the whole cell. Keep `numberRenderer` for inline styles |
 | `ledger` | Supported. With `forceLedgerAlign` (the default), a cell class reserves the width of a `)` on values without one |
 | `label` | Appended as plain text, with no `xh-units-label` span. `labelCls` is not supported |
 | `nullDisplay`, `zeroDisplay` | Strings only |
@@ -131,8 +133,7 @@ A formatter factory takes the options of its renderer counterpart, less those th
 | `withSignGlyph`, `asHtml` | Not supported |
 
 The option types enforce this table. A markup option or an element display value fails to compile,
-also through a variable or a spread of shared renderer options. An untyped caller gets an exception
-from the factory call, never a cell that shows `[object Object]`.
+also through a variable or a spread of shared renderer options.
 
 The `colorSpec` and ledger rules ride on the returned function as `cellClassRules`. `Column` applies
 them beneath its own `cellClassRules`, so a column rule for the same class name wins.
@@ -209,13 +210,13 @@ values so that digits in a column of mixed positive/negative numbers align verti
 Real-world example — a currency column with ledger formatting:
 
 ```typescript
-import {numberFormatter} from '@xh/hoist/format';
+import {numberTextRenderer} from '@xh/hoist/format';
 import {ExcelFormat} from '@xh/hoist/cmp/grid';
 
 const ccyValueCol: ColumnSpec = {
     align: 'right',
     excelFormat: ExcelFormat.LEDGER_2DP,
-    formatter: numberFormatter({
+    textRenderer: numberTextRenderer({
         precision: 2,
         ledger: true,
         forceLedgerAlign: false,
@@ -252,14 +253,14 @@ fmtNumber(overdueAmount, {prefix: '$', colorSpec: {pos: 'xh-intent-danger'}})
 fmtNumber(value, {colorSpec: {pos: {color: '#00aa00'}, neg: {color: '#cc0000'}}})
 ```
 
-Formatters accept class names only. To share one spec between renderers and formatters, type it as
+Text renderers accept class names only. To share one spec between the two kinds, type it as
 a `ColorClassSpec`, which holds a class name per sign:
 
 ```typescript
 const pnlColors: ColorClassSpec = {pos: 'app-gain', neg: 'app-loss'};
 
 numberRenderer({precision: 0, colorSpec: pnlColors})
-numberFormatter({precision: 0, colorSpec: pnlColors})
+numberTextRenderer({precision: 0, colorSpec: pnlColors})
 ```
 
 ColorSpec is commonly combined with `ledger`, `withPlusSign`, or `withSignGlyph` for financial
@@ -274,7 +275,7 @@ const pnlCol: ColumnSpec = {
     width: 130,
     absSort: true,
     tooltip: val => fmtNumberTooltip(val, {ledger: true}),
-    formatter: numberFormatter({
+    textRenderer: numberTextRenderer({
         precision: 0,
         ledger: true,
         colorSpec: true
@@ -325,7 +326,7 @@ fmtBillions(1200000000, {precision: 2, label: true}) // "1.20b"
 Example of a market value column, in millions:
 
 ```typescript
-import {millionsFormatter, fmtNumberTooltip} from '@xh/hoist/format';
+import {millionsTextRenderer, fmtNumberTooltip} from '@xh/hoist/format';
 
 const mktValCol: ColumnSpec = {
     field: {name: 'mktVal', type: 'number'},
@@ -334,7 +335,7 @@ const mktValCol: ColumnSpec = {
     width: 130,
     absSort: true,
     tooltip: val => fmtNumberTooltip(val, {ledger: true}),
-    formatter: millionsFormatter({precision: 3, ledger: true})
+    textRenderer: millionsTextRenderer({precision: 3, ledger: true})
 };
 ```
 
@@ -401,7 +402,7 @@ Renders a minimally formatted, full-precision number for use in tooltips. Suppor
 ```typescript
 // Commonly used for grid column tooltips alongside a scaled or rounded formatter
 tooltip: val => fmtNumberTooltip(val, {ledger: true}),
-formatter: millionsFormatter({precision: 3, ledger: true})
+textRenderer: millionsTextRenderer({precision: 3, ledger: true})
 ```
 
 ### `parseNumber(value)`
@@ -485,7 +486,7 @@ The formatter classifies dates into three buckets:
 | `distantThreshold` | `number` | `6` | Number of months (before and after today) to consider "near" |
 
 ```typescript
-import {fmtCompactDate, compactDateFormatter} from '@xh/hoist/format';
+import {fmtCompactDate, compactDateTextRenderer} from '@xh/hoist/format';
 
 // Assuming today is 2026-02-08:
 fmtCompactDate(new Date('2026-02-08T15:45:00'))  // "3:45pm"    (same day → time only)
@@ -496,10 +497,10 @@ fmtCompactDate(new Date('2025-03-22T10:00:00'))  // "2025-03-22" (11 months ago 
 fmtCompactDate(LocalDate.today())                // "Feb 8"
 
 // Use as a column formatter for activity/event timestamps
-{field: 'lastActivity', formatter: compactDateFormatter()}
+{field: 'lastActivity', textRenderer: compactDateTextRenderer()}
 
 // Custom thresholds - e.g. show full date after only 2 months
-{field: 'updatedDate', formatter: compactDateFormatter({distantThreshold: 2})}
+{field: 'updatedDate', textRenderer: compactDateTextRenderer({distantThreshold: 2})}
 ```
 
 ### Timestamp Utilities
@@ -547,20 +548,20 @@ The most common pattern across Hoist applications is defining shared column spec
 module, pairing formatters with matching `ExcelFormat` values for consistent display and export:
 
 ```typescript
-import {numberFormatter, dateFormatter} from '@xh/hoist/format';
+import {numberTextRenderer, dateTextRenderer} from '@xh/hoist/format';
 import {ExcelFormat} from '@xh/hoist/cmp/grid';
 
 // Shared column definitions
 export const hoursCol: ColumnSpec = {
     field: {name: 'hours', type: 'number'},
     excelFormat: ExcelFormat.NUM_2DP,
-    formatter: numberFormatter({precision: 2, nullDisplay: '-'})
+    textRenderer: numberTextRenderer({precision: 2, nullDisplay: '-'})
 };
 
 export const dueDateCol: ColumnSpec = {
     field: {name: 'dueDate', type: 'localDate'},
     headerName: 'Due',
-    formatter: dateFormatter()
+    textRenderer: dateTextRenderer()
 };
 ```
 
@@ -584,24 +585,24 @@ export function fmtMoney(v: number, opts: NumberFormatOptions = {}) {
 span(fmtMoney(summary.openAmount))
 ```
 
-A grid column that switches scale by an app setting needs a wrapper formatter that picks the current
-scale on each call. The column reads `cellClassRules` once, when it is created, so give the wrapper
-rules that defer to the current formatter. Refresh the column's cells when the setting changes, for
+A grid column that switches scale by an app setting needs a wrapper text renderer that picks the
+current scale on each call. The column reads `cellClassRules` once, when it is created, so give the
+wrapper rules that defer to the current one. Refresh the column's cells when the setting changes, for
 example with `gridModel.agApi?.refreshCells({columns: ['pnl'], force: true})`.
 
 ```typescript
 import {XH} from '@xh/hoist/core';
-import {millionsFormatter, thousandsFormatter, type StringFormatter} from '@xh/hoist/format';
+import {millionsTextRenderer, thousandsTextRenderer, type TextRenderer} from '@xh/hoist/format';
 import {mapValues} from 'lodash';
 
 const opts = {precision: 1, ledger: true, colorSpec: true, label: true} as const,
-    inMillions = millionsFormatter(opts),
-    inThousands = thousandsFormatter(opts),
+    inMillions = millionsTextRenderer(opts),
+    inThousands = thousandsTextRenderer(opts),
     current = () => (XH.getPref('pnlInMillions') ? inMillions : inThousands);
 
-export const pnlFormatter: StringFormatter<number> = v => current()(v);
+export const pnlTextRenderer: TextRenderer<number> = v => current()(v);
 
-pnlFormatter.cellClassRules = mapValues(
+pnlTextRenderer.cellClassRules = mapValues(
     inMillions.cellClassRules,
     (_, cls) => params => current().cellClassRules[cls](params)
 );
@@ -630,7 +631,7 @@ const dayOfWeekCol: ColumnSpec = {
     colId: 'trade_date_day',
     field: {name: 'trade_date', type: 'localDate'},
     displayName: 'Day of Week',
-    formatter: dateFormatter({fmt: 'dddd'})
+    textRenderer: dateTextRenderer({fmt: 'dddd'})
 };
 ```
 

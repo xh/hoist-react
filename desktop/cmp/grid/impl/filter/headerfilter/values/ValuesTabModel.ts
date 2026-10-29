@@ -4,13 +4,7 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {
-    type ColumnCellClassRuleFn,
-    GridFilterModel,
-    GridFilterRenderer,
-    GridFilterSortValueFn,
-    GridModel
-} from '@xh/hoist/cmp/grid';
+import {type ColumnCellClassRuleFn, GridFilterModel, GridModel} from '@xh/hoist/cmp/grid';
 import {HoistModel, managed} from '@xh/hoist/core';
 import type {FieldFilterOperator, FieldFilterSpec} from '@xh/hoist/data';
 import {checkbox} from '@xh/hoist/desktop/cmp/input';
@@ -24,7 +18,6 @@ import {
     isFunction,
     map,
     mapValues,
-    omit,
     partition,
     uniq,
     without
@@ -303,23 +296,25 @@ export class ValuesTabModel extends HoistModel {
             {headerFilterModel, fieldSpec} = this,
             {fieldType, column} = headerFilterModel;
 
-        // Default to the column's renderer (or formatter) and sortValue where they apply to a bare
-        // value - they are called with the value alone (see below).
-        const colRenderer = fieldType !== 'tags' ? (column.renderer ?? column.formatter) : null,
-            renderer = fieldSpec.renderer ?? (colRenderer as GridFilterRenderer),
-            sortValue =
-                fieldSpec.sortValue ??
-                (fieldType !== 'tags' && isFunction(column.sortValue)
-                    ? (column.sortValue as GridFilterSortValueFn)
-                    : null),
-            // The column renderer's `cellClassRules` (e.g. `colorSpec`) apply here as in the grid,
-            // called with the value alone. The ledger rule is dropped - these cells render no
-            // placeholder.
+        // Default to the column's cell function and sortValue where they apply to a bare value.
+        // A text renderer stays one, so its cells render plain.
+        const col = fieldType !== 'tags' ? column : null,
+            textRenderer = fieldSpec.renderer ? null : col?.textRenderer,
+            renderer = fieldSpec.renderer ?? col?.renderer,
+            sortValue = fieldSpec.sortValue ?? (isFunction(col?.sortValue) ? col.sortValue : null),
+            // Each is called with the value alone, skips the blank placeholder and swallows a throw.
+            guard = (fn: (v: any, ...rest: any[]) => any) =>
+                fn &&
+                ((v: any) => {
+                    if (v === BLANK_PLACEHOLDER) return v;
+                    try {
+                        return fn(v);
+                    } catch {
+                        return v;
+                    }
+                }),
             cellClassRules = mapValues(
-                omit(
-                    fieldSpec.renderer ? null : colRenderer?.cellClassRules,
-                    'xh-cell--ledger-align'
-                ),
+                fieldSpec.renderer ? null : col?.resolvedRenderer?.cellClassRules,
                 (rule): ColumnCellClassRuleFn =>
                     ({value}) => {
                         if (value === BLANK_PLACEHOLDER) return false;
@@ -388,24 +383,9 @@ export class ValuesTabModel extends HoistModel {
                         return defaultComparator(v1, v2);
                     },
                     cellClassRules,
-                    // Apply renderer/sortValue as pure value transforms - pass no context, skip the
-                    // blank placeholder, and fall back to the raw value if either throws.
-                    sortValue: v => {
-                        if (v === BLANK_PLACEHOLDER || !sortValue) return v;
-                        try {
-                            return sortValue(v);
-                        } catch {
-                            return v;
-                        }
-                    },
-                    renderer: v => {
-                        if (v === BLANK_PLACEHOLDER || !renderer) return v;
-                        try {
-                            return renderer(v);
-                        } catch {
-                            return v;
-                        }
-                    }
+                    textRenderer: guard(textRenderer),
+                    renderer: guard(renderer),
+                    sortValue: guard(sortValue)
                 }
             ],
             xhImpl: true

@@ -20,8 +20,8 @@ affected APIs.
   react-windowed-select library. The `enableWindowed` prop of `Select` works as before - see
   Step 4.
 - **Column `renderer` reads (required if used)** - The built-in number and date column specs set
-  `formatter`, not `renderer`. Code that calls `col.renderer(...)` on such a column now throws.
-  Fall back to `col.formatter` - see Step 5.
+  `textRenderer`, not `renderer`. Code that calls `col.renderer(...)` on such a column now throws.
+  Read `col.resolvedRenderer` instead - see Step 5.
 
 ## Upgrade Steps
 
@@ -274,12 +274,12 @@ Remove any `react-windowed-select` entry from the app's `resolutions` or `overri
 ### 5. Review Columns Built on the Number and Date Specs
 
 The `number`, `date`, `dateTime`, `dateTimeSec`, `time`, `compactDate` and `localDate` column specs
-now set a `Column.formatter` in place of a `renderer`. A formatter returns the cell's display text,
-and ag-Grid writes it into a plain cell with no React component. Grids built on these specs get
-plain cells with no change. A `renderer` set on top of a spec still wins, so
+now set a `Column.textRenderer` in place of a `renderer`. A text renderer returns the cell's display
+text, and ag-Grid writes it into a plain cell with no React component. Grids built on these specs
+get plain cells with no change. A `renderer` set on top of a spec still wins, so
 `{...number, renderer: myRenderer}` works as before. One side effect remains: app code that reads
-`renderer` from one of these specs, or from a `Column` built on one, finds none. Fall back to the
-formatter, as in `col.renderer ?? col.formatter`.
+`renderer` from one of these specs, or from a `Column` built on one, finds none. Read
+`col.resolvedRenderer`, which returns whichever of the two the column has.
 
 **Find code that reads a column's renderer:**
 
@@ -288,9 +288,9 @@ formatter, as in `col.renderer ?? col.formatter`.
 grep -rnE "\.renderer\b|\{[^}]*\brenderer\b[^}]*\}\s*=" client-app/src/
 ```
 
-**Other formatted columns can be plain too.** Switch them to the `numberFormatter`, `dateFormatter`
-and sibling factories in `@xh/hoist/format` as you touch them. Each takes the options of its
-renderer counterpart, less those that need markup. The compiler rejects those options.
+**Other formatted columns can be plain too.** Switch them to the `numberTextRenderer`,
+`dateTextRenderer` and sibling factories in `@xh/hoist/format` as you touch them. Each takes the
+options of its renderer counterpart, less those that need markup. The compiler rejects those options.
 
 Before:
 
@@ -301,10 +301,11 @@ Before:
 After:
 
 ```typescript
-{field: 'pnl', formatter: numberFormatter({precision: 0, ledger: true, colorSpec: true})}
+{field: 'pnl', textRenderer: numberTextRenderer({precision: 0, ledger: true, colorSpec: true})}
 ```
 
-A formatter cell shows the same text, sign colors and alignment as the renderer cell it replaces.
+A text renderer cell shows the same text, sign colors and alignment as the renderer cell it
+replaces.
 These differences remain:
 
 - `colorSpec` classes such as `xh-pos-val` sit on the cell, not on an inner span.

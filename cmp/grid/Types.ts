@@ -366,33 +366,25 @@ export interface CellContext {
 }
 
 /**
- * Renderer function for a grid cell - returns the cell's content, rendered as a React component.
+ * Renderer for a grid cell - produces the cell's content from its value, as a React component.
+ * May carry `cellClassRules`, which the column applies beneath its own.
  *
- * May carry `cellClassRules`, which the column applies beneath its own. Set `rendererIsComplex`
- * on the column if it reads record fields other than its own. A throw shows '#ERROR' in the
- * cell, and on a row with no record (e.g. an ag-Grid total row) `record` is undefined.
+ * Set `rendererIsComplex` on the column if it reads record fields other than its own. A throw
+ * shows '#ERROR' in the cell, and on a row with no record (e.g. an ag-Grid total row) `record`
+ * is undefined.
  * @param value - cell data value (column + row).
  * @param context - additional data about the column, row and GridModel.
  * @returns the content for display, or null for an empty cell.
  */
-export type ColumnRenderer<T = any> = CellFn<T, ReactNode>;
-
-/**
- * Formatter function for a grid cell - returns the cell's display text, written into the cell
- * with no component. Prefer it over a renderer wherever a string will do.
- *
- * May carry `cellClassRules`, which the column applies beneath its own. Set `rendererIsComplex`
- * on the column if it reads record fields other than its own. A throw shows '#ERROR' in the
- * cell, and on a row with no record (e.g. an ag-Grid total row) `record` is undefined.
- * @param value - cell data value (column + row).
- * @param context - additional data about the column, row and GridModel.
- * @returns the display text, or null for an empty cell.
- */
-export type ColumnFormatter<T = any> = CellFn<T, string>;
-
-type CellFn<T, R> = ((value: T, context: CellContext) => R) & {
+export type ColumnRenderer<T = any, R = ReactNode> = ((value: T, context: CellContext) => R) & {
     cellClassRules?: Record<string, ColumnCellClassRuleFn>;
 };
+
+/**
+ * Renderer for a grid cell that returns the cell's display text, written into the cell with no
+ * component. Prefer it over a `renderer` wherever a string will do.
+ */
+export type ColumnTextRenderer<T = any> = ColumnRenderer<T, string>;
 
 /**
  * Function to return a value to export for a grid cell.

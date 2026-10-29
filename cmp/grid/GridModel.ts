@@ -158,7 +158,7 @@ export interface GridConfig {
 
     /**
      * Column configs to be set on all columns. Merges deeply, except that a column with its own
-     * `renderer` or `formatter` takes neither from the defaults.
+     * `renderer` or `textRenderer` takes neither from the defaults.
      */
     colDefaults?: Partial<ColumnSpec>;
 
@@ -918,8 +918,7 @@ export class GridModel extends HoistModel {
     /**
      * Export grid data using ag-Grid's built-in client-side export.
      *
-     * Cells export their raw value, as copy and {@link exportAsync} do. Pass a
-     * `processCellCallback` in `params` to export something else, such as formatted text.
+     * Cells export their raw value, as copy and {@link exportAsync} do.
      *
      * @param filename - name for exported file.
      * @param type - type of export - either 'excel' or 'csv'.
@@ -1903,12 +1902,8 @@ export class GridModel extends HoistModel {
     // Implementation
     //-----------------------
     private buildColumn(config: ColumnOrGroupSpec, borderedGroup?: ColumnGroupSpec): ColumnOrGroup {
-        // Merge leaf config with defaults.
-        // Ensure *any* tooltip setting on column itself always wins.
         if (this.colDefaults && !this.isGroupSpec(config)) {
-            let colDefaults = {...this.colDefaults};
-            if (config.tooltip) colDefaults.tooltip = null;
-            config = this.withColDefaults(config, colDefaults);
+            config = this.withColDefaults(config, this.colDefaults);
         }
 
         const omit = executeIfFunction(config.omit);
@@ -1927,15 +1922,17 @@ export class GridModel extends HoistModel {
         return new Column(config, this);
     }
 
-    // A config with its own renderer or formatter takes neither from the defaults - a default
-    // renderer would override its formatter, and deep-merging two formatters would copy
-    // `cellClassRules` onto a shared built-in formatter.
     private withColDefaults(
         config: Partial<ColumnSpec>,
         defaults: Partial<ColumnSpec>
     ): Partial<ColumnSpec> {
-        if (config?.renderer || config?.formatter) {
-            defaults = {...defaults, renderer: null, formatter: null};
+        // A config's own tooltip, renderer or text renderer blocks the default, and is never
+        // deep-merged with it.
+        const {tooltip, renderer, textRenderer} = config ?? {};
+        if (tooltip || renderer || textRenderer) {
+            defaults = {...defaults};
+            if (tooltip) defaults.tooltip = null;
+            if (renderer || textRenderer) defaults.renderer = defaults.textRenderer = null;
         }
         return defaultsDeep({}, config, defaults);
     }

@@ -427,7 +427,7 @@
     display: inline-block;
   }
 
-  // Measure a formatter's ledger alignment - see the matching rule for cells in AgGrid.scss.
+  // Measure a text renderer's ledger alignment - see the matching rule for cells in AgGrid.scss.
   &.xh-cell--ledger-align::after {
     content: ')';
     visibility: hidden;

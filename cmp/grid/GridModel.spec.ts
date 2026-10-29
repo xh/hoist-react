@@ -6,7 +6,7 @@
  */
 import {Column, dateTime, type GridConfig, GridModel, GridSorter, number} from '@xh/hoist/cmp/grid';
 import {XH} from '@xh/hoist/core';
-import {numberFormatter} from '@xh/hoist/format';
+import {numberTextRenderer} from '@xh/hoist/format';
 import {wait} from '@xh/hoist/promise';
 import {initTestAppAsync} from '@xh/hoist/test-support';
 import {beforeAll, describe, expect, it, onTestFinished, vi} from 'vitest';
@@ -127,59 +127,59 @@ describe('GridModel', () => {
             expect(tradeDate.sortingOrder).toEqual(Column.DESC_FIRST);
         });
 
-        it('keeps a column formatter, such as a number spec has, over a default renderer', () => {
+        it('keeps a column textRenderer, such as a number spec has, over a default renderer', () => {
             const renderer = (v: unknown) => `${v ?? '-'}`,
-                formatter = (v: unknown) => `<${v}>`,
+                textRenderer = (v: unknown) => `<${v}>`,
                 gridModel = createGridModel({
                     colDefaults: {renderer},
                     columns: [
                         {...number, field: 'pnl'},
                         {...dateTime, field: 'ts'},
                         {field: 'name'},
-                        {field: 'region', formatter}
+                        {field: 'region', textRenderer}
                     ]
                 });
 
             ['pnl', 'ts', 'region'].forEach(colId => {
                 const col = gridModel.getColumn(colId);
                 expect(col.renderer, colId).toBeFalsy();
-                expect(col.formatter, colId).toBeTypeOf('function');
+                expect(col.textRenderer, colId).toBeTypeOf('function');
             });
-            expect(gridModel.getColumn('pnl').formatter(1234567.891, null)).toBe('1,234,568');
+            expect(gridModel.getColumn('pnl').textRenderer(1234567.891, null)).toBe('1,234,568');
             expect(gridModel.getColumn('name').renderer).toBeTypeOf('function');
 
-            // A column's own renderer likewise wins over a default formatter.
-            const withDefaultFormatter = createGridModel({
-                colDefaults: {formatter},
+            // A column's own renderer likewise wins over a default text renderer.
+            const withDefaultText = createGridModel({
+                colDefaults: {textRenderer},
                 columns: [{field: 'name', renderer}, {field: 'region'}]
             });
-            expect(withDefaultFormatter.getColumn('name').formatter).toBeFalsy();
-            expect(withDefaultFormatter.getColumn('region').formatter).toBeTypeOf('function');
+            expect(withDefaultText.getColumn('name').textRenderer).toBeFalsy();
+            expect(withDefaultText.getColumn('region').textRenderer).toBeTypeOf('function');
         });
 
-        // A deep merge copied the default formatter's `cellClassRules` onto the column's own
-        // formatter - here the `number` spec's, which every grid in the app shares.
-        it("keeps a default formatter's cell classes off a column's own formatter", () => {
+        // A deep merge copied the default text renderer's `cellClassRules` onto the column's own
+        // - here the `number` spec's, which every grid in the app shares.
+        it("keeps a default text renderer's cell classes off a column's own", () => {
             const gridModel = createGridModel({
-                colDefaults: {formatter: numberFormatter({colorSpec: true})},
+                colDefaults: {textRenderer: numberTextRenderer({colorSpec: true})},
                 columns: [{...number, field: 'pnl'}, {field: 'qty'}]
             });
 
             expect(gridModel.getColumn('pnl').cellClassRules).toEqual({});
             expect(gridModel.getColumn('qty').cellClassRules).toHaveProperty('xh-pos-val');
-            expect(number.formatter.cellClassRules).toBeUndefined();
+            expect(number.textRenderer.cellClassRules).toBeUndefined();
         });
 
-        it("keeps an app-wide default formatter's cell classes off a grid's own", () => {
+        it("keeps an app-wide default text renderer's cell classes off a grid's own", () => {
             const appDefaults = GridModel.defaults.colDefaults;
-            GridModel.defaults.colDefaults = {formatter: numberFormatter({colorSpec: true})};
+            GridModel.defaults.colDefaults = {textRenderer: numberTextRenderer({colorSpec: true})};
             onTestFinished(() => {
                 GridModel.defaults.colDefaults = appDefaults;
             });
 
-            const ledger = numberFormatter({ledger: true}),
+            const ledger = numberTextRenderer({ledger: true}),
                 gridModel = createGridModel({
-                    colDefaults: {formatter: ledger},
+                    colDefaults: {textRenderer: ledger},
                     columns: [{field: 'qty'}]
                 });
 

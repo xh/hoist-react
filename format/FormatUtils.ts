@@ -25,11 +25,11 @@ export function createRenderer<V = any, C = PlainObject, R = any>(
 }
 
 /**
- * A formatter that always returns a string, for use as a grid `Column.formatter`.
+ * A renderer that always returns a string, for use as a grid `Column.textRenderer`.
  *
- * Styling that the markup-returning formatters apply inline (e.g. `colorSpec`, ledger alignment)
+ * Styling that the markup-returning renderers apply inline (e.g. `colorSpec`, ledger alignment)
  * is carried as `cellClassRules`, which the grid applies to the cell by value.
  */
-export type StringFormatter<V = any> = ((v: V, ...rest: any[]) => string) & {
+export type TextRenderer<V = any> = ((v: V, ...rest: any[]) => string) & {
     cellClassRules?: Record<string, (params: {value: any}) => boolean>;
 };

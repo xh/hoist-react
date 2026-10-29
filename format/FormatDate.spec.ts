@@ -6,7 +6,7 @@
  */
 import {span} from '@xh/hoist/cmp/layout';
 import {
-    compactDateFormatter,
+    compactDateTextRenderer,
     dateRenderer,
     fmtCompactDate,
     fmtDate,
@@ -14,8 +14,8 @@ import {
     fmtDateTimeSec,
     fmtTime,
     withFormattedTimestamps,
-    dateFormatter,
-    dateTimeFormatter
+    dateTextRenderer,
+    dateTimeTextRenderer
 } from '@xh/hoist/format';
 import {LocalDate} from '@xh/hoist/utils/datetime';
 import moment from 'moment';
@@ -184,30 +184,30 @@ describe('withFormattedTimestamps', () => {
     });
 });
 
-/** The string formatters, for `Column.formatter` - the built-in date column specs use them. */
-describe('dateFormatter and friends', () => {
+/** The text renderers, for `Column.textRenderer` - the built-in date column specs use them. */
+describe('dateTextRenderer and friends', () => {
     const date = moment('2026-10-07 14:05:09').toDate();
 
     it('format to a string with a format option or a bare format', () => {
-        expect(dateFormatter()(date)).toBe('2026-10-07');
-        expect(dateFormatter('MMM D')(date)).toBe('Oct 7');
-        expect(dateFormatter({fmt: 'YYYY'})(date)).toBe('2026');
-        expect(dateTimeFormatter()(date)).toBe('2026-10-07 2:05pm');
+        expect(dateTextRenderer()(date)).toBe('2026-10-07');
+        expect(dateTextRenderer('MMM D')(date)).toBe('Oct 7');
+        expect(dateTextRenderer({fmt: 'YYYY'})(date)).toBe('2026');
+        expect(dateTimeTextRenderer()(date)).toBe('2026-10-07 2:05pm');
     });
 
     it('return a string for null and invalid input', () => {
-        expect(dateFormatter()(null)).toBe('');
-        expect(dateFormatter({nullDisplay: '-'})(null)).toBe('-');
-        expect(dateFormatter()('not a date')).toBe('');
+        expect(dateTextRenderer()(null)).toBe('');
+        expect(dateTextRenderer({nullDisplay: '-'})(null)).toBe('-');
+        expect(dateTextRenderer()('not a date')).toBe('');
     });
 
-    it('reject options that need markup, at compile time and when created', () => {
+    it('reject options that need markup at compile time', () => {
         // Each line is a compile error - `pnpm typecheck` fails if one stops being one.
         // @ts-expect-error - tooltip
-        expect(() => dateFormatter({tooltip: () => 'tip'})).toThrow('Column.tooltip');
+        dateTextRenderer({tooltip: () => 'tip'});
         // @ts-expect-error - asHtml
-        expect(() => dateTimeFormatter({asHtml: true})).toThrow('asHtml');
+        dateTimeTextRenderer({asHtml: true});
         // @ts-expect-error - an element for nullDisplay
-        expect(() => compactDateFormatter({nullDisplay: span('-')})).toThrow('nullDisplay');
+        compactDateTextRenderer({nullDisplay: span('-')});
     });
 });

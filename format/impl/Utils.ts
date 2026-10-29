@@ -6,8 +6,7 @@
  */
 
 import {PlainObject} from '@xh/hoist/core';
-import {throwIf} from '@xh/hoist/utils/js';
-import {isNil, isString} from 'lodash';
+import type {ColorClassSpec} from '../FormatNumber';
 
 /**
  * Install a value on an options object as `originalValue` for later reference, if an
@@ -21,26 +20,14 @@ export function saveOriginal(v: any, opts: PlainObject) {
 }
 
 /**
- * Throw if a string formatter factory is given an option that needs markup, or a display value
- * that is not a string. The option types reject these at compile time; this catches untyped
- * callers, since a formatter must return text - ag-Grid shows an element as "[object Object]".
+ * Matches digits that round to zero, as a `strictZero: false` number format shows them.
  * @internal
  */
-export function throwIfMarkupOptions(
-    opts: PlainObject,
-    markupKeys: string[],
-    displayKeys: string[]
-) {
-    markupKeys.forEach(key => {
-        const v = opts[key];
-        throwIf(
-            !isNil(v) && v !== false,
-            `Formatter option '${key}' is not supported - it needs markup, which a formatter ` +
-                `cannot return. ${key === 'tooltip' ? 'Set Column.tooltip' : 'Use a renderer'} instead.`
-        );
-    });
-    displayKeys.forEach(key => {
-        const v = opts[key];
-        throwIf(!isNil(v) && !isString(v), `Formatter option '${key}' must be a string.`);
-    });
-}
+export const ROUNDED_ZERO = /^0+.?0*$/;
+
+/** The sign classes that `colorSpec: true` applies. @internal */
+export const DEFAULT_COLOR_SPEC: ColorClassSpec = {
+    pos: 'xh-pos-val',
+    neg: 'xh-neg-val',
+    neutral: 'xh-neutral-val'
+};

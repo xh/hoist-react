@@ -9,12 +9,12 @@ import {span} from '@xh/hoist/cmp/layout';
 import {action, bindable, computed, observable, observableRef} from '@xh/hoist/mobx';
 import {StoreRecord} from '@xh/hoist/data';
 import {GridSorter} from '@xh/hoist/cmp/grid';
+import {getCellClasses} from '@xh/hoist/cmp/grid/impl/Utils';
 import {Icon} from '@xh/hoist/icon';
 import {cloneDeep, findIndex, isBoolean, isEmpty, isEqual, isFinite, isString} from 'lodash';
 import {ReactNode} from 'react';
 import {ZoneGridModel} from '../ZoneGridModel';
 import {ZoneField, Zone, ZoneLimit, ZoneMapping} from '../Types';
-import {getCellClasses} from './ZoneGridRenderer';
 
 /**
  * Configuration for a ZoneMapperModel - the UI for user-driven customization of zone
@@ -237,7 +237,7 @@ export class ZoneMapperModel extends HoistModel {
                 displayName: displayName,
                 label: label,
                 column: column,
-                renderer: column.renderer ?? column.formatter,
+                resolvedRenderer: column.resolvedRenderer,
                 chooserGroup: column.chooserGroup,
                 sortable: column.sortable,
                 sortingOrder: column.sortingOrder
@@ -318,13 +318,13 @@ export class ZoneMapperModel extends HoistModel {
         if (sampleRecord) {
             const rawValue = sampleRecord.data[mapping.field];
             value = rawValue;
-            if (field.renderer) {
-                value = field.renderer(rawValue, {
+            if (field.resolvedRenderer) {
+                value = field.resolvedRenderer(rawValue, {
                     record: sampleRecord,
                     column: field.column,
                     gridModel: this.zoneGridModel.gridModel
                 });
-                classes = getCellClasses(field.renderer, rawValue, sampleRecord);
+                classes = getCellClasses(field.resolvedRenderer, rawValue, sampleRecord);
             }
         }
 

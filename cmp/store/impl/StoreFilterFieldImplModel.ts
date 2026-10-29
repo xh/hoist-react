@@ -209,8 +209,7 @@ export class StoreFilterFieldImplModel extends HoistModel {
                 if (!cols) return [];
 
                 return cols.map(column => {
-                    const {getValueFn} = column,
-                        renderer = column.renderer ?? column.formatter;
+                    const {getValueFn, resolvedRenderer} = column;
                     return (record: StoreRecord) => {
                         const ctx = {
                                 record,
@@ -222,7 +221,7 @@ export class StoreFilterFieldImplModel extends HoistModel {
                             },
                             ret = getValueFn(ctx);
 
-                        return renderer ? stripTags(renderer(ret, ctx)) : ret;
+                        return resolvedRenderer ? stripTags(resolvedRenderer(ret, ctx)) : ret;
                     };
                 });
             }

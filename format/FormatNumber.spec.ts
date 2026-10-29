@@ -15,16 +15,15 @@ import {
     fmtPrice,
     fmtQuantity,
     fmtThousands,
-    millionsFormatter,
+    millionsTextRenderer,
     millionsRenderer,
     type NumberFormatOptions,
-    numberFormatter,
+    numberTextRenderer,
     numberRenderer,
     parseNumber,
-    percentFormatter,
+    percentTextRenderer,
     percentRenderer,
-    quantityFormatter,
-    type QuantityFormatterOptions,
+    quantityTextRenderer,
     quantityRenderer
 } from '@xh/hoist/format';
 import {isValidElement, type ReactNode} from 'react';
@@ -540,48 +539,51 @@ describe('parseNumber', () => {
 });
 
 /**
- * The string formatters, for `Column.formatter`. A formatted cell must look like the rendered
- * one, and must never receive markup, which it would show as "[object Object]".
+ * The text renderers, for `Column.textRenderer`. A text cell must look like the rendered one,
+ * and must never receive markup, which it would show as "[object Object]".
  */
-describe('numberFormatter and friends', () => {
-    it('reject options that need markup, at compile time and when created', () => {
+describe('numberTextRenderer and friends', () => {
+    it('reject options that need markup at compile time', () => {
         // Each line is a compile error - `pnpm typecheck` fails if one stops being one.
         // @ts-expect-error - tooltip
-        expect(() => numberFormatter({tooltip: true})).toThrow('Column.tooltip');
+        numberTextRenderer({tooltip: true});
         // @ts-expect-error - withSignGlyph
-        expect(() => numberFormatter({withSignGlyph: true})).toThrow('withSignGlyph');
+        numberTextRenderer({withSignGlyph: true});
         // @ts-expect-error - labelCls
-        expect(() => millionsFormatter({label: true, labelCls: 'x'})).toThrow('labelCls');
+        millionsTextRenderer({label: true, labelCls: 'x'});
         // @ts-expect-error - asHtml
-        expect(() => percentFormatter({asHtml: true})).toThrow('asHtml');
-        // @ts-expect-error - colorSpec with inline styles
-        expect(() => numberFormatter({colorSpec: {pos: {color: 'green'}}})).toThrow('colorSpec');
+        percentTextRenderer({asHtml: true});
         // @ts-expect-error - an element for nullDisplay
-        expect(() => numberFormatter({nullDisplay: span('-')})).toThrow('nullDisplay');
+        numberTextRenderer({nullDisplay: span('-')});
         // @ts-expect-error - an element for zeroDisplay
-        expect(() => quantityFormatter({zeroDisplay: span('-')})).toThrow('zeroDisplay');
+        quantityTextRenderer({zeroDisplay: span('-')});
 
         // Options shared with a renderer, passed by variable or spread, fail to compile too.
         const rendererOpts = {precision: 2 as const, withSignGlyph: true};
         // @ts-expect-error - withSignGlyph, by variable
-        expect(() => numberFormatter(rendererOpts)).toThrow('withSignGlyph');
+        numberTextRenderer(rendererOpts);
         // @ts-expect-error - withSignGlyph, by spread
-        expect(() => numberFormatter({...rendererOpts, ledger: true})).toThrow('withSignGlyph');
+        numberTextRenderer({...rendererOpts, ledger: true});
+    });
+
+    it('reject a colorSpec with inline styles', () => {
+        // @ts-expect-error - colorSpec with inline styles
+        expect(() => numberTextRenderer({colorSpec: {pos: {color: 'green'}}})).toThrow('colorSpec');
     });
 
     it('share a class-only colorSpec with renderers', () => {
         const colorSpec: ColorClassSpec = {pos: 'my-pos', neg: 'my-neg'},
-            {cellClassRules} = numberFormatter({colorSpec});
+            {cellClassRules} = numberTextRenderer({colorSpec});
 
         expect(html(numberRenderer({colorSpec})(-5))).toBe('<span class="my-neg">-5</span>');
         expect(cellClassRules['my-neg']({value: -5})).toBe(true);
         expect(cellClassRules['my-pos']({value: -5})).toBe(false);
     });
 
-    it('accept the unit options of quantityFormatter', () => {
-        expect(quantityFormatter()(7100100)).toBe('7.10m');
-        expect(quantityFormatter({lossless: true})(7100100)).toBe('7,100,100');
-        expect(quantityFormatter({useMillions: false})(7100100)).toBe('7,100,100');
+    it('accept the unit options of quantityTextRenderer', () => {
+        expect(quantityTextRenderer()(7100100)).toBe('7.10m');
+        expect(quantityTextRenderer({lossless: true})(7100100)).toBe('7,100,100');
+        expect(quantityTextRenderer({useMillions: false})(7100100)).toBe('7,100,100');
     });
 
     describe('match their renderers', () => {
@@ -594,10 +596,10 @@ describe('numberFormatter and friends', () => {
             ],
             numericStrings: any[] = ['1234567.891', '-12.5', '0', '0.004', '-0.004', ''],
             twins = {
-                number: [numberRenderer, numberFormatter],
-                millions: [millionsRenderer, millionsFormatter],
-                quantity: [quantityRenderer, quantityFormatter],
-                percent: [percentRenderer, percentFormatter]
+                number: [numberRenderer, numberTextRenderer],
+                millions: [millionsRenderer, millionsTextRenderer],
+                quantity: [quantityRenderer, quantityTextRenderer],
+                percent: [percentRenderer, percentTextRenderer]
             };
 
         // The renderer cell's text, markup classes, and whether it ends in the ledger placeholder.
@@ -611,18 +613,18 @@ describe('numberFormatter and friends', () => {
             return {text: body.textContent, classes, ledgerAlign: !!placeholder};
         }
 
-        // The formatter cell's text and the classes its rules give the cell.
-        function formatted(formatter, v: number) {
-            const rules = formatter.cellClassRules ?? {},
+        // The text renderer cell's text and the classes its rules give the cell.
+        function formatted(textRenderer, v: number) {
+            const rules = textRenderer.cellClassRules ?? {},
                 classes = Object.keys(rules).filter(it => rules[it]({value: v}));
             return {
-                text: formatter(v),
+                text: textRenderer(v),
                 classes: classes.filter(it => it !== 'xh-cell--ledger-align'),
                 ledgerAlign: classes.includes('xh-cell--ledger-align')
             };
         }
 
-        it.each<[keyof typeof twins, QuantityFormatterOptions]>([
+        it.each<[keyof typeof twins, Parameters<typeof quantityTextRenderer>[0]]>([
             ['number', {}],
             ['number', {precision: 4, zeroPad: 2}],
             ['number', {ledger: true, precision: 0}],
@@ -640,10 +642,10 @@ describe('numberFormatter and friends', () => {
             ['quantity', {}],
             ['quantity', {ledger: false, colorSpec: true}],
             ['percent', {colorSpec: true}]
-        ])('%sFormatter with %o', (kind, opts) => {
-            const [renderer, formatter] = twins[kind],
+        ])('%sTextRenderer with %o', (kind, opts) => {
+            const [renderer, textRenderer] = twins[kind],
                 render = renderer(opts),
-                format = formatter(opts);
+                format = textRenderer(opts);
             [...values, ...(kind === 'number' ? numericStrings : [])].forEach(v =>
                 expect(formatted(format, v), `value ${v}`).toEqual(rendered(render(v)))
             );

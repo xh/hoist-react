@@ -57,7 +57,7 @@
     margin-right: 0.25em;
   }
 
-  // A formatter's ledger alignment - see the matching rule for grid cells in AgGrid.scss.
+  // A text renderer's ledger alignment - see the matching rule for grid cells in AgGrid.scss.
   &__text-container.xh-cell--ledger-align::after {
     content: ')';
     visibility: hidden;

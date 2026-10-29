@@ -7,7 +7,7 @@
 import {date, grid, GridModel, localDate, number, type ColumnSpec} from '@xh/hoist/cmp/grid';
 import {storeFilterField} from '@xh/hoist/cmp/store';
 import {zoneGrid, ZoneGridModel} from '@xh/hoist/cmp/zoneGrid';
-import {dateRenderer, numberFormatter, numberRenderer} from '@xh/hoist/format';
+import {dateRenderer, numberTextRenderer, numberRenderer} from '@xh/hoist/format';
 import {initTestAppAsync} from '@xh/hoist/test-support';
 import {installAgGridForTests} from '@xh/hoist/test-support/agGrid';
 import {LocalDate} from '@xh/hoist/utils/datetime';
@@ -17,13 +17,13 @@ import {sumBy, times} from 'lodash';
 import {beforeAll, describe, expect, it, onTestFinished, vi} from 'vitest';
 
 /**
- * What each consumer of a cell's value sees for a column with a `formatter`. The built-in `number`
- * and date column specs format this way, so a consumer that reads only `Column.renderer` changes
+ * What each consumer of a cell's value sees for a column with a `textRenderer`. The built-in
+ * `number` and date column specs render this way, so a consumer that reads only `Column.renderer` changes
  * for every app. Autosize, filters and zone grids must see the display text. Copy and client export
  * send the typed value, as they do for the same column with a renderer. Server export reads its
  * values through the same `GridExportService.getExportableValueForCell` as copy.
  */
-describe('Column.formatter', () => {
+describe('Column.textRenderer', () => {
     beforeAll(async () => {
         await initTestAppAsync();
         installAgGridForTests();
@@ -33,7 +33,7 @@ describe('Column.formatter', () => {
     const QTY = 1234567890.5,
         DAY = new Date(2026, 9, 7, 14, 5, 9);
 
-    // Each formatter column beside a twin that formats the same value through a renderer.
+    // Each text renderer column beside a twin that renders the same value through a renderer.
     const twins: ColumnSpec[] = [
         {...number, field: 'qty', colId: 'fmt'},
         {...number, field: 'qty', colId: 'rnd', renderer: numberRenderer({})},
@@ -60,9 +60,9 @@ describe('Column.formatter', () => {
         // positive the widest cell.
         const opts = {ledger: true, precision: 0} as const,
             ledgerCols: ColumnSpec[] = [
-                {field: 'qty', colId: 'fmt', formatter: numberFormatter(opts)},
+                {field: 'qty', colId: 'fmt', textRenderer: numberTextRenderer(opts)},
                 {field: 'qty', colId: 'rnd', renderer: numberRenderer(opts)},
-                {field: 'qty', colId: 'fmtAsRnd', renderer: numberFormatter(opts)}
+                {field: 'qty', colId: 'fmtAsRnd', renderer: numberTextRenderer(opts)}
             ].map(it => ({...it, autosizeIncludeHeader: false})),
             gridModel = await renderGridAsync({columns: ledgerCols});
         gridModel.loadData([
@@ -97,8 +97,8 @@ describe('Column.formatter', () => {
         const gridModel = await renderGridAsync({columns: twins}),
             {agApi} = gridModel;
 
-        // Build the CSV that localExport would download. ag-Grid would apply the formatter by
-        // default, so the raw value shows the export opting out of that.
+        // Build the CSV that localExport would download. ag-Grid would apply the text renderer
+        // by default, so the raw value shows the export opting out of that.
         let csv: string;
         vi.spyOn(agApi, 'exportDataAsCsv').mockImplementation(params => {
             csv = agApi.getDataAsCsv(params);
@@ -125,7 +125,7 @@ describe('Column.formatter', () => {
             columns: [
                 {field: 'name'},
                 {...localDate, field: 'tradeDay'},
-                {field: 'qty', formatter: numberFormatter({precision: 0, colorSpec: true})}
+                {field: 'qty', textRenderer: numberTextRenderer({precision: 0, colorSpec: true})}
             ],
             mappings: {tl: 'name', tr: 'qty', bl: 'tradeDay', br: []}
         });

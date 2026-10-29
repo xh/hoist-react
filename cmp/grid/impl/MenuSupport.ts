@@ -245,7 +245,7 @@ function replaceHoistToken(
                     const values = getValues(selectedRecords, field);
                     if (values.length > 1) return {text: `${values.length} values`};
 
-                    const renderer = fieldSpec.renderer ?? column.renderer ?? column.formatter,
+                    const renderer = fieldSpec.renderer ?? column.resolvedRenderer,
                         elem = renderer
                             ? renderer(values[0], {
                                   record,

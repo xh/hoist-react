@@ -258,42 +258,42 @@ await gridModel.exportAsync({type: 'excel'});
 gridModel.localExport('my-data', 'csv');
 ```
 
-### Formatters
+### Text Renderers
 
-Prefer a `formatter` over a `renderer` wherever a cell shows only text. A formatter returns the
-display text, and ag-Grid writes it into a plain cell with no React component. A renderer makes
+Prefer a `textRenderer` over a `renderer` wherever a cell shows only text. A text renderer returns
+the display text, and ag-Grid writes it into a plain cell with no React component. A renderer makes
 every cell of its column a React component. The built-in `number`, `date`, `dateTime`,
-`dateTimeSec`, `time`, `compactDate` and `localDate` column specs use formatters.
+`dateTimeSec`, `time`, `compactDate` and `localDate` column specs use text renderers.
 
-For numbers and dates, build a formatter with the `xxxFormatter` factories in `@xh/hoist/format`.
-They take the options of their `xxxRenderer` counterparts, less those that need markup. See
-[Formatter Factories](../../format/README.md#formatter-factories) for what each option does in a
-formatter. A custom formatter gets the same `(value, {record, column, gridModel})` arguments as a
-renderer, and must return a string.
+For numbers and dates, build one with the `xxxTextRenderer` factories in `@xh/hoist/format`. They
+take the options of their `xxxRenderer` counterparts, less those that need markup. See
+[Text Renderer Factories](../../format/README.md#text-renderer-factories) for what each option does
+in a text renderer. A custom text renderer gets the same `(value, {record, column, gridModel})`
+arguments as a renderer, and must return a string.
 
 ```typescript
-import {numberFormatter} from '@xh/hoist/format';
+import {numberTextRenderer} from '@xh/hoist/format';
 
 columns: [
-    {field: 'pnl', formatter: numberFormatter({precision: 0, ledger: true, colorSpec: true})},
+    {field: 'pnl', textRenderer: numberTextRenderer({precision: 0, ledger: true, colorSpec: true})},
     {
         field: 'qty',
-        formatter: (v, {record}) => `${v} ${record.data.unit}`,
+        textRenderer: (v, {record}) => `${v} ${record.data.unit}`,
         rendererIsComplex: true
     }
 ]
 ```
 
-- **Styling by value** - a formatter or renderer can carry `cellClassRules`, as the formatter
-  factories do for `colorSpec` and ledger alignment. `Column` applies them beneath its own.
-- **Other record fields** - a formatter that reads them needs `rendererIsComplex`, as a renderer
-  does. Autosize relies on it to measure each row's own text.
+- **Styling by value** - a text renderer or renderer can carry `cellClassRules`, as the text
+  renderer factories do for `colorSpec` and ledger alignment. `Column` applies them beneath its own.
+- **Other record fields** - a text renderer that reads them needs `rendererIsComplex`, as a
+  renderer does. Autosize relies on it to measure each row's own text.
 - **Group rows** - a group row's label shows its raw group value, as with a renderer. Set
-  `GridModel.groupRowRenderer` to format it. An ag-Grid total row has no record, so the formatter
-  gets `record` undefined there.
-- **With a renderer** - the `renderer` wins, and `Column` ignores the formatter and its rules.
+  `GridModel.groupRowRenderer` to format it. An ag-Grid total row has no record, so the text
+  renderer gets `record` undefined there.
+- **With a renderer** - the `renderer` wins, and `Column` ignores the text renderer and its rules.
   This lets `{...number, renderer}` override a built-in spec.
-- **Outside the cell** - autosize, header filters and `ZoneGrid` use the formatted text, as do
+- **Outside the cell** - autosize, header filters and `ZoneGrid` use the text, as do
   `StoreFilterField` and `GridFindField` on date fields. Copy and both exports send the cell's
   value, as for any column.
 
@@ -466,7 +466,7 @@ Key categories of `ColumnSpec` properties:
 | Editing | `editable`, `editor`, `editorIsPopup`                                                                        |
 | Export | `exportName`, `exportValue`, `excludeFromExport`, `excelFormat`, `excelWidth`                                |
 | Chooser | `chooserName`, `chooserGroup`, `chooserDescription`\*, `excludeFromChooser`, `hideable`                      |
-| Rendering | `formatter`, `renderer`, `rendererIsComplex`, `tooltip`, `cellClass`, `cellClassRules`, `cellFlag`            |
+| Rendering | `textRenderer`, `renderer`, `rendererIsComplex`, `tooltip`, `cellClass`, `cellClassRules`, `cellFlag`        |
 | Tree | `isTreeColumn`, `headerHasExpandCollapse`                                                                    |
 | Autosize | `autosizable`, `autosizeIncludeHeader`, `autosizeIncludeHeaderIcons`, `autosizeMinWidth`, `autosizeMaxWidth` |
 

@@ -41,7 +41,7 @@ export interface GridFilterFieldSpecConfig extends BaseFilterFieldSpecConfig {
 
     /**
      * Pure function producing the display content for each entry in the values filter display. If
-     * not provided, the Column's renderer or formatter is used where it can be applied to a bare
+     * not provided, the Column's renderer or text renderer is used where it can be applied to a bare
      * value.
      */
     renderer?: GridFilterRenderer;

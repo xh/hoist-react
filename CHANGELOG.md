@@ -21,8 +21,8 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 * Removed `NumberFormatOptions.formatConfig`, which took a numbro format. Use `precision`, `zeroPad`
   and `withCommas` instead.
 * The built-in `number`, `date`, `dateTime`, `dateTimeSec`, `time`, `compactDate` and `localDate`
-  column specs now set a `formatter` in place of a `renderer`. Their cells are plain, and code that
-  reads their `renderer` finds none.
+  column specs now set a `textRenderer` in place of a `renderer`. Their cells are plain, and code
+  that reads their `renderer` finds none.
 * Desktop `DateInput` now renders its calendar with react-day-picker 10, as the mobile `DateInput`
   already did, and its time picker is Hoist's own 24-hour control. `dayPickerProps` now takes
   react-day-picker 10 props - see the upgrade notes for the renames from v8. Removed
@@ -41,10 +41,11 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 
 ### 🎁 New Features
 
-* Added `Column.formatter`, a function that returns a cell's display text. AG Grid writes the text
-  into a plain cell, with no React component. The `numberFormatter`, `dateFormatter` and sibling
-  factories in `@xh/hoist/format` build one, with `colorSpec` and ledger alignment as cell classes.
-* Added `ColorClassSpec`, a `colorSpec` type that holds class names only. Renderer and formatter
+* Added `Column.textRenderer`, a function that returns a cell's display text. AG Grid writes the
+  text into a plain cell, with no React component. The `numberTextRenderer`, `dateTextRenderer` and
+  sibling factories in `@xh/hoist/format` build one, with `colorSpec` and ledger alignment as cell
+  classes. `Column.resolvedRenderer` returns whichever of `renderer` and `textRenderer` is set.
+* Added `ColorClassSpec`, a `colorSpec` type that holds class names only. Renderer and text renderer
   factories both accept it, so apps can share one spec between them.
 * Added `GridModel.headerContextMenu`, a context menu shown on right-click of a desktop grid column
   header. By default it sorts, pins, hides and autosizes the clicked column and opens the column
@@ -101,7 +102,7 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 ### ✨ Styles
 
 * Moved the selected grid row's text color from its cells to the row. A cell with its own color
-  class, such as a formatter's sign color, now keeps that color when its row is selected.
+  class, such as a text renderer's sign color, now keeps that color when its row is selected.
 * Mobile apps no longer load Onsen UI's stylesheet or its icon fonts. Touch-device defaults that
   the Onsen stylesheet supplied - no tap highlight, no focus rings on controls, `touch-action:
   manipulation`, heading sizes, and a body sized to the viewport - are now set by the mobile
