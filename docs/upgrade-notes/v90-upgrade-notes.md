@@ -19,6 +19,9 @@ affected APIs.
   `reactWindowedSelect` exports from `@xh/hoist/kit/react-select` along with the
   react-windowed-select library. The `enableWindowed` prop of `Select` works as before - see
   Step 4.
+- **`Markdown` escape hatch and kit exports (required if used)** - `Markdown` now renders with
+  marked, so its `reactMarkdownOptions` prop and the `@xh/hoist/kit/react-markdown` exports are
+  gone. Apps that used either render react-markdown themselves - see Step 5.
 
 ## Upgrade Steps
 
@@ -268,6 +271,41 @@ An app that rendered the kit's `WindowedSelect` or `reactWindowedSelect` directl
 `select({enableWindowed: true})` instead, or add react-windowed-select to its own `package.json`.
 Remove any `react-windowed-select` entry from the app's `resolutions` or `overrides`.
 
+### 5. Replace `reactMarkdownOptions` and `kit/react-markdown` Imports
+
+`Markdown` now converts its content with [marked](https://marked.js.org/) and sanitizes the HTML
+with DOMPurify, so Hoist no longer depends on react-markdown, remark-gfm, remark-breaks or
+unified. The `content` and `lineBreaks` props work as before, GitHub Flavored Markdown is still
+on, and the four places the framework renders markdown - desktop and mobile `Banner`, alert
+banners and admin detail forms - need no change.
+
+**Find affected code:**
+
+```bash
+grep -rn "reactMarkdownOptions\|kit/react-markdown" client-app/src/
+```
+
+Two things changed for apps that reached past the props:
+
+- **`reactMarkdownOptions` is gone.** It passed remark plugins and a React component map through
+  to react-markdown. There is no equivalent, since marked produces an HTML string rather than
+  React elements. An app that needs plugins or custom element rendering adds `react-markdown` to
+  its own `package.json` and renders it directly where it needs that.
+- **`@xh/hoist/kit/react-markdown` is gone.** Its `ReactMarkdown` and `reactMarkdown` exports came
+  from the same library. Import from `react-markdown` after adding it to the app, or render
+  `markdown()` from `@xh/hoist/cmp/markdown`.
+
+Two smaller behavior changes to review:
+
+- `Markdown` renders into a `div.xh-markdown`, where react-markdown rendered bare elements.
+  Descendant selectors such as `.my-note p` still match. A selector that assumed the markdown's
+  first element was a direct child of the parent needs one more level.
+- Raw HTML in content is now sanitized and kept, where react-markdown dropped it. Scripts, event
+  handlers and other unsafe markup are removed. Content with safe inline HTML renders it.
+
+`markdownToHtml(content, lineBreaks)` in `@xh/hoist/cmp/markdown` returns the same sanitized HTML
+as a string, for use outside React rendering.
+
 ## Verification Checklist
 
 After completing all steps:
@@ -284,6 +322,8 @@ After completing all steps:
       `modifier`, and nothing imports from `@xh/hoist/kit/onsen`.
 - [ ] Mobile screens with inputs, tabs, dialogs, toasts and menus look as they did on v89.
 - [ ] No code imports `WindowedSelect` or `reactWindowedSelect` from `@xh/hoist/kit/react-select`.
+- [ ] No code passes `reactMarkdownOptions` to `markdown()` or imports from
+      `@xh/hoist/kit/react-markdown`.
 
 ## Reference
 

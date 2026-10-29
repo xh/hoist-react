@@ -35,6 +35,10 @@ detailed, step-by-step upgrade instructions with before/after code examples.
   `Checkbox` and `SwitchInput`. It passed an Onsen modifier string and has no equivalent.
 * Mobile `Checkbox` and `SwitchInput` now put their `testId` on the native `<input>` rather than
   on a wrapper, as on desktop.
+* `Markdown` now renders with marked and sanitizes the result with DOMPurify, replacing
+  react-markdown. Removed its `reactMarkdownOptions` prop and the `@xh/hoist/kit/react-markdown`
+  exports. Apps that passed remark plugins or a component map add react-markdown to their own
+  dependencies and render it directly. Safe raw HTML in content is now kept rather than dropped.
 
 ### 🎁 New Features
 
@@ -74,6 +78,10 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 
 ### ⚙️ Technical
 
+* `Markdown` renders into a `div.xh-markdown` and merges its `className` prop, where it rendered
+  bare elements before. Added `markdownToHtml()` to `@xh/hoist/cmp/markdown`, the same conversion
+  as a string. Dropping react-markdown removes its remark and micromark packages, about 100 in
+  all, from every app install.
 * Desktop and mobile `DateInput` build their calendar props with one shared helper and share one
   react-day-picker theme, in `@xh/hoist/kit/react-day-picker`, for light and dark modes. Dropping
   Blueprint's date picker also drops the second copies of date-fns and react-day-picker it pulled
@@ -104,6 +112,11 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 * react-windowed-select `removed`
 * http-status-codes `removed`
 * inflection `added` - replaces lodash-inflection behind `pluralize`, `singularize` and `ordinalize`
+* marked `added` - replaces react-markdown behind `Markdown`
+* react-markdown `removed`
+* remark-gfm `removed`
+* remark-breaks `removed`
+* unified `removed`
 * lodash-inflection `removed`
 * short-unique-id `removed`
 * store2 `removed`

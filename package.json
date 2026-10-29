@@ -86,6 +86,7 @@
     "inter-ui": "~4.1.1",
     "jwt-decode": "^4.0.0",
     "lodash": "^4.18.1",
+    "marked": "^18.1.2",
     "minisearch": "^7.2.0",
     "mobx": "~7.1.0",
     "mobx-react-lite": "~5.1.0",
@@ -93,11 +94,8 @@
     "qs": "^6.16.1",
     "react-dropzone": "~20.1.4",
     "react-grid-layout": "~2.3.0",
-    "react-markdown": "~10.1.0",
     "react-select": "~5.10.2",
     "react-window": "~2.4.1",
-    "remark-breaks": "~4.0.0",
-    "remark-gfm": "~4.0.1",
     "router5": "~8.0.1",
     "router5-plugin-browser": "~8.0.1",
     "sass-material-colors": "~0.0.5",
@@ -106,7 +104,6 @@
     "ts-morph": "^28.0.0",
     "tsx": "^4.23.15",
     "ua-parser-js": "^2.0.10",
-    "unified": "~11.0.5",
     "zod": "^4.6.7"
   },
   "peerDependencies": {
