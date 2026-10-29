@@ -1,0 +1,107 @@
+/*
+ * This file belongs to Hoist, an application development toolkit
+ * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
+ *
+ * Copyright © 2026 Extremely Heavy Industries Inc.
+ */
+
+.xh-stat-card-strip {
+  display: flex;
+  flex: none;
+  gap: var(--xh-stat-card-strip-gap);
+  padding: var(--xh-stat-card-strip-padding);
+
+  // Equal shares of the strip, regardless of content width.
+  > .xh-stat-card {
+    flex: 1 1 0;
+  }
+}
+
+.xh-stat-card {
+  display: flex;
+  flex-direction: column;
+  // Main (vertical) axis - when a strip stretches a card to its tallest neighbor, split the slack
+  // above and below so the text of adjacent cards reads as one row.
+  justify-content: center;
+  min-width: 0;
+  overflow: hidden;
+  padding: var(--xh-stat-card-padding);
+  background-color: var(--xh-stat-card-bg);
+  border: var(--xh-stat-card-border);
+  border-radius: var(--xh-stat-card-border-radius);
+  color: var(--xh-text-color);
+
+  &--accented {
+    border-top-width: var(--xh-stat-card-accent-width);
+  }
+
+  // Every line truncates rather than wrapping, as its width depends on how many cards share a strip.
+  &__title,
+  &__value-primary,
+  &__secondary,
+  &__detail {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  &__title {
+    font-size: var(--xh-stat-card-title-font-size);
+    color: var(--xh-stat-card-title-color);
+    letter-spacing: var(--xh-stat-card-title-letter-spacing);
+    text-transform: var(--xh-stat-card-title-text-transform);
+  }
+
+  &__value {
+    display: flex;
+    align-items: baseline;
+    gap: var(--xh-stat-card-value-gap);
+    min-width: 0;
+    font-size: var(--xh-stat-card-value-font-size);
+    font-weight: var(--xh-stat-card-value-font-weight);
+    line-height: 1.25;
+
+    &--primary {
+      color: var(--xh-intent-primary-text-color);
+    }
+
+    &--success {
+      color: var(--xh-intent-success-text-color);
+    }
+
+    &--warning {
+      color: var(--xh-intent-warning-text-color);
+    }
+
+    &--danger {
+      color: var(--xh-intent-danger-text-color);
+    }
+  }
+
+  // On a narrow card the secondary label gives up space before the value it elaborates on.
+  &__value-primary {
+    flex: 0 1 auto;
+  }
+
+  &__secondary {
+    flex: 0 4 auto;
+    font-size: var(--xh-stat-card-secondary-font-size);
+    font-weight: normal;
+    color: var(--xh-text-color);
+  }
+
+  // Never shrinks - the icon is what advertises its tooltip.
+  &__info {
+    flex: none;
+    font-size: var(--xh-stat-card-title-font-size);
+    font-weight: normal;
+    color: var(--xh-text-color-muted);
+    cursor: help;
+  }
+
+  &__detail {
+    font-size: var(--xh-stat-card-detail-font-size);
+    color: var(--xh-stat-card-detail-color);
+  }
+}

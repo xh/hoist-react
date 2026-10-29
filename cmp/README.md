@@ -149,6 +149,7 @@ techniques.
 | `/chart/` | Highcharts integration for data visualization |
 | `/treemap/` | Hierarchical treemap and split treemap visualizations |
 | `/zoneGrid/` | Multi-zone grid layout for complex record displays |
+| `/statcard/` | Tiles that call out key figures (StatCard), laid out in equal-width rows (StatCardStrip) |
 
 ### Layout and Containers
 
