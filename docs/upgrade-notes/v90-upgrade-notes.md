@@ -4,7 +4,7 @@
 
 ## Overview
 
-Hoist React v90 is a light upgrade. Its two required steps apply only to apps that use the
+Hoist React v90 is a light upgrade. Its required steps apply only to apps that use the
 affected APIs.
 
 - **Number `formatConfig` (required if used)** - v90 removes `NumberFormatOptions.formatConfig`
@@ -19,6 +19,9 @@ affected APIs.
   `reactWindowedSelect` exports from `@xh/hoist/kit/react-select` along with the
   react-windowed-select library. The `enableWindowed` prop of `Select` works as before - see
   Step 4.
+- **MCP tooling packages (required if an app runs the Hoist MCP server or CLIs)** - the packages
+  behind `hoist-mcp`, `hoist-docs` and `hoist-ts` are now optional peer dependencies. Apps that
+  use the tools add them as devDependencies - see Step 5.
 
 ## Upgrade Steps
 
@@ -268,6 +271,28 @@ An app that rendered the kit's `WindowedSelect` or `reactWindowedSelect` directl
 `select({enableWindowed: true})` instead, or add react-windowed-select to its own `package.json`.
 Remove any `react-windowed-select` entry from the app's `resolutions` or `overrides`.
 
+### 5. Install the MCP Tooling Packages If the App Uses the Tools
+
+The Hoist MCP server and the `hoist-docs` and `hoist-ts` CLIs run on six packages that only they
+import: `tsx`, `@modelcontextprotocol/sdk`, `zod`, `ts-morph`, `minisearch` and `commander`.
+Through v89 these were regular dependencies of `@xh/hoist`, so every app installed them, with
+ts-morph's own copy of TypeScript and tsx's esbuild binaries - about 85 packages and 55 MB per
+install. v90 declares them as optional peer dependencies, so an app installs them only when it
+adds them.
+
+**Apps that run the tools** - those with a `hoist-react` entry in `.mcp.json`, or whose agents
+call `npx hoist-docs` or `npx hoist-ts` - add them as devDependencies:
+
+```bash
+pnpm add -D tsx @modelcontextprotocol/sdk zod ts-morph minisearch commander
+```
+
+Take the latest versions that fit the optional peer ranges in the `package.json` of `@xh/hoist`.
+A bin run without them exits with a message naming the missing packages and this command, so a
+forgotten install shows up on the first `hoist-ping` or CLI call rather than failing silently.
+
+**Apps that do not run the tools** need no change. Their next install drops the packages.
+
 ## Verification Checklist
 
 After completing all steps:
@@ -284,6 +309,8 @@ After completing all steps:
       `modifier`, and nothing imports from `@xh/hoist/kit/onsen`.
 - [ ] Mobile screens with inputs, tabs, dialogs, toasts and menus look as they did on v89.
 - [ ] No code imports `WindowedSelect` or `reactWindowedSelect` from `@xh/hoist/kit/react-select`.
+- [ ] If the app runs the Hoist MCP server or CLIs, `npx hoist-docs ping` reports the library and
+      its doc count rather than missing packages.
 
 ## Reference
 

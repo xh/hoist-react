@@ -35,6 +35,10 @@ detailed, step-by-step upgrade instructions with before/after code examples.
   `Checkbox` and `SwitchInput`. It passed an Onsen modifier string and has no equivalent.
 * Mobile `Checkbox` and `SwitchInput` now put their `testId` on the native `<input>` rather than
   on a wrapper, as on desktop.
+* Declared the MCP server and CLI tooling packages - `@modelcontextprotocol/sdk`, `zod`, `tsx`,
+  `ts-morph`, `minisearch` and `commander` - as optional peer dependencies rather than
+  dependencies. Apps that run the `hoist-mcp`, `hoist-docs` or `hoist-ts` bins add them as
+  devDependencies. Other apps install about 85 fewer packages. See the upgrade notes.
 
 ### 🎁 New Features
 
@@ -85,6 +89,11 @@ detailed, step-by-step upgrade instructions with before/after code examples.
   storage is unavailable the service logs a warning and holds values in memory, as before.
 * Removed Onsen UI from the mobile toolkit, with the `@xh/hoist/kit/onsen` wrappers. Each mobile
   component now owns its DOM and styles.
+
+### 🤖 AI Docs + Tooling
+
+* The `hoist-mcp`, `hoist-docs` and `hoist-ts` bins now check for their tooling packages before
+  they start, and exit with the install command naming any that are missing.
 
 ### ✨ Styles
 

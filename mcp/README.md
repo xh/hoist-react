@@ -126,10 +126,19 @@ compile it via Rsbuild during their own build. The bundler only processes files 
 chains from app entry points. As long as no browser-targeted hoist code imports from `mcp/`, the
 MCP server's Node-only dependencies (`@modelcontextprotocol/sdk`, `ts-morph`, etc.) will never
 enter application bundles. The separate `tsconfig.json` provides an additional safety net at the
-type-checking level. Note that these packages are regular `dependencies`, not `devDependencies` --
-the published `hoist-mcp`, `hoist-docs`, and `hoist-ts` bins must resolve them from a consuming
-application's own install, and package managers do not install a dependency's `devDependencies`.
-Bundle isolation therefore rests on the import-chain boundary alone, not on dependency scope.
+type-checking level.
+
+**Optional peer dependencies for the tooling.** The packages only `mcp/` imports at runtime -
+`@modelcontextprotocol/sdk`, `zod`, `tsx`, `ts-morph`, `minisearch` and `commander` - are optional
+peer dependencies of `@xh/hoist`, and devDependencies of this repo. Package managers do not
+install a dependency's `devDependencies`, and they do install its `dependencies`, so as regular
+dependencies these six packages (with ts-morph's own copy of TypeScript and tsx's esbuild
+binaries, about 85 packages and 55 MB) reached every app that installed Hoist for the UI library.
+As optional peers they reach only an app that adds them, and the published `hoist-mcp`,
+`hoist-docs` and `hoist-ts` bins resolve them from that app's install. `bin/impl/launch.mjs`
+checks for all six before it starts and names any that are missing, with the install command.
+Bundle isolation still rests on the import-chain boundary: dependency scope keeps the packages
+out of an app's `node_modules`, not out of its bundle.
 
 **Section-level retrieval.** Agents rarely need a whole README - they need the one section that
 answers their question. `data/doc-sections.ts` splits every registered doc at `##` and `###`
@@ -441,15 +450,24 @@ disk. Later invocations load the cache in ~20ms and build the in-memory search i
 ### Prerequisites
 
 - Node.js 22.12+, the floor set by `commander` (hoist-dev-utils requires 22.15+ for app builds)
-- `tsx`, a dependency of hoist-react, so it is present wherever `@xh/hoist` is installed
 - `@xh/hoist` installed in the app, or a checked-out hoist-react repository
+- In an app, the tooling packages, which `@xh/hoist` declares as optional peer dependencies so
+  that apps which never run the tools do not install them. Add them as devDependencies:
+
+  ```bash
+  pnpm add -D tsx @modelcontextprotocol/sdk zod ts-morph minisearch commander
+  ```
+
+  Take the latest versions that fit the optional peer ranges in the `package.json` of
+  `@xh/hoist`. A bin run without them exits with a message naming the missing packages and this
+  command. The hoist-react repository has them as devDependencies already.
 
 ### Starting the Server
 
 Claude Code reads `.mcp.json` at the project root and starts the server itself. One entry point
-serves every case: `bin/hoist-mcp.mjs` resolves `tsx` through Node's module resolution and runs
-`mcp/server.ts`, so the same command works from an installed package and from a checkout. Only the
-path differs.
+serves every case: `bin/hoist-mcp.mjs` resolves `tsx` and the other tooling packages through
+Node's module resolution and runs `mcp/server.ts`, so the same command works from an installed
+package and from a checkout. Only the path differs.
 
 **In a Hoist application**, the entry the `xh:onboard-app` skill writes:
 
