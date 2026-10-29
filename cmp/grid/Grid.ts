@@ -54,7 +54,7 @@ import {shallowEqualArrays} from '@xh/hoist/utils/impl';
 import {consumeEvent, isDisplayed, warnIf} from '@xh/hoist/utils/js';
 import {useComposedRefs, createObservableRef, getLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
-import {compact, debounce, intersection, isBoolean, isEmpty, isEqual, isNil, merge} from 'lodash';
+import {compact, debounce, isBoolean, isEmpty, isEqual, isNil, merge} from 'lodash';
 import {type MouseEvent} from 'react';
 import {PartialDeep} from 'type-fest';
 import './Grid.scss';
@@ -465,15 +465,7 @@ export class GridLocalModel extends HoistModel {
                 if (!api) return;
 
                 this.doWithPreservedState({expansion: false, filters: true}, () => {
-                    // ag-Grid caches cell values and text at creation and skips unmounted cells
-                    // on a colDef change, so refresh the columns shown before and after the update.
-                    const shownColIds = () => api.getAllDisplayedColumns().map(c => c.getColId()),
-                        prevColIds = shownColIds();
                     api.updateGridOptions({columnDefs: this.getColumnDefs()});
-                    const colIds = intersection(prevColIds, shownColIds());
-                    if (colIds.length) {
-                        api.refreshCells({columns: colIds, suppressFlash: true});
-                    }
                 });
             }
         };
