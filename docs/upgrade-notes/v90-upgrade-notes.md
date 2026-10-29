@@ -289,11 +289,59 @@ Two things changed for apps that reached past the props:
 
 - **`reactMarkdownOptions` is gone.** It passed remark plugins and a React component map through
   to react-markdown. There is no equivalent, since marked produces an HTML string rather than
-  React elements. An app that needs plugins or custom element rendering adds `react-markdown` to
-  its own `package.json` and renders it directly where it needs that.
+  React elements.
 - **`@xh/hoist/kit/react-markdown` is gone.** Its `ReactMarkdown` and `reactMarkdown` exports came
-  from the same library. Import from `react-markdown` after adding it to the app, or render
-  `markdown()` from `@xh/hoist/cmp/markdown`.
+  from the same library.
+
+First check what the option was for. Opening links in a new tab or restyling particular elements
+does not need react-markdown: the new `div.xh-markdown` wrapper makes CSS targeting easier, and
+attribute changes belong in a DOMPurify hook. Only a React component map, such as rendering code
+blocks through `codeInput` or links through a router-aware component, needs the library.
+
+An app that needs it adds the packages Hoist shipped through v89 and keeps the v89 component as
+its own. This is the v89 `Markdown` with the kit's element factory folded in, so call sites change
+only their import:
+
+```bash
+pnpm add react-markdown@~10.1.0 remark-gfm@~4.0.1 remark-breaks@~4.0.0
+```
+
+```typescript
+// client-app/src/cmp/AppMarkdown.ts
+import {elementFactory, hoistCmp, HoistProps} from '@xh/hoist/core';
+import ReactMarkdown, {Options} from 'react-markdown';
+import remarkBreaks from 'remark-breaks';
+import remarkGfm from 'remark-gfm';
+
+const reactMarkdown = elementFactory(ReactMarkdown);
+
+interface AppMarkdownProps extends HoistProps {
+    content: string;
+    lineBreaks?: boolean;
+    reactMarkdownOptions?: Partial<Options>;
+}
+
+export const [AppMarkdown, appMarkdown] = hoistCmp.withFactory<AppMarkdownProps>({
+    displayName: 'AppMarkdown',
+    model: false,
+    render({content, lineBreaks = true, reactMarkdownOptions = {}}) {
+        const remarkPlugins = [...(reactMarkdownOptions.remarkPlugins ?? [])];
+        if (lineBreaks) remarkPlugins.push(remarkBreaks);
+        remarkPlugins.push(remarkGfm);
+        return reactMarkdown({item: content, ...reactMarkdownOptions, remarkPlugins});
+    }
+});
+```
+
+```typescript
+// Before
+import {markdown} from '@xh/hoist/cmp/markdown';
+markdown({content, reactMarkdownOptions: {components: {a: appLink}}});
+
+// After
+import {appMarkdown} from './cmp/AppMarkdown';
+appMarkdown({content, reactMarkdownOptions: {components: {a: appLink}}});
+```
 
 Two smaller behavior changes to review:
 
