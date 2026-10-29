@@ -278,22 +278,15 @@ export interface ColumnSpec {
      * ag-Grid writes the text into the cell directly, with no React component per cell - the
      * cheapest cell there is. Prefer a formatter over a `renderer` wherever a string will do. For
      * numbers and dates use the `numberFormatter` and `dateFormatter` factories from
-     * `@xh/hoist/format` (and their `thousands`, `millions`, `dateTime`, ... siblings), which take
-     * formatting options and return a reusable formatter. The pre-built column specs (`number`,
-     * `date`, `dateTime`, ... from `@xh/hoist/cmp/grid`) bundle one with alignment and export
+     * `@xh/hoist/format` and their siblings, or the pre-built column specs (`number`, `date`,
+     * `dateTime`, ... from `@xh/hoist/cmp/grid`), which bundle one with alignment and export
      * formatting.
      *
-     * A formatter may carry `cellClassRules` to style the cell by value - the factories above do
-     * so for `colorSpec` and ledger alignment. Those rules are applied beneath the column's own.
-     * As for a renderer, set `rendererIsComplex` if the formatter reads other fields of the
-     * record, so that autosize measures each row's own text. A group row's label shows its raw
-     * value, as for a renderer.
+     * A formatter may carry `cellClassRules` to style the cell by value, applied beneath the
+     * column's own. Set `rendererIsComplex` if the formatter reads other fields of the record.
      *
-     * Autosize, `GridModel.localExport`, header and context menu filters, and ZoneGrid use the
-     * formatted text, as do `StoreFilterField` and `GridFindField` on date fields. A `localExport`
-     * to Excel keeps a number as a raw number. Copy sends the cell's value, and
-     * `GridModel.exportAsync` sends it with its Excel format, as for any column.
-     * Ignored, with its `cellClassRules`, when a `renderer` is set.
+     * Autosize, `GridModel.localExport`, filters, find and ZoneGrid use the formatted text. Copy
+     * and `GridModel.exportAsync` send the cell's value. Ignored when a `renderer` is set.
      */
     formatter?: ColumnFormatter;
 
@@ -699,8 +692,7 @@ export class Column {
         this.headerClass = headerClass;
 
         this.cellClass = cellClass;
-        // A formatter's rules style the cell by value where its text cannot - a renderer wins
-        // over a formatter, and styles its own output.
+        // A renderer styles its own output, so a formatter's rules apply only without one.
         this.cellClassRules = {...(renderer ? null : formatter?.cellClassRules), ...cellClassRules};
         warnIf(
             !isEmpty((renderer as ColumnFormatter)?.cellClassRules),
@@ -909,9 +901,7 @@ export class Column {
         }
 
         // A formatter supplies the cell's display text through ag-Grid's `valueFormatter`, which
-        // keeps a plain cell plain (and reaches a tree column's group renderer as
-        // `valueFormatted`). `GridModel.localExport` writes the same text, except for a number
-        // sent to Excel.
+        // keeps a plain cell plain and reaches a tree column's group renderer as `valueFormatted`.
         if (this.formatter && !this.renderer) {
             ret.valueFormatter = this.agValueFormatter;
         }
@@ -1029,8 +1019,7 @@ export class Column {
             spec.cellClass = withPlainMarker(agOptions.cellClass);
         }
 
-        // ...and `cellClassRules` given via agOptions add to the column's, winning per class. A
-        // formatter's rules carry its styling (e.g. `colorSpec`), and autosize measures with them.
+        // ...and `cellClassRules` given via agOptions add to the column's, winning per class.
         if (agOptions.cellClassRules) {
             spec.cellClassRules = {...ret.cellClassRules, ...agOptions.cellClassRules};
         }
@@ -1083,12 +1072,11 @@ export class Column {
             const {formatter, gridModel} = this,
                 {data: record, node, column} = agParams;
 
-            // ag-Grid also formats a group row's label through the grouped column. The label
-            // shows its raw value, as with a renderer. Other rows without a record, such as
-            // ag-Grid total rows, format their aggregates, also as with a renderer.
+            // A group row's label shows its raw value, as with a renderer. Other rows without a
+            // record, such as ag-Grid total rows, format their aggregates.
             if (!(record instanceof StoreRecord) && node?.rowGroupColumn === column) return null;
 
-            // Blank the cell for a null return, as for a renderer. ag-Grid would show the value.
+            // Blank the cell for a null return, as for a renderer.
             return formatter(agParams.value, {record, column: this, gridModel}) ?? '';
         };
     }

@@ -304,9 +304,8 @@ export class ValuesTabModel extends HoistModel {
             {headerFilterModel, fieldSpec} = this,
             {fieldType, column} = headerFilterModel;
 
-        // Default to the column's renderer (or formatter) and sortValue, but only where they apply
-        // to a bare value - we call them with the value alone (see below), so treat them as pure
-        // value transforms.
+        // Default to the column's renderer (or formatter) and sortValue where they apply to a bare
+        // value - they are called with the value alone (see below).
         const renderer =
                 fieldSpec.renderer ??
                 (fieldType !== 'tags'
@@ -317,9 +316,8 @@ export class ValuesTabModel extends HoistModel {
                 (fieldType !== 'tags' && isFunction(column.sortValue)
                     ? (column.sortValue as GridFilterSortValueFn)
                     : null),
-            // A formatter styles its text with `cellClassRules` (e.g. `colorSpec`). The list's
-            // cells take them as the grid's cells do, called with the value alone. Not the ledger
-            // rule: these cells have a renderer, so they show no placeholder for autosize to count.
+            // A formatter's `cellClassRules` (e.g. `colorSpec`) apply here as in the grid, called
+            // with the value alone. The ledger rule is dropped - these cells render no placeholder.
             cellClassRules = mapValues(
                 omit((renderer as ColumnFormatter)?.cellClassRules, 'xh-cell--ledger-align'),
                 (rule): ColumnCellClassRuleFn =>

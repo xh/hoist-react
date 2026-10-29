@@ -22,9 +22,8 @@ export function saveOriginal(v: any, opts: PlainObject) {
 
 /**
  * Throw if a string formatter factory is given an option that needs markup, or a display value
- * that is not a string. The factories' option types already reject these, so only an untyped
- * caller gets here. Failing when the formatter is created is louder than dropping the option, and
- * a formatter must never return an element - ag-Grid would show it as "[object Object]".
+ * that is not a string. The option types reject these at compile time; this catches untyped
+ * callers, since a formatter must return text - ag-Grid shows an element as "[object Object]".
  * @internal
  */
 export function throwIfMarkupOptions(

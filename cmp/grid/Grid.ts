@@ -465,10 +465,8 @@ export class GridLocalModel extends HoistModel {
                 if (!api) return;
 
                 this.doWithPreservedState({expansion: false, filters: true}, () => {
-                    // ag-Grid caches cell values and text at creation, and a colDef change skips
-                    // cells not yet mounted, such as rows from a same-tick sort. Refresh the
-                    // columns shown before and after the update to rebuild those cells, since new
-                    // columns already build from the new colDef.
+                    // ag-Grid caches cell values and text at creation and skips unmounted cells
+                    // on a colDef change, so refresh the columns shown before and after the update.
                     const shownColIds = () => api.getAllDisplayedColumns().map(c => c.getColId()),
                         prevColIds = shownColIds();
                     api.updateGridOptions({columnDefs: this.getColumnDefs()});

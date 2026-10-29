@@ -381,16 +381,13 @@ export type ColumnRenderer<T = any> = (value: T, context: CellContext) => ReactN
  *
  * ag-Grid writes the text into the cell directly, with no component per cell, so prefer a
  * formatter over a `renderer` wherever a string will do. The function may carry `cellClassRules`
- * to style the cell by value - the string formatter factories in `@xh/hoist/format` attach rules
- * for `colorSpec` and ledger alignment this way.
+ * to style the cell by value, as the string formatter factories in `@xh/hoist/format` do for
+ * `colorSpec` and ledger alignment.
  *
- * As with a renderer, a group row's label shows its raw value without calling the formatter, and
- * a throw shows '#ERROR' in the cell. On a row with no record, such as an ag-Grid total row, the
- * formatter gets `record` undefined.
+ * A group row's label shows its raw value, a throw shows '#ERROR' in the cell, and on a row with
+ * no record (e.g. an ag-Grid total row) `record` is undefined.
  * @param value - cell data value (column + row).
  * @param context - additional data about the column, row and GridModel.
- *      Note that a column whose formatter reads record fields other than its own should set
- *      `rendererIsComplex`, so that autosize measures each row's own text.
  * @returns the display text, or null for an empty cell.
  */
 export type ColumnFormatter<T = any> = ((value: T, context: CellContext) => string) & {

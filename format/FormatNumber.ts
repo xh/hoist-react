@@ -618,10 +618,9 @@ export const numberRenderer = createRenderer(fmtNumber),
 /**
  * Options for the string-returning number formatters - {@link numberFormatter} and friends.
  *
- * As {@link NumberFormatOptions}, less the options that need markup, which a formatter cannot
- * return. Those are typed `never`, so passing one - in a literal, a variable or a spread - fails
- * to compile, and the factories throw if an untyped caller passes one anyway. `colorSpec` and
- * ledger alignment style the cell through `cellClassRules` instead.
+ * As {@link NumberFormatOptions}, less the options that need markup. Those are typed `never`, so
+ * passing one fails to compile, and the factories throw if an untyped caller passes one.
+ * `colorSpec` and ledger alignment style the cell through `cellClassRules` instead.
  */
 export interface NumberFormatterOptions extends Omit<
     NumberFormatOptions,
@@ -636,9 +635,8 @@ export interface NumberFormatterOptions extends Omit<
 > {
     /**
      * True to color the cell by sign with the default classes (`xh-pos-val`, `xh-neg-val`,
-     * `xh-neutral-val`), or the CSS class to apply per sign. Class names only: a formatter cannot
-     * set inline styles, so a `colorSpec` with style objects needs `numberRenderer`. Type a spec
-     * shared with renderers as a {@link ColorClassSpec}.
+     * `xh-neutral-val`), or the CSS class to apply per sign. Class names only - a `colorSpec`
+     * with style objects needs `numberRenderer`.
      */
     colorSpec?: boolean | ColorClassSpec;
 
@@ -668,11 +666,9 @@ export type QuantityFormatterOptions = NumberFormatterOptions &
 /**
  * String-returning counterparts of {@link numberRenderer} and friends, for `Column.formatter`.
  *
- * Each takes {@link NumberFormatterOptions} ({@link QuantityFormatterOptions} for
- * `quantityFormatter`) and returns a formatter whose output ag-Grid writes into the cell as text.
- * With `colorSpec`, or `ledger` with `forceLedgerAlign` (the default), the formatter carries
- * `cellClassRules` that color the cell by sign and reserve the width of a closing parenthesis on
- * positives, so that the column still aligns.
+ * Each returns a formatter whose output ag-Grid writes into the cell as text. With `colorSpec`,
+ * or `ledger` with `forceLedgerAlign` (the default), the formatter carries `cellClassRules` that
+ * color the cell by sign and reserve the width of a closing parenthesis on positives.
  */
 export const numberFormatter = createNumberFormatter(fmtNumber),
     thousandsFormatter = createNumberFormatter(fmtThousands),
@@ -702,8 +698,8 @@ function createNumberFormatter<O extends NumberFormatterOptions = NumberFormatte
                 ...rest
             } = opts,
             {strictZero = true, zeroDisplay = null} = rest,
-            // With these pinned off, `fmtNumber` returns its string form - the cell class rules
-            // below apply the color and ledger alignment instead.
+            // Color and ledger alignment come from the cell class rules below, so `fmtNumber`
+            // returns plain text.
             fmtOpts: NumberFormatOptions = {
                 ...rest,
                 ledger,
@@ -724,8 +720,8 @@ function createNumberFormatter<O extends NumberFormatterOptions = NumberFormatte
             ret: StringFormatter<number> = v => fmt(v, fmtOpts) as string,
             rules: StringFormatter['cellClassRules'] = {};
 
-        // True if `strictZero: false` shows the value as zero. This formats the value, so it keeps
-        // the last result - AG Grid tests a cell's rules one after another with the same value.
+        // True if `strictZero: false` shows the value as zero. Memoized on the last value, as
+        // AG Grid tests a cell's rules one after another with the same value.
         let lastTested: any, lastRoundsToZero: boolean;
         const roundsToZero = (v: any): boolean => {
             if (!Object.is(v, lastTested)) {
@@ -736,10 +732,9 @@ function createNumberFormatter<O extends NumberFormatterOptions = NumberFormatte
             return lastRoundsToZero;
         };
 
-        // The value as `fmtNumber` styles it: zero if `strictZero: false` rounds it to zero, or
-        // null if it shows `nullDisplay` or `zeroDisplay`, which take no sign color or ledger
-        // alignment. Any other value is returned as-is - a numeric string, NaN or Infinity gets
-        // ledger alignment but no sign color, as from `numberRenderer`.
+        // The value as `fmtNumber` styles it: zero if `strictZero: false` rounds it to zero, null
+        // if `nullDisplay` or `zeroDisplay` shows instead. Other values (numeric strings, NaN,
+        // Infinity) get ledger alignment but no sign color, as from `numberRenderer`.
         const styledValue = (v: any): any => {
             if (v == null || v === '') return null;
             if (!strictZero && v !== 0 && roundsToZero(v)) v = 0;
@@ -768,8 +763,7 @@ function createNumberFormatter<O extends NumberFormatterOptions = NumberFormatte
         }
 
         if (ledger && forceLedgerAlign) {
-            // Values shown without parentheses reserve the width of a closing one - as the
-            // element formatter's hidden placeholder does.
+            // Values shown without parentheses reserve the width of a closing one.
             rules['xh-cell--ledger-align'] = ({value}) => {
                 const v = styledValue(value);
                 return v != null && !(v < 0);

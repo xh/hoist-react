@@ -540,10 +540,8 @@ describe('parseNumber', () => {
 });
 
 /**
- * The string formatters, for `Column.formatter`. The built-in `number` column spec uses
- * `numberFormatter`, and apps switch columns to it from `numberRenderer`, so a formatted cell
- * must look like the rendered one. It must never receive markup, which it would show as
- * "[object Object]".
+ * The string formatters, for `Column.formatter`. A formatted cell must look like the rendered
+ * one, and must never receive markup, which it would show as "[object Object]".
  */
 describe('numberFormatter and friends', () => {
     it('reject options that need markup, at compile time and when created', () => {
@@ -587,11 +585,9 @@ describe('numberFormatter and friends', () => {
     });
 
     describe('match their renderers', () => {
-        // A formatted cell must look like the rendered one: the same text, sign color and ledger
-        // placeholder. Only the `xh-units-label` span is gone - a plain-text cell cannot carry it.
-        // NaN (a `number` field's parse of junk input) and Infinity are shown, so they align too.
-        // Numeric strings (an `auto` field's raw values) are checked for `number` only - the other
-        // renderers do arithmetic on them first, which gives a number its sign color.
+        // Same text, sign color and ledger placeholder as the renderer; only the `xh-units-label`
+        // span is gone. NaN and Infinity align too. Numeric strings are checked for `number` only -
+        // the other renderers do arithmetic on them first, which gives a number its sign color.
         const values = [
                 ...[1234567.891, -1234567.891, 0, 0.004, -0.004, 12.5, -12.5, null],
                 ...[NaN, Infinity, -Infinity]
@@ -604,8 +600,7 @@ describe('numberFormatter and friends', () => {
                 percent: [percentRenderer, percentFormatter]
             };
 
-        // What the renderer's cell shows: its text, the classes on its markup, and whether it
-        // ends with the hidden ledger placeholder.
+        // The renderer cell's text, markup classes, and whether it ends in the ledger placeholder.
         function rendered(node: ReactNode) {
             const body = new DOMParser().parseFromString(html(node) ?? '', 'text/html').body,
                 placeholder = body.querySelector('[style*="hidden"]');
@@ -616,7 +611,7 @@ describe('numberFormatter and friends', () => {
             return {text: body.textContent, classes, ledgerAlign: !!placeholder};
         }
 
-        // What the formatter's cell shows: its text, and the classes its rules give the cell.
+        // The formatter cell's text and the classes its rules give the cell.
         function formatted(formatter, v: number) {
             const rules = formatter.cellClassRules ?? {},
                 classes = Object.keys(rules).filter(it => rules[it]({value: v}));

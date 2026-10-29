@@ -204,9 +204,8 @@ export const dateRenderer = createRenderer(fmtDate),
 /**
  * Options for the string-returning date formatters - {@link dateFormatter} and friends.
  *
- * As {@link DateFormatOptions}, less the options that need markup, which a formatter cannot
- * return. Those are typed `never`, so passing one fails to compile, and the factories throw if an
- * untyped caller passes one anyway.
+ * As {@link DateFormatOptions}, less the options that need markup. Those are typed `never`, so
+ * passing one fails to compile, and the factories throw if an untyped caller passes one.
  */
 export type DateFormatterOptions = WithoutMarkup<DateFormatOptions>;
 

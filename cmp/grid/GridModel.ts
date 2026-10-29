@@ -160,8 +160,7 @@ export interface GridConfig {
 
     /**
      * Column configs to be set on all columns. Merges deeply, except that a column with its own
-     * `renderer` or `formatter`, such as one built on the `number` or `date` specs, takes neither
-     * from the defaults. The same holds for these defaults over `GridModel.defaults.colDefaults`.
+     * `renderer` or `formatter` takes neither from the defaults.
      */
     colDefaults?: Partial<ColumnSpec>;
 
@@ -921,10 +920,9 @@ export class GridModel extends HoistModel {
     /**
      * Export grid data using ag-Grid's built-in client-side export.
      *
-     * Cells export their raw value, or their display text where the column has a `formatter`
-     * (or an ag-Grid `valueFormatter`). A null cell exports blank. An Excel export keeps a number
-     * as a number, unformatted. To export raw values, pass a `processCellCallback` in `params`.
-     * Server-side {@link exportAsync} sends typed values with Excel formats instead.
+     * Cells export their display text where the column has a `formatter` (or an ag-Grid
+     * `valueFormatter`), otherwise their raw value. Excel keeps a number as a number. Pass a
+     * `processCellCallback` in `params` to override.
      *
      * @param filename - name for exported file.
      * @param type - type of export - either 'excel' or 'csv'.
@@ -1931,10 +1929,9 @@ export class GridModel extends HoistModel {
         return new Column(config, this);
     }
 
-    // Merge column config over defaults, deeply - but a config with its own renderer or formatter
-    // takes neither from the defaults. A default renderer would override the config's formatter,
-    // and a deep merge of two formatters copies the default's `cellClassRules` onto the config's,
-    // which may be a built-in spec's formatter, shared by every grid in the app.
+    // A config with its own renderer or formatter takes neither from the defaults - a default
+    // renderer would override its formatter, and deep-merging two formatters would copy
+    // `cellClassRules` onto a shared built-in formatter.
     private withColDefaults(
         config: Partial<ColumnSpec>,
         defaults: Partial<ColumnSpec>
@@ -2005,9 +2002,8 @@ export class GridModel extends HoistModel {
         return ids;
     }
 
-    // `formatValue` runs the column's ag-Grid `valueFormatter` (a Hoist `formatter`), if any.
-    // AG Grid's Excel export types each cell from the value returned here, so formatted text such
-    // as "1,234" would land as text. Keep numbers raw for Excel, as its native export does.
+    // Export the formatted text, but keep numbers raw for Excel, which types each cell from the
+    // value returned here.
     private formatValuesForExport(params: ProcessCellForExportParams) {
         const {value, type} = params;
         if (value == null || (type === 'excel' && isFinite(value))) return value;
