@@ -449,8 +449,9 @@ propagation at the primary element level.
 
 -   **Mobile FormField** — Auto-generates testIds from form context and field names, passes
     sub-testIds to input/readonly children, and registers models with `InstanceManager`.
--   **Mobile TabContainer** — Applies testIds to container and generates sub-testIds for each tab
-    (`${testId}-${tabId}`).
+-   **Mobile TabContainer** — Applies testIds to the container, each tab's content
+    (`${testId}-${tabId}`), the switcher (`${testId}-switcher`) and each switcher button
+    (`${testId}-switcher-${tabId}`), as on desktop.
 -   **Mobile Inputs** — All mobile input components (`TextInput`, `TextArea`, `NumberInput`,
     `Select`, `Checkbox`, `SwitchInput`, `DateInput`, `SearchInput`, `ButtonGroupInput`) propagate
     `testId` to their primary rendered element. Components with sub-elements (e.g., `TextInput`
@@ -465,9 +466,6 @@ propagation at the primary element level.
 -   **Select sub-testIds** — Desktop generates `${testId}-menu` and `${testId}-clear-btn` for the
     dropdown menu and clear indicator. Mobile Select uses the react-select library which manages
     these elements, so these sub-testIds are not available on mobile.
--   **TabContainer switcher** — Desktop generates `${testId}-switcher` for the tab switcher
-    component. Mobile uses Onsen's built-in tabbar which does not expose a way to apply this
-    sub-testId, so it is not available on mobile.
 -   **Tab remove buttons** — Desktop tabs can have remove buttons (`${testId}-switcher-${tabId}-remove-btn`).
     Mobile tabs do not have this feature.
 

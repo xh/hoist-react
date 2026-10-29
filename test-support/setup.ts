@@ -56,10 +56,6 @@ globalThis.ResizeObserver ??= class {
     disconnect() {}
 };
 
-// Onsen UI, loaded by the mobile platform, throws "Invalid state" at import unless the root
-// element's computed style lists a transition property. jsdom lists only the properties set on it.
-document.documentElement.style.transitionDuration = '0s';
-
 //------------------------------------------------------------------
 // Guards - problems are collected as they happen, then fail the
 // test when it finishes, with a message naming the cause.
@@ -152,6 +148,21 @@ const viewportSettled = when(() => !!XH.appContainerModel.viewportSizeModel.size
 
 afterAll(async () => {
     await Promise.race([viewportSettled, wait(1000)]);
+    await flushPendingPushesAsync();
     Timer.cancelAll();
     server.close();
 });
+
+// Send what services hold for a debounced push - prefs, activity, metrics and spans - while the
+// fake can still serve it. Otherwise a file that ends soon after boot leaves the push to fire after
+// server.close(), as an unhandled error. Spans go last, as the other pushes record spans of their
+// own. Services exist only once a test has booted the app.
+async function flushPendingPushesAsync() {
+    const {prefService, trackService, metricsService, traceService} = XH;
+    await Promise.all([
+        prefService?.pushPendingAsync(),
+        trackService?.pushPendingAsync(),
+        metricsService?.pushPendingAsync()
+    ]);
+    await traceService?.pushPendingAsync();
+}

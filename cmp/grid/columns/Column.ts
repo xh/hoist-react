@@ -1042,6 +1042,17 @@ export class Column {
         return this.agComparator;
     }
 
+    /** Sorters a header click cycles through, in order. Empty when the column is not sortable. */
+    @computeOnce
+    get availableSorts(): GridSorter[] {
+        if (!this.sortable) return [];
+        const {absSort, colId} = this,
+            sortingOrder =
+                this.sortingOrder ?? (absSort ? Column.ABS_DESC_FIRST : Column.ASC_FIRST),
+            ret = sortingOrder.map(spec => new GridSorter({...spec, colId}));
+        return absSort ? ret : ret.filter(it => !it.abs);
+    }
+
     //--------------------
     // ag-Grid colDef functions - created once per Column, so their identities are stable.
     //--------------------

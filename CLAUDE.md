@@ -365,7 +365,8 @@ important guidelines to internalize:
 - **Named exports only** — No default exports. Components export `[Component, factory]` pairs
   from library code, factory only from application/impl code.
 - **`null` over `undefined`** — Use `null` as the "no value" sentinel. Check with `== null`
-  (loose equality) for concise null-or-undefined testing.
+  (loose equality) for concise null-or-undefined testing. Never write `| null` or `| undefined`
+  in a type; any value may be null.
 - **Comments describe the code as it is, not how it got here** - Write for a reader who never
   saw the previous version. Mention a library version, upgrade, or prior behavior only when it
   tells that reader something they need, such as a workaround to remove once an upstream bug is

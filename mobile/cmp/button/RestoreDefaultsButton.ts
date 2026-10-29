@@ -59,7 +59,6 @@ export const [RestoreDefaultsButton, restoreDefaultsButton] =
                 text: 'Restore Defaults',
                 icon: Icon.reset(),
                 minimal: true,
-                modifier: 'large',
                 onClick,
                 ref,
                 ...buttonProps

@@ -14,7 +14,6 @@ import {
     isMenuHeading,
     isMenuItem
 } from '@xh/hoist/core';
-import {listItem} from '@xh/hoist/kit/onsen';
 import {bindable} from '@xh/hoist/mobx';
 import {filterConsecutiveMenuSeparators} from '@xh/hoist/utils/impl';
 import {TEST_ID} from '@xh/hoist/utils/js';
@@ -110,16 +109,15 @@ class MenuLocalModel extends HoistModel {
                         item,
                     labelItems = icon ? [icon, hspacer(10), text] : [text];
 
-                return listItem({
+                return div({
                     key: idx,
-                    tappable: true,
                     className: classNames(
                         'xh-menu__list__item',
                         idx === pressedIdx ? 'xh-menu__list__item--pressed' : null,
                         active ? 'xh-menu__list__item--active' : null,
                         className
                     ),
-                    item: div({className: 'center', items: labelItems}),
+                    item: div({className: 'xh-menu__list__item__content', items: labelItems}),
                     omit: hidden,
                     [TEST_ID]: testId,
                     onTouchStart: () => (this.pressedIdx = idx),

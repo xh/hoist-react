@@ -164,8 +164,8 @@
             "title": "Mobile Components",
             "mcpCategory": "package",
             "viewerCategory": "mobile",
-            "description": "Mobile-specific components built on Onsen UI.",
-            "keywords": ["AppContainer", "NavigatorModel", "Panel", "AppBar", "mobile inputs", "touch navigation", "swipeable tabs", "DialogPanel", "pull to refresh"]
+            "description": "Mobile-specific components for touch devices.",
+            "keywords": ["AppContainer", "NavigatorModel", "Panel", "AppBar", "mobile inputs", "touch navigation", "tabs", "DialogPanel", "pull to refresh"]
         },
         {
             "id": "format/README.md",
@@ -253,7 +253,7 @@
             "mcpCategory": "package",
             "viewerCategory": "components",
             "description": "Centralized wrappers for third-party libraries used by Hoist.",
-            "keywords": ["installAgGrid", "installHighcharts", "Blueprint", "Onsen", "GoldenLayout", "react-select"]
+            "keywords": ["installAgGrid", "installHighcharts", "Blueprint", "GoldenLayout", "react-select"]
         },
         {
             "id": "kit/blueprint/README.md",

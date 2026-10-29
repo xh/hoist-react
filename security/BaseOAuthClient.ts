@@ -14,9 +14,8 @@ import {Token} from '@xh/hoist/security/Token';
 import {AccessTokenSpec, AuthMethod, TokenMap} from './Types';
 import {Timer} from '@xh/hoist/utils/async';
 import {MINUTES, olderThan, ONE_MINUTE, SECONDS} from '@xh/hoist/utils/datetime';
-import {isJSON, logError, throwIf} from '@xh/hoist/utils/js';
+import {genRandomId, isJSON, logError, throwIf} from '@xh/hoist/utils/js';
 import {compact, find, forEach, head, isEmpty, isObject, keys, map, pickBy, union} from 'lodash';
-import ShortUniqueId from 'short-unique-id';
 
 export type LoginMethod = 'REDIRECT' | 'POPUP';
 
@@ -309,7 +308,7 @@ export abstract class BaseOAuthClient<
      */
     protected captureRedirectState(): string {
         const {pathname, search} = window.location,
-            key = new ShortUniqueId({length: 8}).rnd(),
+            key = genRandomId(),
             state = {
                 key,
                 pathname,

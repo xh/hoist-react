@@ -1,6 +1,35 @@
 .xh-input.xh-search-input {
   background: var(--xh-input-bg);
-  .search-input {
+}
+
+.xh-search-input {
+  align-items: center;
+
+  &__icon {
+    display: flex;
+    align-items: center;
+    padding-left: var(--xh-pad-px);
+    color: var(--xh-text-color-muted);
+  }
+
+  &__input {
+    flex: 1;
+    min-width: 0;
     height: var(--xh-mobile-input-height-px);
+    padding: 0 var(--xh-pad-px);
+    margin: 0;
+    background: transparent;
+    appearance: textfield;
+
+    // The browser's own clear control - Hoist inputs show theirs via `enableClear`.
+    &::-webkit-search-cancel-button,
+    &::-webkit-search-decoration {
+      appearance: none;
+      display: none;
+    }
+
+    &:disabled {
+      opacity: 0.5;
+    }
   }
 }
