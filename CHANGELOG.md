@@ -74,6 +74,9 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 
 ### ⚙️ Technical
 
+* `Markdown` now renders into a `div.xh-markdown` and merges its `className` prop, where it
+  rendered bare elements before. Descendant selectors on a parent still match; a selector that
+  assumed the markdown's first element was a direct child of the parent needs one more level.
 * Desktop and mobile `DateInput` build their calendar props with one shared helper and share one
   react-day-picker theme, in `@xh/hoist/kit/react-day-picker`, for light and dark modes. Dropping
   Blueprint's date picker also drops the second copies of date-fns and react-day-picker it pulled
