@@ -130,7 +130,7 @@ import {
 import {GridSorter, GridSorterLike} from './GridSorter';
 import {computeSortedRecords} from './impl/RecordSortUtils';
 import {initPersist} from './impl/InitPersist';
-import {managedRenderer} from './impl/Utils';
+import {withErrorCell} from './impl/Utils';
 import {
     ColChooserConfig,
     ColChooserMode,
@@ -771,7 +771,7 @@ export class GridModel extends HoistModel {
         this.rowClassFn = rowClassFn;
         this.rowClassRules = rowClassRules;
         this.groupRowHeight = groupRowHeight;
-        this.groupRowRenderer = managedRenderer(groupRowRenderer, 'GROUP_ROW');
+        this.groupRowRenderer = withErrorCell(groupRowRenderer, 'GROUP_ROW');
         this.groupSortFn = withDefault(groupSortFn, this.defaultGroupSortFn);
         this.showGroupRowCounts = showGroupRowCounts;
         this.contextMenu = this.parseContextMenu(contextMenu);

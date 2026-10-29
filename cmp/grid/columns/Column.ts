@@ -46,7 +46,7 @@ import {
 } from 'react';
 import {GridModel} from '../GridModel';
 import {GridSorter} from '../GridSorter';
-import {getAgHeaderClassFn, managedRenderer} from '../impl/Utils';
+import {getAgHeaderClassFn, withErrorCell} from '../impl/Utils';
 import {
     ColumnCellClassFn,
     ColumnCellClassRuleFn,
@@ -732,8 +732,8 @@ export class Column {
         this.hideable = withDefault(hideable, !this.isTreeColumn);
         this.pinned = this.parsePinned(pinned);
 
-        this.formatter = managedRenderer(formatter, this.displayName);
-        this.renderer = managedRenderer(renderer, this.displayName);
+        this.formatter = withErrorCell(formatter, this.displayName);
+        this.renderer = withErrorCell(renderer, this.displayName);
         this.rendererIsComplex = rendererIsComplex;
         this.highlightOnChange = highlightOnChange;
 

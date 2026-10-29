@@ -20,7 +20,7 @@ import {castArray, isFunction} from 'lodash';
  * the function's `cellClassRules`.
  * @internal
  */
-export function managedRenderer<T extends ColumnRenderer | ColumnFormatter | GroupRowRenderer>(
+export function withErrorCell<T extends ColumnRenderer | ColumnFormatter | GroupRowRenderer>(
     fn: T,
     identifier: string
 ): T {
