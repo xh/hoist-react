@@ -22,9 +22,7 @@ detailed, step-by-step upgrade instructions with before/after code examples.
   and `withCommas` instead.
 * The built-in `number`, `date`, `dateTime`, `dateTimeSec`, `time`, `compactDate` and `localDate`
   column specs now set a `formatter` in place of a `renderer`. Their cells are plain, and code that
-  reads their `renderer` finds none. Client-side exports (`GridModel.localExport` and the
-  `exportLocal` menu item) write their display text in place of the raw value. Excel still gets a
-  number as a number.
+  reads their `renderer` finds none.
 * Desktop `DateInput` now renders its calendar with react-day-picker 10, as the mobile `DateInput`
   already did, and its time picker is Hoist's own 24-hour control. `dayPickerProps` now takes
   react-day-picker 10 props - see the upgrade notes for the renames from v8. Removed
@@ -62,8 +60,8 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 
 ### 🐞 Bug Fixes
 
-* Fixed `GridModel.localExport` calling a column's `agOptions.valueFormatter` with a bare value
-  instead of AG Grid's params.
+* `GridModel.localExport` now exports every cell's raw value, as copy and `exportAsync` do. It had
+  called a column's `agOptions.valueFormatter` with a bare value, which exported blanks.
 * Fixed a column's `agOptions.cellClassRules` replacing its own `cellClassRules`, flags and editable
   styling. They now add to them, and win for a class that both define.
 * Fixed column group borders not following their columns when reordered or hidden via the column

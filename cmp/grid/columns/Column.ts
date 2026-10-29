@@ -286,8 +286,8 @@ export interface ColumnSpec {
      * column's own, as a renderer may. Set `rendererIsComplex` if the formatter reads other
      * fields of the record.
      *
-     * Autosize, `GridModel.localExport`, filters, find and ZoneGrid use the formatted text. Copy
-     * and `GridModel.exportAsync` send the cell's value. Ignored when a `renderer` is set.
+     * Autosize, filters, find and ZoneGrid use the formatted text. Copy and exports send the
+     * cell's value. Ignored when a `renderer` is set.
      */
     formatter?: ColumnFormatter;
 

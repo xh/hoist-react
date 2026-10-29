@@ -62,7 +62,6 @@ import {
     CellDoubleClickedEvent,
     CellEditingStartedEvent,
     CellEditingStoppedEvent,
-    ProcessCellForExportParams,
     RowClickedEvent,
     RowDoubleClickedEvent
 } from '@xh/hoist/kit/ag-grid';
@@ -104,7 +103,6 @@ import {
     isArray,
     isBoolean,
     isEmpty,
-    isFinite,
     isFunction,
     isNil,
     isString,
@@ -920,9 +918,8 @@ export class GridModel extends HoistModel {
     /**
      * Export grid data using ag-Grid's built-in client-side export.
      *
-     * Cells export their display text where the column has a `formatter` (or an ag-Grid
-     * `valueFormatter`), otherwise their raw value. Excel keeps a number as a number. Pass a
-     * `processCellCallback` in `params` to override.
+     * Cells export their raw value, as copy and {@link exportAsync} do. Pass a
+     * `processCellCallback` in `params` to export something else, such as formatted text.
      *
      * @param filename - name for exported file.
      * @param type - type of export - either 'excel' or 'csv'.
@@ -935,7 +932,8 @@ export class GridModel extends HoistModel {
             {...params},
             {
                 fileName: filename,
-                processCellCallback: this.formatValuesForExport
+                // ag-Grid would otherwise apply a column's `valueFormatter`.
+                processCellCallback: ({value}) => value
             }
         );
 
@@ -2004,12 +2002,6 @@ export class GridModel extends HoistModel {
 
     // Export the formatted text, but keep numbers raw for Excel, which types each cell from the
     // value returned here.
-    private formatValuesForExport(params: ProcessCellForExportParams) {
-        const {value, type} = params;
-        if (value == null || (type === 'excel' && isFinite(value))) return value;
-        return params.formatValue(value);
-    }
-
     // Store fields and column configs have a tricky bi-directional relationship in GridModel,
     // both for historical reasons and developer convenience.
     //

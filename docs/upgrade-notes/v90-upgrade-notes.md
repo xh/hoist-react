@@ -277,14 +277,9 @@ The `number`, `date`, `dateTime`, `dateTimeSec`, `time`, `compactDate` and `loca
 now set a `Column.formatter` in place of a `renderer`. A formatter returns the cell's display text,
 and ag-Grid writes it into a plain cell with no React component. Grids built on these specs get
 plain cells with no change. A `renderer` set on top of a spec still wins, so
-`{...number, renderer: myRenderer}` works as before. Two side effects remain:
-
-- App code that reads `renderer` from one of these specs, or from a `Column` built on one, finds
-  none. Fall back to the formatter, as in `col.renderer ?? col.formatter`.
-- Client-side exports (`GridModel.localExport` and the `exportLocal` menu item) write the display
-  text of a formatter column, where they wrote the raw value. An Excel file still gets a number
-  as a raw number. Copy still sends the value, and `GridModel.exportAsync` still sends it with its
-  Excel format.
+`{...number, renderer: myRenderer}` works as before. One side effect remains: app code that reads
+`renderer` from one of these specs, or from a `Column` built on one, finds none. Fall back to the
+formatter, as in `col.renderer ?? col.formatter`.
 
 **Find code that reads a column's renderer:**
 
