@@ -101,11 +101,9 @@
     "router5": "~8.0.1",
     "router5-plugin-browser": "~8.0.1",
     "sass-material-colors": "~0.0.5",
-    "semver": "^7.8.5",
     "swiper": "~14.3.0",
     "ts-morph": "^28.0.0",
     "tsx": "^4.23.15",
-    "ua-parser-js": "^2.0.10",
     "unified": "~11.0.5",
     "zod": "^4.6.7"
   },
