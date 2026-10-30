@@ -19,8 +19,9 @@ import {
 import {Exception, HoistException, TimeoutException} from '@xh/hoist/exception';
 import {PromiseTimeoutSpec} from '@xh/hoist/promise';
 import {isLocalDate, SECONDS} from '@xh/hoist/utils/datetime';
-import {genRandomId, QueryStringOptions, stringifyQueryParams, warnIf} from '@xh/hoist/utils/js';
+import {genRandomId, warnIf} from '@xh/hoist/utils/js';
 import {isDate, isFunction, isNil, isObject, isString, noop, omit, omitBy, truncate} from 'lodash';
+import {IStringifyOptions, stringify} from 'qs';
 import {NdjsonResultImpl} from './impl/NdjsonResultImpl';
 import {StringInterner} from './impl/StringInterner';
 
@@ -506,12 +507,13 @@ export class FetchService extends HoistService {
 
         // 3) Preprocess and apply params
         if (params) {
-            const paramsString = stringifyQueryParams(params, {
+            const qsOpts: IStringifyOptions<true> = {
                 arrayFormat: 'repeat',
                 allowDots: true,
                 filter: this.qsFilterFn,
                 ...opts.qsOpts
-            });
+            };
+            const paramsString = stringify(params, qsOpts);
 
             if (
                 ['POST', 'PUT'].includes(method) &&
@@ -946,11 +948,9 @@ export interface FetchOptions {
     fetchOpts?: PlainObject;
 
     /**
-     * Options for encoding `params` as a query string or form body. See
-     * {@link stringifyQueryParams}. By default arrays repeat their key, nested objects use
-     * dots, Dates encode as epoch milliseconds and LocalDates as YYYY-MM-DD.
+     * Options for qs, the library used to encode query strings.
      */
-    qsOpts?: QueryStringOptions;
+    qsOpts?: Partial<IStringifyOptions>;
 
     /**
      * If set, any pending requests made with the same autoAbortKey will be immediately

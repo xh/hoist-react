@@ -13,4 +13,3 @@ export * from './LogUtils';
 export * from './DomUtils';
 export * from './TestUtils';
 export * from './VersionUtils';
-export * from './QueryStringUtils';

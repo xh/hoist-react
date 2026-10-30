@@ -19,9 +19,6 @@ affected APIs.
   `reactWindowedSelect` exports from `@xh/hoist/kit/react-select` along with the
   react-windowed-select library. The `enableWindowed` prop of `Select` works as before - see
   Step 4.
-- **`FetchOptions.qsOpts` (required if an app passes qs-only options)** - Hoist encodes query
-  strings itself and no longer depends on qs. `qsOpts` keeps the options Hoist supports and drops
-  the rest - see Step 5.
 
 ## Upgrade Steps
 
@@ -271,36 +268,6 @@ An app that rendered the kit's `WindowedSelect` or `reactWindowedSelect` directl
 `select({enableWindowed: true})` instead, or add react-windowed-select to its own `package.json`.
 Remove any `react-windowed-select` entry from the app's `resolutions` or `overrides`.
 
-### 5. Review `qsOpts` Passed to Fetch Calls
-
-`FetchService` now encodes `params` with Hoist's own `stringifyQueryParams()` rather than qs. The
-default output is byte-for-byte what qs produced with Hoist's settings: arrays repeat their key,
-nested objects use dots, Dates encode as epoch milliseconds and LocalDates as `YYYY-MM-DD`. Apps
-that never pass `qsOpts` need no change.
-
-`FetchOptions.qsOpts` is now a `QueryStringOptions`, which accepts `arrayFormat`, `allowDots`,
-`skipNulls`, `encode`, `sort` and `filter`, with the same meanings as in qs. Other qs options no
-longer compile.
-
-**Find affected code:**
-
-```bash
-grep -rn "qsOpts" client-app/src/
-```
-
-For each use, keep the supported keys and remove the rest. The qs options an app is most likely to
-have used map as follows:
-
-| qs option | On v90 |
-|---|---|
-| `encodeValuesOnly: true` | Remove. Keys with characters needing encoding are rare; if one matters, pass `encode: false` and encode values in `filter`. |
-| `strictNullHandling: true` | Remove, or use `skipNulls: true` to omit nulls. A null encodes as `key=`. |
-| `serializeDate` | Move the conversion into `filter`, which already receives Dates. |
-| `addQueryPrefix`, `delimiter`, `charset`, `format` | Remove. Hoist always joins with `&`, adds its own `?`, and encodes UTF-8 per RFC 3986. |
-
-Apps that imported qs directly for their own URLs can use `stringifyQueryParams()` from
-`@xh/hoist/utils/js` with the same option names, or keep qs in their own `package.json`.
-
 ## Verification Checklist
 
 After completing all steps:
@@ -317,9 +284,6 @@ After completing all steps:
       `modifier`, and nothing imports from `@xh/hoist/kit/onsen`.
 - [ ] Mobile screens with inputs, tabs, dialogs, toasts and menus look as they did on v89.
 - [ ] No code imports `WindowedSelect` or `reactWindowedSelect` from `@xh/hoist/kit/react-select`.
-- [ ] No `qsOpts` passes options other than `arrayFormat`, `allowDots`, `skipNulls`, `encode`,
-      `sort` and `filter`, and nothing imports `qs`, `semver` or `ua-parser-js` expecting Hoist to
-      provide them.
 
 ## Reference
 

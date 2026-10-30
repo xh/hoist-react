@@ -35,10 +35,6 @@ detailed, step-by-step upgrade instructions with before/after code examples.
   `Checkbox` and `SwitchInput`. It passed an Onsen modifier string and has no equivalent.
 * Mobile `Checkbox` and `SwitchInput` now put their `testId` on the native `<input>` rather than
   on a wrapper, as on desktop.
-* `FetchOptions.qsOpts` now takes `QueryStringOptions` for Hoist's own query-string encoder,
-  which replaces qs: `arrayFormat`, `allowDots`, `skipNulls`, `encode`, `sort` and `filter`. Apps
-  that passed other qs options, such as `encodeValuesOnly`, `strictNullHandling` or
-  `serializeDate`, remove them. The default wire format is unchanged. See the upgrade notes.
 
 ### 🎁 New Features
 
@@ -49,8 +45,6 @@ detailed, step-by-step upgrade instructions with before/after code examples.
   clicked column, and `Column.availableSorts`. The `sort` token offers one item per sort the column
   offers.
 * Added `genRandomId()` to `@xh/hoist/utils/js` for short random alphanumeric IDs.
-* Added `stringifyQueryParams()` to `@xh/hoist/utils/js`, the query-string encoder behind
-  `FetchService`, for apps that build URLs or form bodies with the same conventions.
 * Mobile `TabContainer` now applies `${testId}-switcher` to its switcher and
   `${testId}-switcher-${tabId}` to each switcher button, as on desktop.
 * Added "Purge Connections" buttons to the Admin Console Connection Pool Monitor, to close all
@@ -80,17 +74,6 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 
 ### ⚙️ Technical
 
-* Removed three runtime dependencies with security histories in favor of small Hoist
-  implementations, each pinned by a spec recorded from the library it replaces:
-    * `qs` - `stringifyQueryParams()` encodes `FetchService` params and mobile navigator page
-      keys, so Hoist's own code no longer calls qs and app bundles no longer carry it. The package
-      stays in app installs for now, as a dependency of the MCP SDK's Express server.
-    * `semver` - `checkVersion()` and friends compare versions with a numeric parser, with no
-      regex over input. The `36.*.*` style maximums the ag-Grid and Highcharts kits use still work.
-    * `ua-parser-js` - `UserAgentModel` classifies phone, tablet and desktop from the user agent,
-      with the same iPadOS and Chromium `userAgentData` checks. Smart TVs and other agents that
-      are neither phone nor tablet now count as desktop, where before none of `XH.isPhone`,
-      `isTablet` and `isDesktop` was true.
 * Desktop and mobile `DateInput` build their calendar props with one shared helper and share one
   react-day-picker theme, in `@xh/hoist/kit/react-day-picker`, for light and dark modes. Dropping
   Blueprint's date picker also drops the second copies of date-fns and react-day-picker it pulled
@@ -119,9 +102,6 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 * mobx `7.0 → 7.1` - `toJS` now includes `@observable accessor` fields, which it previously left out
 * react-window `2.3 → 2.4`
 * react-windowed-select `removed`
-* qs `removed`
-* semver `removed`
-* ua-parser-js `removed`
 * http-status-codes `removed`
 * inflection `added` - replaces lodash-inflection behind `pluralize`, `singularize` and `ordinalize`
 * lodash-inflection `removed`
