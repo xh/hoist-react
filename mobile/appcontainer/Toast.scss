@@ -1,34 +1,43 @@
-ons-toast.xh-toast {
-  // Better constrain height to available viewport, allows margins below to position as expected.
+.xh-toast {
+  position: fixed;
+  top: 0;
+  right: 0;
+  left: 0;
   height: 100dvh;
+  overflow: hidden;
+  pointer-events: none;
+  // Above dialogs.
+  z-index: 30001;
 
-  .toast {
-    // Ensure toasts respect safe area for full-screen apps. We don't want them to overlap
-    // with the iOS task switcher (as with full screen DialogPanel).
+  &__content {
+    position: absolute;
+    right: 8px;
+    bottom: 0;
+    left: 8px;
+    // Keep clear of the safe area (e.g. the iOS task switcher) and off the very bottom edge.
     margin: var(--xh-safe-area-inset);
-    // Customize bottom margin to pick toast up off of the very bottom of the screen.
     margin-bottom: calc(var(--xh-safe-area-inset-bottom) + var(--xh-spacing));
-
     padding: var(--xh-spacing);
-    box-shadow: 0 2px 20px rgba(0, 0, 0, 0.5);
-
-    // Handle edge-case where dev configures toast with `intent: null` (vs. default of 'primary')
-    // Onsen uses a semi-transparent background - this works better as fallback.
+    display: flex;
+    align-items: center;
+    min-height: 48px;
+    line-height: 1.5;
+    border-radius: 8px;
+    // Fallback for a toast configured with `intent: null` (vs. the default of 'primary').
     background-color: var(--xh-blue-gray-dark);
+    color: white;
+    font-size: 14px;
+    box-shadow: 0 2px 20px rgba(0, 0, 0, 0.5);
+    pointer-events: auto;
+    animation: xh-toast-lift 0.35s ease;
 
-    &__message {
-      margin: 0;
-      display: flex;
-      align-items: center;
+    & > svg {
+      margin-left: var(--xh-spacing-half);
+      margin-right: var(--xh-spacing);
+    }
 
-      & > svg {
-        margin-left: var(--xh-spacing-half);
-        margin-right: var(--xh-spacing);
-      }
-
-      & > span {
-        flex: 1;
-      }
+    & > span {
+      flex: 1;
     }
 
     .xh-toast__trace-id {
@@ -43,19 +52,31 @@ ons-toast.xh-toast {
     }
   }
 
-  &.toast-bg-intent-primary .toast {
+  &--intent-primary .xh-toast__content {
     background-color: var(--xh-intent-primary);
   }
 
-  &.toast-bg-intent-danger .toast {
+  &--intent-danger .xh-toast__content {
     background-color: var(--xh-intent-danger);
   }
 
-  &.toast-bg-intent-success .toast {
+  &--intent-success .xh-toast__content {
     background-color: var(--xh-intent-success);
   }
 
-  &.toast-bg-intent-warning .toast {
+  &--intent-warning .xh-toast__content {
     background-color: var(--xh-intent-warning);
+  }
+}
+
+@keyframes xh-toast-lift {
+  from {
+    transform: translate3d(0, 100%, 0);
+    opacity: 0;
+  }
+
+  to {
+    transform: none;
+    opacity: 1;
   }
 }

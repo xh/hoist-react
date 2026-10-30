@@ -48,16 +48,8 @@
     padding: var(--xh-spacing-double);
     background: var(--xh-popup-bg);
 
-    // See https://github.com/xh/hoist-react/issues/862 for why this is necessary. Note need for
-    // datepicker workaround below - indicates that this might be a problematic solution in general
-    // to the original issue, but after a few years that's been the only reported issue, so...
+    // See https://github.com/xh/hoist-react/issues/862 for why this is necessary.
     overflow-wrap: break-word;
-
-    // Ensure that date numbers in the datepicker do not wrap if the datePicker portal is rendered
-    // inside a dialogBody - e.g. `dateEditor` in a grid in a dialog. See comment on #862.
-    .bp6-datepicker {
-      overflow-wrap: normal;
-    }
   }
 }
 
@@ -269,7 +261,7 @@
   border-radius: var(--xh-tooltip-border-radius);
   box-shadow: 0 0 0 1px var(--xh-tooltip-border-color);
   // A filter rather than a box-shadow layer, so the shadow follows the arrow and an app can set
-  // `--tooltip-shadow: none` without losing the border ring above.
+  // `--xh-tooltip-shadow: none` without losing the border ring above.
   filter: var(--xh-tooltip-shadow);
 
   .bp6-popover-content {

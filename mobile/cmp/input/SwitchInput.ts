@@ -5,17 +5,14 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {HoistInputProps, HoistInputModel, useHoistInputModel} from '@xh/hoist/cmp/input';
+import {div, input} from '@xh/hoist/cmp/layout';
 import {hoistCmp, HoistProps, StyleProps} from '@xh/hoist/core';
-import {switchControl} from '@xh/hoist/kit/onsen';
 import '@xh/hoist/mobile/register';
 import {TEST_ID} from '@xh/hoist/utils/js';
 import './SwitchInput.scss';
 
 export interface SwitchInputProps extends HoistProps, HoistInputProps, StyleProps {
     value?: boolean;
-
-    /** Onsen modifier string */
-    modifier?: string;
 }
 
 /**
@@ -37,22 +34,30 @@ class SwitchInputModel extends HoistInputModel {
 // Implementation
 //-----------------------
 const cmp = hoistCmp.factory<SwitchInputModel>(({model, className, ...props}, ref) => {
-    return switchControl({
-        checked: !!model.renderValue,
-
-        disabled: props.disabled,
-        modifier: props.modifier,
-        tabIndex: props.tabIndex,
-
+    return div({
+        ref,
         className,
         style: props.style,
-        [TEST_ID]: props.testId,
-        ...props.domAttrs,
+        items: [
+            input({
+                className: 'xh-switch-input__input',
+                type: 'checkbox',
+                checked: !!model.renderValue,
 
-        onBlur: model.onBlur,
-        onFocus: model.onFocus,
-        onChange: e => model.noteValueChange(e.target.checked),
+                disabled: props.disabled,
+                tabIndex: props.tabIndex,
 
-        ref
+                [TEST_ID]: props.testId,
+                ...props.domAttrs,
+
+                onBlur: model.onBlur,
+                onFocus: model.onFocus,
+                onChange: e => model.noteValueChange(e.target.checked)
+            }),
+            div({
+                className: 'xh-switch-input__toggle',
+                item: div({className: 'xh-switch-input__handle'})
+            })
+        ]
     });
 });

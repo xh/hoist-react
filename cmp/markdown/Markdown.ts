@@ -30,6 +30,7 @@ interface MarkdownProps extends HoistProps {
  */
 export const [Markdown, markdown] = hoistCmp.withFactory<MarkdownProps>({
     displayName: 'Markdown',
+    model: false,
     render({content, lineBreaks = true, reactMarkdownOptions = {}}) {
         // add default remark plugins, ensure app provided takes precedence
         const remarkPlugins: PluggableList = [],

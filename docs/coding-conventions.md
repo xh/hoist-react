@@ -620,6 +620,20 @@ properties and return values. Properties are initialized to `null` rather than l
 @observableRef accessor lastResponse: Response = null;
 ```
 
+### No `| null` or `| undefined` Types
+
+The compiler runs without `strictNullChecks`, and `null` is the universal "no value", so any
+property, parameter, or return may be null. Do not widen types to spell that out:
+
+```typescript
+// ✅ Do
+selectedRecord: StoreRecord;
+
+// ❌ Don't
+selectedRecord: StoreRecord | null;
+selectedRecord: StoreRecord | undefined;
+```
+
 ### `== null` Pattern
 
 Use loose equality (`== null` / `!= null`) when checking for both `null` and `undefined`.

@@ -54,6 +54,36 @@ describe('Select', () => {
             expect(scrolled).toEqual(['EU']);
         });
     });
+
+    describe('windowed menu', () => {
+        it('renders only the options in view once the list has 100 or more options', async () => {
+            const {container} = renderWindowedSelect(optionsNamed('Option', 300));
+
+            openMenu(container);
+            await waitFor(() => expect(renderedOptions().length).toBeGreaterThan(0));
+            expect(renderedOptions().length).toBeLessThan(300);
+            expect(document.querySelector('.xh-select__menu-list')).not.toBeNull();
+        });
+
+        it('renders every option of a shorter list', async () => {
+            const {container} = renderWindowedSelect(optionsNamed('Option', 50));
+
+            openMenu(container);
+            await waitFor(() => expect(renderedOptions().length).toBe(50));
+        });
+
+        it('renders each group heading as a row of its own', async () => {
+            const {container} = renderWindowedSelect([
+                {label: 'Group A', options: optionsNamed('A', 80)},
+                {label: 'Group B', options: optionsNamed('B', 80)}
+            ]);
+
+            openMenu(container);
+            await waitFor(() => expect(renderedOptions().length).toBeGreaterThan(0));
+            expect(document.querySelectorAll('.xh-select__group-heading').length).toBe(1);
+            expect(renderedOptions().length).toBeLessThan(160);
+        });
+    });
 });
 
 //------------------
@@ -63,6 +93,20 @@ function renderSelect(value: string) {
     const model = new FormModel(value);
     onTestFinished(() => model.destroy());
     return render(select({model, bind: 'value', options: ['US', 'Emerging Markets', 'EU']}));
+}
+
+function renderWindowedSelect(options: any[]) {
+    const model = new FormModel(null);
+    onTestFinished(() => model.destroy());
+    return render(select({model, bind: 'value', options, enableWindowed: true}));
+}
+
+function optionsNamed(prefix: string, count: number): string[] {
+    return Array.from({length: count}, (_, i) => `${prefix} ${i}`);
+}
+
+function renderedOptions() {
+    return document.querySelectorAll('.xh-select__option');
 }
 
 class FormModel extends HoistModel {

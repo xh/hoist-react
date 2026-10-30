@@ -1,9 +1,18 @@
 .xh-input.xh-number-input {
   background: var(--xh-input-bg);
+}
 
-  .text-input,
-  .text-input__label {
+.xh-number-input {
+  &__input {
+    flex: 1;
+    min-width: 0;
     height: var(--xh-input-height);
     padding: 0 var(--xh-spacing);
+    margin: 0;
+    background: transparent;
+
+    &:disabled {
+      opacity: 0.5;
+    }
   }
 }

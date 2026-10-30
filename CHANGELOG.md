@@ -14,10 +14,15 @@
 
 ## 90.0.0-SNAPSHOT - unreleased
 
-### 💥 Breaking Changes (upgrade difficulty: 🟠 MEDIUM - CSS variables, number `formatConfig`)
+### 💥 Breaking Changes (upgrade difficulty: 🟠 MEDIUM - CSS variables, mobile styling, `DateInput`)
 
 See [`docs/upgrade-notes/v90-upgrade-notes.md`](docs/upgrade-notes/v90-upgrade-notes.md) for
 detailed, step-by-step upgrade instructions with before/after code examples.
+
+The changes below are grouped by area. The CSS variable changes affect any app that customizes or
+reads Hoist's CSS variables. The rest apply only to mobile apps or to apps using the named APIs.
+
+#### CSS Variables
 
 * Overhauled Hoist's CSS custom properties onto a simpler, consistently named baseline. Run
   `docs/codemod/v90/codemod-css-vars.mjs` to migrate app stylesheets and code.
@@ -31,6 +36,32 @@ detailed, step-by-step upgrade instructions with before/after code examples.
       `--xh-tbar-*` -> `--xh-toolbar-*`, `--xh-grid-bg-hover` -> `--xh-grid-row-hover-bg`.
     * Removed `--xh-chart-bg`, `--xh-tab-border-width`, and `--xh-toolbar-button-bg`, none of which
       had any effect.
+
+#### Mobile - Onsen UI Removal
+
+* Mobile components no longer render Onsen UI custom elements. `Button`, `TextInput`,
+  `NumberInput`, `SearchInput`, `Checkbox`, `SwitchInput`, `Dialog`, `DialogPanel`, `Toast`,
+  `TabContainer` and `MenuButton` menus render plain elements under `xh-` class names. App SCSS
+  that targeted Onsen's class names (`.button`, `.text-input`, `.dialog`, `.tabbar`, `.toast`,
+  `.page__content` and others) or its CSS variables must target Hoist's instead.
+* Removed `@xh/hoist/kit/onsen`, along with the `onsenui` and `react-onsenui` dependencies.
+* Mobile components now render in the app font. Onsen applied the system font to its buttons,
+  dialogs, tabs, menus and toasts, so any of those an app had not styled change typeface.
+* Removed the `modifier` prop from mobile `Button`, `TextInput`, `NumberInput`, `SearchInput`,
+  `Checkbox` and `SwitchInput`. It passed an Onsen modifier string and has no equivalent.
+* Mobile `Checkbox` and `SwitchInput` now put their `testId` on the native `<input>` rather than
+  on a wrapper, as on desktop.
+
+#### Other
+
+* Desktop `DateInput` now renders its calendar with react-day-picker 10, as the mobile `DateInput`
+  already did, and its time picker is Hoist's own 24-hour control. `dayPickerProps` now takes
+  react-day-picker 10 props - see the upgrade notes for the renames from v8. Removed
+  `timePickerProps`, which took Blueprint `TimePicker` options such as `useAmPm`.
+* Removed the `datePicker` and `DatePicker` exports from `@xh/hoist/kit/blueprint`, along with the
+  `@blueprintjs/datetime` dependency. Use `dayPicker` from `@xh/hoist/kit/react-day-picker`.
+* Removed the `WindowedSelect` and `reactWindowedSelect` exports from `@xh/hoist/kit/react-select`.
+  Use `select({enableWindowed: true})`.
 * Removed `NumberFormatOptions.formatConfig`, which took a numbro format. Use `precision`, `zeroPad`
   and `withCommas` instead.
 
@@ -43,6 +74,10 @@ detailed, step-by-step upgrade instructions with before/after code examples.
   clicked column, and `Column.availableSorts`. The `sort` token offers one item per sort the column
   offers.
 * Added `genRandomId()` to `@xh/hoist/utils/js` for short random alphanumeric IDs.
+* Mobile `TabContainer` now applies `${testId}-switcher` to its switcher and
+  `${testId}-switcher-${tabId}` to each switcher button, as on desktop.
+* Added "Purge Connections" buttons to the Admin Console Connection Pool Monitor, to close all
+  pooled JDBC connections on one instance or across the cluster. Requires hoist-core v44+.
 
 ### 🐞 Bug Fixes
 
@@ -61,23 +96,53 @@ detailed, step-by-step upgrade instructions with before/after code examples.
   and lose a pin, auto-save or current view change. It now sends one write per burst of changes.
 * Fixed mobile `FormField` ignoring the `--xh-form-field-inline-label-*` custom properties for
   inline labels - it referenced stale names left behind by an earlier rename.
+* Fixed mobile `TabContainer` not rendering a tab with `excludeFromSwitcher`, so activating one
+  showed nothing. Such tabs now render as on desktop, only without a switcher button.
+* Fixed mobile `TextInput`, `NumberInput` and `SearchInput` applying `domAttrs` to a wrapper
+  element rather than to the `<input>` itself.
+* Fixed `Markdown` rendering "No model found" in place of its content when no Hoist model was in
+  context, such as inside another React library's components.
 
 ### ⚙️ Technical
 
+* Desktop and mobile `DateInput` build their calendar props with one shared helper and share one
+  react-day-picker theme, in `@xh/hoist/kit/react-day-picker`, for light and dark modes. Dropping
+  Blueprint's date picker also drops the second copies of date-fns and react-day-picker it pulled
+  into every app.
+* Desktop `Select` now windows large option lists with react-window 2 directly, dropping
+  react-windowed-select and the second copy of react-window it pinned into every app.
 * `LocalStorageService` and `SessionStorageService` now read and write browser storage directly.
   Keys and JSON values are stored exactly as before.  Removed the unused `isFake` getter - when
   storage is unavailable the service logs a warning and holds values in memory, as before.
+* Removed Onsen UI from the mobile toolkit, with the `@xh/hoist/kit/onsen` wrappers. Each mobile
+  component now owns its DOM and styles.
+
+### ✨ Styles
+
+* Mobile apps no longer load Onsen UI's stylesheet or its icon fonts. Touch-device defaults that
+  the Onsen stylesheet supplied - no tap highlight, no focus rings on controls, `touch-action:
+  manipulation`, heading sizes, and a body sized to the viewport - are now set by the mobile
+  `AppContainer` stylesheet.
+* Mobile `Dialog` and `DialogPanel` render into a portal on the document body, so they cover the
+  viewport wherever they sit in the component tree.
 
 ### 📚 Libraries
 
 * router5 `7.0 → 8.0`
 * router5-plugin-browser `7.0 → 8.0`
+* mobx `7.0 → 7.1` - `toJS` now includes `@observable accessor` fields, which it previously left out
+* react-window `2.3 → 2.4`
+* react-windowed-select `removed`
 * http-status-codes `removed`
 * inflection `added` - replaces lodash-inflection behind `pluralize`, `singularize` and `ordinalize`
 * lodash-inflection `removed`
 * short-unique-id `removed`
 * store2 `removed`
 * numbro `removed`
+* @blueprintjs/datetime `removed`
+* date-fns `removed`
+* onsenui `removed`
+* react-onsenui `removed`
 
 
 ## 89.3.1 - 2026-10-21

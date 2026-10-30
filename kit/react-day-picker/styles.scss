@@ -1,0 +1,51 @@
+/*
+ * This file belongs to Hoist, an application development toolkit
+ * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
+ *
+ * Copyright © 2026 Extremely Heavy Industries Inc.
+ */
+
+// Theme react-day-picker to match the app, light and dark, via its published CSS custom props.
+// Platform DateInputs set sizes - see desktop/cmp/input/DateInput.scss and its mobile sibling.
+.rdp-root {
+  // Mobile defines --xh-accent-color. Desktop falls back to its primary intent color.
+  --rdp-accent-color: var(--xh-accent-color, var(--xh-intent-primary));
+  --rdp-accent-background-color: var(--xh-bg-alt);
+  --rdp-today-color: var(--rdp-accent-color);
+  --rdp-selected-border: none;
+  --rdp-day_button-border: none;
+
+  color: var(--xh-text-color);
+  font-family: var(--xh-font-family);
+
+  .rdp-month_caption {
+    font-size: var(--xh-font-size);
+  }
+
+  .rdp-dropdown_root {
+    padding: 0 var(--xh-spacing-half);
+    border-radius: var(--xh-border-radius);
+
+    &:hover {
+      background-color: var(--xh-bg-alt);
+    }
+  }
+
+  .rdp-day_button:hover:not(:disabled) {
+    background-color: var(--xh-bg-alt);
+  }
+
+  .rdp-selected {
+    font-size: inherit;
+
+    .rdp-day_button,
+    .rdp-day_button:hover {
+      background-color: var(--rdp-accent-color);
+      color: var(--xh-white);
+    }
+  }
+
+  .rdp-today:not(.rdp-outside):not(.rdp-selected) .rdp-day_button {
+    font-weight: bold;
+  }
+}

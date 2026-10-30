@@ -4,9 +4,9 @@
 
 ## Overview
 
-Hoist React v90 resets Hoist's CSS custom properties onto a simpler baseline. A codemod automates
-nearly all of that migration. Its other required step applies only to apps that use the affected
-API.
+Hoist React v90 resets Hoist's CSS custom properties onto a simpler baseline, and removes Onsen UI
+from the mobile toolkit. A codemod automates nearly all of the CSS migration. The other required
+steps apply only to apps that use the affected APIs or styles.
 
 - **Number `formatConfig` (required if used)** - v90 removes `NumberFormatOptions.formatConfig`
   with numbro. A few number edge cases also changed, such as negative ties - see Step 1.
@@ -25,6 +25,16 @@ API.
       conventions in [`styles/README.md`](../../styles/README.md#naming-conventions).
     - **Overrides on `body.xh-app` always win**, in every theme and platform combination.
     - **Three variables that never had any effect were removed.**
+- **`DateInput` picker props (required if used)** - the desktop `DateInput` calendar is now
+  react-day-picker 10, so `dayPickerProps` takes v10 props, and `timePickerProps` is gone. Apps
+  that rendered Blueprint's `datePicker` from the kit need another calendar - see Step 6.
+- **Mobile styling (required if an app styled Onsen class names)** - mobile components no longer
+  render Onsen UI elements. App SCSS that targeted Onsen's class names or CSS variables, and any
+  use of the `modifier` prop, needs updating - see Step 7.
+- **`WindowedSelect` kit exports (required if used)** - v90 removes the `WindowedSelect` and
+  `reactWindowedSelect` exports from `@xh/hoist/kit/react-select` along with the
+  react-windowed-select library. The `enableWindowed` prop of `Select` works as before - see
+  Step 8.
 
 The most significant CSS impacts are:
 
@@ -254,6 +264,189 @@ Unitless values found for: --xh-spacing, ...
 The check covers the active theme at startup; switch themes and reload to check the other. Then
 review the app in both light and dark themes, and on mobile if applicable.
 
+### 6. Update `DateInput` Picker Props
+
+The desktop `DateInput` popover now renders its calendar with react-day-picker 10, the library the
+mobile `DateInput` already uses, and a time picker of Hoist's own. Hoist no longer depends on
+`@blueprintjs/datetime`, which also removes the second copies of date-fns and react-day-picker that
+every app installed. Apps that only render `dateInput` with `value`, `minDate`, `maxDate`,
+`timePrecision`, `showActionsBar` and the other standard props need no change. Behavior to note:
+
+- The calendar's month and year are still dropdowns, and `fixedWeeks` is still on.
+- The time picker is 24-hour, matching the `HH:mm` display formats. Arrow keys step the focused
+  field, and a field selects its contents on focus.
+- Today and Clear buttons appear under the calendar when `showActionsBar` is set, as before.
+
+**Find affected code:**
+
+```bash
+grep -rn "dayPickerProps\|timePickerProps\|datePicker\|DatePicker" client-app/src/
+```
+
+**`dayPickerProps`** is now `Partial<DayPickerProps>` from `@xh/hoist/kit/react-day-picker`, so it
+takes react-day-picker 10 props where before it took react-day-picker 8 props. Rename the keys an
+app passes per the [react-day-picker upgrade guide](https://daypicker.dev/upgrading), which covers
+the v8 renames that carried into v10. The common ones:
+
+| react-day-picker 8 | react-day-picker 10 |
+|---|---|
+| `disabledDays` or `disabled` | `disabled` - matchers such as `{before: date}` and `{dayOfWeek: [0, 6]}` are unchanged |
+| `fromDate` / `toDate`, `fromMonth` / `toMonth`, `fromYear` / `toYear` | `startMonth` / `endMonth` |
+| `modifiers` with `modifiersStyles` or `modifiersClassNames` | Same props, but a modifier's generated class is `rdp-<name>`, not `rdp-day_<name>` |
+| `classNames` keys such as `day_selected`, `day_today`, `nav_button_previous` | `selected`, `today`, `button_previous` - see the `ClassNames` type |
+| `components.Caption` | `components.MonthCaption` |
+
+Hoist still owns `mode`, `selected`, `onSelect` and `required`, and merges any `disabled` matchers
+with those it generates from `minDate` and `maxDate`.
+
+Before:
+
+```typescript
+dateInput({
+    bind: 'tradeDate',
+    dayPickerProps: {
+        disabledDays: {daysOfWeek: [0, 6]},
+        fromYear: 2020,
+        toYear: 2030
+    }
+})
+```
+
+After:
+
+```typescript
+dateInput({
+    bind: 'tradeDate',
+    dayPickerProps: {
+        disabled: {dayOfWeek: [0, 6]},
+        startMonth: new Date(2020, 0),
+        endMonth: new Date(2030, 11)
+    }
+})
+```
+
+**`timePickerProps`** is removed. It took Blueprint `TimePicker` options, none of which apply to
+Hoist's time picker. Delete the prop. An app that set `useAmPm: true` gets a 24-hour picker. The
+`formatString` and `parseStrings` props still control how the text input shows and reads the time.
+
+Before:
+
+```typescript
+dateInput({bind: 'start', timePrecision: 'minute', timePickerProps: {useAmPm: true}})
+```
+
+After:
+
+```typescript
+dateInput({bind: 'start', timePrecision: 'minute'})
+```
+
+**`datePicker` and `DatePicker`** are no longer exported from `@xh/hoist/kit/blueprint`. An app
+that rendered Blueprint's calendar directly can render `dayPicker` from
+`@xh/hoist/kit/react-day-picker` instead, which carries Hoist's theme for light and dark modes.
+Its props are react-day-picker 10 props, so apply the table above.
+
+Before:
+
+```typescript
+import {datePicker} from '@xh/hoist/kit/blueprint';
+
+datePicker({value: model.date, onChange: date => (model.date = date), minDate, maxDate})
+```
+
+After:
+
+```typescript
+import {dayPicker} from '@xh/hoist/kit/react-day-picker';
+
+dayPicker({
+    mode: 'single',
+    required: true,
+    selected: model.date,
+    onSelect: date => (model.date = date),
+    disabled: [{before: minDate}, {after: maxDate}],
+    startMonth: minDate,
+    endMonth: maxDate
+})
+```
+
+An app that imports `@blueprintjs/datetime` or `date-fns` itself must now declare them in its own
+`package.json`. Prefer dropping the Blueprint import, since a second calendar library adds a second
+copy of date-fns to the bundle.
+
+### 7. Update Mobile Styling That Targeted Onsen UI
+
+Hoist's mobile components used to render [Onsen UI](https://onsen.io/) custom elements, which
+stamped their own class names into the DOM. In v90 they render native elements under `xh-` class
+names, and Onsen's stylesheet and CSS variables are gone. Most apps need no change: Toolbox did
+not. An app that styled Onsen's class names, or passed the `modifier` prop, needs the steps below.
+
+**Find affected code:**
+
+```bash
+grep -rnE "modifier:|\.(button|text-input|search-input|checkbox|switch|list-item|page|dialog|dialog-container|dialog-mask|toast|tabbar)(__|--|[^a-z-])|ons-|--(highlight-color|text-color|tabbar-height|font-size)\b" client-app/src/
+```
+
+**Remove imports from `@xh/hoist/kit/onsen`.** The kit is gone along with the `onsenui` and
+`react-onsenui` packages. An app that imported Onsen components through it, or installed Onsen
+itself, must replace them with Hoist's mobile components or its own.
+
+**Remove the `modifier` prop.** Mobile `Button`, `TextInput`, `NumberInput`, `SearchInput`,
+`Checkbox` and `SwitchInput` no longer accept it. It carried an Onsen modifier string such as
+`'large'` or `'underbar'`; there is no equivalent. Style the component's `className` instead.
+
+**Replace Onsen selectors with Hoist's.** The DOM each component renders is now Hoist's own:
+
+| Component | Onsen selector (v89) | Hoist selector (v90) |
+|---|---|---|
+| `Button` | `ons-button`, `.button` | `.xh-button` |
+| `TextInput` | `ons-input`, `.text-input` | `.xh-text-input`, `.xh-text-input__input` |
+| `NumberInput` | `ons-input`, `.text-input` | `.xh-number-input`, `.xh-number-input__input` |
+| `SearchInput` | `ons-search-input`, `.search-input` | `.xh-search-input`, `.xh-search-input__input` |
+| `Checkbox` | `.checkbox__input`, `.checkbox__checkmark` | `.xh-check-box__input`, `.xh-check-box__checkmark` |
+| `SwitchInput` | `.switch__toggle`, `.switch__handle` | `.xh-switch-input__toggle`, `.xh-switch-input__handle` |
+| Menu items | `ons-list-item`, `.list-item`, `.center` | `.xh-menu__list__item`, `.xh-menu__list__item__content` |
+| `Dialog`, `DialogPanel` | `.dialog-mask`, `.dialog`, `.dialog-container` | `.xh-dialog__mask`, `.xh-dialog__frame`, `.xh-dialog__container` |
+| `Toast` | `ons-toast`, `.toast`, `.toast__message`, `.toast-bg-intent-*` | `.xh-toast`, `.xh-toast__content`, `.xh-toast--intent-*` |
+| `TabContainer` | `ons-tabbar`, `.tabbar`, `.tabbar__button`, `ons-tab` | `.xh-tab-switcher`, `button.xh-tab`, `.xh-tab--active` |
+| Tab content | `ons-page`, `.page`, `.page__content`, `.page__background` | `.xh-tab-wrapper`, `.xh-tab-page` |
+
+Onsen's CSS variables (`--highlight-color`, `--tabbar-height`, `--text-color`, `--font-size` and
+others) are no longer defined. Use the matching `--xh-*` variable from `styles/vars.scss`.
+
+**Review test selectors.** Mobile `Checkbox` and `SwitchInput` now put their `testId` on the
+native `<input>`, as on desktop, rather than on a wrapper element. Mobile `TabContainer` now
+applies `${testId}-switcher` and `${testId}-switcher-${tabId}`, which were desktop-only before.
+
+**Behavior to note:**
+
+- Mobile components render in the app font (`--xh-font-family`). Onsen applied the system font
+  (`-apple-system`, Helvetica Neue) to its buttons, dialogs, tabs, menus and toasts. To keep the
+  system font for buttons, set `font-family` on `.xh-button` in app SCSS.
+- Mobile `Button` renders a `div` with `role="button"`, as Onsen's element was in effect, so it
+  still fills a block container and sizes to its content in a flex row.
+- Mobile `Dialog` and `DialogPanel` render into a portal on the document body.
+- Mobile `TabContainer` renders every tab's content, including tabs with `excludeFromSwitcher`,
+  which it previously left out. Inactive tabs are hidden with `display: none`, as on desktop,
+  rather than laid out off-screen.
+- Mobile `TextInput`, `NumberInput` and `SearchInput` apply `domAttrs` to the `<input>` itself.
+- Pull-down-to-refresh on the `Navigator` and the Escape key on a cancelable `Dialog` work as
+  before.
+### 8. Remove `WindowedSelect` Imports
+
+The desktop `Select` now windows a large option list itself, with react-window 2, so Hoist no
+longer depends on react-windowed-select. Apps that set `enableWindowed` need no change. The menu
+windows once the list has 100 or more options, as before.
+
+**Find affected code:**
+
+```bash
+grep -rn "WindowedSelect\|react-windowed-select" client-app/src/
+```
+
+An app that rendered the kit's `WindowedSelect` or `reactWindowedSelect` directly should use
+`select({enableWindowed: true})` instead, or add react-windowed-select to its own `package.json`.
+Remove any `react-windowed-select` entry from the app's `resolutions` or `overrides`.
 ## Verification Checklist
 
 After completing all steps:
@@ -274,6 +467,13 @@ After completing all steps:
   # Should return nothing
   grep -rnE -- '--xh-[a-z0-9-]+-px\b|--xh-(pad|tbar)(-|\b)' src
   ```
+- [ ] No code passes `timePickerProps` to a `dateInput`, and `dayPickerProps` keys use
+      react-day-picker 10 names.
+- [ ] Nothing imports `datePicker` or `DatePicker` from `@xh/hoist/kit/blueprint`.
+- [ ] No mobile SCSS targets Onsen class names or CSS variables, no mobile input or button passes
+      `modifier`, and nothing imports from `@xh/hoist/kit/onsen`.
+- [ ] Mobile screens with inputs, tabs, dialogs, toasts and menus look as they did on v89.
+- [ ] No code imports `WindowedSelect` or `reactWindowedSelect` from `@xh/hoist/kit/react-select`.
 
 ## Renamed Variables
 

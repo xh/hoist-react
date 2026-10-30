@@ -42,12 +42,5 @@
     .xh-dialog__title:empty {
       display: none;
     }
-
-    // Theme react-day-picker to match the app via its published CSS custom props.
-    .rdp-root {
-      --rdp-accent-color: var(--xh-accent-color);
-      --rdp-accent-background-color: var(--xh-bg-alt);
-      --rdp-today-color: var(--xh-accent-color);
-    }
   }
 }
