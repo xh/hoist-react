@@ -288,6 +288,10 @@ export interface StoreTransaction {
      * supply them cheaply. Providing this asserts that updates change record values only - no
      * structural/parent changes - and that no field outside the set changed. Enables downstream
      * consumers (e.g. Grid) to prove a change cannot affect sort order and skip re-sorting.
+     *
+     * Cube Views rely on it too: a set naming no dimension or bucket field lets a View skip its
+     * per-record structural check, so a set that omits a changed dimension leaves the View's row
+     * hierarchy stale.
      */
     changedFields?: Set<string>;
 }
@@ -406,6 +410,7 @@ export class Store
     @observableRef private accessor _current: RecordSet;
     @observableRef accessor _filtered: RecordSet;
 
+    private _fieldDefaults: Omit<FieldSpec, 'name'>;
     private _dataTemplate: PlainObject = null;
     private _dataDefaults: PlainObject = null;
     private _denseRecordThreshold: number;
@@ -457,7 +462,10 @@ export class Store
 
         this.xhName = xhName;
         this.experimental = this.parseExperimental(experimental);
+        this._fieldDefaults = fieldDefaults;
         this.fields = this.parseFields(fields, fieldDefaults);
+        // Before anything below that may call `getField()`.
+        this._fieldMap = this.createFieldMap();
         this.idSpec = this.parseIdSpec(idSpec);
         this.processRawData = processRawData;
         this.filter = parseFilter(filter);
@@ -476,7 +484,6 @@ export class Store
         this.resetRecords();
 
         this.validator = new StoreValidator({store: this});
-        this._fieldMap = this.createFieldMap();
         this._dataDefaults = this.createDataDefaults();
         this._dataTemplate = {...this._dataDefaults}; // Clone for fast-props mode.
         this._denseRecordThreshold =
@@ -987,9 +994,25 @@ export class Store
         this.incrementalRefilter();
     }
 
+    /**
+     * Replace this Store's fields wholesale, re-applying `fieldDefaults` and rebuilding the derived
+     * field map and data defaults. Drops all records, which were built against the outgoing
+     * defaults - callers reload immediately.
+     * @internal - supports pivoted Views, whose cell fields are discovered from data.
+     */
+    @action
+    setFields(fields: Array<string | FieldSpec | Field>) {
+        this.fields = this.parseFields(fields, this._fieldDefaults);
+        this._fieldMap = this.createFieldMap();
+        this._dataDefaults = this.createDataDefaults();
+        this._dataTemplate = {...this._dataDefaults}; // Clone for fast-props mode.
+
+        this.resetRecords();
+    }
+
     /** Get a specific Field by name.*/
     getField(name: string): Field {
-        return this.fields.find(it => it.name === name);
+        return this._fieldMap.get(name);
     }
 
     get fieldNames(): string[] {

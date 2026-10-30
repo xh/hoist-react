@@ -260,6 +260,74 @@ const grandTotal = rows.find(r => r.isRoot);
 Use `createView()` when you need connected auto-updates or store integration;
 use `executeQuery()` for lightweight, fire-and-forget queries.
 
+## Pivoting with `pivot`
+
+A query can slice its aggregates across a second axis of dimensions, so a measure appears once per
+value of a *pivot* dimension - the classic region-by-sector table. Set `QueryConfig.pivot`:
+
+```typescript
+const view = cube.createView({
+    query: {
+        dimensions: ['fund', 'trader'],              // Row hierarchy, as usual
+        includeRoot: true,
+        pivot: {
+            dimensions: ['region'],                  // Columns - 1 is typical, 3 the ceiling
+            valueFields: ['mktVal', 'pnl']           // Measures aggregated per cell
+        }
+    },
+    connect: true
+});
+```
+
+`dimensions` keeps its meaning as the row hierarchy; the two axes are orthogonal. See `PivotSpec`
+for the remaining options - a label for blank pivot values, excluding such records entirely, and a
+cap on the number of paths.
+
+**What the result carries.** Every group row still holds its normal aggregates. In addition, each
+cell is written onto the row as a synthetic field named `{path}>>{valueField}`:
+
+```typescript
+view.result.rows[0].children[0];
+// {cubeLabel: 'Fund A', mktVal: 42, pnl: 7,          <- ordinary row totals
+//  'US>>mktVal': 30, 'US>>pnl': 5,                     <- cells for the US path
+//  'EU>>mktVal': 12, 'EU>>pnl': 2}                     <- cells for the EU path
+
+view.result.paths;       // PivotPath tree - US, EU, each with `children` for deeper dimensions
+view.result.cellFields;  // One {name, path, valueField} per cell field, including the row totals
+```
+
+A row's total always equals the sum of its top-level cells. Cells are sparse: a (row, path) pair
+with no records beneath it has no field at all, and a blank pivot value forms its own `(empty)`
+path unless `excludeEmptyPivotValues` drops those records - from the row totals too. `paths` and
+`cellFields` keep their identity while the pivot structure is unchanged, so a consumer can track
+them to decide when to rebuild columns, which is what `PivotGridModel` does.
+
+**Loading a store.** Cell fields are discovered from the data, so a connected Store has to learn
+them. `View.createStore()` mints a Store with every current cell field declared and keeps the
+declarations current as paths come and go:
+
+```typescript
+const store = view.createStore({connect: true});   // Caller owns it - disconnectStore() when done
+```
+
+**Updates.** A pivoted View ticks like any other: a value change adjusts the affected cells and
+totals in place, while a record moving between pivot paths rebuilds, the same as a change to a row
+dimension. `updateQuery` with a different `pivot.dimensions` or `valueFields` reshapes the columns;
+an empty `pivot.dimensions` degenerates to an ordinary View so an app can toggle pivoting without
+swapping objects.
+
+**How it works, briefly.** Each group row carries a hidden subtree of cell rows, one per populated
+pivot path. They are real rows in the aggregation network, so every aggregator - built-in or
+custom - works on them unchanged, and a leaf propagates each tick up both its group parent and its
+cell. Cost scales with populated cells, not rows times paths. The planner behind this is
+`PivotStructure` in `data/cube/pivot/impl`, with its correctness properties pinned by its spec.
+
+**Limits.** Pivoting is not supported together with `bucketSpecFn` and `includeLeaves`, and a
+dimension cannot appear on both axes. `maxPivotPaths` (default 1000) throws when a pivot dimension
+is wider than intended; pick a lower-cardinality dimension or raise the cap deliberately.
+
+To render a pivoted View, see [`/cmp/pivotgrid/`](../../cmp/pivotgrid/README.md).
+
 ## Accessing View Data
 
 There are two ways to consume View results:
@@ -316,4 +384,5 @@ records from `cube.store` directly if you need them.
 
 - [`/data/`](../README.md) - Store, Field, Filter, Validation - the core data layer
 - [`/cmp/grid/`](../../cmp/grid/README.md) - GridModel consumes Store for data display
+- [`/cmp/pivotgrid/`](../../cmp/pivotgrid/README.md) - PivotGrid renders a pivoted View
 - `/cmp/grouping/` - GroupingChooser for specifying multi-level dimension groupings

@@ -548,6 +548,9 @@ export const iconFactories = {
     gridPanel(p?: IconProps) {
         return Icon.icon({...p, faName: 'table'});
     },
+    gridPivot(p?: IconProps) {
+        return Icon.icon({...p, iconName: 'table-pivot'});
+    },
     grip(p?: IconProps) {
         return Icon.icon({...p, faName: 'grip-horizontal'});
     },

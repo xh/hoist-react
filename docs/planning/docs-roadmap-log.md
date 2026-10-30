@@ -561,3 +561,12 @@
   and working with AI agents.
 - Indexed in `docs/README.md` (Quick Reference and DevOps and Environment) and
   `docs/doc-registry.json`. Linked from the README, `CLAUDE.md`, and `docs/build-and-publish.md`.
+
+### 2026-10-08
+- Added `cmp/pivotgrid/README.md`, covering `PivotGridModel` and `PivotGrid`: how a pivoted View
+  maps to columns and cell fields, reconfiguring through the query, summaries, pivot sort, and the
+  filter and export caveats.
+- Added a "Pivoting with `pivot`" section to `data/cube/README.md` for the data layer: the
+  `PivotSpec` query option, result shape, `View.createStore()`, updates, and limits.
+- Indexed in `docs/README.md` (Quick Reference and Components), the roadmap Priority 2 table
+  (Done), and `docs/doc-registry.json`; cross-linked from the `/cmp/` and `/data/cube/` READMEs.

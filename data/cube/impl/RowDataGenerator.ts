@@ -6,7 +6,7 @@
  */
 
 import {PlainObject} from '@xh/hoist/core';
-import {isEqual} from 'lodash';
+import {isEmpty, isEqual} from 'lodash';
 import type {View} from '../View';
 import {ViewRowData} from '../ViewRowData';
 
@@ -26,6 +26,9 @@ import {ViewRowData} from '../ViewRowData';
  *    through prototype getters over an own `_src` reference to the leaf's cube record data. One
  *    generated class per query keeps all leaf datas on a single shape with monomorphic,
  *    inlinable reads.
+ *
+ * Pivoted views add two more shapes, driven by `PivotCells` since they track the pivot structure
+ * rather than the query alone - see the Pivot section below.
  *
  * @internal
  */
@@ -67,6 +70,7 @@ export class RowDataGenerator {
     private init() {
         this.fieldNames = this.view.fieldNames;
         this.exposesLeaves = this.view.exposesLeaves;
+        this.cellFieldNames = this.cellFieldSignature();
         this.parentDataTemplate = this.buildParentDataTemplate();
         this.leafDataClass = this.buildLeafDataClass();
     }
@@ -76,6 +80,7 @@ export class RowDataGenerator {
             id: null,
             cubeRowType: null,
             cubeLabel: null,
+            cubeLabelValue: null,
             cubeDimension: null,
             cubeBuckets: null,
             children: null,
@@ -92,16 +97,94 @@ export class RowDataGenerator {
     private buildLeafDataClass(): LeafDataClass {
         if (!this.exposesLeaves) return null;
 
-        class LeafRowData extends BaseLeafRowData {}
+        const cls = isEmpty(this.cellFieldNames)
+            ? class LeafRowData extends BaseLeafRowData {}
+            : this.buildPivotLeafDataClass();
+
+        // A prototype getter per queried field, reading through the own `_src` reference.
         this.view.fields.forEach(({name}) => {
-            Object.defineProperty(LeafRowData.prototype, name, {
+            Object.defineProperty(cls.prototype, name, {
                 get(this: PlainObject) {
                     return this._src[name];
                 },
                 enumerable: true
             });
         });
-        return LeafRowData;
+        return cls;
+    }
+
+    //------------------
+    // Pivot
+    //------------------
+    private cellFieldNames: string[] = null;
+    private cellAggNames: string[] = null;
+    private cellDataTemplate: PlainObject = null;
+
+    /**
+     * Create a cell row's data object from the shared template - the digest slot plus the measures
+     * cells aggregate, far narrower than a group row's shape.
+     */
+    newCellRowData(): PlainObject {
+        return {...this.cellDataTemplate};
+    }
+
+    /** Rebuild the cell template if the measures cells aggregate have moved. */
+    onCellAggFieldsChange() {
+        const names = this.view._pivot.cellAggFields.map(it => it.name);
+        if (this.cellAggNames && isEqual(this.cellAggNames, names)) return;
+
+        this.cellAggNames = names;
+
+        const data: PlainObject = {cubeRowDigest: null};
+        names.forEach(name => (data[name] = null));
+
+        // Clone into V8 fast-properties mode, as the parent template does.
+        this.cellDataTemplate = {...data};
+    }
+
+    /**
+     * Rebuild the exposed-leaf class if the cell field set has moved, returning true if it did.
+     * Called before any leaf is minted in a generation; the caller drops cached leaves on a true.
+     */
+    onCellFieldsChange(): boolean {
+        if (!this.exposesLeaves || isEqual(this.cellFieldNames, this.cellFieldSignature())) {
+            return false;
+        }
+
+        this.init();
+        return true;
+    }
+
+    private cellFieldSignature(): string[] {
+        return this.view._pivot?.cellFields.map(it => it.name) ?? [];
+    }
+
+    /**
+     * A leaf carries a value for its own full-depth path alone, read through prototype getters over
+     * one `_pivotPathIdx` slot so every leaf keeps a single hidden class. Root-path cell fields are
+     * skipped - their name is the value field's, whose getter already answers.
+     */
+    private buildPivotLeafDataClass(): LeafDataClass {
+        class PivotLeafRowData extends BaseLeafRowData {
+            // Index into `PivotCells.allPaths` of this leaf's full-depth path; -1 until placed.
+            _pivotPathIdx: number = -1;
+        }
+
+        const {_pivot} = this.view;
+        _pivot.cellFields.forEach(({name, path, valueField}) => {
+            if (path.isRoot) return;
+
+            const pathIdx = _pivot.pathIdx.get(path),
+                valueName = valueField.name;
+            Object.defineProperty(PivotLeafRowData.prototype, name, {
+                get(this: PlainObject) {
+                    return this._pivotPathIdx === pathIdx ? this._src[valueName] : null;
+                },
+                enumerable: true
+            });
+        });
+
+        return PivotLeafRowData;
     }
 }
 
@@ -130,6 +213,10 @@ class BaseLeafRowData implements ViewRowData {
     }
     get cubeDimension(): string {
         return null;
+    }
+    // A getter, not an own slot, so every leaf keeps the same shape.
+    get cubeLabelValue(): any {
+        return this.id;
     }
     get children(): ViewRowData[] {
         return null;
