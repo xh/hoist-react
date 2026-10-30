@@ -15,8 +15,7 @@ import {
 } from '@xh/hoist/core';
 import '@xh/hoist/mobile/register';
 import {computed} from '@xh/hoist/mobx';
-import {warnIf, withDefault} from '@xh/hoist/utils/js';
-import {stringify} from 'qs';
+import {stringifyQueryParams, warnIf, withDefault} from '@xh/hoist/utils/js';
 import {NavigatorModel} from './NavigatorModel';
 
 /**
@@ -93,9 +92,11 @@ export class PageModel extends HoistModel {
      * The returned string is stable for a given id and props.
      */
     get key(): string {
-        const {id, props} = this,
-            qsOpts = {allowDots: true, sort: (a, b) => a.localeCompare(b)};
-        return stringify({id, props}, qsOpts);
+        const {id, props} = this;
+        return stringifyQueryParams(
+            {id, props},
+            {allowDots: true, sort: (a, b) => a.localeCompare(b)}
+        );
     }
 
     get renderMode(): RenderMode {
