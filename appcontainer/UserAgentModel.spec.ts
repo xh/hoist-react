@@ -5,7 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {afterEach, describe, expect, it, vi} from 'vitest';
-import {UserAgentModel} from './UserAgentModel';
+import {detectDeviceType, UserAgentModel} from './UserAgentModel';
 
 const UAS = {
     desktop:
@@ -37,5 +37,111 @@ describe('UserAgentModel', () => {
     it('classifies a tablet', () => {
         const model = createModel(UAS.tablet);
         expect([model.isDesktop, model.isPhone, model.isTablet]).toEqual([false, false, true]);
+    });
+});
+
+/**
+ * Classifications match those ua-parser-js 2 gave for the same strings, which this detection
+ * replaced. Its 'mobile' maps to phone and its undefined to desktop. Strings are real browsers
+ * on current hardware, plus the jsdom agent the unit tests themselves run under.
+ */
+describe('detectDeviceType', () => {
+    it.each([
+        ['desktop', 'Mac Chrome', UAS.desktop],
+        [
+            'desktop',
+            'Windows Edge',
+            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0'
+        ],
+        [
+            'desktop',
+            'Windows Firefox',
+            'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:133.0) Gecko/20100101 Firefox/133.0'
+        ],
+        [
+            'desktop',
+            'Windows touch laptop',
+            'Mozilla/5.0 (Windows NT 10.0; Win64; x64; Touch) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36'
+        ],
+        [
+            'desktop',
+            'Linux Chrome',
+            'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36'
+        ],
+        [
+            'desktop',
+            'Chrome OS',
+            'Mozilla/5.0 (X11; CrOS x86_64 14541.0.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36'
+        ],
+        [
+            'desktop',
+            'jsdom',
+            'Mozilla/5.0 (linux) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/30.1.3'
+        ],
+        ['desktop', 'empty', ''],
+        ['phone', 'iPhone Safari', UAS.phone],
+        [
+            'phone',
+            'iPhone Chrome',
+            'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) CriOS/141.0.0.0 Mobile/15E148 Safari/604.1'
+        ],
+        [
+            'phone',
+            'iPod touch',
+            'Mozilla/5.0 (iPod touch; CPU iPhone OS 15_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.0 Mobile/15E148 Safari/604.1'
+        ],
+        [
+            'phone',
+            'Android Chrome',
+            'Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Mobile Safari/537.36'
+        ],
+        [
+            'phone',
+            'Android Samsung Internet',
+            'Mozilla/5.0 (Linux; Android 14; SM-S928B) AppleWebKit/537.36 (KHTML, like Gecko) SamsungBrowser/27.0 Chrome/125.0.0.0 Mobile Safari/537.36'
+        ],
+        [
+            'phone',
+            'Android Firefox',
+            'Mozilla/5.0 (Android 14; Mobile; rv:133.0) Gecko/133.0 Firefox/133.0'
+        ],
+        [
+            'phone',
+            'Windows Phone',
+            'Mozilla/5.0 (Windows Phone 10.0; Android 6.0.1; Microsoft; Lumia 950) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/52.0.2743.116 Mobile Safari/537.36 Edge/15.14977'
+        ],
+        ['tablet', 'iPad Safari', UAS.tablet],
+        [
+            'tablet',
+            'Android tablet Chrome',
+            'Mozilla/5.0 (Linux; Android 14; SM-X916B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36'
+        ],
+        [
+            'tablet',
+            'Android tablet Firefox',
+            'Mozilla/5.0 (Android 14; Tablet; rv:133.0) Gecko/133.0 Firefox/133.0'
+        ],
+        [
+            'tablet',
+            'Kindle Fire Silk',
+            'Mozilla/5.0 (Linux; Android 9; KFTRWI) AppleWebKit/537.36 (KHTML, like Gecko) Silk/118.3.1 like Chrome/118.0.5993.80 Safari/537.36'
+        ]
+    ])('is %s for %s', (expected, _, userAgent) => {
+        expect(detectDeviceType({userAgent})).toBe(expected);
+    });
+
+    it('is tablet for an iPad in desktop mode, which reports as a Mac with a touch screen', () => {
+        const userAgent = UAS.desktop;
+        expect(detectDeviceType({userAgent, standalone: false, maxTouchPoints: 5})).toBe('tablet');
+        expect(detectDeviceType({userAgent, maxTouchPoints: 5})).toBe('desktop');
+        expect(detectDeviceType({userAgent, standalone: false, maxTouchPoints: 0})).toBe('desktop');
+    });
+
+    it('is phone when only the Chromium userAgentData hint says so', () => {
+        const userAgent = 'Mozilla/5.0 (Linux; Android 14) AppleWebKit/537.36 Chrome/141.0.0.0';
+        expect(detectDeviceType({userAgent: '', userAgentData: {mobile: true}} as any)).toBe(
+            'phone'
+        );
+        expect(detectDeviceType({userAgent, userAgentData: {mobile: true}} as any)).toBe('tablet');
     });
 });
