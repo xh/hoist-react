@@ -10,7 +10,6 @@ import moment from 'moment';
 import {ReactNode} from 'react';
 import {DateLike, PlainObject} from '../core/types/Types';
 import {fmtSpan, FormatOptions} from './FormatMisc';
-import {createRenderer} from './FormatUtils';
 import {saveOriginal} from './impl/Utils';
 
 export const DATE_FMT = 'YYYY-MM-DD',
@@ -194,9 +193,3 @@ export function timestampReplacer(
             : v;
     };
 }
-
-export const dateRenderer = createRenderer(fmtDate),
-    dateTimeRenderer = createRenderer(fmtDateTime),
-    dateTimeSecRenderer = createRenderer(fmtDateTimeSec),
-    timeRenderer = createRenderer(fmtTime),
-    compactDateRenderer = createRenderer(fmtCompactDate);

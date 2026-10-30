@@ -366,15 +366,25 @@ export interface CellContext {
 }
 
 /**
- * Renderer function for a grid cell.
+ * Renderer for a grid cell - produces the cell's content from its value, as a React component.
+ * May carry `cellClassRules`, which the column applies beneath its own.
+ *
+ * Set `rendererIsComplex` on the column if it reads record fields other than its own. A throw
+ * shows '#ERROR' in the cell, and on a row with no record (e.g. an ag-Grid total row) `record`
+ * is undefined.
  * @param value - cell data value (column + row).
  * @param context - additional data about the column, row and GridModel.
- *      Note that columns with renderers that access/rely on record fields other than the primary
- *      value should also have their `rendererIsComplex` flag set to true to ensure they are
- *      re-run whenever the record (and not just the primary value) changes.
- * @returns the formatted value for display.
+ * @returns the content for display, or null for an empty cell.
  */
-export type ColumnRenderer<T = any> = (value: T, context: CellContext) => ReactNode;
+export type ColumnRenderer<T = any, R = ReactNode> = ((value: T, context: CellContext) => R) & {
+    cellClassRules?: Record<string, ColumnCellClassRuleFn>;
+};
+
+/**
+ * Renderer for a grid cell that returns the cell's display text, written into the cell with no
+ * component. Prefer it over a `renderer` wherever a string will do.
+ */
+export type ColumnTextRenderer<T = any> = ColumnRenderer<T, string>;
 
 /**
  * Function to return a value to export for a grid cell.

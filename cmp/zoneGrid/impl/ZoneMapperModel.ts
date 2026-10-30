@@ -9,6 +9,7 @@ import {span} from '@xh/hoist/cmp/layout';
 import {action, bindable, computed, observable, observableRef} from '@xh/hoist/mobx';
 import {StoreRecord} from '@xh/hoist/data';
 import {GridSorter} from '@xh/hoist/cmp/grid';
+import {getCellClasses} from '@xh/hoist/cmp/grid/impl/Utils';
 import {Icon} from '@xh/hoist/icon';
 import {cloneDeep, findIndex, isBoolean, isEmpty, isEqual, isFinite, isString} from 'lodash';
 import {ReactNode} from 'react';
@@ -236,7 +237,7 @@ export class ZoneMapperModel extends HoistModel {
                 displayName: displayName,
                 label: label,
                 column: column,
-                renderer: column.renderer,
+                resolvedRenderer: column.resolvedRenderer,
                 chooserGroup: column.chooserGroup,
                 sortable: column.sortable,
                 sortingOrder: column.sortingOrder
@@ -313,15 +314,17 @@ export class ZoneMapperModel extends HoistModel {
 
         if (!field) return null;
 
-        let value;
+        let value, classes: string[];
         if (sampleRecord) {
-            value = sampleRecord.data[mapping.field];
-            if (field.renderer) {
-                value = field.renderer(value, {
+            const rawValue = sampleRecord.data[mapping.field];
+            value = rawValue;
+            if (field.resolvedRenderer) {
+                value = field.resolvedRenderer(rawValue, {
                     record: sampleRecord,
                     column: field.column,
                     gridModel: this.zoneGridModel.gridModel
                 });
+                classes = getCellClasses(field.resolvedRenderer, rawValue, sampleRecord);
             }
         }
 
@@ -332,7 +335,10 @@ export class ZoneMapperModel extends HoistModel {
 
         // Render label if requested
         const label = mapping.showLabel && !ignoreLabel ? `${field.label}: ` : null;
-        return span(label, value);
+        return span(
+            label,
+            isEmpty(classes) ? value : span({className: classes.join(' '), item: value})
+        );
     }
 
     private getSampleRecord(): StoreRecord {

@@ -22,8 +22,7 @@ import {
 import {CSSProperties, ReactNode} from 'react';
 import {IntRange} from 'type-fest';
 import {fmtSpan, FormatOptions} from './FormatMisc';
-import {createRenderer} from './FormatUtils';
-import {saveOriginal} from './impl/Utils';
+import {DEFAULT_COLOR_SPEC, ROUNDED_ZERO, saveOriginal} from './impl/Utils';
 
 const THOUSAND = 1000,
     MILLION = 1000000,
@@ -31,15 +30,11 @@ const THOUSAND = 1000,
     MAX_NUMERIC_PRECISION = 12,
     MAX_SIGNIFICANT_DIGITS = 15;
 
+// A formatted value (sign removed) that shows only zero digits - see `strictZero`.
 const UP_TICK = '▴',
     DOWN_TICK = '▾',
     LEDGER_ALIGN_PLACEHOLDER = '<span style="visibility:hidden">)</span>',
-    LEDGER_ALIGN_PLACEHOLDER_EL = span({style: {visibility: 'hidden'}, item: ')'}),
-    DEFAULT_COLOR_SPEC: ColorSpec = {
-        pos: 'xh-pos-val',
-        neg: 'xh-neg-val',
-        neutral: 'xh-neutral-val'
-    };
+    LEDGER_ALIGN_PLACEHOLDER_EL = span({style: {visibility: 'hidden'}, item: ')'});
 
 export type NumericPrecision = IntRange<0, 13>;
 export type Precision = NumericPrecision | 'auto';
@@ -153,6 +148,21 @@ export interface ColorSpec {
 }
 
 /**
+ * Config for pos/neg/neutral color classes, with class names only. Renderers and text renderers both
+ * accept it, so one spec can be shared between them.
+ */
+export interface ColorClassSpec {
+    /** CSS color class to apply to positive values. */
+    pos?: string;
+
+    /** CSS color class to apply to negative values. */
+    neg?: string;
+
+    /** CSS color class to apply to zero values. */
+    neutral?: string;
+}
+
+/**
  * Standard number formatting for Hoist
  *
  * Formats digits with `Intl.NumberFormat` (`en-US`). Ties round half away from zero.
@@ -206,7 +216,7 @@ export function fmtNumber(v: number, opts?: NumberFormatOptions): ReactNode {
     let sign = null;
 
     // Tests for zero strings at various precisions
-    if (!strictZero && /^0+.?0*$/.test(str)) {
+    if (!strictZero && ROUNDED_ZERO.test(str)) {
         // Treat rounded zeros as a true zero, for sign checks
         v = 0;
     }
@@ -371,6 +381,36 @@ export function fmtNumberTooltip(v: number, opts?: {ledger?: boolean}): string {
         zeroPad: false,
         asHtml: true
     }) as string;
+}
+
+/**
+ * @param value - A value that represents a shorthand numerical value
+ * @returns The number represented by the shorthand string, or NaN
+ */
+export function parseNumber(value: any): number {
+    if (isNil(value) || value === '') return null;
+
+    value = value.toString();
+    value = value.replace(/,/g, '');
+
+    if (shorthandValidator.test(value)) {
+        const numStr = value.substring(0, value.length - 1),
+            lastChar = value.charAt(value.length - 1).toLowerCase();
+
+        // Shift by exponent rather than multiply, to avoid float artifacts (8.2 * 1e6 != 8.2e6).
+        switch (lastChar) {
+            case 'k':
+                return +`${numStr}e3`;
+            case 'm':
+                return +`${numStr}e6`;
+            case 'b':
+                return +`${numStr}e9`;
+            default:
+                return NaN;
+        }
+    }
+
+    return parseFloat(value);
 }
 
 //---------------
@@ -587,42 +627,4 @@ function processToolTip(tooltip, opts) {
     return null;
 }
 
-export const numberRenderer = createRenderer(fmtNumber),
-    thousandsRenderer = createRenderer(fmtThousands),
-    millionsRenderer = createRenderer(fmtMillions),
-    billionsRenderer = createRenderer(fmtBillions),
-    quantityRenderer = createRenderer(fmtQuantity),
-    priceRenderer = createRenderer(fmtPrice),
-    percentRenderer = createRenderer(fmtPercent);
-
 const shorthandValidator = /((\.\d+)|(\d+(\.\d+)?))([kmb])\b/i;
-
-/**
- * @param value - A value that represents a shorthand numerical value
- * @returns The number represented by the shorthand string, or NaN
- */
-export function parseNumber(value: any): number {
-    if (isNil(value) || value === '') return null;
-
-    value = value.toString();
-    value = value.replace(/,/g, '');
-
-    if (shorthandValidator.test(value)) {
-        const numStr = value.substring(0, value.length - 1),
-            lastChar = value.charAt(value.length - 1).toLowerCase();
-
-        // Shift by exponent rather than multiply, to avoid float artifacts (8.2 * 1e6 != 8.2e6).
-        switch (lastChar) {
-            case 'k':
-                return +`${numStr}e3`;
-            case 'm':
-                return +`${numStr}e6`;
-            case 'b':
-                return +`${numStr}e9`;
-            default:
-                return NaN;
-        }
-    }
-
-    return parseFloat(value);
-}

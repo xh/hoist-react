@@ -4,8 +4,9 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {Column, type GridConfig, GridModel, GridSorter} from '@xh/hoist/cmp/grid';
+import {Column, dateTime, type GridConfig, GridModel, GridSorter, number} from '@xh/hoist/cmp/grid';
 import {XH} from '@xh/hoist/core';
+import {numberTextRenderer} from '@xh/hoist/format';
 import {wait} from '@xh/hoist/promise';
 import {initTestAppAsync} from '@xh/hoist/test-support';
 import {beforeAll, describe, expect, it, onTestFinished, vi} from 'vitest';
@@ -124,6 +125,68 @@ describe('GridModel', () => {
 
             expect(qty.sortingOrder).toEqual(Column.ABS_DESC_FIRST);
             expect(tradeDate.sortingOrder).toEqual(Column.DESC_FIRST);
+        });
+
+        it('keeps a column textRenderer, such as a number spec has, over a default renderer', () => {
+            const renderer = (v: unknown) => `${v ?? '-'}`,
+                textRenderer = (v: unknown) => `<${v}>`,
+                gridModel = createGridModel({
+                    colDefaults: {renderer},
+                    columns: [
+                        {...number, field: 'pnl'},
+                        {...dateTime, field: 'ts'},
+                        {field: 'name'},
+                        {field: 'region', textRenderer}
+                    ]
+                });
+
+            ['pnl', 'ts', 'region'].forEach(colId => {
+                const col = gridModel.getColumn(colId);
+                expect(col.renderer, colId).toBeFalsy();
+                expect(col.textRenderer, colId).toBeTypeOf('function');
+            });
+            expect(gridModel.getColumn('pnl').textRenderer(1234567.891, null)).toBe('1,234,568');
+            expect(gridModel.getColumn('name').renderer).toBeTypeOf('function');
+
+            // A column's own renderer likewise wins over a default text renderer.
+            const withDefaultText = createGridModel({
+                colDefaults: {textRenderer},
+                columns: [{field: 'name', renderer}, {field: 'region'}]
+            });
+            expect(withDefaultText.getColumn('name').textRenderer).toBeFalsy();
+            expect(withDefaultText.getColumn('region').textRenderer).toBeTypeOf('function');
+        });
+
+        // A deep merge copied the default text renderer's `cellClassRules` onto the column's own
+        // - here the `number` spec's, which every grid in the app shares.
+        it("keeps a default text renderer's cell classes off a column's own", () => {
+            const gridModel = createGridModel({
+                colDefaults: {textRenderer: numberTextRenderer({colorSpec: true})},
+                columns: [{...number, field: 'pnl'}, {field: 'qty'}]
+            });
+
+            expect(gridModel.getColumn('pnl').cellClassRules).toEqual({});
+            expect(gridModel.getColumn('qty').cellClassRules).toHaveProperty('xh-pos-val');
+            expect(number.textRenderer.cellClassRules).toBeUndefined();
+        });
+
+        it("keeps an app-wide default text renderer's cell classes off a grid's own", () => {
+            const appDefaults = GridModel.defaults.colDefaults;
+            GridModel.defaults.colDefaults = {textRenderer: numberTextRenderer({colorSpec: true})};
+            onTestFinished(() => {
+                GridModel.defaults.colDefaults = appDefaults;
+            });
+
+            const ledger = numberTextRenderer({ledger: true}),
+                gridModel = createGridModel({
+                    colDefaults: {textRenderer: ledger},
+                    columns: [{field: 'qty'}]
+                });
+
+            expect(Object.keys(gridModel.getColumn('qty').cellClassRules)).toEqual([
+                'xh-cell--ledger-align'
+            ]);
+            expect(Object.keys(ledger.cellClassRules)).toEqual(['xh-cell--ledger-align']);
         });
 
         it('creates Store fields for columns the Store config does not define', () => {

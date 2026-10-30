@@ -23,3 +23,13 @@ export function createRenderer<V = any, C = PlainObject, R = any>(
         return (v: V) => formatter(v, config);
     };
 }
+
+/**
+ * A renderer that always returns a string, for use as a grid `Column.textRenderer`.
+ *
+ * Styling that the markup-returning renderers apply inline (e.g. `colorSpec`, ledger alignment)
+ * is carried as `cellClassRules`, which the grid applies to the cell by value.
+ */
+export type TextRenderer<V = any> = ((v: V, ...rest: any[]) => string) & {
+    cellClassRules?: Record<string, (params: {value: any}) => boolean>;
+};

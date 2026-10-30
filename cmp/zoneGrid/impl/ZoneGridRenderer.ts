@@ -5,6 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {CellContext, Column, ColumnRenderer} from '@xh/hoist/cmp/grid';
+import {getCellClasses} from '@xh/hoist/cmp/grid/impl/Utils';
 import {div, span} from '@xh/hoist/cmp/layout';
 import {intersperse, throwIf} from '@xh/hoist/utils/js';
 import {compact, isFunction, isNil, partition} from 'lodash';
@@ -14,7 +15,7 @@ export interface ZoneGridColConfig {
     /** Array of SubField specifications to render. */
     subFields: ZoneGridSubField[];
 
-    /** Renderer for primary field. */
+    /** Produces the primary field's content - the column's renderer or text renderer. */
     mainRenderer?: ColumnRenderer;
 
     /** Separator rendered between consecutive SubFields. */
@@ -26,7 +27,7 @@ export interface ZoneGridSubField {
 
     /**
      * Label to display next to data value. True to use the Column's header as label.
-     * Alternatively provide a custom string, or a renderer for dynamic per-value labels.
+     * Alternatively provide a custom string, or a function for dynamic per-value labels.
      */
     label?: boolean | string | ColumnRenderer;
 
@@ -79,9 +80,9 @@ export function zoneGridRenderer(value: any, context: CellContext, isLeft: boole
 //------------------
 // Implementation
 //------------------
-function renderMainField(value: any, renderer: ColumnRenderer, context: CellContext) {
+function renderMainField(value: any, resolvedRenderer: ColumnRenderer, context: CellContext) {
     const {column} = context;
-    const {content, rendererClass} = renderValue(value, renderer, column, context);
+    const {content, rendererClass} = renderValue(value, resolvedRenderer, column, context);
     return div({
         className: rendererClass,
         item: content
@@ -94,7 +95,7 @@ function renderSubField({colId, label}: ZoneGridSubField, context: CellContext) 
 
     throwIf(!column, `Subfield ${colId} not found`);
 
-    const {field, headerName, renderer} = column,
+    const {field, headerName, resolvedRenderer} = column,
         value = record.data[field];
 
     let labelStr;
@@ -106,7 +107,7 @@ function renderSubField({colId, label}: ZoneGridSubField, context: CellContext) 
         labelStr = label;
     }
 
-    const {content, rendererClass} = renderValue(value, renderer, column, context),
+    const {content, rendererClass} = renderValue(value, resolvedRenderer, column, context),
         renderedValIsEmpty = content === '' || isNil(content);
 
     return renderedValIsEmpty
@@ -124,19 +125,24 @@ function renderSubField({colId, label}: ZoneGridSubField, context: CellContext) 
 
 function renderValue(
     value: string | number,
-    renderer: ColumnRenderer,
+    resolvedRenderer: ColumnRenderer,
     column: Column,
     context: CellContext
 ): {
     content: ReactNode | null;
     rendererClass: string;
 } {
-    const ret = renderer ? renderer(value, {...context, column}) : value;
+    const ret = resolvedRenderer ? resolvedRenderer(value, {...context, column}) : value,
+        classes = [
+            ['string', 'number'].includes(typeof ret)
+                ? getStyleClassName('text-container')
+                : getStyleClassName('element-container'),
+            ...getCellClasses(resolvedRenderer, value, context.record)
+        ];
+
     return {
         content: isNil(ret) ? null : ret,
-        rendererClass: ['string', 'number'].includes(typeof ret)
-            ? getStyleClassName('text-container')
-            : getStyleClassName('element-container')
+        rendererClass: classes.join(' ')
     };
 }
 
