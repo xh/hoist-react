@@ -62,7 +62,7 @@ class DirectoryMembersModel extends BaseMembersModel {
             items: [
                 box({
                     item: displayName,
-                    paddingRight: 'var(--xh-pad-half-px)'
+                    paddingRight: 'var(--xh-spacing-half)'
                 }),
                 Icon.warning({omit: !error, intent: 'warning'})
             ]

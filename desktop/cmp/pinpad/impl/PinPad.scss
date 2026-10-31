@@ -15,13 +15,13 @@
     }
 
     p {
-      font-size: var(--xh-font-size-large-px);
-      height: var(--xh-font-size-large-px);
+      font-size: var(--xh-font-size-large);
+      height: var(--xh-font-size-large);
     }
   }
 
   &__display {
-    margin: 0 var(--xh-pad-px);
+    margin: 0 var(--xh-spacing);
     flex-direction: row;
 
     &__digit {
@@ -34,7 +34,7 @@
       border: var(--xh-border-solid);
       border-radius: 5px;
       font-size: 35px;
-      margin: var(--xh-pad-px);
+      margin: var(--xh-spacing);
       text-align: center;
 
       &.disabled {
@@ -50,10 +50,10 @@
 
   &__error {
     flex: 1;
-    margin: 0 var(--xh-pad-px);
+    margin: 0 var(--xh-spacing);
     color: var(--xh-intent-danger);
     text-align: center;
-    font-size: var(--xh-font-size-px);
+    font-size: var(--xh-font-size);
   }
 
   &__keyboard {
@@ -67,7 +67,7 @@
       flex: 1;
 
       &.xh-button {
-        font-size: var(--xh-font-size-large-em);
+        font-size: var(--xh-font-size-large-relative);
         height: 100%;
         margin: 0;
         padding: 0;

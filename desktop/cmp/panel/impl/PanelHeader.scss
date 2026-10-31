@@ -2,8 +2,8 @@
   align-items: center;
   flex: none;
   user-select: none;
-  height: var(--xh-title-height-px);
-  padding: var(--xh-title-pad-px);
+  height: var(--xh-title-height);
+  padding: var(--xh-title-padding);
   background-color: var(--xh-panel-title-bg);
   color: var(--xh-panel-title-text-color);
 
@@ -11,7 +11,7 @@
     text-overflow: ellipsis;
     white-space: nowrap;
     font-family: var(--xh-panel-title-font-family);
-    font-size: var(--xh-panel-title-font-size-px);
+    font-size: var(--xh-panel-title-font-size);
 
     &__inner {
       display: flex;
@@ -23,14 +23,14 @@
     align-items: center;
 
     > :not(:last-child) {
-      margin-right: var(--xh-tbar-item-pad-px);
+      margin-right: var(--xh-toolbar-item-spacing);
     }
   }
 
   // Header glyph.
   & > .svg-inline--fa {
-    font-size: var(--xh-title-icon-size-px);
-    margin: 0 var(--xh-pad-px) 0 var(--xh-pad-half-px);
+    font-size: var(--xh-title-icon-size);
+    margin: 0 var(--xh-spacing) 0 var(--xh-spacing-half);
   }
 
   // Header "tool" buttons.
@@ -45,10 +45,10 @@
 
   // Vertical mode - collapsed to left or right
   &.xh-vbox {
-    width: var(--xh-title-height-px);
+    width: var(--xh-title-height);
 
     & > .xh-icon {
-      margin: var(--xh-pad-px) 0 0 0;
+      margin: var(--xh-spacing) 0 0 0;
     }
 
     .xh-panel-header__title {
@@ -70,17 +70,17 @@
 
   // Compact mode
   &--compact {
-    height: var(--xh-title-compact-height-px);
-    font-size: var(--xh-title-compact-font-size-px);
-    padding: 0 0 0 var(--xh-pad-half-px);
+    height: var(--xh-title-compact-height);
+    font-size: var(--xh-title-compact-font-size);
+    padding: 0 0 0 var(--xh-spacing-half);
 
     .xh-panel-header__title {
-      font-size: var(--xh-title-compact-font-size-px);
+      font-size: var(--xh-title-compact-font-size);
     }
 
     &.xh-vbox {
-      padding: var(--xh-pad-half-px) 0 0 0;
-      width: var(--xh-title-compact-height-px);
+      padding: var(--xh-spacing-half) 0 0 0;
+      width: var(--xh-title-compact-height);
     }
   }
 }

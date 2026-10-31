@@ -63,7 +63,7 @@ html {
   input,
   textarea {
     font-family: var(--xh-font-family);
-    font-size: var(--xh-mobile-input-font-size-px);
+    font-size: var(--xh-input-font-size);
     font-weight: 400;
 
     color: var(--xh-text-color);
@@ -78,9 +78,9 @@ html {
   }
 
   &:not(.xh-input-label):not(.xh-button-group):not(.xh-switch-input):not(.xh-check-box) {
-    font-size: var(--xh-mobile-input-font-size-px);
+    font-size: var(--xh-input-font-size);
     border: var(--xh-border-solid);
-    border-radius: var(--xh-border-radius-px);
+    border-radius: var(--xh-border-radius);
 
     &:not(.xh-input--invalid):not(.xh-input--warning):not(.xh-input--info):focus-within {
       border-color: var(--xh-focus-outline-color);

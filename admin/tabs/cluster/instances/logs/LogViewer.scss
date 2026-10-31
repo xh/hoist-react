@@ -8,7 +8,7 @@
 .xh-log-display {
   &__row {
     font-family: var(--xh-font-family-mono);
-    font-size: var(--xh-font-size-small-em);
+    font-size: var(--xh-font-size-small-relative);
 
     &-number {
       color: var(--xh-text-color-accent);

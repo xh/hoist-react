@@ -7,7 +7,7 @@
 
 // DateRangePicker - trigger + popover styling. Colors and key sizes come from the
 // `--xh-date-range-picker-*` vars declared in styles/vars.scss, so both themes work without any
-// theme-specific overrides here and apps can re-key the picker via the unprefixed hooks.
+// theme-specific overrides here and apps re-key the picker by overriding those vars.
 
 // Fixed type scale for the picker's secondary text - tuned to the popover's layout, rather than
 // derived from the app font size.
@@ -63,7 +63,7 @@ $drp-transition-dur: 120ms;
   padding: 7px 10px;
   background: var(--xh-date-range-picker-footer-bg);
   border-top: 1px solid var(--xh-border-color);
-  border-radius: 0 0 var(--xh-border-radius-px) var(--xh-border-radius-px);
+  border-radius: 0 0 var(--xh-border-radius) var(--xh-border-radius);
 }
 
 // Scoped under .xh-app to out-rank Hoist base button rules of the same class count.
@@ -103,7 +103,7 @@ $drp-transition-dur: 120ms;
       }
 
       .xh-date-range-picker__trigger-label {
-        font-size: var(--xh-font-size-px);
+        font-size: var(--xh-font-size);
         font-weight: 500;
       }
 
@@ -126,8 +126,8 @@ $drp-transition-dur: 120ms;
         background-color: var(--xh-input-bg) !important;
         border: none;
         box-shadow: var(--xh-form-field-box-shadow);
-        padding-left: var(--xh-pad-px) !important;
-        padding-right: var(--xh-pad-px) !important;
+        padding-left: var(--xh-spacing) !important;
+        padding-right: var(--xh-spacing) !important;
 
         > .xh-icon {
           color: var(--xh-text-color-muted);
@@ -158,7 +158,7 @@ $drp-transition-dur: 120ms;
       overflow: hidden;
       text-overflow: ellipsis;
       // Keep a truncated label's ellipsis off the trigger's edge.
-      padding-right: var(--xh-pad-half-px);
+      padding-right: var(--xh-spacing-half);
     }
   }
 
@@ -166,31 +166,31 @@ $drp-transition-dur: 120ms;
     // Selection accent - the primary intent by default, re-keyed by the component's `intent`
     // prop via the modifier classes below.
     &--intent-success {
-      --xh-date-range-picker-accent: var(--xh-intent-success);
+      --xh-date-range-picker-accent-color: var(--xh-intent-success);
     }
 
     &--intent-warning {
-      --xh-date-range-picker-accent: var(--xh-intent-warning);
+      --xh-date-range-picker-accent-color: var(--xh-intent-warning);
     }
 
     &--intent-danger {
-      --xh-date-range-picker-accent: var(--xh-intent-danger);
+      --xh-date-range-picker-accent-color: var(--xh-intent-danger);
     }
 
     .bp6-popover-content {
       padding: 0;
       background: var(--xh-popup-bg);
-      border-radius: var(--xh-border-radius-px);
+      border-radius: var(--xh-border-radius);
     }
 
     &.bp6-popover {
       border: 1px solid var(--xh-popup-border-color);
-      border-radius: var(--xh-border-radius-px);
+      border-radius: var(--xh-border-radius);
     }
 
     &__content {
       width: var(--xh-date-range-picker-popover-width);
-      font-size: var(--xh-font-size-px);
+      font-size: var(--xh-font-size);
       color: var(--xh-text-color);
     }
 
@@ -223,7 +223,7 @@ $drp-transition-dur: 120ms;
     //------------------
     &__tab {
       flex: 1;
-      padding: var(--xh-pad-px);
+      padding: var(--xh-spacing);
       min-width: 0;
     }
 
@@ -243,7 +243,7 @@ $drp-transition-dur: 120ms;
       height: var(--xh-date-range-picker-row-height);
       min-height: var(--xh-date-range-picker-row-height);
       padding: 0 6px;
-      border-radius: var(--xh-border-radius-px);
+      border-radius: var(--xh-border-radius);
       cursor: pointer;
       transition:
         background-color $drp-transition-dur,
@@ -270,7 +270,7 @@ $drp-transition-dur: 120ms;
     &__row-check {
       font-size: $drp-font-size-micro;
       width: 12px;
-      color: var(--xh-date-range-picker-accent);
+      color: var(--xh-date-range-picker-accent-color);
 
       &--hidden {
         visibility: hidden;
@@ -292,7 +292,7 @@ $drp-transition-dur: 120ms;
       align-items: center;
       gap: 8px;
       padding: 0 6px;
-      margin-bottom: var(--xh-pad-px);
+      margin-bottom: var(--xh-spacing);
     }
 
     &__rel-prefix {
@@ -300,10 +300,10 @@ $drp-transition-dur: 120ms;
     }
 
     &__snap-box {
-      margin: 0 6px var(--xh-pad-px);
+      margin: 0 6px var(--xh-spacing);
       padding: 8px;
       border: 1px solid var(--xh-border-color);
-      border-radius: var(--xh-border-radius-px);
+      border-radius: var(--xh-border-radius);
 
       // `fill: false` sizes the options but leaves the tray stretched - hug the content.
       .xh-segmented-control {
@@ -322,7 +322,7 @@ $drp-transition-dur: 120ms;
       padding: 8px 10px;
       background: var(--xh-bg-alt);
       border: 1px solid var(--xh-border-color);
-      border-radius: var(--xh-border-radius-px);
+      border-radius: var(--xh-border-radius);
     }
 
     &__preview-label {
@@ -429,7 +429,7 @@ $drp-transition-dur: 120ms;
       align-items: end;
       gap: 8px;
       padding: 0 6px;
-      margin-bottom: var(--xh-pad-px);
+      margin-bottom: var(--xh-spacing);
     }
 
     &__field {
@@ -439,11 +439,11 @@ $drp-transition-dur: 120ms;
         font-family: var(--xh-date-range-picker-date-font-family);
       }
 
-      // Accents the field whose edge the next calendar click will set. Overrides the resolved
-      // `--xh-` var, not the `--form-field-` hook: the hook is only read where Hoist declares
-      // these vars, on `body`, so it has no effect scoped to a descendant.
+      // Accents the field whose edge the next calendar click will set. Sets the box-shadow var
+      // itself, not the `-box-shadow-color-*` vars it derives from: derived vars resolve once, on
+      // `body`, so re-setting an upstream var on a descendant would not reach it.
       &--armed {
-        --xh-form-field-box-shadow: inset 0 0 0 1px var(--xh-date-range-picker-accent);
+        --xh-form-field-box-shadow: inset 0 0 0 1px var(--xh-date-range-picker-accent-color);
       }
     }
 
@@ -530,7 +530,7 @@ $drp-transition-dur: 120ms;
       }
 
       &--edge {
-        background: var(--xh-date-range-picker-accent);
+        background: var(--xh-date-range-picker-accent-color);
         color: var(--xh-date-range-picker-accent-text-color);
         font-weight: 600;
         border-radius: 3px;

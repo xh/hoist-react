@@ -21,7 +21,7 @@
 .xh-tab-switcher {
   display: flex;
   flex: none;
-  height: var(--xh-tbar-min-size-px);
+  height: var(--xh-toolbar-min-size);
   background-color: var(--xh-bg-alt);
   white-space: nowrap;
 
@@ -46,7 +46,7 @@
     background: transparent;
     color: var(--xh-text-color);
     font: inherit;
-    font-size: var(--xh-button-font-size-px);
+    font-size: var(--xh-button-font-size);
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
@@ -61,7 +61,7 @@
 
     // Icon with title
     .xh-icon:not(:last-child) {
-      margin-right: var(--xh-pad-half-px);
+      margin-right: var(--xh-spacing-half);
     }
 
     // Icon without title

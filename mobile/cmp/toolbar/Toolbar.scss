@@ -8,14 +8,14 @@
   // Toolbars are the compact-button special case: keep buttons short and tight-cornered so they
   // fit dense bars, overriding the taller / rounder defaults used for buttons in body content
   // (see vars.scss). Derive the button height from the bar size so a single token
-  // (--xh-tbar-min-size) drives both - subtracting the bar's vertical padding so buttons fit a
+  // (--xh-toolbar-min-size) drives both - subtracting the bar's vertical padding so buttons fit a
   // horizontal bar. The same height is reused for vertical bars to keep buttons consistent.
-  --xh-button-height: calc(var(--xh-tbar-min-size-px) - 2 * var(--xh-pad-half-px));
-  --xh-button-border-radius-px: var(--xh-border-radius-px);
+  --xh-button-height: calc(var(--xh-toolbar-min-size) - 2 * var(--xh-spacing-half));
+  --xh-button-border-radius: var(--xh-border-radius);
 
-  padding: var(--xh-pad-half-px) var(--xh-pad-px);
-  color: var(--xh-tbar-text-color);
-  background-color: var(--xh-tbar-bg);
+  padding: var(--xh-spacing-half) var(--xh-spacing);
+  color: var(--xh-toolbar-text-color);
+  background-color: var(--xh-toolbar-bg);
   width: 100%;
   flex: none;
   align-items: center;
@@ -26,49 +26,49 @@
     flex-shrink: 0;
 
     &:not(:first-child):not([class*='xh-no-pad']):not([class*='xh-mask']) {
-      margin-left: var(--xh-tbar-item-pad-px);
+      margin-left: var(--xh-toolbar-item-spacing);
     }
   }
 
   &--vertical {
-    width: var(--xh-tbar-min-size-px);
-    padding: 0 var(--xh-pad-half-px) var(--xh-pad-px) var(--xh-pad-half-px);
+    width: var(--xh-toolbar-min-size);
+    padding: 0 var(--xh-spacing-half) var(--xh-spacing) var(--xh-spacing-half);
 
     > *:not([class*='xh-no-pad']) {
-      margin-top: var(--xh-tbar-item-pad-px);
+      margin-top: var(--xh-toolbar-item-spacing);
       margin-left: 0;
     }
 
     .xh-toolbar__separator {
-      border-bottom: 1px solid var(--xh-tbar-separator-color);
+      border-bottom: 1px solid var(--xh-toolbar-separator-color);
       width: 20px;
     }
 
     &:first-child {
-      border-right: 1px solid var(--xh-tbar-border-color);
+      border-right: 1px solid var(--xh-toolbar-border-color);
     }
 
     &:last-child {
-      border-left: 1px solid var(--xh-tbar-border-color);
+      border-left: 1px solid var(--xh-toolbar-border-color);
     }
   }
 
   &:not(&--vertical) {
-    height: var(--xh-tbar-min-size-px);
+    height: var(--xh-toolbar-min-size);
 
     &:not(:last-child) {
-      border-bottom: 1px solid var(--xh-tbar-border-color);
+      border-bottom: 1px solid var(--xh-toolbar-border-color);
     }
 
     &:last-child {
-      border-top: 1px solid var(--xh-tbar-border-color);
+      border-top: 1px solid var(--xh-toolbar-border-color);
     }
 
     .xh-toolbar__separator {
-      border-left: 1px solid var(--xh-tbar-separator-color);
+      border-left: 1px solid var(--xh-toolbar-separator-color);
       height: 20px;
-      margin-left: calc(var(--xh-tbar-item-pad) * 2px);
-      margin-right: var(--xh-tbar-item-pad-px);
+      margin-left: calc(var(--xh-toolbar-item-spacing) * 2);
+      margin-right: var(--xh-toolbar-item-spacing);
     }
   }
 }

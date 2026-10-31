@@ -18,10 +18,10 @@
 
   &__mask {
     position: absolute;
-    top: var(--xh-pad-safe-top);
-    right: var(--xh-pad-safe-right);
-    bottom: var(--xh-pad-safe-bottom);
-    left: var(--xh-pad-safe-left);
+    top: var(--xh-safe-area-inset-top);
+    right: var(--xh-safe-area-inset-right);
+    bottom: var(--xh-safe-area-inset-bottom);
+    left: var(--xh-safe-area-inset-left);
     background-color: var(--xh-backdrop-bg);
   }
 
@@ -34,7 +34,7 @@
     flex-direction: column;
     min-width: 320px;
     min-height: 100px;
-    max-height: calc(100dvh - var(--xh-pad-double-px));
+    max-height: calc(100dvh - var(--xh-spacing-double));
     overflow: hidden;
     text-align: left;
   }
@@ -44,10 +44,10 @@
     flex-direction: column;
     height: inherit;
     min-height: inherit;
-    max-width: calc(100svw - var(--xh-pad-double-px));
-    margin: var(--xh-pad-safe-all);
+    max-width: calc(100svw - var(--xh-spacing-double));
+    margin: var(--xh-safe-area-inset);
     overflow: hidden;
-    border: var(--xh-popup-border-width-px) solid var(--xh-popup-border-color);
+    border: var(--xh-popup-border-width) solid var(--xh-popup-border-color);
     border-radius: 4px;
     // The border color, to avoid hairline gaps at the edges - the content paints its own bg.
     background-color: var(--xh-popup-border-color);

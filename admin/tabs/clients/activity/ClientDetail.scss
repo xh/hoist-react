@@ -1,9 +1,9 @@
 .xh-admin-client-detail {
   &__header {
     align-items: center;
-    background-color: var(--xh-grid-bg-odd);
+    background-color: var(--xh-grid-odd-row-bg);
     border-bottom: var(--xh-border-solid);
-    padding: var(--xh-pad-px);
+    padding: var(--xh-spacing);
 
     h2 {
       flex: 1;
