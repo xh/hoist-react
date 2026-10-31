@@ -118,6 +118,9 @@ node node_modules/@xh/hoist/docs/codemod/v90/codemod-css-vars.mjs --dry src
 node node_modules/@xh/hoist/docs/codemod/v90/codemod-css-vars.mjs src
 ```
 
+The codemod skips `node_modules`. A Hoist package that ships its own styles needs the same
+migration in its own repo, and a new release, before apps on v90 pick it up.
+
 It scans `.scss`, `.css`, `.ts`, `.tsx`, `.js`, `.jsx`, and `.md` files and:
 
 1. **Migrates unprefixed hooks** to their `--xh-*` variable, including the handful whose names
