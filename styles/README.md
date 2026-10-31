@@ -145,7 +145,7 @@ Conventions within that grammar:
 
 ### Variable Categories
 
-The `vars.scss` file organizes ~410 CSS custom properties into these categories:
+The `vars.scss` file organizes its CSS custom properties into these categories:
 
 | Category | Prefix Pattern | Examples |
 |----------|---------------|----------|
