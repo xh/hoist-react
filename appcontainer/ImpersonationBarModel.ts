@@ -26,6 +26,8 @@ export class ImpersonationBarModel extends HoistModel {
     // For managed focus of desktop select.
     inputRef = createRef<HoistInputModel>();
 
+    private targetsLoaded = false;
+
     init() {
         this.addAutorun(() => {
             if (this.isOpen) {
@@ -89,12 +91,13 @@ export class ImpersonationBarModel extends HoistModel {
     // Implementation
     //--------------------
     private ensureTargetsLoaded() {
-        if (this.targets.length) return;
+        if (this.targetsLoaded) return;
 
         this.runner()
             .span('impersonationTargets')
             .run(async ctx => {
                 const targets = await XH.fetchJson({url: 'xh/impersonationTargets'}, ctx);
+                this.targetsLoaded = true;
                 this.setTargets(targets);
             })
             .catchDefault();

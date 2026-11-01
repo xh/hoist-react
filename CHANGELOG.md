@@ -52,6 +52,8 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 
 ### 🐞 Bug Fixes
 
+* Fixed the impersonation bar re-requesting its list of users without end when the server returned
+  no users other than the current one.
 * Fixed column group borders not following their columns when reordered or hidden via the column
   chooser.
 * Fixed grid row borders and the row drag drop line stopping at the last column when the columns
