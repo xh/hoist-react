@@ -4,24 +4,27 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {describe, expect, it, onTestFinished, vi} from 'vitest';
+import {afterEach, describe, expect, it, vi} from 'vitest';
 import {ViewportSizeModel} from './ViewportSizeModel';
 
 // Longer than the model's 100ms measure debounce plus its slowest 300ms orientation check.
 const SETTLE_MS = 500;
 
 /**
- * ViewportSizeModel measures the window on debounced timers after every resize. Test-support
- * destroys it at the end of each spec file, so it must leave nothing scheduled to read `window`
- * after the test environment is gone. XH's own instance also hears these resizes, so the tests
- * check the model's size rather than count timers.
+ * Apps read the viewport size and orientation from `XH.viewportSizeModel` to adapt layouts, and
+ * mobile apps switch between portrait and landscape layouts on `isPortrait`.
  */
 describe('ViewportSizeModel', () => {
+    const {innerWidth, innerHeight} = window,
+        orientation = window.screen.orientation as {type: string},
+        orientationType = orientation.type;
+
+    afterEach(() => {
+        Object.assign(window, {innerWidth, innerHeight});
+        orientation.type = orientationType;
+    });
+
     function resizeWindow(width: number, height: number) {
-        const {innerWidth, innerHeight} = window;
-        onTestFinished(() => {
-            Object.assign(window, {innerWidth, innerHeight});
-        });
         Object.assign(window, {innerWidth: width, innerHeight: height});
         window.dispatchEvent(new Event('resize'));
     }
@@ -43,20 +46,41 @@ describe('ViewportSizeModel', () => {
         model.destroy();
     });
 
-    it('cancels a pending measure on destroy, even right after a resize', async () => {
+    it('reads orientation from the Screen Orientation API', async () => {
+        const model = await createModelAsync();
+
+        // The API wins over the window's landscape shape.
+        orientation.type = 'portrait-primary';
+        resizeWindow(1200, 800);
+        await vi.advanceTimersByTimeAsync(SETTLE_MS);
+        expect(model.isPortrait).toBe(true);
+        expect(model.isLandscape).toBe(false);
+
+        model.destroy();
+    });
+
+    it('falls back to the window shape without the Screen Orientation API', async () => {
+        const model = await createModelAsync();
+        orientation.type = undefined;
+
+        resizeWindow(800, 1200);
+        await vi.advanceTimersByTimeAsync(SETTLE_MS);
+        expect(model.isPortrait).toBe(true);
+
+        resizeWindow(1200, 800);
+        await vi.advanceTimersByTimeAsync(SETTLE_MS);
+        expect(model.isPortrait).toBe(false);
+
+        model.destroy();
+    });
+
+    // A destroyed model must not touch `window` later - test-support destroys XH's instance before
+    // Vitest tears down jsdom at the end of each spec file.
+    it('stops measuring once destroyed, including a measure already pending', async () => {
         const model = await createModelAsync(),
             {size} = model;
 
         resizeWindow(1024, 768);
-        model.destroy();
-        await vi.advanceTimersByTimeAsync(SETTLE_MS);
-        expect(model.size).toBe(size);
-    });
-
-    it('ignores resizes after destroy', async () => {
-        const model = await createModelAsync(),
-            {size} = model;
-
         model.destroy();
         resizeWindow(640, 480);
         await vi.advanceTimersByTimeAsync(SETTLE_MS);

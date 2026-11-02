@@ -66,6 +66,7 @@ export class ViewportSizeModel extends HoistModel {
     //---------------------
     // Debounced to account for slow inner window resize on mobile. A single 100ms debounce does
     // appear to reliably catch resize events even on problematic mobile browsers (see above).
+    // A lodash debounce rather than `@debounced`, because destroy() must cancel a pending call.
     private readonly setViewportSize = debounce(() => {
         runInAction(
             () =>

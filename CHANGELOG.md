@@ -66,9 +66,6 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 
 ### 🐞 Bug Fixes
 
-* Fixed a rare `window is not defined` error after a spec file that uses `@xh/hoist/test-support`
-  finished. The test kit now destroys `ViewportSizeModel` at teardown, which cancels its pending
-  resize timers.
 * `GridModel.localExport` now exports every cell's raw value, as copy and `exportAsync` do. It had
   called a column's `agOptions.valueFormatter` with a bare value, which exported blanks.
 * Fixed a column's `agOptions.cellClassRules` replacing its own `cellClassRules`, flags and editable
@@ -92,6 +89,9 @@ detailed, step-by-step upgrade instructions with before/after code examples.
   element rather than to the `<input>` itself.
 * Fixed `Markdown` rendering "No model found" in place of its content when no Hoist model was in
   context, such as inside another React library's components.
+* Fixed a rare `window is not defined` error after a spec file that uses `@xh/hoist/test-support`
+  finished. The test kit now destroys `ViewportSizeModel` at teardown, which cancels its pending
+  resize timers.
 
 ### ⚙️ Technical
 
