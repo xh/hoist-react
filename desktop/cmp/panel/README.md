@@ -408,8 +408,8 @@ screens), straddles the line so it is easy to grab.
   drag. With `resizeWhileDragging: false`, a thin accent line tracks the pointer.
 - Double-click the line to reset a resizable panel to its `defaultSize`. On a panel that is
   collapsible but not resizable, double-click toggles collapse.
-- Drag a collapsible panel well below its `minSize` to collapse it. The line turns orange and the
-  content dims to preview the collapse. Release to collapse, or drag back to cancel. The panel
+- Drag a collapsible panel well below its `minSize` to collapse it. The line turns orange, shows the
+  collapse chevron, and the content dims to preview the collapse. Release to collapse, or drag back to cancel. The panel
   keeps its pre-drag size for the next expand.
 - The splitter is focusable. Arrow keys resize by 10px, or 50px with Shift. Enter toggles
   collapse.

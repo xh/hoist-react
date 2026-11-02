@@ -32,6 +32,7 @@ export const splitter = hoistCmp.factory({
                 collapsible,
                 showSplitter,
                 showSplitterCollapseButton,
+                resizeWhileDragging,
                 isResizing,
                 size,
                 minSize,
@@ -80,6 +81,12 @@ export const splitter = hoistCmp.factory({
                         e.stopPropagation();
                         panelModel.toggleCollapsed();
                     }
+                }),
+                // Drag-to-collapse cue. Without live resizing, the ghost line shows it instead.
+                div({
+                    className: 'xh-panel-splitter-snap-badge',
+                    item: collapseToggleIcon(panelModel),
+                    omit: !snapPending || !resizeWhileDragging
                 })
             ]
         });

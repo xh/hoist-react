@@ -1,3 +1,42 @@
+// Round chevron badge centered on a splitter line - the hover collapse button and the
+// drag-to-collapse badge.
+%xh-panel-splitter-badge {
+  position: absolute;
+  top: calc(50% - 11px);
+  left: calc(50% - 11px);
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  margin: 0;
+  padding: 0;
+  border-radius: 50%;
+  box-shadow: 0 1px 3px rgb(0 0 0 / 25%);
+  font-size: 12px;
+  line-height: 1;
+
+  svg {
+    display: block;
+  }
+
+  // Font Awesome chevron paths sit ~0.75px off-center toward their point. Nudge them back.
+  .fa-chevron-left {
+    transform: translateX(0.75px);
+  }
+
+  .fa-chevron-right {
+    transform: translateX(-0.75px);
+  }
+
+  .fa-chevron-up {
+    transform: translateY(0.75px);
+  }
+
+  .fa-chevron-down {
+    transform: translateY(-0.75px);
+  }
+}
+
 // Panel splitter - a 1px line with an invisible hit area that straddles it. An accent line and
 // collapse button fade in after a short hover delay, or at once when focused or dragging.
 .xh-panel-splitter {
@@ -110,23 +149,11 @@
   // Collapse button
   //------------------
   &__btn {
-    position: absolute;
+    @extend %xh-panel-splitter-badge;
     z-index: 3;
-    top: calc(50% - 11px);
-    left: calc(50% - 11px);
-    display: grid;
-    place-items: center;
-    width: 22px;
-    height: 22px;
-    margin: 0;
-    padding: 0;
-    border-radius: 50%;
     border: 1px solid var(--xh-panel-splitter-button-border-color);
     background-color: var(--xh-panel-splitter-button-bg);
-    box-shadow: 0 1px 3px rgb(0 0 0 / 25%);
     color: var(--xh-panel-splitter-button-icon-color);
-    font-size: 12px;
-    line-height: 1;
     cursor: pointer;
     // Hidden, not just transparent, until revealed - so it cannot catch a click (or block a drag)
     // during the hover delay. Visibility flips at the end of the delay, and after the fade out.
@@ -137,27 +164,6 @@
     transition-duration: 120ms, 120ms, 0ms, 100ms, 100ms;
     transition-timing-function: ease-out, ease-out, linear, ease, ease;
     transition-delay: 0ms, 0ms, 120ms, 0ms, 0ms;
-
-    svg {
-      display: block;
-    }
-
-    // Font Awesome chevron paths sit ~0.75px off-center toward their point. Nudge them back.
-    .fa-chevron-left {
-      transform: translateX(0.75px);
-    }
-
-    .fa-chevron-right {
-      transform: translateX(-0.75px);
-    }
-
-    .fa-chevron-up {
-      transform: translateY(0.75px);
-    }
-
-    .fa-chevron-down {
-      transform: translateY(-0.75px);
-    }
 
     &:hover {
       background-color: var(--xh-panel-splitter-accent-color);
@@ -188,6 +194,24 @@
   }
 }
 
+// Collapse chevron shown on the line while a drag is past the drag-to-collapse threshold.
+.xh-panel-splitter-snap-badge {
+  @extend %xh-panel-splitter-badge;
+  z-index: 4;
+  pointer-events: none;
+  border: 1px solid var(--xh-panel-splitter-snap-color);
+  background-color: var(--xh-panel-splitter-snap-color);
+  color: white;
+  animation: xh-panel-splitter-snap-badge-in 120ms ease-out;
+}
+
+@keyframes xh-panel-splitter-snap-badge-in {
+  from {
+    opacity: 0;
+    transform: scale(0.85);
+  }
+}
+
 // Accent line that tracks the pointer while dragging, when the panel does not resize live.
 .xh-panel-splitter-ghost {
   position: absolute;
@@ -205,6 +229,10 @@
 
   &--snap {
     background-color: var(--xh-panel-splitter-snap-color);
+  }
+
+  &:not(&--snap) > .xh-panel-splitter-snap-badge {
+    display: none;
   }
 }
 

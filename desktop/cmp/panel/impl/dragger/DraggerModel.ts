@@ -11,6 +11,7 @@ import {createObservableRef} from '@xh/hoist/utils/react';
 import {clamp, throttle} from 'lodash';
 import type {KeyboardEvent} from 'react';
 import {PanelModel} from '../../PanelModel';
+import {collapseToggleIcon} from '../CollapseToggleIcon';
 
 /** Arrow keys that grow (+1) or shrink (-1) a panel, by the side it collapses toward. */
 const ARROW_KEY_DIRS = {
@@ -246,6 +247,13 @@ export class DraggerModel extends HoistModel {
             style.top = `${panelEl.offsetTop}px`;
             style.height = `${panelEl.offsetHeight}px`;
         }
+
+        // Drag-to-collapse cue, shown by CSS while the ghost has its snap class.
+        const badge = document.createElement('div');
+        badge.className = 'xh-panel-splitter-snap-badge';
+        badge.innerHTML = collapseToggleIcon(this.panelModel, {asHtml: true});
+        ret.appendChild(badge);
+
         panelEl.parentElement.appendChild(ret);
         return ret;
     }
