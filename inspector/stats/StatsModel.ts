@@ -7,7 +7,6 @@
 import {ChartModel} from '@xh/hoist/cmp/chart';
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {HoistModel, XH} from '@xh/hoist/core';
-import {PanelModel} from '@xh/hoist/desktop/cmp/panel';
 import {fmtDate, numberRenderer} from '@xh/hoist/format';
 
 /**
@@ -18,23 +17,17 @@ export class StatsModel extends HoistModel {
 
     override persistWith = {localStorageKey: `xhInspector.${XH.clientAppCode}.stats`};
 
-    panelModel: PanelModel;
     gridModel: GridModel;
     chartModel: ChartModel;
 
+    /** Sync run of the selected stat - null for stats recorded by a previous page load. */
     get selectedSyncRun(): number {
-        return this.gridModel.selectedRecord?.data.syncRun;
+        const {data} = this.gridModel.selectedRecord ?? {};
+        return data?.loadId === XH.loadId ? data.syncRun : null;
     }
 
     constructor() {
         super();
-
-        this.panelModel = new PanelModel({
-            side: 'left',
-            defaultSize: 450,
-            persistWith: this.persistWith,
-            xhImpl: true
-        });
 
         this.gridModel = new GridModel({
             colChooserModel: true,
@@ -105,13 +98,13 @@ export class StatsModel extends HoistModel {
                         title: {text: '# Models'},
                         allowDecimals: false,
                         opposite: true,
-                        height: '70%'
+                        height: '80%'
                     },
-                    {title: {text: 'Used JS Heap (mb)'}, height: '70%'},
+                    {title: {text: 'Used JS Heap (mb)'}, height: '80%'},
                     {
                         title: {text: '#Δ'},
-                        height: '20%',
-                        top: '80%',
+                        height: '15%',
+                        top: '85%',
                         offset: 0,
                         opposite: true,
                         plotLines: [

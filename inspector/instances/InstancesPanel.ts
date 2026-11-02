@@ -4,74 +4,25 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {grid, gridCountLabel} from '@xh/hoist/cmp/grid';
-import {a, div, filler, hframe, hspacer, p, span} from '@xh/hoist/cmp/layout';
-import {storeFilterField} from '@xh/hoist/cmp/store';
+import {hframe} from '@xh/hoist/cmp/layout';
 import {tabContainer} from '@xh/hoist/cmp/tab';
-import {creates, hoistCmp, useContextModel} from '@xh/hoist/core';
-import {button} from '@xh/hoist/desktop/cmp/button';
-import {buttonGroupInput} from '@xh/hoist/desktop/cmp/input';
+import {creates, hoistCmp} from '@xh/hoist/core';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
-import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {Icon} from '@xh/hoist/icon';
-import {InspectorModel} from '@xh/hoist/inspector/InspectorModel';
-import {diagnosticsPanel} from '@xh/hoist/inspector/instances/DiagnosticsPanel';
+import {diagnosticsPanel} from '@xh/hoist/inspector/instances/details/DiagnosticsPanel';
 import {InstancesModel} from '@xh/hoist/inspector/instances/InstancesModel';
-import {popover} from '@xh/hoist/kit/blueprint';
+import {propertiesPanel} from '@xh/hoist/inspector/instances/details/PropertiesPanel';
 
 export const instancesPanel = hoistCmp.factory({
     model: creates(InstancesModel),
 
     render({model}) {
-        const {instancesPanelModel, selectedSyncRun} = model,
-            // Re-parent grid popups (context/column menus) when Inspector is detached.
-            popupParent = useContextModel(InspectorModel)?.windowContainer ?? undefined,
-            headerItems = [];
-
-        if (selectedSyncRun) {
-            headerItems.push(
-                popover({
-                    interactionKind: 'hover',
-                    item: span(Icon.filter(), ` registered @ sync run ${selectedSyncRun}`),
-                    content: div({
-                        className: 'xh-pad',
-                        style: {width: '300px'},
-                        items: [
-                            p('Triggered by your selection in the Stats grid.'),
-                            p(
-                                'Focuses this grid on instances created around the same time, in-between batched updates to stats.'
-                            ),
-                            p(
-                                'Useful for isolating clusters of models created together as part of an interaction or handler.'
-                            ),
-                            p(
-                                a({
-                                    item: '(click to clear)',
-                                    onClick: () => model.statsModel.gridModel.clearSelection()
-                                })
-                            )
-                        ]
-                    })
-                }),
-                hspacer()
-            );
-        }
+        const {instancesPanelModel, navTabModel} = model;
 
         return panel({
             item: hframe(
                 panel({
-                    title: `Models · Services · Data`,
-                    headerItems,
-                    icon: Icon.cube(),
-                    compactHeader: true,
-                    item: grid({
-                        model: model.instancesGridModel,
-                        agOptions: {
-                            suppressGroupChangesColumnVisibility: true,
-                            popupParent
-                        }
-                    }),
-                    bbar: instanceGridBar(),
+                    item: tabContainer({model: navTabModel}),
                     model: instancesPanelModel
                 }),
                 tabContainer({
@@ -82,12 +33,12 @@ export const instancesPanel = hoistCmp.factory({
                             {
                                 id: 'properties',
                                 icon: Icon.fileText(),
-                                content: propertiesView
+                                content: () => propertiesPanel({model: model.propertiesModel})
                             },
                             {
                                 id: 'diagnostics',
                                 icon: Icon.gauge(),
-                                content: diagnosticsView
+                                content: () => diagnosticsPanel({model: model.diagnosticsModel})
                             }
                         ]
                     }
@@ -95,103 +46,4 @@ export const instancesPanel = hoistCmp.factory({
             )
         });
     }
-});
-
-const propertiesView = hoistCmp.factory<InstancesModel>({
-    render({model}) {
-        // Re-parent grid popups (context/column menus) when Inspector is detached.
-        const popupParent = useContextModel(InspectorModel)?.windowContainer ?? undefined;
-        return panel({
-            item: grid({model: model.propertiesGridModel, agOptions: {popupParent}}),
-            bbar: propertiesGridBar()
-        });
-    }
-});
-
-const diagnosticsView = hoistCmp.factory<InstancesModel>({
-    render({model}) {
-        return diagnosticsPanel({model: model.diagnosticsModel});
-    }
-});
-
-const instanceGridBar = hoistCmp.factory<InstancesModel>(({model}) => {
-    const {instancesGridModel} = model;
-    return toolbar({
-        items: [
-            buttonGroupInput({
-                bind: 'instQuickFilters',
-                enableMulti: true,
-                outlined: true,
-                items: [
-                    button({
-                        text: 'Grouped',
-                        value: 'showInGroups'
-                    }),
-                    button({
-                        text: 'xhImpl',
-                        value: 'showXhImpl',
-                        tooltip:
-                            'Show instances created as part of internal Hoist model/component implementations'
-                    }),
-                    button({
-                        text: 'Favorites',
-                        value: 'favoritesOnly',
-                        tooltip:
-                            'Show only favorited instances, including any not currently alive. Star any instance with an xhName to favorite it - favorites persist across reloads.'
-                    })
-                ]
-            }),
-            filler(),
-            gridCountLabel({unit: 'instance', gridModel: instancesGridModel}),
-            '-',
-            storeFilterField({
-                gridModel: instancesGridModel,
-                bind: 'instancesStoreFilter',
-                matchMode: 'any'
-            })
-        ]
-    });
-});
-
-const propertiesGridBar = hoistCmp.factory<InstancesModel>(({model}) => {
-    const {propertiesGridModel} = model;
-    return toolbar({
-        items: [
-            buttonGroupInput({
-                bind: 'propQuickFilters',
-                enableMulti: true,
-                outlined: true,
-                items: [
-                    button({
-                        text: 'Own only',
-                        value: 'ownPropsOnly',
-                        tooltip:
-                            'Show only properties held directly by the instance, not its prototype / superclass'
-                    }),
-                    button({
-                        icon: Icon.eye(),
-                        text: 'only',
-                        value: 'observablePropsOnly',
-                        tooltip: 'Show only Observable properties (including getters)'
-                    }),
-                    button({
-                        text: '_ props',
-                        value: 'showUnderscoreProps',
-                        tooltip: 'Include properties that begin with an underscore'
-                    })
-                ]
-            }),
-            '-',
-            button({
-                text: 'Load getters',
-                icon: Icon.ellipsisHorizontal(),
-                outlined: true,
-                onClick: () => model.loadAllCurrentGetters()
-            }),
-            filler(),
-            gridCountLabel({unit: 'props', gridModel: propertiesGridModel}),
-            '-',
-            storeFilterField({gridModel: propertiesGridModel, matchMode: 'any'})
-        ]
-    });
 });
