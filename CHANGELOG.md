@@ -47,7 +47,8 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 
 * Redesigned desktop panel splitters as a 1px line with a wider invisible grab area. An accent
   line and collapse button fade in on hover. Splitters also support keyboard resizing,
-  double-click to reset size, and drag-to-collapse.
+  double-click to reset size, and drag-to-collapse. Set `PanelConfig.dragToCollapse: false` to turn
+  off drag-to-collapse.
 * Added a clickable rail for collapsed panels that have no title or icon, so they stay easy to find
   and expand. Set `PanelConfig.showCollapsedRail: false` to turn it off. A single click on any
   collapsed panel header now expands the panel.

@@ -111,6 +111,12 @@ describe('PanelModel', () => {
             expect(model.showHeaderCollapseButton).toBe(false);
         });
 
+        it('enables drag-to-collapse by default, unless disabled or not collapsible', () => {
+            expect(createPanel().dragToCollapse).toBe(true);
+            expect(createPanel({dragToCollapse: false}).dragToCollapse).toBe(false);
+            expect(createPanel({collapsible: false}).dragToCollapse).toBe(false);
+        });
+
         it('shows the collapsed rail by default, unless disabled or not collapsible', () => {
             expect(createPanel().showCollapsedRail).toBe(true);
             expect(createPanel({showCollapsedRail: false}).showCollapsedRail).toBe(false);

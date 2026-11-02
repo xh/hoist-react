@@ -40,6 +40,13 @@ export interface PanelConfig {
     /** Redraw panel as resize happens? */
     resizeWhileDragging?: boolean;
 
+    /**
+     * Collapse the panel when the user drags its splitter well below its minSize - half of
+     * minSize, or 24px if that is larger. Only applicable if the panel is collapsible and
+     * resizable. Default true.
+     */
+    dragToCollapse?: boolean;
+
     /** Can panel be collapsed, showing only its header? */
     collapsible?: boolean;
 
@@ -146,6 +153,7 @@ export class PanelModel extends HoistModel implements Persistable<PanelPersistSt
     //-----------------------
     readonly resizable: boolean;
     readonly collapsible: boolean;
+    readonly dragToCollapse: boolean;
     readonly defaultSize: number | string;
     readonly minSize: number;
     readonly maxSize: number;
@@ -223,6 +231,7 @@ export class PanelModel extends HoistModel implements Persistable<PanelPersistSt
         collapsible = true,
         resizable = true,
         resizeWhileDragging = false,
+        dragToCollapse = true,
         defaultSize,
         minSize = 0,
         maxSize = null,
@@ -273,6 +282,7 @@ export class PanelModel extends HoistModel implements Persistable<PanelPersistSt
         this.collapsible = collapsible;
         this.resizable = resizable;
         this.resizeWhileDragging = resizeWhileDragging;
+        this.dragToCollapse = collapsible && resizable && dragToCollapse;
         this.size = this.defaultSize = defaultSize;
         this.minSize = minSize;
         this.maxSize = maxSize;
