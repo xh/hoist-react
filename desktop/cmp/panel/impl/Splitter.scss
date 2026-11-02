@@ -1,40 +1,169 @@
-.xh-resizable-splitter {
-  background-color: var(--xh-resizable-bg);
-  justify-content: center;
-  align-items: center;
+// Panel splitter - a 1px line with an invisible hit area that straddles it. An accent line and
+// collapse button fade in after a short hover delay, or at once when focused or dragging.
+.xh-panel-splitter {
+  position: relative;
+  flex: none;
+  z-index: 5;
+  outline: none;
+  background-color: var(--xh-panel-splitter-line-color);
 
-  .xh-resizable-collapser-btn {
-    color: var(--xh-resizable-button-icon-color) !important;
+  &--ew {
+    width: 1px;
+  }
+
+  &--ns {
+    height: 1px;
+  }
+
+  &--no-line {
+    background-color: transparent;
+
+    &.xh-panel-splitter--ew {
+      width: 0;
+    }
+
+    &.xh-panel-splitter--ns {
+      height: 0;
+    }
+  }
+
+  &__hit {
+    position: absolute;
+    z-index: 1;
+    touch-action: none;
+  }
+
+  &--ew > &__hit {
+    top: 0;
+    bottom: 0;
+    left: calc(50% - var(--xh-panel-splitter-hit-size-px) / 2);
+    width: var(--xh-panel-splitter-hit-size-px);
+  }
+
+  &--ns > &__hit {
+    left: 0;
+    right: 0;
+    top: calc(50% - var(--xh-panel-splitter-hit-size-px) / 2);
+    height: var(--xh-panel-splitter-hit-size-px);
+  }
+
+  &--resizable.xh-panel-splitter--ew > &__hit {
+    cursor: col-resize;
+  }
+
+  &--resizable.xh-panel-splitter--ns > &__hit {
+    cursor: row-resize;
+  }
+
+  //------------------
+  // Accent line
+  //------------------
+  &__accent {
+    position: absolute;
+    z-index: 2;
+    pointer-events: none;
+    opacity: 0;
+    background-color: var(--xh-panel-splitter-accent-color);
+    transition: opacity 120ms ease-out 0ms;
+  }
+
+  &--ew > &__accent {
+    top: 0;
+    bottom: 0;
+    left: calc(50% - 1.5px);
+    width: 3px;
+  }
+
+  &--ns > &__accent {
+    left: 0;
+    right: 0;
+    top: calc(50% - 1.5px);
+    height: 3px;
+  }
+
+  &--resizable:hover > &__accent {
+    opacity: 1;
+    transition-delay: var(--xh-panel-splitter-hover-delay);
+  }
+
+  &--collapsible-only:hover > &__accent {
+    opacity: 0.4;
+    transition-delay: var(--xh-panel-splitter-hover-delay);
+  }
+
+  &:focus-visible > &__accent {
+    opacity: 1;
+    transition-delay: 0ms;
+  }
+
+  &--dragging > &__accent {
+    opacity: 1;
+    transition: none;
+    background-color: var(--xh-panel-splitter-accent-active-color);
+  }
+
+  &--snap > &__accent {
+    background-color: var(--xh-panel-splitter-snap-color);
+  }
+
+  //------------------
+  // Collapse button
+  //------------------
+  &__btn {
+    position: absolute;
+    z-index: 3;
+    top: calc(50% - 11px);
+    left: calc(50% - 11px);
+    display: grid;
+    place-items: center;
+    width: 22px;
+    height: 22px;
     margin: 0;
     padding: 0;
-    z-index: 10;
-  }
+    border-radius: 50%;
+    border: 1px solid var(--xh-panel-splitter-button-border-color);
+    background-color: var(--xh-panel-splitter-button-bg);
+    box-shadow: 0 1px 3px rgb(0 0 0 / 25%);
+    color: var(--xh-panel-splitter-button-icon-color);
+    font-size: 12px;
+    line-height: 1;
+    cursor: pointer;
+    opacity: 0;
+    pointer-events: none;
+    transform: scale(0.85);
+    transition:
+      opacity 120ms ease-out 0ms,
+      transform 120ms ease-out 0ms,
+      background-color 100ms,
+      border-color 100ms;
 
-  &.vertical {
-    height: var(--xh-resizable-size-px);
-    border-top: var(--xh-resizable-border-width-px) solid var(--xh-resizable-border-color);
-    border-bottom: var(--xh-resizable-border-width-px) solid var(--xh-resizable-border-color);
+    svg {
+      display: block;
+    }
 
-    .xh-resizable-collapser-btn {
-      width: 50px;
-      height: 10px;
-      background-color: var(--xh-resizable-button-bg) !important;
-      border-left: 1px solid var(--xh-resizable-border-color) !important;
-      border-right: 1px solid var(--xh-resizable-border-color) !important;
+    &:hover {
+      background-color: var(--xh-panel-splitter-accent-color);
+      border-color: var(--xh-panel-splitter-accent-color);
+      color: white;
     }
   }
 
-  &.horizontal {
-    width: var(--xh-resizable-size-px);
-    border-left: var(--xh-resizable-border-width-px) solid var(--xh-resizable-border-color);
-    border-right: var(--xh-resizable-border-width-px) solid var(--xh-resizable-border-color);
+  &:hover > &__btn {
+    opacity: 1;
+    pointer-events: auto;
+    transform: none;
+    transition-delay: var(--xh-panel-splitter-hover-delay);
+  }
 
-    .xh-resizable-collapser-btn {
-      width: 10px;
-      height: 50px;
-      background-color: var(--xh-resizable-button-bg) !important;
-      border-bottom: 1px solid var(--xh-resizable-border-color) !important;
-      border-top: 1px solid var(--xh-resizable-border-color) !important;
-    }
+  &:focus-visible > &__btn {
+    opacity: 1;
+    pointer-events: auto;
+    transform: none;
+    transition-delay: 0ms;
+  }
+
+  &--dragging > &__btn {
+    opacity: 0 !important;
+    pointer-events: none !important;
   }
 }

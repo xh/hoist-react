@@ -5,10 +5,20 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {HoistModel, lookup, XH} from '@xh/hoist/core';
+import {observable} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
 import {createObservableRef} from '@xh/hoist/utils/react';
 import {clamp, throttle} from 'lodash';
+import type {KeyboardEvent} from 'react';
 import {PanelModel} from '../../PanelModel';
+
+/** Arrow keys that grow (+1) or shrink (-1) a panel, by the side it collapses toward. */
+const ARROW_KEY_DIRS = {
+    left: {ArrowRight: 1, ArrowLeft: -1},
+    right: {ArrowLeft: 1, ArrowRight: -1},
+    top: {ArrowDown: 1, ArrowUp: -1},
+    bottom: {ArrowUp: 1, ArrowDown: -1}
+};
 
 export class DraggerModel extends HoistModel {
     override xhImpl = true;
@@ -16,7 +26,11 @@ export class DraggerModel extends HoistModel {
     @lookup(PanelModel)
     panelModel: PanelModel;
 
-    ref = createObservableRef();
+    /** The splitter's hit area element, which starts a drag. */
+    ref = createObservableRef<HTMLDivElement>();
+
+    /** True while a drag is past the drag-to-collapse threshold. */
+    @observable accessor snapPending = false;
 
     resizeState = null;
     startSize = null;
@@ -26,6 +40,44 @@ export class DraggerModel extends HoistModel {
     dragBar = null;
     maxSize = null;
     throttledSetSize;
+
+    /** True if the panel can be resized now - i.e. it is resizable and not collapsed. */
+    get canResize(): boolean {
+        const {resizable, collapsed} = this.panelModel;
+        return resizable && !collapsed;
+    }
+
+    /** Reset a resizable panel to its default size, or toggle a collapsible-only panel. */
+    onDoubleClick = () => {
+        const {panelModel} = this;
+        if (this.canResize) {
+            panelModel.size = panelModel.defaultSize;
+        } else if (panelModel.collapsible) {
+            panelModel.toggleCollapsed();
+        }
+    };
+
+    /** Resize with the arrow keys (Shift for larger steps) and toggle collapse with Enter. */
+    onKeyDown = (e: KeyboardEvent) => {
+        const {panelModel} = this,
+            panelEl = panelModel._resizeRef?.current,
+            dir = ARROW_KEY_DIRS[panelModel.side]?.[e.key];
+
+        if (e.key === 'Enter' && panelModel.collapsible) {
+            panelModel.toggleCollapsed();
+        } else if (dir && this.canResize && panelEl) {
+            const currSize = this.getContentSize(panelEl),
+                maxSize = this.getMaxSize(currSize, panelEl);
+            panelModel.size = clamp(
+                currSize + dir * (e.shiftKey ? 50 : 10),
+                panelModel.minSize,
+                maxSize
+            );
+        } else {
+            return;
+        }
+        e.preventDefault();
+    };
 
     override onLinked() {
         this.throttledSetSize = throttle(size => (this.panelModel.size = size), 50);
@@ -89,7 +141,7 @@ export class DraggerModel extends HoistModel {
         }
 
         // We will use whichever is smaller - the calculated available size, or the configured max size
-        const calcMaxSize = this.startSize + this.getSiblingAvailSize();
+        const calcMaxSize = this.startSize + this.getSiblingAvailSize(panel);
         this.maxSize = panelModel.maxSize ? Math.min(panelModel.maxSize, calcMaxSize) : calcMaxSize;
     };
 
@@ -242,19 +294,37 @@ export class DraggerModel extends HoistModel {
         }
     }
 
-    private getSiblingAvailSize() {
-        const {panelModel, panelEl} = this,
-            sib = panelModel.contentFirst
-                ? panelEl.nextElementSibling
-                : panelEl.previousElementSibling,
-            sibIsResizable = sib.classList.contains('xh-resizable'),
-            sibSplitter = sibIsResizable ? sib.querySelector('.xh-resizable-splitter') : null;
+    /** Size of the panel itself along its sizing dimension, excluding its splitter line. */
+    private getContentSize(panelEl: HTMLElement): number {
+        return this.getDimSize(panelEl) - this.getDimSize(this.panelModel.splitterRef.current);
+    }
 
-        // Use 'clientWidth/Height', not 'offsetWidth/Height' here, because clientHeight does not count borders.
-        // Flexbox does not collapse borders when resizing.
-        return panelModel.vertical
-            ? sib.clientHeight - (sibIsResizable ? sibSplitter.offsetHeight : 0)
-            : sib.clientWidth - (sibIsResizable ? sibSplitter.offsetWidth : 0);
+    /** Max size the panel can reach - its configured max or all the room its sibling has. */
+    private getMaxSize(currSize: number, panelEl: HTMLElement): number {
+        const sibAvail = this.getSiblingAvailSize(panelEl),
+            calcMax = sibAvail == null ? Infinity : currSize + sibAvail,
+            {maxSize} = this.panelModel;
+        return maxSize ? Math.min(maxSize, calcMax) : calcMax;
+    }
+
+    /** Room the sibling panel can give up, or null if there is no sibling. */
+    private getSiblingAvailSize(panelEl: HTMLElement): number {
+        const {contentFirst, vertical} = this.panelModel,
+            sib = (
+                contentFirst ? panelEl.nextElementSibling : panelEl.previousElementSibling
+            ) as HTMLElement;
+        if (!sib) return null;
+
+        // A resizable sibling cannot give up the room taken by its own splitter. Use client
+        // (not offset) size, which excludes borders - flexbox does not collapse them on resize.
+        const sibSplitter = sib.querySelector<HTMLElement>(':scope > .xh-panel-splitter'),
+            sibSize = vertical ? sib.clientHeight : sib.clientWidth;
+        return sibSize - this.getDimSize(sibSplitter);
+    }
+
+    private getDimSize(el: HTMLElement): number {
+        if (!el) return 0;
+        return this.panelModel.vertical ? el.offsetHeight : el.offsetWidth;
     }
 
     private parseEventPositions(e) {

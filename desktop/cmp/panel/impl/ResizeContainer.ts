@@ -10,7 +10,6 @@ import {hoistCmp, useContextModel} from '@xh/hoist/core';
 import {isString} from 'lodash';
 import {Children} from 'react';
 import {PanelModel} from '../PanelModel';
-import {dragger} from './dragger/Dragger';
 import {splitter} from './Splitter';
 
 export const resizeContainer = hoistCmp.factory({
@@ -23,19 +22,18 @@ export const resizeContainer = hoistCmp.factory({
             {size, resizable, collapsed, vertical, contentFirst, showSplitter} = panelModel,
             dim = vertical ? 'height' : 'width',
             child = Children.only(children),
-            dragBarWidth = showSplitter ? '8px' : '0px',
+            splitterSize = showSplitter ? '1px' : '0px',
             sizeIsPct = isString(size) && size.endsWith('%');
 
-        const boxSize = sizeIsPct ? `calc(100% - ${dragBarWidth})` : size;
-        let items = [collapsed ? box(child) : box({item: child, [dim]: boxSize})];
+        const boxSize = sizeIsPct ? `calc(100% - ${splitterSize})` : size;
+        // Keyed so content is never remounted when a line-less splitter comes or goes.
+        let items = [box({key: 'content', item: child, [dim]: collapsed ? null : boxSize})];
 
-        if (showSplitter) {
-            const splitterCmp = splitter();
+        // Without a visible splitter, a resizable panel still gets a line-less splitter as its
+        // hit area for dragging and keyboard resizing.
+        if (showSplitter || (resizable && !collapsed)) {
+            const splitterCmp = splitter({key: 'splitter'});
             items = contentFirst ? [...items, splitterCmp] : [splitterCmp, ...items];
-        }
-
-        if (!collapsed && resizable) {
-            items.push(dragger());
         }
 
         const cmp = vertical ? vbox : hbox,
@@ -51,7 +49,7 @@ export const resizeContainer = hoistCmp.factory({
             flex: 'none',
             [dim]: cmpSize,
             [maxDim]: '100%',
-            [minDim]: dragBarWidth,
+            [minDim]: splitterSize,
             testId,
             domAttrs,
             items
