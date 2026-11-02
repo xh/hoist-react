@@ -415,27 +415,17 @@ in the table above.
 
 ### Splitter
 
-The splitter is a 1px line at the panel edge. An invisible hit area, 8px wide (20px on touch
-screens), straddles the line so it is easy to grab.
+The splitter is a 1px line with an invisible 8px grab area (20px on touch screens). On hover, an
+accent line and a collapse button fade in.
 
-- After a short hover delay, an accent line fades in. On a collapsible panel, a round collapse
-  button also appears in the middle of the line.
-- Drag the line to resize. The resize cursor holds steady over grids and other content while you
-  drag. With `resizeWhileDragging: false`, a thin accent line tracks the pointer.
-- Double-click the line to reset a resizable panel to its `defaultSize`. On a panel that is
-  collapsible but not resizable, double-click toggles collapse.
-- Drag a collapsible panel below half its `minSize`, or below 24px if that is larger, to collapse
-  it. The line turns orange, shows the collapse chevron, and the content dims to preview the
-  collapse. Release to collapse, or drag back to cancel. The panel keeps its pre-drag size for the
-  next expand.
+- Drag to resize. Double-click to reset to `defaultSize`.
+- Drag a collapsible panel below half its `minSize` (at least 24px) to collapse it. The line turns
+  orange and the content dims to preview the collapse. Drag back to cancel.
 - The splitter is focusable. Arrow keys resize by 10px, or 50px with Shift. Enter toggles
   collapse.
 
-A resizable panel with `showSplitter: false` and `resizeWhileDragging: true` has no visible line,
-but still has the hit area, hover accent, and keyboard support.
-
-The splitter has its own `--xh-panel-splitter-*` CSS variables for its line, accent, hit size,
-hover delay, and button. The rail uses `--xh-panel-collapsed-rail-*`.
+Style it with the `--xh-panel-splitter-*` CSS variables. The rail uses
+`--xh-panel-collapsed-rail-*`.
 
 ### Collapse Behavior
 

@@ -155,8 +155,7 @@
     background-color: var(--xh-panel-splitter-button-bg);
     color: var(--xh-panel-splitter-button-icon-color);
     cursor: pointer;
-    // Hidden, not just transparent, until revealed - so it cannot catch a click (or block a drag)
-    // during the hover delay. Visibility flips at the end of the delay, and after the fade out.
+    // Hidden, not just transparent, so it cannot catch a click or block a drag before it shows.
     opacity: 0;
     visibility: hidden;
     transform: scale(0.85);

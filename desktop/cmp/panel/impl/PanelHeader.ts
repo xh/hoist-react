@@ -59,9 +59,8 @@ export const panelHeader = hoistCmp.factory({
             displayedHeaderItems.push(collapseToggleButton({panelModel}));
         }
 
-        // A single click anywhere on a collapsed header expands it. Flag that expand so the
-        // double-click it may start does not re-collapse the panel. The first click of any new
-        // sequence (detail 1) clears the flag, whatever the OS double-click interval.
+        // A click on a collapsed header expands it. Flag that expand so a double-click it starts
+        // does not re-collapse the panel.
         const clickToExpand = isRenderedCollapsed && collapsible,
             onClick = (e: MouseEvent) => {
                 if (clickToExpand) {

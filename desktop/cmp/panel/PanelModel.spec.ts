@@ -141,7 +141,6 @@ describe('PanelModel', () => {
             expect(model.showHeaderCollapseButton).toBe(false);
         });
 
-        // Restores the header chevron on expanded panels app-wide, as before the splitter redesign.
         it('shows the header collapse button on expanded panels when defaulted to true', () => {
             setDefaults({showHeaderCollapseButton: true});
             expect(createPanel().showHeaderCollapseButton).toBe(true);
