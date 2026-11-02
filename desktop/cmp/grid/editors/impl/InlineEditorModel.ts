@@ -4,16 +4,19 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {CustomCellEditorProps, useGridCellEditor} from '@xh/hoist/kit/ag-grid';
-import {GridModel} from '@xh/hoist/cmp/grid';
-import {HoistInputModel} from '@xh/hoist/cmp/input';
-import {ElementFactory, HoistModel, useLocalModel} from '@xh/hoist/core';
-import {EditorProps} from '@xh/hoist/desktop/cmp/grid/editors/EditorProps';
+import type {CustomCellEditorProps} from '@xh/hoist/kit/ag-grid';
+import {useGridCellEditor} from '@xh/hoist/kit/ag-grid';
+import type {GridModel} from '@xh/hoist/cmp/grid';
+import type {HoistInputModel} from '@xh/hoist/cmp/input';
+import type {ElementFactory} from '@xh/hoist/core';
+import {HoistModel, useLocalModel} from '@xh/hoist/core';
+import type {EditorProps} from '@xh/hoist/desktop/cmp/grid/editors/EditorProps';
 import {bindable} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 import {useComposedRefs, createObservableRef} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
-import {ForwardedRef, ReactElement, useCallback} from 'react';
+import type {ForwardedRef, ReactElement} from 'react';
+import {useCallback} from 'react';
 
 /**
  * Hook to render a component to be used for inline cell editing in ag-grid.

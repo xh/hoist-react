@@ -5,18 +5,11 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {frame} from '@xh/hoist/cmp/layout';
-import {
-    Persistable,
-    PersistableState,
-    PersistenceProvider,
-    PlainObject,
-    RefreshMode,
-    RenderMode,
-    TaskObserver,
-    XH
-} from '@xh/hoist/core';
+import type {Persistable, PlainObject, RefreshMode, RenderMode} from '@xh/hoist/core';
+import {PersistableState, PersistenceProvider, TaskObserver, XH} from '@xh/hoist/core';
 import {DashContainerViewModel} from '@xh/hoist/desktop/cmp/dash/container/DashContainerViewModel';
-import {convertIconToHtml, ResolvedIconProps} from '@xh/hoist/icon';
+import type {ResolvedIconProps} from '@xh/hoist/icon';
+import {convertIconToHtml} from '@xh/hoist/icon';
 import {GoldenLayout} from '@xh/hoist/kit/golden-layout';
 import {action, bindable, runInAction, observableRef} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
@@ -35,9 +28,10 @@ import {
     startCase
 } from 'lodash';
 import {createRoot} from 'react-dom/client';
-import {DashConfig, DashModel} from '../';
-import {DashViewState} from '../DashViewModel';
-import {DashContainerViewSpec} from './DashContainerViewSpec';
+import type {DashConfig} from '../';
+import {DashModel} from '../';
+import type {DashViewState} from '../DashViewModel';
+import type {DashContainerViewSpec} from './DashContainerViewSpec';
 import {dashContainerContextMenu} from './impl/DashContainerContextMenu';
 import {dashContainerMenuButton} from './impl/DashContainerMenuButton';
 import {

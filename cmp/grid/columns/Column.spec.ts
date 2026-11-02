@@ -4,7 +4,8 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {Column, type ColumnSpec, GridModel} from '@xh/hoist/cmp/grid';
+import type {Column} from '@xh/hoist/cmp/grid';
+import {type ColumnSpec, GridModel} from '@xh/hoist/cmp/grid';
 import {required} from '@xh/hoist/data';
 import {wait} from '@xh/hoist/promise';
 import {initTestAppAsync} from '@xh/hoist/test-support';

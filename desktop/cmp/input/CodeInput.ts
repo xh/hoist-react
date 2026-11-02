@@ -10,38 +10,38 @@ import {
     historyKeymap,
     indentWithTab
 } from '@codemirror/commands';
+import type {LanguageDescription, LanguageSupport} from '@codemirror/language';
 import {
     foldGutter as foldGutterExtension,
     foldKeymap,
-    indentOnInput as indentOnInputExtension,
-    LanguageDescription,
-    LanguageSupport
+    indentOnInput as indentOnInputExtension
 } from '@codemirror/language';
 import {languages} from '@codemirror/language-data';
 import {linter as linterExtension, lintGutter as lintGutterExtension} from '@codemirror/lint';
 
+import type {Extension} from '@codemirror/state';
 import {
     Compartment,
     EditorState,
-    Extension,
     RangeSetBuilder,
     StateEffect,
     StateField
 } from '@codemirror/state';
+import type {DecorationSet, ViewUpdate} from '@codemirror/view';
 import {
     Decoration,
-    DecorationSet,
     EditorView,
     highlightActiveLine as highlightActiveLineExtension,
     highlightActiveLineGutter as highlightActiveLineGutterExtension,
     keymap,
     lineNumbers as lineNumbersExtension,
-    ViewPlugin,
-    ViewUpdate
+    ViewPlugin
 } from '@codemirror/view';
-import {HoistInputModel, HoistInputProps, useHoistInputModel} from '@xh/hoist/cmp/input';
+import type {HoistInputProps} from '@xh/hoist/cmp/input';
+import {HoistInputModel, useHoistInputModel} from '@xh/hoist/cmp/input';
 import {box, div, filler, fragment, frame, hbox, label, span, vbox} from '@xh/hoist/cmp/layout';
-import {hoistCmp, HoistProps, LayoutProps, managed, PlainObject, XH} from '@xh/hoist/core';
+import type {HoistProps, LayoutProps, PlainObject} from '@xh/hoist/core';
+import {hoistCmp, managed, XH} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {clipboardButton} from '@xh/hoist/desktop/cmp/clipboard';
 import {textInput} from '@xh/hoist/desktop/cmp/input/TextInput';
@@ -54,7 +54,7 @@ import {logError, logWarn, withDefault} from '@xh/hoist/utils/js';
 import {getLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import {compact, find, includes, isFunction, isNil, isObject} from 'lodash';
-import {ReactElement} from 'react';
+import type {ReactElement} from 'react';
 import './CodeInput.scss';
 import {githubLight, githubDark} from '@uiw/codemirror-theme-github';
 

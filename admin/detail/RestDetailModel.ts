@@ -6,7 +6,7 @@
  */
 import {FormModel} from '@xh/hoist/cmp/form';
 import {HoistModel, lookup, managed} from '@xh/hoist/core';
-import {StoreRecord} from '@xh/hoist/data';
+import type {StoreRecord} from '@xh/hoist/data';
 import {RestGridModel} from '@xh/hoist/desktop/cmp/rest';
 import {computed} from '@xh/hoist/mobx';
 

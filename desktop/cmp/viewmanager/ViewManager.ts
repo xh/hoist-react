@@ -7,23 +7,18 @@
 
 import {box, fragment, hbox} from '@xh/hoist/cmp/layout';
 import {spinner} from '@xh/hoist/cmp/spinner';
-import {
-    hoistCmp,
-    HoistProps,
-    MenuItemLike,
-    TestSupportProps,
-    useLocalModel,
-    uses
-} from '@xh/hoist/core';
+import type {HoistProps, MenuItemLike, TestSupportProps} from '@xh/hoist/core';
+import {hoistCmp, useLocalModel, uses} from '@xh/hoist/core';
 import {ViewManagerModel} from '@xh/hoist/cmp/viewmanager';
-import {button, ButtonProps} from '@xh/hoist/desktop/cmp/button';
+import type {ButtonProps} from '@xh/hoist/desktop/cmp/button';
+import {button} from '@xh/hoist/desktop/cmp/button';
 import {Icon} from '@xh/hoist/icon';
 import {popover} from '@xh/hoist/kit/blueprint';
 import {getTestId} from '@xh/hoist/utils/js';
 import {useOnVisibleChange} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import {startCase} from 'lodash';
-import {ReactElement} from 'react';
+import type {ReactElement} from 'react';
 import {viewMenu} from './ViewMenu';
 import {ViewManagerLocalModel} from './ViewManagerLocalModel';
 import {manageDialog} from './dialog/ManageDialog';

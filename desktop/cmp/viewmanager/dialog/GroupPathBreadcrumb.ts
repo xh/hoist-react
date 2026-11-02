@@ -7,7 +7,8 @@
 
 import {span} from '@xh/hoist/cmp/layout';
 import {splitGroupPath} from '@xh/hoist/cmp/viewmanager';
-import {hoistCmp, HoistProps} from '@xh/hoist/core';
+import type {HoistProps} from '@xh/hoist/core';
+import {hoistCmp} from '@xh/hoist/core';
 import classNames from 'classnames';
 import {isEmpty, last} from 'lodash';
 

@@ -5,7 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
-import {Store} from '@xh/hoist/data';
+import type {Store} from '@xh/hoist/data';
 import type {FilterSpec, FilterTestFn} from './Types';
 
 /**

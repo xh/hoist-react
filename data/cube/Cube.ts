@@ -5,21 +5,25 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
-import {AnyIterable, HoistBase, managed, PlainObject, Some} from '@xh/hoist/core';
+import type {AnyIterable, PlainObject, Some} from '@xh/hoist/core';
+import {HoistBase, managed} from '@xh/hoist/core';
 import {instanceManager} from '@xh/hoist/core/impl/InstanceManager';
 import {action, observableRef} from '@xh/hoist/mobx';
 import {forEachAsync} from '@xh/hoist/utils/async';
 import {throwIf} from '@xh/hoist/utils/js';
 import {defaultsDeep, isArray, isEmpty} from 'lodash';
-import {Store, StoreConfig, StoreRecordIdSpec, StoreTransaction} from '../Store';
-import {RecordSetDelta} from '../impl/RecordSet';
-import {StoreRecord} from '../StoreRecord';
-import {BucketSpec} from './BucketSpec';
-import {CubeField, CubeFieldSpec} from './CubeField';
-import {Query, QueryConfig} from './Query';
-import {ViewRow} from './ViewRow';
+import type {StoreConfig, StoreRecordIdSpec, StoreTransaction} from '../Store';
+import {Store} from '../Store';
+import type {RecordSetDelta} from '../impl/RecordSet';
+import type {StoreRecord} from '../StoreRecord';
+import type {BucketSpec} from './BucketSpec';
+import type {CubeFieldSpec} from './CubeField';
+import {CubeField} from './CubeField';
+import type {QueryConfig} from './Query';
+import {Query} from './Query';
+import type {ViewRow} from './ViewRow';
 import {View} from './View';
-import {ViewRowData} from './ViewRowData';
+import type {ViewRowData} from './ViewRowData';
 
 /**
  * Configuration for a {@link Cube}. Provide `fields` (including at least one dimension

@@ -7,10 +7,11 @@
 // Load the Admin Console as an app does - ConfigPanelModel alone hits an import cycle.
 import '@xh/hoist/admin/AppModel';
 import {ConfigPanelModel} from '@xh/hoist/admin/tabs/general/config/ConfigPanelModel';
-import {PlainObject, XH} from '@xh/hoist/core';
+import type {PlainObject} from '@xh/hoist/core';
+import {XH} from '@xh/hoist/core';
 import {hoistCore, initTestAppAsync} from '@xh/hoist/test-support';
 import {beforeAll, describe, expect, it, onTestFinished, vi} from 'vitest';
-import {DifferModel} from './DifferModel';
+import type {DifferModel} from './DifferModel';
 
 /**
  * The Admin Console config differ, which compares configs across environments and writes remote

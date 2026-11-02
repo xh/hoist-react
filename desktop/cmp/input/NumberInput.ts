@@ -4,29 +4,27 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {
-    getPasswordManagerAttrs,
-    HoistInputModel,
-    HoistInputProps,
-    PasswordManagerSupportProps,
-    useHoistInputModel
-} from '@xh/hoist/cmp/input';
+import type {HoistInputProps, PasswordManagerSupportProps} from '@xh/hoist/cmp/input';
+import {getPasswordManagerAttrs, HoistInputModel, useHoistInputModel} from '@xh/hoist/cmp/input';
 import {
     addCommasWhileEditing,
     getCaretSkippingCommas,
     setCaretSkippingCommas,
     skipCommaOnDelete
 } from '@xh/hoist/cmp/input/impl/LiveCommas';
-import {hoistCmp, HoistProps, LayoutProps, StyleProps} from '@xh/hoist/core';
+import type {HoistProps, LayoutProps, StyleProps} from '@xh/hoist/core';
+import {hoistCmp} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
-import {fmtNumber, NumericPrecision, parseNumber, Precision, ZeroPad} from '@xh/hoist/format';
+import type {NumericPrecision, Precision, ZeroPad} from '@xh/hoist/format';
+import {fmtNumber, parseNumber} from '@xh/hoist/format';
 import {numericInput} from '@xh/hoist/kit/blueprint';
 import {wait} from '@xh/hoist/promise';
 import {TEST_ID, throwIf, withDefault} from '@xh/hoist/utils/js';
 import {getLayoutProps, useComposedRefs, useOnMount} from '@xh/hoist/utils/react';
 import type {Property} from 'csstype';
 import {clamp, debounce, isNaN, isNil, isNumber, round} from 'lodash';
-import {KeyboardEventHandler, ReactElement, ReactNode, Ref, useLayoutEffect} from 'react';
+import type {KeyboardEventHandler, ReactElement, ReactNode, Ref} from 'react';
+import {useLayoutEffect} from 'react';
 
 export interface NumberInputProps
     extends HoistProps, LayoutProps, StyleProps, HoistInputProps, PasswordManagerSupportProps {

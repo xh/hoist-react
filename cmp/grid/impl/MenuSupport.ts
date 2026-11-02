@@ -7,14 +7,14 @@
 import {isEmpty, isFunction, isNil, isString, sortBy, uniq} from 'lodash';
 import {copyToClipboard, TEST_ID} from '@xh/hoist/utils/js';
 import {hoistCmp, type HoistProps, type HSide, isMenuHeading, type Some, XH} from '@xh/hoist/core';
-import {Column, GridModel} from '@xh/hoist/cmp/grid';
+import type {Column, GridModel} from '@xh/hoist/cmp/grid';
+import type {StoreRecord} from '@xh/hoist/data';
 import {
     type ActionFnData,
     RecordAction,
     type RecordActionHeading,
     type RecordActionSpec,
-    Store,
-    StoreRecord
+    Store
 } from '@xh/hoist/data';
 import {Icon} from '@xh/hoist/icon';
 import {filterConsecutiveMenuSeparators} from '@xh/hoist/utils/impl';

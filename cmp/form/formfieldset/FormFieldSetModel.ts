@@ -6,9 +6,10 @@
  */
 
 import {CardModel} from '@xh/hoist/cmp/card/CardModel';
-import {FieldModel} from '@xh/hoist/cmp/form';
-import {type PersistOptions} from '@xh/hoist/core';
-import {maxSeverity, ValidationSeverity} from '@xh/hoist/data';
+import type {FieldModel} from '@xh/hoist/cmp/form';
+import type {PersistOptions} from '@xh/hoist/core';
+import type {ValidationSeverity} from '@xh/hoist/data';
+import {maxSeverity} from '@xh/hoist/data';
 import {uniq, without} from 'lodash';
 import {action, computed, observable, observableRef} from '@xh/hoist/mobx';
 

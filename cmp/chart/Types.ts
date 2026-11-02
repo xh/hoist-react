@@ -4,7 +4,7 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {ChartModel} from '@xh/hoist/cmp/chart/ChartModel';
+import type {ChartModel} from '@xh/hoist/cmp/chart/ChartModel';
 import type {ContextMenuSpec, MenuContext, MenuToken} from '@xh/hoist/core';
 
 /**

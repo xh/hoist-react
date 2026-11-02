@@ -7,11 +7,11 @@
 import {badgeCol, badgeRenderer} from '@xh/hoist/admin/columns';
 import {RangeAggregator} from '@xh/hoist/admin/tabs/activity/aggregators/RangeAggregator';
 import * as Col from '@xh/hoist/cmp/grid/columns';
-import {ColumnSpec} from '@xh/hoist/cmp/grid/columns';
-import {TrackSeverity} from '@xh/hoist/core';
+import type {ColumnSpec} from '@xh/hoist/cmp/grid/columns';
+import type {TrackSeverity} from '@xh/hoist/core';
 import {fmtDate, fmtSpan, numberRenderer} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
-import {ReactElement} from 'react';
+import type {ReactElement} from 'react';
 
 const autosizeMaxWidth = 400;
 

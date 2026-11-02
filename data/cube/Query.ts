@@ -5,19 +5,19 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
-import {
+import type {
     BucketSpecFn,
     Filter,
     FilterLike,
     FilterTestFn,
     LockFn,
     OmitFn,
-    parseFilter,
     StoreRecord
 } from '@xh/hoist/data';
+import {parseFilter} from '@xh/hoist/data';
 import {throwIf} from '@xh/hoist/utils/js';
 import {find, isEqual, sortBy, uniq} from 'lodash';
-import {Cube} from './Cube';
+import type {Cube} from './Cube';
 import {CubeField} from './CubeField';
 
 /**

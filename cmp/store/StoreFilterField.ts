@@ -6,7 +6,8 @@
  */
 import type {GridModel} from '@xh/hoist/cmp/grid';
 import type {ZoneGridModel} from '@xh/hoist/cmp/zoneGrid';
-import {DefaultHoistProps, hoistCmp, HoistModel, useLocalModel, XH} from '@xh/hoist/core';
+import type {DefaultHoistProps, HoistModel} from '@xh/hoist/core';
+import {hoistCmp, useLocalModel, XH} from '@xh/hoist/core';
 import type {FilterMatchMode, FilterTestFn, Store} from '@xh/hoist/data';
 import {storeFilterFieldImpl as desktopStoreFilterFieldImpl} from '@xh/hoist/dynamics/desktop';
 import {storeFilterFieldImpl as mobileStoreFilterFieldImpl} from '@xh/hoist/dynamics/mobile';

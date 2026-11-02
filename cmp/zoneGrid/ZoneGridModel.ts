@@ -4,48 +4,35 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {
+import type {
     CellClickedEvent,
     CellContextMenuEvent,
     CellDoubleClickedEvent,
     RowClickedEvent,
     RowDoubleClickedEvent
 } from '@xh/hoist/kit/ag-grid';
-import {
-    Column,
+import type {
     ColumnRenderer,
     ColumnSpec,
-    Grid,
     GridConfig,
     GridContextMenuItemLike,
     GridContextMenuSpec,
     GridGroupSortFn,
-    GridModel,
-    GridSorter,
     GridSorterLike,
     GroupRowRenderer,
     RowClassFn,
     RowClassRuleFn,
     TreeStyle
 } from '@xh/hoist/cmp/grid';
-import {
+import {Column, Grid, GridModel, GridSorter} from '@xh/hoist/cmp/grid';
+import type {
     ZoneGridColConfig,
-    zoneGridRenderer,
     ZoneGridSubField
 } from '@xh/hoist/cmp/zoneGrid/impl/ZoneGridRenderer';
-import {
-    Awaitable,
-    HoistModel,
-    LoadSpec,
-    managed,
-    PlainObject,
-    Some,
-    Thunkable,
-    VSide,
-    XH
-} from '@xh/hoist/core';
-import {
-    RecordAction,
+import {zoneGridRenderer} from '@xh/hoist/cmp/zoneGrid/impl/ZoneGridRenderer';
+import type {Awaitable, LoadSpec, PlainObject, Some, Thunkable, VSide} from '@xh/hoist/core';
+import {HoistModel, managed, XH} from '@xh/hoist/core';
+import type {
     Store,
     StoreConfig,
     StoreRecordOrId,
@@ -53,6 +40,7 @@ import {
     StoreSelectionModel,
     StoreTransaction
 } from '@xh/hoist/data';
+import {RecordAction} from '@xh/hoist/data';
 import {Icon} from '@xh/hoist/icon';
 import {action, observableRef, bindableRef} from '@xh/hoist/mobx';
 import {executeIfFunction, throwIf, withDefault} from '@xh/hoist/utils/js';
@@ -67,10 +55,11 @@ import {
     isString,
     uniq
 } from 'lodash';
-import {ReactNode} from 'react';
+import type {ReactNode} from 'react';
 import {initPersist} from './impl/InitPersist';
-import {ZoneMapperConfig, ZoneMapperModel} from './impl/ZoneMapperModel';
-import {Zone, ZoneGridModelPersistOptions, ZoneLimit, ZoneMapping} from './Types';
+import type {ZoneMapperConfig} from './impl/ZoneMapperModel';
+import {ZoneMapperModel} from './impl/ZoneMapperModel';
+import type {Zone, ZoneGridModelPersistOptions, ZoneLimit, ZoneMapping} from './Types';
 
 /**
  * Configuration for a {@link ZoneGridModel} - a card-style grid that arranges column data

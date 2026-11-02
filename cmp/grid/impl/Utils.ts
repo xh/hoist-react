@@ -4,7 +4,8 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {Column, ColumnOrGroup, ColumnRenderer, GroupRowRenderer} from '@xh/hoist/cmp/grid';
+import type {ColumnOrGroup, ColumnRenderer, GroupRowRenderer} from '@xh/hoist/cmp/grid';
+import {Column} from '@xh/hoist/cmp/grid';
 import type {HeaderClassParams} from '@xh/hoist/kit/ag-grid';
 import {logWarn} from '@xh/hoist/utils/js';
 import {castArray, isFunction} from 'lodash';

@@ -6,7 +6,7 @@
  */
 
 import {checkVersion, logError} from '@xh/hoist/utils/js';
-import {Component} from 'react';
+import type {Component} from 'react';
 
 /**
  * The exports below are ag-Grid components provided at runtime by applications.

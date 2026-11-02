@@ -4,12 +4,16 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {HoistInputModel, HoistInputProps, useHoistInputModel} from '@xh/hoist/cmp/input';
+import type {HoistInputProps} from '@xh/hoist/cmp/input';
+import {HoistInputModel, useHoistInputModel} from '@xh/hoist/cmp/input';
 import {div, filler, hbox, span} from '@xh/hoist/cmp/layout';
-import {elementFactory, hoistCmp, HoistProps, LayoutProps, StyleProps} from '@xh/hoist/core';
+import type {HoistProps, LayoutProps, StyleProps} from '@xh/hoist/core';
+import {elementFactory, hoistCmp} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
-import {button, ButtonProps} from '@xh/hoist/desktop/cmp/button';
-import {HoistIconPrefix, Icon, IconCatalogEntry, IconFactory} from '@xh/hoist/icon';
+import type {ButtonProps} from '@xh/hoist/desktop/cmp/button';
+import {button} from '@xh/hoist/desktop/cmp/button';
+import type {HoistIconPrefix, IconCatalogEntry, IconFactory} from '@xh/hoist/icon';
+import {Icon} from '@xh/hoist/icon';
 import {popover} from '@xh/hoist/kit/blueprint';
 import {action, bindable, computed, observable, observableRef} from '@xh/hoist/mobx';
 import {getTestId, TEST_ID, withDefault} from '@xh/hoist/utils/js';

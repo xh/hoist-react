@@ -4,8 +4,9 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {MonitorResults, MonitorStatus} from '@xh/hoist/admin/tabs/monitor/Types';
-import {LoadSpec, managed, persist, XH} from '@xh/hoist/core';
+import type {MonitorResults, MonitorStatus} from '@xh/hoist/admin/tabs/monitor/Types';
+import type {LoadSpec} from '@xh/hoist/core';
+import {managed, persist, XH} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {action, bindable, computed, observable, observableRef} from '@xh/hoist/mobx';
 import {Timer} from '@xh/hoist/utils/async';

@@ -7,13 +7,13 @@
 import {HoistModel, XH} from '@xh/hoist/core';
 import {span} from '@xh/hoist/cmp/layout';
 import {action, bindable, computed, observable, observableRef} from '@xh/hoist/mobx';
-import {StoreRecord} from '@xh/hoist/data';
+import type {StoreRecord} from '@xh/hoist/data';
 import {GridSorter} from '@xh/hoist/cmp/grid';
 import {Icon} from '@xh/hoist/icon';
 import {cloneDeep, findIndex, isBoolean, isEmpty, isEqual, isFinite, isString} from 'lodash';
-import {ReactNode} from 'react';
-import {ZoneGridModel} from '../ZoneGridModel';
-import {ZoneField, Zone, ZoneLimit, ZoneMapping} from '../Types';
+import type {ReactNode} from 'react';
+import type {ZoneGridModel} from '../ZoneGridModel';
+import type {ZoneField, Zone, ZoneLimit, ZoneMapping} from '../Types';
 
 /**
  * Configuration for a ZoneMapperModel - the UI for user-driven customization of zone

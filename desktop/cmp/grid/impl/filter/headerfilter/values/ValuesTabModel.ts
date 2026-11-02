@@ -4,12 +4,8 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {
-    GridFilterModel,
-    GridFilterRenderer,
-    GridFilterSortValueFn,
-    GridModel
-} from '@xh/hoist/cmp/grid';
+import type {GridFilterRenderer, GridFilterSortValueFn} from '@xh/hoist/cmp/grid';
+import {GridFilterModel, GridModel} from '@xh/hoist/cmp/grid';
 import {HoistModel, managed} from '@xh/hoist/core';
 import type {FieldFilterOperator, FieldFilterSpec} from '@xh/hoist/data';
 import {checkbox} from '@xh/hoist/desktop/cmp/input';
@@ -26,7 +22,7 @@ import {
     uniq,
     without
 } from 'lodash';
-import {HeaderFilterModel} from '../HeaderFilterModel';
+import type {HeaderFilterModel} from '../HeaderFilterModel';
 
 /**
  * @internal

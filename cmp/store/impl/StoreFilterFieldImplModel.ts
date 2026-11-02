@@ -4,11 +4,12 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {Column, GridModel} from '@xh/hoist/cmp/grid';
+import type {Column} from '@xh/hoist/cmp/grid';
+import {GridModel} from '@xh/hoist/cmp/grid';
 import {ZoneGridModel} from '@xh/hoist/cmp/zoneGrid';
 import {HoistModel, lookup} from '@xh/hoist/core';
-import type {FilterMatchMode, StoreRecord} from '@xh/hoist/data';
-import {appendFilter, getFilterRegex, Store} from '@xh/hoist/data';
+import type {FilterMatchMode, StoreRecord, Store} from '@xh/hoist/data';
+import {appendFilter, getFilterRegex} from '@xh/hoist/data';
 import {action, compareStructural, computed} from '@xh/hoist/mobx';
 import {stripTags, throwIf, warnIf} from '@xh/hoist/utils/js';
 import {

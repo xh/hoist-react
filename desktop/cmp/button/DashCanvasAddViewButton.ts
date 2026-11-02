@@ -11,7 +11,8 @@ import {createViewMenuItems} from '@xh/hoist/desktop/cmp/dash/canvas/impl/utils'
 import {Icon} from '@xh/hoist/icon';
 import {popover} from '@xh/hoist/kit/blueprint';
 import {errorIf, withDefault} from '@xh/hoist/utils/js';
-import {button, ButtonProps} from './Button';
+import type {ButtonProps} from './Button';
+import {button} from './Button';
 
 export interface DashCanvasAddViewButtonProps extends ButtonProps {
     /** DashCanvasModel for which this button should allow the user to add views. */

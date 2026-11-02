@@ -5,13 +5,15 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {div} from '@xh/hoist/cmp/layout';
-import {hoistCmp, HoistProps, HoistUser, MenuItemLike, XH} from '@xh/hoist/core';
+import type {HoistProps, HoistUser, MenuItemLike} from '@xh/hoist/core';
+import {hoistCmp, XH} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
-import {menuButton, MenuButtonProps} from '@xh/hoist/mobile/cmp/menu';
+import type {MenuButtonProps} from '@xh/hoist/mobile/cmp/menu';
+import {menuButton} from '@xh/hoist/mobile/cmp/menu';
 import '@xh/hoist/mobile/register';
 import {withDefault} from '@xh/hoist/utils/js';
 import {isFunction} from 'lodash';
-import {ReactNode} from 'react';
+import type {ReactNode} from 'react';
 
 export interface AppMenuButtonProps extends MenuButtonProps {
     /** Array of app-specific MenuItems or configs to create them. */

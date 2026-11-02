@@ -4,6 +4,12 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
+import type {
+    IAutorunOptions,
+    IEqualsComparer,
+    IReactionDisposer,
+    IReactionOptions
+} from '@xh/hoist/mobx';
 import {
     action,
     autorun as mobxAutorun,
@@ -11,10 +17,6 @@ import {
     compareIdentity,
     compareShallow,
     compareStructural,
-    IAutorunOptions,
-    IEqualsComparer,
-    IReactionDisposer,
-    IReactionOptions,
     reaction as mobxReaction,
     runInAction,
     when as mobxWhen
@@ -39,16 +41,8 @@ import {
     isString,
     upperFirst
 } from 'lodash';
-import {
-    CallContextLike,
-    DebounceSpec,
-    PersistableState,
-    PersistenceProvider,
-    persistOptions,
-    PersistOptions,
-    Some,
-    XH
-} from './';
+import type {CallContextLike, DebounceSpec, PersistOptions, Some} from './';
+import {PersistableState, PersistenceProvider, persistOptions, XH} from './';
 
 export interface HoistBaseClass {
     new (...args: any[]): HoistBase;

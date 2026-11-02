@@ -8,7 +8,8 @@ import {hoistCmp} from '@xh/hoist/core';
 import {dialogContainer} from '@xh/hoist/mobile/cmp/dialog/impl/DialogContainer';
 import '@xh/hoist/mobile/register';
 import './DialogPanel.scss';
-import {panel, PanelProps} from './Panel';
+import type {PanelProps} from './Panel';
+import {panel} from './Panel';
 
 export interface DialogPanelProps extends PanelProps {
     /** Is the dialog panel shown.  */

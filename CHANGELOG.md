@@ -93,6 +93,9 @@ detailed, step-by-step upgrade instructions with before/after code examples.
   storage is unavailable the service logs a warning and holds values in memory, as before.
 * Removed Onsen UI from the mobile toolkit, with the `@xh/hoist/kit/onsen` wrappers. Each mobile
   component now owns its DOM and styles.
+* ESLint now requires `import type` and `export type` for type-only imports and exports, so a
+  build that compiles one file at a time always erases them. Barrels of type-only modules now use
+  `export type *`.
 
 ### ✨ Styles
 

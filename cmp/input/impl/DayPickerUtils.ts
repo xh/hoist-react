@@ -5,7 +5,8 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import type {DayPickerProps, Matcher} from '@xh/hoist/kit/react-day-picker';
-import {isLocalDate, LocalDate} from '@xh/hoist/utils/datetime';
+import type {LocalDate} from '@xh/hoist/utils/datetime';
+import {isLocalDate} from '@xh/hoist/utils/datetime';
 import {castArray, isNil, omitBy} from 'lodash';
 
 export interface DayPickerSpec {

@@ -4,7 +4,8 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {ColumnSpec, ExcelFormat} from '@xh/hoist/cmp/grid';
+import type {ColumnSpec} from '@xh/hoist/cmp/grid';
+import {ExcelFormat} from '@xh/hoist/cmp/grid';
 import {
     compactDateRenderer,
     dateRenderer,
