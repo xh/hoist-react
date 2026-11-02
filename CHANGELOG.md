@@ -45,6 +45,10 @@ detailed, step-by-step upgrade instructions with before/after code examples.
   clicked column, and `Column.availableSorts`. The `sort` token offers one item per sort the column
   offers.
 * Added `genRandomId()` to `@xh/hoist/utils/js` for short random alphanumeric IDs.
+* Added `genUuid()` to `@xh/hoist/utils/js` for version 4 UUIDs, including on plain HTTP where
+  browsers omit `crypto.randomUUID()`.
+* Added `getOwn()` to `@xh/hoist/utils/js`, which reads an own property of an object and never one
+  inherited from `Object.prototype`. Use it to look up untrusted keys in a plain-object map.
 * Mobile `TabContainer` now applies `${testId}-switcher` to its switcher and
   `${testId}-switcher-${tabId}` to each switcher button, as on desktop.
 * Added "Purge Connections" buttons to the Admin Console Connection Pool Monitor, to close all
