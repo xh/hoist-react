@@ -167,3 +167,46 @@
     pointer-events: none !important;
   }
 }
+
+// Accent line that tracks the pointer while dragging, when the panel does not resize live.
+.xh-panel-splitter-ghost {
+  position: absolute;
+  z-index: 10;
+  pointer-events: none;
+  background-color: var(--xh-panel-splitter-accent-active-color);
+
+  &--ew {
+    width: 3px;
+  }
+
+  &--ns {
+    height: 3px;
+  }
+
+  &--snap {
+    background-color: var(--xh-panel-splitter-snap-color);
+  }
+}
+
+// Set on the body during a drag - holds the resize cursor steady over any content below it.
+body.xh-panel-splitter-dragging--ew,
+body.xh-panel-splitter-dragging--ns {
+  &,
+  * {
+    user-select: none !important;
+  }
+}
+
+body.xh-panel-splitter-dragging--ew {
+  &,
+  * {
+    cursor: col-resize !important;
+  }
+}
+
+body.xh-panel-splitter-dragging--ns {
+  &,
+  * {
+    cursor: row-resize !important;
+  }
+}
