@@ -346,7 +346,7 @@ Map each override that targeted panel splitters to its new variable:
 
 Other new variables are `--panel-splitter-accent-color`, `--panel-splitter-accent-active-color`,
 `--panel-splitter-snap-color`, `--panel-splitter-hover-delay`,
-`--panel-splitter-button-border-color`, and `--panel-collapsed-rail-*` for the rail.
+`--panel-splitter-button-border-color`, and `--panel-collapsed-strip-*` for the strip.
 
 App SCSS that targeted `.xh-resizable-splitter` should target `.xh-panel-splitter`. The
 `.xh-resizable-dragger` and `.xh-resizable-collapser-btn` classes are gone.

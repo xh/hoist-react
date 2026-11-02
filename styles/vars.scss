@@ -874,11 +874,11 @@ body {
   --xh-panel-splitter-button-bg: var(--panel-splitter-button-bg, var(--xh-bg));
   --xh-panel-splitter-button-border-color: var(--panel-splitter-button-border-color, #{mc('blue-grey', '200')});
   --xh-panel-splitter-button-icon-color: var(--panel-splitter-button-icon-color, var(--xh-text-color));
-  --xh-panel-collapsed-rail-size: var(--panel-collapsed-rail-size, 20);
-  --xh-panel-collapsed-rail-size-px: calc(var(--xh-panel-collapsed-rail-size) * 1px);
-  --xh-panel-collapsed-rail-bg: var(--panel-collapsed-rail-bg, #{mc('blue-grey', '50')});
-  --xh-panel-collapsed-rail-hover-bg: var(--panel-collapsed-rail-hover-bg, #{mc('blue-grey', '100')});
-  --xh-panel-collapsed-rail-icon-color: var(--panel-collapsed-rail-icon-color, var(--xh-blue-gray));
+  --xh-panel-collapsed-strip-size: var(--panel-collapsed-strip-size, 20);
+  --xh-panel-collapsed-strip-size-px: calc(var(--xh-panel-collapsed-strip-size) * 1px);
+  --xh-panel-collapsed-strip-bg: var(--panel-collapsed-strip-bg, #{mc('blue-grey', '50')});
+  --xh-panel-collapsed-strip-hover-bg: var(--panel-collapsed-strip-hover-bg, #{mc('blue-grey', '100')});
+  --xh-panel-collapsed-strip-icon-color: var(--panel-collapsed-strip-icon-color, var(--xh-blue-gray));
 
   @media (pointer: coarse) {
     --xh-panel-splitter-hit-size: var(--panel-splitter-hit-size, 20);
@@ -887,9 +887,9 @@ body {
   &.xh-dark {
     --xh-panel-splitter-button-border-color: var(--panel-splitter-button-border-color, #{mc('blue-grey', '700')});
     --xh-panel-splitter-button-icon-color: var(--panel-splitter-button-icon-color, #{mc('blue-grey', '100')});
-    --xh-panel-collapsed-rail-bg: var(--panel-collapsed-rail-bg, #{mc('blue-grey', '900')});
-    --xh-panel-collapsed-rail-hover-bg: var(--panel-collapsed-rail-hover-bg, #{mc('blue-grey', '800')});
-    --xh-panel-collapsed-rail-icon-color: var(--panel-collapsed-rail-icon-color, #{mc('blue-grey', '300')});
+    --xh-panel-collapsed-strip-bg: var(--panel-collapsed-strip-bg, #{mc('blue-grey', '900')});
+    --xh-panel-collapsed-strip-hover-bg: var(--panel-collapsed-strip-hover-bg, #{mc('blue-grey', '800')});
+    --xh-panel-collapsed-strip-icon-color: var(--panel-collapsed-strip-icon-color, #{mc('blue-grey', '300')});
   }
 
 
