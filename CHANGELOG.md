@@ -66,6 +66,9 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 
 ### 🐞 Bug Fixes
 
+* Fixed a rare `window is not defined` error after a spec file that uses `@xh/hoist/test-support`
+  finished. The test kit now destroys `ViewportSizeModel` at teardown, which cancels its pending
+  resize timers.
 * `GridModel.localExport` now exports every cell's raw value, as copy and `exportAsync` do. It had
   called a column's `agOptions.valueFormatter` with a bare value, which exported blanks.
 * Fixed a column's `agOptions.cellClassRules` replacing its own `cellClassRules`, flags and editable
