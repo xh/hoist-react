@@ -4,66 +4,84 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-.xh-tab {
-  font-size: var(--xh-button-font-size-px);
-
-  // Icon with title
-  .xh-icon:not(:last-child) {
-    margin-right: var(--xh-pad-half-px);
-  }
-
-  // Icon without title
-  .xh-icon:last-child {
-    font-size: 20px;
-  }
-}
-
-.xh-tab-page .page__content {
-  display: flex;
-  align-items: stretch;
-  flex-direction: column;
-  transform: translateX(0);
-}
-
-// Theme the page backdrop. Onsen renders an opaque, light-by-default `.page__background` behind
-// each page's content, and the content itself is forced transparent (so the app background shows
-// through). That leaves the light backdrop visible for tab content that is not itself a panel,
-// rendering themed text unreadable in dark mode - so paint the backdrop with the app background.
-.xh-tab-page .page__background {
-  background-color: var(--xh-bg);
-}
 
 .xh-tab-container {
-  // Override Onsen's tabbar height CSS var
-  --tabbar-height: var(--xh-tbar-min-size-px);
-
   position: relative;
   flex: auto;
 
-  &--top .tabbar {
+  .xh-tab-wrapper {
+    position: relative;
+    display: flex;
+    //noinspection CssRedundantUnit
+    flex: 1 1 0%;
+    min-height: 0;
+  }
+}
+
+.xh-tab-switcher {
+  display: flex;
+  flex: none;
+  height: var(--xh-tbar-min-size-px);
+  background-color: var(--xh-bg-alt);
+  white-space: nowrap;
+
+  &--top {
     border-bottom: var(--xh-border-solid);
   }
 
-  &--bottom .tabbar {
+  &--bottom {
     border-top: var(--xh-border-solid);
   }
 
-  .tabbar {
-    height: var(--xh-tbar-min-size-px);
-    line-height: var(--xh-tbar-min-size-px);
+  .xh-tab {
+    flex: 1 1 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    appearance: none;
+    background: transparent;
+    color: var(--xh-text-color);
+    font: inherit;
+    font-size: var(--xh-button-font-size-px);
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
 
-    &__button {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      height: var(--xh-tbar-min-size-px);
-      line-height: var(--xh-tbar-min-size-px);
-      color: var(--xh-text-color);
+    &--active {
+      color: var(--xh-accent-color);
+    }
+
+    &:disabled {
+      opacity: 0.3;
+    }
+
+    // Icon with title
+    .xh-icon:not(:last-child) {
+      margin-right: var(--xh-pad-half-px);
+    }
+
+    // Icon without title
+    .xh-icon:last-child {
+      font-size: 20px;
     }
   }
+}
 
-  // Tab visibility is managed via TabContainerModel.renderMode, rather than Onsen's internal state.
-  .ons-swiper-target.active:not(.swiping) > .xh-tab-page:not([shown]) {
-    visibility: initial;
-  }
+.xh-tab-page {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
+  background-color: var(--xh-bg);
+  transform: translateX(0);
 }

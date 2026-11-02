@@ -5,17 +5,14 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {HoistInputModel, HoistInputProps, useHoistInputModel} from '@xh/hoist/cmp/input';
-import {hoistCmp, HoistProps} from '@xh/hoist/core';
-import {checkbox as onsenCheckbox} from '@xh/hoist/kit/onsen';
+import {div, input, span} from '@xh/hoist/cmp/layout';
+import {hoistCmp, HoistProps, StyleProps} from '@xh/hoist/core';
 import '@xh/hoist/mobile/register';
 import {TEST_ID} from '@xh/hoist/utils/js';
 import './Checkbox.scss';
 
-export interface CheckboxProps extends HoistProps, HoistInputProps {
+export interface CheckboxProps extends HoistProps, HoistInputProps, StyleProps {
     value?: boolean;
-
-    /** Onsen modifier string */
-    modifier?: string;
 }
 
 /**
@@ -37,22 +34,27 @@ class CheckboxInputModel extends HoistInputModel {
 // Implementation
 //----------------------------------
 const cmp = hoistCmp.factory<CheckboxInputModel>(({model, className, ...props}, ref) => {
-    return onsenCheckbox({
-        checked: !!model.renderValue,
-
-        disabled: props.disabled,
-        modifier: props.modifier,
-        tabIndex: props.tabIndex,
-
-        style: props.style,
-        [TEST_ID]: props.testId,
-        ...props.domAttrs,
-
-        onBlur: model.onBlur,
-        onFocus: model.onFocus,
-        onChange: e => model.noteValueChange(e.target.checked),
-
+    return div({
+        ref,
         className,
-        ref
+        style: props.style,
+        items: [
+            input({
+                className: 'xh-check-box__input',
+                type: 'checkbox',
+                checked: !!model.renderValue,
+
+                disabled: props.disabled,
+                tabIndex: props.tabIndex,
+
+                [TEST_ID]: props.testId,
+                ...props.domAttrs,
+
+                onBlur: model.onBlur,
+                onFocus: model.onFocus,
+                onChange: e => model.noteValueChange(e.target.checked)
+            }),
+            span({className: 'xh-check-box__checkmark'})
+        ]
     });
 });

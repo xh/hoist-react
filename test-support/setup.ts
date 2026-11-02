@@ -56,10 +56,6 @@ globalThis.ResizeObserver ??= class {
     disconnect() {}
 };
 
-// Onsen UI, loaded by the mobile platform, throws "Invalid state" at import unless the root
-// element's computed style lists a transition property. jsdom lists only the properties set on it.
-document.documentElement.style.transitionDuration = '0s';
-
 //------------------------------------------------------------------
 // Guards - problems are collected as they happen, then fail the
 // test when it finishes, with a message naming the cause.

@@ -54,7 +54,6 @@ import {
     Tooltip,
     Tree
 } from '@blueprintjs/core';
-import {DatePicker} from '@blueprintjs/datetime';
 import {elementFactory} from '@xh/hoist/core';
 import React, {createElement as reactCreateElement} from 'react';
 
@@ -81,7 +80,6 @@ export {
     BpCard,
     Checkbox,
     ControlGroup,
-    DatePicker,
     Dialog,
     Drawer,
     EditableText,
@@ -126,7 +124,6 @@ export const alert = elementFactory(Alert),
     button = elementFactory(Button),
     controlGroup = elementFactory(ControlGroup),
     checkbox = elementFactory(Checkbox),
-    datePicker = elementFactory(DatePicker),
     menuDivider = elementFactory(MenuDivider),
     menuItem = elementFactory(MenuItem),
     navbarDivider = elementFactory(NavbarDivider),

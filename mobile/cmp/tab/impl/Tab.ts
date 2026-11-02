@@ -4,31 +4,30 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
+import {errorBoundary} from '@xh/hoist/cmp/error/ErrorBoundary';
+import {div} from '@xh/hoist/cmp/layout';
 import {TabModel} from '@xh/hoist/cmp/tab';
 import {hoistCmp, refreshContextView, uses} from '@xh/hoist/core';
-import {page} from '@xh/hoist/kit/onsen';
 import '@xh/hoist/mobile/register';
 import {TEST_ID} from '@xh/hoist/utils/js';
 import {elementFromContent} from '@xh/hoist/utils/react';
 import {useRef} from 'react';
 import './Tabs.scss';
-import {errorBoundary} from '@xh/hoist/cmp/error/ErrorBoundary';
 
 /**
+ * Wrapper for contents to be shown within a mobile TabContainer. Renders the tab's content, as a
+ * page that fills its wrapper and scrolls, or nothing when the tab's `renderMode` says an
+ * inactive tab should not be rendered.
+ *
  * @internal
- *
- * Wrapper for contents to be shown within a TabContainer. This Component is used by TabContainer's
- * internal implementation to:
- *
- *   - Mount/unmount its contents according to `TabModel.renderMode`.
- *   - Track and trigger refreshes according to `TabModel.refreshMode`.
  */
 export const tab = hoistCmp.factory({
     displayName: 'Tab',
+    className: 'xh-tab-page',
     model: uses(TabModel, {publishMode: 'limited'}),
 
-    render({model, testId}) {
-        let {content, isActive, renderMode, refreshContextModel} = model,
+    render({model, className, testId}) {
+        const {content, isActive, renderMode, refreshContextModel} = model,
             wasActivated = useRef(false);
 
         if (!wasActivated.current && isActive) wasActivated.current = true;
@@ -37,15 +36,14 @@ export const tab = hoistCmp.factory({
             !isActive &&
             (renderMode === 'unmountOnHide' || (renderMode === 'lazy' && !wasActivated.current))
         ) {
-            // Note: We must render an empty placeholder page to work with Onsen's tabbar.
-            return page({[TEST_ID]: testId, className: 'xh-tab-page'});
+            return null;
         }
 
         return refreshContextView({
             model: refreshContextModel,
-            item: page({
+            item: div({
                 [TEST_ID]: testId,
-                className: 'xh-tab-page',
+                className,
                 item: errorBoundary(elementFromContent(content))
             })
         });

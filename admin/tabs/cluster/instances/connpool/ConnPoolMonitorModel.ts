@@ -9,8 +9,10 @@ import {timestampNoYear} from '@xh/hoist/admin/columns';
 import {BaseInstanceModel} from '@xh/hoist/admin/tabs/cluster/instances/BaseInstanceModel';
 import {ChartModel} from '@xh/hoist/cmp/chart';
 import {GridModel} from '@xh/hoist/cmp/grid';
+import {br, fragment} from '@xh/hoist/cmp/layout';
 import {LoadSpec, managed, PlainObject, XH} from '@xh/hoist/core';
 import {fmtTime} from '@xh/hoist/format';
+import {Icon} from '@xh/hoist/icon';
 import {bindable, bindableRef} from '@xh/hoist/mobx';
 import {forOwn, sortBy} from 'lodash';
 
@@ -165,6 +167,45 @@ export class ConnPoolMonitorModel extends BaseInstanceModel {
             .then(async () => {
                 await this.refreshAsync();
                 XH.successToast('Connection pool stats reset.');
+            })
+            .catchDefault();
+    }
+
+    /**
+     * Close all pooled JDBC connections on this instance, or across the cluster. Idle connections
+     * close immediately, in-use connections close when returned. Discards connections holding
+     * stale database session state - e.g. permissions granted after the pool was populated.
+     */
+    async purgeConnectionsAsync(entireCluster: boolean) {
+        const {instanceName, loadObserver} = this;
+
+        const confirmed = await XH.confirm({
+            message: fragment(
+                `This will close all pooled database connections ${entireCluster ? 'for all instances in this cluster' : 'for instance ' + instanceName}.`,
+                br(),
+                br(),
+                'Idle connections will be closed immediately and in-use connections closed when returned to the pool. New connections will be opened on demand.'
+            ),
+            confirmProps: {
+                text: 'Purge Connections',
+                icon: Icon.database(),
+                intent: 'warning',
+                outlined: true,
+                autoFocus: false
+            }
+        });
+        if (!confirmed) return;
+
+        await this.runner()
+            .span('purgeConnections')
+            .fetchJson({
+                url: 'connectionPoolMonitorAdmin/purgeConnections',
+                params: {instance: entireCluster ? null : instanceName}
+            })
+            .linkTo(loadObserver)
+            .then(async () => {
+                await this.refreshAsync();
+                XH.successToast('Connection pools purged.');
             })
             .catchDefault();
     }

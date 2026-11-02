@@ -65,6 +65,21 @@ const bbar = hoistCmp.factory<ConnPoolMonitorModel>({
                 omit: readonly,
                 onClick: () => model.resetStatsAsync()
             }),
+            '-',
+            button({
+                text: 'Purge Connections',
+                icon: Icon.database(),
+                intent: 'warning',
+                omit: readonly,
+                onClick: () => model.purgeConnectionsAsync(false)
+            }),
+            button({
+                text: 'Purge Connections (Cluster)',
+                icon: Icon.database(),
+                intent: 'warning',
+                omit: readonly,
+                onClick: () => model.purgeConnectionsAsync(true)
+            }),
             filler(),
             gridCountLabel({unit: 'snapshot'}),
             '-',

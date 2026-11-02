@@ -123,7 +123,7 @@ const EXACT_NAME_BOOST = 2.5;
 /** Extra multiplier for a member hit whose owner the query also names (`StoreRecord raw`). */
 const OWNER_NAMED_BOOST = 1.3;
 
-/** Multiplier for `kit/` re-exports of third-party components (Blueprint, Onsen), which are not Hoist APIs. */
+/** Multiplier for `kit/` re-exports of third-party components (e.g. Blueprint), which are not Hoist APIs. */
 const KIT_WEIGHT = 0.5;
 
 /**

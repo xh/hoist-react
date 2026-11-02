@@ -189,11 +189,8 @@ textInput({
 Keys are constrained by type to `data-*` and `aria-*` attributes, plus `role`, so the prop cannot
 reach attributes the component manages itself.
 
-> **Mobile caveat:** `TextInput` and `NumberInput` on mobile render Onsen's `<ons-input>` custom
-> element, and `SearchInput` renders `<ons-search-input>`. Both mirror only a fixed allowlist of
-> attributes onto the real `<input>` they create. Attributes supplied via `domAttrs` are applied to the `<ons-input>` wrapper,
-> not to the inner `<input>`. This matches where `testId` lands today. Mobile `TextArea` is
-> unaffected - it renders a native `<textarea>`.
+Mobile inputs render native `<input>` and `<textarea>` elements, so `domAttrs` reach the element
+the user types into, as on desktop.
 
 ### Password Managers
 

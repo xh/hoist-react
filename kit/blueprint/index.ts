@@ -16,7 +16,6 @@ import {
     useHotkeys
 } from '@blueprintjs/core';
 import '@blueprintjs/core/lib/css/blueprint.css';
-import '@blueprintjs/datetime/lib/css/blueprint-datetime.css';
 import {elementFactory} from '@xh/hoist/core';
 import './styles.scss';
 

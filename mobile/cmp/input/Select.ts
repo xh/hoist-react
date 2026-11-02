@@ -182,7 +182,7 @@ export interface SelectProps extends HoistProps, HoistInputProps, LayoutProps {
 }
 
 /**
- * A managed wrapper around the React-Select combobox/dropdown component.
+ * A combobox for choosing a value from a dropdown list of options, with type-ahead filtering.
  *
  * Supports advanced options such as:
  *      + Asynchronous queries
@@ -190,8 +190,8 @@ export interface SelectProps extends HoistProps, HoistInputProps, LayoutProps {
  *      + User-created ad-hoc entries
  *      + Full-screen mode
  *
- * Unlike the desktop version, multiple selection and use of react-windowed-select are not
- * currently supported.
+ * Unlike the desktop version, multiple selection and windowed rendering of large option lists
+ * are not currently supported.
  *
  * @see {@link https://react-select.com|React Select Docs}
  */
@@ -360,8 +360,8 @@ class SelectInputModel extends HoistInputModel {
         const {reactSelect} = this;
         if (!reactSelect) return;
 
-        // Unwrap the HOCs added by AsyncSelect / Creatable / WindowedSelect (each exposes the
-        // inner Select via `.select`) to reach the underlying Select that owns the inputRef.
+        // Unwrap the HOCs added by AsyncSelect / Creatable (each exposes the inner Select via
+        // `.select`) to reach the underlying Select that owns the inputRef.
         let selectComp = reactSelect;
         while (selectComp && !selectComp.inputRef) {
             selectComp = selectComp.select;

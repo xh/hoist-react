@@ -5,10 +5,9 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {AppContainerModel} from '@xh/hoist/appcontainer/AppContainerModel';
-import {div, vspacer} from '@xh/hoist/cmp/layout';
+import {div, viewport, vspacer} from '@xh/hoist/cmp/layout';
 import {hoistCmp, XH} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
-import {page} from '@xh/hoist/kit/onsen';
 import {button} from '@xh/hoist/mobile/cmp/button';
 import './LockoutPanel.scss';
 
@@ -24,8 +23,9 @@ export const lockoutPanel = hoistCmp.factory<AppContainerModel>({
             {appSpec, appStateModel} = model,
             {identityService} = XH;
 
-        return page(
-            div({
+        return viewport({
+            overflow: 'auto',
+            item: div({
                 className: 'xh-lockout-panel',
                 item: div(
                     appStateModel.accessDeniedMessage ?? '',
@@ -53,6 +53,6 @@ export const lockoutPanel = hoistCmp.factory<AppContainerModel>({
                     })
                 )
             })
-        );
+        });
     }
 });
