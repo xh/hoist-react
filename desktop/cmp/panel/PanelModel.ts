@@ -132,6 +132,19 @@ export interface PanelConfig {
     xhName?: string;
 }
 
+/**
+ * App-level defaults for {@link PanelModel}, set via `PanelModel.defaults` at app startup.
+ * Instance config takes precedence.
+ */
+export interface PanelModelDefaults {
+    resizeWhileDragging?: boolean;
+    dragToCollapse?: boolean;
+    showSplitterCollapseButton?: boolean;
+    /** Leave null for the state-aware default - see {@link PanelConfig.showHeaderCollapseButton}. */
+    showHeaderCollapseButton?: boolean;
+    showCollapsedRail?: boolean;
+}
+
 export interface PanelPersistState {
     collapsed?: boolean;
     size?: number | string;
@@ -147,6 +160,15 @@ export interface PanelPersistState {
  */
 export class PanelModel extends HoistModel implements Persistable<PanelPersistState> {
     declare config: PanelConfig;
+
+    /** App-level defaults for PanelModel. Instance config takes precedence. */
+    static defaults: PanelModelDefaults = {
+        resizeWhileDragging: false,
+        dragToCollapse: true,
+        showSplitterCollapseButton: true,
+        showHeaderCollapseButton: null,
+        showCollapsedRail: true
+    };
 
     //-----------------------
     // Immutable Properties
@@ -230,8 +252,8 @@ export class PanelModel extends HoistModel implements Persistable<PanelPersistSt
     constructor({
         collapsible = true,
         resizable = true,
-        resizeWhileDragging = false,
-        dragToCollapse = true,
+        resizeWhileDragging = PanelModel.defaults.resizeWhileDragging,
+        dragToCollapse = PanelModel.defaults.dragToCollapse,
         defaultSize,
         minSize = 0,
         maxSize = null,
@@ -243,9 +265,9 @@ export class PanelModel extends HoistModel implements Persistable<PanelPersistSt
         refreshMode = 'onShowLazy',
         persistWith = null,
         showSplitter = resizable || collapsible,
-        showSplitterCollapseButton = showSplitter && collapsible,
-        showHeaderCollapseButton = null,
-        showCollapsedRail = true,
+        showSplitterCollapseButton = PanelModel.defaults.showSplitterCollapseButton,
+        showHeaderCollapseButton = PanelModel.defaults.showHeaderCollapseButton,
+        showCollapsedRail = PanelModel.defaults.showCollapsedRail,
         showModalToggleButton = true,
         xhName = null,
         xhImpl = false

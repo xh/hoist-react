@@ -41,23 +41,26 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 * Renamed the `.xh-resizable-splitter` CSS class to `.xh-panel-splitter`, and removed
   `.xh-resizable-dragger` and `.xh-resizable-collapser-btn`.
 * `PanelConfig.showHeaderCollapseButton` now defaults to `false` on an expanded panel whose
-  splitter shows a collapse button. Set it to `true` to keep the header button.
+  splitter shows a collapse button. Set it to `true` to keep the header button, or set
+  `PanelModel.defaults.showHeaderCollapseButton = true` to keep it app-wide.
 
 ### 🎁 New Features
 
-* Redesigned desktop panel splitters as a 1px line with a wider invisible grab area. An accent
-  line and collapse button fade in on hover. Splitters also support keyboard resizing,
-  double-click to reset size, and drag-to-collapse. Set `PanelConfig.dragToCollapse: false` to turn
-  off drag-to-collapse.
-* Added a clickable rail for collapsed panels that have no title or icon, so they stay easy to find
-  and expand. Set `PanelConfig.showCollapsedRail: false` to turn it off. A single click on any
-  collapsed panel header now expands the panel.
 * Added `GridModel.headerContextMenu`, a context menu shown on right-click of a desktop grid column
   header. By default it sorts, pins, hides and autosizes the clicked column and opens the column
   chooser. Set `false` to show none. Grids that disable `contextMenu` get no header menu by default.
 * Added `sort`, `pinColumn`, `hideColumn` and `autosizeColumn` grid menu tokens, which act on the
   clicked column, and `Column.availableSorts`. The `sort` token offers one item per sort the column
   offers.
+* Redesigned desktop panel splitters as a 1px line with a wider invisible grab area. An accent
+  line and collapse button fade in on hover. Splitters also support keyboard resizing,
+  double-click to reset size, and drag-to-collapse.
+* Added a clickable rail for collapsed panels that have no title or icon, so they stay easy to find
+  and expand. Set `PanelConfig.showCollapsedRail: false` to turn it off. A single click on any
+  collapsed panel header now expands the panel.
+* Added `PanelModel.defaults` to set app-wide defaults for `resizeWhileDragging`,
+  `dragToCollapse`, `showSplitterCollapseButton`, `showHeaderCollapseButton` and
+  `showCollapsedRail`. Instance config takes precedence.
 * Added `genRandomId()` to `@xh/hoist/utils/js` for short random alphanumeric IDs.
 * Mobile `TabContainer` now applies `${testId}-switcher` to its switcher and
   `${testId}-switcher-${tabId}` to each switcher button, as on desktop.

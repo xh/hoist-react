@@ -314,6 +314,15 @@ panel({modelConfig: {side: 'left', defaultSize: 250}})
 panel({modelConfig: {side: 'left', defaultSize: 250, showHeaderCollapseButton: true}})
 ```
 
+To keep the header button on every panel, set the default once at app startup, for example in
+your `AppModel` constructor:
+
+```typescript
+import {PanelModel} from '@xh/hoist/desktop/cmp/panel';
+
+PanelModel.defaults.showHeaderCollapseButton = true;
+```
+
 ## Verification Checklist
 
 After completing all steps:

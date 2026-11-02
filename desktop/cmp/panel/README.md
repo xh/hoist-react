@@ -398,6 +398,22 @@ panel({
 | `resizeWhileDragging` | `false` | Redraw panel continuously during resize drag. |
 | `dragToCollapse` | `true` | Collapse the panel when the user drags its splitter below half its `minSize` (at least 24px). |
 
+### App-Level Defaults
+
+`PanelModel.defaults` sets app-wide defaults for `resizeWhileDragging`, `dragToCollapse`,
+`showSplitterCollapseButton`, `showHeaderCollapseButton`, and `showCollapsedRail`. Set them at app
+startup, for example in your `AppModel` constructor. Instance config takes precedence.
+
+```typescript
+import {PanelModel} from '@xh/hoist/desktop/cmp/panel';
+
+PanelModel.defaults.resizeWhileDragging = true;
+PanelModel.defaults.showHeaderCollapseButton = true; // header chevron on expanded panels too
+```
+
+Leave `showHeaderCollapseButton` at its `null` default to keep the state-aware behavior described
+in the table above.
+
 ### Splitter
 
 The splitter is a 1px line at the panel edge. An invisible hit area, 8px wide (20px on touch

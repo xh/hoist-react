@@ -5,7 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import type {PersistOptions, PlainObject} from '@xh/hoist/core';
-import {PanelModel, type PanelConfig} from '@xh/hoist/desktop/cmp/panel';
+import {PanelModel, type PanelConfig, type PanelModelDefaults} from '@xh/hoist/desktop/cmp/panel';
 import {describe, expect, it, onTestFinished, vi} from 'vitest';
 
 /**
@@ -124,6 +124,48 @@ describe('PanelModel', () => {
         });
     });
 
+    describe('app-level defaults', () => {
+        it('applies PanelModel.defaults when a config omits the setting', () => {
+            setDefaults({
+                resizeWhileDragging: true,
+                dragToCollapse: false,
+                showSplitterCollapseButton: false,
+                showHeaderCollapseButton: false,
+                showCollapsedRail: false
+            });
+            const model = createPanel();
+
+            expect(model.resizeWhileDragging).toBe(true);
+            expect(model.dragToCollapse).toBe(false);
+            expect(model.showSplitterCollapseButton).toBe(false);
+            expect(model.showHeaderCollapseButton).toBe(false);
+            expect(model.showCollapsedRail).toBe(false);
+        });
+
+        it('lets instance config override PanelModel.defaults', () => {
+            setDefaults({dragToCollapse: false, showHeaderCollapseButton: true});
+            const model = createPanel({dragToCollapse: true, showHeaderCollapseButton: false});
+
+            expect(model.dragToCollapse).toBe(true);
+            expect(model.showHeaderCollapseButton).toBe(false);
+        });
+
+        // Restores the header chevron on expanded panels app-wide, as before the splitter redesign.
+        it('shows the header collapse button on expanded panels when defaulted to true', () => {
+            setDefaults({showHeaderCollapseButton: true});
+            expect(createPanel().showHeaderCollapseButton).toBe(true);
+        });
+
+        it('still requires a collapsible panel for defaulted collapse affordances', () => {
+            setDefaults({dragToCollapse: true, showCollapsedRail: true});
+            const model = createPanel({collapsible: false});
+
+            expect(model.dragToCollapse).toBe(false);
+            expect(model.showCollapsedRail).toBe(false);
+            expect(model.showSplitterCollapseButton).toBe(false);
+        });
+    });
+
     describe('persistence', () => {
         it('restores a saved size and collapsed state', () => {
             const store = new MemoryStore({panel: {size: 320, collapsed: true}}),
@@ -164,6 +206,15 @@ function createPanel(config: PanelConfig = {}): PanelModel {
     const ret = new PanelModel({side: 'left', defaultSize: 200, ...config});
     onTestFinished(() => ret.destroy());
     return ret;
+}
+
+/** Patch PanelModel.defaults for one test, restoring the originals when it finishes. */
+function setDefaults(patch: PanelModelDefaults) {
+    const orig = {...PanelModel.defaults};
+    Object.assign(PanelModel.defaults, patch);
+    onTestFinished(() => {
+        PanelModel.defaults = orig;
+    });
 }
 
 /** Stand in for a rendered panel element - jsdom has no layout, so sizes are stubbed. */
