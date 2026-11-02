@@ -85,7 +85,6 @@ describe('PanelModel', () => {
         it.each([{showSplitter: false}, {showSplitterCollapseButton: false}] as const)(
             'shows the expanded header collapse button when the splitter has none (%o)',
             config => {
-                vi.spyOn(console, 'error').mockImplementation(() => {});
                 const model = createPanel({resizeWhileDragging: true, ...config});
                 expect(model.showHeaderCollapseButton).toBe(true);
             }
