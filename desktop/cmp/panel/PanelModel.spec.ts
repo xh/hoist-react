@@ -76,6 +76,48 @@ describe('PanelModel', () => {
         });
     });
 
+    describe('collapse affordances', () => {
+        it('hides the expanded header collapse button when the splitter has one', () => {
+            const model = createPanel();
+            expect(model.showHeaderCollapseButton).toBe(false);
+        });
+
+        it.each([{showSplitter: false}, {showSplitterCollapseButton: false}] as const)(
+            'shows the expanded header collapse button when the splitter has none (%o)',
+            config => {
+                vi.spyOn(console, 'error').mockImplementation(() => {});
+                const model = createPanel({resizeWhileDragging: true, ...config});
+                expect(model.showHeaderCollapseButton).toBe(true);
+            }
+        );
+
+        it('shows the header collapse button when collapsed', () => {
+            const model = createPanel({defaultCollapsed: true});
+            expect(model.showHeaderCollapseButton).toBe(true);
+        });
+
+        it('honors an explicit showHeaderCollapseButton in both states', () => {
+            const off = createPanel({showHeaderCollapseButton: false});
+            expect(off.showHeaderCollapseButton).toBe(false);
+            off.setCollapsed(true);
+            expect(off.showHeaderCollapseButton).toBe(false);
+
+            const on = createPanel({showHeaderCollapseButton: true});
+            expect(on.showHeaderCollapseButton).toBe(true);
+        });
+
+        it('never shows a header collapse button on a non-collapsible panel', () => {
+            const model = createPanel({collapsible: false, showHeaderCollapseButton: true});
+            expect(model.showHeaderCollapseButton).toBe(false);
+        });
+
+        it('shows the collapsed rail by default, unless disabled or not collapsible', () => {
+            expect(createPanel().showCollapsedRail).toBe(true);
+            expect(createPanel({showCollapsedRail: false}).showCollapsedRail).toBe(false);
+            expect(createPanel({collapsible: false}).showCollapsedRail).toBe(false);
+        });
+    });
+
     describe('persistence', () => {
         it('restores a saved size and collapsed state', () => {
             const store = new MemoryStore({panel: {size: 320, collapsed: true}}),
