@@ -63,6 +63,8 @@ detailed, step-by-step upgrade instructions with before/after code examples.
   `${testId}-switcher-${tabId}` to each switcher button, as on desktop.
 * Added "Purge Connections" buttons to the Admin Console Connection Pool Monitor, to close all
   pooled JDBC connections on one instance or across the cluster. Requires hoist-core v44+.
+* `@debounced` methods now do nothing once their `HoistBase` owner is destroyed, including a call
+  pending at destroy.
 
 ### 🐞 Bug Fixes
 
@@ -89,6 +91,8 @@ detailed, step-by-step upgrade instructions with before/after code examples.
   element rather than to the `<input>` itself.
 * Fixed `Markdown` rendering "No model found" in place of its content when no Hoist model was in
   context, such as inside another React library's components.
+* Fixed a rare `window is not defined` error at the end of a spec file that uses
+  `@xh/hoist/test-support`.
 
 ### ⚙️ Technical
 
