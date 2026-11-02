@@ -128,14 +128,15 @@
     font-size: 12px;
     line-height: 1;
     cursor: pointer;
+    // Hidden, not just transparent, until revealed - so it cannot catch a click (or block a drag)
+    // during the hover delay. Visibility flips at the end of the delay, and after the fade out.
     opacity: 0;
-    pointer-events: none;
+    visibility: hidden;
     transform: scale(0.85);
-    transition:
-      opacity 120ms ease-out 0ms,
-      transform 120ms ease-out 0ms,
-      background-color 100ms,
-      border-color 100ms;
+    transition-property: opacity, transform, visibility, background-color, border-color;
+    transition-duration: 120ms, 120ms, 0ms, 100ms, 100ms;
+    transition-timing-function: ease-out, ease-out, linear, ease, ease;
+    transition-delay: 0ms, 0ms, 120ms, 0ms, 0ms;
 
     svg {
       display: block;
@@ -167,21 +168,23 @@
 
   &:hover > &__btn {
     opacity: 1;
-    pointer-events: auto;
+    visibility: visible;
     transform: none;
-    transition-delay: var(--xh-panel-splitter-hover-delay);
+    transition-delay:
+      var(--xh-panel-splitter-hover-delay), var(--xh-panel-splitter-hover-delay),
+      var(--xh-panel-splitter-hover-delay), 0ms, 0ms;
   }
 
   &:focus-visible > &__btn {
     opacity: 1;
-    pointer-events: auto;
+    visibility: visible;
     transform: none;
     transition-delay: 0ms;
   }
 
   &--dragging > &__btn {
     opacity: 0 !important;
-    pointer-events: none !important;
+    visibility: hidden !important;
   }
 }
 

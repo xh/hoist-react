@@ -10,7 +10,7 @@ import {button, modalToggleButton} from '@xh/hoist/desktop/cmp/button';
 import {withDefault} from '@xh/hoist/utils/js';
 import classNames from 'classnames';
 import {isEmpty, isNil} from 'lodash';
-import {useRef} from 'react';
+import {type MouseEvent, useRef} from 'react';
 import {PanelModel} from '../PanelModel';
 import {collapsedRail} from './CollapsedRail';
 import {collapseToggleIcon} from './CollapseToggleIcon';
@@ -34,7 +34,7 @@ export const panelHeader = hoistCmp.factory({
                 showCollapsedRail
             } = panelModel,
             {title, icon, compact} = props,
-            lastClickExpand = useRef(0);
+            expandedByClick = useRef(false);
 
         // Title and icon can vary based on collapsed state.
         const collapsedTitle = withDefault(props.collapsedTitle, title),
@@ -59,18 +59,24 @@ export const panelHeader = hoistCmp.factory({
             displayedHeaderItems.push(collapseToggleButton({panelModel}));
         }
 
-        // A single click anywhere on a collapsed header expands it.
+        // A single click anywhere on a collapsed header expands it. Flag that expand so the
+        // double-click it may start does not re-collapse the panel. The first click of any new
+        // sequence (detail 1) clears the flag, whatever the OS double-click interval.
         const clickToExpand = isRenderedCollapsed && collapsible,
-            onClick = clickToExpand
-                ? () => {
-                      lastClickExpand.current = Date.now();
-                      panelModel.setCollapsed(false);
-                  }
-                : null;
+            onClick = (e: MouseEvent) => {
+                if (clickToExpand) {
+                    expandedByClick.current = true;
+                    panelModel.setCollapsed(false);
+                } else if (e.detail === 1) {
+                    expandedByClick.current = false;
+                }
+            };
 
         const onDoubleClick = () => {
-            // Skip the double-click that ends with a click-to-expand, or it re-collapses.
-            if (Date.now() - lastClickExpand.current < 500) return;
+            if (expandedByClick.current) {
+                expandedByClick.current = false;
+                return;
+            }
 
             if (isModal) {
                 panelModel.toggleIsModal();
