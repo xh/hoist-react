@@ -472,6 +472,10 @@ when explicitly requested or when it points to extensive context that doesn't fi
 scope (issue/PR references belong in the commit message and PR description). Hard-wrap changelog
 entries at 100 characters (unlike commit messages and PR descriptions, which should not be wrapped).
 
+**Versioning:** `develop` always holds the next major version as a snapshot, for example
+`90.0.0-SNAPSHOT` while 89.x releases ship. Minor and patch releases never move it. See
+[Versioning](docs/build-and-publish.md#versioning) for the release steps.
+
 **Declaring a new hoist-core minimum:** a `Requires hoist-core >= X` changelog entry is not
 self-enforcing. Also update `MIN_HOIST_CORE_VERSION` in `core/XH.ts` (checked at startup by
 `EnvironmentService`) and the matching row in
