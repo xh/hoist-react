@@ -74,8 +74,8 @@ describe('ViewportSizeModel', () => {
         model.destroy();
     });
 
-    // A destroyed model must not touch `window` later - test-support destroys XH's instance before
-    // Vitest tears down jsdom at the end of each spec file.
+    // Test-support destroys XH's instance before Vitest tears down jsdom at the end of each spec
+    // file. `@debounced` drops the pending measure, so it never reads a `window` that is gone.
     it('stops measuring once destroyed, including a measure already pending', async () => {
         const model = await createModelAsync(),
             {size} = model;
