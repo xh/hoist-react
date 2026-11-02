@@ -111,12 +111,6 @@ describe('PanelModel', () => {
             expect(model.showHeaderCollapseButton).toBe(false);
         });
 
-        it('enables drag-to-collapse by default, unless disabled or not collapsible', () => {
-            expect(createPanel().dragToCollapse).toBe(true);
-            expect(createPanel({dragToCollapse: false}).dragToCollapse).toBe(false);
-            expect(createPanel({collapsible: false}).dragToCollapse).toBe(false);
-        });
-
         it('shows the collapsed rail by default, unless disabled or not collapsible', () => {
             expect(createPanel().showCollapsedRail).toBe(true);
             expect(createPanel({showCollapsedRail: false}).showCollapsedRail).toBe(false);
@@ -128,7 +122,6 @@ describe('PanelModel', () => {
         it('applies PanelModel.defaults when a config omits the setting', () => {
             setDefaults({
                 resizeWhileDragging: true,
-                dragToCollapse: false,
                 showSplitterCollapseButton: false,
                 showHeaderCollapseButton: false,
                 showCollapsedRail: false
@@ -136,17 +129,16 @@ describe('PanelModel', () => {
             const model = createPanel();
 
             expect(model.resizeWhileDragging).toBe(true);
-            expect(model.dragToCollapse).toBe(false);
             expect(model.showSplitterCollapseButton).toBe(false);
             expect(model.showHeaderCollapseButton).toBe(false);
             expect(model.showCollapsedRail).toBe(false);
         });
 
         it('lets instance config override PanelModel.defaults', () => {
-            setDefaults({dragToCollapse: false, showHeaderCollapseButton: true});
-            const model = createPanel({dragToCollapse: true, showHeaderCollapseButton: false});
+            setDefaults({showCollapsedRail: false, showHeaderCollapseButton: true});
+            const model = createPanel({showCollapsedRail: true, showHeaderCollapseButton: false});
 
-            expect(model.dragToCollapse).toBe(true);
+            expect(model.showCollapsedRail).toBe(true);
             expect(model.showHeaderCollapseButton).toBe(false);
         });
 
@@ -157,10 +149,9 @@ describe('PanelModel', () => {
         });
 
         it('still requires a collapsible panel for defaulted collapse affordances', () => {
-            setDefaults({dragToCollapse: true, showCollapsedRail: true});
+            setDefaults({showCollapsedRail: true});
             const model = createPanel({collapsible: false});
 
-            expect(model.dragToCollapse).toBe(false);
             expect(model.showCollapsedRail).toBe(false);
             expect(model.showSplitterCollapseButton).toBe(false);
         });

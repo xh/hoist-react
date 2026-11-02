@@ -396,11 +396,10 @@ panel({
 | `renderMode` | `'lazy'` | How collapsed content is rendered: `'lazy'` (render once, preserve), `'always'`, or `'unmountOnHide'`. |
 | `refreshMode` | `'onShowLazy'` | How collapsed content is refreshed when re-expanded. |
 | `resizeWhileDragging` | `false` | Redraw panel continuously during resize drag. |
-| `dragToCollapse` | `true` | Collapse the panel when the user drags its splitter below half its `minSize` (at least 24px). |
 
 ### App-Level Defaults
 
-`PanelModel.defaults` sets app-wide defaults for `resizeWhileDragging`, `dragToCollapse`,
+`PanelModel.defaults` sets app-wide defaults for `resizeWhileDragging`,
 `showSplitterCollapseButton`, `showHeaderCollapseButton`, and `showCollapsedRail`. Set them at app
 startup, for example in your `AppModel` constructor. Instance config takes precedence.
 
@@ -428,7 +427,7 @@ screens), straddles the line so it is easy to grab.
 - Drag a collapsible panel below half its `minSize`, or below 24px if that is larger, to collapse
   it. The line turns orange, shows the collapse chevron, and the content dims to preview the
   collapse. Release to collapse, or drag back to cancel. The panel keeps its pre-drag size for the
-  next expand. Set `dragToCollapse: false` to turn this off.
+  next expand.
 - The splitter is focusable. Arrow keys resize by 10px, or 50px with Shift. Enter toggles
   collapse.
 

@@ -40,13 +40,6 @@ export interface PanelConfig {
     /** Redraw panel as resize happens? */
     resizeWhileDragging?: boolean;
 
-    /**
-     * Collapse the panel when the user drags its splitter well below its minSize - half of
-     * minSize, or 24px if that is larger. Only applicable if the panel is collapsible and
-     * resizable. Default true.
-     */
-    dragToCollapse?: boolean;
-
     /** Can panel be collapsed, showing only its header? */
     collapsible?: boolean;
 
@@ -138,7 +131,6 @@ export interface PanelConfig {
  */
 export interface PanelModelDefaults {
     resizeWhileDragging?: boolean;
-    dragToCollapse?: boolean;
     showSplitterCollapseButton?: boolean;
     /** Leave null for the state-aware default - see {@link PanelConfig.showHeaderCollapseButton}. */
     showHeaderCollapseButton?: boolean;
@@ -164,7 +156,6 @@ export class PanelModel extends HoistModel implements Persistable<PanelPersistSt
     /** App-level defaults for PanelModel. Instance config takes precedence. */
     static defaults: PanelModelDefaults = {
         resizeWhileDragging: false,
-        dragToCollapse: true,
         showSplitterCollapseButton: true,
         showHeaderCollapseButton: null,
         showCollapsedRail: true
@@ -175,7 +166,6 @@ export class PanelModel extends HoistModel implements Persistable<PanelPersistSt
     //-----------------------
     readonly resizable: boolean;
     readonly collapsible: boolean;
-    readonly dragToCollapse: boolean;
     readonly defaultSize: number | string;
     readonly minSize: number;
     readonly maxSize: number;
@@ -253,7 +243,6 @@ export class PanelModel extends HoistModel implements Persistable<PanelPersistSt
         collapsible = true,
         resizable = true,
         resizeWhileDragging = PanelModel.defaults.resizeWhileDragging,
-        dragToCollapse = PanelModel.defaults.dragToCollapse,
         defaultSize,
         minSize = 0,
         maxSize = null,
@@ -304,7 +293,6 @@ export class PanelModel extends HoistModel implements Persistable<PanelPersistSt
         this.collapsible = collapsible;
         this.resizable = resizable;
         this.resizeWhileDragging = resizeWhileDragging;
-        this.dragToCollapse = collapsible && resizable && dragToCollapse;
         this.size = this.defaultSize = defaultSize;
         this.minSize = minSize;
         this.maxSize = maxSize;

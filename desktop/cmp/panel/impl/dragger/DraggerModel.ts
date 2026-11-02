@@ -155,13 +155,13 @@ export class DraggerModel extends HoistModel {
         if (!this.isDragging) return;
         e.preventDefault();
 
-        const {side, vertical, dragToCollapse, minSize, resizeWhileDragging} = this.panelModel,
+        const {side, vertical, collapsible, minSize, resizeWhileDragging} = this.panelModel,
             pos = vertical ? e.clientY : e.clientX,
             sign = side === 'left' || side === 'top' ? 1 : -1,
             rawSize = this.startSize + sign * (pos - this.startPos),
             size = clamp(rawSize, minSize, this.maxSize);
 
-        this.setSnapPending(dragToCollapse && rawSize < Math.max(minSize / 2, MIN_SNAP_SIZE));
+        this.setSnapPending(collapsible && rawSize < Math.max(minSize / 2, MIN_SNAP_SIZE));
         this.dragSize = size;
 
         if (resizeWhileDragging) {
