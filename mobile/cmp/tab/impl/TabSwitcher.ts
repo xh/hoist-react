@@ -4,7 +4,7 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {buttonEl, div} from '@xh/hoist/cmp/layout';
+import {div, htmlButton} from '@xh/hoist/cmp/layout';
 import {TabContainerModel, TabSwitcherProps} from '@xh/hoist/cmp/tab';
 import {hoistCmp, uses} from '@xh/hoist/core';
 import '@xh/hoist/mobile/register';
@@ -31,7 +31,7 @@ export const tabSwitcher = hoistCmp.factory<TabSwitcherProps>({
             className: classNames(className, `xh-tab-switcher--${orientation}`),
             [TEST_ID]: testId,
             items: tabs.map(({id, title, icon, disabled}) =>
-                buttonEl({
+                htmlButton({
                     key: id,
                     type: 'button',
                     className: classNames('xh-tab', id === activeTabId ? 'xh-tab--active' : null),
