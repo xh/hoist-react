@@ -6,7 +6,8 @@
  */
 import {HoistModel} from '@xh/hoist/core';
 import {action, observable, runInAction, observableRef} from '@xh/hoist/mobx';
-import {debounce, isFinite, isString} from 'lodash';
+import {debounced} from '@xh/hoist/utils/js';
+import {isFinite, isString} from 'lodash';
 
 /**
  * Exposes width / height of browser viewport + device orientation as observables.
@@ -28,7 +29,7 @@ export class ViewportSizeModel extends HoistModel {
 
     constructor() {
         super();
-        window.addEventListener('resize', this.setViewportSize);
+        window.addEventListener('resize', () => this.setViewportSize());
         this.setViewportSize();
 
         // iOS browsers - specifically iOS WebKit components, i.e. *not* Safari itself, but
@@ -54,20 +55,13 @@ export class ViewportSizeModel extends HoistModel {
         });
     }
 
-    override destroy() {
-        // Cancel a pending measure too, so it cannot read `window` after the page is gone.
-        window.removeEventListener('resize', this.setViewportSize);
-        this.setViewportSize.cancel();
-        super.destroy();
-    }
-
     //---------------------
     // Implementation
     //---------------------
     // Debounced to account for slow inner window resize on mobile. A single 100ms debounce does
     // appear to reliably catch resize events even on problematic mobile browsers (see above).
-    // A lodash debounce rather than `@debounced`, because destroy() must cancel a pending call.
-    private readonly setViewportSize = debounce(() => {
+    @debounced(100)
+    private setViewportSize() {
         runInAction(
             () =>
                 (this.size = {
@@ -75,7 +69,7 @@ export class ViewportSizeModel extends HoistModel {
                     height: window.innerHeight
                 })
         );
-    }, 100);
+    }
 
     @action
     private updateOrientation() {
