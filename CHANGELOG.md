@@ -105,10 +105,12 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 
 ### 📚 Libraries
 
+* @auth0/auth0-spa-js `2.28 → 2.29`
+* @azure/msal-browser `5.25 → 5.27`
 * router5 `7.0 → 8.0`
 * router5-plugin-browser `7.0 → 8.0`
 * mobx `7.0 → 7.1` - `toJS` now includes `@observable accessor` fields, which it previously left out
-* react-window `2.3 → 2.4`
+* react-window `2.3 → 2.5`
 * react-windowed-select `removed`
 * semver `removed`
 * ua-parser-js `removed`
