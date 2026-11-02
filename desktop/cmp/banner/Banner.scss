@@ -7,18 +7,18 @@
 .xh-banner {
   flex: none;
   align-items: center;
-  gap: var(--xh-pad-half-px);
+  gap: var(--xh-spacing-half);
   width: 100%;
-  min-height: var(--xh-tbar-min-size-px);
-  padding: var(--xh-pad-half-px) var(--xh-pad-half-px) var(--xh-pad-half-px) var(--xh-pad-px);
-  font-size: var(--xh-tbar-font-size-px);
+  min-height: var(--xh-toolbar-min-size);
+  padding: var(--xh-spacing-half) var(--xh-spacing-half) var(--xh-spacing-half) var(--xh-spacing);
+  font-size: var(--xh-toolbar-font-size);
   color: var(--xh-text-color);
   background-color: var(--xh-intent-neutral-trans1);
 
   &__content {
     flex: 1;
     align-items: center;
-    gap: var(--xh-pad-px);
+    gap: var(--xh-spacing);
     min-width: 0;
 
     > .xh-icon {
@@ -72,15 +72,15 @@
   }
 
   &--compact {
-    min-height: var(--xh-tbar-compact-min-size-px);
+    min-height: var(--xh-toolbar-compact-min-size);
     padding-top: 2px;
     padding-bottom: 2px;
-    font-size: var(--xh-tbar-compact-font-size-px);
+    font-size: var(--xh-toolbar-compact-font-size);
 
     .xh-button {
-      min-height: var(--xh-tbar-compact-item-height-px);
-      height: var(--xh-tbar-compact-item-height-px);
-      font-size: var(--xh-tbar-compact-font-size-px);
+      min-height: var(--xh-toolbar-compact-item-height);
+      height: var(--xh-toolbar-compact-item-height);
+      font-size: var(--xh-toolbar-compact-font-size);
     }
   }
 

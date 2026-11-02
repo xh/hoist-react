@@ -37,8 +37,8 @@
     background-color: var(--xh-input-bg) !important;
     border: none;
     box-shadow: var(--xh-form-field-box-shadow);
-    padding-left: var(--xh-pad-px) !important;
-    padding-right: var(--xh-pad-px) !important;
+    padding-left: var(--xh-spacing) !important;
+    padding-right: var(--xh-spacing) !important;
 
     &:hover {
       background-color: color-mix(in srgb, var(--xh-input-bg) 94%, gray) !important;
@@ -55,14 +55,14 @@
   // Compact mode - trigger button matches compact toolbar button sizing.
   // .xh-button qualifier needed to beat `.xh-app .xh-button.bp6-button` font-size (0,3,0).
   &--compact &__trigger.xh-button {
-    min-height: var(--xh-tbar-compact-item-height-px);
-    max-height: var(--xh-tbar-compact-item-height-px);
-    font-size: var(--xh-tbar-compact-font-size-px);
-    padding: 3px var(--xh-pad-half-px);
+    min-height: var(--xh-toolbar-compact-item-height);
+    max-height: var(--xh-toolbar-compact-item-height);
+    font-size: var(--xh-toolbar-compact-font-size);
+    padding: 3px var(--xh-spacing-half);
   }
 
   &--compact .xh-icon-picker__trigger--as-input.xh-button {
-    padding: 3px var(--xh-pad-half-px) !important;
+    padding: 3px var(--xh-spacing-half) !important;
   }
 }
 
@@ -71,17 +71,16 @@
 .xh-icon-picker__popover.bp6-popover {
   .bp6-popover-content {
     padding: 0;
-    border-radius: var(--xh-border-radius-px);
-    box-shadow: var(--xh-popup-shadow);
+    border-radius: var(--xh-border-radius);
     background: var(--xh-bg);
   }
 
   &.xh-icon-picker__popover--compact {
-    font-size: var(--xh-tbar-compact-font-size-px);
+    font-size: var(--xh-toolbar-compact-font-size);
 
     .xh-icon-picker__filter,
     .xh-icon-picker__footer {
-      padding: 3px var(--xh-pad-half-px);
+      padding: 3px var(--xh-spacing-half);
     }
   }
 
@@ -90,12 +89,12 @@
   }
 
   .xh-icon-picker__filter {
-    padding: var(--xh-pad-half-px);
+    padding: var(--xh-spacing-half);
     border-bottom: 1px solid var(--xh-border-color);
   }
 
   .xh-icon-picker__grid {
-    padding: var(--xh-pad-half-px);
+    padding: var(--xh-spacing-half);
   }
 
   // The list's width includes room for a scrollbar - keep that room whether or not one shows.
@@ -118,7 +117,7 @@
     height: var(--xh-icon-picker-cell-size);
     padding: 0;
     border: none;
-    border-radius: var(--xh-border-radius-px);
+    border-radius: var(--xh-border-radius);
     background: none;
     color: var(--xh-text-color);
     cursor: pointer;
@@ -137,7 +136,7 @@
   }
 
   .xh-icon-picker__no-results {
-    padding: var(--xh-pad-px);
+    padding: var(--xh-spacing);
     color: var(--xh-text-color-muted);
     font-style: italic;
     text-align: center;
@@ -146,9 +145,9 @@
   .xh-icon-picker__footer {
     display: flex;
     align-items: center;
-    padding: var(--xh-pad-half-px) var(--xh-pad-px);
+    padding: var(--xh-spacing-half) var(--xh-spacing);
     border-top: 1px solid var(--xh-border-color);
-    font-size: var(--xh-font-size-small-px);
+    font-size: var(--xh-font-size-small);
     color: var(--xh-text-color-muted);
   }
 
@@ -167,7 +166,7 @@
   .xh-icon-picker__footer-action {
     cursor: pointer;
     color: var(--xh-intent-primary);
-    padding-left: var(--xh-pad-px);
+    padding-left: var(--xh-spacing);
 
     &:hover {
       text-decoration: underline;

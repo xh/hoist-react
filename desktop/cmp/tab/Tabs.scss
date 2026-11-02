@@ -39,6 +39,7 @@
   // Generic tab defaults - orientation-specific blocks below layer on top of these.
   .bp6-tab {
     color: var(--xh-tab-text-color);
+    font-weight: var(--xh-tab-font-weight);
 
     &[aria-disabled='true'] {
       color: var(--xh-tab-disabled-text-color);
@@ -59,23 +60,23 @@
   }
 
   &--top {
-    padding-left: var(--xh-pad-px);
+    padding-left: var(--xh-spacing);
     max-width: 100%;
 
     // Active indicator sits on the bottom edge of the tab, adjacent to the content below.
     .bp6-tab[aria-selected='true'] {
-      box-shadow: inset 0 -3px 0 var(--xh-tab-active-text-color);
+      box-shadow: inset 0 -3px 0 var(--xh-tab-active-indicator-color);
     }
   }
 
   &--bottom {
-    padding-left: var(--xh-pad-px);
-    padding-top: var(--xh-pad-half-px);
+    padding-left: var(--xh-spacing);
+    padding-top: var(--xh-spacing-half);
     max-width: 100%;
 
     // Flip the indicator to be on top of the tab label
     .bp6-tab[aria-selected='true'] {
-      box-shadow: inset 0 3px 0 currentColor;
+      box-shadow: inset 0 3px 0 var(--xh-tab-active-indicator-color);
     }
   }
 
@@ -142,7 +143,7 @@
   &__tab {
     align-items: baseline;
     font-family: var(--xh-tab-font-family);
-    font-size: var(--xh-tab-font-size-px);
+    font-size: var(--xh-tab-font-size);
     user-select: none;
 
     & > svg:first-child {

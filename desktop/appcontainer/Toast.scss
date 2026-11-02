@@ -12,28 +12,28 @@
 
   .xh-toast {
     color: white !important;
-    padding-left: var(--xh-pad-half-px);
+    padding-left: var(--xh-spacing-half);
 
     &__title {
-      margin-bottom: var(--xh-pad-half-px);
+      margin-bottom: var(--xh-spacing-half);
       display: block;
-      font-size: var(--xh-font-size-large-px);
+      font-size: var(--xh-font-size-large);
     }
 
     &__body {
-      font-size: var(--xh-font-size-px);
+      font-size: var(--xh-font-size);
     }
 
     &__trace-id {
       display: block;
-      margin-top: var(--xh-pad-half-px);
-      font-size: var(--xh-font-size-small-px);
+      margin-top: var(--xh-spacing-half);
+      font-size: var(--xh-font-size-small);
       opacity: 0.7;
     }
 
     &__icon {
       align-self: center;
-      margin: 0 0 0 var(--xh-pad-half-px);
+      margin: 0 0 0 var(--xh-spacing-half);
     }
 
     .bp6-toast-message {

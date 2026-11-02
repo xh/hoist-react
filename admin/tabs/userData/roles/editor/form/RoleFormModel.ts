@@ -270,7 +270,7 @@ export class RoleFormModel extends HoistModel {
                                         entity === 'DIRECTORY_GROUP'
                                             ? (displayName ?? RoleModel.fmtDirectoryGroup(v))
                                             : v,
-                                    paddingRight: 'var(--xh-pad-half-px)'
+                                    paddingRight: 'var(--xh-spacing-half)'
                                 }),
                                 Icon.warning({omit: !error, intent: 'warning'})
                             ]

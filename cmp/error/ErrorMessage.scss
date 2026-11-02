@@ -10,7 +10,7 @@
   justify-content: center;
 
   &__inner {
-    padding: var(--xh-pad-px);
+    padding: var(--xh-spacing);
     background: var(--xh-intent-danger-trans1);
     border: 1px solid var(--xh-intent-danger);
     max-width: 50%;
@@ -18,7 +18,7 @@
     overflow-wrap: break-word;
 
     & > * {
-      margin: 0 0 var(--xh-pad-px);
+      margin: 0 0 var(--xh-spacing);
 
       &:last-child {
         margin-bottom: 0;
@@ -38,5 +38,5 @@
 .xh-mobile .xh-error-message__inner {
   flex: 1;
   max-width: none;
-  margin: 0 var(--xh-pad-px);
+  margin: 0 var(--xh-spacing);
 }

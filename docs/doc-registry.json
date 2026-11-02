@@ -244,8 +244,8 @@
             "title": "Styles & Theming",
             "mcpCategory": "package",
             "viewerCategory": "supporting",
-            "description": "CSS custom properties, BEM naming, dark/light theming, SCSS conventions, and utility classes.",
-            "keywords": ["CSS, SCSS, styles, theme, dark mode, CSS variables, custom properties, BEM, xh- prefix, vars.scss, intent colors, utility classes, ThemeModel"]
+            "description": "CSS custom properties - naming conventions, units, overrides - plus BEM naming, dark/light theming, SCSS conventions, and utility classes.",
+            "keywords": ["CSS, SCSS, styles, theme, dark mode, CSS variables, custom properties, naming conventions, spacing, units, BEM, xh- prefix, vars.scss, intent colors, utility classes, ThemeModel"]
         },
         {
             "id": "kit/README.md",
@@ -556,8 +556,8 @@
             "title": "v90 Upgrade Notes",
             "mcpCategory": "devops",
             "viewerCategory": "upgrade",
-            "description": "Upgrade guide from v89.x to v90.0.0. Low difficulty. Covers the removal of numbro and NumberFormatOptions.formatConfig.",
-            "keywords": ["upgrade", "migration", "breaking changes", "v90", "v89", "numbro", "formatConfig"]
+            "description": "Upgrade guide from v89.x to v90.0.0. Medium difficulty. Covers the CSS custom property overhaul (codemod, removed override hooks, renamed variables, units) and the removal of numbro and NumberFormatOptions.formatConfig.",
+            "keywords": ["upgrade", "migration", "breaking changes", "v90", "v89", "numbro", "formatConfig", "css variables", "custom properties", "override hooks", "codemod", "renamed variables", "units", "--xh-"]
         }
     ]
 }

@@ -8,10 +8,10 @@
 
   &__content-overlay {
     position: fixed;
-    top: var(--xh-pad-safe-top);
-    bottom: var(--xh-pad-safe-bottom);
-    left: var(--xh-pad-safe-left);
-    right: var(--xh-pad-safe-right);
+    top: var(--xh-safe-area-inset-top);
+    bottom: var(--xh-safe-area-inset-bottom);
+    left: var(--xh-safe-area-inset-left);
+    right: var(--xh-safe-area-inset-right);
     width: 100svw;
     display: flex;
     flex-direction: column;

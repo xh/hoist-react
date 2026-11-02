@@ -5,12 +5,12 @@
 
     &__add-btn-row {
       display: flex;
-      padding: var(--xh-pad-half-px);
+      padding: var(--xh-spacing-half);
     }
   }
 
   &__unsupported {
-    padding: var(--xh-pad-px);
+    padding: var(--xh-spacing);
     color: var(--xh-text-color-muted);
   }
 
@@ -23,7 +23,7 @@
 
   &__row {
     display: flex;
-    padding: var(--xh-pad-half-px);
+    padding: var(--xh-spacing-half);
     border-bottom: 1px solid var(--xh-grid-border-color);
 
     &__body {
@@ -31,7 +31,7 @@
     }
 
     &__bottom {
-      margin-top: var(--xh-pad-half-px);
+      margin-top: var(--xh-spacing-half);
 
       .bp6-popover-target,
       .bp6-input-group {

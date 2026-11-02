@@ -1,8 +1,8 @@
 .xh-toolbar {
-  padding: var(--xh-pad-half-px) var(--xh-pad-px) var(--xh-pad-half-px) var(--xh-pad-half-px);
-  font-size: var(--xh-tbar-font-size-px);
-  color: var(--xh-tbar-text-color);
-  background-color: var(--xh-tbar-bg);
+  padding: var(--xh-spacing-half) var(--xh-spacing) var(--xh-spacing-half) var(--xh-spacing-half);
+  font-size: var(--xh-toolbar-font-size);
+  color: var(--xh-toolbar-text-color);
+  background-color: var(--xh-toolbar-bg);
   width: 100%;
   flex: none;
   align-items: center;
@@ -22,7 +22,7 @@
       }
 
       &:not([class*='xh-no-pad']) {
-        margin-left: var(--xh-tbar-item-pad-px);
+        margin-left: var(--xh-toolbar-item-spacing);
       }
     }
   }
@@ -33,66 +33,65 @@
     flex-shrink: 0;
 
     &:not([class*='xh-no-pad']) {
-      margin-left: var(--xh-tbar-item-pad-px);
+      margin-left: var(--xh-toolbar-item-spacing);
     }
   }
 
   &:not(&--vertical) {
-    min-height: var(--xh-tbar-min-size-px);
+    min-height: var(--xh-toolbar-min-size);
 
     // Selected via not-last to account for panels, which dock a header above the tbar.
     &:not(:last-child) {
-      border-bottom: 1px solid var(--xh-tbar-border-color);
+      border-bottom: 1px solid var(--xh-toolbar-border-color);
     }
 
     &:last-child {
-      border-top: 1px solid var(--xh-tbar-border-color);
+      border-top: 1px solid var(--xh-toolbar-border-color);
     }
 
     .xh-toolbar__separator {
-      border-left: 1px solid var(--xh-tbar-separator-color);
+      border-left: 1px solid var(--xh-toolbar-separator-color);
       height: 20px; // matches BluePrint navBarSeparator
-      margin-left: calc(var(--xh-tbar-item-pad) * 2px);
-      margin-right: var(--xh-tbar-item-pad-px);
+      margin-left: calc(var(--xh-toolbar-item-spacing) * 2);
+      margin-right: var(--xh-toolbar-item-spacing);
     }
   }
 
   // Vertical mode
   &--vertical {
-    width: var(--xh-tbar-min-size-px);
-    padding: 0 var(--xh-pad-half-px) var(--xh-pad-px) var(--xh-pad-half-px);
+    width: var(--xh-toolbar-min-size);
+    padding: 0 var(--xh-spacing-half) var(--xh-spacing) var(--xh-spacing-half);
 
     &:not(.xh-toolbar--overflow) > *:not([class*='xh-no-pad']) {
-      margin-top: var(--xh-tbar-item-pad-px);
+      margin-top: var(--xh-toolbar-item-spacing);
       margin-left: 0;
     }
 
     .xh-toolbar__separator {
-      border-bottom: 1px solid var(--xh-tbar-separator-color);
+      border-bottom: 1px solid var(--xh-toolbar-separator-color);
       width: 20px;
     }
 
     &:first-child {
-      border-right: 1px solid var(--xh-tbar-border-color);
+      border-right: 1px solid var(--xh-toolbar-border-color);
     }
 
     &:last-child {
-      border-left: 1px solid var(--xh-tbar-border-color);
+      border-left: 1px solid var(--xh-toolbar-border-color);
     }
   }
 
   // Compact mode
   &--compact {
-    font-size: var(--xh-tbar-compact-font-size-px);
+    font-size: var(--xh-toolbar-compact-font-size);
     // Tighten up padding on edges and between items.
     padding-left: 0;
     padding-right: 2px;
-    --xh-tbar-item-pad: 4;
-    --xh-tbar-item-pad-px: 4px;
+    --xh-toolbar-item-spacing: 4px;
 
     &:not(.xh-toolbar--vertical) {
       min-height: unset;
-      height: var(--xh-tbar-compact-min-size-px);
+      height: var(--xh-toolbar-compact-min-size);
 
       .xh-toolbar__separator {
         height: 12px;
@@ -100,7 +99,7 @@
     }
 
     &.xh-toolbar--vertical {
-      width: var(--xh-tbar-compact-min-size-px);
+      width: var(--xh-toolbar-compact-min-size);
 
       .xh-toolbar__separator {
         width: 12px;
@@ -113,10 +112,10 @@
       button.xh-button.bp6-button.xh-button--minimal,
       button.xh-button.bp6-button.xh-button--standard,
       button.xh-button.bp6-button.xh-button--outlined {
-        padding: 3px var(--xh-pad-half-px);
-        min-height: var(--xh-tbar-compact-item-height-px);
-        max-height: var(--xh-tbar-compact-item-height-px);
-        font-size: var(--xh-tbar-compact-font-size-px);
+        padding: 3px var(--xh-spacing-half);
+        min-height: var(--xh-toolbar-compact-item-height);
+        max-height: var(--xh-toolbar-compact-item-height);
+        font-size: var(--xh-toolbar-compact-font-size);
 
         svg:not(:last-child) {
           margin-right: 4px;
@@ -126,8 +125,8 @@
 
     // Compact toolbar inputs
     .xh-input {
-      max-height: var(--xh-tbar-compact-item-height-px);
-      min-height: var(--xh-tbar-compact-item-height-px);
+      max-height: var(--xh-toolbar-compact-item-height);
+      min-height: var(--xh-toolbar-compact-item-height);
 
       .bp6-input-group {
         // This padding reserves space for a left-icon - default 30px overly wide in compact mode.
@@ -136,20 +135,20 @@
         }
 
         > input {
-          max-height: var(--xh-tbar-compact-item-height-px);
-          min-height: var(--xh-tbar-compact-item-height-px);
+          max-height: var(--xh-toolbar-compact-item-height);
+          min-height: var(--xh-toolbar-compact-item-height);
         }
 
         // Buttons inside other input elements
         .xh-button {
-          max-height: var(--xh-tbar-compact-item-height-px);
-          min-height: var(--xh-tbar-compact-item-height-px);
+          max-height: var(--xh-toolbar-compact-item-height);
+          min-height: var(--xh-toolbar-compact-item-height);
           margin: 0 !important;
         }
 
         // Inline input icons made smaller, lighter, and alignment tweaked.
         svg:not(.bp6-icon) {
-          font-size: var(--xh-tbar-compact-font-size-px);
+          font-size: var(--xh-toolbar-compact-font-size);
           margin: 5px 2px 5px 4px;
           opacity: 0.6;
         }
@@ -164,7 +163,7 @@
         padding-inline-start: 0;
 
         .bp6-control-indicator {
-          margin: 0 var(--xh-pad-half-px) 0 0;
+          margin: 0 var(--xh-spacing-half) 0 0;
         }
 
         &.bp6-align-right {
@@ -173,7 +172,7 @@
 
           .bp6-control-indicator {
             float: none;
-            margin: 0 0 0 var(--xh-pad-half-px);
+            margin: 0 0 0 var(--xh-spacing-half);
           }
         }
       }
@@ -181,7 +180,7 @@
       // BP's unlabeled slider (labelRenderer: false) is 16px - center it. Labeled ones are 40px
       // and overhang the bar.
       &.xh-slider .bp6-slider-unlabeled {
-        margin-top: calc((var(--xh-tbar-compact-item-height-px) - 16px) / 2);
+        margin-top: calc((var(--xh-toolbar-compact-item-height) - 16px) / 2);
       }
 
       &.xh-select {
@@ -189,20 +188,20 @@
         align-items: center;
 
         .xh-select__control {
-          max-height: var(--xh-tbar-compact-item-height-px);
-          min-height: var(--xh-tbar-compact-item-height-px);
+          max-height: var(--xh-toolbar-compact-item-height);
+          min-height: var(--xh-toolbar-compact-item-height);
 
           // Matched to other inline input icons (above).
           &__left-icon {
-            font-size: var(--xh-tbar-compact-font-size-px);
+            font-size: var(--xh-toolbar-compact-font-size);
             margin: 5px 2px 5px 4px;
             opacity: 0.6;
           }
         }
 
         .xh-select__value-container {
-          max-height: var(--xh-tbar-compact-item-height-px);
-          min-height: var(--xh-tbar-compact-item-height-px);
+          max-height: var(--xh-toolbar-compact-item-height);
+          min-height: var(--xh-toolbar-compact-item-height);
 
           // No need for padding if there is a leading leftIcon.
           &:not(:first-child) {
@@ -236,26 +235,26 @@
 }
 
 .xh-toolbar-overflow-popover {
-  border: 1px solid var(--xh-tbar-border-color);
+  border: 1px solid var(--xh-toolbar-border-color);
 
   .bp6-popover-arrow-border,
   .bp6-popover-arrow-fill {
-    fill: var(--xh-tbar-border-color) !important;
+    fill: var(--xh-toolbar-border-color) !important;
   }
 
   .bp6-popover-content {
-    color: var(--xh-tbar-text-color);
-    background-color: var(--xh-tbar-bg);
+    color: var(--xh-toolbar-text-color);
+    background-color: var(--xh-toolbar-bg);
 
     & > .xh-vbox {
       align-items: flex-start;
 
       & > * {
-        margin: 2px var(--xh-tbar-item-pad-px);
+        margin: 2px var(--xh-toolbar-item-spacing);
       }
 
       .xh-toolbar__separator {
-        border-bottom: 1px solid var(--xh-tbar-separator-color);
+        border-bottom: 1px solid var(--xh-toolbar-separator-color);
         align-self: stretch;
       }
     }

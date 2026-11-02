@@ -19,7 +19,7 @@ import './RadioCardInput.scss';
 export interface RadioCardInputProps extends HoistProps, HoistInputProps, LayoutProps {
     /**
      * Width of every card, in pixels or any CSS width. Cards in a group always share one width
-     * and wrap onto new rows as needed. Defaults to the `--radio-card-input-card-width` CSS var
+     * and wrap onto new rows as needed. Defaults to the `--xh-radio-card-input-card-width` CSS var
      * (88px), which suits short labels under a small preview. Set a wider value for longer labels
      * or descriptions - text wraps within the card.
      */

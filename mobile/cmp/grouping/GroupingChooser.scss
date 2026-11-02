@@ -18,7 +18,7 @@
 
   &__editor {
     .xh-panel__content {
-      padding: var(--xh-pad-px);
+      padding: var(--xh-spacing);
     }
   }
 
@@ -66,18 +66,18 @@
     // Section heading style for internal title (like colChooser)
     .xh-panel-header {
       background-color: var(--xh-appbar-bg);
-      color: var(--xh-appbar-title-color);
-      padding-left: var(--xh-pad-px);
+      color: var(--xh-appbar-title-text-color);
+      padding-left: var(--xh-spacing);
     }
 
     .xh-panel__content {
-      padding: var(--xh-pad-px);
+      padding: var(--xh-spacing);
     }
 
     // Empty state placeholder - don't flex as it pushes add button down.
     .xh-placeholder {
       flex: none;
-      margin: var(--xh-pad-px);
+      margin: var(--xh-spacing);
     }
 
     // Individual favorite items (hBoxes w/buttons)
@@ -93,7 +93,7 @@
 
     &__add-btn {
       width: 200px;
-      margin: var(--xh-pad-px) auto;
+      margin: var(--xh-spacing) auto;
     }
   }
 }

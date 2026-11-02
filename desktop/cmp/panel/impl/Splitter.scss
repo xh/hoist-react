@@ -11,9 +11,9 @@
   }
 
   &.vertical {
-    height: var(--xh-resizable-size-px);
-    border-top: var(--xh-resizable-border-width-px) solid var(--xh-resizable-border-color);
-    border-bottom: var(--xh-resizable-border-width-px) solid var(--xh-resizable-border-color);
+    height: var(--xh-resizable-size);
+    border-top: var(--xh-resizable-border-width) solid var(--xh-resizable-border-color);
+    border-bottom: var(--xh-resizable-border-width) solid var(--xh-resizable-border-color);
 
     .xh-resizable-collapser-btn {
       width: 50px;
@@ -25,9 +25,9 @@
   }
 
   &.horizontal {
-    width: var(--xh-resizable-size-px);
-    border-left: var(--xh-resizable-border-width-px) solid var(--xh-resizable-border-color);
-    border-right: var(--xh-resizable-border-width-px) solid var(--xh-resizable-border-color);
+    width: var(--xh-resizable-size);
+    border-left: var(--xh-resizable-border-width) solid var(--xh-resizable-border-color);
+    border-right: var(--xh-resizable-border-width) solid var(--xh-resizable-border-color);
 
     .xh-resizable-collapser-btn {
       width: 10px;

@@ -11,7 +11,7 @@
   // A card shrinks below its width only when the container is narrower than one card.
   display: flex;
   flex-wrap: wrap;
-  gap: var(--xh-radio-card-input-gap-px);
+  gap: var(--xh-radio-card-input-gap);
 
   // Fill - span the container and stretch cards to share each row, with the card width as their
   // minimum. A grid keeps every card in a row the same width, including on the last row.
@@ -34,11 +34,11 @@
     align-items: center;
     flex: 0 1 auto;
     width: var(--xh-radio-card-input-card-width);
-    gap: var(--xh-pad-half-px);
+    gap: var(--xh-spacing-half);
     min-width: 0;
-    padding: var(--xh-pad-px);
+    padding: var(--xh-spacing);
     border: 1px solid var(--xh-border-color);
-    border-radius: var(--xh-radio-card-input-border-radius-px);
+    border-radius: var(--xh-radio-card-input-border-radius);
     background-color: var(--xh-radio-card-input-bg);
     cursor: pointer;
     user-select: none;
@@ -65,7 +65,7 @@
 
     // A preview's own whitespace sits above the label, so tighten the bottom to balance it.
     &--with-preview {
-      padding-bottom: var(--xh-pad-half-px);
+      padding-bottom: var(--xh-spacing-half);
     }
 
     // Text-only cards center their content, so a short label next to taller cards in the same
@@ -94,7 +94,7 @@
   }
 
   &__label {
-    font-size: var(--xh-font-size-small-px);
+    font-size: var(--xh-font-size-small);
     font-weight: 500;
     color: var(--xh-text-color-muted);
     text-align: center;
@@ -109,7 +109,7 @@
   }
 
   &__description {
-    font-size: var(--xh-font-size-small-px);
+    font-size: var(--xh-font-size-small);
     color: var(--xh-text-color-muted);
     text-align: center;
     max-width: 100%;

@@ -52,7 +52,7 @@
       margin: 2px 0 0 2px;
       padding: 4px 8px;
       font-family: var(--xh-font-family);
-      font-size: var(--xh-font-size-px);
+      font-size: var(--xh-font-size);
       line-height: 1;
       background: var(--xh-bg-alt);
       border: var(--xh-border-solid);
@@ -86,7 +86,7 @@
           width: 140px;
           max-width: 100%;
           font-family: var(--xh-font-family);
-          font-size: var(--xh-font-size-px);
+          font-size: var(--xh-font-size);
           color: var(--xh-text-color);
           background: none;
           border: 1px solid var(--xh-intent-primary);
@@ -114,7 +114,7 @@
     .lm_tab {
       background-color: var(--xh-menu-bg);
       color: var(--xh-menu-item-text-color);
-      font-size: var(--xh-menu-item-font-size-px);
+      font-size: var(--xh-menu-item-font-size);
       border: none;
       margin: 0;
       height: 30px;
@@ -131,13 +131,13 @@
     background: var(--xh-resizable-bg);
 
     &.lm_horizontal {
-      border-left: var(--xh-resizable-border-width-px) solid var(--xh-resizable-border-color);
-      border-right: var(--xh-resizable-border-width-px) solid var(--xh-resizable-border-color);
+      border-left: var(--xh-resizable-border-width) solid var(--xh-resizable-border-color);
+      border-right: var(--xh-resizable-border-width) solid var(--xh-resizable-border-color);
     }
 
     &.lm_vertical {
-      border-top: var(--xh-resizable-border-width-px) solid var(--xh-resizable-border-color);
-      border-bottom: var(--xh-resizable-border-width-px) solid var(--xh-resizable-border-color);
+      border-top: var(--xh-resizable-border-width) solid var(--xh-resizable-border-color);
+      border-bottom: var(--xh-resizable-border-width) solid var(--xh-resizable-border-color);
     }
   }
 
@@ -151,10 +151,10 @@
 
 .lm_dragProxy {
   .lm_header .lm_tab {
-    padding: var(--xh-pad-half-px) var(--xh-pad-px);
+    padding: var(--xh-spacing-half) var(--xh-spacing);
     line-height: 1;
     font-family: var(--xh-font-family);
-    font-size: var(--xh-font-size-px);
+    font-size: var(--xh-font-size);
     background: var(--xh-bg);
     border: var(--xh-border-solid);
     color: var(--xh-text-color);

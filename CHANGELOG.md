@@ -14,27 +14,56 @@
 
 ## 90.0.0-SNAPSHOT - unreleased
 
-### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW - `formatConfig`, `DateInput` props, mobile styling)
+### 💥 Breaking Changes (upgrade difficulty: 🟠 MEDIUM - CSS variables, mobile styling, `DateInput`)
+
 See [`docs/upgrade-notes/v90-upgrade-notes.md`](docs/upgrade-notes/v90-upgrade-notes.md) for
 detailed, step-by-step upgrade instructions with before/after code examples.
 
-* Removed `NumberFormatOptions.formatConfig`, which took a numbro format. Use `precision`, `zeroPad`
-  and `withCommas` instead.
-* Desktop `DateInput` now renders its calendar with react-day-picker 10, as the mobile `DateInput`
-  already did, and its time picker is Hoist's own 24-hour control. `dayPickerProps` now takes
-  react-day-picker 10 props - see the upgrade notes for the renames from v8. Removed
-  `timePickerProps`, which took Blueprint `TimePicker` options such as `useAmPm`.
+The changes below are grouped by area. The CSS variable changes affect any app that customizes or
+reads Hoist's CSS variables. The rest apply only to mobile apps or to apps using the named APIs.
+
+#### CSS Variables
+
+* Overhauled Hoist's CSS custom properties onto a simpler, consistently named baseline. Run
+  `docs/codemod/v90/codemod-css-vars.mjs` to migrate app stylesheets and code.
+    * Removed the unprefixed override hooks (e.g. `--grid-bg`, `--pad`). Apps now set the `--xh-*`
+      variables directly on `body.xh-app`, which now wins over Hoist's defaults in every theme and
+      platform combination. Overrides set on `:root` or `html` no longer have any effect.
+    * Size variables now hold lengths with units (`--xh-spacing: 10px`), and every `-px` companion
+      (`--xh-pad-px`, `--xh-font-size-px`, etc.) was removed - read the base variable instead.
+      Hoist logs a development-mode warning if a size variable resolves to a bare number.
+    * Renamed about 40 variables to follow one naming grammar, e.g. `--xh-pad` -> `--xh-spacing`,
+      `--xh-tbar-*` -> `--xh-toolbar-*`, `--xh-grid-bg-hover` -> `--xh-grid-row-hover-bg`.
+    * Removed `--xh-chart-bg`, `--xh-tab-border-width`, and `--xh-toolbar-button-bg`, none of which
+      had any effect.
+
+#### Mobile - Onsen UI Removal
+
 * Mobile components no longer render Onsen UI custom elements. `Button`, `TextInput`,
   `NumberInput`, `SearchInput`, `Checkbox`, `SwitchInput`, `Dialog`, `DialogPanel`, `Toast`,
   `TabContainer` and `MenuButton` menus render plain elements under `xh-` class names. App SCSS
   that targeted Onsen's class names (`.button`, `.text-input`, `.dialog`, `.tabbar`, `.toast`,
   `.page__content` and others) or its CSS variables must target Hoist's instead.
+* Removed `@xh/hoist/kit/onsen`, along with the `onsenui` and `react-onsenui` dependencies.
 * Mobile components now render in the app font. Onsen applied the system font to its buttons,
   dialogs, tabs, menus and toasts, so any of those an app had not styled change typeface.
 * Removed the `modifier` prop from mobile `Button`, `TextInput`, `NumberInput`, `SearchInput`,
   `Checkbox` and `SwitchInput`. It passed an Onsen modifier string and has no equivalent.
 * Mobile `Checkbox` and `SwitchInput` now put their `testId` on the native `<input>` rather than
   on a wrapper, as on desktop.
+
+#### Other
+
+* Desktop `DateInput` now renders its calendar with react-day-picker 10, as the mobile `DateInput`
+  already did, and its time picker is Hoist's own 24-hour control. `dayPickerProps` now takes
+  react-day-picker 10 props - see the upgrade notes for the renames from v8. Removed
+  `timePickerProps`, which took Blueprint `TimePicker` options such as `useAmPm`.
+* Removed the `datePicker` and `DatePicker` exports from `@xh/hoist/kit/blueprint`, along with the
+  `@blueprintjs/datetime` dependency. Use `dayPicker` from `@xh/hoist/kit/react-day-picker`.
+* Removed the `WindowedSelect` and `reactWindowedSelect` exports from `@xh/hoist/kit/react-select`.
+  Use `select({enableWindowed: true})`.
+* Removed `NumberFormatOptions.formatConfig`, which took a numbro format. Use `precision`, `zeroPad`
+  and `withCommas` instead.
 
 ### 🎁 New Features
 
@@ -65,6 +94,8 @@ detailed, step-by-step upgrade instructions with before/after code examples.
   debounced or in flight.
 * Fixed `ViewManagerModel` sending overlapping user state writes, which could fail on the server
   and lose a pin, auto-save or current view change. It now sends one write per burst of changes.
+* Fixed mobile `FormField` ignoring the `--xh-form-field-inline-label-*` custom properties for
+  inline labels - it referenced stale names left behind by an earlier rename.
 * Fixed mobile `TabContainer` not rendering a tab with `excludeFromSwitcher`, so activating one
   showed nothing. Such tabs now render as on desktop, only without a switcher button.
 * Fixed mobile `TextInput`, `NumberInput` and `SearchInput` applying `domAttrs` to a wrapper
@@ -96,6 +127,15 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 
 ### ✨ Styles
 
+* Added CSS variables for concerns some components lacked: `--xh-input-border-radius`,
+  `--xh-popup-border-radius`, `--xh-title-font-weight` (with `--xh-panel-title-font-weight`,
+  `--xh-popup-title-font-weight` and `--xh-card-header-font-weight`), `--xh-tab-font-weight` and
+  `--xh-tab-active-indicator-color`.
+* Mobile tabs now read the `--xh-tab-*` variables, and mobile dialogs read `--xh-popup-bg` and
+  `--xh-popup-title-font-family`, as on desktop.
+* Desktop `Select` now rounds its corners to match other inputs (4px, up from 3px). A desktop
+  `TabSwitcher` placed at the bottom now marks its active tab in the active tab color, as one at
+  the top does, rather than in the resting text color.
 * Mobile apps no longer load Onsen UI's stylesheet or its icon fonts. Touch-device defaults that
   the Onsen stylesheet supplied - no tap highlight, no focus rings on controls, `touch-action:
   manipulation`, heading sizes, and a body sized to the viewport - are now set by the mobile

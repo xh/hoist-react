@@ -61,7 +61,7 @@ Verified against both hoist-react and hoist-core changelogs.
 
 | hoist-react | Min Core Required | Recommended Core | Max Core Tested | Notes | Upgrade |
 |---|---|---|---|---|---|
-| 90.0 | -- | 42.0 | 43.0 | No new server-side pairing requirements | [Notes](./upgrade-notes/v90-upgrade-notes.md) |
+| 90.0 | -- | 42.0 | 43.0 | CSS variable override hooks removed (client-only) - no new server-side pairing requirements | [Notes](./upgrade-notes/v90-upgrade-notes.md) |
 | 89.0 | -- | 42.0 | 43.0 | No new server-side pairing requirements | [Notes](./upgrade-notes/v89-upgrade-notes.md) |
 | 88.1 | -- | 42.0 | 42.0 | Use 88.1.2 or later - earlier 88 releases drop `MsalClient` defaults. `ViewManagerModel.manageGlobal` derived from server `globalWriteRoles` (42, degrades gracefully). TC39 decorators are client-only - requires hoist-dev-utils 16 | [Notes](./upgrade-notes/v88-upgrade-notes.md) |
 | 87.0 | 40.5.0 | 41.0 | 41.0 | `ViewManager` group rename + bulk edit (40.5); directory group names/search, tabbed config editor (41, degrade gracefully) | [Notes](./upgrade-notes/v87-upgrade-notes.md) |

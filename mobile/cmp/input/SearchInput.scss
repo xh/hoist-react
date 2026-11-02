@@ -8,15 +8,15 @@
   &__icon {
     display: flex;
     align-items: center;
-    padding-left: var(--xh-pad-px);
+    padding-left: var(--xh-spacing);
     color: var(--xh-text-color-muted);
   }
 
   &__input {
     flex: 1;
     min-width: 0;
-    height: var(--xh-mobile-input-height-px);
-    padding: 0 var(--xh-pad-px);
+    height: var(--xh-input-height);
+    padding: 0 var(--xh-spacing);
     margin: 0;
     background: transparent;
     appearance: textfield;

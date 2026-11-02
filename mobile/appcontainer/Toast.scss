@@ -15,9 +15,9 @@
     bottom: 0;
     left: 8px;
     // Keep clear of the safe area (e.g. the iOS task switcher) and off the very bottom edge.
-    margin: var(--xh-pad-safe-all);
-    margin-bottom: calc(var(--xh-pad-safe-bottom) + var(--xh-pad-px));
-    padding: var(--xh-pad-px);
+    margin: var(--xh-safe-area-inset);
+    margin-bottom: calc(var(--xh-safe-area-inset-bottom) + var(--xh-spacing));
+    padding: var(--xh-spacing);
     display: flex;
     align-items: center;
     min-height: 48px;
@@ -32,8 +32,8 @@
     animation: xh-toast-lift 0.35s ease;
 
     & > svg {
-      margin-left: var(--xh-pad-half-px);
-      margin-right: var(--xh-pad-px);
+      margin-left: var(--xh-spacing-half);
+      margin-right: var(--xh-spacing);
     }
 
     & > span {
@@ -42,8 +42,8 @@
 
     .xh-toast__trace-id {
       display: block;
-      margin-top: var(--xh-pad-half-px);
-      font-size: var(--xh-font-size-small-px);
+      margin-top: var(--xh-spacing-half);
+      font-size: var(--xh-font-size-small);
       opacity: 0.7;
     }
 

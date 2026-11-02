@@ -7,11 +7,11 @@
 
 .xh-radio-input {
   .xh-radio-input-option.bp6-control:not(.bp6-inline) {
-    margin-bottom: var(--xh-pad-half-px);
+    margin-bottom: var(--xh-spacing-half);
   }
 
   .xh-radio-input-option.bp6-control.bp6-inline {
-    margin-right: var(--xh-pad-double-px);
+    margin-right: var(--xh-spacing-double);
   }
 
   &.xh-input--invalid,
@@ -41,6 +41,6 @@
   flex-direction: row;
 
   .xh-radio-input-option {
-    margin-right: var(--xh-pad-double-px);
+    margin-right: var(--xh-spacing-double);
   }
 }
