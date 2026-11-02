@@ -12,7 +12,7 @@ import classNames from 'classnames';
 import {isEmpty, isNil} from 'lodash';
 import {type MouseEvent, useRef} from 'react';
 import {PanelModel} from '../PanelModel';
-import {collapsedRail} from './CollapsedRail';
+import {collapsedStrip} from './CollapsedStrip';
 import {collapseToggleIcon} from './CollapseToggleIcon';
 import './PanelHeader.scss';
 
@@ -31,7 +31,7 @@ export const panelHeader = hoistCmp.factory({
                 side,
                 showModalToggleButton,
                 showHeaderCollapseButton,
-                showCollapsedRail
+                showCollapsedStrip
             } = panelModel,
             {title, icon, compact} = props,
             expandedByClick = useRef(false);
@@ -47,9 +47,9 @@ export const panelHeader = hoistCmp.factory({
         const headerItems = props.headerItems ?? [],
             displayedHeaderItems = isRenderedCollapsed ? [] : [...headerItems];
 
-        // Return a rail (if collapsed) or null if nothing to display.
+        // Return a strip (if collapsed) or null if nothing to display.
         if (isNil(displayedTitle) && isNil(displayedIcon) && isEmpty(displayedHeaderItems)) {
-            return isRenderedCollapsed && showCollapsedRail ? collapsedRail() : null;
+            return isRenderedCollapsed && showCollapsedStrip ? collapsedStrip() : null;
         }
 
         if (showModalToggleButton && !isRenderedCollapsed) {

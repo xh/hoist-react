@@ -9,24 +9,24 @@ import {hoistCmp, useContextModel} from '@xh/hoist/core';
 import classNames from 'classnames';
 import {PanelModel} from '../PanelModel';
 import {collapseToggleIcon} from './CollapseToggleIcon';
-import './CollapsedRail.scss';
+import './CollapsedStrip.scss';
 
 /**
  * Thin clickable strip shown in place of the header when a collapsed panel has nothing else to
  * show, so the panel stays easy to find and expand.
  * @internal
  */
-export const collapsedRail = hoistCmp.factory({
-    displayName: 'CollapsedRail',
+export const collapsedStrip = hoistCmp.factory({
+    displayName: 'CollapsedStrip',
     model: false,
-    className: 'xh-panel-collapsed-rail',
+    className: 'xh-panel-collapsed-strip',
 
     render({className}) {
         const panelModel = useContextModel(PanelModel);
         return box({
             className: classNames(
                 className,
-                `xh-panel-collapsed-rail--${panelModel.vertical ? 'ns' : 'ew'}`
+                `xh-panel-collapsed-strip--${panelModel.vertical ? 'ns' : 'ew'}`
             ),
             title: 'Expand',
             item: collapseToggleIcon(panelModel),
