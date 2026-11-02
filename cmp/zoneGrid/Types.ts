@@ -30,7 +30,7 @@ export interface ZoneField {
     field: string;
     displayName: string;
     label: string;
-    renderer: ColumnRenderer;
+    resolvedRenderer: ColumnRenderer;
     column: Column;
     chooserGroup: string;
     sortable: boolean;

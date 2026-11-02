@@ -46,7 +46,7 @@ import {
 } from 'react';
 import {GridModel} from '../GridModel';
 import {GridSorter} from '../GridSorter';
-import {getAgHeaderClassFn, managedRenderer} from '../impl/Utils';
+import {getAgHeaderClassFn, withErrorCell} from '../impl/Utils';
 import {
     ColumnCellClassFn,
     ColumnCellClassRuleFn,
@@ -62,6 +62,7 @@ import {
     ColumnHeaderClassFn,
     ColumnHeaderNameFn,
     ColumnRenderer,
+    ColumnTextRenderer,
     ColumnSetValueFn,
     ColumnSortSpec,
     ColumnSortValueFn,
@@ -74,6 +75,7 @@ import type {
     ColDef,
     ICellRendererParams,
     ITooltipParams,
+    ValueFormatterParams,
     ValueGetterParams,
     ValueSetterParams,
     CustomCellEditorProps,
@@ -271,18 +273,33 @@ export interface ColumnSpec {
     pinned?: boolean | HSide;
 
     /**
+     * Function returning the display text for each cell value in this Column.
+     *
+     * ag-Grid writes the text into the cell directly, with no React component per cell - the
+     * cheapest cell there is. Prefer it over a `renderer` wherever a string will do. For numbers
+     * and dates use the `numberTextRenderer` and `dateTextRenderer` factories from
+     * `@xh/hoist/format` and their siblings, or the pre-built column specs (`number`, `date`,
+     * `dateTime`, ... from `@xh/hoist/cmp/grid`), which bundle one with alignment and export
+     * formatting.
+     *
+     * A text renderer may carry `cellClassRules` to style the cell by value, applied beneath the
+     * column's own, as a renderer may. Set `rendererIsComplex` if it reads other fields of the
+     * record.
+     *
+     * Autosize, filters, find and ZoneGrid use the text. Copy and exports send the cell's value.
+     * Ignored when a `renderer` is set.
+     */
+    textRenderer?: ColumnTextRenderer;
+
+    /**
      * Function returning a React Element for each cell value in this Column.
      *
-     * Without a renderer, the cell displays its value as plain text, which ag-Grid writes into
-     * the cell directly - the cheapest cell there is. A renderer makes each cell of the column a
-     * React component, so prefer a `valueFormatter`-style renderer that returns a string where
-     * a string will do, and reserve element-returning renderers for cells that need them.
+     * A renderer makes each cell of the column a React component. Reserve it for cells that need
+     * an element (icons, nested layout, inline styles) and use `textRenderer` where a string will do.
      *
-     * For number and date formatting, prefer the pre-built `numberRenderer` and `dateRenderer`
-     * factories from `@xh/hoist/format` - these accept formatting options and return a reusable
-     * renderer function. Also consider the pre-built column specs (`number`, `date`, `dateTime`,
-     * `boolCheck` from `@xh/hoist/cmp/grid`) which bundle a renderer with appropriate alignment,
-     * sorting, and export formatting.
+     * For number and date formatting with markup options (`withSignGlyph`, styled labels, a
+     * `colorSpec` with inline styles), the `numberRenderer` and `dateRenderer` factories from
+     * `@xh/hoist/format` accept formatting options and return a reusable renderer function.
      *
      * For custom rendering based on record data beyond this column's field, set
      * `rendererIsComplex: true` to ensure cells refresh on any record change.
@@ -292,9 +309,10 @@ export interface ColumnSpec {
     renderer?: ColumnRenderer;
 
     /**
-     * True if this renderer relies on more than just the value of the field associated with this
-     * column. Set to true to ensure that the cells for this column are updated any time the
-     * record is changed, but note this can negatively affect update performance. Default false.
+     * True if this column's renderer or text renderer relies on more than just the value of the field
+     * associated with this column. Set to true to ensure that the cells for this column are
+     * updated any time the record is changed, but note this can negatively affect update
+     * performance. Default false.
      */
     rendererIsComplex?: boolean;
 
@@ -535,6 +553,7 @@ export class Column {
     filterable: boolean;
     hideable: boolean;
     pinned: HSide;
+    textRenderer: ColumnTextRenderer;
     renderer: ColumnRenderer;
     rendererIsComplex: boolean;
     highlightOnChange: boolean;
@@ -610,6 +629,7 @@ export class Column {
             sortable,
             filterable,
             pinned,
+            textRenderer,
             renderer,
             rendererIsComplex,
             highlightOnChange,
@@ -673,7 +693,7 @@ export class Column {
         this.headerClass = headerClass;
 
         this.cellClass = cellClass;
-        this.cellClassRules = cellClassRules || {};
+        this.cellClassRules = {...(renderer ?? textRenderer)?.cellClassRules, ...cellClassRules};
         this.cellFlag = cellFlag;
 
         this.align = align;
@@ -712,7 +732,8 @@ export class Column {
         this.hideable = withDefault(hideable, !this.isTreeColumn);
         this.pinned = this.parsePinned(pinned);
 
-        this.renderer = managedRenderer(renderer, this.displayName);
+        this.textRenderer = withErrorCell(textRenderer, this.displayName);
+        this.renderer = withErrorCell(renderer, this.displayName);
         this.rendererIsComplex = rendererIsComplex;
         this.highlightOnChange = highlightOnChange;
 
@@ -807,6 +828,7 @@ export class Column {
                 },
                 headerClass: getAgHeaderClassFn(this),
                 headerTooltip: this.headerTooltip,
+                valueFormatter: this.agValueFormatter,
                 // Undefined keeps ag-Grid's current visibility on update.
                 hide: gridModel.isColumnHiddenByGrouping(this.colId) ? undefined : this.hidden,
                 columnGroupShow: toAgColumnGroupShow(this.groupShowMode),
@@ -860,9 +882,10 @@ export class Column {
                 onCellClicked: this.onCellClicked
             };
 
-        // Renderer: Tree cols nest our renderer in ag-Grid's group cell renderer. Plain have none.
-        const {agCellRenderer} = this;
-        if (this.isTreeColumn) {
+        // Rendering: tree cols nest our renderer in ag-Grid's group cell renderer, which hands it
+        // any formatted text as `valueFormatted`. Plain cols have no renderer.
+        const {agCellRenderer, isTreeColumn} = this;
+        if (isTreeColumn) {
             ret.showRowGroup = true;
             ret.cellRenderer = 'agGroupCellRenderer';
             ret.cellRendererParams = {
@@ -896,7 +919,7 @@ export class Column {
         // provided custom classes. Only a `cellClass` function needs evaluating per cell - ag-Grid
         // calls the function on every cell render and value change, so a static list is emitted
         // as-is otherwise.
-        const {cellClass, isTreeColumn, align} = this,
+        const {cellClass, align} = this,
             fixedClasses: string[] = [];
         if (isTreeColumn) fixedClasses.push('xh-tree-column');
         if (align === 'center' || align === 'right') fixedClasses.push('xh-align-' + align);
@@ -986,12 +1009,22 @@ export class Column {
         if (!agCellRenderer && agOptions.cellClass) {
             spec.cellClass = withPlainMarker(agOptions.cellClass);
         }
+
+        // ...and `cellClassRules` given via agOptions add to the column's, winning per class.
+        if (agOptions.cellClassRules) {
+            spec.cellClassRules = {...ret.cellClassRules, ...agOptions.cellClassRules};
+        }
         return spec;
     }
 
     /** ag-Grid comparator for this column - see {@link getAgSpec}. @internal */
     getAgComparator(): ColDef['comparator'] {
         return this.agComparator;
+    }
+
+    /** The renderer, else the text renderer - whichever produces this column's cells. */
+    get resolvedRenderer(): ColumnRenderer {
+        return this.renderer ?? this.textRenderer;
     }
 
     /** Sorters a header click cycles through, in order. Empty when the column is not sortable. */
@@ -1020,12 +1053,29 @@ export class Column {
             const {gridModel} = this;
             let ret = renderer
                 ? renderer(agParams.value, {record: agParams.data, column: this, gridModel})
-                : agParams.value;
+                : (agParams.valueFormatted ?? agParams.value);
 
             ret = isNil(ret) || isValidElement(ret) ? ret : toString(ret);
 
             // Add wrapping span for styling purposes
             return span({className: 'xh-cell-inner-wrapper', item: ret});
+        };
+    }
+
+    // The text renderer as ag-Grid's `valueFormatter`. Null without one, or with a renderer.
+    @computeOnce
+    private get agValueFormatter(): ColDef['valueFormatter'] {
+        if (!this.textRenderer || this.renderer) return null;
+        return (agParams: ValueFormatterParams) => {
+            const {textRenderer, gridModel} = this,
+                {data: record, node, column} = agParams;
+
+            // A group row's label shows its raw value, as with a renderer. Other rows without a
+            // record, such as ag-Grid total rows, format their aggregates.
+            if (!(record instanceof StoreRecord) && node?.rowGroupColumn === column) return null;
+
+            // Blank the cell for a null return, as for a renderer.
+            return textRenderer(agParams.value, {record, column: this, gridModel}) ?? '';
         };
     }
 
