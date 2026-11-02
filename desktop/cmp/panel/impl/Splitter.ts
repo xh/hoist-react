@@ -4,15 +4,13 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {div} from '@xh/hoist/cmp/layout';
-import {creates, elementFactory, hoistCmp} from '@xh/hoist/core';
+import {div, htmlButton} from '@xh/hoist/cmp/layout';
+import {creates, hoistCmp} from '@xh/hoist/core';
 import classNames from 'classnames';
 import {isNumber} from 'lodash';
 import {collapseToggleIcon} from './CollapseToggleIcon';
 import {DraggerModel} from './dragger/DraggerModel';
 import './Splitter.scss';
-
-const htmlButton = elementFactory('button');
 
 /**
  * The edge of a resizable or collapsible panel - a 1px line with a wider, invisible hit area,
