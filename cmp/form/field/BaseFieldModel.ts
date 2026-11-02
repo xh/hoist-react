@@ -5,14 +5,8 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {HoistModel, TaskObserver} from '@xh/hoist/core';
-import {
-    genDisplayName,
-    required,
-    Rule,
-    RuleLike,
-    ValidationResult,
-    ValidationState
-} from '@xh/hoist/data';
+import type {RuleLike, ValidationResult, ValidationState} from '@xh/hoist/data';
+import {genDisplayName, required, Rule} from '@xh/hoist/data';
 import {
     action,
     computed,
@@ -25,7 +19,7 @@ import {wait} from '@xh/hoist/promise';
 import {executeIfFunction, withDefault} from '@xh/hoist/utils/js';
 import {createObservableRef} from '@xh/hoist/utils/react';
 import {compact, flatten, isEmpty, isEqual, isFunction, isNil, isString} from 'lodash';
-import {FormModel} from '../FormModel';
+import type {FormModel} from '../FormModel';
 
 /**
  * Configuration for a {@link BaseFieldModel} - defines a single field within a

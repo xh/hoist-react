@@ -4,7 +4,8 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {Column, type ColumnTextRenderer, type ColumnSpec, GridModel} from '@xh/hoist/cmp/grid';
+import type {Column} from '@xh/hoist/cmp/grid';
+import {type ColumnTextRenderer, type ColumnSpec, GridModel} from '@xh/hoist/cmp/grid';
 import {required} from '@xh/hoist/data';
 import {numberTextRenderer, numberRenderer} from '@xh/hoist/format';
 import {wait} from '@xh/hoist/promise';

@@ -1,6 +1,6 @@
-import {TabContainerModel} from '@xh/hoist/cmp/tab/TabContainerModel';
-import {TabModel} from '@xh/hoist/cmp/tab/TabModel';
-import {
+import type {TabContainerModel} from '@xh/hoist/cmp/tab/TabContainerModel';
+import type {TabModel} from '@xh/hoist/cmp/tab/TabModel';
+import type {
     BoxProps,
     HoistModel,
     HoistProps,
@@ -10,7 +10,7 @@ import {
     PersistOptions,
     Side
 } from '@xh/hoist/core';
-import {ReactElement, ReactNode} from 'react';
+import type {ReactElement, ReactNode} from 'react';
 
 export interface TabSwitcherProps extends HoistProps<TabContainerModel>, BoxProps {
     /** Relative position within the parent TabContainer. Defaults to 'top'. */

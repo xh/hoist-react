@@ -4,23 +4,21 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {
+import type {
     Content,
     Thunkable,
-    HoistModel,
-    managed,
-    ManagedRefreshContextModel,
     RefreshContextModel,
     RefreshMode,
     RenderMode,
     Awaitable
 } from '@xh/hoist/core';
+import {HoistModel, managed, ManagedRefreshContextModel} from '@xh/hoist/core';
 import {ModalSupportModel} from '@xh/hoist/desktop/cmp/modalsupport/ModalSupportModel';
 import '@xh/hoist/desktop/register';
 import {action, bindable, observable, bindableRef} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
-import {ReactElement} from 'react';
-import {DockContainerModel} from './DockContainerModel';
+import type {ReactElement} from 'react';
+import type {DockContainerModel} from './DockContainerModel';
 
 /**
  * Configuration for a {@link DockViewModel} - a dockable view within a

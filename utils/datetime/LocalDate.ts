@@ -4,10 +4,12 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {LocalDateUnit, XH} from '@xh/hoist/core';
+import type {LocalDateUnit} from '@xh/hoist/core';
+import {XH} from '@xh/hoist/core';
 import {computeOnce, throwIf} from '@xh/hoist/utils/js';
 import {isNil, isString} from 'lodash';
-import moment, {Moment, MomentInput} from 'moment';
+import type {Moment, MomentInput} from 'moment';
+import moment from 'moment';
 
 /**
  * A Date representation that does not contain time information. Useful for business day or calendar

@@ -6,7 +6,7 @@
  */
 
 import {XH} from '@xh/hoist/core';
-import {RuleLike} from '@xh/hoist/data/validation/Types';
+import type {RuleLike} from '@xh/hoist/data/validation/Types';
 import {isLocalDate, LocalDate} from '@xh/hoist/utils/datetime';
 import {withDefault} from '@xh/hoist/utils/js';
 import {Rule} from './validation/Rule';

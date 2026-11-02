@@ -19,9 +19,10 @@ import {
     isUndefined,
     round
 } from 'lodash';
-import {CSSProperties, ReactNode} from 'react';
-import {IntRange} from 'type-fest';
-import {fmtSpan, FormatOptions} from './FormatMisc';
+import type {CSSProperties, ReactNode} from 'react';
+import type {IntRange} from 'type-fest';
+import type {FormatOptions} from './FormatMisc';
+import {fmtSpan} from './FormatMisc';
 import {DEFAULT_COLOR_SPEC, ROUNDED_ZERO, saveOriginal} from './impl/Utils';
 
 const THOUSAND = 1000,

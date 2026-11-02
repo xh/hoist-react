@@ -6,7 +6,8 @@
  */
 import {AgGrid} from '@xh/hoist/cmp/ag-grid';
 import {box, div, fragment, hbox, hframe, p, placeholder, vbox, vframe} from '@xh/hoist/cmp/layout';
-import {BoxProps, hoistCmp, HoistProps, uses, XH} from '@xh/hoist/core';
+import type {BoxProps, HoistProps} from '@xh/hoist/core';
+import {hoistCmp, uses, XH} from '@xh/hoist/core';
 import {errorMessage} from '@xh/hoist/cmp/error';
 import {mask} from '@xh/hoist/cmp/mask';
 import classNames from 'classnames';

@@ -4,10 +4,11 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {XH, hoistCmp, HoistModel, creates, managed, HoistProps} from '@xh/hoist/core';
+import type {HoistProps} from '@xh/hoist/core';
+import {XH, hoistCmp, HoistModel, creates, managed} from '@xh/hoist/core';
 import {div, span} from '@xh/hoist/cmp/layout';
 import {computed, bindable} from '@xh/hoist/mobx';
-import {Column, GridModel} from '@xh/hoist/cmp/grid';
+import type {Column, GridModel} from '@xh/hoist/cmp/grid';
 import {Icon} from '@xh/hoist/icon';
 import {columnHeaderFilter, ColumnHeaderFilterModel} from '@xh/hoist/dynamics/desktop';
 import {createObservableRef} from '@xh/hoist/utils/react';
@@ -25,7 +26,7 @@ import {
 } from 'lodash';
 import classNames from 'classnames';
 
-import {ReactNode} from 'react';
+import type {ReactNode} from 'react';
 
 import type {IHeaderParams, AgColumn} from '@xh/hoist/kit/ag-grid';
 

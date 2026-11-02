@@ -5,7 +5,8 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {MessageModel} from '@xh/hoist/appcontainer/MessageModel';
-import {HoistRoute, MessageSuppressSpec, XH} from '@xh/hoist/core';
+import type {HoistRoute, MessageSuppressSpec} from '@xh/hoist/core';
+import {XH} from '@xh/hoist/core';
 import {required} from '@xh/hoist/data';
 import {initTestAppAsync, TestAppModel} from '@xh/hoist/test-support';
 import {DAYS, HOURS, MINUTES, SECONDS} from '@xh/hoist/utils/datetime';

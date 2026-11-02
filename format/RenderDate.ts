@@ -5,17 +5,10 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {isString} from 'lodash';
-import {ReactNode} from 'react';
-import {DateLike, PlainObject} from '../core/types/Types';
-import {
-    CompactDateFormatOptions,
-    DateFormatOptions,
-    fmtCompactDate,
-    fmtDate,
-    fmtDateTime,
-    fmtDateTimeSec,
-    fmtTime
-} from './FormatDate';
+import type {ReactNode} from 'react';
+import type {DateLike, PlainObject} from '../core/types/Types';
+import type {CompactDateFormatOptions, DateFormatOptions} from './FormatDate';
+import {fmtCompactDate, fmtDate, fmtDateTime, fmtDateTimeSec, fmtTime} from './FormatDate';
 import {createRenderer, type TextRenderer} from './FormatUtils';
 
 /**

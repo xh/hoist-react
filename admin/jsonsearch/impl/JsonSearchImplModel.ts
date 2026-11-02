@@ -5,8 +5,10 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
-import {GridConfig, GridModel} from '@xh/hoist/cmp/grid';
-import {HoistModel, managed, PlainObject, TaskObserver, XH} from '@xh/hoist/core';
+import type {GridConfig} from '@xh/hoist/cmp/grid';
+import {GridModel} from '@xh/hoist/cmp/grid';
+import type {PlainObject} from '@xh/hoist/core';
+import {HoistModel, managed, TaskObserver, XH} from '@xh/hoist/core';
 import {action, bindable, observable, bindableRef} from '@xh/hoist/mobx';
 import {pluralize} from '@xh/hoist/utils/js';
 import {isEmpty, zipWith} from 'lodash';

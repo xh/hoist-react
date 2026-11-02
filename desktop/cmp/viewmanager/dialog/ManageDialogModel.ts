@@ -6,40 +6,30 @@
  */
 
 import {badge} from '@xh/hoist/cmp/badge';
-import {
-    dateTime,
-    GridAutosizeMode,
-    GridContextMenuItemLike,
-    GridModel,
-    TreeStyle
-} from '@xh/hoist/cmp/grid';
+import type {GridContextMenuItemLike} from '@xh/hoist/cmp/grid';
+import {dateTime, GridAutosizeMode, GridModel, TreeStyle} from '@xh/hoist/cmp/grid';
 import {fragment, p, span, strong} from '@xh/hoist/cmp/layout';
 import {TabContainerModel} from '@xh/hoist/cmp/tab';
-import {
-    buildViewGroupTree,
-    composeGroupPath,
-    getAllGroupPaths,
-    getGroupLeaf,
-    isGroupSameOrDescendant,
+import type {
     ViewGroupNode,
     ViewInfo,
     ViewManagerModel,
     ViewUpdateSpec
 } from '@xh/hoist/cmp/viewmanager';
 import {
-    HoistModel,
-    LoadSpec,
-    managed,
-    PlainObject,
-    TaskObserver,
-    ToastSpec,
-    XH
-} from '@xh/hoist/core';
-import {FilterTestFn, RecordActionSpec, StoreRecord} from '@xh/hoist/data';
+    buildViewGroupTree,
+    composeGroupPath,
+    getAllGroupPaths,
+    getGroupLeaf,
+    isGroupSameOrDescendant
+} from '@xh/hoist/cmp/viewmanager';
+import type {LoadSpec, PlainObject, ToastSpec} from '@xh/hoist/core';
+import {HoistModel, managed, TaskObserver, XH} from '@xh/hoist/core';
+import type {FilterTestFn, RecordActionSpec, StoreRecord} from '@xh/hoist/data';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {viewsGrid} from '@xh/hoist/desktop/cmp/viewmanager/dialog/ManageDialog';
 import {Icon} from '@xh/hoist/icon';
-import {GridOptions, RowDropZoneEvents} from '@xh/hoist/kit/ag-grid';
+import type {GridOptions, RowDropZoneEvents} from '@xh/hoist/kit/ag-grid';
 import {
     action,
     computed,
@@ -61,7 +51,8 @@ import {
     uniq,
     uniqBy
 } from 'lodash';
-import {createRef, ReactNode} from 'react';
+import type {ReactNode} from 'react';
+import {createRef} from 'react';
 import {groupPathBreadcrumb} from './GroupPathBreadcrumb';
 import {confirmGroupMergeIfExistsAsync} from './Utils';
 import {RenameGroupDialogModel} from './editpanels/RenameGroupDialogModel';

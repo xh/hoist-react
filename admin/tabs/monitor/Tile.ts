@@ -4,12 +4,14 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {MonitorResult, MonitorResults, MonitorStatus} from './Types';
+import type {MonitorResult, MonitorResults, MonitorStatus} from './Types';
 import {div, hbox, hspacer, span, vbox, vspacer} from '@xh/hoist/cmp/layout';
 import {getRelativeTimestamp} from '@xh/hoist/cmp/relativetimestamp';
-import {hoistCmp, PlainObject} from '@xh/hoist/core';
+import type {PlainObject} from '@xh/hoist/core';
+import {hoistCmp} from '@xh/hoist/core';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
-import {Icon, IconProps} from '@xh/hoist/icon';
+import type {IconProps} from '@xh/hoist/icon';
+import {Icon} from '@xh/hoist/icon';
 import './Tile.scss';
 import {sortBy} from 'lodash';
 

@@ -5,7 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {RouterModel} from '@xh/hoist/appcontainer/RouterModel';
-import {HoistRoute} from '@xh/hoist/core';
+import type {HoistRoute} from '@xh/hoist/core';
 import {describe, expect, it, onTestFinished, vi} from 'vitest';
 
 /**

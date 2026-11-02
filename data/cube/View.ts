@@ -6,10 +6,10 @@
  */
 
 import type {GridFilterBindTarget} from '@xh/hoist/cmp/grid';
-import {HoistBase, PlainObject, Some} from '@xh/hoist/core';
+import type {PlainObject, Some} from '@xh/hoist/core';
+import {HoistBase} from '@xh/hoist/core';
 import {instanceManager} from '@xh/hoist/core/impl/InstanceManager';
-import {
-    Cube,
+import type {
     CubeField,
     Filter,
     FilterBindTarget,
@@ -21,7 +21,8 @@ import {
     StoreRecord,
     StoreRecordId
 } from '@xh/hoist/data';
-import {ViewRowData} from '@xh/hoist/data/cube/ViewRowData';
+import {Cube} from '@xh/hoist/data';
+import type {ViewRowData} from '@xh/hoist/data/cube/ViewRowData';
 import {ViewDiagnostics} from './impl/ViewDiagnostics';
 import {action, observable, observableRef} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
@@ -30,9 +31,10 @@ import {AggregationContext} from './aggregate/AggregationContext';
 import {RowCache} from './impl/RowCache';
 import {RowDataGenerator} from './impl/RowDataGenerator';
 import {BaseRow} from './row/BaseRow';
-import {ExposedLeafRow, HiddenLeafRow, LeafRow, LeafUpdateChanges} from './row/LeafRow';
+import type {LeafRow, LeafUpdateChanges} from './row/LeafRow';
+import {ExposedLeafRow, HiddenLeafRow} from './row/LeafRow';
 import {AggregateRow, BucketRow} from './row/ParentRow';
-import {RecordSet, RecordSetDelta} from '../impl/RecordSet';
+import type {RecordSet, RecordSetDelta} from '../impl/RecordSet';
 
 /**
  * Configuration for a {@link View} - a query result from a {@link Cube} that can optionally

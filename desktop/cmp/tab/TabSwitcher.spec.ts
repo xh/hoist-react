@@ -5,7 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {tabContainer, TabContainerModel, type TabSwitcherMenuContext} from '@xh/hoist/cmp/tab';
-import {type MenuItem, type MenuItemLike, type MenuToken} from '@xh/hoist/core';
+import type {MenuItem, MenuItemLike, MenuToken} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {initTestAppAsync} from '@xh/hoist/test-support';
 import {fireEvent, render, screen, waitFor} from '@testing-library/react';

@@ -1,5 +1,6 @@
 import {fileExt, GridModel} from '@xh/hoist/cmp/grid';
-import {HoistModel, lookup, managed, ReactionSpec} from '@xh/hoist/core';
+import type {ReactionSpec} from '@xh/hoist/core';
+import {HoistModel, lookup, managed} from '@xh/hoist/core';
 import {FileChooserModel} from '../FileChooserModel';
 import {actionCol, calcActionColWidth} from '@xh/hoist/desktop/cmp/grid';
 import {Icon} from '@xh/hoist/icon';

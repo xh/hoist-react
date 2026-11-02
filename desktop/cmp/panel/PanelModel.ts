@@ -4,19 +4,21 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import React from 'react';
-import {
-    HoistModel,
-    managed,
-    ManagedRefreshContextModel,
+import type React from 'react';
+import type {
     Persistable,
-    PersistableState,
-    PersistenceProvider,
     PersistOptions,
     RefreshContextModel,
     RefreshMode,
     RenderMode,
     Side
+} from '@xh/hoist/core';
+import {
+    HoistModel,
+    managed,
+    ManagedRefreshContextModel,
+    PersistableState,
+    PersistenceProvider
 } from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {action, observable, bindable} from '@xh/hoist/mobx';
@@ -24,8 +26,10 @@ import {wait} from '@xh/hoist/promise';
 import {throwIf} from '@xh/hoist/utils/js';
 import {isNil, isNumber, isString} from 'lodash';
 import {createRef} from 'react';
-import {ModalSupportConfig, ModalSupportModel} from '../modalsupport/';
-import {ErrorBoundaryConfig, ErrorBoundaryModel} from '@xh/hoist/cmp/error/ErrorBoundaryModel';
+import type {ModalSupportConfig} from '../modalsupport/';
+import {ModalSupportModel} from '../modalsupport/';
+import type {ErrorBoundaryConfig} from '@xh/hoist/cmp/error/ErrorBoundaryModel';
+import {ErrorBoundaryModel} from '@xh/hoist/cmp/error/ErrorBoundaryModel';
 
 /**
  * Configuration for a {@link PanelModel} - controls resizing, collapsing, and modal behavior

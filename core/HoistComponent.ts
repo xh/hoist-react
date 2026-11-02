@@ -5,45 +5,31 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {instanceManager} from '@xh/hoist/core/impl/InstanceManager';
-import {
-    CreatesSpec,
-    UsesSpec,
+import type {
     HoistProps,
     DefaultHoistProps,
-    elementFactory,
     ElementFactory,
     TestSupportProps,
     PlainObject
 } from './';
+import {CreatesSpec, UsesSpec, elementFactory} from './';
+import type {ModelSpec, HoistModel} from './model';
 import {
     useModelLinker,
     localModelContext,
     ModelLookup,
     ModelLookupContext,
     modelLookupContextProvider,
-    ModelSpec,
     uses,
-    formatSelector,
-    HoistModel
+    formatSelector
 } from './model';
 import {logError, throwIf, warnIf, withDefault} from '@xh/hoist/utils/js';
 import {getLayoutProps, useOnMount, useOnUnmount} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import {isFunction, isPlainObject, isObject} from 'lodash';
 import {observer, untracked} from '../mobx';
-import {
-    ForwardedRef,
-    forwardRef,
-    FC,
-    memo,
-    ReactNode,
-    useContext,
-    useEffect,
-    useRef,
-    createElement,
-    FunctionComponent,
-    useDebugValue
-} from 'react';
+import type {ForwardedRef, FC, ReactNode, FunctionComponent} from 'react';
+import {forwardRef, memo, useContext, useEffect, useRef, createElement, useDebugValue} from 'react';
 
 /**
  * Type representing props passed to a HoistComponent's render function.

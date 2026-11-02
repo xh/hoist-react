@@ -5,7 +5,8 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {box} from '@xh/hoist/cmp/layout';
-import {BoxProps, hoistCmp, HoistProps, useContextModel} from '@xh/hoist/core';
+import type {BoxProps, HoistProps} from '@xh/hoist/core';
+import {hoistCmp, useContextModel} from '@xh/hoist/core';
 import {fmtNumber} from '@xh/hoist/format';
 import {logError, pluralize, singularize, withDefault} from '@xh/hoist/utils/js';
 import {GridModel} from '../GridModel';

@@ -4,7 +4,8 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {HoistService, InitContext, MetricTags, XH} from '@xh/hoist/core';
+import type {InitContext, MetricTags} from '@xh/hoist/core';
+import {HoistService, XH} from '@xh/hoist/core';
 import {SECONDS} from '@xh/hoist/utils/datetime';
 import {debounced} from '@xh/hoist/utils/js';
 import {isEmpty, isFinite, isString} from 'lodash';

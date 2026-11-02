@@ -4,8 +4,8 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {PlainObject} from '@xh/hoist/core';
-import {CubeField} from '../CubeField';
+import type {PlainObject} from '@xh/hoist/core';
+import type {CubeField} from '../CubeField';
 
 /**
  * A change at a leaf affecting one field's aggregation, propagated up the leaf's ancestors to

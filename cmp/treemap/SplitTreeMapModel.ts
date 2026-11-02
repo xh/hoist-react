@@ -4,14 +4,17 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {HoistModel, managed, PlainObject, Theme} from '@xh/hoist/core';
+import type {PlainObject, Theme} from '@xh/hoist/core';
+import {HoistModel, managed} from '@xh/hoist/core';
 import {action, observable, computed} from '@xh/hoist/mobx';
 import {throwIf, withDefault} from '@xh/hoist/utils/js';
-import {StoreRecord, StoreRecordId} from '@xh/hoist/data';
-import {ReactNode} from 'react';
+import type {StoreRecordId} from '@xh/hoist/data';
+import {StoreRecord} from '@xh/hoist/data';
+import type {ReactNode} from 'react';
 import {uniq} from 'lodash';
 
-import {TreeMapAlgorithm, TreeMapColorMode, TreeMapModel, TreeMapConfig} from './TreeMapModel';
+import type {TreeMapAlgorithm, TreeMapColorMode, TreeMapConfig} from './TreeMapModel';
+import {TreeMapModel} from './TreeMapModel';
 
 export interface SplitTreeMapConfig extends TreeMapConfig {
     /**
