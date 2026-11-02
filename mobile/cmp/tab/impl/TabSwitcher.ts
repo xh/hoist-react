@@ -4,9 +4,9 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {div} from '@xh/hoist/cmp/layout';
+import {buttonEl, div} from '@xh/hoist/cmp/layout';
 import {TabContainerModel, TabSwitcherProps} from '@xh/hoist/cmp/tab';
-import {elementFactory, hoistCmp, uses} from '@xh/hoist/core';
+import {hoistCmp, uses} from '@xh/hoist/core';
 import '@xh/hoist/mobile/register';
 import {getTestId, TEST_ID} from '@xh/hoist/utils/js';
 import classNames from 'classnames';
@@ -44,5 +44,3 @@ export const tabSwitcher = hoistCmp.factory<TabSwitcherProps>({
         });
     }
 });
-
-const buttonEl = elementFactory('button');

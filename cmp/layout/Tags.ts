@@ -27,6 +27,8 @@ export const textarea = elementFactory('textarea');
 
 export const a = elementFactory('a');
 export const br = elementFactory('br');
+export const buttonEl = elementFactory('button');
+export const caption = elementFactory('caption');
 export const code = elementFactory('code');
 export const div = elementFactory('div');
 export const fieldset = elementFactory('fieldset');
@@ -40,6 +42,7 @@ export const h4 = elementFactory('h4');
 export const label = elementFactory('label');
 export const legend = elementFactory('legend');
 export const li = elementFactory('li');
+export const mark = elementFactory('mark');
 export const nav = elementFactory('nav');
 export const ol = elementFactory('ol');
 export const option = elementFactory('option');
