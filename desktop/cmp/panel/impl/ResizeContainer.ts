@@ -47,6 +47,9 @@ export const resizeContainer = hoistCmp.factory({
             ref,
             className,
             flex: 'none',
+            // Let the splitter's hit area and button extend over the neighbor. The content box
+            // still clips the panel itself.
+            overflow: 'visible',
             [dim]: cmpSize,
             [maxDim]: '100%',
             [minDim]: splitterSize,

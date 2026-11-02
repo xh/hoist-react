@@ -141,6 +141,23 @@
       display: block;
     }
 
+    // Font Awesome chevron paths sit ~0.75px off-center toward their point. Nudge them back.
+    .fa-chevron-left {
+      transform: translateX(0.75px);
+    }
+
+    .fa-chevron-right {
+      transform: translateX(-0.75px);
+    }
+
+    .fa-chevron-up {
+      transform: translateY(0.75px);
+    }
+
+    .fa-chevron-down {
+      transform: translateY(-0.75px);
+    }
+
     &:hover {
       background-color: var(--xh-panel-splitter-accent-color);
       border-color: var(--xh-panel-splitter-accent-color);
