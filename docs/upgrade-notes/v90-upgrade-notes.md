@@ -22,6 +22,9 @@ affected APIs.
 - **Column `renderer` reads (required if used)** - The built-in number and date column specs set
   `textRenderer`, not `renderer`. Code that calls `col.renderer(...)` on such a column now throws.
   Read `col.resolvedRenderer` instead - see Step 5.
+- **Panel splitter CSS (required if an app styled splitters)** - desktop panel splitters are now
+  a 1px line with their own `--xh-panel-splitter-*` variables. App overrides of
+  `--resizable-*` variables no longer reach them - see Step 6.
 
 ## Upgrade Steps
 
@@ -317,6 +320,58 @@ Keep the renderer where a cell needs an element, such as an icon or nested layou
 `withSignGlyph`, `labelCls`, or a `colorSpec` with inline styles. A `tooltip` option does not need
 the renderer. Move it to `Column.tooltip`, for example `tooltip: v => fmtNumberTooltip(v)`.
 
+### 6. Move Panel Splitter Style Overrides
+
+Desktop panel splitters are now a 1px line with a hover accent and a hover collapse button. They
+no longer read the `--xh-resizable-*` CSS variables. Those variables still style the splitters in
+`DashContainer` and `SplitTreeMap`, so leave any override in place if the app wants to style
+those.
+
+**Find affected code:**
+
+```bash
+grep -rn "resizable-\|xh-resizable-splitter\|xh-resizable-dragger\|xh-resizable-collapser" client-app/src/
+```
+
+Map each override that targeted panel splitters to its new variable:
+
+| Old variable | New variable |
+|--------------|--------------|
+| `--resizable-border-color` | `--panel-splitter-line-color` |
+| `--resizable-button-bg` | `--panel-splitter-button-bg` |
+| `--resizable-button-icon-color` | `--panel-splitter-button-icon-color` |
+| `--resizable-border-width` | None. The line is always 1px. |
+| `--resizable-size` | None. Use `--panel-splitter-hit-size` to change the grab area. |
+| `--resizable-bg` | None. The splitter has no bar. |
+
+Other new variables are `--panel-splitter-accent-color`, `--panel-splitter-accent-active-color`,
+`--panel-splitter-snap-color`, `--panel-splitter-hover-delay`,
+`--panel-splitter-button-border-color`, and `--panel-collapsed-rail-*` for the rail.
+
+App SCSS that targeted `.xh-resizable-splitter` should target `.xh-panel-splitter`. The
+`.xh-resizable-dragger` and `.xh-resizable-collapser-btn` classes are gone.
+
+**Header collapse button:** `showHeaderCollapseButton` now defaults to `false` on an expanded
+panel when its splitter shows a collapse button. A collapsed header still shows its chevron. To
+keep the header button on expanded panels, set `showHeaderCollapseButton: true`.
+
+```typescript
+// Before (v89) - header button shown by default
+panel({modelConfig: {side: 'left', defaultSize: 250}})
+
+// After (v90) - opt in to keep the header button when expanded
+panel({modelConfig: {side: 'left', defaultSize: 250, showHeaderCollapseButton: true}})
+```
+
+To keep the header button on every panel, set the default once at app startup, for example in
+your `AppModel` constructor:
+
+```typescript
+import {PanelModel} from '@xh/hoist/desktop/cmp/panel';
+
+PanelModel.defaults.showHeaderCollapseButton = true;
+```
+
 ## Verification Checklist
 
 After completing all steps:
@@ -335,6 +390,7 @@ After completing all steps:
 - [ ] No code imports `WindowedSelect` or `reactWindowedSelect` from `@xh/hoist/kit/react-select`.
 - [ ] Code that reads `Column.renderer` handles columns built on the number and date specs.
 - [ ] Styles on `xh-units-label` or on sign color classes inside grid cells still apply.
+- [ ] No app SCSS styles panel splitters with `--resizable-*` variables or `.xh-resizable-splitter`.
 
 ## Reference
 

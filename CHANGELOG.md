@@ -14,7 +14,7 @@
 
 ## 90.0.0-SNAPSHOT - unreleased
 
-### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW - `formatConfig`, built-in column specs, `DateInput` props, mobile styling)
+### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW - `formatConfig`, built-in column specs, `DateInput` props, mobile styling, panel splitter CSS)
 See [`docs/upgrade-notes/v90-upgrade-notes.md`](docs/upgrade-notes/v90-upgrade-notes.md) for
 detailed, step-by-step upgrade instructions with before/after code examples.
 
@@ -38,6 +38,13 @@ detailed, step-by-step upgrade instructions with before/after code examples.
   `Checkbox` and `SwitchInput`. It passed an Onsen modifier string and has no equivalent.
 * Mobile `Checkbox` and `SwitchInput` now put their `testId` on the native `<input>` rather than
   on a wrapper, as on desktop.
+* Desktop panel splitters no longer read the `--xh-resizable-*` CSS variables. Style them with the
+  new `--xh-panel-splitter-*` variables instead. The `--xh-resizable-*` variables still style
+  `DashContainer` and `SplitTreeMap`.
+* Renamed the `.xh-resizable-splitter` CSS class to `.xh-panel-splitter`, and removed
+  `.xh-resizable-dragger` and `.xh-resizable-collapser-btn`.
+* `PanelConfig.showHeaderCollapseButton` now defaults to `false` on an expanded panel whose
+  splitter shows a collapse button.
 
 ### 🎁 New Features
 
@@ -53,6 +60,12 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 * Added `sort`, `pinColumn`, `hideColumn` and `autosizeColumn` grid menu tokens, which act on the
   clicked column, and `Column.availableSorts`. The `sort` token offers one item per sort the column
   offers.
+* Redesigned desktop panel splitters as a 1px line with a wider invisible grab area. An accent
+  line and collapse button fade in on hover. Splitters also support keyboard resizing,
+  double-click to reset size, and drag-to-collapse.
+* Added a clickable rail for collapsed panels that have no title or icon, so they stay easy to find
+  and expand. A single click on any collapsed panel header now expands the panel.
+* Added `PanelModel.defaults` for app-wide defaults of selected `PanelModel` configs.
 * Added `genRandomId()` to `@xh/hoist/utils/js` for short random alphanumeric IDs.
 * Added `htmlButton`, `mark` and `caption` element factories to `@xh/hoist/cmp/layout`.
 * Added `genUuid()` to `@xh/hoist/utils/js` for version 4 UUIDs, including on plain HTTP where

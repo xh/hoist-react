@@ -99,9 +99,18 @@ export interface PanelConfig {
 
     /**
      * Should a collapse button be added to the end of the panel header? Only applicable if the
-     * panel is collapsible.
+     * panel is collapsible. Defaults to true when the panel is collapsed. When expanded, defaults
+     * to true only if the splitter shows no collapse button of its own.
      */
     showHeaderCollapseButton?: boolean;
+
+    /**
+     * Show a thin clickable rail in place of the header when the panel is collapsed and has no
+     * title, icon, or header items to show. Only applicable if the panel is collapsible. Set to
+     * false to collapse such a panel to its splitter line only - the app must then supply its own
+     * control to expand it. Default true.
+     */
+    showCollapsedRail?: boolean;
 
     /**
      * Should a modal toggle button be added to the end of the panel header? Only applicable if
@@ -114,6 +123,18 @@ export interface PanelConfig {
 
     /** See {@link HoistBase.xhName}. */
     xhName?: string;
+}
+
+/**
+ * App-level defaults for {@link PanelModel}, set via `PanelModel.defaults` at app startup.
+ * Instance config takes precedence.
+ */
+export interface PanelModelDefaults {
+    resizeWhileDragging?: boolean;
+    showSplitterCollapseButton?: boolean;
+    /** Leave null for the state-aware default - see {@link PanelConfig.showHeaderCollapseButton}. */
+    showHeaderCollapseButton?: boolean;
+    showCollapsedRail?: boolean;
 }
 
 export interface PanelPersistState {
@@ -132,6 +153,14 @@ export interface PanelPersistState {
 export class PanelModel extends HoistModel implements Persistable<PanelPersistState> {
     declare config: PanelConfig;
 
+    /** App-level defaults for PanelModel. Instance config takes precedence. */
+    static defaults: PanelModelDefaults = {
+        resizeWhileDragging: false,
+        showSplitterCollapseButton: true,
+        showHeaderCollapseButton: null,
+        showCollapsedRail: true
+    };
+
     //-----------------------
     // Immutable Properties
     //-----------------------
@@ -146,7 +175,7 @@ export class PanelModel extends HoistModel implements Persistable<PanelPersistSt
     readonly refreshMode: RefreshMode;
     readonly showSplitter: boolean;
     readonly showSplitterCollapseButton: boolean;
-    readonly showHeaderCollapseButton: boolean;
+    readonly showCollapsedRail: boolean;
     readonly showModalToggleButton: boolean;
 
     @managed modalSupportModel: ModalSupportModel;
@@ -191,16 +220,29 @@ export class PanelModel extends HoistModel implements Persistable<PanelPersistSt
         return !this.isRenderedCollapsed;
     }
 
+    /**
+     * True if the panel header should show a collapse button. See
+     * {@link PanelConfig.showHeaderCollapseButton} for the state-dependent default.
+     */
+    get showHeaderCollapseButton(): boolean {
+        if (!this.collapsible) return false;
+        const {headerCollapseButtonConfig: config} = this;
+        return this.isRenderedCollapsed
+            ? (config ?? true)
+            : (config ?? !this.showSplitterCollapseButton);
+    }
+
     //-----------------
     // Implementation
     //-----------------
     _resizeRef: React.RefObject<HTMLDivElement>;
     splitterRef = createRef<HTMLDivElement>();
+    private readonly headerCollapseButtonConfig: boolean;
 
     constructor({
         collapsible = true,
         resizable = true,
-        resizeWhileDragging = false,
+        resizeWhileDragging = PanelModel.defaults.resizeWhileDragging,
         defaultSize,
         minSize = 0,
         maxSize = null,
@@ -212,8 +254,9 @@ export class PanelModel extends HoistModel implements Persistable<PanelPersistSt
         refreshMode = 'onShowLazy',
         persistWith = null,
         showSplitter = resizable || collapsible,
-        showSplitterCollapseButton = showSplitter && collapsible,
-        showHeaderCollapseButton = true,
+        showSplitterCollapseButton = PanelModel.defaults.showSplitterCollapseButton,
+        showHeaderCollapseButton = PanelModel.defaults.showHeaderCollapseButton,
+        showCollapsedRail = PanelModel.defaults.showCollapsedRail,
         showModalToggleButton = true,
         xhName = null,
         xhImpl = false
@@ -258,8 +301,9 @@ export class PanelModel extends HoistModel implements Persistable<PanelPersistSt
         this.renderMode = renderMode;
         this.refreshMode = refreshMode;
         this.showSplitter = showSplitter;
-        this.showSplitterCollapseButton = showSplitterCollapseButton;
-        this.showHeaderCollapseButton = collapsible && showHeaderCollapseButton;
+        this.showSplitterCollapseButton = collapsible && showSplitter && showSplitterCollapseButton;
+        this.headerCollapseButtonConfig = showHeaderCollapseButton;
+        this.showCollapsedRail = collapsible && showCollapsedRail;
         this.showModalToggleButton = modalSupport && showModalToggleButton;
 
         // Set up various optional functionality;

@@ -861,6 +861,37 @@ body {
     --xh-resizable-button-icon-color: var(--resizable-button-icon-color, #{mc('blue-grey', '900')});
   }
 
+  //------------------------
+  // Panel splitters
+  //------------------------
+  --xh-panel-splitter-line-color: var(--panel-splitter-line-color, var(--xh-panel-border-color));
+  --xh-panel-splitter-accent-color: var(--panel-splitter-accent-color, var(--xh-intent-primary));
+  --xh-panel-splitter-accent-active-color: var(--panel-splitter-accent-active-color, var(--xh-intent-primary-darker));
+  --xh-panel-splitter-snap-color: var(--panel-splitter-snap-color, var(--xh-intent-warning));
+  --xh-panel-splitter-hit-size: var(--panel-splitter-hit-size, 8);
+  --xh-panel-splitter-hit-size-px: calc(var(--xh-panel-splitter-hit-size) * 1px);
+  --xh-panel-splitter-hover-delay: var(--panel-splitter-hover-delay, 250ms);
+  --xh-panel-splitter-button-bg: var(--panel-splitter-button-bg, var(--xh-bg));
+  --xh-panel-splitter-button-border-color: var(--panel-splitter-button-border-color, #{mc('blue-grey', '200')});
+  --xh-panel-splitter-button-icon-color: var(--panel-splitter-button-icon-color, var(--xh-text-color));
+  --xh-panel-collapsed-rail-size: var(--panel-collapsed-rail-size, 20);
+  --xh-panel-collapsed-rail-size-px: calc(var(--xh-panel-collapsed-rail-size) * 1px);
+  --xh-panel-collapsed-rail-bg: var(--panel-collapsed-rail-bg, #{mc('blue-grey', '50')});
+  --xh-panel-collapsed-rail-hover-bg: var(--panel-collapsed-rail-hover-bg, #{mc('blue-grey', '100')});
+  --xh-panel-collapsed-rail-icon-color: var(--panel-collapsed-rail-icon-color, var(--xh-blue-gray));
+
+  @media (pointer: coarse) {
+    --xh-panel-splitter-hit-size: var(--panel-splitter-hit-size, 20);
+  }
+
+  &.xh-dark {
+    --xh-panel-splitter-button-border-color: var(--panel-splitter-button-border-color, #{mc('blue-grey', '700')});
+    --xh-panel-splitter-button-icon-color: var(--panel-splitter-button-icon-color, #{mc('blue-grey', '100')});
+    --xh-panel-collapsed-rail-bg: var(--panel-collapsed-rail-bg, #{mc('blue-grey', '900')});
+    --xh-panel-collapsed-rail-hover-bg: var(--panel-collapsed-rail-hover-bg, #{mc('blue-grey', '800')});
+    --xh-panel-collapsed-rail-icon-color: var(--panel-collapsed-rail-icon-color, #{mc('blue-grey', '300')});
+  }
+
 
   //------------------------
   // Scrollbars

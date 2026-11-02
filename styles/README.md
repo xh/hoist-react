@@ -69,7 +69,8 @@ The `vars.scss` file organizes ~300 CSS custom properties into these categories:
 
 Components with dedicated variable sets include: AppBar, Badge, Button, Card, Chart, Form Field,
 Grid (including Large, Compact, Tiny, and ZoneGrid variants), Input, Loading Indicator, Mask, Menu,
-Panel, Popup, Resizable Splitter, Scrollbar, Tab, Title, Toolbar, Tooltip, and Viewport.
+Panel (including Panel Splitter and Collapsed Rail), Popup, Resizable Splitter (used by
+`DashContainer` and `SplitTreeMap`), Scrollbar, Tab, Title, Toolbar, Tooltip, and Viewport.
 
 ### Unitless Values and the `-px` Suffix Convention
 
