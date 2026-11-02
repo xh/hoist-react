@@ -19,6 +19,9 @@ affected APIs.
   `reactWindowedSelect` exports from `@xh/hoist/kit/react-select` along with the
   react-windowed-select library. The `enableWindowed` prop of `Select` works as before - see
   Step 4.
+- **Panel splitter CSS (required if an app styled splitters)** - desktop panel splitters are now
+  a 1px line with their own `--xh-panel-splitter-*` variables. App overrides of
+  `--resizable-*` variables no longer reach them - see Step 5.
 
 ## Upgrade Steps
 
@@ -268,6 +271,49 @@ An app that rendered the kit's `WindowedSelect` or `reactWindowedSelect` directl
 `select({enableWindowed: true})` instead, or add react-windowed-select to its own `package.json`.
 Remove any `react-windowed-select` entry from the app's `resolutions` or `overrides`.
 
+### 5. Move Panel Splitter Style Overrides
+
+Desktop panel splitters are now a 1px line with a hover accent and a hover collapse button. They
+no longer read the `--xh-resizable-*` CSS variables. Those variables still style the splitters in
+`DashContainer` and `SplitTreeMap`, so leave any override in place if the app wants to style
+those.
+
+**Find affected code:**
+
+```bash
+grep -rn "resizable-\|xh-resizable-splitter\|xh-resizable-dragger\|xh-resizable-collapser" client-app/src/
+```
+
+Map each override that targeted panel splitters to its new variable:
+
+| Old variable | New variable |
+|--------------|--------------|
+| `--resizable-border-color` | `--panel-splitter-line-color` |
+| `--resizable-button-bg` | `--panel-splitter-button-bg` |
+| `--resizable-button-icon-color` | `--panel-splitter-button-icon-color` |
+| `--resizable-border-width` | None. The line is always 1px. |
+| `--resizable-size` | None. Use `--panel-splitter-hit-size` to change the grab area. |
+| `--resizable-bg` | None. The splitter has no bar. |
+
+Other new variables are `--panel-splitter-accent-color`, `--panel-splitter-accent-active-color`,
+`--panel-splitter-snap-color`, `--panel-splitter-hover-delay`,
+`--panel-splitter-button-border-color`, and `--panel-collapsed-rail-*` for the rail.
+
+App SCSS that targeted `.xh-resizable-splitter` should target `.xh-panel-splitter`. The
+`.xh-resizable-dragger` and `.xh-resizable-collapser-btn` classes are gone.
+
+**Header collapse button:** `showHeaderCollapseButton` now defaults to `false` on an expanded
+panel when its splitter shows a collapse button. A collapsed header still shows its chevron. To
+keep the header button on expanded panels, set `showHeaderCollapseButton: true`.
+
+```typescript
+// Before (v89) - header button shown by default
+panel({modelConfig: {side: 'left', defaultSize: 250}})
+
+// After (v90) - opt in to keep the header button when expanded
+panel({modelConfig: {side: 'left', defaultSize: 250, showHeaderCollapseButton: true}})
+```
+
 ## Verification Checklist
 
 After completing all steps:
@@ -284,6 +330,7 @@ After completing all steps:
       `modifier`, and nothing imports from `@xh/hoist/kit/onsen`.
 - [ ] Mobile screens with inputs, tabs, dialogs, toasts and menus look as they did on v89.
 - [ ] No code imports `WindowedSelect` or `reactWindowedSelect` from `@xh/hoist/kit/react-select`.
+- [ ] No app SCSS styles panel splitters with `--resizable-*` variables or `.xh-resizable-splitter`.
 
 ## Reference
 

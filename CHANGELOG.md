@@ -14,7 +14,7 @@
 
 ## 90.0.0-SNAPSHOT - unreleased
 
-### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW - `formatConfig`, `DateInput` props, mobile styling)
+### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW - `formatConfig`, `DateInput` props, mobile styling, panel splitter CSS)
 See [`docs/upgrade-notes/v90-upgrade-notes.md`](docs/upgrade-notes/v90-upgrade-notes.md) for
 detailed, step-by-step upgrade instructions with before/after code examples.
 
@@ -35,9 +35,22 @@ detailed, step-by-step upgrade instructions with before/after code examples.
   `Checkbox` and `SwitchInput`. It passed an Onsen modifier string and has no equivalent.
 * Mobile `Checkbox` and `SwitchInput` now put their `testId` on the native `<input>` rather than
   on a wrapper, as on desktop.
+* Desktop panel splitters no longer read the `--xh-resizable-*` CSS variables. Style them with the
+  new `--xh-panel-splitter-*` variables instead. The `--xh-resizable-*` variables still style
+  `DashContainer` and `SplitTreeMap`.
+* Renamed the `.xh-resizable-splitter` CSS class to `.xh-panel-splitter`, and removed
+  `.xh-resizable-dragger` and `.xh-resizable-collapser-btn`.
+* `PanelConfig.showHeaderCollapseButton` now defaults to `false` on an expanded panel whose
+  splitter shows a collapse button. Set it to `true` to keep the header button.
 
 ### 🎁 New Features
 
+* Redesigned desktop panel splitters as a 1px line with a wider invisible grab area. An accent
+  line and collapse button fade in on hover. Splitters also support keyboard resizing,
+  double-click to reset size, and drag-to-collapse.
+* Added a clickable rail for collapsed panels that have no title or icon, so they stay easy to find
+  and expand. Set `PanelConfig.showCollapsedRail: false` to turn it off. A single click on any
+  collapsed panel header now expands the panel.
 * Added `GridModel.headerContextMenu`, a context menu shown on right-click of a desktop grid column
   header. By default it sorts, pins, hides and autosizes the clicked column and opens the column
   chooser. Set `false` to show none. Grids that disable `contextMenu` get no header menu by default.
