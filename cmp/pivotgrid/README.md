@@ -33,6 +33,7 @@ PivotGridModel
 ├── view: View                         # Bound for life - not swappable
 ├── store: Store                       # From view.createStore(); disconnected on destroy
 ├── gridModel: GridModel               # The grid rendered; treeMode, generated columns
+├── selectedRecord, selectAsync, ...   # Selection and `empty` delegated, as on ZoneGridModel
 ├── rowSummary, pivotSummary           # Total columns, docked / per group: false|true|HSide
 ├── valueSummary                       # Totals row: false|true|VSide - needs includeRoot
 ├── pivotSortBy: PivotSort[]           # Display order per pivot level

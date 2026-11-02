@@ -135,8 +135,10 @@ import {
     ColumnGroupState,
     ColumnState,
     ColumnStateOptions,
+    GridEnsureVisibleOptions,
     GridModelPersistOptions,
-    GridScrollPosition,
+    GridSelectFirstOptions,
+    GridSelectOptions,
     GroupRowRenderer,
     RowClassFn,
     RowClassRuleFn
@@ -942,20 +944,7 @@ export class GridModel extends HoistModel {
      * @param records - one or more record(s) / ID(s) to select.
      * @param opts - additional post-selection options
      */
-    async selectAsync(
-        records: Some<StoreRecordOrId>,
-        opts: {
-            /**
-             * True (default) to scroll the grid or expand nodes as needed to make selection
-             * visible if it is within a collapsed node or outside of the visible scroll window.
-             */
-            ensureVisible?: boolean;
-            /** Position of the selection in the viewport - default null scrolls minimally. */
-            ensureVisiblePosition?: GridScrollPosition;
-            /** True (default) to clear previous selection (rather than add to it). */
-            clearSelection?: boolean;
-        } = {}
-    ) {
+    async selectAsync(records: Some<StoreRecordOrId>, opts: GridSelectOptions = {}) {
         const {ensureVisible = true, ensureVisiblePosition = null, clearSelection = true} = opts;
         this.selModel.select(records, clearSelection);
         if (ensureVisible) {
@@ -970,20 +959,7 @@ export class GridModel extends HoistModel {
      * any pre-existing selection unchanged, which is what apps typically want when reloading an
      * already-populated grid.
      */
-    async selectFirstAsync(
-        opts: {
-            /**
-             * True (default) to expand nodes as needed to allow selection when the first selectable
-             * node is in a collapsed group.
-             */
-            expandParentGroups?: boolean;
-            /**
-             * True (default) to scroll the grid or expand nodes as needed to make selection
-             * visible if it is outside of the visible scroll window.
-             */
-            ensureVisible?: boolean;
-        } = {}
-    ) {
+    async selectFirstAsync(opts: GridSelectFirstOptions = {}) {
         const {expandParentGroups = true, ensureVisible = true} = opts;
         await this.whenReadyAsync();
         if (!this.isReady) return;
@@ -1027,12 +1003,7 @@ export class GridModel extends HoistModel {
      *
      * @param opts - additional scrolling options
      */
-    async ensureSelectionVisibleAsync(
-        opts: {
-            /** Position of the selection in the viewport - default null scrolls minimally. */
-            position?: GridScrollPosition;
-        } = {}
-    ) {
+    async ensureSelectionVisibleAsync(opts: GridEnsureVisibleOptions = {}) {
         await this.whenReadyAsync();
         if (!this.isReady) return;
 
@@ -1054,10 +1025,7 @@ export class GridModel extends HoistModel {
      */
     async ensureRecordsVisibleAsync(
         records: Some<StoreRecord>,
-        opts: {
-            /** Position of the record in the viewport - default null scrolls minimally. */
-            position?: GridScrollPosition;
-        } = {}
+        opts: GridEnsureVisibleOptions = {}
     ) {
         const {position = null} = opts;
 

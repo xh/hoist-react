@@ -4,9 +4,17 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {ColumnGroupSpec, ColumnSpec, GridConfig, GridModel} from '@xh/hoist/cmp/grid';
-import {HoistModel, HSide, managed, ReactionSpec, VSide} from '@xh/hoist/core';
-import {CubeField, PivotCellField, PivotPath, Store, View} from '@xh/hoist/data';
+import {
+    ColumnGroupSpec,
+    ColumnSpec,
+    GridConfig,
+    GridEnsureVisibleOptions,
+    GridModel,
+    GridSelectFirstOptions,
+    GridSelectOptions
+} from '@xh/hoist/cmp/grid';
+import {HoistModel, HSide, managed, ReactionSpec, Some, VSide} from '@xh/hoist/core';
+import {CubeField, PivotCellField, PivotPath, Store, StoreRecordOrId, View} from '@xh/hoist/data';
 import {action, bindable, bindableRef} from '@xh/hoist/mobx';
 import {isArray, isEmpty, mapValues, omit, orderBy, sortBy} from 'lodash';
 
@@ -156,6 +164,50 @@ export class PivotGridModel extends HoistModel {
         this.gridModel = this.createGridModel(gridConfig);
 
         this.addReaction(this.columnsReaction(), this.valueSummaryReaction());
+    }
+
+    //------------------------
+    // Selection and state - delegated to the GridModel, as in ZoneGridModel
+    //------------------------
+
+    get empty() {
+        return this.gridModel.empty;
+    }
+
+    get selModel() {
+        return this.gridModel.selModel;
+    }
+
+    get hasSelection() {
+        return this.gridModel.hasSelection;
+    }
+
+    get selectedRecords() {
+        return this.gridModel.selectedRecords;
+    }
+
+    get selectedRecord() {
+        return this.gridModel.selectedRecord;
+    }
+
+    get selectedId() {
+        return this.gridModel.selectedId;
+    }
+
+    selectAsync(records: Some<StoreRecordOrId>, opts?: GridSelectOptions) {
+        return this.gridModel.selectAsync(records, opts);
+    }
+
+    preSelectFirstAsync() {
+        return this.gridModel.preSelectFirstAsync();
+    }
+
+    selectFirstAsync(opts?: GridSelectFirstOptions) {
+        return this.gridModel.selectFirstAsync(opts);
+    }
+
+    ensureSelectionVisibleAsync(opts?: GridEnsureVisibleOptions) {
+        return this.gridModel.ensureSelectionVisibleAsync(opts);
     }
 
     //------------------------

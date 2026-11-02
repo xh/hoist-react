@@ -87,6 +87,39 @@ export type GridGroupSortFn = (
 /** Position of a row in the viewport when scrolled into view - default null scrolls minimally. */
 export type GridScrollPosition = 'top' | 'middle' | 'bottom';
 
+/** Options for {@link GridModel.selectAsync}. */
+export interface GridSelectOptions {
+    /**
+     * True (default) to scroll the grid or expand nodes as needed to make selection visible if it
+     * is within a collapsed node or outside of the visible scroll window.
+     */
+    ensureVisible?: boolean;
+    /** Position of the selection in the viewport - default null scrolls minimally. */
+    ensureVisiblePosition?: GridScrollPosition;
+    /** True (default) to clear previous selection (rather than add to it). */
+    clearSelection?: boolean;
+}
+
+/** Options for {@link GridModel.selectFirstAsync}. */
+export interface GridSelectFirstOptions {
+    /**
+     * True (default) to expand nodes as needed to allow selection when the first selectable node
+     * is in a collapsed group.
+     */
+    expandParentGroups?: boolean;
+    /**
+     * True (default) to scroll the grid or expand nodes as needed to make selection visible if it
+     * is outside of the visible scroll window.
+     */
+    ensureVisible?: boolean;
+}
+
+/** Options for {@link GridModel.ensureSelectionVisibleAsync} and `ensureRecordsVisibleAsync`. */
+export interface GridEnsureVisibleOptions {
+    /** Position of the record(s) in the viewport - default null scrolls minimally. */
+    position?: GridScrollPosition;
+}
+
 /**
  * Closure to generate CSS class names for a row.
  * @param record - the StoreRecord associated with the rendered row.

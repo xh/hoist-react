@@ -38,6 +38,17 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 
 ### 🎁 New Features
 
+* Added Grid and Cube pivoting - a View can slice its measures across extra dimensions as columns,
+  and a new `PivotGrid` renders the result.
+    * Set `QueryConfig.pivot` to pivot a Cube View. Cells are published as synthetic fields on
+      each group row and described by `ViewResult.paths` and `cellFields`, and pivoted Views update
+      incrementally like any other. See `PivotSpec` and the
+      [Cube README](data/cube/README.md#pivoting-with-pivot).
+    * Added `PivotGrid` and `PivotGridModel` (`@xh/hoist/cmp/pivotgrid`) to render a pivoted View
+      as a tree grid with nested column groups, docked summaries, and per-measure column config.
+      See the [PivotGrid README](cmp/pivotgrid/README.md).
+    * See the Admin Console's Activity Tracking tab for a working example - its new "Pivot by"
+      option pivots the aggregate grid on a chosen dimension.
 * Added `GridModel.headerContextMenu`, a context menu shown on right-click of a desktop grid column
   header. By default it sorts, pins, hides and autosizes the clicked column and opens the column
   chooser. Set `false` to show none. Grids that disable `contextMenu` get no header menu by default.
@@ -93,6 +104,14 @@ detailed, step-by-step upgrade instructions with before/after code examples.
   storage is unavailable the service logs a warning and holds values in memory, as before.
 * Removed Onsen UI from the mobile toolkit, with the `@xh/hoist/kit/onsen` wrappers. Each mobile
   component now owns its DOM and styles.
+
+### ⚙️ Typescript API Adjustments
+
+* Added `GridSelectOptions`, `GridSelectFirstOptions` and `GridEnsureVisibleOptions`, the option
+  types of `GridModel.selectAsync`, `selectFirstAsync` and `ensureSelectionVisibleAsync`. The
+  `ZoneGridModel` and `DataViewModel` delegates now share them, so they accept every option the
+  `GridModel` methods take - previously `ensureVisiblePosition` and `expandParentGroups` were
+  dropped.
 
 ### ✨ Styles
 
@@ -277,17 +296,6 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 
 ### 🎁 New Features
 
-* Added Grid and Cube pivoting - a View can slice its measures across extra dimensions as columns,
-  and a new `PivotGrid` renders the result.
-    * Set `QueryConfig.pivot` to pivot a Cube View. Cells are published as synthetic fields on
-      each group row and described by `ViewResult.paths` and `cellFields`, and pivoted Views update
-      incrementally like any other. See `PivotSpec` and the
-      [Cube README](data/cube/README.md#pivoting-with-pivot).
-    * Added `PivotGrid` and `PivotGridModel` (`@xh/hoist/cmp/pivotgrid`) to render a pivoted View
-      as a tree grid with nested column groups, docked summaries, and per-measure column config.
-      See the [PivotGrid README](cmp/pivotgrid/README.md).
-    * See the Admin Console's Activity Tracking tab for a working example - its new "Pivot by"
-      option pivots the aggregate grid on a chosen dimension.
 * Added `WeightedAverageAggregator` for Cube fields averaged by the weight of a second field. Pass
   `{absolute: true}` to weight by magnitude.
 * Added `Aggregator.dependsOn` for custom aggregators that read other leaf fields - a View now
