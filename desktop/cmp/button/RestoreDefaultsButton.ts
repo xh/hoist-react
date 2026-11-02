@@ -8,8 +8,9 @@ import {br, fragment} from '@xh/hoist/cmp/layout';
 import {hoistCmp, XH} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
-import {ReactNode} from 'react';
-import {button, ButtonProps} from './Button';
+import type {ReactNode} from 'react';
+import type {ButtonProps} from './Button';
+import {button} from './Button';
 
 export interface RestoreDefaultsButtonProps extends ButtonProps {
     /** Message for confirm dialog shown prior to clearing user customizations. */

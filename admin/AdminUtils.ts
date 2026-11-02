@@ -4,7 +4,7 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {AppModel} from '@xh/hoist/admin/AppModel';
+import type {AppModel} from '@xh/hoist/admin/AppModel';
 import {div, span} from '@xh/hoist/cmp/layout';
 import {markdown} from '@xh/hoist/cmp/markdown';
 import {XH} from '@xh/hoist/core';
@@ -12,7 +12,7 @@ import {defaultReadonlyRenderer} from '@xh/hoist/desktop/cmp/form';
 import {jsonInput} from '@xh/hoist/desktop/cmp/input';
 import {LocalDate} from '@xh/hoist/utils/datetime';
 import {isString} from 'lodash';
-import {ReactElement, ReactNode} from 'react';
+import type {ReactElement, ReactNode} from 'react';
 
 /**
  * Generate a standardized filename for an Admin module grid export, without datestamp.

@@ -12,9 +12,10 @@ import {formField} from '@xh/hoist/desktop/cmp/form';
 import {select, textInput} from '@xh/hoist/desktop/cmp/input';
 import {Icon} from '@xh/hoist/icon';
 import {popover} from '@xh/hoist/kit/blueprint';
-import {ReactNode} from 'react';
+import type {ReactNode} from 'react';
 import {groupPathBreadcrumb} from '../GroupPathBreadcrumb';
-import {GroupPathOption, groupValueDisplay, TOP_LEVEL_GROUP_VALUE, topLevelLabel} from '../Utils';
+import type {GroupPathOption} from '../Utils';
+import {groupValueDisplay, TOP_LEVEL_GROUP_VALUE, topLevelLabel} from '../Utils';
 import {GroupFieldModel} from './GroupFieldModel';
 
 /**

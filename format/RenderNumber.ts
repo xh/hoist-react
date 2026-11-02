@@ -6,18 +6,16 @@
  */
 import {throwIf} from '@xh/hoist/utils/js';
 import {forEach, isEmpty, isFinite, isNil, isString} from 'lodash';
-import {ReactNode} from 'react';
+import type {ReactNode} from 'react';
+import type {ColorClassSpec, NumberFormatOptions, QuantityFormatOptions} from './FormatNumber';
 import {
-    ColorClassSpec,
     fmtBillions,
     fmtMillions,
     fmtNumber,
     fmtPercent,
     fmtPrice,
     fmtQuantity,
-    fmtThousands,
-    NumberFormatOptions,
-    QuantityFormatOptions
+    fmtThousands
 } from './FormatNumber';
 import {createRenderer, type TextRenderer} from './FormatUtils';
 import {DEFAULT_COLOR_SPEC, ROUNDED_ZERO} from './impl/Utils';

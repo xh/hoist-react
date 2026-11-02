@@ -5,13 +5,16 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 /// <reference path="../../assets.d.ts" />
-import {IconName} from '@fortawesome/fontawesome-svg-core';
+import type {IconName} from '@fortawesome/fontawesome-svg-core';
 import {img} from '@xh/hoist/cmp/layout';
-import {hoistCmp, HoistProps} from '@xh/hoist/core';
-import {HoistIconPrefix, Icon, IconProps} from '@xh/hoist/icon';
+import type {HoistProps} from '@xh/hoist/core';
+import {hoistCmp} from '@xh/hoist/core';
+import type {HoistIconPrefix, IconProps} from '@xh/hoist/icon';
+import {Icon} from '@xh/hoist/icon';
 import {apiDeprecated} from '@xh/hoist/utils/js';
 import classNames from 'classnames';
-import {cloneElement, isValidElement, ReactElement} from 'react';
+import type {ReactElement} from 'react';
+import {cloneElement, isValidElement} from 'react';
 import compactSpinnerImg from './spinner-20px.png';
 import spinnerImg from './spinner-50px.png';
 import './Spinner.scss';

@@ -5,18 +5,17 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {div, li, span, ul} from '@xh/hoist/cmp/layout';
-import {HAlign, HSide, Intent, PlainObject, Some, XH, Thunkable} from '@xh/hoist/core';
-import {
+import type {HAlign, HSide, Intent, PlainObject, Some, Thunkable} from '@xh/hoist/core';
+import {XH} from '@xh/hoist/core';
+import type {
     CubeFieldSpec,
     FieldSpec,
-    genDisplayName,
-    maxSeverity,
     RecordAction,
     RecordActionSpec,
-    StoreRecord,
     ValidationResult,
     ValidationSeverity
 } from '@xh/hoist/data';
+import {genDisplayName, maxSeverity, StoreRecord} from '@xh/hoist/data';
 import {computeOnce, logDebug, logWarn, throwIf, warnIf, withDefault} from '@xh/hoist/utils/js';
 import {
     castArray,
@@ -34,20 +33,12 @@ import {
     keysIn,
     toString
 } from 'lodash';
-import {
-    createElement,
-    forwardRef,
-    FunctionComponent,
-    isValidElement,
-    ReactElement,
-    ReactNode,
-    useLayoutEffect,
-    useRef
-} from 'react';
-import {GridModel} from '../GridModel';
+import type {FunctionComponent, ReactElement, ReactNode} from 'react';
+import {createElement, forwardRef, isValidElement, useLayoutEffect, useRef} from 'react';
+import type {GridModel} from '../GridModel';
 import {GridSorter} from '../GridSorter';
 import {getAgHeaderClassFn, withErrorCell} from '../impl/Utils';
-import {
+import type {
     ColumnCellClassFn,
     ColumnCellClassRuleFn,
     ColumnCellFlagFn,
@@ -66,9 +57,9 @@ import {
     ColumnSetValueFn,
     ColumnSortSpec,
     ColumnSortValueFn,
-    ColumnTooltipFn,
-    toAgColumnGroupShow
+    ColumnTooltipFn
 } from '../Types';
+import {toAgColumnGroupShow} from '../Types';
 import {ExcelFormat} from '../enums/ExcelFormat';
 import type {
     CellClassParams,

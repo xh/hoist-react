@@ -22,7 +22,7 @@ import {
     uniq,
     without
 } from 'lodash';
-import {HeaderFilterModel} from '../HeaderFilterModel';
+import type {HeaderFilterModel} from '../HeaderFilterModel';
 
 /**
  * @internal

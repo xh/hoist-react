@@ -5,19 +5,18 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
-import {
+import type {
     GridFilterBindTarget,
-    GridFilterFieldSpec,
     GridFilterFieldSpecConfig,
     GridFilterModelConfig
 } from '@xh/hoist/cmp/grid';
+import {GridFilterFieldSpec} from '@xh/hoist/cmp/grid';
 import {HoistModel, managed} from '@xh/hoist/core';
+import type {Filter, FilterLike} from '@xh/hoist/data';
 import {
     appendFilter,
     CompoundFilter,
     FieldFilter,
-    Filter,
-    FilterLike,
     flattenFilter,
     parseFilter
 } from '@xh/hoist/data';
@@ -25,8 +24,8 @@ import {Icon} from '@xh/hoist/icon';
 import {action, bindable, observable} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 import {castArray, compact, every, find, isNil, isString, uniq} from 'lodash';
-import {ReactElement} from 'react';
-import {GridModel} from '../GridModel';
+import type {ReactElement} from 'react';
+import type {GridModel} from '../GridModel';
 
 export interface GridFilterModelDefaults {
     activeFilterIcon?: ReactElement;

@@ -4,16 +4,16 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {
+import type {
     Thunkable,
     ExceptionHandlerOptions,
-    TaskObserver,
     TrackOptions,
-    XH,
     Some,
     Awaitable
 } from '@xh/hoist/core';
-import {Exception, TimeoutExceptionConfig} from '@xh/hoist/exception';
+import {TaskObserver, XH} from '@xh/hoist/core';
+import type {TimeoutExceptionConfig} from '@xh/hoist/exception';
+import {Exception} from '@xh/hoist/exception';
 
 import {action} from '@xh/hoist/mobx';
 import {olderThan, SECONDS} from '@xh/hoist/utils/datetime';
@@ -106,8 +106,7 @@ export type PromiseTimeoutSpec = number | {interval: number; message?: string};
  * message to show while pending and/or optional flag to skip (e.g. for conditional masking).
  */
 export type PromiseLinkSpec =
-    | TaskObserver
-    | {observer: TaskObserver; message?: string; omit?: Thunkable<boolean>};
+    TaskObserver | {observer: TaskObserver; message?: string; omit?: Thunkable<boolean>};
 
 /**
  * Return a promise that will resolve after the specified amount of time.

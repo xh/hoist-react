@@ -4,12 +4,12 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {CellContext, Column, ColumnRenderer} from '@xh/hoist/cmp/grid';
+import type {CellContext, Column, ColumnRenderer} from '@xh/hoist/cmp/grid';
 import {getCellClasses} from '@xh/hoist/cmp/grid/impl/Utils';
 import {div, span} from '@xh/hoist/cmp/layout';
 import {intersperse, throwIf} from '@xh/hoist/utils/js';
 import {compact, isFunction, isNil, partition} from 'lodash';
-import {ReactNode} from 'react';
+import type {ReactNode} from 'react';
 
 export interface ZoneGridColConfig {
     /** Array of SubField specifications to render. */

@@ -4,7 +4,7 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {Thunkable} from '@xh/hoist/core/types/Types';
+import type {Thunkable} from '@xh/hoist/core/types/Types';
 import {isFunction} from 'lodash';
 
 /**

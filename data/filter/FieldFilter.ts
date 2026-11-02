@@ -23,11 +23,12 @@ import {
     isUndefined,
     uniq
 } from 'lodash';
-import {FieldType, parseFieldValue} from '../Field';
-import {Store} from '../Store';
-import {StoreRecord} from '../StoreRecord';
+import type {FieldType} from '../Field';
+import {parseFieldValue} from '../Field';
+import type {Store} from '../Store';
+import type {StoreRecord} from '../StoreRecord';
 import {Filter} from './Filter';
-import {FieldFilterOperator, FieldFilterSpec, FilterTestFn} from './Types';
+import type {FieldFilterOperator, FieldFilterSpec, FilterTestFn} from './Types';
 
 const _warnedFields = new Set<string>();
 

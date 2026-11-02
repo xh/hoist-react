@@ -4,17 +4,11 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {FilterChooserFilter, FilterChooserModel} from '@xh/hoist/cmp/filter';
+import type {FilterChooserFilter} from '@xh/hoist/cmp/filter';
+import {FilterChooserModel} from '@xh/hoist/cmp/filter';
 import {box, div, hbox, hframe, vbox} from '@xh/hoist/cmp/layout';
-import {
-    hoistCmp,
-    HoistModel,
-    HoistProps,
-    LayoutProps,
-    lookup,
-    useLocalModel,
-    uses
-} from '@xh/hoist/core';
+import type {HoistProps, LayoutProps} from '@xh/hoist/core';
+import {hoistCmp, HoistModel, lookup, useLocalModel, uses} from '@xh/hoist/core';
 import {bindable} from '@xh/hoist/mobx';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {select} from '@xh/hoist/desktop/cmp/input';
@@ -26,7 +20,8 @@ import {getLayoutProps, splitLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import {isEmpty, sortBy} from 'lodash';
 import {badge} from '@xh/hoist/cmp/badge';
-import {cloneElement, ReactElement} from 'react';
+import type {ReactElement} from 'react';
+import {cloneElement} from 'react';
 import './FilterChooser.scss';
 
 export interface FilterChooserProps extends HoistProps<FilterChooserModel>, LayoutProps {

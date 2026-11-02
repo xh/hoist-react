@@ -6,8 +6,9 @@
  */
 import {hoistCmp} from '@xh/hoist/core';
 import {div, filler, hbox, p} from '@xh/hoist/cmp/layout';
-import {ErrorMessageProps} from '@xh/hoist/cmp/error';
-import {button, ButtonProps} from '@xh/hoist/desktop/cmp/button';
+import type {ErrorMessageProps} from '@xh/hoist/cmp/error';
+import type {ButtonProps} from '@xh/hoist/desktop/cmp/button';
+import {button} from '@xh/hoist/desktop/cmp/button';
 import {Icon} from '@xh/hoist/icon';
 import {isString} from 'lodash';
 import {isValidElement} from 'react';

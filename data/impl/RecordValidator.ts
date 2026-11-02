@@ -4,7 +4,7 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {
+import type {
     Field,
     RecordValidationMessagesMap,
     RecordValidationResultsMap,
@@ -16,7 +16,8 @@ import {
 } from '@xh/hoist/data';
 import {computed, runInAction, observableRef, computedStruct} from '@xh/hoist/mobx';
 import {compact, flatten, isEmpty, isString, mapValues, values} from 'lodash';
-import {PlainObject, TaskObserver} from '../../core';
+import type {PlainObject} from '../../core';
+import {TaskObserver} from '../../core';
 
 /**
  * Computes validation state for a StoreRecord.

@@ -4,11 +4,14 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {CallContext, LoadSpec, PlainObject, XH} from '@xh/hoist/core';
-import {StoreRecord, StoreRecordId, UrlStore, UrlStoreConfig} from '@xh/hoist/data';
+import type {CallContext, LoadSpec, PlainObject} from '@xh/hoist/core';
+import {XH} from '@xh/hoist/core';
+import type {StoreRecord, StoreRecordId, UrlStoreConfig} from '@xh/hoist/data';
+import {UrlStore} from '@xh/hoist/data';
 import '@xh/hoist/desktop/register';
 import {filter, isNil, keyBy, mapValues} from 'lodash';
-import {RestField, RestFieldSpec} from './RestField';
+import type {RestFieldSpec} from './RestField';
+import {RestField} from './RestField';
 
 export interface RestStoreConfig extends UrlStoreConfig {
     /** Field names, configs, or instances. */

@@ -4,11 +4,10 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {AgGridModel, AgGridThemeParams} from '@xh/hoist/cmp/ag-grid';
-import {
-    Column,
+import type {AgGridThemeParams} from '@xh/hoist/cmp/ag-grid';
+import {AgGridModel} from '@xh/hoist/cmp/ag-grid';
+import type {
     ColumnCellClassRuleFn,
-    ColumnGroup,
     ColumnGroupSpec,
     ColumnOrGroup,
     ColumnOrGroupSpec,
@@ -17,45 +16,39 @@ import {
     GridFilterModelConfig,
     GridGroupSortFn,
     IColChooserModel,
-    isColumnSpec,
     TreeStyle
 } from '@xh/hoist/cmp/grid';
+import {Column, ColumnGroup, isColumnSpec} from '@xh/hoist/cmp/grid';
 import {GridFilterModel} from '@xh/hoist/cmp/grid/filter/GridFilterModel';
 import {fragment, p} from '@xh/hoist/cmp/layout';
-import {
+import type {
     Awaitable,
-    HoistModel,
     HSide,
     LoadSpec,
-    managed,
     PlainObject,
     SizingMode,
     Some,
-    TaskObserver,
     Thunkable,
-    VSide,
-    XH
+    VSide
 } from '@xh/hoist/core';
-import {
+import {HoistModel, managed, TaskObserver, XH} from '@xh/hoist/core';
+import type {
     Field,
     FieldSpec,
-    getFieldName,
-    Store,
     StoreConfig,
-    StoreRecord,
     StoreRecordId,
     StoreRecordOrId,
     StoreSelectionConfig,
-    StoreSelectionModel,
     StoreTransaction
 } from '@xh/hoist/data';
+import {getFieldName, Store, StoreRecord, StoreSelectionModel} from '@xh/hoist/data';
 import {
     DockedColChooserModel as DesktopDockedColChooserModel,
     ModalColChooserModel as DesktopModalColChooserModel
 } from '@xh/hoist/dynamics/desktop';
 import {ColChooserModel as MobileColChooserModel} from '@xh/hoist/dynamics/mobile';
 import {Icon} from '@xh/hoist/icon';
-import {
+import type {
     AgColumnState,
     CellClickedEvent,
     CellContextMenuEvent,
@@ -77,7 +70,7 @@ import {
     computed
 } from '@xh/hoist/mobx';
 import {wait, waitFor} from '@xh/hoist/promise';
-import {ExportOptions} from '@xh/hoist/svc/GridExportService';
+import type {ExportOptions} from '@xh/hoist/svc/GridExportService';
 import {SECONDS} from '@xh/hoist/utils/datetime';
 import {
     apiDeprecated,
@@ -117,19 +110,21 @@ import {
     take,
     uniqBy
 } from 'lodash';
-import {createRef, ReactNode, RefObject} from 'react';
-import {GridAutosizeOptions} from './GridAutosizeOptions';
+import type {ReactNode, RefObject} from 'react';
+import {createRef} from 'react';
+import type {GridAutosizeOptions} from './GridAutosizeOptions';
 import {GridModelDiagnostics} from './impl/GridModelDiagnostics';
-import {
+import type {
     GridContextMenuItemLike,
     GridContextMenuSpec,
     GridHeaderContextMenuSpec
 } from './GridContextMenu';
-import {GridSorter, GridSorterLike} from './GridSorter';
+import type {GridSorterLike} from './GridSorter';
+import {GridSorter} from './GridSorter';
 import {computeSortedRecords} from './impl/RecordSortUtils';
 import {initPersist} from './impl/InitPersist';
 import {withErrorCell} from './impl/Utils';
-import {
+import type {
     ColChooserConfig,
     ColChooserMode,
     ColumnGroupState,

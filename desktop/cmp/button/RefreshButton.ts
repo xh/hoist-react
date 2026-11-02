@@ -4,10 +4,12 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {hoistCmp, Loadable, RefreshContextModel, useContextModel} from '@xh/hoist/core';
+import type {Loadable} from '@xh/hoist/core';
+import {hoistCmp, RefreshContextModel, useContextModel} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
-import {button, ButtonProps} from './Button';
+import type {ButtonProps} from './Button';
+import {button} from './Button';
 
 export interface RefreshButtonProps extends ButtonProps {
     /** Object to refresh when clicked. */

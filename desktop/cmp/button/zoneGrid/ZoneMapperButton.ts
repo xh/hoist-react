@@ -8,12 +8,14 @@ import '@xh/hoist/desktop/register';
 import {hoistCmp, useContextModel} from '@xh/hoist/core';
 import {div, vbox} from '@xh/hoist/cmp/layout';
 import {ZoneGridModel} from '@xh/hoist/cmp/zoneGrid';
-import {ZoneMapperModel} from '@xh/hoist/cmp/zoneGrid/impl/ZoneMapperModel';
+import type {ZoneMapperModel} from '@xh/hoist/cmp/zoneGrid/impl/ZoneMapperModel';
 import {zoneMapper} from '@xh/hoist/desktop/cmp/zoneGrid/impl/ZoneMapper';
 import {Icon} from '@xh/hoist/icon';
-import {popover, Position} from '@xh/hoist/kit/blueprint';
+import type {Position} from '@xh/hoist/kit/blueprint';
+import {popover} from '@xh/hoist/kit/blueprint';
 import {logError, stopPropagation, withDefault} from '@xh/hoist/utils/js';
-import {button, ButtonProps} from '../Button';
+import type {ButtonProps} from '../Button';
+import {button} from '../Button';
 
 export interface ZoneMapperButtonProps extends ButtonProps {
     /** ZoneGridModel to which this button should bind. Will find nearest in context if not provided. */

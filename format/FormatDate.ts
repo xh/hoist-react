@@ -7,9 +7,10 @@
 import {DAYS, isLocalDate, LocalDate} from '@xh/hoist/utils/datetime';
 import {defaults, isFinite, isString} from 'lodash';
 import moment from 'moment';
-import {ReactNode} from 'react';
-import {DateLike, PlainObject} from '../core/types/Types';
-import {fmtSpan, FormatOptions} from './FormatMisc';
+import type {ReactNode} from 'react';
+import type {DateLike, PlainObject} from '../core/types/Types';
+import type {FormatOptions} from './FormatMisc';
+import {fmtSpan} from './FormatMisc';
 import {saveOriginal} from './impl/Utils';
 
 export const DATE_FMT = 'YYYY-MM-DD',

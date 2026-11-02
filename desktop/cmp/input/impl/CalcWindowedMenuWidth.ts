@@ -7,7 +7,8 @@
 import {logWarn, stripTags} from '@xh/hoist/utils/js';
 import {renderToStaticMarkup} from '@xh/hoist/utils/react';
 import {isEmpty, isNil, isString, sortBy, takeRight} from 'lodash';
-import {isValidElement, ReactNode} from 'react';
+import type {ReactNode} from 'react';
+import {isValidElement} from 'react';
 
 /** Max number of (widest) options to render and measure when sizing a windowed menu. */
 const SIZE_CALC_SAMPLES = 25;

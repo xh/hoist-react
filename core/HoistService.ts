@@ -4,18 +4,16 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {
+import type {
     CallContext,
-    HoistBase,
     InitContext,
-    managed,
-    LoadSupport,
     LoadSpec,
     LoadSpecConfig,
     Loadable,
     PlainObject,
     TaskObserver
 } from './';
+import {HoistBase, managed, LoadSupport} from './';
 
 /**
  * Core superclass for Services in Hoist. Services are special classes used in both Hoist and

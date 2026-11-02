@@ -6,12 +6,12 @@
  */
 
 import {XH} from '@xh/hoist/core';
-import {StoreRecord} from '../../StoreRecord';
+import type {StoreRecord} from '../../StoreRecord';
 import type {CubeField} from '../CubeField';
 import type {ParentRow} from '../row/ParentRow';
 import type {RowUpdate} from '../row/RowUpdate';
 import type {ViewRow} from '../ViewRow';
-import {View} from '../View';
+import type {View} from '../View';
 
 /**
  * Context provided to aggregators.

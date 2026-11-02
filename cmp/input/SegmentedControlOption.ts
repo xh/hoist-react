@@ -4,9 +4,9 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {Intent} from '@xh/hoist/core';
-import {LocalDate} from '@xh/hoist/utils/datetime';
-import {ReactElement} from 'react';
+import type {Intent} from '@xh/hoist/core';
+import type {LocalDate} from '@xh/hoist/utils/datetime';
+import type {ReactElement} from 'react';
 
 /** Primitive value types supported as a SegmentedControl option value/label. */
 export type OptionPrimitive = string | number | boolean | LocalDate;

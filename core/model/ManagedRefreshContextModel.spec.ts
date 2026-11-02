@@ -4,7 +4,8 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {HoistModel, LoadSpec, ManagedRefreshContextModel, RefreshMode} from '@xh/hoist/core';
+import type {LoadSpec, RefreshMode} from '@xh/hoist/core';
+import {HoistModel, ManagedRefreshContextModel} from '@xh/hoist/core';
 import {bindable} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 import {describe, expect, it, onTestFinished} from 'vitest';

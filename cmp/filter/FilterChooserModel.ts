@@ -4,28 +4,25 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
+import type {PersistOptions, Thunkable} from '@xh/hoist/core';
 import {
     HoistModel,
     managed,
     PersistableState,
     PersistenceProvider,
     persistOptions,
-    PersistOptions,
     TaskObserver,
-    Thunkable,
     XH
 } from '@xh/hoist/core';
+import type {Filter, FilterBindTarget, FilterValueSource} from '@xh/hoist/data';
 import {
     appendFilter,
     CompoundFilter,
     FieldFilter,
-    Filter,
-    FilterBindTarget,
-    FilterValueSource,
     isFilterValueSource,
     parseFilter
 } from '@xh/hoist/data';
-import {CompoundFilterSpec, FieldFilterSpec, FilterLike} from '@xh/hoist/data/filter/Types';
+import type {CompoundFilterSpec, FieldFilterSpec, FilterLike} from '@xh/hoist/data/filter/Types';
 import {action, observable, observableRef} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 import {executeIfFunction, throwIf, withDefault} from '@xh/hoist/utils/js';
@@ -50,10 +47,12 @@ import {
     uniq,
     uniqBy
 } from 'lodash';
-import {ReactNode} from 'react';
+import type {ReactNode} from 'react';
 
-import {FilterChooserFieldSpec, FilterChooserFieldSpecConfig} from './FilterChooserFieldSpec';
-import {compoundFilterOption, fieldFilterOption, FilterChooserOption} from './impl/Option';
+import type {FilterChooserFieldSpecConfig} from './FilterChooserFieldSpec';
+import {FilterChooserFieldSpec} from './FilterChooserFieldSpec';
+import type {FilterChooserOption} from './impl/Option';
+import {compoundFilterOption, fieldFilterOption} from './impl/Option';
 import {QueryEngine} from './impl/QueryEngine';
 
 /**

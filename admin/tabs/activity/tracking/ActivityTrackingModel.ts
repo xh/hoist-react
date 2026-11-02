@@ -7,23 +7,24 @@
 import {exportFilename, getAppModel} from '@xh/hoist/admin/AdminUtils';
 import * as Col from '@xh/hoist/admin/columns';
 import {elapsedRenderer} from '@xh/hoist/admin/columns';
-import {
-    ActivityTrackingDataFieldSpec,
-    DataFieldsEditorModel
-} from '@xh/hoist/admin/tabs/activity/tracking/datafields/DataFieldsEditorModel';
+import type {ActivityTrackingDataFieldSpec} from '@xh/hoist/admin/tabs/activity/tracking/datafields/DataFieldsEditorModel';
+import {DataFieldsEditorModel} from '@xh/hoist/admin/tabs/activity/tracking/datafields/DataFieldsEditorModel';
 import {DateRangePickerModel} from '@xh/hoist/cmp/daterange';
 import {FilterChooserModel} from '@xh/hoist/cmp/filter';
 import {FormModel} from '@xh/hoist/cmp/form';
-import {ColumnRenderer, ColumnSpec, GridModel, TreeStyle} from '@xh/hoist/cmp/grid';
+import type {ColumnRenderer, ColumnSpec} from '@xh/hoist/cmp/grid';
+import {GridModel, TreeStyle} from '@xh/hoist/cmp/grid';
 import {GroupingChooserModel} from '@xh/hoist/cmp/grouping';
-import {HoistModel, LoadSpec, managed, PlainObject, XH} from '@xh/hoist/core';
-import {Cube, CubeFieldSpec, FieldSpec, getCubeLeaves, ViewRowData} from '@xh/hoist/data';
+import type {LoadSpec, PlainObject} from '@xh/hoist/core';
+import {HoistModel, managed, XH} from '@xh/hoist/core';
+import type {CubeFieldSpec, FieldSpec, ViewRowData} from '@xh/hoist/data';
+import {Cube, getCubeLeaves} from '@xh/hoist/data';
 import {dateRenderer, dateTimeSecRenderer, numberRenderer} from '@xh/hoist/format';
 import {action, computed, observable, observableRef} from '@xh/hoist/mobx';
 import {LocalDate} from '@xh/hoist/utils/datetime';
 import {compact, get, isEmpty, isEqual, round} from 'lodash';
 import moment from 'moment';
-import {ActivityDetailProvider} from './detail/ActivityDetailModel';
+import type {ActivityDetailProvider} from './detail/ActivityDetailModel';
 
 export class ActivityTrackingModel extends HoistModel implements ActivityDetailProvider {
     override telemetryPrefix = 'xh.client.admin.tracking';

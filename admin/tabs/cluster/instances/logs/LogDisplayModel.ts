@@ -5,7 +5,8 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {GridModel} from '@xh/hoist/cmp/grid';
-import {HoistModel, LoadSpec, managed, persist, XH} from '@xh/hoist/core';
+import type {LoadSpec} from '@xh/hoist/core';
+import {HoistModel, managed, persist, XH} from '@xh/hoist/core';
 import {PanelModel} from '@xh/hoist/desktop/cmp/panel';
 import {Icon} from '@xh/hoist/icon';
 import {bindable} from '@xh/hoist/mobx';
@@ -13,7 +14,7 @@ import {Timer} from '@xh/hoist/utils/async';
 import {olderThan, ONE_SECOND, SECONDS} from '@xh/hoist/utils/datetime';
 import {debounced} from '@xh/hoist/utils/js';
 import {escapeRegExp, maxBy} from 'lodash';
-import {LogViewerModel} from './LogViewerModel';
+import type {LogViewerModel} from './LogViewerModel';
 
 /**
  * @internal

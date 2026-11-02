@@ -4,8 +4,9 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {Icon, IconProps} from '@xh/hoist/icon';
-import {PanelModel} from '../PanelModel';
+import type {IconProps} from '@xh/hoist/icon';
+import {Icon} from '@xh/hoist/icon';
+import type {PanelModel} from '../PanelModel';
 
 /**
  * Chevron for a panel's collapse controls, pointing the way the panel moves when toggled.

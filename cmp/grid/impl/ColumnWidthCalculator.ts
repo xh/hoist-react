@@ -5,10 +5,11 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
-import {GridAutosizeOptions} from '@xh/hoist/cmp/grid/GridAutosizeOptions';
+import type {GridAutosizeOptions} from '@xh/hoist/cmp/grid/GridAutosizeOptions';
 import {XH} from '@xh/hoist/core';
 import type {CellClassParams} from '@xh/hoist/kit/ag-grid';
-import {CompoundFilter, FieldFilter, Filter, StoreRecord} from '@xh/hoist/data';
+import type {Filter, StoreRecord} from '@xh/hoist/data';
+import {CompoundFilter, FieldFilter} from '@xh/hoist/data';
 import {forEachAsync} from '@xh/hoist/utils/async';
 import {logWarn, stripTags} from '@xh/hoist/utils/js';
 import {
@@ -27,8 +28,8 @@ import {
 } from 'lodash';
 import {isValidElement} from 'react';
 import {renderToStaticMarkup} from '@xh/hoist/utils/react';
-import {Column} from '../columns';
-import {GridModel} from '../GridModel';
+import type {Column} from '../columns';
+import type {GridModel} from '../GridModel';
 import {CanvasTextMeasurer} from './CanvasTextMeasurer';
 
 /**
