@@ -57,6 +57,18 @@ How it works:
   minted by `actions/create-github-app-token`, scoped to the toolbox repo with Contents: write.
   Toolbox runs triggered this way show `xh-build-bot[bot]` as the actor.
 
+## Versioning
+
+`develop` always holds the next major version as a snapshot, in the Maven style. For example,
+`develop` stays on `90.0.0-SNAPSHOT` while 89.x releases ship. All XH libraries follow this policy.
+
+- After a major release, bump `package.json` on `develop` to the next major `-SNAPSHOT`. Add a
+  matching `## N.0.0-SNAPSHOT - unreleased` heading to the top of `CHANGELOG.md`.
+- A release without breaking changes goes out as the next minor or patch from the latest tag.
+  For the release, change the snapshot changelog heading to that version and date. Keep
+  `package.json` on the snapshot, because Deploy Release sets the published version. After the
+  release, put the snapshot heading back on top of the changelog.
+
 ## Deploy Release (`deployRelease.yml`)
 
 Publishes a numbered release to npm. **Manually triggered** from the `master` branch via

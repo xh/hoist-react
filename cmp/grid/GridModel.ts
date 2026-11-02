@@ -123,7 +123,7 @@ import type {GridSorterLike} from './GridSorter';
 import {GridSorter} from './GridSorter';
 import {computeSortedRecords} from './impl/RecordSortUtils';
 import {initPersist} from './impl/InitPersist';
-import {managedRenderer} from './impl/Utils';
+import {withErrorCell} from './impl/Utils';
 import type {
     ColChooserConfig,
     ColChooserMode,
@@ -151,7 +151,10 @@ export interface GridConfig {
     /** Columns for this grid. */
     columns?: ColumnOrGroupSpec[];
 
-    /**  Column configs to be set on all columns.  Merges deeply. */
+    /**
+     * Column configs to be set on all columns. Merges deeply, except that a column with its own
+     * `renderer` or `textRenderer` takes neither from the defaults.
+     */
     colDefaults?: Partial<ColumnSpec>;
 
     /**
@@ -761,7 +764,7 @@ export class GridModel extends HoistModel {
         this.rowClassFn = rowClassFn;
         this.rowClassRules = rowClassRules;
         this.groupRowHeight = groupRowHeight;
-        this.groupRowRenderer = managedRenderer(groupRowRenderer, 'GROUP_ROW');
+        this.groupRowRenderer = withErrorCell(groupRowRenderer, 'GROUP_ROW');
         this.groupSortFn = withDefault(groupSortFn, this.defaultGroupSortFn);
         this.showGroupRowCounts = showGroupRowCounts;
         this.contextMenu = this.parseContextMenu(contextMenu);
@@ -809,7 +812,7 @@ export class GridModel extends HoistModel {
 
         Object.assign(this, rest);
 
-        this.colDefaults = defaultsDeep({}, colDefaults, GridModel.defaults.colDefaults);
+        this.colDefaults = this.withColDefaults(colDefaults, GridModel.defaults.colDefaults);
         this.parseAndSetColumnsAndStore(columns, store);
 
         this.setGroupBy(groupBy);
@@ -910,6 +913,8 @@ export class GridModel extends HoistModel {
     /**
      * Export grid data using ag-Grid's built-in client-side export.
      *
+     * Cells export their raw value, as copy and {@link exportAsync} do.
+     *
      * @param filename - name for exported file.
      * @param type - type of export - either 'excel' or 'csv'.
      * @param params - passed to agGrid's export functions.
@@ -921,7 +926,8 @@ export class GridModel extends HoistModel {
             {...params},
             {
                 fileName: filename,
-                processCellCallback: this.formatValuesForExport
+                // ag-Grid would otherwise apply a column's `valueFormatter`.
+                processCellCallback: ({value}) => value
             }
         );
 
@@ -1891,12 +1897,8 @@ export class GridModel extends HoistModel {
     // Implementation
     //-----------------------
     private buildColumn(config: ColumnOrGroupSpec, borderedGroup?: ColumnGroupSpec): ColumnOrGroup {
-        // Merge leaf config with defaults.
-        // Ensure *any* tooltip setting on column itself always wins.
         if (this.colDefaults && !this.isGroupSpec(config)) {
-            let colDefaults = {...this.colDefaults};
-            if (config.tooltip) colDefaults.tooltip = null;
-            config = defaultsDeep({}, config, colDefaults);
+            config = this.withColDefaults(config, this.colDefaults);
         }
 
         const omit = executeIfFunction(config.omit);
@@ -1913,6 +1915,21 @@ export class GridModel extends HoistModel {
         }
 
         return new Column(config, this);
+    }
+
+    private withColDefaults(
+        config: Partial<ColumnSpec>,
+        defaults: Partial<ColumnSpec>
+    ): Partial<ColumnSpec> {
+        // A config's own tooltip, renderer or text renderer blocks the default, and is never
+        // deep-merged with it.
+        const {tooltip, renderer, textRenderer} = config ?? {};
+        if (tooltip || renderer || textRenderer) {
+            defaults = {...defaults};
+            if (tooltip) defaults.tooltip = null;
+            if (renderer || textRenderer) defaults.renderer = defaults.textRenderer = null;
+        }
+        return defaultsDeep({}, config, defaults);
     }
 
     @sharePendingPromise
@@ -1975,16 +1992,8 @@ export class GridModel extends HoistModel {
         return ids;
     }
 
-    private formatValuesForExport(params) {
-        const value = params.value,
-            fmt = params.column.colDef.valueFormatter;
-        if (value !== null && fmt) {
-            return fmt(value);
-        } else {
-            return value;
-        }
-    }
-
+    // Export the formatted text, but keep numbers raw for Excel, which types each cell from the
+    // value returned here.
     // Store fields and column configs have a tricky bi-directional relationship in GridModel,
     // both for historical reasons and developer convenience.
     //

@@ -6,9 +6,9 @@
  */
 import type {HoistInputProps} from '@xh/hoist/cmp/input';
 import {HoistInputModel, useHoistInputModel} from '@xh/hoist/cmp/input';
-import {div} from '@xh/hoist/cmp/layout';
+import {div, htmlButton} from '@xh/hoist/cmp/layout';
 import type {HoistProps, Intent} from '@xh/hoist/core';
-import {elementFactory, hoistCmp} from '@xh/hoist/core';
+import {hoistCmp} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
 import {computed} from '@xh/hoist/mobx';
@@ -69,8 +69,6 @@ export const [IntentInput, intentInput] = hoistCmp.withFactory<IntentInputProps>
 //-----------------------
 // Implementation
 //-----------------------
-const buttonEl = elementFactory('button');
-
 class IntentInputModel extends HoistInputModel {
     override xhImpl = true;
 
@@ -172,7 +170,7 @@ const cmp = hoistCmp.factory<IntentInputModel>(({model, className, ...props}, re
                 isNull = intent == null,
                 name = isNull ? 'None' : capitalize(intent);
 
-            return buttonEl({
+            return htmlButton({
                 key: intent ?? 'none',
                 type: 'button',
                 className: classNames(

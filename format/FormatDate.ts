@@ -11,7 +11,6 @@ import type {ReactNode} from 'react';
 import type {DateLike, PlainObject} from '../core/types/Types';
 import type {FormatOptions} from './FormatMisc';
 import {fmtSpan} from './FormatMisc';
-import {createRenderer} from './FormatUtils';
 import {saveOriginal} from './impl/Utils';
 
 export const DATE_FMT = 'YYYY-MM-DD',
@@ -195,9 +194,3 @@ export function timestampReplacer(
             : v;
     };
 }
-
-export const dateRenderer = createRenderer(fmtDate),
-    dateTimeRenderer = createRenderer(fmtDateTime),
-    dateTimeSecRenderer = createRenderer(fmtDateTimeSec),
-    timeRenderer = createRenderer(fmtTime),
-    compactDateRenderer = createRenderer(fmtCompactDate);

@@ -14,12 +14,15 @@
 
 ## 90.0.0-SNAPSHOT - unreleased
 
-### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW - `formatConfig`, `DateInput` props, mobile styling)
+### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW - `formatConfig`, built-in column specs, `DateInput` props, mobile styling, panel splitter CSS)
 See [`docs/upgrade-notes/v90-upgrade-notes.md`](docs/upgrade-notes/v90-upgrade-notes.md) for
 detailed, step-by-step upgrade instructions with before/after code examples.
 
 * Removed `NumberFormatOptions.formatConfig`, which took a numbro format. Use `precision`, `zeroPad`
   and `withCommas` instead.
+* The built-in `number`, `date`, `dateTime`, `dateTimeSec`, `time`, `compactDate` and `localDate`
+  column specs now set a `textRenderer` in place of a `renderer`. Their cells are plain, and code
+  that reads their `renderer` finds none.
 * Desktop `DateInput` now renders its calendar with react-day-picker 10, as the mobile `DateInput`
   already did, and its time picker is Hoist's own 24-hour control. `dayPickerProps` now takes
   react-day-picker 10 props - see the upgrade notes for the renames from v8. Removed
@@ -35,23 +38,53 @@ detailed, step-by-step upgrade instructions with before/after code examples.
   `Checkbox` and `SwitchInput`. It passed an Onsen modifier string and has no equivalent.
 * Mobile `Checkbox` and `SwitchInput` now put their `testId` on the native `<input>` rather than
   on a wrapper, as on desktop.
+* Desktop panel splitters no longer read the `--xh-resizable-*` CSS variables. Style them with the
+  new `--xh-panel-splitter-*` variables instead. The `--xh-resizable-*` variables still style
+  `DashContainer` and `SplitTreeMap`.
+* Renamed the `.xh-resizable-splitter` CSS class to `.xh-panel-splitter`, and removed
+  `.xh-resizable-dragger` and `.xh-resizable-collapser-btn`.
+* `PanelConfig.showHeaderCollapseButton` now defaults to `false` on an expanded panel whose
+  splitter shows a collapse button.
 
 ### 🎁 New Features
 
+* Added `Column.textRenderer`, a function that returns a cell's display text. AG Grid writes the
+  text into a plain cell, with no React component. The `numberTextRenderer`, `dateTextRenderer` and
+  sibling factories in `@xh/hoist/format` build one, with `colorSpec` and ledger alignment as cell
+  classes. `Column.resolvedRenderer` returns whichever of `renderer` and `textRenderer` is set.
+* Added `ColorClassSpec`, a `colorSpec` type that holds class names only. Renderer and text renderer
+  factories both accept it, so apps can share one spec between them.
 * Added `GridModel.headerContextMenu`, a context menu shown on right-click of a desktop grid column
   header. By default it sorts, pins, hides and autosizes the clicked column and opens the column
   chooser. Set `false` to show none. Grids that disable `contextMenu` get no header menu by default.
 * Added `sort`, `pinColumn`, `hideColumn` and `autosizeColumn` grid menu tokens, which act on the
   clicked column, and `Column.availableSorts`. The `sort` token offers one item per sort the column
   offers.
+* Redesigned desktop panel splitters as a 1px line with a wider invisible grab area. An accent
+  line and collapse button fade in on hover. Splitters also support keyboard resizing,
+  double-click to reset size, and drag-to-collapse.
+* Added a clickable rail for collapsed panels that have no title or icon, so they stay easy to find
+  and expand. A single click on any collapsed panel header now expands the panel.
+* Added `PanelModel.defaults` for app-wide defaults of selected `PanelModel` configs.
 * Added `genRandomId()` to `@xh/hoist/utils/js` for short random alphanumeric IDs.
+* Added `htmlButton`, `mark` and `caption` element factories to `@xh/hoist/cmp/layout`.
+* Added `genUuid()` to `@xh/hoist/utils/js` for version 4 UUIDs, including on plain HTTP where
+  browsers omit `crypto.randomUUID()`.
+* Added `getOwn()` to `@xh/hoist/utils/js`, which reads an own property of an object and never one
+  inherited from `Object.prototype`. Use it to look up untrusted keys in a plain-object map.
 * Mobile `TabContainer` now applies `${testId}-switcher` to its switcher and
   `${testId}-switcher-${tabId}` to each switcher button, as on desktop.
 * Added "Purge Connections" buttons to the Admin Console Connection Pool Monitor, to close all
   pooled JDBC connections on one instance or across the cluster. Requires hoist-core v44+.
+* `@debounced` methods now do nothing once their `HoistBase` owner is destroyed, including a call
+  pending at destroy.
 
 ### 🐞 Bug Fixes
 
+* `GridModel.localExport` now exports every cell's raw value, as copy and `exportAsync` do. It had
+  called a column's `agOptions.valueFormatter` with a bare value, which exported blanks.
+* Fixed a column's `agOptions.cellClassRules` replacing its own `cellClassRules`, flags and editable
+  styling. They now add to them, and win for a class that both define.
 * Fixed column group borders not following their columns when reordered or hidden via the column
   chooser.
 * Fixed grid row borders and the row drag drop line stopping at the last column when the columns
@@ -71,6 +104,8 @@ detailed, step-by-step upgrade instructions with before/after code examples.
   element rather than to the `<input>` itself.
 * Fixed `Markdown` rendering "No model found" in place of its content when no Hoist model was in
   context, such as inside another React library's components.
+* Fixed a rare `window is not defined` error at the end of a spec file that uses
+  `@xh/hoist/test-support`.
 
 ### ⚙️ Technical
 
@@ -99,6 +134,8 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 
 ### ✨ Styles
 
+* Moved the selected grid row's text color from its cells to the row. A cell with its own color
+  class, such as a text renderer's sign color, now keeps that color when its row is selected.
 * Mobile apps no longer load Onsen UI's stylesheet or its icon fonts. Touch-device defaults that
   the Onsen stylesheet supplied - no tap highlight, no focus rings on controls, `touch-action:
   manipulation`, heading sizes, and a body sized to the viewport - are now set by the mobile
