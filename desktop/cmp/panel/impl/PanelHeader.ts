@@ -7,11 +7,13 @@
 import {box, filler, hbox, span, vbox} from '@xh/hoist/cmp/layout';
 import {hoistCmp, useContextModel} from '@xh/hoist/core';
 import {button, modalToggleButton} from '@xh/hoist/desktop/cmp/button';
-import {Icon} from '@xh/hoist/icon';
 import {withDefault} from '@xh/hoist/utils/js';
 import classNames from 'classnames';
 import {isEmpty, isNil} from 'lodash';
+import {useRef} from 'react';
 import {PanelModel} from '../PanelModel';
+import {collapsedRail} from './CollapsedRail';
+import {collapseToggleIcon} from './CollapseToggleIcon';
 import './PanelHeader.scss';
 
 export const panelHeader = hoistCmp.factory({
@@ -28,9 +30,11 @@ export const panelHeader = hoistCmp.factory({
                 isModal,
                 side,
                 showModalToggleButton,
-                showHeaderCollapseButton
+                showHeaderCollapseButton,
+                showCollapsedRail
             } = panelModel,
-            {title, icon, compact} = props;
+            {title, icon, compact} = props,
+            lastClickExpand = useRef(0);
 
         // Title and icon can vary based on collapsed state.
         const collapsedTitle = withDefault(props.collapsedTitle, title),
@@ -43,9 +47,9 @@ export const panelHeader = hoistCmp.factory({
         const headerItems = props.headerItems ?? [],
             displayedHeaderItems = isRenderedCollapsed ? [] : [...headerItems];
 
-        // Return null if nothing to display.
+        // Return a rail (if collapsed) or null if nothing to display.
         if (isNil(displayedTitle) && isNil(displayedIcon) && isEmpty(displayedHeaderItems)) {
-            return null;
+            return isRenderedCollapsed && showCollapsedRail ? collapsedRail() : null;
         }
 
         if (showModalToggleButton && !isRenderedCollapsed) {
@@ -55,7 +59,19 @@ export const panelHeader = hoistCmp.factory({
             displayedHeaderItems.push(collapseToggleButton({panelModel}));
         }
 
+        // A single click anywhere on a collapsed header expands it.
+        const clickToExpand = isRenderedCollapsed && collapsible,
+            onClick = clickToExpand
+                ? () => {
+                      lastClickExpand.current = Date.now();
+                      panelModel.setCollapsed(false);
+                  }
+                : null;
+
         const onDoubleClick = () => {
+            // Skip the double-click that ends with a click-to-expand, or it re-collapses.
+            if (Date.now() - lastClickExpand.current < 500) return;
+
             if (isModal) {
                 panelModel.toggleIsModal();
             } else if (collapsible) {
@@ -65,12 +81,13 @@ export const panelHeader = hoistCmp.factory({
 
         const titleCls = 'xh-panel-header__title',
             sideCls = `xh-panel-header--${side}`,
-            compactCls = compact ? 'xh-panel-header--compact' : null;
+            compactCls = compact ? 'xh-panel-header--compact' : null,
+            collapsedCls = clickToExpand ? 'xh-panel-header--collapsed' : null;
 
         // Return a vertically oriented header if collapsed to left or right side.
         if (isCollapsedToLeftOrRight) {
             return vbox({
-                className: classNames(className, sideCls, compactCls),
+                className: classNames(className, sideCls, compactCls, collapsedCls),
                 flex: 1,
                 items: [
                     displayedIcon,
@@ -83,6 +100,7 @@ export const panelHeader = hoistCmp.factory({
                         : filler(),
                     ...displayedHeaderItems
                 ],
+                onClick,
                 onDoubleClick
             });
         }
@@ -90,7 +108,7 @@ export const panelHeader = hoistCmp.factory({
         // Return a standard horizontal header otherwise.
         // Panel is expanded, modal, and/or collapsed to the top or bottom side.
         return hbox({
-            className: classNames(className, compactCls),
+            className: classNames(className, compactCls, collapsedCls),
             items: [
                 displayedIcon,
                 displayedTitle
@@ -106,20 +124,19 @@ export const panelHeader = hoistCmp.factory({
                     onDoubleClick: e => e.stopPropagation()
                 })
             ],
+            onClick,
             onDoubleClick
         });
     }
 });
 
-const collapseToggleButton = hoistCmp.factory(({panelModel}) => {
-    const {vertical, collapsed, contentFirst} = panelModel as PanelModel,
-        directions = vertical ? ['chevronUp', 'chevronDown'] : ['chevronLeft', 'chevronRight'],
-        idx = contentFirst !== collapsed ? 0 : 1,
-        chevron = directions[idx];
-
-    return button({
-        icon: Icon[chevron](),
-        onClick: () => panelModel.toggleCollapsed(),
+const collapseToggleButton = hoistCmp.factory(({panelModel}) =>
+    button({
+        icon: collapseToggleIcon(panelModel),
+        onClick: e => {
+            e.stopPropagation();
+            panelModel.toggleCollapsed();
+        },
         minimal: true
-    });
-});
+    })
+);
