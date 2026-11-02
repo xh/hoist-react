@@ -127,6 +127,15 @@ reads Hoist's CSS variables. The rest apply only to mobile apps or to apps using
 
 ### ✨ Styles
 
+* Added CSS variables for concerns some components lacked: `--xh-input-border-radius`,
+  `--xh-popup-border-radius`, `--xh-title-font-weight` (with `--xh-panel-title-font-weight`,
+  `--xh-popup-title-font-weight` and `--xh-card-header-font-weight`), `--xh-tab-font-weight` and
+  `--xh-tab-active-indicator-color`.
+* Mobile tabs now read the `--xh-tab-*` variables, and mobile dialogs read `--xh-popup-bg` and
+  `--xh-popup-title-font-family`, as on desktop.
+* Desktop `Select` now rounds its corners to match other inputs (4px, up from 3px). A desktop
+  `TabSwitcher` placed at the bottom now marks its active tab in the active tab color, as one at
+  the top does, rather than in the resting text color.
 * Mobile apps no longer load Onsen UI's stylesheet or its icon fonts. Touch-device defaults that
   the Onsen stylesheet supplied - no tap highlight, no focus rings on controls, `touch-action:
   manipulation`, heading sizes, and a body sized to the viewport - are now set by the mobile

@@ -21,7 +21,7 @@
 //------------------------
 .bp6-dialog {
   padding-bottom: 0;
-  border-radius: var(--xh-border-radius);
+  border-radius: var(--xh-popup-border-radius);
   border: var(--xh-popup-border-width) solid var(--xh-popup-border-color);
 
   .bp6-dialog-header {
@@ -30,12 +30,16 @@
     font-family: var(--xh-popup-title-font-family);
     font-size: var(--xh-popup-title-font-size);
     padding-left: var(--xh-spacing);
-    border-top-right-radius: var(--xh-border-radius);
-    border-top-left-radius: var(--xh-border-radius);
+    border-top-right-radius: var(--xh-popup-border-radius);
+    border-top-left-radius: var(--xh-popup-border-radius);
 
     .bp6-heading,
     .bp6-icon {
       color: var(--xh-popup-title-text-color);
+    }
+
+    .bp6-heading {
+      font-weight: var(--xh-popup-title-font-weight);
     }
 
     > svg:first-child {
@@ -351,6 +355,7 @@ textarea.bp6-input,
 .bp6-input-ghost {
   color: var(--xh-input-text-color);
   background: var(--xh-input-bg);
+  border-radius: var(--xh-input-border-radius);
   // Follow the surrounding font size (e.g. smaller in compact toolbars and grids) rather than
   // Blueprint's fixed default.
   font-size: inherit;

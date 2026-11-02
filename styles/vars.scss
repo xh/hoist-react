@@ -379,6 +379,7 @@ body {
   --xh-card-border-radius: var(--xh-border-radius);
   --xh-card-danger-color: var(--xh-intent-danger-text-color);
   --xh-card-header-font-size: var(--xh-font-size);
+  --xh-card-header-font-weight: normal;
   --xh-card-header-gap: 8px;
   --xh-card-header-min-height: 30px;
   --xh-card-header-text-color: var(--xh-text-color);
@@ -651,6 +652,7 @@ body {
   // Inputs
   //------------------------
   --xh-input-bg: var(--xh-bg);
+  --xh-input-border-radius: var(--xh-border-radius);
   --xh-input-disabled-bg: rgba(206, 217, 224, 0.5);  // This and below currently matched from Blueprint defaults
   --xh-input-disabled-text-color: rgba(92, 112, 128, 0.5);
   --xh-input-font-family: var(--xh-font-family);
@@ -780,6 +782,7 @@ body {
   --xh-panel-title-bg: var(--xh-title-bg);
   --xh-panel-title-font-family: var(--xh-title-font-family);
   --xh-panel-title-font-size: var(--xh-title-font-size);
+  --xh-panel-title-font-weight: var(--xh-title-font-weight);
   --xh-panel-title-text-color: var(--xh-title-text-color);
 
   &:where(.xh-mobile) {
@@ -797,14 +800,18 @@ body {
   //------------------------
   --xh-popup-bg: var(--xh-bg);
   --xh-popup-border-color: var(--xh-border-color);
+  --xh-popup-border-radius: var(--xh-border-radius);
   --xh-popup-border-width: var(--xh-border-width);
   --xh-popup-title-bg: var(--xh-title-bg);
   --xh-popup-title-font-family: var(--xh-title-font-family);
   --xh-popup-title-font-size: var(--xh-title-font-size);
+  // Desktop dialog titles match Blueprint's semi-bold heading.
+  --xh-popup-title-font-weight: 600;
   --xh-popup-title-text-color: var(--xh-title-text-color);
 
   &:where(.xh-mobile) {
     --xh-popup-border-width: 2px;
+    --xh-popup-title-font-weight: normal;
   }
 
   //------------------------
@@ -855,6 +862,9 @@ body {
   --xh-tab-disabled-text-color: var(--xh-text-color-muted);
   --xh-tab-font-family: var(--xh-font-family);
   --xh-tab-font-size: var(--xh-font-size);
+  --xh-tab-font-weight: normal;
+  // Bar marking the active tab in a top or bottom TabSwitcher (desktop).
+  --xh-tab-active-indicator-color: var(--xh-tab-active-text-color);
 
   // Vertical (left/right) TabSwitcher - the styled "rail" of rounded, hoverable items with a
   // filled active "pill".
@@ -884,6 +894,12 @@ body {
 
   &:where(.xh-dark) {
     --xh-tab-active-text-color: var(--xh-intent-primary-lighter);
+  }
+
+  // Declared after the dark block so it also applies in the mobile dark theme.
+  &:where(.xh-mobile) {
+    --xh-tab-active-text-color: var(--xh-accent-color);
+    --xh-tab-font-size: var(--xh-button-font-size);
   }
 
 
@@ -916,6 +932,7 @@ body {
   --xh-title-text-color: var(--xh-blue-gray-light);
   --xh-title-font-family: var(--xh-font-family-headings);
   --xh-title-font-size: var(--xh-font-size-large);
+  --xh-title-font-weight: normal;
   --xh-title-height: 36px;
   --xh-title-icon-size: var(--xh-title-font-size);
   --xh-title-padding: var(--xh-spacing-half);

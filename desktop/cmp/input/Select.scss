@@ -24,6 +24,7 @@
     &__control {
       background: var(--xh-input-bg);
       border: none;
+      border-radius: var(--xh-input-border-radius);
       box-shadow: var(--xh-form-field-box-shadow);
       min-height: 30px;
 

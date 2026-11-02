@@ -80,7 +80,7 @@ html {
   &:not(.xh-input-label):not(.xh-button-group):not(.xh-switch-input):not(.xh-check-box) {
     font-size: var(--xh-input-font-size);
     border: var(--xh-border-solid);
-    border-radius: var(--xh-border-radius);
+    border-radius: var(--xh-input-border-radius);
 
     &:not(.xh-input--invalid):not(.xh-input--warning):not(.xh-input--info):focus-within {
       border-color: var(--xh-focus-outline-color);

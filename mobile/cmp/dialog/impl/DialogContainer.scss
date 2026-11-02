@@ -48,7 +48,7 @@
     margin: var(--xh-safe-area-inset);
     overflow: hidden;
     border: var(--xh-popup-border-width) solid var(--xh-popup-border-color);
-    border-radius: 4px;
+    border-radius: var(--xh-popup-border-radius);
     // The border color, to avoid hairline gaps at the edges - the content paints its own bg.
     background-color: var(--xh-popup-border-color);
     color: var(--xh-text-color);

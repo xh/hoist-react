@@ -44,15 +44,17 @@
     border: 0;
     appearance: none;
     background: transparent;
-    color: var(--xh-text-color);
+    color: var(--xh-tab-text-color);
     font: inherit;
-    font-size: var(--xh-button-font-size);
+    font-family: var(--xh-tab-font-family);
+    font-size: var(--xh-tab-font-size);
+    font-weight: var(--xh-tab-font-weight);
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
 
     &--active {
-      color: var(--xh-accent-color);
+      color: var(--xh-tab-active-text-color);
     }
 
     &:disabled {

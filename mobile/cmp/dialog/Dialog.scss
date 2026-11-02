@@ -4,7 +4,9 @@
     background-color: var(--xh-popup-title-bg);
     color: var(--xh-popup-title-text-color);
     display: flex;
+    font-family: var(--xh-popup-title-font-family);
     font-size: var(--xh-popup-title-font-size);
+    font-weight: var(--xh-popup-title-font-weight);
     padding: var(--xh-spacing);
 
     svg {
@@ -14,7 +16,7 @@
 
   &__inner {
     padding: var(--xh-spacing);
-    background-color: var(--xh-bg);
+    background-color: var(--xh-popup-bg);
     overflow-y: auto;
   }
 
