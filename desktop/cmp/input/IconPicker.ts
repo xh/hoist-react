@@ -5,7 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {HoistInputModel, HoistInputProps, useHoistInputModel} from '@xh/hoist/cmp/input';
-import {div, filler, hbox, span} from '@xh/hoist/cmp/layout';
+import {div, filler, hbox, htmlButton, span} from '@xh/hoist/cmp/layout';
 import {elementFactory, hoistCmp, HoistProps, LayoutProps, StyleProps} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {button, ButtonProps} from '@xh/hoist/desktop/cmp/button';
@@ -113,7 +113,6 @@ export const [IconPicker, iconPicker] = hoistCmp.withFactory<IconPickerProps>({
 //-----------------------
 // Implementation
 //-----------------------
-const buttonEl = elementFactory('button');
 const reactWindowList = elementFactory(List);
 
 // Cell sizes in px, set here rather than in CSS as the windowed grid needs exact row heights.
@@ -591,7 +590,7 @@ function iconRow({
 
 const iconCell = hoistCmp.factory<IconPickerModel>(
     ({model, option, idx, prefix, isActive, isSelected}) =>
-        buttonEl({
+        htmlButton({
             type: 'button',
             tabIndex: -1,
             className: classNames(

@@ -54,6 +54,7 @@ detailed, step-by-step upgrade instructions with before/after code examples.
   clicked column, and `Column.availableSorts`. The `sort` token offers one item per sort the column
   offers.
 * Added `genRandomId()` to `@xh/hoist/utils/js` for short random alphanumeric IDs.
+* Added `htmlButton`, `mark` and `caption` element factories to `@xh/hoist/cmp/layout`.
 * Added `genUuid()` to `@xh/hoist/utils/js` for version 4 UUIDs, including on plain HTTP where
   browsers omit `crypto.randomUUID()`.
 * Added `getOwn()` to `@xh/hoist/utils/js`, which reads an own property of an object and never one
