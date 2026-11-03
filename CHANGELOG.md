@@ -12,6 +12,8 @@
   3. Plain ASCII punctuation only. Use " - " for in-sentence breaks, never an em dash.
 -->
 
+## 91.0.0-SNAPSHOT - unreleased
+
 ## 90.0.0 - 2026-11-02
 
 ### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW - `formatConfig`, built-in column specs, `DateInput` props, mobile styling, panel splitter CSS)
