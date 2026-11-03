@@ -12,7 +12,7 @@
   3. Plain ASCII punctuation only. Use " - " for in-sentence breaks, never an em dash.
 -->
 
-## 90.0.0-SNAPSHOT - unreleased
+## 90.0.0 - 2026-11-02
 
 ### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW - `formatConfig`, built-in column specs, `DateInput` props, mobile styling, panel splitter CSS)
 See [`docs/upgrade-notes/v90-upgrade-notes.md`](docs/upgrade-notes/v90-upgrade-notes.md) for
@@ -27,6 +27,10 @@ detailed, step-by-step upgrade instructions with before/after code examples.
   already did, and its time picker is Hoist's own 24-hour control. `dayPickerProps` now takes
   react-day-picker 10 props - see the upgrade notes for the renames from v8. Removed
   `timePickerProps`, which took Blueprint `TimePicker` options such as `useAmPm`.
+* Removed `datePicker` and `DatePicker` from `@xh/hoist/kit/blueprint`. Render `dayPicker` from
+  `@xh/hoist/kit/react-day-picker` instead.
+* Removed `WindowedSelect` and `reactWindowedSelect` from `@xh/hoist/kit/react-select`. Desktop
+  `Select` windows large option lists itself, so `enableWindowed` works as before.
 * Mobile components no longer render Onsen UI custom elements. `Button`, `TextInput`,
   `NumberInput`, `SearchInput`, `Checkbox`, `SwitchInput`, `Dialog`, `DialogPanel`, `Toast`,
   `TabContainer` and `MenuButton` menus render plain elements under `xh-` class names. App SCSS

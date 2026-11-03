@@ -1,6 +1,6 @@
 # Hoist React v90 Upgrade Notes
 
-> **From:** v89.x → v90.0.0 | **Released:** TBD | **Difficulty:** 🟢 LOW
+> **From:** v89.x → v90.0.0 | **Released:** 2026-11-02 | **Difficulty:** 🟢 LOW
 
 ## Overview
 
@@ -24,7 +24,7 @@ affected APIs.
   Read `col.resolvedRenderer` instead - see Step 5.
 - **Panel splitter CSS (required if an app styled splitters)** - desktop panel splitters are now
   a 1px line with their own `--xh-panel-splitter-*` variables. App overrides of
-  `--resizable-*` variables no longer reach them - see Step 6.
+  `--xh-resizable-*` variables no longer reach them - see Step 6.
 
 ## Upgrade Steps
 
@@ -71,6 +71,23 @@ numberRenderer({label: 'ms', precision: 0, withCommas: false})
 
 An app that imports numbro itself, for example to call `numbro.unformat()`, must declare numbro in
 its own `package.json`.
+
+Ordinary values render exactly as before. These edge cases changed:
+
+| Input | Before | After | Why |
+|---|---|---|---|
+| `fmtNumber(-2.5, {precision: 0})` | `-2` | `-3` | Ties round half away from zero for both signs. numbro rounded negative ties toward zero. |
+| `fmtNumber(-1.005, {precision: 2})` | `-1.00` | `-1.01` | The same rule. `1.005` gives `1.01`, as before. |
+| `fmtPercent(-0.0045, {precision: 1})` | `-0.4%` | `-0.5%` | A negative value near a tie rounds as a positive one. `0.0045` gives `0.5%`, as before. |
+| `fmtNumber(9.9999999e-7, {precision: 6})` | `0.000000` | `0.000001` | At a fixed precision, values below 1e-6 round like any other. numbro truncated them. At `'auto'` precision they still show as zero. |
+| `fmtNumber(2390421244, {precision: 12})` | `2,390,421,243.999999500000` | `2,390,421,244.000000000000` | Past 15 significant digits the stored value shows. numbro added float noise when it shifted the decimal point. |
+| `fmtNumber(1234.0001, {precision: 2, zeroPad: 0, omitFourDigitComma: true})` | `1234` | `1,234` | A `zeroPad` of `0` is the same as `false`. |
+| `fmtNumber(Infinity)` | `Infinity` | `∞` | The `Intl.NumberFormat` symbol for infinity. |
+| `fmtNumber('1,234.5', {precision: 2})` | `1,234.50` | `NaN` | A string renders as JavaScript's `Number()` reads it. `'1234.5'` still formats. |
+| `fmtNumber('N/A')` | throws a `TypeError` | `NaN` | The same rule. |
+
+Parse formatted text with `parseNumber()` before you format it, and update tests or exports that
+match the text `Infinity`.
 
 ### 2. Update `DateInput` Picker Props
 
@@ -181,23 +198,6 @@ dayPicker({
 An app that imports `@blueprintjs/datetime` or `date-fns` itself must now declare them in its own
 `package.json`. Prefer dropping the Blueprint import, since a second calendar library adds a second
 copy of date-fns to the bundle.
-
-Ordinary values render exactly as before. These edge cases changed:
-
-| Input | Before | After | Why |
-|---|---|---|---|
-| `fmtNumber(-2.5, {precision: 0})` | `-2` | `-3` | Ties round half away from zero for both signs. numbro rounded negative ties toward zero. |
-| `fmtNumber(-1.005, {precision: 2})` | `-1.00` | `-1.01` | The same rule. `1.005` gives `1.01`, as before. |
-| `fmtPercent(-0.0045, {precision: 1})` | `-0.4%` | `-0.5%` | A negative value near a tie rounds as a positive one. `0.0045` gives `0.5%`, as before. |
-| `fmtNumber(9.9999999e-7, {precision: 6})` | `0.000000` | `0.000001` | At a fixed precision, values below 1e-6 round like any other. numbro truncated them. At `'auto'` precision they still show as zero. |
-| `fmtNumber(2390421244, {precision: 12})` | `2,390,421,243.999999500000` | `2,390,421,244.000000000000` | Past 15 significant digits the stored value shows. numbro added float noise when it shifted the decimal point. |
-| `fmtNumber(1234.0001, {precision: 2, zeroPad: 0, omitFourDigitComma: true})` | `1234` | `1,234` | A `zeroPad` of `0` is the same as `false`. |
-| `fmtNumber(Infinity)` | `Infinity` | `∞` | The `Intl.NumberFormat` symbol for infinity. |
-| `fmtNumber('1,234.5', {precision: 2})` | `1,234.50` | `NaN` | A string renders as JavaScript's `Number()` reads it. `'1234.5'` still formats. |
-| `fmtNumber('N/A')` | throws a `TypeError` | `NaN` | The same rule. |
-
-Parse formatted text with `parseNumber()` before you format it, and update tests or exports that
-match the text `Infinity`.
 
 ### 3. Update Mobile Styling That Targeted Onsen UI
 
@@ -330,23 +330,24 @@ those.
 **Find affected code:**
 
 ```bash
-grep -rn "resizable-\|xh-resizable-splitter\|xh-resizable-dragger\|xh-resizable-collapser" client-app/src/
+grep -rn "xh-resizable-" client-app/src/
 ```
 
 Map each override that targeted panel splitters to its new variable:
 
 | Old variable | New variable |
 |--------------|--------------|
-| `--resizable-border-color` | `--panel-splitter-line-color` |
-| `--resizable-button-bg` | `--panel-splitter-button-bg` |
-| `--resizable-button-icon-color` | `--panel-splitter-button-icon-color` |
-| `--resizable-border-width` | None. The line is always 1px. |
-| `--resizable-size` | None. Use `--panel-splitter-hit-size` to change the grab area. |
-| `--resizable-bg` | None. The splitter has no bar. |
+| `--xh-resizable-border-color` | `--xh-panel-splitter-line-color` |
+| `--xh-resizable-button-bg` | `--xh-panel-splitter-button-bg` |
+| `--xh-resizable-button-icon-color` | `--xh-panel-splitter-button-icon-color` |
+| `--xh-resizable-border-width` | None. The line is always 1px. |
+| `--xh-resizable-size` | None. Use `--xh-panel-splitter-hit-size` to change the grab area. |
+| `--xh-resizable-bg` | None. The splitter has no bar. |
 
-Other new variables are `--panel-splitter-accent-color`, `--panel-splitter-accent-active-color`,
-`--panel-splitter-snap-color`, `--panel-splitter-hover-delay`,
-`--panel-splitter-button-border-color`, and `--panel-collapsed-strip-*` for the strip.
+Other new variables are `--xh-panel-splitter-accent-color`,
+`--xh-panel-splitter-accent-active-color`, `--xh-panel-splitter-snap-color`,
+`--xh-panel-splitter-hover-delay`, `--xh-panel-splitter-button-border-color`, and
+`--xh-panel-collapsed-strip-*` for the strip.
 
 App SCSS that targeted `.xh-resizable-splitter` should target `.xh-panel-splitter`. The
 `.xh-resizable-dragger` and `.xh-resizable-collapser-btn` classes are gone.
@@ -390,7 +391,8 @@ After completing all steps:
 - [ ] No code imports `WindowedSelect` or `reactWindowedSelect` from `@xh/hoist/kit/react-select`.
 - [ ] Code that reads `Column.renderer` handles columns built on the number and date specs.
 - [ ] Styles on `xh-units-label` or on sign color classes inside grid cells still apply.
-- [ ] No app SCSS styles panel splitters with `--resizable-*` variables or `.xh-resizable-splitter`.
+- [ ] No app SCSS styles panel splitters with `--xh-resizable-*` variables or
+      `.xh-resizable-splitter`.
 
 ## Reference
 
