@@ -19,6 +19,7 @@ describe('ImpersonationBarModel', () => {
         await initTestAppAsync();
     });
 
+    // Guards against the endless refetch on an empty target list, fixed in v90.
     it('loads targets once when no other user can be impersonated', async () => {
         // The only target is the current user, whom the bar leaves out.
         hoistCore.route('GET', 'xh/impersonationTargets', () => [{username: 'jdoe'}]);

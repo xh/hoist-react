@@ -29,8 +29,10 @@ export class ImpersonationBarModel extends HoistModel {
     private targetsLoaded = false;
 
     init() {
-        this.addAutorun(() => {
-            if (this.isOpen) {
+        this.addReaction({
+            track: () => this.isOpen,
+            run: isOpen => {
+                if (!isOpen) return;
                 this.ensureTargetsLoaded();
 
                 // We don't have an impersonation message on mobile, so instead we
@@ -38,7 +40,8 @@ export class ImpersonationBarModel extends HoistModel {
                 if (XH.isMobileApp && XH.identityService.isImpersonating) {
                     this.pendingTarget = XH.getUsername();
                 }
-            }
+            },
+            fireImmediately: true
         });
     }
 
@@ -97,8 +100,8 @@ export class ImpersonationBarModel extends HoistModel {
             .span('impersonationTargets')
             .run(async ctx => {
                 const targets = await XH.fetchJson({url: 'xh/impersonationTargets'}, ctx);
-                this.targetsLoaded = true;
                 this.setTargets(targets);
+                this.targetsLoaded = true;
             })
             .catchDefault();
     }
