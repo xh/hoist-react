@@ -233,13 +233,13 @@ describe('FetchService', () => {
             const ab = search('ab');
             await expect(a).rejects.toMatchObject({
                 name: 'Fetch Aborted',
-                isFetchAborted: true,
+                isAborted: true,
                 isRoutine: true
             });
             await arrived;
 
             // The first request's cleanup must not release the key held by the second.
-            const abAborted = expect(ab).rejects.toMatchObject({isFetchAborted: true});
+            const abAborted = expect(ab).rejects.toMatchObject({isAborted: true});
             expect(await search('abc')).toEqual({q: 'abc'});
             await abAborted;
             expect(signals.map(it => it.aborted)).toEqual([true, true, false]);
@@ -251,7 +251,7 @@ describe('FetchService', () => {
             expect(await lines.next()).toEqual({done: false, value: {id: 1}});
 
             expect(XH.fetchService.abort('chat')).toBe(true);
-            await expect(lines.next()).rejects.toMatchObject({isFetchAborted: true});
+            await expect(lines.next()).rejects.toMatchObject({isAborted: true});
         });
 
         it('aborts a stream still being read when a new request uses the same key', async () => {
@@ -260,7 +260,7 @@ describe('FetchService', () => {
             await first.next();
 
             const second = XH.fetchNdjson({url: 'test/stream', autoAbortKey: 'chat'}).lines;
-            await expect(first.next()).rejects.toMatchObject({isFetchAborted: true});
+            await expect(first.next()).rejects.toMatchObject({isAborted: true});
             expect(await second.next()).toEqual({done: false, value: {id: 1}});
             XH.fetchService.abort('chat');
             await second.next().catch(() => {});
@@ -312,8 +312,8 @@ describe('FetchService', () => {
 
             request.abort('User stopped');
             stream.abort('User stopped');
-            await expect(result).rejects.toMatchObject({isFetchAborted: true});
-            await expect(lines.next()).rejects.toMatchObject({isFetchAborted: true});
+            await expect(result).rejects.toMatchObject({isAborted: true});
+            await expect(lines.next()).rejects.toMatchObject({isAborted: true});
         });
 
         it('wraps an abort reason that is a Hoist exception as the cause', async () => {
@@ -328,8 +328,8 @@ describe('FetchService', () => {
 
             request.abort(reason);
             stream.abort(reason);
-            await expect(result).rejects.toMatchObject({isFetchAborted: true, cause: reason});
-            await expect(lines.next()).rejects.toMatchObject({isFetchAborted: true, cause: reason});
+            await expect(result).rejects.toMatchObject({isAborted: true, cause: reason});
+            await expect(lines.next()).rejects.toMatchObject({isAborted: true, cause: reason});
         });
 
         it('aborts a stream mid-read', async () => {
@@ -342,7 +342,7 @@ describe('FetchService', () => {
             await lines.next();
 
             controller.abort();
-            await expect(lines.next()).rejects.toMatchObject({isFetchAborted: true});
+            await expect(lines.next()).rejects.toMatchObject({isAborted: true});
         });
     });
 

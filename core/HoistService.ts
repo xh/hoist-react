@@ -13,7 +13,7 @@ import type {
     PlainObject,
     TaskObserver
 } from './';
-import {HoistBase, managed, LoadSupport} from './';
+import {HoistBase, managed, LoadSupport, XH} from './';
 
 /**
  * Core superclass for Services in Hoist. Services are special classes used in both Hoist and
@@ -102,7 +102,14 @@ export class HoistService extends HoistBase implements Loadable {
         return this.loadSupport?.autoRefreshAsync(meta);
     }
 
+    skipStaleLoads = true;
+    skipAutoRefreshErrors = true;
+
     async doLoadAsync(loadSpec: LoadSpec) {}
+
+    handleLoadException(e: unknown, loadSpec: LoadSpec): void | Promise<void> {
+        XH.handleException(e);
+    }
 
     async loadAsync(loadSpec?: LoadSpecConfig | CallContext) {
         return this.loadSupport?.loadAsync(loadSpec);
