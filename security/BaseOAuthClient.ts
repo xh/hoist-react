@@ -6,17 +6,17 @@
  */
 import {br, fragment} from '@xh/hoist/cmp/layout';
 import {isHoistException} from '@xh/hoist/exception';
-import {CallContextLike, HoistBase, managed, XH} from '@xh/hoist/core';
+import type {CallContextLike} from '@xh/hoist/core';
+import {HoistBase, managed, XH} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {action} from '@xh/hoist/mobx';
 import {never, wait} from '@xh/hoist/promise';
-import {Token} from '@xh/hoist/security/Token';
-import {AccessTokenSpec, AuthMethod, TokenMap} from './Types';
+import type {Token} from '@xh/hoist/security/Token';
+import type {AccessTokenSpec, AuthMethod, TokenMap} from './Types';
 import {Timer} from '@xh/hoist/utils/async';
 import {MINUTES, olderThan, ONE_MINUTE, SECONDS} from '@xh/hoist/utils/datetime';
-import {isJSON, logError, throwIf} from '@xh/hoist/utils/js';
+import {genRandomId, isJSON, logError, throwIf} from '@xh/hoist/utils/js';
 import {compact, find, forEach, head, isEmpty, isObject, keys, map, pickBy, union} from 'lodash';
-import ShortUniqueId from 'short-unique-id';
 
 export type LoginMethod = 'REDIRECT' | 'POPUP';
 
@@ -309,7 +309,7 @@ export abstract class BaseOAuthClient<
      */
     protected captureRedirectState(): string {
         const {pathname, search} = window.location,
-            key = new ShortUniqueId({length: 8}).rnd(),
+            key = genRandomId(),
             state = {
                 key,
                 pathname,

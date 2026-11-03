@@ -4,8 +4,8 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {CallContextLike, TaskObserver} from '../';
-import {LoadSpec, LoadSpecConfig} from './';
+import type {CallContextLike, TaskObserver} from '../';
+import type {LoadSpec, LoadSpecConfig} from './';
 
 /**
  * Interface for the primary load/refresh APIs on models and services with {@link LoadSupport}.

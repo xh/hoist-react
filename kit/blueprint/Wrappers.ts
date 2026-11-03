@@ -54,9 +54,9 @@ import {
     Tooltip,
     Tree
 } from '@blueprintjs/core';
-import {DatePicker} from '@blueprintjs/datetime';
 import {elementFactory} from '@xh/hoist/core';
-import React, {createElement as reactCreateElement} from 'react';
+import type React from 'react';
+import {createElement as reactCreateElement} from 'react';
 
 // Wrap Dialog and Popover to disable fade/scale-in transitions by default.
 // See also popover & overlay related CSS overrides in ./styles.scss.
@@ -81,7 +81,6 @@ export {
     BpCard,
     Checkbox,
     ControlGroup,
-    DatePicker,
     Dialog,
     Drawer,
     EditableText,
@@ -126,7 +125,6 @@ export const alert = elementFactory(Alert),
     button = elementFactory(Button),
     controlGroup = elementFactory(ControlGroup),
     checkbox = elementFactory(Checkbox),
-    datePicker = elementFactory(DatePicker),
     menuDivider = elementFactory(MenuDivider),
     menuItem = elementFactory(MenuItem),
     navbarDivider = elementFactory(NavbarDivider),

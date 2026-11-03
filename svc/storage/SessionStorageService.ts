@@ -4,9 +4,7 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {XH} from '@xh/hoist/core';
 import {BaseStorageService} from '@xh/hoist/svc/storage/BaseStorageService';
-import store, {StoreType} from 'store2';
 
 /**
  * Service to provide simple key/value access to browser session storage, appropriately namespaced
@@ -17,7 +15,7 @@ import store, {StoreType} from 'store2';
 export class SessionStorageService extends BaseStorageService {
     static instance: SessionStorageService;
 
-    protected get storeInstance(): StoreType {
-        return store.session.namespace(`${XH.appCode}.${XH.getUsername()}`);
+    protected override get browserStorage(): Storage {
+        return window.sessionStorage;
     }
 }

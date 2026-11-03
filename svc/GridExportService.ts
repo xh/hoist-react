@@ -5,12 +5,12 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {ExcelFormat} from '@xh/hoist/cmp/grid';
-import {CallContext, HoistService, TrackOptions, XH} from '@xh/hoist/core';
+import type {CallContext, TrackOptions} from '@xh/hoist/core';
+import {HoistService, XH} from '@xh/hoist/core';
 import {fmtDate} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
 import {isLocalDate, SECONDS} from '@xh/hoist/utils/datetime';
 import {downloadBlob, withDefault} from '@xh/hoist/utils/js';
-import {StatusCodes} from 'http-status-codes';
 import {
     castArray,
     countBy,
@@ -29,8 +29,8 @@ import {
 } from 'lodash';
 import {span, a} from '@xh/hoist/cmp/layout';
 import {wait} from '@xh/hoist/promise';
-import {GridModel, Column} from '@xh/hoist/cmp/grid';
-import {StoreRecord} from '@xh/hoist/data';
+import type {GridModel, Column} from '@xh/hoist/cmp/grid';
+import type {StoreRecord} from '@xh/hoist/data';
 
 /**
  * Exports Grid data to either Excel or CSV via Hoist's server-side export capabilities.
@@ -139,7 +139,7 @@ export class GridExportService extends HoistService {
                 ctx
             );
 
-            const blob = response.status === StatusCodes.NO_CONTENT ? null : await response.blob(),
+            const blob = response.status === 204 ? null : await response.blob(),
                 fileExt = this.getFileExtension(type);
 
             if (blob) downloadBlob(blob, `${filename}${fileExt}`);

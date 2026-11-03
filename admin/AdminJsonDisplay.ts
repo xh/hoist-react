@@ -5,7 +5,8 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {hoistCmp} from '@xh/hoist/core';
-import {jsonInput, JsonInputProps} from '@xh/hoist/desktop/cmp/input';
+import type {JsonInputProps} from '@xh/hoist/desktop/cmp/input';
+import {jsonInput} from '@xh/hoist/desktop/cmp/input';
 import {fmtJson, timestampReplacer} from '@xh/hoist/format';
 
 /**

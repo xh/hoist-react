@@ -4,7 +4,8 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {HoistService, PlainObject, XH, Span, FullSpanConfig} from '@xh/hoist/core';
+import type {PlainObject, FullSpanConfig} from '@xh/hoist/core';
+import {HoistService, XH, Span} from '@xh/hoist/core';
 import {SECONDS} from '@xh/hoist/utils/datetime';
 import {debounced, parseTypeName} from '@xh/hoist/utils/js';
 import {every, forEach, groupBy, isEmpty, isString, omitBy, takeRight} from 'lodash';

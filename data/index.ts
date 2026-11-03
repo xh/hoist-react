@@ -40,11 +40,11 @@ export * from './cube/Cube';
 export * from './cube/CubeField';
 export * from './cube/Query';
 export * from './cube/View';
-export * from './cube/ViewRow';
+export type * from './cube/ViewRow';
 export * from './cube/ViewRowData';
 export * from './cube/row/RowUpdate';
 
 export * from './validation/constraints';
 export * from './validation/Rule';
 export * from './validation/ValidationState';
-export * from './validation/Types';
+export type * from './validation/Types';

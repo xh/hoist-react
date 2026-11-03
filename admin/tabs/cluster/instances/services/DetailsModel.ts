@@ -4,7 +4,8 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {HoistModel, LoadSpec, lookup, PlainObject, XH} from '@xh/hoist/core';
+import type {LoadSpec, PlainObject} from '@xh/hoist/core';
+import {HoistModel, lookup, XH} from '@xh/hoist/core';
 import {bindableRef} from '@xh/hoist/mobx';
 import {ServiceModel} from './ServiceModel';
 

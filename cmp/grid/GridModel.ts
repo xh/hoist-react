@@ -4,11 +4,10 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {AgGridModel, AgGridThemeParams} from '@xh/hoist/cmp/ag-grid';
-import {
-    Column,
+import type {AgGridThemeParams} from '@xh/hoist/cmp/ag-grid';
+import {AgGridModel} from '@xh/hoist/cmp/ag-grid';
+import type {
     ColumnCellClassRuleFn,
-    ColumnGroup,
     ColumnGroupSpec,
     ColumnOrGroup,
     ColumnOrGroupSpec,
@@ -17,52 +16,45 @@ import {
     GridFilterModelConfig,
     GridGroupSortFn,
     IColChooserModel,
-    isColumnSpec,
     TreeStyle
 } from '@xh/hoist/cmp/grid';
+import {Column, ColumnGroup, isColumnSpec} from '@xh/hoist/cmp/grid';
 import {GridFilterModel} from '@xh/hoist/cmp/grid/filter/GridFilterModel';
 import {fragment, p} from '@xh/hoist/cmp/layout';
-import {
+import type {
     Awaitable,
-    HoistModel,
     HSide,
     LoadSpec,
-    managed,
     PlainObject,
     SizingMode,
     Some,
-    TaskObserver,
     Thunkable,
-    VSide,
-    XH
+    VSide
 } from '@xh/hoist/core';
-import {
+import {HoistModel, managed, TaskObserver, XH} from '@xh/hoist/core';
+import type {
     Field,
     FieldSpec,
-    getFieldName,
-    Store,
     StoreConfig,
-    StoreRecord,
     StoreRecordId,
     StoreRecordOrId,
     StoreSelectionConfig,
-    StoreSelectionModel,
     StoreTransaction
 } from '@xh/hoist/data';
+import {getFieldName, Store, StoreRecord, StoreSelectionModel} from '@xh/hoist/data';
 import {
     DockedColChooserModel as DesktopDockedColChooserModel,
     ModalColChooserModel as DesktopModalColChooserModel
 } from '@xh/hoist/dynamics/desktop';
 import {ColChooserModel as MobileColChooserModel} from '@xh/hoist/dynamics/mobile';
 import {Icon} from '@xh/hoist/icon';
-import {
+import type {
     AgColumnState,
     CellClickedEvent,
     CellContextMenuEvent,
     CellDoubleClickedEvent,
     CellEditingStartedEvent,
     CellEditingStoppedEvent,
-    ColumnEvent,
     RowClickedEvent,
     RowDoubleClickedEvent
 } from '@xh/hoist/kit/ag-grid';
@@ -78,7 +70,7 @@ import {
     computed
 } from '@xh/hoist/mobx';
 import {wait, waitFor} from '@xh/hoist/promise';
-import {ExportOptions} from '@xh/hoist/svc/GridExportService';
+import type {ExportOptions} from '@xh/hoist/svc/GridExportService';
 import {SECONDS} from '@xh/hoist/utils/datetime';
 import {
     apiDeprecated,
@@ -118,15 +110,21 @@ import {
     take,
     uniqBy
 } from 'lodash';
-import {createRef, ReactNode, RefObject} from 'react';
-import {GridAutosizeOptions} from './GridAutosizeOptions';
+import type {ReactNode, RefObject} from 'react';
+import {createRef} from 'react';
+import type {GridAutosizeOptions} from './GridAutosizeOptions';
 import {GridModelDiagnostics} from './impl/GridModelDiagnostics';
-import {GridContextMenuItemLike, GridContextMenuSpec} from './GridContextMenu';
-import {GridSorter, GridSorterLike} from './GridSorter';
+import type {
+    GridContextMenuItemLike,
+    GridContextMenuSpec,
+    GridHeaderContextMenuSpec
+} from './GridContextMenu';
+import type {GridSorterLike} from './GridSorter';
+import {GridSorter} from './GridSorter';
 import {computeSortedRecords} from './impl/RecordSortUtils';
 import {initPersist} from './impl/InitPersist';
-import {managedRenderer} from './impl/Utils';
-import {
+import {withErrorCell} from './impl/Utils';
+import type {
     ColChooserConfig,
     ColChooserMode,
     ColumnGroupState,
@@ -153,7 +151,10 @@ export interface GridConfig {
     /** Columns for this grid. */
     columns?: ColumnOrGroupSpec[];
 
-    /**  Column configs to be set on all columns.  Merges deeply. */
+    /**
+     * Column configs to be set on all columns. Merges deeply, except that a column with its own
+     * `renderer` or `textRenderer` takes neither from the defaults.
+     */
     colDefaults?: Partial<ColumnSpec>;
 
     /**
@@ -348,10 +349,18 @@ export interface GridConfig {
     clicksToExpand?: number;
 
     /**
-     * Array of RecordActions, dividers, or token strings with which to create a context menu.
-     * May also be specified as a function returning same or false to omit context menu from grid.
+     * Items for the context menu shown on right-click of a row or cell, as actions, headings and
+     * tokens, or a function returning them, or false to show none. Desktop only. Defaults to
+     * filter, copy, expand / collapse, export and column items - see `GridModel.defaults`.
      */
     contextMenu?: GridContextMenuSpec | false;
+
+    /**
+     * Items for the context menu shown on right-click of a column header, as for `contextMenu`,
+     * or false to show none. Desktop only. Defaults to column-focused items for the clicked column
+     * plus the column chooser, or to none when `contextMenu` is disabled.
+     */
+    headerContextMenu?: GridHeaderContextMenuSpec | false;
 
     /**
      * True (default) to render cells only for the columns within or near the visible scroll area,
@@ -451,6 +460,7 @@ export interface GridModelDefaults {
     colChooserModel?: Omit<ColChooserConfig, 'gridModel'> | ColChooserMode | boolean | null;
     colDefaults?: Partial<ColumnSpec> | null;
     contextMenu?: GridContextMenuItemLike[];
+    headerContextMenu?: GridContextMenuItemLike[];
     emptyText?: ReactNode | null;
     enableColumnPinning?: boolean;
     enableExport?: boolean;
@@ -525,6 +535,18 @@ export class GridModel extends HoistModel {
             'colChooser',
             'autosizeColumns'
         ],
+        headerContextMenu: [
+            'sort',
+            '-',
+            'pinColumn',
+            'hideColumn',
+            'autosizeColumn',
+            '-',
+            'restoreDefaults',
+            '-',
+            'colChooser',
+            'autosizeColumns'
+        ],
         emptyText: null,
         enableColumnPinning: true,
         enableExport: false,
@@ -556,6 +578,7 @@ export class GridModel extends HoistModel {
     rowClassFn: RowClassFn;
     rowClassRules: Record<string, RowClassRuleFn>;
     contextMenu: GridContextMenuSpec;
+    headerContextMenu: GridHeaderContextMenuSpec;
     groupRowHeight: number;
     groupRowRenderer: GroupRowRenderer;
     groupSortFn: GridGroupSortFn;
@@ -709,6 +732,7 @@ export class GridModel extends HoistModel {
             onCellContextMenu,
             clicksToExpand = GridModel.defaults.clicksToExpand ?? (XH.isMobileApp ? 1 : 2),
             contextMenu,
+            headerContextMenu,
             useVirtualColumns = true,
             autosizeOptions = {},
             restoreDefaultsFn,
@@ -740,11 +764,11 @@ export class GridModel extends HoistModel {
         this.rowClassFn = rowClassFn;
         this.rowClassRules = rowClassRules;
         this.groupRowHeight = groupRowHeight;
-        this.groupRowRenderer = managedRenderer(groupRowRenderer, 'GROUP_ROW');
+        this.groupRowRenderer = withErrorCell(groupRowRenderer, 'GROUP_ROW');
         this.groupSortFn = withDefault(groupSortFn, this.defaultGroupSortFn);
         this.showGroupRowCounts = showGroupRowCounts;
-        this.contextMenu =
-            contextMenu === false ? [] : withDefault(contextMenu, GridModel.defaults.contextMenu);
+        this.contextMenu = this.parseContextMenu(contextMenu);
+        this.headerContextMenu = this.parseHeaderContextMenu(headerContextMenu, contextMenu);
         this.useVirtualColumns = useVirtualColumns;
         this.externalSort = externalSort;
         apiDeprecated('GridModel.enableFullWidthScroll', {
@@ -788,7 +812,7 @@ export class GridModel extends HoistModel {
 
         Object.assign(this, rest);
 
-        this.colDefaults = defaultsDeep({}, colDefaults, GridModel.defaults.colDefaults);
+        this.colDefaults = this.withColDefaults(colDefaults, GridModel.defaults.colDefaults);
         this.parseAndSetColumnsAndStore(columns, store);
 
         this.setGroupBy(groupBy);
@@ -889,6 +913,8 @@ export class GridModel extends HoistModel {
     /**
      * Export grid data using ag-Grid's built-in client-side export.
      *
+     * Cells export their raw value, as copy and {@link exportAsync} do.
+     *
      * @param filename - name for exported file.
      * @param type - type of export - either 'excel' or 'csv'.
      * @param params - passed to agGrid's export functions.
@@ -900,7 +926,8 @@ export class GridModel extends HoistModel {
             {...params},
             {
                 fileName: filename,
-                processCellCallback: this.formatValuesForExport
+                // ag-Grid would otherwise apply a column's `valueFormatter`.
+                processCellCallback: ({value}) => value
             }
         );
 
@@ -1870,12 +1897,8 @@ export class GridModel extends HoistModel {
     // Implementation
     //-----------------------
     private buildColumn(config: ColumnOrGroupSpec, borderedGroup?: ColumnGroupSpec): ColumnOrGroup {
-        // Merge leaf config with defaults.
-        // Ensure *any* tooltip setting on column itself always wins.
         if (this.colDefaults && !this.isGroupSpec(config)) {
-            let colDefaults = {...this.colDefaults};
-            if (config.tooltip) colDefaults.tooltip = null;
-            config = defaultsDeep({}, config, colDefaults);
+            config = this.withColDefaults(config, this.colDefaults);
         }
 
         const omit = executeIfFunction(config.omit);
@@ -1892,6 +1915,21 @@ export class GridModel extends HoistModel {
         }
 
         return new Column(config, this);
+    }
+
+    private withColDefaults(
+        config: Partial<ColumnSpec>,
+        defaults: Partial<ColumnSpec>
+    ): Partial<ColumnSpec> {
+        // A config's own tooltip, renderer or text renderer blocks the default, and is never
+        // deep-merged with it.
+        const {tooltip, renderer, textRenderer} = config ?? {};
+        if (tooltip || renderer || textRenderer) {
+            defaults = {...defaults};
+            if (tooltip) defaults.tooltip = null;
+            if (renderer || textRenderer) defaults.renderer = defaults.textRenderer = null;
+        }
+        return defaultsDeep({}, config, defaults);
     }
 
     @sharePendingPromise
@@ -1954,16 +1992,8 @@ export class GridModel extends HoistModel {
         return ids;
     }
 
-    private formatValuesForExport(params) {
-        const value = params.value,
-            fmt = params.column.colDef.valueFormatter;
-        if (value !== null && fmt) {
-            return fmt(value);
-        } else {
-            return value;
-        }
-    }
-
+    // Export the formatted text, but keep numbers raw for Excel, which types each cell from the
+    // value returned here.
     // Store fields and column configs have a tricky bi-directional relationship in GridModel,
     // both for historical reasons and developer convenience.
     //
@@ -2248,6 +2278,23 @@ export class GridModel extends HoistModel {
         };
     }
 
+    private parseContextMenu(spec: GridConfig['contextMenu']): GridContextMenuSpec {
+        return spec === false ? [] : withDefault(spec, GridModel.defaults.contextMenu);
+    }
+
+    /** A grid with no context menu gets no header menu either, unless one is set explicitly. */
+    private parseHeaderContextMenu(
+        spec: GridConfig['headerContextMenu'],
+        contextMenu: GridConfig['contextMenu']
+    ): GridHeaderContextMenuSpec {
+        if (spec === false) return [];
+        const dflt =
+            contextMenu === false || contextMenu === null
+                ? []
+                : GridModel.defaults.headerContextMenu;
+        return withDefault(spec, dflt);
+    }
+
     private parseChooserModel(chooserModel: GridConfig['colChooserModel']): IColChooserModel {
         if (!chooserModel) return null;
 
@@ -2299,15 +2346,6 @@ export class GridModel extends HoistModel {
     ): ColumnCellClassRuleFn {
         return ({api, column, ...ctx}) => {
             if (!api || !column) return false;
-
-            // Re-evaluate cell class rules when column is re-ordered
-            // See https://www.ag-grid.com/javascript-data-grid/column-object/#reference-events
-            if (!column['xhAppliedGroupBorderListener']) {
-                column['xhAppliedGroupBorderListener'] = true;
-                column.addEventListener('leftChanged', ({api, columns, source}: ColumnEvent) => {
-                    if (source === 'uiColumnMoved') api.refreshCells({columns});
-                });
-            }
 
             // Don't render a left-border if col is first or if prev col already has right-border
             if (side === 'left') {

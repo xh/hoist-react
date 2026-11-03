@@ -4,21 +4,21 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {ButtonGroupProps as BpButtonGroupProps} from '@blueprintjs/core';
-import {
+import type {ButtonGroupProps as BpButtonGroupProps} from '@blueprintjs/core';
+import type {
     DomAttrsProps,
-    hoistCmp,
     HoistModel,
     HoistProps,
     LayoutProps,
     StyleProps,
     TestSupportProps
 } from '@xh/hoist/core';
+import {hoistCmp} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {buttonGroup as bpButtonGroup} from '@xh/hoist/kit/blueprint';
 import {TEST_ID} from '@xh/hoist/utils/js';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
-import {SetOptional} from 'type-fest';
+import type {SetOptional} from 'type-fest';
 
 export interface ButtonGroupProps<M extends HoistModel = null>
     extends

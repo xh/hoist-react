@@ -5,7 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {RouterModel} from '@xh/hoist/appcontainer/RouterModel';
-import {HoistRoute} from '@xh/hoist/core';
+import type {HoistRoute} from '@xh/hoist/core';
 import {describe, expect, it, onTestFinished, vi} from 'vitest';
 
 /**
@@ -47,6 +47,16 @@ describe('RouterModel', () => {
 
             expect(names).toEqual(['default.grids', 'default.grids.detail']);
             expect(model.currentState.params).toEqual({id: 7});
+        });
+
+        it('round-trips URL-reserved characters in a path param', () => {
+            const model = createModel(),
+                id = 'a/b&c=d?e#f';
+
+            model.router.navigate('default.grids.detail', {id});
+
+            expect(model.currentState.params).toEqual({id});
+            expect(model.currentState.path).toBe('/app/grids/a%2Fb%26c%3Dd%3Fe%23f');
         });
     });
 

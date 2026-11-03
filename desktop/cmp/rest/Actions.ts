@@ -6,9 +6,9 @@
  */
 
 import '@xh/hoist/desktop/register';
-import {GridModel} from '@xh/hoist/cmp/grid';
-import {RecordActionSpec} from '@xh/hoist/data';
-import {RestGridModel} from '@xh/hoist/desktop/cmp/rest/RestGridModel';
+import type {GridModel} from '@xh/hoist/cmp/grid';
+import type {RecordActionSpec} from '@xh/hoist/data';
+import type {RestGridModel} from '@xh/hoist/desktop/cmp/rest/RestGridModel';
 import {Icon} from '@xh/hoist/icon/Icon';
 
 export const addAction: RecordActionSpec = {

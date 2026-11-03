@@ -147,6 +147,11 @@ Parameter constraints can be specified using angle-bracket syntax (e.g. `/:id<\\
 numeric-only parameters). See the
 [Router5 documentation](https://router5.js.org/guides/defining-routes) for full syntax details.
 
+Path parameter values are percent-encoded when a URL is built and decoded on match, so values
+containing `/`, `&`, `?` or `#` round-trip through `XH.navigate()` and `XH.routerState.params`.
+Note that a value containing `/` reaches the server as `%2F` on a full page load, which Tomcat
+rejects by default - apps that deep-link such values should substitute another character first.
+
 ### Conditional Route Exclusion
 
 Routes support an `omit` property (a Hoist extension, not part of Router5) that allows

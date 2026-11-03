@@ -4,12 +4,16 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {HoistInputModel, HoistInputProps, useHoistInputModel} from '@xh/hoist/cmp/input';
+import type {HoistInputProps} from '@xh/hoist/cmp/input';
+import {HoistInputModel, useHoistInputModel} from '@xh/hoist/cmp/input';
+import {getDayPickerProps, resolveBoundDate} from '@xh/hoist/cmp/input/impl/DayPickerUtils';
 import {box, div, hbox} from '@xh/hoist/cmp/layout';
-import {hoistCmp, HoistProps, LayoutProps, StyleProps} from '@xh/hoist/core';
+import type {HoistProps, LayoutProps, StyleProps} from '@xh/hoist/core';
+import {hoistCmp} from '@xh/hoist/core';
 import {fmtDate} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
-import {dayPicker, DayPickerProps} from '@xh/hoist/kit/react-day-picker';
+import type {DayPickerProps} from '@xh/hoist/kit/react-day-picker';
+import {dayPicker} from '@xh/hoist/kit/react-day-picker';
 import {button} from '@xh/hoist/mobile/cmp/button';
 import {dialog} from '@xh/hoist/mobile/cmp/dialog';
 import '@xh/hoist/mobile/register';
@@ -19,8 +23,7 @@ import {getTestId, TEST_ID, withDefault} from '@xh/hoist/utils/js';
 import {getLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import type {Property} from 'csstype';
-import {castArray, isNil, omitBy} from 'lodash';
-import {ReactElement} from 'react';
+import type {ReactElement} from 'react';
 import './DateInput.scss';
 
 export interface DateInputProps extends HoistProps, HoistInputProps, StyleProps, LayoutProps {
@@ -175,33 +178,22 @@ const cmp = hoistCmp.factory<DateInputModel>(({model, className, ...props}, ref)
 });
 
 const pickerDialog = hoistCmp.factory<DateInputModel>(({model}) => {
-    let {minDate, maxDate, renderValue} = model,
-        {dayPickerProps} = model.componentProps,
-        disabledDays = [];
-    if (minDate) disabledDays.push({before: minDate});
-    if (maxDate) disabledDays.push({after: maxDate});
-    if (dayPickerProps?.disabled) disabledDays.push(...castArray(dayPickerProps.disabled));
-
-    dayPickerProps = omitBy(
-        {
-            defaultMonth: renderValue,
-            startMonth: minDate,
-            endMonth: maxDate,
-            ...dayPickerProps,
-            mode: 'single',
-            required: true,
-            selected: renderValue,
-            disabled: disabledDays,
-            onSelect: model.onDaySelect
-        },
-        isNil
-    );
+    const {minDate, maxDate, renderValue} = model,
+        {dayPickerProps} = model.componentProps;
 
     return dialog({
         isOpen: model.pickerIsOpen,
         className: 'xh-date-input__picker-dialog',
         onCancel: () => (model.pickerIsOpen = false),
-        content: dayPicker(dayPickerProps)
+        content: dayPicker(
+            getDayPickerProps({
+                value: renderValue,
+                minDate,
+                maxDate,
+                dayPickerProps,
+                onSelect: model.onDaySelect
+            })
+        )
     });
 });
 
@@ -219,15 +211,3 @@ const clearButton = hoistCmp.factory<DateInputModel>(({model}) =>
         }
     })
 );
-
-//---------------------------------
-// Local helpers
-//---------------------------------
-function resolveBoundDate(val: Date | LocalDate | undefined | null): Date | null {
-    if (val == null) return null;
-    return isLocalDate(val) ? val.date : stripTime(val);
-}
-
-function stripTime(date: Date): Date {
-    return new Date(date.getFullYear(), date.getMonth(), date.getDate());
-}

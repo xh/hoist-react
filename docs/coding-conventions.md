@@ -187,8 +187,8 @@ import {observable} from 'mobx';
 
 ### Type Imports
 
-Use `import type` for type-only imports that are erased at compile time. This can be a standalone
-`import type` statement or inline `type` qualifiers within a regular import:
+Use `import type` for type-only imports that are erased at compile time. ESLint enforces this, and
+`eslint --fix` writes a separate `import type` statement. Inline `type` qualifiers also pass:
 
 ```typescript
 // Standalone type import
@@ -618,6 +618,20 @@ properties and return values. Properties are initialized to `null` rather than l
 ```typescript
 @observable accessor selectedId: string = null;
 @observableRef accessor lastResponse: Response = null;
+```
+
+### No `| null` or `| undefined` Types
+
+The compiler runs without `strictNullChecks`, and `null` is the universal "no value", so any
+property, parameter, or return may be null. Do not widen types to spell that out:
+
+```typescript
+// ✅ Do
+selectedRecord: StoreRecord;
+
+// ❌ Don't
+selectedRecord: StoreRecord | null;
+selectedRecord: StoreRecord | undefined;
 ```
 
 ### `== null` Pattern

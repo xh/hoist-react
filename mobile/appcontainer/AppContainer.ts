@@ -33,6 +33,7 @@ import {optionsDialog} from './OptionsDialog';
 import {suspendPanel} from './suspend/SuspendPanel';
 import {toastSource} from './ToastSource';
 import {versionBar} from './VersionBar';
+import './AppContainer.scss';
 
 installMobileImpls({
     tabContainerImpl,

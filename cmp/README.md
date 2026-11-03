@@ -24,7 +24,7 @@ Components in `/cmp/` fall into two categories:
 │   └── Desktop app container and shell
 │
 └── /mobile/
-    ├── Extends /cmp/ components with Onsen UI
+    ├── Extends /cmp/ components with native, touch-styled elements
     ├── Adds mobile-specific inputs, navigator, panels
     └── Mobile app container and shell
 ```
@@ -36,7 +36,7 @@ and use them identically on desktop and mobile. The platform-specific packages p
 components built with platform-appropriate UI libraries:
 
 - `/desktop/cmp/grid/` - Cell editors, column chooser dialog, filter UI (using Blueprint)
-- `/mobile/cmp/grid/` - Column chooser sheet (using Onsen UI)
+- `/mobile/cmp/grid/` - Column chooser sheet
 
 The core grid functionality (sorting, grouping, selection, data binding) works the same everywhere.
 

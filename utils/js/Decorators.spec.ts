@@ -4,6 +4,7 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
+import {HoistModel} from '@xh/hoist/core';
 import {action, autorun, observable} from '@xh/hoist/mobx';
 import {computeOnce, debounced, sharePendingPromise, throwIf} from '@xh/hoist/utils/js';
 import {describe, expect, it, onTestFinished, vi} from 'vitest';
@@ -73,6 +74,25 @@ describe('Decorators', () => {
             await vi.advanceTimersByTimeAsync(200);
 
             expect(seen).toEqual(['2026-12-31', '2027-06-30']);
+        });
+
+        it('drops a pending call when its HoistBase owner is destroyed', async () => {
+            vi.useFakeTimers();
+            class FilterModel extends HoistModel {
+                applied: string[] = [];
+
+                @debounced(100)
+                apply(filter: string) {
+                    this.applied.push(filter);
+                }
+            }
+            const model = new FilterModel();
+
+            model.apply('open');
+            model.destroy();
+            await vi.advanceTimersByTimeAsync(100);
+
+            expect(model.applied).toEqual([]);
         });
     });
 

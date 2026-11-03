@@ -6,8 +6,19 @@
  */
 import {HoistModel, HoistService} from '@xh/hoist/core';
 import {Exception} from '@xh/hoist/exception';
-import {mergeDeep, parseNameSource, pluralize, throwIf, withDefault} from '@xh/hoist/utils/js';
-import {describe, expect, it, onTestFinished} from 'vitest';
+import {
+    genRandomId,
+    genUuid,
+    getOwn,
+    mergeDeep,
+    ordinalize,
+    parseNameSource,
+    pluralize,
+    singularize,
+    throwIf,
+    withDefault
+} from '@xh/hoist/utils/js';
+import {describe, expect, it, onTestFinished, vi} from 'vitest';
 
 /**
  * Core language helpers. `withDefault` and `throwIf` sit in hundreds of config-parsing paths, and
@@ -100,12 +111,87 @@ describe('LangUtils', () => {
 
     describe('pluralize', () => {
         it('pluralizes to match a count, optionally prefixed with that count', () => {
-            // Pins the contract of this wrapper over the unmaintained lodash-inflection package.
+            // Pins the contract of this wrapper over the inflection package.
             expect(pluralize('role', 1, true)).toBe('1 role');
             expect(pluralize('role', 0, true)).toBe('0 roles');
             expect(pluralize('selected entry', 3, true)).toBe('3 selected entries');
+            expect(pluralize('Hibernate Cache', 2, true)).toBe('2 Hibernate Caches');
             expect(pluralize('file', 1)).toBe('file');
             expect(pluralize('person')).toBe('people');
+            expect(pluralize('roles', 1)).toBe('role');
+        });
+    });
+
+    describe('singularize', () => {
+        it('returns the singular form of a plural word', () => {
+            expect(singularize('entries')).toBe('entry');
+            expect(singularize('people')).toBe('person');
+            expect(singularize('selected entries')).toBe('selected entry');
+        });
+    });
+
+    describe('ordinalize', () => {
+        it('appends the ordinal suffix for a number', () => {
+            expect(ordinalize(1)).toBe('1st');
+            expect(ordinalize(2)).toBe('2nd');
+            expect(ordinalize(3)).toBe('3rd');
+            expect(ordinalize(11)).toBe('11th');
+            expect(ordinalize(22)).toBe('22nd');
+            expect(ordinalize(113)).toBe('113th');
+        });
+    });
+
+    describe('genRandomId', () => {
+        it('returns distinct alphanumeric IDs of the requested length', () => {
+            const ids = Array.from({length: 50}, () => genRandomId(16));
+            expect(new Set(ids).size).toBe(50);
+            ids.forEach(id => expect(id).toMatch(/^[a-zA-Z0-9]{16}$/));
+            expect(genRandomId()).toHaveLength(8);
+        });
+    });
+
+    // Apps store these IDs on a server, so they must be version 4 UUIDs over HTTPS or plain HTTP.
+    describe('genUuid', () => {
+        const UUID_V4 = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/;
+
+        it('returns distinct version 4 UUIDs', () => {
+            const ids = Array.from({length: 1000}, () => genUuid());
+            ids.forEach(id => expect(id).toMatch(UUID_V4));
+            expect(new Set(ids).size).toBe(1000);
+        });
+
+        it('builds a version 4 UUID when the browser has no randomUUID, as over plain HTTP', () => {
+            const {getRandomValues} = crypto;
+            vi.stubGlobal('crypto', {getRandomValues: getRandomValues.bind(crypto)});
+            onTestFinished(() => {
+                vi.unstubAllGlobals();
+            });
+
+            const ids = Array.from({length: 1000}, () => genUuid());
+            ids.forEach(id => expect(id).toMatch(UUID_V4));
+            expect(new Set(ids).size).toBe(1000);
+        });
+    });
+
+    // Apps look up keys from user input or a server, which must never resolve to an Object built-in.
+    describe('getOwn', () => {
+        const map: Record<string, string> = {weather: 'Weather', 'a.b': 'Dotted'};
+
+        it('returns the value of an own property, treating a dotted key as one key', () => {
+            expect(getOwn(map, 'weather')).toBe('Weather');
+            expect(getOwn(map, 'a.b')).toBe('Dotted');
+        });
+
+        it('returns null for a key that only Object.prototype has', () => {
+            expect(getOwn(map, 'constructor')).toBeNull();
+            expect(getOwn(map, 'toString')).toBeNull();
+            expect(getOwn(map, '__proto__')).toBeNull();
+        });
+
+        it('returns null for a missing key, a non-string key or no object', () => {
+            expect(getOwn(map, 'missing')).toBeNull();
+            expect(getOwn(map, null)).toBeNull();
+            expect(getOwn(null, 'weather')).toBeNull();
         });
     });
 

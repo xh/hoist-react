@@ -5,7 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
-import {Token} from './Token';
+import type {Token} from './Token';
 
 export interface AccessTokenSpec {
     /**

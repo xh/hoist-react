@@ -4,9 +4,9 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {Content, Thunkable} from '@xh/hoist/core';
+import type {Content, Thunkable} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
-import {ReactElement} from 'react';
+import type {ReactElement} from 'react';
 
 /**
  * Spec used to generate DashViews and DashViewModels within a DashContainer or DashCanvas.

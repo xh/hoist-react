@@ -4,7 +4,7 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {ColChooserMode} from '@xh/hoist/cmp/grid';
+import type {ColChooserMode} from '@xh/hoist/cmp/grid';
 import {action, observable} from '@xh/hoist/mobx';
 import {ColChooserModel} from './ColChooserModel';
 

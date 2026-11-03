@@ -4,9 +4,11 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {HoistInputModel, HoistInputProps, useHoistInputModel} from '@xh/hoist/cmp/input';
+import type {HoistInputProps} from '@xh/hoist/cmp/input';
+import {HoistInputModel, useHoistInputModel} from '@xh/hoist/cmp/input';
 import {box, div, hbox, span} from '@xh/hoist/cmp/layout';
-import {hoistCmp, HoistProps, LayoutProps, PlainObject, SelectOption} from '@xh/hoist/core';
+import type {HoistProps, LayoutProps, PlainObject, SelectOption} from '@xh/hoist/core';
+import {hoistCmp} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {
     reactAsyncCreatableSelect,
@@ -22,7 +24,8 @@ import {debouncePromise, wait} from '@xh/hoist/promise';
 import {throwIf, withDefault, mergeDeep} from '@xh/hoist/utils/js';
 import {createObservableRef, getLayoutProps} from '@xh/hoist/utils/react';
 import {escapeRegExp, isEqual, isNil, isPlainObject} from 'lodash';
-import {Children, ReactNode, ReactPortal} from 'react';
+import type {ReactNode, ReactPortal} from 'react';
+import {Children} from 'react';
 import ReactDom from 'react-dom';
 import './Select.scss';
 
@@ -182,7 +185,7 @@ export interface SelectProps extends HoistProps, HoistInputProps, LayoutProps {
 }
 
 /**
- * A managed wrapper around the React-Select combobox/dropdown component.
+ * A combobox for choosing a value from a dropdown list of options, with type-ahead filtering.
  *
  * Supports advanced options such as:
  *      + Asynchronous queries
@@ -190,8 +193,8 @@ export interface SelectProps extends HoistProps, HoistInputProps, LayoutProps {
  *      + User-created ad-hoc entries
  *      + Full-screen mode
  *
- * Unlike the desktop version, multiple selection and use of react-windowed-select are not
- * currently supported.
+ * Unlike the desktop version, multiple selection and windowed rendering of large option lists
+ * are not currently supported.
  *
  * @see {@link https://react-select.com|React Select Docs}
  */
@@ -360,8 +363,8 @@ class SelectInputModel extends HoistInputModel {
         const {reactSelect} = this;
         if (!reactSelect) return;
 
-        // Unwrap the HOCs added by AsyncSelect / Creatable / WindowedSelect (each exposes the
-        // inner Select via `.select`) to reach the underlying Select that owns the inputRef.
+        // Unwrap the HOCs added by AsyncSelect / Creatable (each exposes the inner Select via
+        // `.select`) to reach the underlying Select that owns the inputRef.
         let selectComp = reactSelect;
         while (selectComp && !selectComp.inputRef) {
             selectComp = selectComp.select;

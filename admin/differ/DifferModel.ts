@@ -5,12 +5,14 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
-import {ColumnRenderer, ColumnSpec, GridModel} from '@xh/hoist/cmp/grid';
+import type {ColumnRenderer, ColumnSpec} from '@xh/hoist/cmp/grid';
+import {GridModel} from '@xh/hoist/cmp/grid';
 import {div, hbox, p} from '@xh/hoist/cmp/layout';
-import {HoistModel, LoadSpec, managed, PlainObject, XH} from '@xh/hoist/core';
-import {RecordActionSpec} from '@xh/hoist/data';
+import type {LoadSpec, PlainObject} from '@xh/hoist/core';
+import {HoistModel, managed, XH} from '@xh/hoist/core';
+import type {RecordActionSpec} from '@xh/hoist/data';
 import {actionCol} from '@xh/hoist/desktop/cmp/grid';
-import {RestGridModel} from '@xh/hoist/desktop/cmp/rest';
+import type {RestGridModel} from '@xh/hoist/desktop/cmp/rest';
 import {Icon} from '@xh/hoist/icon';
 import {action, bindable, observable} from '@xh/hoist/mobx';
 import {pluralize} from '@xh/hoist/utils/js';

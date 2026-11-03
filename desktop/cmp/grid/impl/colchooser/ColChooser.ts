@@ -4,22 +4,24 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {ColChooserOptionsModel} from '@xh/hoist/appcontainer/ColChooserOptionsModel';
+import type {ColChooserOptionsModel} from '@xh/hoist/appcontainer/ColChooserOptionsModel';
 import {grid} from '@xh/hoist/cmp/grid';
 import {div, filler, fragment, hframe, span, vbox, vframe} from '@xh/hoist/cmp/layout';
 import {storeFilterField} from '@xh/hoist/cmp/store';
-import {hoistCmp, HoistProps, LayoutProps, uses} from '@xh/hoist/core';
+import type {HoistProps, LayoutProps} from '@xh/hoist/core';
+import {hoistCmp, uses} from '@xh/hoist/core';
 import type {FilterTestFn} from '@xh/hoist/data';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
-import {Icon, IconProps} from '@xh/hoist/icon';
+import type {IconProps} from '@xh/hoist/icon';
+import {Icon} from '@xh/hoist/icon';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
-import {ReactElement} from 'react';
+import type {ReactElement} from 'react';
 
 import {ColChooserModel} from './ColChooserModel';
 import './ColChooser.scss';
-import {ColChooserBucketModel} from './ColChooserBucketModel';
+import type {ColChooserBucketModel} from './ColChooserBucketModel';
 
 export interface ColChooserProps extends HoistProps<ColChooserModel>, LayoutProps {}
 

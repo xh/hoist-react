@@ -1,15 +1,15 @@
-export * from './DashConfig';
+export type * from './DashConfig';
 export * from './DashModel';
 export * from './DashViewModel';
-export * from './DashViewSpec';
+export type * from './DashViewSpec';
 
 export * from './container/DashContainer';
 export * from './container/DashContainerModel';
 export * from './container/DashContainerViewModel';
-export * from './container/DashContainerViewSpec';
+export type * from './container/DashContainerViewSpec';
 
 export * from './canvas/DashCanvas';
 export * from './canvas/DashCanvasModel';
 export * from './canvas/DashCanvasViewModel';
-export * from './canvas/DashCanvasViewSpec';
+export type * from './canvas/DashCanvasViewSpec';
 export * from './canvas/widgetchooser/DashCanvasWidgetChooser';

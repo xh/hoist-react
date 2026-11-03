@@ -48,3 +48,25 @@
     }
   }
 }
+
+.xh-date-input__popover {
+  padding: var(--xh-pad-px);
+  background-color: var(--xh-popup-bg);
+
+  .rdp-root {
+    --rdp-day-height: 30px;
+    --rdp-day-width: 30px;
+    --rdp-day_button-height: 28px;
+    --rdp-day_button-width: 28px;
+    --rdp-nav-height: 30px;
+    --rdp-nav_button-height: 30px;
+    --rdp-nav_button-width: 30px;
+    --rdp-weekday-padding: 4px 0;
+
+    font-size: var(--xh-font-size-px);
+  }
+}
+
+.xh-date-input__actions {
+  padding-top: var(--xh-pad-px);
+}

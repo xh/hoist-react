@@ -4,22 +4,19 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {
-    getPasswordManagerAttrs,
-    HoistInputModel,
-    HoistInputProps,
-    PasswordManagerSupportProps,
-    useHoistInputModel
-} from '@xh/hoist/cmp/input';
+import type {HoistInputProps, PasswordManagerSupportProps} from '@xh/hoist/cmp/input';
+import {getPasswordManagerAttrs, HoistInputModel, useHoistInputModel} from '@xh/hoist/cmp/input';
 import {
     addCommasWhileEditing,
     getCaretSkippingCommas,
     setCaretSkippingCommas,
     skipCommaOnDelete
 } from '@xh/hoist/cmp/input/impl/LiveCommas';
-import {hoistCmp, HoistProps, LayoutProps, StyleProps} from '@xh/hoist/core';
-import {fmtNumber, NumericPrecision, Precision, ZeroPad} from '@xh/hoist/format';
-import {input} from '@xh/hoist/kit/onsen';
+import {hbox, input} from '@xh/hoist/cmp/layout';
+import type {HoistProps, LayoutProps, StyleProps} from '@xh/hoist/core';
+import {hoistCmp} from '@xh/hoist/core';
+import type {NumericPrecision, Precision, ZeroPad} from '@xh/hoist/format';
+import {fmtNumber} from '@xh/hoist/format';
 import '@xh/hoist/mobile/register';
 import {wait} from '@xh/hoist/promise';
 import {TEST_ID, throwIf, withDefault} from '@xh/hoist/utils/js';
@@ -56,9 +53,6 @@ export interface NumberInputProps
      * via user input. Larger values passed to it via props or a bound model will still be displayed.
      */
     max?: number;
-
-    /** Onsen modifier string. */
-    modifier?: string;
 
     /** Text to display when control is empty. */
     placeholder?: string;
@@ -270,8 +264,8 @@ const cmp = hoistCmp.factory<NumberInputModel>(
             renderValue = model.formatRenderValue(model.renderValue),
             inputMode = enableShorthandUnits ? 'text' : 'decimal';
 
-        // Restore the caret after a reformat while editing moved it. Runs after Onsen's own
-        // effect writes the value into the input.
+        // Restore the caret after a reformat while editing moved it. Runs after React writes the
+        // value into the input.
         useEffect(() => {
             const input = model.inputEl as HTMLInputElement;
             if (input && model.caretPos != null) {
@@ -286,30 +280,34 @@ const cmp = hoistCmp.factory<NumberInputModel>(
         // Using type=text rather than type=number, to support shorthand units and rich
         // rendering but also because of issues with typing in decimal point (see #3450)
         // Rely on inputMode, and Hoist's parsing to enforce numbers only.
-        return input({
-            inputMode,
+        return hbox({
+            ref,
             className,
-            value: renderValue,
-            disabled: props.disabled,
-            placeholder: props.placeholder,
-            modifier: props.modifier,
-            tabIndex: props.tabIndex,
+            display: 'inline-flex',
             style: {
                 ...props.style,
                 ...layoutProps,
-                width: withDefault(width, null),
-                textAlign: withDefault(props.textAlign, 'right')
+                width: withDefault(width, null)
             },
-            spellCheck: false,
-            [TEST_ID]: props.testId,
-            ...getPasswordManagerAttrs(props.enablePasswordManagers),
-            ...props.domAttrs,
+            item: input({
+                className: 'xh-number-input__input',
+                type: 'text',
+                inputMode,
+                value: renderValue,
+                disabled: props.disabled,
+                placeholder: props.placeholder,
+                tabIndex: props.tabIndex,
+                style: {textAlign: withDefault(props.textAlign, 'right')},
+                spellCheck: false,
+                [TEST_ID]: props.testId,
+                ...getPasswordManagerAttrs(props.enablePasswordManagers),
+                ...props.domAttrs,
 
-            onInput: model.onValueChange,
-            onKeyDown: model.onKeyDown,
-            onBlur: model.onBlur,
-            onFocus: model.onFocus,
-            ref
+                onChange: model.onValueChange,
+                onKeyDown: model.onKeyDown,
+                onBlur: model.onBlur,
+                onFocus: model.onFocus
+            })
         });
     }
 );

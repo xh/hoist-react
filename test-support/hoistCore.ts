@@ -552,7 +552,9 @@ function defaultConfigs(): PlainObject {
     };
 }
 
-// Prefs that hoist-core creates by default, none of them set by the user.
+// Prefs that hoist-core creates by default, none of them set by the user. xhSizingMode defaults to
+// {} in hoist-core, and SizingModeModel saves the platform's mode on boot when it finds none. Seed
+// every platform here, so boot writes nothing.
 function defaultPrefs(): Record<string, PrefSpec> {
     const pref = (type: PrefSpec['type'], defaultValue: any): PrefSpec => ({type, defaultValue});
     return {
@@ -560,7 +562,7 @@ function defaultPrefs(): Record<string, PrefSpec> {
         xhIdleDetectionDisabled: pref('bool', false),
         xhLastReadChangelog: pref('string', '0.0.0'),
         xhShowVersionBar: pref('string', 'auto'),
-        xhSizingMode: pref('json', {}),
+        xhSizingMode: pref('json', {desktop: 'standard', mobile: 'standard', tablet: 'standard'}),
         xhTheme: pref('string', 'system')
     };
 }

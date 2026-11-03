@@ -5,16 +5,15 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {div, hspacer, vbox} from '@xh/hoist/cmp/layout';
+import type {MenuItemLike} from '@xh/hoist/core';
 import {
     hoistCmp,
     HoistModel,
     useLocalModel,
     type MenuContext,
-    MenuItemLike,
     isMenuHeading,
     isMenuItem
 } from '@xh/hoist/core';
-import {listItem} from '@xh/hoist/kit/onsen';
 import {bindable} from '@xh/hoist/mobx';
 import {filterConsecutiveMenuSeparators} from '@xh/hoist/utils/impl';
 import {TEST_ID} from '@xh/hoist/utils/js';
@@ -25,7 +24,8 @@ import {
 } from '@xh/hoist/cmp/menu/impl/Menus';
 import classNames from 'classnames';
 import {clone, isEmpty} from 'lodash';
-import {ReactNode, useEffect} from 'react';
+import type {ReactNode} from 'react';
+import {useEffect} from 'react';
 
 import './Menu.scss';
 
@@ -110,16 +110,15 @@ class MenuLocalModel extends HoistModel {
                         item,
                     labelItems = icon ? [icon, hspacer(10), text] : [text];
 
-                return listItem({
+                return div({
                     key: idx,
-                    tappable: true,
                     className: classNames(
                         'xh-menu__list__item',
                         idx === pressedIdx ? 'xh-menu__list__item--pressed' : null,
                         active ? 'xh-menu__list__item--active' : null,
                         className
                     ),
-                    item: div({className: 'center', items: labelItems}),
+                    item: div({className: 'xh-menu__list__item__content', items: labelItems}),
                     omit: hidden,
                     [TEST_ID]: testId,
                     onTouchStart: () => (this.pressedIdx = idx),

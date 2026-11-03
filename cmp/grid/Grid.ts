@@ -4,26 +4,21 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {GridApi, AgColumnState} from '@xh/hoist/kit/ag-grid';
+import type {GridApi, AgColumnState} from '@xh/hoist/kit/ag-grid';
 
 import {agGrid} from '@xh/hoist/cmp/ag-grid';
-import {ColumnGroupState, ColumnState, getTreeStyleClasses} from '@xh/hoist/cmp/grid';
+import type {ColumnGroupState, ColumnState} from '@xh/hoist/cmp/grid';
+import {getTreeStyleClasses} from '@xh/hoist/cmp/grid';
 import {getAgGridMenuItems} from '@xh/hoist/cmp/grid/impl/MenuSupport';
 import {div, fragment, frame, hframe} from '@xh/hoist/cmp/layout';
-import {
-    hoistCmp,
-    HoistModel,
+import type {
     HoistProps,
     LayoutProps,
-    lookup,
-    managed,
     PlainObject,
     ReactionSpec,
-    TestSupportProps,
-    useLocalModel,
-    uses,
-    XH
+    TestSupportProps
 } from '@xh/hoist/core';
+import {hoistCmp, HoistModel, lookup, managed, useLocalModel, uses, XH} from '@xh/hoist/core';
 import type {Filter} from '@xh/hoist/data';
 import type {RecordSet, RecordSetDelta} from '@xh/hoist/data/impl/RecordSet';
 import {GridTransactionManager} from '@xh/hoist/cmp/grid/impl/GridTransactionManager';
@@ -43,6 +38,7 @@ import type {
     ColDef,
     ColGroupDef,
     GetContextMenuItemsParams,
+    GetMainMenuItemsParams,
     GridOptions,
     GridReadyEvent,
     ProcessCellForExportParams
@@ -54,8 +50,8 @@ import {consumeEvent, isDisplayed, warnIf} from '@xh/hoist/utils/js';
 import {useComposedRefs, createObservableRef, getLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import {compact, debounce, isBoolean, isEmpty, isEqual, isNil, merge} from 'lodash';
-import {type MouseEvent} from 'react';
-import {PartialDeep} from 'type-fest';
+import type {MouseEvent} from 'react';
+import type {PartialDeep} from 'type-fest';
 import './Grid.scss';
 import {GridModel} from './GridModel';
 import {columnGroupHeader} from './impl/ColumnGroupHeader';
@@ -297,6 +293,7 @@ export class GridLocalModel extends HoistModel {
             onColumnRowGroupChanged: this.onColumnRowGroupChanged,
             onColumnPinned: this.onColumnPinned,
             onColumnVisible: this.onColumnVisible,
+            onDisplayedColumnsChanged: this.onDisplayedColumnsChanged,
             onColumnGroupOpened: this.onColumnGroupOpened,
             onCellEditingStarted: model.onCellEditingStarted,
             onCellEditingStopped: model.onCellEditingStopped,
@@ -344,7 +341,8 @@ export class GridLocalModel extends HoistModel {
             ret = {
                 ...ret,
                 allowContextMenuWithControlKey: true,
-                getContextMenuItems: this.getContextMenuItems as any
+                getContextMenuItems: this.getContextMenuItems as any,
+                getMainMenuItems: this.getHeaderContextMenuItems as any
             };
         }
 
@@ -371,7 +369,7 @@ export class GridLocalModel extends HoistModel {
     getContextMenuItems = (params: GetContextMenuItemsParams) => {
         const {model} = this,
             {contextMenu} = model;
-        if (!contextMenu || XH.isMobileApp || model.isEditing) return [];
+        if (!contextMenu || model.isEditing) return [];
 
         // Manipulate selection if needed.
         if (model.selModel.isEnabled) {
@@ -385,10 +383,15 @@ export class GridLocalModel extends HoistModel {
             if (!record) selModel.clear();
         }
 
-        const ret = getAgGridMenuItems(params, model, contextMenu);
-        if (isEmpty(ret)) return [];
+        return getAgGridMenuItems(params, model, contextMenu) ?? [];
+    };
 
-        return ret;
+    // ag-Grid shows its column menu on header right-click, with these as its items.
+    getHeaderContextMenuItems = (params: GetMainMenuItemsParams) => {
+        const {model} = this,
+            {headerContextMenu} = model;
+        if (!headerContextMenu || model.isEditing) return [];
+        return getAgGridMenuItems(params, model, headerContextMenu) ?? [];
     };
 
     //------------------------
@@ -804,6 +807,9 @@ export class GridLocalModel extends HoistModel {
             this.model.noteAgColumnStateChanged(ev.api.getColumnState());
         }
     };
+
+    // Cell class rules such as column group borders can depend on column position - re-evaluate.
+    onDisplayedColumnsChanged = ev => ev.api.refreshCells();
 
     // Fires for our own writes too (no `source` on this event) - model's equality check stops the loop.
     onColumnGroupOpened = ev => {

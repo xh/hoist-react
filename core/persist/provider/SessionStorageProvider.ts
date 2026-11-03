@@ -7,7 +7,8 @@
 
 import {XH} from '@xh/hoist/core';
 import {throwIf} from '@xh/hoist/utils/js';
-import {PersistenceProvider, PersistenceProviderConfig} from '../PersistenceProvider';
+import type {PersistenceProviderConfig} from '../PersistenceProvider';
+import {PersistenceProvider} from '../PersistenceProvider';
 
 /**
  * PersistenceProvider that stores state within the Browser's SessionStorage.

@@ -7,7 +7,6 @@
 import type {Some} from '@xh/hoist/core';
 import {Exception} from '@xh/hoist/exception';
 import {castArray, isUndefined} from 'lodash';
-import store from 'store2';
 import {intersperse, type NameSource, parseNameSource} from './LangUtils';
 
 /**
@@ -77,8 +76,8 @@ export function setLogLevel(level: LogLevel, persistMins: number = -1) {
         console.warn(`Client logging set to level '${level}'.`);
     }
     if (persistMins > 0) {
-        store.local.set('xhLogLevel', level);
-        store.local.set('xhLogLevelExpire', Date.now() + persistMins * 60 * 1000);
+        localStorage.setItem('xhLogLevel', level);
+        localStorage.setItem('xhLogLevelExpire', String(Date.now() + persistMins * 60 * 1000));
         console.warn(`Logging level '${level}' will persist for ${persistMins} minutes.`);
     }
 }
@@ -275,6 +274,10 @@ function parseSource(source: NameSource): string {
 let _logLevel: LogLevel = 'info';
 const _severity: Record<LogLevel, number> = {error: 3, warn: 2, info: 1, debug: 0};
 
-const level = store.local.get('xhLogLevel'),
-    expire = store.local.get('xhLogLevelExpire');
-setLogLevel(level && expire > Date.now() ? level : 'info');
+// Guarded, as this runs at module load and storage access can throw when disabled.
+let persisted: LogLevel = null;
+try {
+    const expire = Number(localStorage.getItem('xhLogLevelExpire'));
+    if (expire > Date.now()) persisted = localStorage.getItem('xhLogLevel') as LogLevel;
+} catch {}
+setLogLevel(persisted ?? 'info');

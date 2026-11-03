@@ -12,7 +12,7 @@ import {creates, hoistCmp} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {recordActionBar} from '@xh/hoist/desktop/cmp/record';
 import {restGrid} from '@xh/hoist/desktop/cmp/rest';
-import {RestFormModel} from '@xh/hoist/desktop/cmp/rest/impl/RestFormModel';
+import type {RestFormModel} from '@xh/hoist/desktop/cmp/rest/impl/RestFormModel';
 import {toolbar, toolbarSep} from '@xh/hoist/desktop/cmp/toolbar';
 import {Icon} from '@xh/hoist/icon';
 import {differ} from '../../../differ/Differ';

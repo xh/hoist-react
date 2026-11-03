@@ -93,7 +93,7 @@ jobs:
           id: snapshot
           # Pinned to commit SHA of xh/hoist-dev-utils master at time of pinning.
           # Bumped by Dependabot when newer versions of the action are released.
-          uses: xh/hoist-dev-utils/.github/actions/prepare-npm-snapshot-version@f62ac663d8eaa6d1b371157e7796a74277d9bf82 # master
+          uses: xh/hoist-dev-utils/.github/actions/prepare-npm-snapshot-version@c65099c640ff360d0e7b068de6a3417421be9264 # master
           with:
               version: ${{ inputs.version }}
 
@@ -155,24 +155,39 @@ jobs:
         # was meant to carry. Poll until the registry itself resolves `next` to this run's version
         # before dispatching, so the deploy is not "done" until Toolbox can actually consume it.
         # Experimental runs poll their own tag, so the run still confirms the build is installable.
+        #
+        # npm can take 10+ minutes to make a new version resolvable. If it has not done so within
+        # 30 minutes, the step warns and skips the Toolbox trigger rather than failing the job - the
+        # build itself passed and published, so the commit should not show a red X. The step
+        # timeout and `continue-on-error` are a backstop for a hung `npm view`.
         - name: Wait for snapshot to be resolvable on npm
-          timeout-minutes: 10
+          id: wait-npm
+          timeout-minutes: 35
+          continue-on-error: true
           env:
               SNAPSHOT_VERSION: ${{ steps.snapshot.outputs.snapshot-version }}
           run: |
               echo "Waiting for @xh/hoist@$DIST_TAG to resolve to $SNAPSHOT_VERSION..."
               until [ "$(npm view "@xh/hoist@$DIST_TAG" version 2>/dev/null)" = "$SNAPSHOT_VERSION" ]; do
+                  if [ "$SECONDS" -ge 1800 ]; then
+                      MSG="@xh/hoist@$DIST_TAG did not resolve to $SNAPSHOT_VERSION within 30 minutes - Toolbox snapshot build NOT triggered."
+                      echo "::warning::$MSG"
+                      printf '\n⚠️ %s\n' "$MSG" >> "$GITHUB_STEP_SUMMARY"
+                      exit 0
+                  fi
                   echo "Not yet available - retrying in 10s"
                   sleep 10
               done
               echo "Confirmed: @xh/hoist@$DIST_TAG now resolves to $SNAPSHOT_VERSION"
+              echo "resolved=true" >> "$GITHUB_OUTPUT"
 
         # Mint a short-lived installation token for the org-owned "XH Build Bot" GitHub App, scoped
         # to the toolbox repo with Contents: write (required by the repository_dispatch endpoint).
         # Credentials live in the team 1Password vault under "GitHub App: XH Build Bot".
-        # This step and the trigger below are skipped for experimental runs - Toolbox tracks `next`.
+        # This step and the trigger below are skipped for experimental runs - Toolbox tracks `next` -
+        # and when the wait above gave up.
         - name: Mint Toolbox dispatch token
-          if: ${{ !inputs.experimental }}
+          if: ${{ !inputs.experimental && steps.wait-npm.outputs.resolved == 'true' }}
           id: toolbox-token
           uses: actions/create-github-app-token@v3
           with:
@@ -183,7 +198,7 @@ jobs:
               permission-contents: write
 
         - name: Trigger Toolbox snapshot build
-          if: ${{ !inputs.experimental }}
+          if: ${{ !inputs.experimental && steps.wait-npm.outputs.resolved == 'true' }}
           env:
               GH_TOKEN: ${{ steps.toolbox-token.outputs.token }}
           run: |

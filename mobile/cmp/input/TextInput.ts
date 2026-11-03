@@ -4,24 +4,19 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {
-    getPasswordManagerAttrs,
-    HoistInputModel,
-    HoistInputProps,
-    PasswordManagerSupportProps,
-    useHoistInputModel
-} from '@xh/hoist/cmp/input';
-import {box, hbox} from '@xh/hoist/cmp/layout';
-import {hoistCmp, HoistProps, LayoutProps, StyleProps} from '@xh/hoist/core';
+import type {HoistInputProps, PasswordManagerSupportProps} from '@xh/hoist/cmp/input';
+import {getPasswordManagerAttrs, HoistInputModel, useHoistInputModel} from '@xh/hoist/cmp/input';
+import {box, hbox, input} from '@xh/hoist/cmp/layout';
+import type {HoistProps, LayoutProps, StyleProps} from '@xh/hoist/core';
+import {hoistCmp} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
-import {input} from '@xh/hoist/kit/onsen';
 import {button} from '@xh/hoist/mobile/cmp/button';
 import '@xh/hoist/mobile/register';
 import {getTestId, TEST_ID, withDefault} from '@xh/hoist/utils/js';
 import {getLayoutProps} from '@xh/hoist/utils/react';
 import type {Property} from 'csstype';
 import {isEmpty} from 'lodash';
-import {ReactElement} from 'react';
+import type {ReactElement} from 'react';
 import './TextInput.scss';
 
 export interface TextInputProps
@@ -56,9 +51,6 @@ export interface TextInputProps
 
     /** Icon to display inline on the left side of the input. */
     leftIcon?: ReactElement;
-
-    /** Onsen modifier string */
-    modifier?: string;
 
     /** Text to display when control is empty */
     placeholder?: string;
@@ -163,18 +155,17 @@ const cmp = hoistCmp.factory<TextInputModel>(({model, className, ...props}, ref)
                     props.type === 'password' ? 'new-password' : 'off'
                 ),
                 disabled: props.disabled,
-                modifier: props.modifier,
                 placeholder: props.placeholder,
                 spellCheck: withDefault(props.spellCheck, false),
                 tabIndex: props.tabIndex,
-                type: props.type,
+                type: withDefault(props.type, 'text'),
                 className: 'xh-text-input__input',
                 style: {textAlign: withDefault(props.textAlign, 'left')},
                 [TEST_ID]: props.testId,
                 ...getPasswordManagerAttrs(props.enablePasswordManagers),
                 ...props.domAttrs,
 
-                onInput: model.onChange,
+                onChange: model.onChange,
                 onKeyDown: model.onKeyDown,
                 onBlur: model.onBlur,
                 onFocus: model.onFocus

@@ -4,15 +4,11 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
+import type {AppState, CallContext, HoistAppModel, IdentityInfo, InitContext} from '@xh/hoist/core';
 import {
     AppSpec,
-    AppState,
-    CallContext,
     createElement,
-    HoistAppModel,
     HoistModel,
-    IdentityInfo,
-    InitContext,
     managed,
     RootRefreshContextModel,
     TaskObserver,
@@ -21,7 +17,7 @@ import {
 import {Icon} from '@xh/hoist/icon';
 import {bindable, when as mobxWhen} from '@xh/hoist/mobx';
 import {never, wait} from '@xh/hoist/promise';
-import {ReactNode} from 'react';
+import type {ReactNode} from 'react';
 import {createRoot} from 'react-dom/client';
 import {
     AlertBannerService,

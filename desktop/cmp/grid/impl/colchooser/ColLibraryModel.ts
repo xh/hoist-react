@@ -4,10 +4,11 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {ColumnState, GridModel} from '@xh/hoist/cmp/grid';
+import type {ColumnState} from '@xh/hoist/cmp/grid';
+import {GridModel} from '@xh/hoist/cmp/grid';
 import type {Some} from '@xh/hoist/core';
 import {hoistCmp, HoistModel, managed} from '@xh/hoist/core';
-import {StoreRecordId} from '@xh/hoist/data';
+import type {StoreRecordId} from '@xh/hoist/data';
 import type {GridOptions, IRowNode, RowDragEndEvent} from '@xh/hoist/kit/ag-grid';
 import {castArray} from 'lodash';
 

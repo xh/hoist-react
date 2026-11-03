@@ -6,10 +6,11 @@
  */
 import {hoistCmp} from '@xh/hoist/core';
 import {FieldType} from '@xh/hoist/data';
-import {dateInput, DateInputProps} from '@xh/hoist/desktop/cmp/input';
+import type {DateInputProps} from '@xh/hoist/desktop/cmp/input';
+import {dateInput} from '@xh/hoist/desktop/cmp/input';
 import '@xh/hoist/desktop/register';
 import {warnIf} from '@xh/hoist/utils/js';
-import {EditorProps} from './EditorProps';
+import type {EditorProps} from './EditorProps';
 import './Editors.scss';
 import {useInlineEditorModel} from './impl/InlineEditorModel';
 

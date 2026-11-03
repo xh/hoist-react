@@ -4,23 +4,22 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {hspacer} from '@xh/hoist/cmp/layout';
-import {
+import {div, hspacer} from '@xh/hoist/cmp/layout';
+import type {
     DomAttrsProps,
     LayoutProps,
     StyleProps,
-    hoistCmp,
     HoistModel,
     HoistProps,
     TestSupportProps,
     Intent
 } from '@xh/hoist/core';
-import {button as onsenButton} from '@xh/hoist/kit/onsen';
+import {hoistCmp} from '@xh/hoist/core';
 import '@xh/hoist/mobile/register';
 import {TEST_ID} from '@xh/hoist/utils/js';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
-import {ReactNode, ReactElement, MouseEvent} from 'react';
+import type {ReactNode, ReactElement, MouseEvent} from 'react';
 import './Button.scss';
 
 export interface ButtonProps<M extends HoistModel = HoistModel>
@@ -34,13 +33,14 @@ export interface ButtonProps<M extends HoistModel = HoistModel>
     outlined?: boolean;
     text?: ReactNode;
     value?: any;
-    modifier?: string;
     tabIndex?: number;
 }
 
 /**
- * Wrapper around Onsen's Button component. Adds layout support for top-level sizing and
- * margin/padding props. Relays all other props supported by Onsen's Button.
+ * Button component for mobile.
+ *
+ * Renders a div with the button role rather than a native button, so it lays out as a block that
+ * fills its container and as a content-sized item in a flex row, like other Hoist containers.
  */
 export const [Button, button] = hoistCmp.withFactory<ButtonProps>({
     displayName: 'Button',
@@ -59,14 +59,15 @@ export const [Button, button] = hoistCmp.withFactory<ButtonProps>({
             domAttrs,
             icon,
             intent,
+            minimal,
             onClick,
+            outlined,
             style,
             testId,
             text,
             ...rest
         } = nonLayoutProps;
 
-        let {outlined, minimal} = nonLayoutProps;
         if (disabled) {
             classes.push('xh-button--disabled');
         } else {
@@ -92,11 +93,12 @@ export const [Button, button] = hoistCmp.withFactory<ButtonProps>({
             items.push(text);
         }
 
-        return onsenButton({
+        return div({
             ref,
+            role: 'button',
+            'aria-disabled': disabled || null,
             items,
-            onClick,
-            disabled,
+            onClick: disabled ? null : onClick,
             className: classNames(className, classes),
             style: {
                 ...style,
