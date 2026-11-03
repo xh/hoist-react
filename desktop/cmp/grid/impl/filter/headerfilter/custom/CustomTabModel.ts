@@ -5,16 +5,16 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {HoistModel, XH} from '@xh/hoist/core';
-import {
+import type {
     CompoundFilterOperator,
-    FieldFilter,
     FieldFilterOperator,
     FieldFilterSpec,
     FilterLike
 } from '@xh/hoist/data';
+import {FieldFilter} from '@xh/hoist/data';
 import {action, bindable, observableRef, computedStruct} from '@xh/hoist/mobx';
 import {compact, first, flatMap, forEach, groupBy, isArray, isEmpty, uniq} from 'lodash';
-import {HeaderFilterModel} from '../HeaderFilterModel';
+import type {HeaderFilterModel} from '../HeaderFilterModel';
 
 import {CustomRowModel, usesMultiValueInput} from './CustomRowModel';
 

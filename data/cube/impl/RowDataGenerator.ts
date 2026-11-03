@@ -5,10 +5,10 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
-import {PlainObject} from '@xh/hoist/core';
+import type {PlainObject} from '@xh/hoist/core';
 import {isEmpty, isEqual} from 'lodash';
 import type {View} from '../View';
-import {ViewRowData} from '../ViewRowData';
+import type {ViewRowData} from '../ViewRowData';
 
 /**
  * Generates the `ViewRowData` objects published by a View. Owned by its View, with

@@ -5,12 +5,12 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
-import {PlainObject} from '@xh/hoist/core';
-import {StoreRecord, StoreRecordId} from '@xh/hoist/data';
+import type {PlainObject} from '@xh/hoist/core';
+import type {StoreRecord, StoreRecordId} from '@xh/hoist/data';
 import {isEmpty} from 'lodash';
-import {CubeField} from '../CubeField';
-import {View} from '../View';
-import {ViewRowData} from '../ViewRowData';
+import type {CubeField} from '../CubeField';
+import type {View} from '../View';
+import type {ViewRowData} from '../ViewRowData';
 import {BaseRow, propagateUpdate} from './BaseRow';
 import {RowUpdate} from './RowUpdate';
 

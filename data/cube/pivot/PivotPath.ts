@@ -5,7 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
-import {CubeField} from '../CubeField';
+import type {CubeField} from '../CubeField';
 
 /**
  * One ordered tuple of pivot dimension values within a pivoted {@link View} result - e.g.

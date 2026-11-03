@@ -4,10 +4,11 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {HoistModel, ToastSpec} from '@xh/hoist/core';
+import type {ToastSpec} from '@xh/hoist/core';
+import {HoistModel} from '@xh/hoist/core';
 import {action, observable} from '@xh/hoist/mobx';
 import {SECONDS} from '@xh/hoist/utils/datetime';
-import {ReactNode, ReactElement} from 'react';
+import type {ReactNode, ReactElement} from 'react';
 
 /**
  * Model for a single instance of a pop-up Toast alert.

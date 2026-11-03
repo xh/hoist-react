@@ -5,7 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
-import {DomAttrsProps, TestSupportProps} from '@xh/hoist/core';
+import type {DomAttrsProps, TestSupportProps} from '@xh/hoist/core';
 
 export interface HoistInputProps extends TestSupportProps, DomAttrsProps {
     /**

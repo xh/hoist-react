@@ -6,14 +6,15 @@
  */
 import {AppModel} from '@xh/hoist/admin/AppModel';
 import * as Col from '@xh/hoist/admin/columns';
-import {MonitorTabModel} from '@xh/hoist/admin/tabs/monitor/MonitorTabModel';
+import type {MonitorTabModel} from '@xh/hoist/admin/tabs/monitor/MonitorTabModel';
 import {filler} from '@xh/hoist/cmp/layout';
 import {hoistCmp} from '@xh/hoist/core';
-import {FieldSpec} from '@xh/hoist/data';
+import type {FieldSpec} from '@xh/hoist/data';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {textArea} from '@xh/hoist/desktop/cmp/input';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
-import {restGrid, RestGridConfig} from '@xh/hoist/desktop/cmp/rest';
+import type {RestGridConfig} from '@xh/hoist/desktop/cmp/rest';
+import {restGrid} from '@xh/hoist/desktop/cmp/rest';
 import {Icon} from '@xh/hoist/icon';
 import {dialog} from '@xh/hoist/kit/blueprint';
 import {isEmpty} from 'lodash';

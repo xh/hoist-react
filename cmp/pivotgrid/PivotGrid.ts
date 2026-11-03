@@ -5,8 +5,9 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {grid} from '@xh/hoist/cmp/grid';
-import {hoistCmp, HoistProps, LayoutProps, TestSupportProps, uses} from '@xh/hoist/core';
-import {GridOptions} from '@xh/hoist/kit/ag-grid';
+import type { HoistProps, LayoutProps, TestSupportProps} from '@xh/hoist/core';
+import {hoistCmp, uses} from '@xh/hoist/core';
+import type {GridOptions} from '@xh/hoist/kit/ag-grid';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
 import {PivotGridModel} from './PivotGridModel';
 

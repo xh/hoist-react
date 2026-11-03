@@ -4,12 +4,12 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {ElementFactory} from '@xh/hoist/core';
-import {LocalDate} from '@xh/hoist/utils/datetime';
-import {MomentInput} from 'moment';
-import {Component, FunctionComponent, ReactElement} from 'react';
-import {DebounceSettings} from 'lodash';
-import {Route} from 'router5';
+import type {ElementFactory} from '@xh/hoist/core';
+import type {LocalDate} from '@xh/hoist/utils/datetime';
+import type {MomentInput} from 'moment';
+import type {Component, FunctionComponent, ReactElement} from 'react';
+import type {DebounceSettings} from 'lodash';
+import type {Route} from 'router5';
 
 /** Values available for intents. */
 export type Intent = 'primary' | 'success' | 'warning' | 'danger';

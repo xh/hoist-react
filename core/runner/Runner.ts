@@ -4,11 +4,13 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {CallContextLike, FullSpanConfig, Some, SpanConfig, TrackOptions, XH} from '@xh/hoist/core';
+import type {CallContextLike, FullSpanConfig, Some, SpanConfig, TrackOptions} from '@xh/hoist/core';
+import {XH} from '@xh/hoist/core';
 import {CallContext} from './CallContext';
-import {PromiseLinkSpec} from '@xh/hoist/promise';
-import {FetchOptions} from '@xh/hoist/svc';
-import {getLogLevel, NameSource, withDebug, withInfo} from '@xh/hoist/utils/js';
+import type {PromiseLinkSpec} from '@xh/hoist/promise';
+import type {FetchOptions} from '@xh/hoist/svc';
+import type {NameSource} from '@xh/hoist/utils/js';
+import {getLogLevel, withDebug, withInfo} from '@xh/hoist/utils/js';
 import {isString} from 'lodash';
 
 export type RunFunction<T> = (ctx: CallContext) => Promise<T>;

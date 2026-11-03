@@ -15,14 +15,8 @@ import {correctBounds} from 'react-grid-layout/core';
 import {GridBackground, type GridBackgroundProps, wrapCompactor} from 'react-grid-layout/extras';
 import {useComposedRefs, useOnResize} from '@xh/hoist/utils/react';
 import {div, vbox, vspacer} from '@xh/hoist/cmp/layout';
-import {
-    elementFactory,
-    hoistCmp,
-    HoistProps,
-    refreshContextView,
-    TestSupportProps,
-    uses
-} from '@xh/hoist/core';
+import type {HoistProps, TestSupportProps} from '@xh/hoist/core';
+import {elementFactory, hoistCmp, refreshContextView, uses} from '@xh/hoist/core';
 import {dashCanvasAddViewButton} from '@xh/hoist/desktop/cmp/button/DashCanvasAddViewButton';
 import '@xh/hoist/desktop/register';
 import {Classes, overlay, showContextMenu} from '@xh/hoist/kit/blueprint';

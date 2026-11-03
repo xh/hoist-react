@@ -5,8 +5,9 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {ChartModel} from '@xh/hoist/cmp/chart';
-import {HoistModel, lookup, managed, SelectOption} from '@xh/hoist/core';
-import {Cube, StoreRecord} from '@xh/hoist/data';
+import type {SelectOption} from '@xh/hoist/core';
+import {HoistModel, lookup, managed} from '@xh/hoist/core';
+import type {Cube, StoreRecord} from '@xh/hoist/data';
 import {bindable, computed} from '@xh/hoist/mobx';
 import {LocalDate} from '@xh/hoist/utils/datetime';
 import {pluralize} from '@xh/hoist/utils/js';

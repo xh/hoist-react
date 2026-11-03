@@ -5,12 +5,14 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import '@xh/hoist/desktop/register';
-import {HoistInputModel, HoistInputProps, useHoistInputModel} from '@xh/hoist/cmp/input';
+import type {HoistInputProps} from '@xh/hoist/cmp/input';
+import {HoistInputModel, useHoistInputModel} from '@xh/hoist/cmp/input';
 import {hoistCmp} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
-import {button, ButtonProps} from '@xh/hoist/desktop/cmp/button';
+import type {ButtonProps} from '@xh/hoist/desktop/cmp/button';
+import {button} from '@xh/hoist/desktop/cmp/button';
 import {withDefault} from '@xh/hoist/utils/js';
-import {ReactElement} from 'react';
+import type {ReactElement} from 'react';
 import './CheckboxButton.scss';
 
 export interface CheckboxButtonProps extends Omit<ButtonProps, 'onChange'>, HoistInputProps {

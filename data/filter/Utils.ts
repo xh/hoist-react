@@ -11,7 +11,7 @@ import {logError} from '@xh/hoist/utils/js';
 import {compact, escapeRegExp, flatMap, groupBy, isArray, isFunction} from 'lodash';
 import {FieldFilter} from './FieldFilter';
 import {Filter} from './Filter';
-import {FieldFilterSpec, FilterLike, FilterMatchMode} from './Types';
+import type {FieldFilterSpec, FilterLike, FilterMatchMode} from './Types';
 
 /**
  * Parse a filter from an object or array representation.

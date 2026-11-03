@@ -4,12 +4,13 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {Column, GridModel} from '@xh/hoist/cmp/grid';
+import type {Column} from '@xh/hoist/cmp/grid';
+import {GridModel} from '@xh/hoist/cmp/grid';
 import {PivotGridModel} from '@xh/hoist/cmp/pivotgrid';
 import {ZoneGridModel} from '@xh/hoist/cmp/zoneGrid';
 import {HoistModel, lookup} from '@xh/hoist/core';
-import type {FilterMatchMode, StoreRecord} from '@xh/hoist/data';
-import {appendFilter, getFilterRegex, Store} from '@xh/hoist/data';
+import type {FilterMatchMode, StoreRecord, Store} from '@xh/hoist/data';
+import {appendFilter, getFilterRegex} from '@xh/hoist/data';
 import {action, compareStructural, computed} from '@xh/hoist/mobx';
 import {stripTags, throwIf, warnIf} from '@xh/hoist/utils/js';
 import {
@@ -207,7 +208,7 @@ export class StoreFilterFieldImplModel extends HoistModel {
                 if (!cols) return [];
 
                 return cols.map(column => {
-                    const {renderer, getValueFn} = column;
+                    const {getValueFn, resolvedRenderer} = column;
                     return (record: StoreRecord) => {
                         const ctx = {
                                 record,
@@ -219,7 +220,7 @@ export class StoreFilterFieldImplModel extends HoistModel {
                             },
                             ret = getValueFn(ctx);
 
-                        return renderer ? stripTags(renderer(ret, ctx)) : ret;
+                        return resolvedRenderer ? stripTags(resolvedRenderer(ret, ctx)) : ret;
                     };
                 });
             }

@@ -4,7 +4,7 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {ToastModel} from '@xh/hoist/appcontainer/ToastModel';
+import type {ToastModel} from '@xh/hoist/appcontainer/ToastModel';
 import {ToastSourceModel} from '@xh/hoist/appcontainer/ToastSourceModel';
 import {hoistCmp, uses} from '@xh/hoist/core';
 import {wait} from '@xh/hoist/promise';

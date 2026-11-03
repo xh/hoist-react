@@ -5,7 +5,8 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {filler, fragment, hbox, vbox} from '@xh/hoist/cmp/layout';
-import {BoxProps, hoistCmp, HoistProps} from '@xh/hoist/core';
+import type {BoxProps, HoistProps} from '@xh/hoist/core';
+import {hoistCmp} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
@@ -14,7 +15,8 @@ import {filterConsecutiveToolbarSeparators} from '@xh/hoist/utils/impl';
 import {throwIf} from '@xh/hoist/utils/js';
 import classNames from 'classnames';
 import {isEmpty} from 'lodash';
-import {Children, ReactNode} from 'react';
+import type {ReactNode} from 'react';
+import {Children} from 'react';
 import './Toolbar.scss';
 import {toolbarSeparator} from './ToolbarSep';
 

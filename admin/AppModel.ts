@@ -5,13 +5,15 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {GridModel} from '@xh/hoist/cmp/grid';
-import {TabConfig, TabContainerModel} from '@xh/hoist/cmp/tab';
+import type {TabConfig} from '@xh/hoist/cmp/tab';
+import {TabContainerModel} from '@xh/hoist/cmp/tab';
 import {ViewManagerModel} from '@xh/hoist/cmp/viewmanager';
-import {HoistAppModel, HoistRoute, InitContext, XH} from '@xh/hoist/core';
+import type {HoistRoute, InitContext} from '@xh/hoist/core';
+import {HoistAppModel, XH} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {SECONDS} from '@xh/hoist/utils/datetime';
 import {without} from 'lodash';
-import {RoleModuleConfig} from './tabs/userData/roles/Types';
+import type {RoleModuleConfig} from './tabs/userData/roles/Types';
 import {activityTrackingPanel} from './tabs/activity/tracking/ActivityTrackingPanel';
 import {clientsPanel} from './tabs/clients/ClientsPanel';
 import {monitorTab} from './tabs/monitor/MonitorTab';

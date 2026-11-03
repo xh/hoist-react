@@ -4,7 +4,8 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {hoistCmp, BoxProps, setCmpErrorDisplay, HoistProps} from '@xh/hoist/core';
+import type {BoxProps, HoistProps} from '@xh/hoist/core';
+import {hoistCmp, setCmpErrorDisplay} from '@xh/hoist/core';
 import {box} from '@xh/hoist/cmp/layout';
 import './Placeholder.scss';
 

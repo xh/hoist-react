@@ -4,10 +4,12 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {AppOptionSpec, SizingMode, XH} from '@xh/hoist/core';
-import {segmentedControl, SegmentedControlProps} from '@xh/hoist/mobile/cmp/input';
+import type {AppOptionSpec} from '@xh/hoist/core';
+import {SizingMode, XH} from '@xh/hoist/core';
+import type {SegmentedControlProps} from '@xh/hoist/mobile/cmp/input';
+import {segmentedControl} from '@xh/hoist/mobile/cmp/input';
 import {startCase, values} from 'lodash';
-import {FormFieldProps} from '../form/FormField';
+import type {FormFieldProps} from '../form/FormField';
 import '@xh/hoist/mobile/register';
 
 interface SizingModeAppOptionSpec {

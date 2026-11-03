@@ -6,8 +6,8 @@
  */
 import {span} from '@xh/hoist/cmp/layout';
 import {capitalize, isNil, isString, kebabCase, map} from 'lodash';
-import {CSSProperties, ReactNode} from 'react';
-import {PlainObject} from '@xh/hoist/core';
+import type {CSSProperties, ReactNode} from 'react';
+import type {PlainObject} from '@xh/hoist/core';
 
 export interface FormatOptions<T = any> {
     /** Display value for null values. */

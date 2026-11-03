@@ -6,8 +6,8 @@
  */
 import {HoistModel} from '@xh/hoist/core';
 import {action, observableRef} from '@xh/hoist/mobx';
-import {DifferModel} from './DifferModel';
-import {StoreRecord} from '@xh/hoist/data';
+import type {DifferModel} from './DifferModel';
+import type {StoreRecord} from '@xh/hoist/data';
 import {isEqual} from 'lodash';
 
 /**

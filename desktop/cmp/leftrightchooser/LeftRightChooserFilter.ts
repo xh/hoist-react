@@ -4,7 +4,8 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {hoistCmp, HoistModel, HoistProps, lookup, useLocalModel, uses} from '@xh/hoist/core';
+import type {HoistProps} from '@xh/hoist/core';
+import {hoistCmp, HoistModel, lookup, useLocalModel, uses} from '@xh/hoist/core';
 import type {FilterMatchMode} from '@xh/hoist/data';
 import {getFilterRegex} from '@xh/hoist/data';
 import {textInput} from '@xh/hoist/desktop/cmp/input';

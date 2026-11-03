@@ -5,7 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import * as Col from '@xh/hoist/cmp/grid/columns';
-import {ColumnSpec} from '@xh/hoist/cmp/grid/columns';
+import type {ColumnSpec} from '@xh/hoist/cmp/grid/columns';
 import {Icon} from '@xh/hoist/icon';
 
 export const createdTime: ColumnSpec = {

@@ -9,8 +9,8 @@ import {throwIf} from '@xh/hoist/utils/js';
 import {parseFilter} from './Utils';
 import {Filter} from './Filter';
 import {compact, every, isEmpty, isEqualWith} from 'lodash';
-import {Store} from '../Store';
-import {CompoundFilterSpec, CompoundFilterOperator, FilterTestFn} from './Types';
+import type {Store} from '../Store';
+import type {CompoundFilterSpec, CompoundFilterOperator, FilterTestFn} from './Types';
 
 /**
  * Combines multiple filters (including other nested CompoundFilters) via an `AND` or `OR` operator.

@@ -7,4 +7,4 @@
 export * from './DateRangePickerModel';
 export * from './DateRangePresets';
 export * from './DateRangeUtils';
-export * from './Types';
+export type * from './Types';

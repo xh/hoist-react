@@ -5,7 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
-import {SetOptional} from '@xh/hoist/core';
+import type {SetOptional} from '@xh/hoist/core';
 import type {ViewRow} from './ViewRow';
 
 /**

@@ -11,7 +11,7 @@ import {Icon} from '@xh/hoist/icon';
 import {popover} from '@xh/hoist/kit/blueprint';
 import {isEmpty} from 'lodash';
 import {createViewSpecMenuItems} from '../../impl/DashUtils';
-import {DashContainerModel} from '../DashContainerModel';
+import type {DashContainerModel} from '../DashContainerModel';
 
 /**
  * Context menu for title bar/tabs of a stack in a DashContainer.
