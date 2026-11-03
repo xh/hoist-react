@@ -5,7 +5,8 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {div} from '@xh/hoist/cmp/layout';
-import {tabContainer, TabContainerModel, TabContainerProps} from '@xh/hoist/cmp/tab';
+import type {TabContainerProps} from '@xh/hoist/cmp/tab';
+import {tabContainer, TabContainerModel} from '@xh/hoist/cmp/tab';
 import {initTestAppAsync} from '@xh/hoist/test-support';
 import {act, fireEvent, render, screen} from '@testing-library/react';
 import {beforeAll, describe, expect, it, onTestFinished, vi} from 'vitest';

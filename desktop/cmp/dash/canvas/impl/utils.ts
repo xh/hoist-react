@@ -5,9 +5,9 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
-import {type MenuItemLike} from '@xh/hoist/core';
+import type {MenuItemLike} from '@xh/hoist/core';
 import {createViewSpecMenuItems} from '../../impl/DashUtils';
-import {DashCanvasModel} from '../DashCanvasModel';
+import type {DashCanvasModel} from '../DashCanvasModel';
 
 /**
  * Used to create view menu items (for adding or replacing views)

@@ -5,15 +5,14 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
-import {PlainObject} from '@xh/hoist/core';
+import type {PlainObject} from '@xh/hoist/core';
+import type {AggregationContext, FieldSpec} from '@xh/hoist/data';
 import {
-    AggregationContext,
     Aggregator,
     AverageAggregator,
     AverageStrictAggregator,
     ChildCountAggregator,
     Field,
-    FieldSpec,
     LeafCountAggregator,
     MaxAggregator,
     MinAggregator,

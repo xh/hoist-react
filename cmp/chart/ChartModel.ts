@@ -4,10 +4,11 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {type MouseEvent} from 'react';
+import type {MouseEvent} from 'react';
 import type {ChartContextMenuSpec, ChartMenuToken} from '@xh/hoist/cmp/chart/Types';
 import {getContextMenuItems} from '@xh/hoist/cmp/chart/impl/ChartContextMenuItems';
-import {HoistModel, PlainObject, Some, XH} from '@xh/hoist/core';
+import type {PlainObject, Some} from '@xh/hoist/core';
+import {HoistModel, XH} from '@xh/hoist/core';
 import {action, computed, observableRef} from '@xh/hoist/mobx';
 import {castArray, cloneDeep, isEmpty, isFunction, isNil} from 'lodash';
 import {mergeDeep} from '@xh/hoist/utils/js';

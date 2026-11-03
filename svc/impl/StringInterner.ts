@@ -5,7 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
-import {PlainObject, Some} from '@xh/hoist/core';
+import type {PlainObject, Some} from '@xh/hoist/core';
 import {isArray, isPlainObject, isString, round} from 'lodash';
 import type {StringInternSpec} from '../FetchService';
 

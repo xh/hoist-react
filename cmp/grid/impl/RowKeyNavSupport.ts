@@ -5,7 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
-import {GridModel} from '../GridModel';
+import type {GridModel} from '../GridModel';
 
 import type {CellPosition, NavigateToNextCellParams} from '@xh/hoist/kit/ag-grid';
 

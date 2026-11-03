@@ -5,15 +5,8 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {box, span} from '@xh/hoist/cmp/layout';
-import {
-    BoxProps,
-    hoistCmp,
-    HoistModel,
-    HoistProps,
-    managed,
-    useLocalModel,
-    XH
-} from '@xh/hoist/core';
+import type {BoxProps, HoistProps} from '@xh/hoist/core';
+import {hoistCmp, HoistModel, managed, useLocalModel, XH} from '@xh/hoist/core';
 import {fmtCompactDate, fmtDateTime} from '@xh/hoist/format';
 import {action, observable, computedStruct} from '@xh/hoist/mobx';
 import {Timer} from '@xh/hoist/utils/async';

@@ -4,7 +4,8 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {CallContextLike, HoistModel, HoistUser, IdentityInfo, PlainObject, XH} from './';
+import type {CallContextLike, HoistUser, IdentityInfo, PlainObject} from './';
+import {HoistModel, XH} from './';
 
 /**
  *  Base class for managing authentication lifecycle.

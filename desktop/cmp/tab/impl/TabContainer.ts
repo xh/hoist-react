@@ -5,8 +5,8 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {div, hbox, placeholder, vbox} from '@xh/hoist/cmp/layout';
-import {TabContainerModel, TabContainerProps} from '@xh/hoist/cmp/tab';
-import {TabSwitcherProps} from '@xh/hoist/cmp/tab/Types';
+import type {TabContainerModel, TabContainerProps} from '@xh/hoist/cmp/tab';
+import type {TabSwitcherProps} from '@xh/hoist/cmp/tab/Types';
 import {getTestId} from '@xh/hoist/utils/js';
 import {getLayoutProps} from '@xh/hoist/utils/react';
 import {isEmpty, isNull, isObject} from 'lodash';

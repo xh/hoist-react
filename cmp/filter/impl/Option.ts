@@ -7,7 +7,7 @@
 
 import {parseFieldValue} from '@xh/hoist/data';
 import {isNil} from 'lodash';
-import {FilterChooserFieldSpec} from '../FilterChooserFieldSpec';
+import type {FilterChooserFieldSpec} from '../FilterChooserFieldSpec';
 
 export interface FilterChooserOption {
     /**

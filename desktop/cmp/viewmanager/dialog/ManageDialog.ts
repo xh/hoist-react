@@ -6,7 +6,8 @@
  */
 
 import {card} from '@xh/hoist/cmp/card';
-import {grid, GridModel} from '@xh/hoist/cmp/grid';
+import type {GridModel} from '@xh/hoist/cmp/grid';
+import {grid} from '@xh/hoist/cmp/grid';
 import {filler, fragment, hframe, placeholder, vframe} from '@xh/hoist/cmp/layout';
 import {storeFilterField} from '@xh/hoist/cmp/store';
 import {tabContainer} from '@xh/hoist/cmp/tab';

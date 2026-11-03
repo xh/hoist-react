@@ -5,15 +5,15 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
-import {PlainObject} from '@xh/hoist/core';
+import type {PlainObject} from '@xh/hoist/core';
 import {shallowEqualArrays, shallowEqualObjects} from '@xh/hoist/utils/impl';
 import {isEmpty} from 'lodash';
-import {BucketSpec} from '../BucketSpec';
-import {CubeField} from '../CubeField';
-import {View} from '../View';
-import {ViewRowData} from '../ViewRowData';
+import type {BucketSpec} from '../BucketSpec';
+import type {CubeField} from '../CubeField';
+import type {View} from '../View';
+import type {ViewRowData} from '../ViewRowData';
 import {BaseRow} from './BaseRow';
-import {RowUpdate} from './RowUpdate';
+import type {RowUpdate} from './RowUpdate';
 
 /**
  * Row within a dataset produced by a Cube / View that aggregates values from its children. Holds

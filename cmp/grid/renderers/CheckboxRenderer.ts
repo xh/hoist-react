@@ -4,10 +4,10 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {Intent} from '@xh/hoist/core';
+import type {Intent} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {isNil} from 'lodash';
-import {ReactNode} from 'react';
+import type {ReactNode} from 'react';
 
 /**
  * Renderer for boolean values that displays a solid "checked" checkbox for true and a corresponding

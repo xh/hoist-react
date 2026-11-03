@@ -7,11 +7,12 @@
 import {withDefault} from '@xh/hoist/utils/js';
 import {isNil} from 'lodash';
 import {useEffect} from 'react';
-import {CustomCellEditorProps} from '@xh/hoist/kit/ag-grid';
+import type {CustomCellEditorProps} from '@xh/hoist/kit/ag-grid';
 import {hoistCmp} from '@xh/hoist/core';
-import {numberInput, NumberInputProps} from '@xh/hoist/desktop/cmp/input';
+import type {NumberInputProps} from '@xh/hoist/desktop/cmp/input';
+import {numberInput} from '@xh/hoist/desktop/cmp/input';
 import '@xh/hoist/desktop/register';
-import {EditorProps} from './EditorProps';
+import type {EditorProps} from './EditorProps';
 import './Editors.scss';
 import {useInlineEditorModel} from './impl/InlineEditorModel';
 

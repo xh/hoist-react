@@ -6,8 +6,8 @@
  */
 import {PersistableState, PersistenceProvider, persistOptions} from '@xh/hoist/core';
 import {isObject} from 'lodash';
-import {ZoneGridModel} from '../ZoneGridModel';
-import {ZoneGridModelPersistOptions} from '../Types';
+import type {ZoneGridModel} from '../ZoneGridModel';
+import type {ZoneGridModelPersistOptions} from '../Types';
 
 /**
  * Initialize persistence for a {@link ZoneGridModel} by applying its `persistWith` config.

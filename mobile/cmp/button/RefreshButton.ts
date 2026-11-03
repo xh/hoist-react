@@ -4,9 +4,11 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {hoistCmp, Loadable, RefreshContextModel, useContextModel} from '@xh/hoist/core';
+import type {Loadable} from '@xh/hoist/core';
+import {hoistCmp, RefreshContextModel, useContextModel} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
-import {button, ButtonProps} from '@xh/hoist/mobile/cmp/button';
+import type {ButtonProps} from '@xh/hoist/mobile/cmp/button';
+import {button} from '@xh/hoist/mobile/cmp/button';
 import '@xh/hoist/mobile/register';
 
 export interface RefreshButtonProps extends ButtonProps {

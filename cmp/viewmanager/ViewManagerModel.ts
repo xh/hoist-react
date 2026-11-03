@@ -6,18 +6,17 @@
  */
 
 import {fragment, strong, p, span} from '@xh/hoist/cmp/layout';
-import {
+import {HoistModel, TaskObserver, XH} from '@xh/hoist/core';
+import type {
+    ViewManagerProvider,
+    ReactionSpec,
     CallContext,
     CallContextLike,
     ExceptionHandlerOptions,
-    HoistModel,
     LoadSpec,
     PlainObject,
-    TaskObserver,
-    Thunkable,
-    XH
+    Thunkable
 } from '@xh/hoist/core';
-import type {ViewManagerProvider, ReactionSpec} from '@xh/hoist/core';
 import {genDisplayName} from '@xh/hoist/data';
 import {fmtDateTime} from '@xh/hoist/format';
 import {
@@ -43,9 +42,9 @@ import {
     remove,
     uniqBy
 } from 'lodash';
-import {ReactNode} from 'react';
-import {ViewInfo} from './ViewInfo';
-import {View} from './View';
+import type {ReactNode} from 'react';
+import type {ViewInfo} from './ViewInfo';
+import type {View} from './View';
 import {DataAccess} from './DataAccess';
 
 export interface ViewCreateSpec {

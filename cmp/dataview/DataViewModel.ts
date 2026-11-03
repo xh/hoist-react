@@ -4,12 +4,11 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {RowClickedEvent, RowDoubleClickedEvent, RowHeightParams} from '@xh/hoist/kit/ag-grid';
-import {
+import type {RowClickedEvent, RowDoubleClickedEvent, RowHeightParams} from '@xh/hoist/kit/ag-grid';
+import type {
     ColumnRenderer,
     ColumnSpec,
     GridConfig,
-    GridModel,
     GroupRowRenderer,
     RowClassFn,
     RowClassRuleFn,
@@ -17,8 +16,10 @@ import {
     GridContextMenuSpec,
     GridGroupSortFn
 } from '@xh/hoist/cmp/grid';
-import {HoistModel, LoadSpec, managed, PlainObject, Some} from '@xh/hoist/core';
-import {
+import {GridModel} from '@xh/hoist/cmp/grid';
+import type {LoadSpec, PlainObject, Some} from '@xh/hoist/core';
+import {HoistModel, managed} from '@xh/hoist/core';
+import type {
     Store,
     StoreConfig,
     StoreRecord,
@@ -30,7 +31,7 @@ import {
 import {bindable, bindableRef} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
 import {isFunction, isNumber} from 'lodash';
-import {ReactNode} from 'react';
+import type {ReactNode} from 'react';
 
 /**
  * Configuration for a {@link DataViewModel} - a list-style data component that renders

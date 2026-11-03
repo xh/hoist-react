@@ -1,10 +1,10 @@
-import {CardModel} from '@xh/hoist/cmp/card/CardModel';
+import type {CardModel} from '@xh/hoist/cmp/card/CardModel';
 import {div, fragment, legend} from '@xh/hoist/cmp/layout';
 import {hoistCmp} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {button} from '@xh/hoist/mobile/cmp/button';
 import {warnIf} from '@xh/hoist/utils/js';
-import {ReactNode} from 'react';
+import type {ReactNode} from 'react';
 
 /**
  * Mobile implementation of CardHeader.
