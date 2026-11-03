@@ -4,11 +4,10 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {AgGridModel, AgGridThemeParams} from '@xh/hoist/cmp/ag-grid';
-import {
-    Column,
+import type {AgGridThemeParams} from '@xh/hoist/cmp/ag-grid';
+import {AgGridModel} from '@xh/hoist/cmp/ag-grid';
+import type {
     ColumnCellClassRuleFn,
-    ColumnGroup,
     ColumnGroupSpec,
     ColumnOrGroup,
     ColumnOrGroupSpec,
@@ -17,45 +16,39 @@ import {
     GridFilterModelConfig,
     GridGroupSortFn,
     IColChooserModel,
-    isColumnSpec,
     TreeStyle
 } from '@xh/hoist/cmp/grid';
+import {Column, ColumnGroup, isColumnSpec} from '@xh/hoist/cmp/grid';
 import {GridFilterModel} from '@xh/hoist/cmp/grid/filter/GridFilterModel';
 import {fragment, p} from '@xh/hoist/cmp/layout';
-import {
+import type {
     Awaitable,
-    HoistModel,
     HSide,
     LoadSpec,
-    managed,
     PlainObject,
     SizingMode,
     Some,
-    TaskObserver,
     Thunkable,
-    VSide,
-    XH
+    VSide
 } from '@xh/hoist/core';
-import {
+import {HoistModel, managed, TaskObserver, XH} from '@xh/hoist/core';
+import type {
     Field,
     FieldSpec,
-    getFieldName,
-    Store,
     StoreConfig,
-    StoreRecord,
     StoreRecordId,
     StoreRecordOrId,
     StoreSelectionConfig,
-    StoreSelectionModel,
     StoreTransaction
 } from '@xh/hoist/data';
+import {getFieldName, Store, StoreRecord, StoreSelectionModel} from '@xh/hoist/data';
 import {
     DockedColChooserModel as DesktopDockedColChooserModel,
     ModalColChooserModel as DesktopModalColChooserModel
 } from '@xh/hoist/dynamics/desktop';
 import {ColChooserModel as MobileColChooserModel} from '@xh/hoist/dynamics/mobile';
 import {Icon} from '@xh/hoist/icon';
-import {
+import type {
     AgColumnState,
     CellClickedEvent,
     CellContextMenuEvent,
@@ -77,7 +70,7 @@ import {
     computed
 } from '@xh/hoist/mobx';
 import {wait, waitFor} from '@xh/hoist/promise';
-import {ExportOptions} from '@xh/hoist/svc/GridExportService';
+import type {ExportOptions} from '@xh/hoist/svc/GridExportService';
 import {SECONDS} from '@xh/hoist/utils/datetime';
 import {
     apiDeprecated,
@@ -117,19 +110,21 @@ import {
     take,
     uniqBy
 } from 'lodash';
-import {createRef, ReactNode, RefObject} from 'react';
-import {GridAutosizeOptions} from './GridAutosizeOptions';
+import type {ReactNode, RefObject} from 'react';
+import {createRef} from 'react';
+import type {GridAutosizeOptions} from './GridAutosizeOptions';
 import {GridModelDiagnostics} from './impl/GridModelDiagnostics';
-import {
+import type {
     GridContextMenuItemLike,
     GridContextMenuSpec,
     GridHeaderContextMenuSpec
 } from './GridContextMenu';
-import {GridSorter, GridSorterLike} from './GridSorter';
+import type {GridSorterLike} from './GridSorter';
+import {GridSorter} from './GridSorter';
 import {computeSortedRecords} from './impl/RecordSortUtils';
 import {initPersist} from './impl/InitPersist';
-import {managedRenderer} from './impl/Utils';
-import {
+import {withErrorCell} from './impl/Utils';
+import type {
     ColChooserConfig,
     ColChooserMode,
     ColumnGroupState,
@@ -158,7 +153,10 @@ export interface GridConfig {
     /** Columns for this grid. */
     columns?: ColumnOrGroupSpec[];
 
-    /**  Column configs to be set on all columns.  Merges deeply. */
+    /**
+     * Column configs to be set on all columns. Merges deeply, except that a column with its own
+     * `renderer` or `textRenderer` takes neither from the defaults.
+     */
     colDefaults?: Partial<ColumnSpec>;
 
     /**
@@ -768,7 +766,7 @@ export class GridModel extends HoistModel {
         this.rowClassFn = rowClassFn;
         this.rowClassRules = rowClassRules;
         this.groupRowHeight = groupRowHeight;
-        this.groupRowRenderer = managedRenderer(groupRowRenderer, 'GROUP_ROW');
+        this.groupRowRenderer = withErrorCell(groupRowRenderer, 'GROUP_ROW');
         this.groupSortFn = withDefault(groupSortFn, this.defaultGroupSortFn);
         this.showGroupRowCounts = showGroupRowCounts;
         this.contextMenu = this.parseContextMenu(contextMenu);
@@ -816,7 +814,7 @@ export class GridModel extends HoistModel {
 
         Object.assign(this, rest);
 
-        this.colDefaults = defaultsDeep({}, colDefaults, GridModel.defaults.colDefaults);
+        this.colDefaults = this.withColDefaults(colDefaults, GridModel.defaults.colDefaults);
         this.parseAndSetColumnsAndStore(columns, store);
 
         this.setGroupBy(groupBy);
@@ -917,6 +915,8 @@ export class GridModel extends HoistModel {
     /**
      * Export grid data using ag-Grid's built-in client-side export.
      *
+     * Cells export their raw value, as copy and {@link exportAsync} do.
+     *
      * @param filename - name for exported file.
      * @param type - type of export - either 'excel' or 'csv'.
      * @param params - passed to agGrid's export functions.
@@ -928,7 +928,8 @@ export class GridModel extends HoistModel {
             {...params},
             {
                 fileName: filename,
-                processCellCallback: this.formatValuesForExport
+                // ag-Grid would otherwise apply a column's `valueFormatter`.
+                processCellCallback: ({value}) => value
             }
         );
 
@@ -1864,12 +1865,8 @@ export class GridModel extends HoistModel {
     // Implementation
     //-----------------------
     private buildColumn(config: ColumnOrGroupSpec, borderedGroup?: ColumnGroupSpec): ColumnOrGroup {
-        // Merge leaf config with defaults.
-        // Ensure *any* tooltip setting on column itself always wins.
         if (this.colDefaults && !this.isGroupSpec(config)) {
-            let colDefaults = {...this.colDefaults};
-            if (config.tooltip) colDefaults.tooltip = null;
-            config = defaultsDeep({}, config, colDefaults);
+            config = this.withColDefaults(config, this.colDefaults);
         }
 
         const omit = executeIfFunction(config.omit);
@@ -1886,6 +1883,21 @@ export class GridModel extends HoistModel {
         }
 
         return new Column(config, this);
+    }
+
+    private withColDefaults(
+        config: Partial<ColumnSpec>,
+        defaults: Partial<ColumnSpec>
+    ): Partial<ColumnSpec> {
+        // A config's own tooltip, renderer or text renderer blocks the default, and is never
+        // deep-merged with it.
+        const {tooltip, renderer, textRenderer} = config ?? {};
+        if (tooltip || renderer || textRenderer) {
+            defaults = {...defaults};
+            if (tooltip) defaults.tooltip = null;
+            if (renderer || textRenderer) defaults.renderer = defaults.textRenderer = null;
+        }
+        return defaultsDeep({}, config, defaults);
     }
 
     @sharePendingPromise
@@ -1948,16 +1960,8 @@ export class GridModel extends HoistModel {
         return ids;
     }
 
-    private formatValuesForExport(params) {
-        const value = params.value,
-            fmt = params.column.colDef.valueFormatter;
-        if (value !== null && fmt) {
-            return fmt(value);
-        } else {
-            return value;
-        }
-    }
-
+    // Export the formatted text, but keep numbers raw for Excel, which types each cell from the
+    // value returned here.
     // Store fields and column configs have a tricky bi-directional relationship in GridModel,
     // both for historical reasons and developer convenience.
     //

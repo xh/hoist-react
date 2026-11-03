@@ -4,7 +4,7 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {Some} from '@xh/hoist/core';
+import type {Some} from '@xh/hoist/core';
 import type {FieldSpec} from '@xh/hoist/data';
 import {flatMap} from 'lodash';
 

@@ -5,17 +5,19 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
-import {PlainObject} from '@xh/hoist/core';
-import {Field, Store, StoreRecord} from '@xh/hoist/data';
+import type {PlainObject} from '@xh/hoist/core';
+import type {Store, StoreRecord} from '@xh/hoist/data';
+import {Field} from '@xh/hoist/data';
 import {throwIf} from '@xh/hoist/utils/js';
 import {isEmpty} from 'lodash';
-import {CubeField} from '../../CubeField';
-import {PivotCellField, PivotPath} from '../PivotPath';
+import type {CubeField} from '../../CubeField';
+import type {PivotCellField} from '../PivotPath';
+import {PivotPath} from '../PivotPath';
 import {BaseRow} from '../../row/BaseRow';
-import {LeafRow} from '../../row/LeafRow';
+import type {LeafRow} from '../../row/LeafRow';
 import {PivotCellRow} from '../PivotCellRow';
 import type {View} from '../../View';
-import {ViewRowData} from '../../ViewRowData';
+import type {ViewRowData} from '../../ViewRowData';
 import {
     buildPivotStructure,
     CHILD_KIND_LEAF,
@@ -25,7 +27,7 @@ import {
     type PivotPathDiscoveryResult,
     type PivotPathSpec
 } from './PivotStructure';
-import {PivotPhases} from '../../impl/ViewDiagnostics';
+import type {PivotPhases} from '../../impl/ViewDiagnostics';
 
 /**
  * Pivot support for a {@link View} whose query sets {@link QueryConfig.pivot}.

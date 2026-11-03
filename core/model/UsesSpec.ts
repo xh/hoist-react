@@ -4,7 +4,8 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {HoistModel, ModelSelector, ensureIsSelector, ModelPublishMode} from './';
+import type {HoistModel, ModelSelector, ModelPublishMode} from './';
+import {ensureIsSelector} from './';
 
 /**
  * Returns a ModelSpec to define how a functional HoistComponent should source its primary backing

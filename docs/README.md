@@ -104,7 +104,7 @@ See [`docs-roadmap.md`](./planning/docs-roadmap.md) for documentation coverage t
 
 | Package | Description | Key Topics |
 |---------|-------------|------------|
-| [`/format/`](../format/README.md) | Number, date, and miscellaneous formatting for grids and display | fmtNumber, fmtPercent, fmtMillions, numberRenderer, dateRenderer, ledger, colorSpec, auto-precision, localization |
+| [`/format/`](../format/README.md) | Number, date, and miscellaneous formatting for grids and display | fmtNumber, fmtPercent, fmtMillions, numberRenderer, dateRenderer, numberTextRenderer, dateTextRenderer, ledger, colorSpec, auto-precision, localization |
 | [`/appcontainer/`](../appcontainer/README.md) | Application shell — lifecycle, dialogs, toasts, banners, theming, and environment | AppContainerModel, MessageSpec, ToastSpec, BannerSpec, ExceptionDialogModel, ThemeModel, RouterModel, AppOption |
 | [`/utils/`](../utils/README.md) | Async, datetime, JS, and React utility functions used throughout hoist-react | Timer, LocalDate, forEachAsync, decorators (@debounced, @computeOnce, @sharePendingPromise), logging, hooks |
 | [`/promise/`](../promise/README.md) | Promise prototype extensions for error handling, tracking, masking, and timeouts | catchDefault, catchWhen, track, linkTo, timeout, thenAction, wait, waitFor, tap |
@@ -176,7 +176,7 @@ breaking changes, before/after code examples, and verification checklists.
 
 | Version | Released | Difficulty | Key Changes |
 |---------|----------|------------|-------------|
-| [v90](./upgrade-notes/v90-upgrade-notes.md) | TBD | 🟢 LOW | numbro removed - `NumberFormatOptions.formatConfig` no longer supported |
+| [v90](./upgrade-notes/v90-upgrade-notes.md) | 2026-11-02 | 🟢 LOW | numbro removed (`formatConfig`), desktop `DateInput` on react-day-picker 10, Onsen UI removed from mobile, `Column.textRenderer` on built-in column specs, panel splitter redesign, renderer import paths, removed libraries |
 | [v89](./upgrade-notes/v89-upgrade-notes.md) | 2026-10-13 | 🟢 LOW | TypeScript 7 (strongly recommended), `GridFilterModelConfig.fieldSpecs` no longer an allow-list |
 | [v88](./upgrade-notes/v88-upgrade-notes.md) | 2026-09-28 | 🔴 HIGH | TC39 decorators (`accessor`, no `makeObservable`) + dev-utils 16 / Rsbuild, MobX 7 named exports, AG Grid 36 + Theming API, React 19.3, v86 scheduled removals |
 | [v87](./upgrade-notes/v87-upgrade-notes.md) | TBD | 🟠 MEDIUM | React 19 + Floating UI popovers, data-layer perf overhaul (`leafMap`, `getCubeLeaves`, `StoreRecord.data` access), new column chooser + `RowDragModule`, hoist-core >= 40.5.0 |

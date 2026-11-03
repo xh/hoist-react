@@ -5,8 +5,9 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {box} from '@xh/hoist/cmp/layout';
-import {BoxProps, hoistCmp, HoistProps} from '@xh/hoist/core';
-import {Store} from '@xh/hoist/data';
+import type {BoxProps, HoistProps} from '@xh/hoist/core';
+import {hoistCmp} from '@xh/hoist/core';
+import type {Store} from '@xh/hoist/data';
 import {fmtNumber} from '@xh/hoist/format';
 import {pluralize, singularize} from '@xh/hoist/utils/js';
 

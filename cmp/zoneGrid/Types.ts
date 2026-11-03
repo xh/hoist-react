@@ -5,8 +5,8 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
-import {Column, ColumnRenderer, ColumnSortSpec} from '@xh/hoist/cmp/grid';
-import {PersistOptions} from '@xh/hoist/core';
+import type {Column, ColumnRenderer, ColumnSortSpec} from '@xh/hoist/cmp/grid';
+import type {PersistOptions} from '@xh/hoist/core';
 
 export type Zone = 'tl' | 'tr' | 'bl' | 'br';
 
@@ -30,7 +30,7 @@ export interface ZoneField {
     field: string;
     displayName: string;
     label: string;
-    renderer: ColumnRenderer;
+    resolvedRenderer: ColumnRenderer;
     column: Column;
     chooserGroup: string;
     sortable: boolean;

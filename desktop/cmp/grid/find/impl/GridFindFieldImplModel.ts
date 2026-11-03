@@ -4,14 +4,15 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {Column, GridModel} from '@xh/hoist/cmp/grid';
-import {PivotGridModel} from '@xh/hoist/cmp/pivotgrid';
+import type {Column} from '@xh/hoist/cmp/grid';
+import {GridModel} from '@xh/hoist/cmp/grid';
+import type {PivotGridModel} from '@xh/hoist/cmp/pivotgrid';
 import {isGridLikeModel} from '@xh/hoist/cmp/store/impl/StoreFilterFieldImplModel';
 import {ZoneGridModel} from '@xh/hoist/cmp/zoneGrid';
 import {HoistModel} from '@xh/hoist/core';
 import type {FilterMatchMode, StoreRecord} from '@xh/hoist/data';
 import {getFilterRegex} from '@xh/hoist/data';
-import {TextInputModel} from '@xh/hoist/desktop/cmp/input';
+import type {TextInputModel} from '@xh/hoist/desktop/cmp/input';
 import {action, bindable, computed, observableRef, compareStructural} from '@xh/hoist/mobx';
 import {stripTags} from '@xh/hoist/utils/js';
 import {createObservableRef} from '@xh/hoist/utils/react';
@@ -240,7 +241,7 @@ export class GridFindFieldImplModel extends HoistModel {
             if (!cols) return [];
 
             return cols.map(column => {
-                const {renderer, getValueFn} = column;
+                const {getValueFn, resolvedRenderer} = column;
                 return (record: StoreRecord) => {
                     const ctx = {
                             record,
@@ -252,7 +253,7 @@ export class GridFindFieldImplModel extends HoistModel {
                         },
                         ret = getValueFn(ctx);
 
-                    return renderer ? stripTags(renderer(ret, ctx)) : ret;
+                    return resolvedRenderer ? stripTags(resolvedRenderer(ret, ctx)) : ret;
                 };
             });
         }

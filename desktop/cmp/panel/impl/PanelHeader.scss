@@ -84,3 +84,8 @@
     }
   }
 }
+
+// Collapsed - a click anywhere expands the panel.
+.xh-panel-header--collapsed {
+  cursor: pointer;
+}

@@ -4,12 +4,13 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {DashCanvasViewSpec} from '@xh/hoist/desktop/cmp/dash';
-import {DashViewConfig, DashViewModel} from '../DashViewModel';
+import type {DashCanvasViewSpec} from '@xh/hoist/desktop/cmp/dash';
+import type {DashViewConfig} from '../DashViewModel';
+import {DashViewModel} from '../DashViewModel';
 import '@xh/hoist/desktop/register';
 import {createObservableRef} from '@xh/hoist/utils/react';
 import {observable, bindableRef} from '@xh/hoist/mobx';
-import {ReactNode} from 'react';
+import type {ReactNode} from 'react';
 
 /**
  * Model for a content item within a DashCanvas.

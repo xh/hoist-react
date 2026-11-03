@@ -1,40 +1,259 @@
-.xh-resizable-splitter {
-  background-color: var(--xh-resizable-bg);
-  justify-content: center;
-  align-items: center;
+// Round chevron badge centered on a splitter line - the hover collapse button and the
+// drag-to-collapse badge.
+%xh-panel-splitter-badge {
+  position: absolute;
+  top: calc(50% - 11px);
+  left: calc(50% - 11px);
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  margin: 0;
+  padding: 0;
+  border-radius: 50%;
+  box-shadow: 0 1px 3px rgb(0 0 0 / 25%);
+  font-size: 12px;
+  line-height: 1;
 
-  .xh-resizable-collapser-btn {
-    color: var(--xh-resizable-button-icon-color) !important;
-    margin: 0;
-    padding: 0;
-    z-index: 10;
+  svg {
+    display: block;
   }
 
-  &.vertical {
-    height: var(--xh-resizable-size-px);
-    border-top: var(--xh-resizable-border-width-px) solid var(--xh-resizable-border-color);
-    border-bottom: var(--xh-resizable-border-width-px) solid var(--xh-resizable-border-color);
+  // Font Awesome chevron paths sit ~0.75px off-center toward their point. Nudge them back.
+  .fa-chevron-left {
+    transform: translateX(0.75px);
+  }
 
-    .xh-resizable-collapser-btn {
-      width: 50px;
-      height: 10px;
-      background-color: var(--xh-resizable-button-bg) !important;
-      border-left: 1px solid var(--xh-resizable-border-color) !important;
-      border-right: 1px solid var(--xh-resizable-border-color) !important;
+  .fa-chevron-right {
+    transform: translateX(-0.75px);
+  }
+
+  .fa-chevron-up {
+    transform: translateY(0.75px);
+  }
+
+  .fa-chevron-down {
+    transform: translateY(-0.75px);
+  }
+}
+
+// Panel splitter - a 1px line with an invisible hit area that straddles it. An accent line and
+// collapse button fade in after a short hover delay, or at once when focused or dragging.
+.xh-panel-splitter {
+  position: relative;
+  flex: none;
+  z-index: 5;
+  outline: none;
+  background-color: var(--xh-panel-splitter-line-color);
+
+  &--ew {
+    width: 1px;
+  }
+
+  &--ns {
+    height: 1px;
+  }
+
+  &--no-line {
+    background-color: transparent;
+
+    &.xh-panel-splitter--ew {
+      width: 0;
+    }
+
+    &.xh-panel-splitter--ns {
+      height: 0;
     }
   }
 
-  &.horizontal {
-    width: var(--xh-resizable-size-px);
-    border-left: var(--xh-resizable-border-width-px) solid var(--xh-resizable-border-color);
-    border-right: var(--xh-resizable-border-width-px) solid var(--xh-resizable-border-color);
+  &__hit {
+    position: absolute;
+    z-index: 1;
+    touch-action: none;
+  }
 
-    .xh-resizable-collapser-btn {
-      width: 10px;
-      height: 50px;
-      background-color: var(--xh-resizable-button-bg) !important;
-      border-bottom: 1px solid var(--xh-resizable-border-color) !important;
-      border-top: 1px solid var(--xh-resizable-border-color) !important;
+  &--ew > &__hit {
+    top: 0;
+    bottom: 0;
+    left: calc(50% - var(--xh-panel-splitter-hit-size-px) / 2);
+    width: var(--xh-panel-splitter-hit-size-px);
+  }
+
+  &--ns > &__hit {
+    left: 0;
+    right: 0;
+    top: calc(50% - var(--xh-panel-splitter-hit-size-px) / 2);
+    height: var(--xh-panel-splitter-hit-size-px);
+  }
+
+  &--resizable.xh-panel-splitter--ew > &__hit {
+    cursor: col-resize;
+  }
+
+  &--resizable.xh-panel-splitter--ns > &__hit {
+    cursor: row-resize;
+  }
+
+  //------------------
+  // Accent line
+  //------------------
+  &__accent {
+    position: absolute;
+    z-index: 2;
+    pointer-events: none;
+    opacity: 0;
+    background-color: var(--xh-panel-splitter-accent-color);
+    transition: opacity 120ms ease-out 0ms;
+  }
+
+  &--ew > &__accent {
+    top: 0;
+    bottom: 0;
+    left: calc(50% - 1.5px);
+    width: 3px;
+  }
+
+  &--ns > &__accent {
+    left: 0;
+    right: 0;
+    top: calc(50% - 1.5px);
+    height: 3px;
+  }
+
+  &--resizable:hover > &__accent {
+    opacity: 1;
+    transition-delay: var(--xh-panel-splitter-hover-delay);
+  }
+
+  &--collapsible-only:hover > &__accent {
+    opacity: 0.4;
+    transition-delay: var(--xh-panel-splitter-hover-delay);
+  }
+
+  &:focus-visible > &__accent {
+    opacity: 1;
+    transition-delay: 0ms;
+  }
+
+  &--dragging > &__accent {
+    opacity: 1;
+    transition: none;
+    background-color: var(--xh-panel-splitter-accent-active-color);
+  }
+
+  &--snap > &__accent {
+    background-color: var(--xh-panel-splitter-snap-color);
+  }
+
+  //------------------
+  // Collapse button
+  //------------------
+  &__btn {
+    @extend %xh-panel-splitter-badge;
+    z-index: 3;
+    border: 1px solid var(--xh-panel-splitter-button-border-color);
+    background-color: var(--xh-panel-splitter-button-bg);
+    color: var(--xh-panel-splitter-button-icon-color);
+    cursor: pointer;
+    // Hidden, not just transparent, so it cannot catch a click or block a drag before it shows.
+    opacity: 0;
+    visibility: hidden;
+    transform: scale(0.85);
+    transition-property: opacity, transform, visibility, background-color, border-color;
+    transition-duration: 120ms, 120ms, 0ms, 100ms, 100ms;
+    transition-timing-function: ease-out, ease-out, linear, ease, ease;
+    transition-delay: 0ms, 0ms, 120ms, 0ms, 0ms;
+
+    &:hover {
+      background-color: var(--xh-panel-splitter-accent-color);
+      border-color: var(--xh-panel-splitter-accent-color);
+      color: white;
     }
+  }
+
+  &:hover > &__btn {
+    opacity: 1;
+    visibility: visible;
+    transform: none;
+    transition-delay:
+      var(--xh-panel-splitter-hover-delay), var(--xh-panel-splitter-hover-delay),
+      var(--xh-panel-splitter-hover-delay), 0ms, 0ms;
+  }
+
+  &:focus-visible > &__btn {
+    opacity: 1;
+    visibility: visible;
+    transform: none;
+    transition-delay: 0ms;
+  }
+
+  &--dragging > &__btn {
+    opacity: 0 !important;
+    visibility: hidden !important;
+  }
+}
+
+// Collapse chevron shown on the line while a drag is past the drag-to-collapse threshold.
+.xh-panel-splitter-snap-badge {
+  @extend %xh-panel-splitter-badge;
+  z-index: 4;
+  pointer-events: none;
+  border: 1px solid var(--xh-panel-splitter-snap-color);
+  background-color: var(--xh-panel-splitter-snap-color);
+  color: white;
+  animation: xh-panel-splitter-snap-badge-in 120ms ease-out;
+}
+
+@keyframes xh-panel-splitter-snap-badge-in {
+  from {
+    opacity: 0;
+    transform: scale(0.85);
+  }
+}
+
+// Accent line that tracks the pointer while dragging, when the panel does not resize live.
+.xh-panel-splitter-ghost {
+  position: absolute;
+  z-index: 10;
+  pointer-events: none;
+  background-color: var(--xh-panel-splitter-accent-active-color);
+
+  &--ew {
+    width: 3px;
+  }
+
+  &--ns {
+    height: 3px;
+  }
+
+  &--snap {
+    background-color: var(--xh-panel-splitter-snap-color);
+  }
+
+  &:not(&--snap) > .xh-panel-splitter-snap-badge {
+    display: none;
+  }
+}
+
+// Set on the body during a drag - holds the resize cursor steady over any content below it.
+body.xh-panel-splitter-dragging--ew,
+body.xh-panel-splitter-dragging--ns {
+  &,
+  * {
+    user-select: none !important;
+  }
+}
+
+body.xh-panel-splitter-dragging--ew {
+  &,
+  * {
+    cursor: col-resize !important;
+  }
+}
+
+body.xh-panel-splitter-dragging--ns {
+  &,
+  * {
+    cursor: row-resize !important;
   }
 }

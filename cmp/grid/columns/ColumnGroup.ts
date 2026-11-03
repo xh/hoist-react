@@ -5,22 +5,24 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {getAgHeaderClassFn} from '@xh/hoist/cmp/grid/impl/Utils';
-import {HAlign, PlainObject, Some, Thunkable, XH} from '@xh/hoist/core';
+import type {HAlign, PlainObject, Some, Thunkable} from '@xh/hoist/core';
+import {XH} from '@xh/hoist/core';
 import {genDisplayName} from '@xh/hoist/data';
 
 import type {ColGroupDef} from '@xh/hoist/kit/ag-grid';
 import {throwIf, warnIf, withDefault} from '@xh/hoist/utils/js';
 import {clone, isEmpty, isFunction, isString, keysIn} from 'lodash';
-import {ReactNode} from 'react';
-import {GridModel} from '../GridModel';
-import {
+import type {ReactNode} from 'react';
+import type {GridModel} from '../GridModel';
+import type {
     ColumnGroupShowMode,
     ColumnHeaderClassFn,
     ColumnHeaderNameFn,
-    ColumnOrGroup,
-    toAgColumnGroupShow
+    ColumnOrGroup
 } from '../Types';
-import {Column, ColumnSpec} from './Column';
+import {toAgColumnGroupShow} from '../Types';
+import type {ColumnSpec} from './Column';
+import {Column} from './Column';
 
 /**
  * Configuration for a {@link ColumnGroup} - a hierarchical grouping of columns that renders

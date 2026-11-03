@@ -8,9 +8,10 @@ import {GridModel} from '@xh/hoist/cmp/grid';
 import {hoistCmp, useContextModel} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
-import {ExportOptions} from '@xh/hoist/svc';
+import type {ExportOptions} from '@xh/hoist/svc';
 import {logError} from '@xh/hoist/utils/js';
-import {button, ButtonProps} from '../Button';
+import type {ButtonProps} from '../Button';
+import {button} from '../Button';
 
 const EXPORT_TYPE_LABELS: Record<Required<ExportOptions>['type'], string> = {
     excel: 'Excel',

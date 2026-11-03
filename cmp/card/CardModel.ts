@@ -5,15 +5,8 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
-import {
-    HoistModel,
-    Persistable,
-    PersistableState,
-    PersistenceProvider,
-    persistOptions,
-    PersistOptions,
-    RenderMode
-} from '@xh/hoist/core';
+import type {Persistable, PersistOptions, RenderMode} from '@xh/hoist/core';
+import {HoistModel, PersistableState, PersistenceProvider, persistOptions} from '@xh/hoist/core';
 import {throwIf} from '@xh/hoist/utils/js';
 import {isNil} from 'lodash';
 import {action, observable} from '@xh/hoist/mobx';

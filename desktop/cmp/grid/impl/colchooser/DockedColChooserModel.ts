@@ -4,8 +4,9 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {ColChooserConfig, ColChooserMode} from '@xh/hoist/cmp/grid';
-import {HSide, managed} from '@xh/hoist/core';
+import type {ColChooserConfig, ColChooserMode} from '@xh/hoist/cmp/grid';
+import type {HSide} from '@xh/hoist/core';
+import {managed} from '@xh/hoist/core';
 import {PanelModel} from '@xh/hoist/desktop/cmp/panel';
 import {action, observable} from '@xh/hoist/mobx';
 import {isNumber} from 'lodash';

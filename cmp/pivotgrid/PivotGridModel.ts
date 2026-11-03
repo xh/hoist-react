@@ -4,17 +4,25 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {
+import type {
     ColumnGroupSpec,
     ColumnSpec,
     GridConfig,
     GridEnsureVisibleOptions,
-    GridModel,
     GridSelectFirstOptions,
     GridSelectOptions
 } from '@xh/hoist/cmp/grid';
-import {HoistModel, HSide, managed, ReactionSpec, Some, VSide} from '@xh/hoist/core';
-import {CubeField, PivotCellField, PivotPath, Store, StoreRecordOrId, View} from '@xh/hoist/data';
+import {GridModel} from '@xh/hoist/cmp/grid';
+import type {HSide, ReactionSpec, Some, VSide} from '@xh/hoist/core';
+import {HoistModel, managed} from '@xh/hoist/core';
+import type {
+    CubeField,
+    PivotCellField,
+    PivotPath,
+    Store,
+    StoreRecordOrId,
+    View
+} from '@xh/hoist/data';
 import {action, bindable, bindableRef} from '@xh/hoist/mobx';
 import {isArray, isEmpty, mapValues, omit, orderBy, sortBy} from 'lodash';
 

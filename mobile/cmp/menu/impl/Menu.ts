@@ -5,12 +5,12 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {div, hspacer, vbox} from '@xh/hoist/cmp/layout';
+import type {MenuItemLike} from '@xh/hoist/core';
 import {
     hoistCmp,
     HoistModel,
     useLocalModel,
     type MenuContext,
-    MenuItemLike,
     isMenuHeading,
     isMenuItem
 } from '@xh/hoist/core';
@@ -24,7 +24,8 @@ import {
 } from '@xh/hoist/cmp/menu/impl/Menus';
 import classNames from 'classnames';
 import {clone, isEmpty} from 'lodash';
-import {ReactNode, useEffect} from 'react';
+import type {ReactNode} from 'react';
+import {useEffect} from 'react';
 
 import './Menu.scss';
 

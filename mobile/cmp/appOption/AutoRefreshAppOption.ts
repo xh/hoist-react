@@ -4,9 +4,11 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {AppOptionSpec, XH} from '@xh/hoist/core';
-import {FormFieldProps} from '@xh/hoist/mobile/cmp/form';
-import {switchInput, SwitchInputProps} from '@xh/hoist/mobile/cmp/input';
+import type {AppOptionSpec} from '@xh/hoist/core';
+import {XH} from '@xh/hoist/core';
+import type {FormFieldProps} from '@xh/hoist/mobile/cmp/form';
+import type {SwitchInputProps} from '@xh/hoist/mobile/cmp/input';
+import {switchInput} from '@xh/hoist/mobile/cmp/input';
 import '@xh/hoist/mobile/register';
 
 interface AutoRefreshAppOptionSpec {

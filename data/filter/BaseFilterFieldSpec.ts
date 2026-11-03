@@ -5,9 +5,10 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {HoistBase} from '@xh/hoist/core';
-import {Field, FieldFilter, FieldType, FilterValueSource, genDisplayName} from '@xh/hoist/data';
+import type {Field, FieldType, FilterValueSource} from '@xh/hoist/data';
+import {FieldFilter, genDisplayName} from '@xh/hoist/data';
 import {isArray, isEmpty} from 'lodash';
-import {FieldFilterOperator} from './Types';
+import type {FieldFilterOperator} from './Types';
 
 /**
  * Base configuration for field-level filtering options - defines available operators, value

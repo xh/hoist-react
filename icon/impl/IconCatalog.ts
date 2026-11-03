@@ -4,12 +4,8 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {
-    findIconDefinition,
-    IconDefinition,
-    IconName,
-    library
-} from '@fortawesome/fontawesome-svg-core';
+import type {IconDefinition, IconName} from '@fortawesome/fontawesome-svg-core';
+import {findIconDefinition, library} from '@fortawesome/fontawesome-svg-core';
 import {logWarn, throwIf} from '@xh/hoist/utils/js';
 import classNames from 'classnames';
 import {

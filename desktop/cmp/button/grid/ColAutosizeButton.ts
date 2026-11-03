@@ -4,12 +4,14 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {GridAutosizeOptions, GridModel} from '@xh/hoist/cmp/grid';
+import type {GridAutosizeOptions} from '@xh/hoist/cmp/grid';
+import {GridModel} from '@xh/hoist/cmp/grid';
 import {hoistCmp, useContextModel} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
 import {logError, withDefault} from '@xh/hoist/utils/js';
-import {button, ButtonProps} from '../Button';
+import type {ButtonProps} from '../Button';
+import {button} from '../Button';
 
 export interface ColAutosizeButtonProps extends ButtonProps {
     /** GridModel to which this button should bind. Will find nearest in context if not provided. */

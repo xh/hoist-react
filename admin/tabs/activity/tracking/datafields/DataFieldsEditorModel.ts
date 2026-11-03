@@ -4,10 +4,12 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {ActivityTrackingModel} from '@xh/hoist/admin/tabs/activity/tracking/ActivityTrackingModel';
-import {FormModel, SubformsFieldModel} from '@xh/hoist/cmp/form';
+import type {ActivityTrackingModel} from '@xh/hoist/admin/tabs/activity/tracking/ActivityTrackingModel';
+import type {SubformsFieldModel} from '@xh/hoist/cmp/form';
+import {FormModel} from '@xh/hoist/cmp/form';
 import {HoistModel, managed} from '@xh/hoist/core';
-import {AggregatorToken, FieldType, genDisplayName, required} from '@xh/hoist/data';
+import type {AggregatorToken, FieldType} from '@xh/hoist/data';
+import {genDisplayName, required} from '@xh/hoist/data';
 import {action, observable} from '@xh/hoist/mobx';
 import {computed} from '@xh/hoist/mobx';
 import {last, uniqBy} from 'lodash';

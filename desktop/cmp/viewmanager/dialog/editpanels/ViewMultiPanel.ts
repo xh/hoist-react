@@ -13,7 +13,7 @@ import {select} from '@xh/hoist/desktop/cmp/input';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {pluralize} from '@xh/hoist/utils/js';
 import {isEmpty} from 'lodash';
-import {CSSProperties} from 'react';
+import type {CSSProperties} from 'react';
 import {getVisibilityInfo, getVisibilityOptions} from '../Utils';
 import {formButtons} from './FormButtons';
 import {ViewMultiPanelModel} from './ViewMultiPanelModel';

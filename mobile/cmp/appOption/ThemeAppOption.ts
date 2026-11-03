@@ -4,10 +4,12 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {AppOptionSpec, XH} from '@xh/hoist/core';
+import type {AppOptionSpec} from '@xh/hoist/core';
+import {XH} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon/Icon';
-import {FormFieldProps} from '@xh/hoist/mobile/cmp/form';
-import {segmentedControl, SegmentedControlProps} from '@xh/hoist/mobile/cmp/input';
+import type {FormFieldProps} from '@xh/hoist/mobile/cmp/form';
+import type {SegmentedControlProps} from '@xh/hoist/mobile/cmp/input';
+import {segmentedControl} from '@xh/hoist/mobile/cmp/input';
 import '@xh/hoist/mobile/register';
 
 interface ThemeAppOptionSpec {

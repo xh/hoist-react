@@ -4,10 +4,11 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {ElementFactory, HoistAppModel, HoistAuthModel, HoistProps, XH} from '@xh/hoist/core';
+import type {ElementFactory, HoistAppModel, HoistProps} from '@xh/hoist/core';
+import {HoistAuthModel, XH} from '@xh/hoist/core';
 import {throwIf} from '@xh/hoist/utils/js';
 import {isFunction, isNil, isString} from 'lodash';
-import {Component, ComponentClass, FunctionComponent, ReactElement} from 'react';
+import type {Component, ComponentClass, FunctionComponent, ReactElement} from 'react';
 
 /**
  * Spec for a client-side Hoist application. A config matching this class's shape is provided

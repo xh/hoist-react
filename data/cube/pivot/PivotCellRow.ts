@@ -5,11 +5,11 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
-import {PlainObject} from '@xh/hoist/core';
-import {CubeField} from '../CubeField';
-import {PivotPath} from './PivotPath';
+import type {PlainObject} from '@xh/hoist/core';
+import type {CubeField} from '../CubeField';
+import type {PivotPath} from './PivotPath';
 import type {View} from '../View';
-import {BaseRow} from '../row/BaseRow';
+import type {BaseRow} from '../row/BaseRow';
 import {ParentRow} from '../row/ParentRow';
 
 /**

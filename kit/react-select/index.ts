@@ -5,7 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {elementFactory} from '@xh/hoist/core';
-import {ComponentType} from 'react';
+import type {ComponentType} from 'react';
 import Select from 'react-select';
 import AsyncSelect from 'react-select/async';
 import AsyncCreatable from 'react-select/async-creatable';

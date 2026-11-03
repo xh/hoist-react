@@ -9,7 +9,7 @@ import {HoistModel, managed} from '@xh/hoist/core';
 import {bindable} from '@xh/hoist/mobx';
 import {ManageDialogModel} from './dialog/ManageDialogModel';
 import {SaveAsDialogModel} from './dialog/SaveAsDialogModel';
-import {ViewManagerModel} from '@xh/hoist/cmp/viewmanager';
+import type {ViewManagerModel} from '@xh/hoist/cmp/viewmanager';
 
 export class ViewManagerLocalModel extends HoistModel {
     readonly parent: ViewManagerModel;

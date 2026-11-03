@@ -5,11 +5,11 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
-import {PlainObject, Some} from '@xh/hoist/core';
-import {ViewRowData} from '@xh/hoist/data/cube/ViewRowData';
+import type {PlainObject, Some} from '@xh/hoist/core';
+import type {ViewRowData} from '@xh/hoist/data/cube/ViewRowData';
 import {shallowEqualObjects} from '@xh/hoist/utils/impl';
 import {isArray, isEmpty} from 'lodash';
-import {View} from '../View';
+import type {View} from '../View';
 import type {ViewRow} from '../ViewRow';
 import type {ParentRow} from './ParentRow';
 import type {RowUpdate} from './RowUpdate';

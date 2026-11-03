@@ -4,7 +4,8 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {HoistAppModel, HoistModel, LoadSpec, XH} from '@xh/hoist/core';
+import type {LoadSpec} from '@xh/hoist/core';
+import {HoistAppModel, HoistModel, XH} from '@xh/hoist/core';
 import {wait} from '@xh/hoist/promise';
 import {initTestAppAsync} from '@xh/hoist/test-support';
 import {last} from 'lodash';

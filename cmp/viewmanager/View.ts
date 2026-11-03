@@ -4,10 +4,10 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {PlainObject} from '@xh/hoist/core';
-import {ViewManagerModel} from './ViewManagerModel';
+import type {PlainObject} from '@xh/hoist/core';
+import type {ViewManagerModel} from './ViewManagerModel';
 import {ViewInfo} from './ViewInfo';
-import {JsonBlob} from '@xh/hoist/svc';
+import type {JsonBlob} from '@xh/hoist/svc';
 
 /**
  * A named saved bundle of state for components.
