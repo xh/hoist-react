@@ -25,6 +25,21 @@ affected APIs.
 - **Panel splitter CSS (required if an app styled splitters)** - desktop panel splitters are now
   a 1px line with their own `--xh-panel-splitter-*` variables. App overrides of
   `--xh-resizable-*` variables no longer reach them - see Step 6.
+- **Renderer import paths (required if used)** - the `*Renderer` factories moved out of
+  `@xh/hoist/format/FormatNumber` and `@xh/hoist/format/FormatDate`. Import them from
+  `@xh/hoist/format` - see Step 7.
+- **Removed libraries (required if an app imports them)** - Hoist no longer depends on several
+  libraries, such as `semver` and `store2`. An app that imports one must declare it in its own
+  `package.json` - see Step 8.
+
+## Prerequisites
+
+Before starting, ensure:
+
+- [ ] Running hoist-react v89.x.
+- [ ] **hoist-core** at >= 40.5.0 (unchanged floor). **hoist-core 44.0 is recommended.** The new
+  Purge Connections buttons in the Admin Console Connection Pool Monitor call an endpoint that
+  older cores lack, so they fail there. See [Version Compatibility](../version-compatibility.md).
 
 ## Upgrade Steps
 
@@ -373,6 +388,69 @@ import {PanelModel} from '@xh/hoist/desktop/cmp/panel';
 PanelModel.defaults.showHeaderCollapseButton = true;
 ```
 
+### 7. Import Renderer Factories from `@xh/hoist/format`
+
+The number and date renderer factories now live in their own files, next to the new text renderer
+factories. The `@xh/hoist/format` package still exports all of them, so apps that import from it
+need no change. An import of a renderer from `@xh/hoist/format/FormatNumber` or
+`@xh/hoist/format/FormatDate` fails to compile. The `fmt*` functions and option types such as
+`NumberFormatOptions` still import from those paths.
+
+The moved factories:
+
+| Old file | Factories |
+|---|---|
+| `FormatNumber` | `numberRenderer`, `thousandsRenderer`, `millionsRenderer`, `billionsRenderer`, `quantityRenderer`, `priceRenderer`, `percentRenderer` |
+| `FormatDate` | `dateRenderer`, `dateTimeRenderer`, `dateTimeSecRenderer`, `timeRenderer`, `compactDateRenderer` |
+
+**Find affected code:**
+
+```bash
+grep -rnE "@xh/hoist/format/Format(Number|Date)['\"]" client-app/src/
+```
+
+Check each match for a name that ends in `Renderer`.
+
+Before:
+
+```typescript
+import {fmtNumber, numberRenderer} from '@xh/hoist/format/FormatNumber';
+```
+
+After:
+
+```typescript
+import {fmtNumber, numberRenderer} from '@xh/hoist/format';
+```
+
+### 8. Declare Removed Libraries Your App Imports
+
+Hoist v90 drops the libraries below from its dependencies. An app could import any of them
+without declaring it, because Hoist installed them. Those imports now fail to resolve. For each
+library that an app imports, either add it to the app's `package.json` or switch to the Hoist API
+in the table.
+
+| Library | Hoist alternative |
+|---|---|
+| `numbro` | `fmtNumber` and its options - see Step 1 |
+| `date-fns`, `@blueprintjs/datetime` | `dayPicker` from `@xh/hoist/kit/react-day-picker` - see Step 2 |
+| `onsenui`, `react-onsenui` | Hoist's mobile components - see Step 3 |
+| `react-windowed-select` | `select({enableWindowed: true})` - see Step 4 |
+| `semver` | `checkVersion`, `checkMinVersion` and `checkMaxVersion` from `@xh/hoist/utils/js` |
+| `ua-parser-js` | `XH.isPhone`, `XH.isTablet` and `XH.isDesktop` |
+| `store2` | `XH.localStorageService` and `XH.sessionStorageService` |
+| `short-unique-id` | `genRandomId()` from `@xh/hoist/utils/js`, or `XH.genId()` |
+| `lodash-inflection` | `pluralize`, `singularize` and `ordinalize` from `@xh/hoist/utils/js` |
+| `http-status-codes` | None |
+
+**Find affected code:**
+
+```bash
+grep -rnE "from '(numbro|date-fns|@blueprintjs/datetime|onsenui|react-onsenui|react-windowed-select|semver|ua-parser-js|store2|short-unique-id|lodash-inflection|http-status-codes)['/]" client-app/src/
+```
+
+Skip any match for a library that the app's `package.json` already declares.
+
 ## Verification Checklist
 
 After completing all steps:
@@ -393,6 +471,9 @@ After completing all steps:
 - [ ] Styles on `xh-units-label` or on sign color classes inside grid cells still apply.
 - [ ] No app SCSS styles panel splitters with `--xh-resizable-*` variables or
       `.xh-resizable-splitter`.
+- [ ] Nothing imports a `*Renderer` factory from `@xh/hoist/format/FormatNumber` or
+      `@xh/hoist/format/FormatDate`.
+- [ ] The app's `package.json` declares every library that the app imports.
 
 ## Reference
 
