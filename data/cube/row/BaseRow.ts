@@ -15,9 +15,8 @@ import type {ParentRow} from './ParentRow';
 import type {RowUpdate} from './RowUpdate';
 
 /**
- * Send updates up both aggregation routes. `applyDataUpdate` rewrites each {@link RowUpdate}'s
- * `oldValue` / `newValue` in place, so a second parent needs its own copies - `clone()`, which
- * keeps this row's aggregated delta where a fresh `RowUpdate` would reset to leaf values.
+ * Send updates up both aggregation routes. `applyDataUpdate` rewrites each {@link RowUpdate} in
+ * place, so the second route receives clones.
  * @internal
  */
 export function propagateUpdate(

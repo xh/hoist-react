@@ -323,8 +323,7 @@ export class PivotCells {
      * identity is the structural-change signal consumers key off.
      */
     private syncPaths(specs: PivotPathSpec[]) {
-        // Keys alone miss a `valueFields` or `emptyPathLabel` change. Compared as separate arrays
-        // so no value can forge a boundary.
+        // Labels and value fields can change while the keys do not.
         const keys = specs.map(s => s.key),
             labels = specs.map(s => s.label),
             valueFieldNames = this.valueFields.map(f => f.name);
@@ -378,7 +377,10 @@ export class PivotCells {
         this.pathIdx = pathIdx;
     }
 
-    /** A cell field colliding with a Cube field would overwrite it on row data. Root-path entries are the value field itself. */
+    /**
+     * A cell field colliding with a Cube field would overwrite it on row data. Root-path entries
+     * are the value field itself.
+     */
     private validateCellFieldNames(cellFields: PivotCellField[]) {
         const cubeNames = new Set(this.view.cube.fields.map(f => f.name));
         cellFields.forEach(({name, path}) => {

@@ -26,7 +26,7 @@ export class PivotCellRow extends ParentRow {
     ownerRow: BaseRow;
     path: PivotPath;
 
-    /** Cell field names last projected onto `ownerRow`, so a later generation can null any it no longer writes. */
+    /** Cell field names last projected onto `ownerRow`, nulled by a generation that drops them. */
     projectedCellNames: string[] = null;
 
     protected get dimOrBucketName(): string {
