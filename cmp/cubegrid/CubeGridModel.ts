@@ -103,14 +103,14 @@ export interface CubeGridConfig {
      * the default 'right', or an {@link HSide} to place it relative to the pivot columns. Default
      * false. Bind this rather than expecting the column chooser to restore it.
      */
-    pivotSummary?: boolean | HSide;
+    pivotValueSummary?: boolean | HSide;
 
     /**
      * Column per value field inside each parent pivot group holding that group's aggregate. True
      * for the default 'right', or an {@link HSide} to place it within the group. Default false.
      * Only ever visible with 2+ pivot dimensions, since a single dimension has no parent nodes.
      */
-    pivotSubtotal?: boolean | HSide;
+    pivotGroupSummary?: boolean | HSide;
 
     /** Display sort per pivot dimension, outermost first. Unspecified levels keep view order. */
     pivotSortBy?: PivotSort[];
@@ -151,8 +151,8 @@ export class CubeGridModel extends HoistModel {
     /** View supplying this grid's data. Not swappable. */
     readonly view: View;
 
-    @bindable accessor pivotSummary: boolean | HSide;
-    @bindable accessor pivotSubtotal: boolean | HSide;
+    @bindable accessor pivotValueSummary: boolean | HSide;
+    @bindable accessor pivotGroupSummary: boolean | HSide;
     @bindableRef accessor pivotSortBy: PivotSort[];
     @bindableRef accessor pivotValueSpecs: Record<string, PivotValueSpec>;
     @bindableRef accessor columns: Array<ColumnSpec | ColumnGroupSpec>;
@@ -170,8 +170,8 @@ export class CubeGridModel extends HoistModel {
         cube,
         query,
         columns = [],
-        pivotSummary = false,
-        pivotSubtotal = false,
+        pivotValueSummary = false,
+        pivotGroupSummary = false,
         pivotSortBy = [],
         pivotValueSpecs = {},
         gridConfig
@@ -186,8 +186,8 @@ export class CubeGridModel extends HoistModel {
         this.view = view ?? this.markManaged(cube.createView({query, connect: true}));
 
         this.columns = columns;
-        this.pivotSummary = pivotSummary;
-        this.pivotSubtotal = pivotSubtotal;
+        this.pivotValueSummary = pivotValueSummary;
+        this.pivotGroupSummary = pivotGroupSummary;
         this.pivotSortBy = pivotSortBy;
         this.pivotValueSpecs = pivotValueSpecs;
 
@@ -266,12 +266,12 @@ export class CubeGridModel extends HoistModel {
         return this.query.pivot?.valueFields ?? [];
     }
 
-    private get pivotSummarySide(): HSide {
-        return resolveSide(this.pivotSummary, 'right');
+    private get pivotValueSummarySide(): HSide {
+        return resolveSide(this.pivotValueSummary, 'right');
     }
 
-    private get pivotSubtotalSide(): HSide {
-        return resolveSide(this.pivotSubtotal, 'right');
+    private get pivotGroupSummarySide(): HSide {
+        return resolveSide(this.pivotGroupSummary, 'right');
     }
 
     // `equals: 'shallow'` - the track fn allocates a fresh array per run.
@@ -281,8 +281,8 @@ export class CubeGridModel extends HoistModel {
             track: () => [
                 this.view.result.paths,
                 this.columns,
-                this.pivotSummary,
-                this.pivotSubtotal,
+                this.pivotValueSummary,
+                this.pivotGroupSummary,
                 this.pivotSortBy,
                 this.pivotValueSpecs
             ],
@@ -351,12 +351,14 @@ export class CubeGridModel extends HoistModel {
         this._pivotColIds = new Set();
         if (!this.query.isPivoted) return fixed;
 
-        const {pivotSummarySide} = this,
+        const {pivotValueSummarySide} = this,
             pathCols = this.sortPaths(paths, 0).map(path => this.buildPathColumn(path)),
             summaryCols =
-                pivotSummarySide && this._rootPath ? [this.buildSummaryColumn(this._rootPath)] : [],
+                pivotValueSummarySide && this._rootPath
+                    ? [this.buildSummaryColumn(this._rootPath)]
+                    : [],
             pivotCols =
-                pivotSummarySide === 'left'
+                pivotValueSummarySide === 'left'
                     ? [...summaryCols, ...pathCols]
                     : [...pathCols, ...summaryCols];
 
@@ -406,16 +408,16 @@ export class CubeGridModel extends HoistModel {
             return this.buildColGroup(path.key, path.label, this.buildValueColumns(path));
         }
 
-        const {pivotSubtotalSide} = this,
+        const {pivotGroupSummarySide} = this,
             childCols = this.sortPaths(path.children, path.depth).map(child =>
                 this.buildPathColumn(child)
             ),
-            summaryCols = pivotSubtotalSide ? [this.buildSummaryColumn(path)] : [];
+            summaryCols = pivotGroupSummarySide ? [this.buildSummaryColumn(path)] : [];
 
         return this.buildColGroup(
             path.key,
             path.label,
-            pivotSubtotalSide === 'left'
+            pivotGroupSummarySide === 'left'
                 ? [...summaryCols, ...childCols]
                 : [...childCols, ...summaryCols]
         );
@@ -430,7 +432,7 @@ export class CubeGridModel extends HoistModel {
             colId: `total>>${col.colId}`
         }));
         return this.buildColGroup(
-            path.isRoot ? 'pivotSummary' : `${path.key}:subtotal`,
+            path.isRoot ? 'pivotValueSummary' : `${path.key}:groupSummary`,
             'Total',
             cols
         );

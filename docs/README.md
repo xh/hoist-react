@@ -88,7 +88,7 @@ See [`docs-roadmap.md`](./planning/docs-roadmap.md) for documentation coverage t
 |---------|-------------|------------|
 | [`/cmp/`](../cmp/README.md) | Cross-platform component overview and catalog | Component categories, factory pattern, platform-specific vs shared |
 | [`/cmp/grid/`](../cmp/grid/README.md) | Primary data grid built on AG Grid | GridModel, Column, ColumnGroup, sorting, grouping, filtering, selection, inline editing, export |
-| [`/cmp/cubegrid/`](../cmp/cubegrid/README.md) | Cube View rendered as a tree grid with the app's columns, plus pivot paths as nested column groups and docked summaries | CubeGridModel, CubeGrid, cube, pivot, PivotSpec, valueFields, cellFields, pivotSummary, pivotSubtotal, pivotSortBy, pivotValueSpecs |
+| [`/cmp/cubegrid/`](../cmp/cubegrid/README.md) | Cube View rendered as a tree grid with the app's columns, plus pivot paths as nested column groups and docked summaries | CubeGridModel, CubeGrid, cube, pivot, PivotSpec, valueFields, cellFields, pivotValueSummary, pivotGroupSummary, pivotSortBy, pivotValueSpecs |
 | [`/cmp/form/`](../cmp/form/README.md) | Form infrastructure for data entry with validation | FormModel, FieldModel, SubformsFieldModel, validation rules, data binding |
 | [`/cmp/input/`](../cmp/input/README.md) | Base classes and interfaces for input components | HoistInputModel, change/commit lifecycle, value binding, focus management |
 | [`/cmp/layout/`](../cmp/layout/README.md) | Flexbox-based layout containers | Box, VBox, HBox, Frame, Viewport, LayoutProps, pixel conversion |

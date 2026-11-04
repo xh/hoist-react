@@ -93,7 +93,7 @@ describe('CubeGridModel', () => {
             const model = createModel({
                     query: PIVOT_QUERY,
                     columns: [{field: 'sum'}],
-                    pivotSummary: true
+                    pivotValueSummary: true
                 }),
                 {gridModel} = model;
 
@@ -118,16 +118,16 @@ describe('CubeGridModel', () => {
             expect(locked.gridModel.getColumn('Energy>>sum').hideable).toBe(false);
         });
 
-        it('places the summary column on the side pivotSummary names, within the pivot region', () => {
+        it('places the summary column on the side pivotValueSummary names, within the pivot region', () => {
             const right = createModel({
                     query: PIVOT_QUERY,
                     columns: [{field: 'avg'}],
-                    pivotSummary: true
+                    pivotValueSummary: true
                 }),
                 left = createModel({
                     query: PIVOT_QUERY,
                     columns: [{field: 'avg'}],
-                    pivotSummary: 'left'
+                    pivotValueSummary: 'left'
                 });
 
             expect(colIds(right.gridModel.columns)).toEqual([

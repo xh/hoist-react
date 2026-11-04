@@ -13,7 +13,7 @@ presentation of the standard `Grid`, in the same way `ZoneGrid` and `DataView` a
   wired for you, with or without pivoting
 - Columns derived from the data when pivoting - a new pivot value becomes a new column group,
   appended after the app's columns
-- Nested column groups for two or more pivot dimensions, with per-group subtotals
+- Nested column groups for two or more pivot dimensions, with a summary column per group
 - Docked row totals and a docked totals row, each optional and placeable
 - Display sort per pivot level, and column config per measure applied across every path
 - Live updates: ticks reach the cells in place, and column state survives a structural rebuild
@@ -40,7 +40,7 @@ CubeGridModel
 ├── gridModel: GridModel               # The grid rendered; treeMode, managed columns
 ├── selectedRecord, selectAsync, ...   # Selection and `empty` delegated, as on ZoneGridModel
 ├── columns                            # The app's fixed columns, label column first by default
-├── pivotSummary, pivotSubtotal      # Total columns, docked / per group: false|true|HSide
+├── pivotValueSummary, pivotGroupSummary      # Total columns, docked / per group: false|true|HSide
 ├── showSummary                        # The grid's totals row, delegated - needs includeRoot
 ├── pivotSortBy: PivotSort[]           # Display order per pivot level
 ├── pivotValueSpecs                   # ColumnSpec per measure, applied across every path
@@ -79,7 +79,7 @@ class PositionsModel extends HoistModel {
             includeRoot: true,
             pivot: {dimensions: ['region'], valueFields: ['mktVal', 'pnl']}
         },
-        pivotSummary: 'right',
+        pivotValueSummary: 'right',
         pivotValueSpecs: {
             mktVal: {width: 120, renderer: millionsRenderer({precision: 2, label: true})},
             pnl: {width: 110, renderer: numberRenderer({precision: 0, colorSpec: true})}
@@ -127,7 +127,7 @@ The grid has two regions, always in this order:
    so `{field: 'mktVal'}` shows market value once even when the query pivots P&L by region.
 2. **Pivot columns** - derived from `result.paths` when the query pivots, one group per path with
    a column per `pivot.valueFields` entry, configured through `pivotValueSpecs`. The summary
-   column joins this region on the side `pivotSummary` names.
+   column joins this region on the side `pivotValueSummary` names.
 
 Users reorder the fixed columns and the grid persists that through its normal column state. Pivot
 columns are not movable: their order is the view's, set through `pivotSortBy`, in the same way row
@@ -152,8 +152,8 @@ view.updateQuery({pivot: null});
 ```
 
 `updateQuery` replaces the whole `pivot` block, so spread the current one to change a single
-member. Presentation settings change on the model itself - `columns`, `pivotSummary`,
-`pivotSubtotal`, `pivotSortBy` and `pivotValueSpecs` are all bindable, and `showSummary`
+member. Presentation settings change on the model itself - `columns`, `pivotValueSummary`,
+`pivotGroupSummary`, `pivotSortBy` and `pivotValueSpecs` are all bindable, and `showSummary`
 delegates to the grid.
 
 ### Pivot Columns and Cell Fields

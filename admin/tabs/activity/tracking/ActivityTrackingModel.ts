@@ -463,7 +463,7 @@ export class ActivityTrackingModel extends HoistModel implements ActivityDetailP
         return new CubeGridModel({
             cube: this.cube,
             query: this.queryConfig,
-            pivotSummary: 'right',
+            pivotValueSummary: 'right',
             pivotValueSpecs: {
                 entryCount: {width: 80},
                 elapsed: {width: 100, renderer: elapsedRenderer},
