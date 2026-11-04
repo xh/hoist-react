@@ -99,6 +99,20 @@ export interface CubeGridConfig {
     columns?: Array<ColumnSpec | ColumnGroupSpec>;
 
     /**
+     * Column config applied to every pivot column built for the named value field - renderer,
+     * width, align, and so on. Keyed by value field name.
+     *
+     * Specs are expected to be shared with the fixed `columns`, so {@link RESERVED_PIVOT_VALUE_KEYS}
+     * are stripped rather than rejected. Pivot columns are hideable like any other - set
+     * `hideable: false` here to lock a measure's columns, and drop the field from the query's
+     * `pivot.valueFields` to remove them.
+     */
+    pivotValueSpecs?: Record<string, PivotValueSpec>;
+
+    /** Display sort per pivot dimension, outermost first. Unspecified levels keep view order. */
+    pivotSortBy?: PivotSort[];
+
+    /**
      * Docked column per value field holding each row's aggregate across all pivot paths. True for
      * the default 'right', or an {@link HSide} to place it relative to the pivot columns. Default
      * false. Bind this rather than expecting the column chooser to restore it.
@@ -111,20 +125,6 @@ export interface CubeGridConfig {
      * Only ever visible with 2+ pivot dimensions, since a single dimension has no parent nodes.
      */
     pivotGroupSummary?: boolean | HSide;
-
-    /** Display sort per pivot dimension, outermost first. Unspecified levels keep view order. */
-    pivotSortBy?: PivotSort[];
-
-    /**
-     * Column config applied to every pivot column built for the named value field - renderer,
-     * width, align, and so on. Keyed by value field name.
-     *
-     * Specs are expected to be shared with the fixed `columns`, so {@link RESERVED_PIVOT_VALUE_KEYS}
-     * are stripped rather than rejected. Pivot columns are hideable like any other - set
-     * `hideable: false` here to lock a measure's columns, and drop the field from the query's
-     * `pivot.valueFields` to remove them.
-     */
-    pivotValueSpecs?: Record<string, PivotValueSpec>;
 
     /**
      * Config for the underlying GridModel. `store`, `treeMode` and `columns` are managed by this
@@ -152,10 +152,10 @@ export class CubeGridModel extends HoistModel {
     readonly view: View;
 
     @bindableRef accessor columns: Array<ColumnSpec | ColumnGroupSpec>;
+    @bindableRef accessor pivotValueSpecs: Record<string, PivotValueSpec>;
+    @bindableRef accessor pivotSortBy: PivotSort[];
     @bindable accessor pivotValueSummary: boolean | HSide;
     @bindable accessor pivotGroupSummary: boolean | HSide;
-    @bindableRef accessor pivotSortBy: PivotSort[];
-    @bindableRef accessor pivotValueSpecs: Record<string, PivotValueSpec>;
 
     //------------------------
     // Child Models
@@ -170,10 +170,10 @@ export class CubeGridModel extends HoistModel {
         cube,
         query,
         columns = [],
+        pivotValueSpecs = {},
+        pivotSortBy = [],
         pivotValueSummary = false,
         pivotGroupSummary = false,
-        pivotSortBy = [],
-        pivotValueSpecs = {},
         gridConfig
     }: CubeGridConfig) {
         super();
@@ -186,10 +186,10 @@ export class CubeGridModel extends HoistModel {
         this.view = view ?? this.markManaged(cube.createView({query, connect: true}));
 
         this.columns = columns;
+        this.pivotValueSpecs = pivotValueSpecs;
+        this.pivotSortBy = pivotSortBy;
         this.pivotValueSummary = pivotValueSummary;
         this.pivotGroupSummary = pivotGroupSummary;
-        this.pivotSortBy = pivotSortBy;
-        this.pivotValueSpecs = pivotValueSpecs;
 
         this.store = this.view.createStore({connect: true});
         const {persistWith, ...restGridConfig} = gridConfig ?? {};

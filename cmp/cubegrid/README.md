@@ -40,10 +40,10 @@ CubeGridModel
 ├── gridModel: GridModel               # The grid rendered; treeMode, managed columns
 ├── selectedRecord, selectAsync, ...   # Selection and `empty` delegated, as on ZoneGridModel
 ├── columns                            # The app's fixed columns, label column first by default
+├── pivotValueSpecs                    # ColumnSpec per measure, applied across every path
+├── pivotSortBy: PivotSort[]           # Display order per pivot level
 ├── pivotValueSummary, pivotGroupSummary      # Total columns, docked / per group: false|true|HSide
 ├── showSummary                        # The grid's totals row, delegated - needs includeRoot
-├── pivotSortBy: PivotSort[]           # Display order per pivot level
-├── pivotValueSpecs                   # ColumnSpec per measure, applied across every path
 └── rebuildColumns()                   # Runs when result.paths or `columns` changes
 
 CubeGrid                               # Renders gridModel; layout props and agOptions
@@ -154,8 +154,8 @@ view.updateQuery({pivot: null});
 ```
 
 `updateQuery` replaces the whole `pivot` block, so spread the current one to change a single
-member. Presentation settings change on the model itself - `columns`, `pivotValueSummary`,
-`pivotGroupSummary`, `pivotSortBy` and `pivotValueSpecs` are all bindable, and `showSummary`
+member. Presentation settings change on the model itself - `columns`, `pivotValueSpecs`,
+`pivotSortBy`, `pivotValueSummary` and `pivotGroupSummary` are all bindable, and `showSummary`
 delegates to the grid.
 
 ### Pivot Columns and Cell Fields
