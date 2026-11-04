@@ -131,8 +131,10 @@ The grid has two regions, always in this order:
 
 Users reorder the fixed columns and the grid persists that through its normal column state. Pivot
 columns are not movable: their order is the view's, set through `pivotSortBy`, in the same way row
-order is set through the query rather than dragged. The regions never interleave, and a rebuild
-keeps each pivot column's width and hidden flag while taking its position from the build.
+order is set through the query rather than dragged. The regions never interleave. A header drag
+cannot drop a fixed column inside the pivot block, a drop made through the column chooser is moved
+back as soon as it lands, and a rebuild keeps each pivot column's width and hidden flag while taking
+its position from the build.
 
 ### Reconfiguring
 

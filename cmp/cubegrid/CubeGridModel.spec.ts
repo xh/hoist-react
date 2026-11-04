@@ -253,6 +253,25 @@ describe('CubeGridModel', () => {
             expect(stateFor('Tech>>sum').width).toBe(321);
         });
 
+        it('puts a fixed column dropped among the pivot columns back in its region', () => {
+            const model = createModel({query: PIVOT_QUERY, columns: [{field: 'avg'}]}),
+                {gridModel} = model,
+                stateFor = (colId: string) => find(gridModel.columnState, {colId});
+
+            gridModel.setColumnState([
+                stateFor('cubeLabel'),
+                stateFor('Energy>>sum'),
+                stateFor('avg'),
+                stateFor('Tech>>sum')
+            ]);
+            expect(gridModel.columnState.map(it => it.colId)).toEqual([
+                'cubeLabel',
+                'avg',
+                'Energy>>sum',
+                'Tech>>sum'
+            ]);
+        });
+
         it('rebuilds when the fixed columns change', () => {
             const model = createModel({query: PIVOT_QUERY});
 

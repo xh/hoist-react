@@ -32,6 +32,11 @@
   `gridModel` prop or from context, as they do a `ZoneGridModel`. `ColChooserButton` accepts a
   `CubeGridModel` too, to choose among its fixed columns.
 
+### 🐞 Bug Fixes
+
+* The grid header's "Pin Column" menu is no longer offered for a column with `movable: false`.
+  Pinning relocates the column, which header and chooser drags already refused for it.
+
 ### ⚙️ Typescript API Adjustments
 
 * Added `GridSelectOptions`, `GridSelectFirstOptions` and `GridEnsureVisibleOptions`, the option

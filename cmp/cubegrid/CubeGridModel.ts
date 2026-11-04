@@ -29,7 +29,7 @@ import type {
 } from '@xh/hoist/data';
 import {action, bindable, bindableRef} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
-import {isArray, isEmpty, keyBy, mapValues, omit, orderBy, pick, sortBy} from 'lodash';
+import {isArray, isEmpty, isEqual, keyBy, mapValues, omit, orderBy, pick, sortBy} from 'lodash';
 
 /**
  * Display sort for the pivot values at one level of the path tree.
@@ -198,7 +198,7 @@ export class CubeGridModel extends HoistModel {
         this._pendingPersistWith = persistWith;
         this.initPersistWhenReady();
 
-        this.addReaction(this.columnsReaction());
+        this.addReaction(this.columnsReaction(), this.regionsReaction());
     }
 
     //------------------------
@@ -328,6 +328,26 @@ export class CubeGridModel extends HoistModel {
         this.initPersistWhenReady();
     }
 
+    // The column chooser's own drag knows nothing of ag-Grid's position lock, so a fixed column
+    // dropped among the pivot columns there is put back as soon as the state lands.
+    private regionsReaction(): ReactionSpec {
+        return {
+            track: () => this.gridModel.columnState,
+            run: () => this.enforceRegions()
+        };
+    }
+
+    @action
+    private enforceRegions() {
+        const {gridModel, _pivotColIds} = this,
+            {columnState} = gridModel,
+            ordered = [
+                ...columnState.filter(it => !_pivotColIds.has(it.colId)),
+                ...columnState.filter(it => _pivotColIds.has(it.colId))
+            ];
+        if (!isEqual(ordered, columnState)) gridModel.setColumnState(ordered);
+    }
+
     // Persisted state names pivot columns, which exist only once a pivoted view has paths.
     // Attaching earlier would restore and rewrite that state without them.
     private initPersistWhenReady() {
@@ -452,7 +472,9 @@ export class CubeGridModel extends HoistModel {
             field: name,
             chooserName: `${path.isRoot ? 'Total' : path.label} › ${field.displayName}`,
             movable: false,
-            enableDotSeparatedFieldPath: false
+            enableDotSeparatedFieldPath: false,
+            // Keeps the pivot block trailing: a fixed column cannot be dropped inside it.
+            agOptions: {lockPosition: 'right'}
         };
     }
 
