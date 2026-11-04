@@ -151,11 +151,11 @@ export class CubeGridModel extends HoistModel {
     /** View supplying this grid's data. Not swappable. */
     readonly view: View;
 
+    @bindableRef accessor columns: Array<ColumnSpec | ColumnGroupSpec>;
     @bindable accessor pivotValueSummary: boolean | HSide;
     @bindable accessor pivotGroupSummary: boolean | HSide;
     @bindableRef accessor pivotSortBy: PivotSort[];
     @bindableRef accessor pivotValueSpecs: Record<string, PivotValueSpec>;
-    @bindableRef accessor columns: Array<ColumnSpec | ColumnGroupSpec>;
 
     //------------------------
     // Child Models
