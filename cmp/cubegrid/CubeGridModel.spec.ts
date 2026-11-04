@@ -12,7 +12,7 @@ import {Cube, type QueryConfig} from '@xh/hoist/data';
 import {initTestAppAsync} from '@xh/hoist/test-support';
 import {find} from 'lodash';
 import {beforeAll, describe, expect, it, onTestFinished} from 'vitest';
-import {CubeGridModel} from './CubeGridModel';
+import {CubeGridModel, PIVOT_GROUP_ID} from './CubeGridModel';
 
 /**
  * CubeGridModel is the grid for any Cube view. These tests pin its layout contract: the app's
@@ -85,8 +85,32 @@ describe('CubeGridModel', () => {
                 'cubeLabel',
                 'sum',
                 'Energy>>sum',
-                'Tech>>sum'
+                'Tech>>sum',
+                'total>>sum'
             ]);
+        });
+
+        it('spans the pivot region with a group that collapses to the row summary', () => {
+            const model = createModel({query: PIVOT_QUERY}),
+                region = model.gridModel.getColumnGroup(PIVOT_GROUP_ID),
+                showModes = (group: ColumnGroup) =>
+                    group.children.map(it => [groupIdOf(it), it.groupShowMode]);
+
+            expect(region.headerName).toBe('Sector');
+            expect(showModes(region)).toEqual([
+                ['Energy', 'expanded'],
+                ['Tech', 'expanded'],
+                ['pivotValueSummary', 'collapsed']
+            ]);
+
+            const withSummary = createModel({query: PIVOT_QUERY, pivotValueSummary: true});
+            expect(showModes(withSummary.gridModel.getColumnGroup(PIVOT_GROUP_ID))).toContainEqual([
+                'pivotValueSummary',
+                'always'
+            ]);
+
+            const collapsed = createModel({query: PIVOT_QUERY, pivotGroupsCollapsed: true});
+            expect(collapsed.gridModel.isColumnGroupExpanded(PIVOT_GROUP_ID)).toBe(false);
         });
 
         it('lets a fixed column and the row summary bind the same measure', () => {
@@ -157,7 +181,8 @@ describe('CubeGridModel', () => {
                 'cubeLabel',
                 'avg',
                 'Energy>>sum',
-                'Tech>>sum'
+                'Tech>>sum',
+                'total>>sum'
             ]);
         });
 
@@ -170,7 +195,8 @@ describe('CubeGridModel', () => {
                 'cubeLabel',
                 'Energy>>sum',
                 'Health>>sum',
-                'Tech>>sum'
+                'Tech>>sum',
+                'total>>sum'
             ]);
         });
 
@@ -224,7 +250,7 @@ describe('CubeGridModel', () => {
                 })
             );
             second.gridModel.updateColumnState([{colId: 'Tech>>sum', width: 333}]);
-            expect(savedColIds()).toEqual(['cubeLabel', 'Energy>>sum', 'Tech>>sum']);
+            expect(savedColIds()).toEqual(['cubeLabel', 'Energy>>sum', 'Tech>>sum', 'total>>sum']);
         });
 
         it('keeps pivot columns in view order across a rebuild, with widths and fixed order kept', () => {
@@ -248,7 +274,8 @@ describe('CubeGridModel', () => {
                 'avg',
                 'sum',
                 'Energy>>sum',
-                'Tech>>sum'
+                'Tech>>sum',
+                'total>>sum'
             ]);
             expect(stateFor('Tech>>sum').width).toBe(321);
         });
@@ -268,7 +295,8 @@ describe('CubeGridModel', () => {
                 'cubeLabel',
                 'avg',
                 'Energy>>sum',
-                'Tech>>sum'
+                'Tech>>sum',
+                'total>>sum'
             ]);
         });
 
@@ -280,7 +308,8 @@ describe('CubeGridModel', () => {
                 'cubeLabel',
                 'avg',
                 'Energy>>sum',
-                'Tech>>sum'
+                'Tech>>sum',
+                'total>>sum'
             ]);
         });
     });
@@ -334,6 +363,10 @@ function createModel(config: Omit<ConstructorParameters<typeof CubeGridModel>[0]
 function autoDestroy<T extends {destroy(): void}>(obj: T): T {
     onTestFinished(() => obj.destroy());
     return obj;
+}
+
+function groupIdOf(it: ColumnOrGroup): string {
+    return it instanceof ColumnGroup ? it.groupId : it.colId;
 }
 
 /** Leaf column ids in display order, descending through groups. */

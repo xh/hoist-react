@@ -115,9 +115,10 @@ export interface CubeGridConfig {
     pivotSortBy?: PivotSort[];
 
     /**
-     * Docked column per value field holding each row's aggregate across all pivot paths. True for
-     * the default 'right', or an {@link HSide} to place it relative to the pivot columns. Default
-     * false. Bind this rather than expecting the column chooser to restore it.
+     * Docked column per value field holding each row's aggregate across all pivot paths. The
+     * pivot region, collapsed, always shows it. True for the default 'right', or an {@link HSide},
+     * to show it while expanded too, on that side of the pivot columns. Default false. Bind this
+     * rather than expecting the column chooser to restore it.
      */
     pivotValueSummary?: boolean | HSide;
 
@@ -130,9 +131,10 @@ export interface CubeGridConfig {
     pivotGroupSummary?: boolean | HSide;
 
     /**
-     * True to render each parent pivot group collapsed to its summary until the user expands it.
-     * Default false. Initial state only - thereafter {@link GridModel.columnGroupState} tracks
-     * each group, keyed on its path, and persists it with `gridConfig.persistWith`.
+     * True to render the pivot region and each parent pivot group collapsed to its summary until
+     * the user expands it. Default false. Initial state only - thereafter
+     * {@link GridModel.columnGroupState} tracks each group, keyed on its path, and persists it
+     * with `gridConfig.persistWith`.
      */
     pivotGroupsCollapsed?: boolean;
 
@@ -386,21 +388,29 @@ export class CubeGridModel extends HoistModel implements GridLikeModel {
 
         const fixed = this.buildFixedColumns();
         this._pivotColIds = new Set();
-        if (!this.query.isPivoted) return fixed;
+        if (!this.query.isPivoted || isEmpty(paths)) return fixed;
 
-        const {pivotValueSummarySide} = this,
-            pathCols = this.sortPaths(paths, 0).map(path => this.buildPathColumn(path)),
-            summaryCols =
-                pivotValueSummarySide && this._rootPath
-                    ? [this.buildSummaryColumn(this._rootPath)]
-                    : [],
-            pivotCols =
+        // One group over the whole region, titled by the pivot dimensions, collapses to the row
+        // summaries. Left-aligned, as a centered label on a wide region sits out of the viewport.
+        const {pivotValueSummarySide, _rootPath} = this,
+            pathCols = this.sortPaths(paths, 0).map(path => ({
+                ...this.buildPathColumn(path),
+                groupShowMode: 'expanded' as const
+            })),
+            summaryCols = [
+                this.buildSummaryColumn(_rootPath, pivotValueSummarySide ? 'always' : 'collapsed')
+            ],
+            pivotGroup = this.buildColGroup(
+                PIVOT_GROUP_ID,
+                this.query.pivot.dimensions.map(it => it.displayName).join(' › '),
                 pivotValueSummarySide === 'left'
                     ? [...summaryCols, ...pathCols]
-                    : [...pathCols, ...summaryCols];
+                    : [...pathCols, ...summaryCols],
+                {headerAlign: 'left', collapsed: this.pivotGroupsCollapsed}
+            );
 
-        this._pivotColIds = new Set(leafColIds(pivotCols));
-        return [...fixed, ...pivotCols];
+        this._pivotColIds = new Set(leafColIds([pivotGroup]));
+        return [...fixed, pivotGroup];
     }
 
     // The app's columns, with a default label column first unless the app supplied a tree column.
@@ -547,6 +557,9 @@ export class CubeGridModel extends HoistModel implements GridLikeModel {
         super.destroy();
     }
 }
+
+/** Group id of the column group spanning the pivot region. */
+export const PIVOT_GROUP_ID = 'pivot';
 
 function leafColIds(cols: Array<ColumnSpec | ColumnGroupSpec>): string[] {
     return cols.flatMap(it => ('children' in it ? leafColIds(it.children) : it.colId));

@@ -43,7 +43,7 @@ CubeGridModel
 ├── pivotValueSpecs                    # ColumnSpec per measure, applied across every path
 ├── pivotSortBy: PivotSort[]           # Display order per pivot level
 ├── pivotValueSummary, pivotGroupSummary      # Total columns, docked / per group: false|true|HSide
-├── pivotGroupsCollapsed               # Start parent pivot groups collapsed to their summary
+├── pivotGroupsCollapsed               # Start the pivot region and its parent groups collapsed
 ├── showSummary                        # The grid's totals row, delegated - needs includeRoot
 └── rebuildColumns()                   # Runs when result.paths or `columns` changes
 
@@ -127,14 +127,17 @@ The grid has two regions, always in this order:
    `SINGLE` aggregator, a leaf field, or a measure. A measure's bare field name is its row total,
    so `{field: 'mktVal'}` shows market value once even when the query pivots P&L by region.
 2. **Pivot columns** - derived from `result.paths` when the query pivots, one group per path with
-   a column per `pivot.valueFields` entry, configured through `pivotValueSpecs`. The summary
-   column joins this region on the side `pivotValueSummary` names.
+   a column per `pivot.valueFields` entry, configured through `pivotValueSpecs`. One group spans
+   the region, titled by the pivot dimensions (`Region › Sector`), with the row summary column on
+   the side `pivotValueSummary` names.
 
-With two or more pivot dimensions, each parent path group expands and collapses from its header.
-A collapsed group shows only its summary column, the group's aggregate per value field.
-`pivotGroupSummary` keeps that summary visible while expanded too, on the side it names. Set
+Column groups in the pivot region expand and collapse from their headers. The region collapses to
+the row summary, one column per value field holding each row's total, and `pivotValueSummary`
+keeps that summary visible while expanded too. With two or more pivot dimensions, each parent path
+group collapses to its own summary the same way, governed by `pivotGroupSummary`. Set
 `pivotGroupsCollapsed` to start every group collapsed. The state is the grid's own
-`columnGroupState`, keyed on the path, so it survives a rebuild and persists with `persistWith`.
+`columnGroupState`, keyed on the path and on `PIVOT_GROUP_ID` for the region, so it survives a
+rebuild and persists with `persistWith`.
 
 Users reorder the fixed columns and the grid persists that through its normal column state. Pivot
 columns are not movable: their order is the view's, set through `pivotSortBy`, in the same way row

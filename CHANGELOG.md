@@ -19,8 +19,8 @@
 * Added `CubeGrid` and `CubeGridModel` (`@xh/hoist/cmp/cubegrid`), a grid bound to a Cube View.
   Create it from an existing `view` or from a `cube` and `query`. It owns its Store and tree-mode
   `GridModel`, takes the app's `columns` for the fixed region, and appends a column group per
-  pivot path to their right when the query pivots, with docked summaries, collapsible parent
-  groups and per-measure column config. See the [CubeGrid README](cmp/cubegrid/README.md).
+  pivot path to their right when the query pivots, with docked summaries, collapsible groups
+  and per-measure column config. See the [CubeGrid README](cmp/cubegrid/README.md).
 * Added Cube pivoting - a View can slice its measures across extra dimensions as columns. Set
   `QueryConfig.pivot` to pivot a Cube View. Cells are published as synthetic fields on each group
   row and described by `ViewResult.paths` and `cellFields`, and pivoted Views update
