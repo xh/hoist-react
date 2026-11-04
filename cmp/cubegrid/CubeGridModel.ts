@@ -5,6 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import type {
+    ColumnGroupShowMode,
     ColumnGroupSpec,
     ColumnSpec,
     GridConfig,
@@ -121,11 +122,19 @@ export interface CubeGridConfig {
     pivotValueSummary?: boolean | HSide;
 
     /**
-     * Column per value field inside each parent pivot group holding that group's aggregate. True
-     * for the default 'right', or an {@link HSide} to place it within the group. Default false.
-     * Only ever visible with 2+ pivot dimensions, since a single dimension has no parent nodes.
+     * Column per value field inside each parent pivot group holding that group's aggregate. A
+     * collapsed group always shows it. True for the default 'right', or an {@link HSide}, to show
+     * it while expanded too, on that side of the group. Default false. Only ever visible with 2+
+     * pivot dimensions, since a single dimension has no parent nodes.
      */
     pivotGroupSummary?: boolean | HSide;
+
+    /**
+     * True to render each parent pivot group collapsed to its summary until the user expands it.
+     * Default false. Initial state only - thereafter {@link GridModel.columnGroupState} tracks
+     * each group, keyed on its path, and persists it with `gridConfig.persistWith`.
+     */
+    pivotGroupsCollapsed?: boolean;
 
     /**
      * Config for the underlying GridModel. `store`, `treeMode` and `columns` are managed by this
@@ -151,6 +160,7 @@ export interface CubeGridConfig {
 export class CubeGridModel extends HoistModel implements GridLikeModel {
     /** View supplying this grid's data. Not swappable. */
     readonly view: View;
+    readonly pivotGroupsCollapsed: boolean;
 
     @bindableRef accessor columns: Array<ColumnSpec | ColumnGroupSpec>;
     @bindableRef accessor pivotValueSpecs: Record<string, PivotValueSpec>;
@@ -175,6 +185,7 @@ export class CubeGridModel extends HoistModel implements GridLikeModel {
         pivotSortBy = [],
         pivotValueSummary = false,
         pivotGroupSummary = false,
+        pivotGroupsCollapsed = false,
         gridConfig
     }: CubeGridConfig) {
         super();
@@ -191,6 +202,7 @@ export class CubeGridModel extends HoistModel implements GridLikeModel {
         this.pivotSortBy = pivotSortBy;
         this.pivotValueSummary = pivotValueSummary;
         this.pivotGroupSummary = pivotGroupSummary;
+        this.pivotGroupsCollapsed = pivotGroupsCollapsed;
 
         this.store = this.view.createStore({connect: true});
         const {persistWith, ...restGridConfig} = gridConfig ?? {};
@@ -433,25 +445,33 @@ export class CubeGridModel extends HoistModel implements GridLikeModel {
             return this.buildColGroup(path.key, path.label, this.buildValueColumns(path));
         }
 
+        // A parent group collapses to its summary. The summary shows expanded too only when asked.
         const {pivotGroupSummarySide} = this,
-            childCols = this.sortPaths(path.children, path.depth).map(child =>
-                this.buildPathColumn(child)
-            ),
-            summaryCols = pivotGroupSummarySide ? [this.buildSummaryColumn(path)] : [];
+            childCols = this.sortPaths(path.children, path.depth).map(child => ({
+                ...this.buildPathColumn(child),
+                groupShowMode: 'expanded' as const
+            })),
+            summaryCols = [
+                this.buildSummaryColumn(path, pivotGroupSummarySide ? 'always' : 'collapsed')
+            ];
 
         return this.buildColGroup(
             path.key,
             path.label,
             pivotGroupSummarySide === 'left'
                 ? [...summaryCols, ...childCols]
-                : [...childCols, ...summaryCols]
+                : [...childCols, ...summaryCols],
+            {collapsed: this.pivotGroupsCollapsed}
         );
     }
 
     // Row summaries are the pivot summaries at the root path - the same cells at different depths.
     // A summary column binds the path's own cell but takes a colId of its own, so the root summary
     // never collides with a fixed column bound to the same measure.
-    private buildSummaryColumn(path: PivotPath): ColumnSpec | ColumnGroupSpec {
+    private buildSummaryColumn(
+        path: PivotPath,
+        groupShowMode?: ColumnGroupShowMode
+    ): ColumnGroupSpec {
         const cols = this.buildValueColumns(path).map(col => ({
             ...col,
             colId: `total>>${col.colId}`
@@ -459,7 +479,8 @@ export class CubeGridModel extends HoistModel implements GridLikeModel {
         return this.buildColGroup(
             path.isRoot ? 'pivotValueSummary' : `${path.key}:groupSummary`,
             'Total',
-            cols
+            cols,
+            {groupShowMode}
         );
     }
 
@@ -486,9 +507,10 @@ export class CubeGridModel extends HoistModel implements GridLikeModel {
     private buildColGroup(
         groupId: string,
         headerName: string,
-        children: Array<ColumnSpec | ColumnGroupSpec>
+        children: Array<ColumnSpec | ColumnGroupSpec>,
+        extra?: Partial<ColumnGroupSpec>
     ): ColumnGroupSpec {
-        return {groupId, headerName, headerAlign: 'center', children};
+        return {groupId, headerName, headerAlign: 'center', children, ...extra};
     }
 
     // Display only - `result.paths` is immutable.

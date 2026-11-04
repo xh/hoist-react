@@ -43,6 +43,7 @@ CubeGridModel
 ├── pivotValueSpecs                    # ColumnSpec per measure, applied across every path
 ├── pivotSortBy: PivotSort[]           # Display order per pivot level
 ├── pivotValueSummary, pivotGroupSummary      # Total columns, docked / per group: false|true|HSide
+├── pivotGroupsCollapsed               # Start parent pivot groups collapsed to their summary
 ├── showSummary                        # The grid's totals row, delegated - needs includeRoot
 └── rebuildColumns()                   # Runs when result.paths or `columns` changes
 
@@ -128,6 +129,12 @@ The grid has two regions, always in this order:
 2. **Pivot columns** - derived from `result.paths` when the query pivots, one group per path with
    a column per `pivot.valueFields` entry, configured through `pivotValueSpecs`. The summary
    column joins this region on the side `pivotValueSummary` names.
+
+With two or more pivot dimensions, each parent path group expands and collapses from its header.
+A collapsed group shows only its summary column, the group's aggregate per value field.
+`pivotGroupSummary` keeps that summary visible while expanded too, on the side it names. Set
+`pivotGroupsCollapsed` to start every group collapsed. The state is the grid's own
+`columnGroupState`, keyed on the path, so it survives a rebuild and persists with `persistWith`.
 
 Users reorder the fixed columns and the grid persists that through its normal column state. Pivot
 columns are not movable: their order is the view's, set through `pivotSortBy`, in the same way row
