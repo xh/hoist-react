@@ -391,7 +391,7 @@ export class CubeGridModel extends HoistModel implements GridLikeModel {
         if (!this.query.isPivoted || isEmpty(paths)) return fixed;
 
         // One group over the whole region, titled by the pivot dimensions, collapses to the row
-        // summaries. Left-aligned, as a centered label on a wide region sits out of the viewport.
+        // summaries.
         const {pivotValueSummarySide, _rootPath} = this,
             pathCols = this.sortPaths(paths, 0).map(path => ({
                 ...this.buildPathColumn(path),
@@ -406,7 +406,7 @@ export class CubeGridModel extends HoistModel implements GridLikeModel {
                 pivotValueSummarySide === 'left'
                     ? [...summaryCols, ...pathCols]
                     : [...pathCols, ...summaryCols],
-                {headerAlign: 'left', collapsed: this.pivotGroupsCollapsed}
+                {collapsed: this.pivotGroupsCollapsed}
             );
 
         this._pivotColIds = new Set(leafColIds([pivotGroup]));
@@ -514,13 +514,14 @@ export class CubeGridModel extends HoistModel implements GridLikeModel {
         };
     }
 
+    // Left-aligned: a centered label on a wide group sits out of the viewport.
     private buildColGroup(
         groupId: string,
         headerName: string,
         children: Array<ColumnSpec | ColumnGroupSpec>,
         extra?: Partial<ColumnGroupSpec>
     ): ColumnGroupSpec {
-        return {groupId, headerName, headerAlign: 'center', children, ...extra};
+        return {groupId, headerName, headerAlign: 'left', children, ...extra};
     }
 
     // Display only - `result.paths` is immutable.
