@@ -5,7 +5,6 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {GridModel} from '@xh/hoist/cmp/grid';
-import {getGridModel} from '@xh/hoist/cmp/grid/impl/GridLikeModel';
 import {CubeGridModel} from '@xh/hoist/cmp/cubegrid';
 import {div, vbox} from '@xh/hoist/cmp/layout';
 import {hoistCmp, useContextModel} from '@xh/hoist/core';
@@ -68,7 +67,7 @@ export const [ColChooserButton, colChooserButton] = hoistCmp.withFactory<ColChoo
         const contextModel = useContextModel<GridModel | CubeGridModel>(
                 it => it instanceof GridModel || it instanceof CubeGridModel
             ),
-            gridModel = getGridModel(withDefault(boundModel, contextModel));
+            gridModel = withDefault(boundModel, contextModel)?.innerGridModel;
         modalTarget = withDefault(modalTarget, 'popover');
 
         const chooserModel = gridModel?.colChooserModel,

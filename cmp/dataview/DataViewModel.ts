@@ -10,6 +10,7 @@ import type {
     ColumnSpec,
     GridConfig,
     GridEnsureVisibleOptions,
+    GridLikeModel,
     GridSelectFirstOptions,
     GridSelectOptions,
     GroupRowRenderer,
@@ -155,7 +156,7 @@ export type ItemHeightFn = (params: {
  * @see DataView
  * @see DataViewConfig
  */
-export class DataViewModel extends HoistModel {
+export class DataViewModel extends HoistModel implements GridLikeModel {
     @managed gridModel: GridModel;
     @bindableRef accessor itemHeight: number | ItemHeightFn;
     @bindable accessor groupRowHeight: number;
@@ -239,6 +240,10 @@ export class DataViewModel extends HoistModel {
     get store() {
         return this.gridModel.store;
     }
+    get innerGridModel(): GridModel {
+        return this.gridModel;
+    }
+
     get empty() {
         return this.gridModel.empty;
     }

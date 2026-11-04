@@ -9,6 +9,7 @@ import type {
     ColumnSpec,
     GridConfig,
     GridEnsureVisibleOptions,
+    GridLikeModel,
     GridModelPersistOptions,
     GridSelectFirstOptions,
     GridSelectOptions
@@ -147,7 +148,7 @@ export interface CubeGridConfig {
  * @see CubeGridConfig
  * @mcpHint tree grid on a Cube view - app columns, plus pivot paths as column groups when pivoted
  */
-export class CubeGridModel extends HoistModel {
+export class CubeGridModel extends HoistModel implements GridLikeModel {
     /** View supplying this grid's data. Not swappable. */
     readonly view: View;
 
@@ -204,6 +205,10 @@ export class CubeGridModel extends HoistModel {
     //------------------------
     // Selection and state - delegated to the GridModel, as in ZoneGridModel
     //------------------------
+
+    get innerGridModel(): GridModel {
+        return this.gridModel;
+    }
 
     get empty() {
         return this.gridModel.empty;

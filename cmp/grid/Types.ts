@@ -12,7 +12,10 @@ import type {
     FilterMatchMode,
     FilterValueSource,
     Store,
-    StoreRecord
+    StoreRecord,
+    StoreRecordId,
+    StoreRecordOrId,
+    StoreSelectionModel
 } from '@xh/hoist/data';
 import type {
     CellClassParams,
@@ -118,6 +121,27 @@ export interface GridSelectFirstOptions {
 export interface GridEnsureVisibleOptions {
     /** Position of the record(s) in the viewport - default null scrolls minimally. */
     position?: GridScrollPosition;
+}
+
+/**
+ * A GridModel, or a model wrapping one that exposes its store and selection - what grid-bound
+ * fields and buttons accept. Implemented by {@link GridModel}, `ZoneGridModel`, `DataViewModel`
+ * and `CubeGridModel`.
+ */
+export interface GridLikeModel extends HoistModel {
+    /** The GridModel behind this model - itself, for a GridModel. */
+    readonly innerGridModel: GridModel;
+    readonly store: Store;
+    readonly empty: boolean;
+    readonly selModel: StoreSelectionModel;
+    readonly hasSelection: boolean;
+    readonly selectedRecords: StoreRecord[];
+    readonly selectedRecord: StoreRecord;
+    readonly selectedId: StoreRecordId;
+    selectAsync(records: Some<StoreRecordOrId>, opts?: GridSelectOptions): Promise<void>;
+    preSelectFirstAsync(): Promise<void>;
+    selectFirstAsync(opts?: GridSelectFirstOptions): Promise<void>;
+    ensureSelectionVisibleAsync(opts?: GridEnsureVisibleOptions): Promise<void>;
 }
 
 /**

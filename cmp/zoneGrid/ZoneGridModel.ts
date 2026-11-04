@@ -19,6 +19,7 @@ import type {
     GridContextMenuSpec,
     GridEnsureVisibleOptions,
     GridGroupSortFn,
+    GridLikeModel,
     GridSelectFirstOptions,
     GridSelectOptions,
     GridSorterLike,
@@ -325,7 +326,7 @@ export interface ZoneGridConfig {
  * @see ZoneGrid
  * @see ZoneGridConfig
  */
-export class ZoneGridModel extends HoistModel {
+export class ZoneGridModel extends HoistModel implements GridLikeModel {
     @managed
     gridModel: GridModel;
 
@@ -510,6 +511,10 @@ export class ZoneGridModel extends HoistModel {
 
     get store() {
         return this.gridModel.store;
+    }
+
+    get innerGridModel(): GridModel {
+        return this.gridModel;
     }
 
     get empty() {

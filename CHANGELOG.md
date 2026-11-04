@@ -28,9 +28,10 @@
   [Cube README](data/cube/README.md#pivoting-with-pivot).
     * See the Admin Console's Activity Tracking tab for a working example - its new "Pivot by"
       option pivots the aggregate grid on a chosen dimension.
-* `StoreFilterField`, `GridFindField` and `ExportButton` now accept a `CubeGridModel` via their
-  `gridModel` prop or from context, as they do a `ZoneGridModel`. `ColChooserButton` accepts a
-  `CubeGridModel` too, to choose among its fixed columns.
+* `StoreFilterField`, `GridFindField` and `ExportButton` now type their `gridModel` prop as a
+  `GridLikeModel`, and accept a `CubeGridModel` there or from context, as they do a
+  `ZoneGridModel`. `ColChooserButton` accepts a `CubeGridModel` too, to choose among its fixed
+  columns.
 
 ### 🐞 Bug Fixes
 
@@ -39,6 +40,9 @@
 
 ### ⚙️ Typescript API Adjustments
 
+* Added `GridLikeModel`, the interface for a `GridModel` or a model wrapping one. It declares the
+  shared `store`, `empty` and selection members, plus `innerGridModel` to reach the `GridModel`
+  behind it. `GridModel`, `ZoneGridModel`, `DataViewModel` and `CubeGridModel` implement it.
 * Added `GridSelectOptions`, `GridSelectFirstOptions` and `GridEnsureVisibleOptions`, the option
   types of `GridModel.selectAsync`, `selectFirstAsync` and `ensureSelectionVisibleAsync`. The
   `ZoneGridModel` and `DataViewModel` delegates now share them, so they accept every option the

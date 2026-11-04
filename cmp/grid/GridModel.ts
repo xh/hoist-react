@@ -131,6 +131,7 @@ import type {
     ColumnState,
     ColumnStateOptions,
     GridEnsureVisibleOptions,
+    GridLikeModel,
     GridModelPersistOptions,
     GridSelectFirstOptions,
     GridSelectOptions,
@@ -501,7 +502,7 @@ export interface GridModelDefaults {
  *
  * @mcpHint model backing all grid components
  */
-export class GridModel extends HoistModel {
+export class GridModel extends HoistModel implements GridLikeModel {
     /**
      * Ceilings (ms) on how long deferred grid work may be held back, calibrated to what going
      * stale costs the user: a deferred sort leaves row order wrong, while a deferred autosize
@@ -1115,6 +1116,10 @@ export class GridModel extends HoistModel {
     /** True if this grid has no records to show in its store. */
     get empty(): boolean {
         return this.store.empty;
+    }
+
+    get innerGridModel(): GridModel {
+        return this;
     }
 
     /**

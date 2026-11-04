@@ -4,10 +4,8 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import type {Column} from '@xh/hoist/cmp/grid';
-import type {GridModel} from '@xh/hoist/cmp/grid';
-import type {GridLikeModel} from '@xh/hoist/cmp/grid/impl/GridLikeModel';
-import {getGridModel, isGridLikeModel} from '@xh/hoist/cmp/grid/impl/GridLikeModel';
+import type {Column, GridLikeModel, GridModel} from '@xh/hoist/cmp/grid';
+import {isGridLikeModel} from '@xh/hoist/cmp/grid/impl/GridLikeModel';
 import {ZoneGridModel} from '@xh/hoist/cmp/zoneGrid';
 import {HoistModel, lookup} from '@xh/hoist/core';
 import type {FilterMatchMode, StoreRecord, Store} from '@xh/hoist/data';
@@ -235,7 +233,7 @@ export class StoreFilterFieldImplModel extends HoistModel {
     }
 
     private get innerGridModel(): GridModel {
-        return getGridModel(this.boundModel);
+        return this.boundModel?.innerGridModel ?? null;
     }
 
     /**

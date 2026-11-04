@@ -4,7 +4,7 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import type {GridLikeModel} from '@xh/hoist/cmp/grid/impl/GridLikeModel';
+import type {GridLikeModel} from '@xh/hoist/cmp/grid';
 import {hbox, span, vbox} from '@xh/hoist/cmp/layout';
 import type {LayoutProps} from '@xh/hoist/core';
 import {hoistCmp, useLocalModel} from '@xh/hoist/core';

@@ -4,8 +4,8 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import type {GridLikeModel} from '@xh/hoist/cmp/grid/impl/GridLikeModel';
-import {getGridModel, isGridLikeModel} from '@xh/hoist/cmp/grid/impl/GridLikeModel';
+import type {GridLikeModel} from '@xh/hoist/cmp/grid';
+import {isGridLikeModel} from '@xh/hoist/cmp/grid/impl/GridLikeModel';
 import {hoistCmp, useContextModel} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
@@ -60,7 +60,7 @@ export const [ExportButton, exportButton] = hoistCmp.withFactory<ExportButtonPro
         ref
     ) {
         const contextModel = useContextModel<GridLikeModel>(isGridLikeModel),
-            gridModel = getGridModel(boundModel ?? contextModel);
+            gridModel = (boundModel ?? contextModel)?.innerGridModel;
 
         if (!onClick) {
             // Validate bound model available and suitable for use.
