@@ -58,7 +58,7 @@ export class PivotPath {
  * A single materialized measure within a pivoted {@link View} result - the pairing of a pivot path with
  * a value field, and the synthetic field name its value is written to on row data.
  *
- * `PivotGridModel` declares one Store field per entry and binds value columns to `name`.
+ * `CubeGridModel` declares one Store field per entry and binds value columns to `name`.
  */
 export interface PivotCellField {
     /** Field name on published row data. The value field's own name at the root path. */

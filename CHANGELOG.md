@@ -16,17 +16,21 @@
 
 ### 🎁 New Features
 
-* Added Grid and Cube pivoting - a View can slice its measures across extra dimensions as columns,
-  and a new `PivotGrid` renders the result.
-    * Set `QueryConfig.pivot` to pivot a Cube View. Cells are published as synthetic fields on
-      each group row and described by `ViewResult.paths` and `cellFields`, and pivoted Views update
-      incrementally like any other. See `PivotSpec` and the
-      [Cube README](data/cube/README.md#pivoting-with-pivot).
-    * Added `PivotGrid` and `PivotGridModel` (`@xh/hoist/cmp/pivotgrid`) to render a pivoted View
-      as a tree grid with nested column groups, docked summaries, and per-measure column config.
-      See the [PivotGrid README](cmp/pivotgrid/README.md).
+* Added `CubeGrid` and `CubeGridModel` (`@xh/hoist/cmp/cubegrid`), a grid bound to a Cube View.
+  Create it from an existing `view` or from a `cube` and `query`. It owns its Store and tree-mode
+  `GridModel`, takes the app's `columns` for the fixed region, and appends a column group per
+  pivot path to their right when the query pivots, with docked summaries and per-measure column
+  config. See the [CubeGrid README](cmp/cubegrid/README.md).
+* Added Cube pivoting - a View can slice its measures across extra dimensions as columns. Set
+  `QueryConfig.pivot` to pivot a Cube View. Cells are published as synthetic fields on each group
+  row and described by `ViewResult.paths` and `cellFields`, and pivoted Views update
+  incrementally like any other. See `PivotSpec` and the
+  [Cube README](data/cube/README.md#pivoting-with-pivot).
     * See the Admin Console's Activity Tracking tab for a working example - its new "Pivot by"
       option pivots the aggregate grid on a chosen dimension.
+* `StoreFilterField`, `GridFindField` and `ExportButton` now accept a `CubeGridModel` via their
+  `gridModel` prop or from context, as they do a `ZoneGridModel`. `ColChooserButton` accepts a
+  `CubeGridModel` too, to choose among its fixed columns.
 
 ### ⚙️ Typescript API Adjustments
 

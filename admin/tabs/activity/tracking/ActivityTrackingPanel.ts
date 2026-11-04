@@ -7,8 +7,7 @@
 import {dataFieldsEditor} from '@xh/hoist/admin/tabs/activity/tracking/datafields/DataFieldsEditor';
 import {errorMessage} from '@xh/hoist/cmp/error';
 import {form} from '@xh/hoist/cmp/form';
-import {grid} from '@xh/hoist/cmp/grid';
-import {pivotGrid} from '@xh/hoist/cmp/pivotgrid';
+import {cubeGrid} from '@xh/hoist/cmp/cubegrid';
 import {div, filler, hframe} from '@xh/hoist/cmp/layout';
 import {creates, hoistCmp} from '@xh/hoist/core';
 import {button, colChooserButton, exportButton} from '@xh/hoist/desktop/cmp/button';
@@ -123,21 +122,23 @@ const aggregateView = hoistCmp.factory<ActivityTrackingModel>(({model}) => {
                     width: 150
                 }),
                 select({
-                    bind: 'pivotMeasure',
+                    bind: 'pivotMeasures',
                     options: model.pivotMeasureOptions,
+                    enableMulti: true,
+                    enableClear: false,
                     enableFilter: false,
-                    width: 130,
-                    omit: !model.pivotGridModel
+                    hideDropdownIndicator: true,
+                    placeholder: 'Measures...',
+                    width: 260,
+                    omit: !model.pivotBy
                 }),
                 filler(),
-                colChooserButton({gridModel: model.activeGridModel, omit: !!model.pivotGridModel}),
-                exportButton({gridModel: model.activeGridModel})
+                colChooserButton({gridModel: model.cubeGridModel}),
+                exportButton({gridModel: model.cubeGridModel})
             ]
         }),
         items: [
-            model.pivotGridModel
-                ? pivotGrid({flex: 1, model: model.pivotGridModel})
-                : grid({flex: 1}),
+            cubeGrid({flex: 1, model: model.cubeGridModel}),
             div({
                 className: 'xh-admin-activity-panel__max-rows-alert',
                 items: [

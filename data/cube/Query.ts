@@ -143,7 +143,7 @@ export interface QueryConfig {
  * the measures aggregated at each intersection. `QueryConfig.dimensions` keeps its meaning as the
  * row hierarchy; the two axes are orthogonal. Results carry the structure as
  * {@link ViewResult.paths} and {@link ViewResult.cellFields}, with each cell value published as a
- * synthetic field on its group row - see `PivotGridModel` for rendering.
+ * synthetic field on its group row - see `CubeGridModel` for rendering.
  */
 export interface PivotSpec {
     /**

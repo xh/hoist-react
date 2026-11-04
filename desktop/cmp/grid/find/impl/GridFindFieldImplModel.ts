@@ -5,9 +5,9 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import type {Column} from '@xh/hoist/cmp/grid';
-import {GridModel} from '@xh/hoist/cmp/grid';
-import type {PivotGridModel} from '@xh/hoist/cmp/pivotgrid';
-import {isGridLikeModel} from '@xh/hoist/cmp/store/impl/StoreFilterFieldImplModel';
+import type {GridModel} from '@xh/hoist/cmp/grid';
+import type {GridLikeModel} from '@xh/hoist/cmp/grid/impl/GridLikeModel';
+import {getGridModel, isGridLikeModel} from '@xh/hoist/cmp/grid/impl/GridLikeModel';
 import {ZoneGridModel} from '@xh/hoist/cmp/zoneGrid';
 import {HoistModel} from '@xh/hoist/core';
 import type {FilterMatchMode, StoreRecord} from '@xh/hoist/data';
@@ -89,7 +89,7 @@ export class GridFindFieldImplModel extends HoistModel {
 
     /** Model to search - from props, or the nearest found in context. */
     @computed
-    get boundModel(): GridModel | ZoneGridModel | PivotGridModel {
+    get boundModel(): GridLikeModel {
         return this.componentProps.gridModel ?? this.lookupModel(isGridLikeModel);
     }
 
@@ -266,8 +266,7 @@ export class GridFindFieldImplModel extends HoistModel {
     }
 
     private get innerGridModel(): GridModel {
-        const {boundModel} = this;
-        return boundModel instanceof GridModel ? boundModel : (boundModel?.gridModel ?? null);
+        return getGridModel(this.boundModel);
     }
 
     // See corresponding method in StoreFilterFieldImplModel.

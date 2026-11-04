@@ -4,5 +4,5 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-export * from './PivotGrid';
-export * from './PivotGridModel';
+export * from './CubeGrid';
+export * from './CubeGridModel';

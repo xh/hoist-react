@@ -13,7 +13,7 @@ import {beforeAll, describe, expect, it, onTestFinished} from 'vitest';
 /**
  * A View whose query sets `pivot` slices each group row's aggregates across a second axis of
  * dimensions, publishing one synthetic field per (pivot path, value field) on the row. These tests
- * pin the contract a PivotGrid relies on: which fields appear and what they are named, that a row's
+ * pin the contract a CubeGrid relies on: which fields appear and what they are named, that a row's
  * total equals the sum of its top-level cells, that ticks keep cells current in place, and that
  * structural changes rebuild rather than leave stale cells behind. Expected values are accumulated
  * directly from the trades, never through the View.

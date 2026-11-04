@@ -5,6 +5,8 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {GridModel} from '@xh/hoist/cmp/grid';
+import {getGridModel} from '@xh/hoist/cmp/grid/impl/GridLikeModel';
+import {CubeGridModel} from '@xh/hoist/cmp/cubegrid';
 import {div, vbox} from '@xh/hoist/cmp/layout';
 import {hoistCmp, useContextModel} from '@xh/hoist/core';
 import {colChooser} from '@xh/hoist/desktop/cmp/grid/impl/colchooser/ColChooser';
@@ -18,8 +20,11 @@ import type {ButtonProps} from '../Button';
 import {button} from '../Button';
 
 export interface ColChooserButtonProps extends ButtonProps {
-    /** GridModel to which this button should bind. Will find nearest in context if not provided. */
-    gridModel?: GridModel;
+    /**
+     * GridModel or CubeGridModel to which this button should bind. Will find the nearest in
+     * context if not provided. A ZoneGridModel has no column chooser - see `zoneMapperButton`.
+     */
+    gridModel?: GridModel | CubeGridModel;
 
     /**
      * Overlay to show a modal chooser in (default 'popover'). Ignored by a chooser configured with
@@ -51,7 +56,7 @@ export const [ColChooserButton, colChooserButton] = hoistCmp.withFactory<ColChoo
             className,
             icon,
             title,
-            gridModel,
+            gridModel: boundModel,
             modalTarget,
             popoverPosition,
             disabled,
@@ -60,7 +65,10 @@ export const [ColChooserButton, colChooserButton] = hoistCmp.withFactory<ColChoo
         },
         ref
     ) {
-        gridModel = withDefault(gridModel, useContextModel(GridModel));
+        const contextModel = useContextModel<GridModel | CubeGridModel>(
+                it => it instanceof GridModel || it instanceof CubeGridModel
+            ),
+            gridModel = getGridModel(withDefault(boundModel, contextModel));
         modalTarget = withDefault(modalTarget, 'popover');
 
         const chooserModel = gridModel?.colChooserModel,

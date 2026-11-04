@@ -5,8 +5,9 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import type {Column} from '@xh/hoist/cmp/grid';
-import {GridModel} from '@xh/hoist/cmp/grid';
-import {PivotGridModel} from '@xh/hoist/cmp/pivotgrid';
+import type {GridModel} from '@xh/hoist/cmp/grid';
+import type {GridLikeModel} from '@xh/hoist/cmp/grid/impl/GridLikeModel';
+import {getGridModel, isGridLikeModel} from '@xh/hoist/cmp/grid/impl/GridLikeModel';
 import {ZoneGridModel} from '@xh/hoist/cmp/zoneGrid';
 import {HoistModel, lookup} from '@xh/hoist/core';
 import type {FilterMatchMode, StoreRecord, Store} from '@xh/hoist/data';
@@ -42,7 +43,7 @@ export class StoreFilterFieldImplModel extends HoistModel {
 
     /** Model to filter - from props, or the nearest found in context. */
     @computed
-    get boundModel(): GridModel | ZoneGridModel | PivotGridModel {
+    get boundModel(): GridLikeModel {
         const {gridModel, store} = this.componentProps;
         if (store) return null;
         return gridModel ?? this.lookupModel(isGridLikeModel);
@@ -234,8 +235,7 @@ export class StoreFilterFieldImplModel extends HoistModel {
     }
 
     private get innerGridModel(): GridModel {
-        const {boundModel} = this;
-        return boundModel instanceof GridModel ? boundModel : (boundModel?.gridModel ?? null);
+        return getGridModel(this.boundModel);
     }
 
     /**
@@ -249,9 +249,4 @@ export class StoreFilterFieldImplModel extends HoistModel {
             ? boundModel.getMappedColumns()
             : innerGridModel.getVisibleLeafColumns();
     }
-}
-
-/** Models a filter or find field can bind to - a GridModel, or a model wrapping one. */
-export function isGridLikeModel(it: unknown): it is GridModel | ZoneGridModel | PivotGridModel {
-    return it instanceof GridModel || it instanceof ZoneGridModel || it instanceof PivotGridModel;
 }

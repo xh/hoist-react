@@ -4,9 +4,7 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import type {GridModel} from '@xh/hoist/cmp/grid';
-import type {PivotGridModel} from '@xh/hoist/cmp/pivotgrid';
-import type {ZoneGridModel} from '@xh/hoist/cmp/zoneGrid';
+import type {GridLikeModel} from '@xh/hoist/cmp/grid/impl/GridLikeModel';
 import type {DefaultHoistProps, HoistModel} from '@xh/hoist/core';
 import {hoistCmp, useLocalModel, XH} from '@xh/hoist/core';
 import type {FilterMatchMode, FilterTestFn, Store} from '@xh/hoist/data';
@@ -40,12 +38,12 @@ export interface StoreFilterFieldProps extends DefaultHoistProps {
     filterBuffer?: number;
 
     /**
-     * Model whose Store this control should filter. When given a GridModel or PivotGridModel, this
+     * Model whose Store this control should filter. When given a GridModel or CubeGridModel, this
      * component will, by default, use the fields for all *visible* columns when matching, as well
      * as any groupBy field. When given a ZoneGridModel, it uses the fields currently mapped to any
      * of its zones. Do not configure this and `store` on the same component.
      */
-    gridModel?: GridModel | ZoneGridModel | PivotGridModel;
+    gridModel?: GridLikeModel;
 
     /**
      * Names of field(s) to include in search. Required if neither a store nor gridModel are
@@ -88,7 +86,7 @@ export interface StoreFilterFieldProps extends DefaultHoistProps {
  * object itself is considered a match.
  *
  * This component is designed to be bound to a Store via either its `store` OR `gridModel` props,
- * the latter accepting a GridModel, ZoneGridModel or PivotGridModel. If not configured with either,
+ * the latter accepting a GridModel, ZoneGridModel or CubeGridModel. If not configured with either,
  * it binds by default to the nearest such model found in context. Binding in this way
  * allows the component to auto-generate the fields in the store to be included in the filter and
  * to automatically apply the filter to the Store.

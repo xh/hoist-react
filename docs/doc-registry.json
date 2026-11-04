@@ -59,7 +59,7 @@
             "mcpCategory": "package",
             "viewerCategory": "core",
             "description": "Client-side OLAP-style aggregation with dimensions, measures, Views, Queries, and pivoting.",
-            "keywords": ["Cube", "CubeField", "View", "Query", "QueryConfig", "aggregator", "dimension", "measure", "SUM", "AVG", "includeRoot", "includeLeaves", "createView", "pivot", "PivotSpec", "createStore", "cubeLabelValue"]
+            "keywords": ["Cube", "CubeField", "View", "Query", "QueryConfig", "aggregator", "dimension", "measure", "SUM", "AVG", "includeRoot", "includeLeaves", "createView", "pivot", "PivotSpec", "cubeLabelValue"]
         },
         {
             "id": "svc/README.md",
@@ -88,12 +88,12 @@
             "keywords": ["GridModel", "Column", "ColumnGroup", "sorting", "grouping", "filtering", "selection", "inline editing", "export", "tree grid", "GridFilterModel", "ag-Grid", "column chooser", "context menu"]
         },
         {
-            "id": "cmp/pivotgrid/README.md",
-            "title": "PivotGrid Package",
+            "id": "cmp/cubegrid/README.md",
+            "title": "CubeGrid Package",
             "mcpCategory": "package",
             "viewerCategory": "components",
-            "description": "Pivoted Cube View rendered as a tree grid with nested column groups, docked summaries, and per-measure column config.",
-            "keywords": ["PivotGridModel", "PivotGrid", "PivotGridConfig", "pivot", "PivotSpec", "valueFields", "cellFields", "PivotPath", "rowSummary", "pivotSummary", "valueSummary", "pivotSortBy", "valueColumnSpecs"]
+            "description": "Cube View rendered as a tree grid with the app's columns, plus pivot paths as nested column groups, docked summaries, and per-measure column config when the query pivots.",
+            "keywords": ["CubeGridModel", "CubeGrid", "CubeGridConfig", "cube grid", "pivot", "PivotSpec", "valueFields", "cellFields", "PivotPath", "pivotSummary", "pivotSubtotal", "pivotSortBy", "pivotValueSpecs", "showSummary"]
         },
         {
             "id": "cmp/form/README.md",

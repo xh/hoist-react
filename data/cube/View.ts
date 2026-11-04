@@ -103,6 +103,7 @@ export interface ViewResult {
 /**
  * Configuration for {@link View.createStore}. Accepts the full {@link StoreConfig} surface,
  * defaulting `loadTreeData` and `projectionOnly` to true.
+ * @internal
  */
 export interface ViewStoreConfig extends StoreConfig {
     /**
@@ -338,6 +339,7 @@ export class View
      *
      * The caller owns the returned Store, and with `connect: true` must call
      * {@link disconnectStore} from its own `destroy()`.
+     * @internal - used by `CubeGridModel`
      */
     createStore(config?: ViewStoreConfig): Store {
         const {connect = false, fields = [], ...rest} = config ?? {};
@@ -362,7 +364,10 @@ export class View
         return store;
     }
 
-    /** Stop loading the given Store from this view. Callers of {@link createStore} own this call. */
+    /**
+     * Stop loading the given Store from this view. Callers of {@link createStore} own this call.
+     * @internal
+     */
     disconnectStore(store: Store) {
         this.stores = this.stores.filter(it => it !== store);
     }

@@ -9,9 +9,9 @@ import type {HoistProps, LayoutProps, TestSupportProps} from '@xh/hoist/core';
 import {hoistCmp, uses} from '@xh/hoist/core';
 import type {GridOptions} from '@xh/hoist/kit/ag-grid';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
-import {PivotGridModel} from './PivotGridModel';
+import {CubeGridModel} from './CubeGridModel';
 
-export interface PivotGridProps<M extends PivotGridModel = PivotGridModel>
+export interface CubeGridProps<M extends CubeGridModel = CubeGridModel>
     extends HoistProps<M>, LayoutProps, TestSupportProps {
     /**
      * Options for ag-Grid's API.
@@ -26,16 +26,16 @@ export interface PivotGridProps<M extends PivotGridModel = PivotGridModel>
 }
 
 /**
- * A PivotGrid is a specialized version of the Grid component.
+ * A CubeGrid is a specialized version of the Grid component, bound to a Cube View.
  *
- * It displays group rows down a tree column and pivot paths across nested column groups, with
- * optional docked summaries. See {@link PivotGridModel} for its configuration, and
- * {@link QueryConfig.pivot} for the query that supplies its data.
+ * It displays group rows down a tree column with the app's columns and, when the view's query
+ * pivots, pivot paths across nested column groups with optional docked summaries. See
+ * {@link CubeGridModel} for its configuration.
  */
-export const [PivotGrid, pivotGrid] = hoistCmp.withFactory<PivotGridProps>({
-    displayName: 'PivotGrid',
-    model: uses(PivotGridModel),
-    className: 'xh-pivot-grid',
+export const [CubeGrid, cubeGrid] = hoistCmp.withFactory<CubeGridProps>({
+    displayName: 'CubeGrid',
+    model: uses(CubeGridModel),
+    className: 'xh-cube-grid',
 
     render({model, className, testId, ...props}, ref) {
         const [layoutProps] = splitLayoutProps(props);

@@ -300,15 +300,11 @@ A row's total always equals the sum of its top-level cells. Cells are sparse: a 
 with no records beneath it has no field at all, and a blank pivot value forms its own `(empty)`
 path unless `excludeEmptyPivotValues` drops those records - from the row totals too. `paths` and
 `cellFields` keep their identity while the pivot structure is unchanged, so a consumer can track
-them to decide when to rebuild columns, which is what `PivotGridModel` does.
+them to decide when to rebuild columns, which is what `CubeGridModel` does.
 
 **Loading a store.** Cell fields are discovered from the data, so a connected Store has to learn
-them. `View.createStore()` mints a Store with every current cell field declared and keeps the
-declarations current as paths come and go:
-
-```typescript
-const store = view.createStore({connect: true});   // Caller owns it - disconnectStore() when done
-```
+them as paths come and go. `CubeGridModel` handles this for its own Store; read `result` directly
+to consume a pivoted View without a grid.
 
 **Updates.** A pivoted View ticks like any other: a value change adjusts the affected cells and
 totals in place, while a record moving between pivot paths rebuilds, the same as a change to a row
@@ -326,7 +322,7 @@ cell. Cost scales with populated cells, not rows times paths. The planner behind
 dimension cannot appear on both axes. `maxPivotPaths` (default 1000) throws when a pivot dimension
 is wider than intended; pick a lower-cardinality dimension or raise the cap deliberately.
 
-To render a pivoted View, see [`/cmp/pivotgrid/`](../../cmp/pivotgrid/README.md).
+To render a View, pivoted or not, see [`/cmp/cubegrid/`](../../cmp/cubegrid/README.md).
 
 ## Accessing View Data
 
@@ -384,5 +380,5 @@ records from `cube.store` directly if you need them.
 
 - [`/data/`](../README.md) - Store, Field, Filter, Validation - the core data layer
 - [`/cmp/grid/`](../../cmp/grid/README.md) - GridModel consumes Store for data display
-- [`/cmp/pivotgrid/`](../../cmp/pivotgrid/README.md) - PivotGrid renders a pivoted View
+- [`/cmp/cubegrid/`](../../cmp/cubegrid/README.md) - CubeGrid renders a View as a grid, pivoted or not
 - `/cmp/grouping/` - GroupingChooser for specifying multi-level dimension groupings
