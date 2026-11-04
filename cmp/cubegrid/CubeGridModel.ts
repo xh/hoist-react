@@ -490,7 +490,7 @@ export class CubeGridModel extends HoistModel implements GridLikeModel {
             path.isRoot ? 'pivotValueSummary' : `${path.key}:groupSummary`,
             'Total',
             cols,
-            {groupShowMode}
+            {groupShowMode, headerAlign: 'center'}
         );
     }
 
