@@ -6,6 +6,7 @@
  */
 import type {Column, GridLikeModel, GridModel} from '@xh/hoist/cmp/grid';
 import {isGridLikeModel} from '@xh/hoist/cmp/grid/impl/GridLikeModel';
+import {DataViewModel} from '@xh/hoist/cmp/dataview';
 import {ZoneGridModel} from '@xh/hoist/cmp/zoneGrid';
 import {HoistModel} from '@xh/hoist/core';
 import type {FilterMatchMode, StoreRecord} from '@xh/hoist/data';
@@ -271,8 +272,10 @@ export class GridFindFieldImplModel extends HoistModel {
     private getSearchColumns(): Column[] {
         const {boundModel, innerGridModel} = this;
         if (!boundModel) return [];
-        return boundModel instanceof ZoneGridModel
-            ? boundModel.getMappedColumns()
-            : innerGridModel.getVisibleLeafColumns();
+        if (boundModel instanceof ZoneGridModel) return boundModel.getMappedColumns();
+        if (boundModel instanceof DataViewModel) {
+            return innerGridModel.getLeafColumns().filter(it => it.field);
+        }
+        return innerGridModel.getVisibleLeafColumns();
     }
 }

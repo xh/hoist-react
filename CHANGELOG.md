@@ -28,10 +28,13 @@
   [Cube README](data/cube/README.md#pivoting-with-pivot).
     * See the Admin Console's Activity Tracking tab for a working example - its new "Pivot by"
       option pivots the aggregate grid on a chosen dimension.
-* `StoreFilterField`, `GridFindField` and `ExportButton` now type their `gridModel` prop as a
-  `GridLikeModel`, and accept a `CubeGridModel` there or from context, as they do a
-  `ZoneGridModel`. `ColChooserButton` accepts a `CubeGridModel` too, to choose among its fixed
-  columns.
+* Every grid-bound field, button and label now takes any `GridLikeModel` via its `gridModel` prop
+  or from context - a `GridModel`, `ZoneGridModel`, `DataViewModel` or `CubeGridModel` - and acts
+  on the `GridModel` behind it. This covers `StoreFilterField`, `GridFindField`, `GridCountLabel`,
+  `ExportButton`, `ColChooserButton`, `ColAutosizeButton`, `ExpandToLevelButton` and the mobile
+  `ExpandCollapseButton`.
+* `StoreFilterField` and `GridFindField` bound to a `DataViewModel` search every field, as a
+  DataView has no visible columns to narrow them.
 
 ### 🐞 Bug Fixes
 

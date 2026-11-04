@@ -6,6 +6,7 @@
  */
 import type {Column, GridLikeModel, GridModel} from '@xh/hoist/cmp/grid';
 import {isGridLikeModel} from '@xh/hoist/cmp/grid/impl/GridLikeModel';
+import {DataViewModel} from '@xh/hoist/cmp/dataview';
 import {ZoneGridModel} from '@xh/hoist/cmp/zoneGrid';
 import {HoistModel, lookup} from '@xh/hoist/core';
 import type {FilterMatchMode, StoreRecord, Store} from '@xh/hoist/data';
@@ -239,12 +240,15 @@ export class StoreFilterFieldImplModel extends HoistModel {
     /**
      * Columns whose fields the user can see, and so should be able to search. A ZoneGrid renders
      * its mapped fields within two zone columns, so use the columns backing those fields instead.
+     * A DataView renders every field through one item renderer, so search them all.
      */
     private getSearchColumns(): Column[] {
         const {boundModel, innerGridModel} = this;
         if (!boundModel) return [];
-        return boundModel instanceof ZoneGridModel
-            ? boundModel.getMappedColumns()
-            : innerGridModel.getVisibleLeafColumns();
+        if (boundModel instanceof ZoneGridModel) return boundModel.getMappedColumns();
+        if (boundModel instanceof DataViewModel) {
+            return innerGridModel.getLeafColumns().filter(it => it.field);
+        }
+        return innerGridModel.getVisibleLeafColumns();
     }
 }

@@ -6,9 +6,12 @@
  */
 import type {GridLikeModel} from '@xh/hoist/cmp/grid';
 import {GridModel} from '@xh/hoist/cmp/grid';
-import {CubeGridModel} from '@xh/hoist/cmp/cubegrid';
-import {ZoneGridModel} from '@xh/hoist/cmp/zoneGrid';
+import type {HoistModel} from '@xh/hoist/core';
 
+/** True for a GridModel, or any model exposing one as `innerGridModel`. */
 export function isGridLikeModel(it: unknown): it is GridLikeModel {
-    return it instanceof GridModel || it instanceof ZoneGridModel || it instanceof CubeGridModel;
+    return (
+        !!(it as HoistModel)?.isHoistModel &&
+        (it as GridLikeModel).innerGridModel instanceof GridModel
+    );
 }
