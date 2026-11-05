@@ -20,13 +20,11 @@ export class ImpersonationBarModel extends HoistModel {
     override xhName = 'impersonationBarModel';
 
     @observable accessor showRequested: boolean = false;
-    @observableRef accessor targets: string[] = [];
+    @observableRef accessor targets: string[] = null;
     @bindable accessor pendingTarget: string = null;
 
     // For managed focus of desktop select.
     inputRef = createRef<HoistInputModel>();
-
-    private targetsLoaded = false;
 
     init() {
         this.addReaction({
@@ -94,14 +92,13 @@ export class ImpersonationBarModel extends HoistModel {
     // Implementation
     //--------------------
     private ensureTargetsLoaded() {
-        if (this.targetsLoaded) return;
+        if (this.targets) return;
 
         this.runner()
             .span('impersonationTargets')
             .run(async ctx => {
                 const targets = await XH.fetchJson({url: 'xh/impersonationTargets'}, ctx);
                 this.setTargets(targets);
-                this.targetsLoaded = true;
             })
             .catchDefault();
     }
