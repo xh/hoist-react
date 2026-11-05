@@ -37,9 +37,9 @@ export const columnGroupHeader = hoistCmp.factory<ColumnGroupHeaderProps>({
         const expandIcon = () => {
             if (!isExpandable) return null;
 
-            // Points where the content goes on click, as panel collapse toggles do.
+            // Shows open or closed state, as tree rows do.
             const icon = isExpanded
-                ? Icon.chevronLeft({size: 'sm'})
+                ? Icon.chevronDown({size: 'sm'})
                 : Icon.chevronRight({size: 'sm'});
             return div(icon);
         };
