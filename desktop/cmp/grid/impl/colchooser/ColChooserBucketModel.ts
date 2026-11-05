@@ -485,7 +485,7 @@ export class ColChooserBucketModel extends HoistModel implements ColChooserDropP
 
                 data.push({
                     id: instanceId,
-                    name: typeof group.headerName === 'string' ? group.headerName : group.groupId,
+                    name: group.chooserName,
                     description: '',
                     chooserGroup: '',
                     visible: false,

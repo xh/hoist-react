@@ -36,10 +36,15 @@
 * `StoreFilterField` and `GridFindField` bound to a `DataViewModel` search every field, as a
   DataView has no visible columns to narrow them.
 
+* Added `ColumnGroupSpec.chooserName` to set a group's name in the desktop column chooser. Use it
+  when `headerName` is a function or element, which the chooser cannot display.
+
 ### 🐞 Bug Fixes
 
 * The grid header's "Pin Column" menu is no longer offered for a column with `movable: false`.
   Pinning relocates the column, which header and chooser drags already refused for it.
+* Fixed the impersonation bar re-requesting its list of users without end when the server returned
+  no users other than the current one.
 
 ### ✨ Styles
 
