@@ -32,44 +32,14 @@ import type {
 import {action, bindable, bindableRef, observable} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
 import {isArray, isEmpty, isEqual, keyBy, mapValues, omit, orderBy, pick, sortBy} from 'lodash';
-
-/**
- * Display sort for the pivot values at one level of the path tree.
- *
- * `'asc'` / `'desc'` sort by raw dimension value. An array is an explicit ordering of raw dimension
- * values, with anything unlisted following in the view's own ascending order. `null` leaves the level
- * in that view order.
- */
-export type PivotSort = 'asc' | 'desc' | any[];
-
-/**
- * {@link ColumnSpec} keys managed by {@link CubeGridModel} and stripped from any
- * {@link CubeGridConfig.pivotValueSpecs} entry - column identity is derived from the pivot path,
- * and the rest are reserved for this model's own use.
- */
-export const RESERVED_PIVOT_VALUE_KEYS = [
-    'colId',
-    'field',
-    'isTreeColumn',
-    'hidden',
-    'hideable',
-    'excludeFromChooser',
-    'enableDotSeparatedFieldPath',
-    'omit',
-    'pinned',
-    'editable',
-    'editor',
-    'setValueFn',
-    'getValueFn',
-    'sortValue',
-    'agOptions'
-] as const;
-
-/**
- * Config for a pivot value column. {@link RESERVED_PIVOT_VALUE_KEYS} are an error to write
- * inline, but a shared spec carrying them assigns cleanly and they are stripped.
- */
-export type PivotValueSpec = Omit<ColumnSpec, (typeof RESERVED_PIVOT_VALUE_KEYS)[number]>;
+import type {
+    PivotColumnGroupContext,
+    PivotColumnGroupSpec,
+    PivotSort,
+    PivotColumnContext,
+    PivotColumnSpec
+} from './Types';
+import {RESERVED_PIVOT_COLUMN_GROUP_KEYS, RESERVED_PIVOT_COLUMN_KEYS} from './Types';
 
 /**
  * Configuration for a {@link CubeGridModel}.
@@ -103,15 +73,32 @@ export interface CubeGridConfig {
     columns?: Array<ColumnSpec | ColumnGroupSpec>;
 
     /**
-     * Column config applied to every pivot column built for the named value field - renderer,
-     * width, align, and so on. Keyed by value field name.
+     * Column config per measure, applied to every pivot column built for it under every path -
+     * renderer, width, align, and so on. Each entry's `field` names a `pivot.valueFields` entry,
+     * and their order here is the order of the columns within each path group. A measure
+     * without an entry gets a default column.
      *
-     * Specs are expected to be shared with the fixed `columns`, so {@link RESERVED_PIVOT_VALUE_KEYS}
+     * Specs are expected to be shared with the fixed `columns`, so {@link RESERVED_PIVOT_COLUMN_KEYS}
      * are stripped rather than rejected. Pivot columns are not hideable and stay out of the column
      * chooser - the region is the query's, so drop a field from `pivot.valueFields` to remove its
      * columns.
      */
-    pivotValueSpecs?: Record<string, PivotValueSpec>;
+    pivotColumns?: PivotColumnSpec[];
+
+    /**
+     * Overrides for one pivot column, merged over its `pivotColumns` entry - a class on the
+     * `total` columns, a width keyed on the path, and so on. Called per column on every rebuild.
+     * Return null for none. Reserved keys are stripped as for `pivotColumns`.
+     */
+    pivotColumnSpecFn?: (ctx: PivotColumnContext) => PivotColumnSpec;
+
+    /**
+     * Overrides for one pivot column group, merged over the built group - a header class or
+     * alignment on the `total` groups, a header name keyed on the path, and so on. Called per
+     * group on every rebuild. Return null for none. {@link RESERVED_PIVOT_COLUMN_GROUP_KEYS} are
+     * stripped.
+     */
+    pivotColumnGroupSpecFn?: (ctx: PivotColumnGroupContext) => PivotColumnGroupSpec;
 
     /** Display sort per pivot dimension, outermost first. Unspecified levels keep view order. */
     pivotSortBy?: PivotSort[];
@@ -120,8 +107,9 @@ export interface CubeGridConfig {
      * Summary columns while a pivot group is expanded, as {@link GridConfig.showSummary} is the
      * summary row: a column per value field under a `Total` header, holding the pivot region's
      * row totals and each parent pivot group's subtotals. A collapsed group always shows its
-     * summary. True for the default 'right', or an {@link HSide} to place it within the group.
-     * Default false. Bind this rather than expecting the column chooser to restore it.
+     * summary. True for the default 'left', where the summary keeps its collapsed position and
+     * the group opens to its right, or an {@link HSide} to place it within the group. Default
+     * false. Bind this rather than expecting the column chooser to restore it.
      */
     showPivotSummaries?: boolean | HSide;
 
@@ -170,7 +158,11 @@ export class CubeGridModel extends HoistModel implements GridLikeModel {
     @observable accessor pivotExpandLevel: number;
 
     @bindableRef accessor columns: Array<ColumnSpec | ColumnGroupSpec>;
-    @bindableRef accessor pivotValueSpecs: Record<string, PivotValueSpec>;
+    @bindableRef accessor pivotColumns: PivotColumnSpec[];
+    @bindableRef accessor pivotColumnSpecFn: (ctx: PivotColumnContext) => PivotColumnSpec;
+    @bindableRef accessor pivotColumnGroupSpecFn: (
+        ctx: PivotColumnGroupContext
+    ) => PivotColumnGroupSpec;
     @bindableRef accessor pivotSortBy: PivotSort[];
     @bindable accessor showPivotSummaries: boolean | HSide;
     @bindable accessor pivotGroupsCollapsible: boolean;
@@ -188,7 +180,9 @@ export class CubeGridModel extends HoistModel implements GridLikeModel {
         cube,
         query,
         columns = [],
-        pivotValueSpecs = {},
+        pivotColumns = [],
+        pivotColumnSpecFn = null,
+        pivotColumnGroupSpecFn = null,
         pivotSortBy = [],
         showPivotSummaries = false,
         pivotGroupsCollapsible = true,
@@ -205,7 +199,9 @@ export class CubeGridModel extends HoistModel implements GridLikeModel {
         this.view = view ?? this.markManaged(cube.createView({query, connect: true}));
 
         this.columns = columns;
-        this.pivotValueSpecs = pivotValueSpecs;
+        this.pivotColumns = pivotColumns;
+        this.pivotColumnSpecFn = pivotColumnSpecFn;
+        this.pivotColumnGroupSpecFn = pivotColumnGroupSpecFn;
         this.pivotSortBy = pivotSortBy;
         this.showPivotSummaries = showPivotSummaries;
         this.pivotGroupsCollapsible = pivotGroupsCollapsible;
@@ -315,12 +311,18 @@ export class CubeGridModel extends HoistModel implements GridLikeModel {
         return this.view.query;
     }
 
+    // Measures in `pivotColumns` order, then any the app left unconfigured in query order.
     private get valueFields(): CubeField[] {
-        return this.query.pivot?.valueFields ?? [];
+        const fields = this.query.pivot?.valueFields ?? [],
+            listed = this.pivotColumns.map(it => it.field);
+        return sortBy(fields, it => {
+            const idx = listed.indexOf(it.name);
+            return idx === -1 ? listed.length : idx;
+        });
     }
 
     private get pivotSummarySide(): HSide {
-        return resolveSide(this.showPivotSummaries, 'right');
+        return resolveSide(this.showPivotSummaries, 'left');
     }
 
     // `equals: 'shallow'` - the track fn allocates a fresh array per run.
@@ -333,7 +335,9 @@ export class CubeGridModel extends HoistModel implements GridLikeModel {
                 this.showPivotSummaries,
                 this.pivotGroupsCollapsible,
                 this.pivotSortBy,
-                this.pivotValueSpecs
+                this.pivotColumns,
+                this.pivotColumnSpecFn,
+                this.pivotColumnGroupSpecFn
             ],
             run: () => this.rebuildColumns()
         };
@@ -412,8 +416,11 @@ export class CubeGridModel extends HoistModel implements GridLikeModel {
         this.indexCellFields(cellFields);
 
         // Stripped once per rebuild.
-        this._valueSpecs = mapValues(this.pivotValueSpecs, it =>
-            omit(it, RESERVED_PIVOT_VALUE_KEYS)
+        this.pivotColumns.forEach(it =>
+            throwIf(!it.field, 'Each `pivotColumns` entry must name a value field in `field`.')
+        );
+        this._pivotColumnsByField = mapValues(keyBy(this.pivotColumns, 'field'), it =>
+            omit(it, RESERVED_PIVOT_COLUMN_KEYS)
         );
 
         const fixed = this.buildFixedColumns();
@@ -423,12 +430,12 @@ export class CubeGridModel extends HoistModel implements GridLikeModel {
 
         // One group over the whole region, titled by the pivot dimensions, collapses to the row
         // summaries.
-        const pathCols = this.sortPaths(paths, 0).map(path => this.buildPathColumn(path)),
+        const pathCols = this.sortPaths(paths, 0).map(path => this.buildPathColumn(path, [])),
             pivotGroup = this.buildColGroup(
                 PIVOT_GROUP_ID,
                 this.query.pivot.dimensions.map(it => it.displayName).join(' › '),
                 this.buildGroupChildren(pathCols, this._rootPath),
-                {level: 0}
+                {level: 0, ctx: {path: this._rootPath, kind: 'path'}}
             );
 
         this._pivotColIds = new Set(leafColIds([pivotGroup]));
@@ -471,20 +478,31 @@ export class CubeGridModel extends HoistModel implements GridLikeModel {
         };
     }
 
-    private buildPathColumn(path: PivotPath): ColumnSpec | ColumnGroupSpec {
+    // The tooltip carries the full path, as an ancestor's header is often scrolled out of view.
+    private buildPathColumn(
+        path: PivotPath,
+        ancestorLabels: string[]
+    ): ColumnSpec | ColumnGroupSpec {
+        const labels = [...ancestorLabels, path.label],
+            headerTooltip = labels.join(' › ');
+
         // Always a group, so the measure name stays visible beside any fixed columns.
         if (isEmpty(path.children)) {
             return this.buildColGroup(path.key, path.label, this.buildValueColumns(path), {
                 level: path.depth,
-                headerAlign: 'center'
+                headerAlign: 'center',
+                headerTooltip,
+                ctx: {path, kind: 'path'}
             });
         }
 
         const childCols = this.sortPaths(path.children, path.depth).map(child =>
-            this.buildPathColumn(child)
+            this.buildPathColumn(child, labels)
         );
         return this.buildColGroup(path.key, path.label, this.buildGroupChildren(childCols, path), {
-            level: path.depth
+            level: path.depth,
+            headerTooltip,
+            ctx: {path, kind: 'path'}
         });
     }
 
@@ -510,7 +528,8 @@ export class CubeGridModel extends HoistModel implements GridLikeModel {
                     this.buildSummaryColumns(summaryPath, 'total'),
                     {
                         headerAlign: 'center',
-                        groupShowMode: pivotGroupsCollapsible ? 'expanded' : null
+                        groupShowMode: pivotGroupsCollapsible ? 'expanded' : null,
+                        ctx: {path: summaryPath, kind: 'total'}
                     }
                 )
             );
@@ -529,23 +548,33 @@ export class CubeGridModel extends HoistModel implements GridLikeModel {
     // never collides with a fixed column bound to the same measure. The `collapsed` set stands in
     // for the `total` set while its group is collapsed.
     private buildSummaryColumns(path: PivotPath, kind: 'total' | 'collapsed'): ColumnSpec[] {
-        return this.buildValueColumns(path).map(col => ({
+        return this.buildValueColumns(path, kind).map(col => ({
             ...col,
             colId: `${kind}>>${col.colId}`,
             groupShowMode: kind === 'collapsed' ? 'collapsed' : null
         }));
     }
 
-    private buildValueColumns(path: PivotPath): ColumnSpec[] {
-        return this.valueFields.map(field => this.buildValueColumn(path, field));
+    private buildValueColumns(
+        path: PivotPath,
+        kind: PivotColumnContext['kind'] = 'cell'
+    ): ColumnSpec[] {
+        return this.valueFields.map(field => this.buildValueColumn(path, field, kind));
     }
 
     // The pivot region is the query's: these columns never move or hide, and the chooser does not
     // list them. Field names are built from data values that may contain dots.
-    private buildValueColumn(path: PivotPath, field: CubeField): ColumnSpec {
-        const name = this.cellFieldName(path, field);
+    private buildValueColumn(
+        path: PivotPath,
+        field: CubeField,
+        kind: PivotColumnContext['kind']
+    ): ColumnSpec {
+        const name = this.cellFieldName(path, field),
+            spec = this._pivotColumnsByField[field.name] ?? {},
+            overrides = this.pivotColumnSpecFn?.({path, field, kind, spec});
         return {
-            ...this._valueSpecs[field.name],
+            ...spec,
+            ...(overrides ? omit(overrides, RESERVED_PIVOT_COLUMN_KEYS) : null),
             colId: name,
             field: name,
             movable: false,
@@ -566,15 +595,25 @@ export class CubeGridModel extends HoistModel implements GridLikeModel {
         {
             level,
             headerAlign = 'left',
-            groupShowMode
-        }: {level?: number; headerAlign?: HAlign; groupShowMode?: ColumnGroupShowMode}
+            groupShowMode,
+            headerTooltip,
+            ctx
+        }: {
+            level?: number;
+            headerAlign?: HAlign;
+            groupShowMode?: ColumnGroupShowMode;
+            headerTooltip?: string;
+            ctx: Pick<PivotColumnGroupContext, 'path' | 'kind'>;
+        }
     ): ColumnGroupSpec {
-        const isPivotLevel = level != null;
+        const isPivotLevel = level != null,
+            spec: PivotColumnGroupSpec = {headerName, headerAlign, headerTooltip},
+            overrides = this.pivotColumnGroupSpecFn?.({...ctx, spec});
         if (isPivotLevel) this._pivotGroupLevels.set(groupId, level);
         return {
+            ...spec,
+            ...(overrides ? omit(overrides, RESERVED_PIVOT_COLUMN_GROUP_KEYS) : null),
             groupId,
-            headerName,
-            headerAlign,
             children,
             groupShowMode,
             collapsed:
@@ -611,7 +650,7 @@ export class CubeGridModel extends HoistModel implements GridLikeModel {
 
     private _cellFieldNames: Map<PivotPath, Map<string, string>> = new Map();
     private _rootPath: PivotPath = null;
-    private _valueSpecs: Record<string, PivotValueSpec> = {};
+    private _pivotColumnsByField: Record<string, PivotColumnSpec> = {};
     private _pendingPersistWith: GridModelPersistOptions = null;
     private _pivotColIds: Set<string> = new Set();
     private _pivotGroupLevels: Map<string, number> = new Map();

@@ -463,12 +463,12 @@ export class ActivityTrackingModel extends HoistModel implements ActivityDetailP
         return new CubeGridModel({
             cube: this.cube,
             query: this.queryConfig,
-            showPivotSummaries: 'right',
-            pivotValueSpecs: {
-                entryCount: {width: 80},
-                elapsed: {width: 100, renderer: elapsedRenderer},
-                elapsedMax: {width: 100, renderer: elapsedRenderer}
-            },
+            showPivotSummaries: true,
+            pivotColumns: [
+                {field: 'entryCount', width: 80},
+                {field: 'elapsed', width: 100, renderer: elapsedRenderer},
+                {field: 'elapsedMax', width: 100, renderer: elapsedRenderer}
+            ],
             columns: [
                 {
                     field: 'cubeLabel',

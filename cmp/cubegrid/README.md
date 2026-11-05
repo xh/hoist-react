@@ -40,7 +40,9 @@ CubeGridModel
 ├── gridModel: GridModel               # The grid rendered; treeMode, managed columns
 ├── selectedRecord, selectAsync, ...   # Selection and `empty` delegated, as on ZoneGridModel
 ├── columns                            # The app's fixed columns, label column first by default
-├── pivotValueSpecs                    # ColumnSpec per measure, applied across every path
+├── pivotColumns                       # ColumnSpec per measure, applied across every path
+├── pivotColumnSpecFn                  # Overrides per column, by path, measure and kind
+├── pivotColumnGroupSpecFn             # Overrides per column group, by path and kind
 ├── pivotSortBy: PivotSort[]           # Display order per pivot level
 ├── showPivotSummaries                 # Total columns per pivot group while expanded: false|true|HSide
 ├── pivotGroupsCollapsible             # Let pivot groups collapse from their headers (default)
@@ -82,11 +84,11 @@ class PositionsModel extends HoistModel {
             includeRoot: true,
             pivot: {dimensions: ['region'], valueFields: ['mktVal', 'pnl']}
         },
-        showPivotSummaries: 'right',
-        pivotValueSpecs: {
-            mktVal: {width: 120, renderer: millionsRenderer({precision: 2, label: true})},
-            pnl: {width: 110, renderer: numberRenderer({precision: 0, colorSpec: true})}
-        },
+        showPivotSummaries: true,
+        pivotColumns: [
+            {field: 'mktVal', width: 120, renderer: millionsRenderer({precision: 2, label: true})},
+            {field: 'pnl', width: 110, renderer: numberRenderer({precision: 0, colorSpec: true})}
+        ],
         gridConfig: {showSummary: 'top', sizingMode: 'compact', autosizeOptions: {mode: 'managed'}}
     });
 
@@ -129,7 +131,12 @@ The grid has two regions, always in this order:
    `SINGLE` aggregator, a leaf field, or a measure. A measure's bare field name is its row total,
    so `{field: 'mktVal'}` shows market value once even when the query pivots P&L by region.
 2. **Pivot columns** - derived from `result.paths` when the query pivots, one group per path with
-   a column per `pivot.valueFields` entry, configured through `pivotValueSpecs`. One group spans
+   a column per `pivot.valueFields` entry, configured through `pivotColumns`, with
+   `pivotColumnSpecFn` overriding single columns by path, measure and kind (`cell`, `total` or
+   `collapsed`) - a class on the `Total` columns, say. `pivotColumnGroupSpecFn` does the same for the
+   column groups, by path and kind (`path` or `total`), for header names, classes and alignment.
+   Both receive the spec they override as `spec`, to derive from rather than replace.
+   One group spans
    the region, titled by the pivot dimensions (`Region › Sector`), with the row summary column on
    the side `showPivotSummaries` names.
 
@@ -137,7 +144,8 @@ Column groups in the pivot region expand and collapse from their headers. The re
 the row summary, one column per value field holding each row's total, shown directly under the
 region's label as ag-Grid does. With two or more pivot dimensions, each parent path group collapses
 to its own summary the same way. `showPivotSummaries` keeps every summary visible while expanded
-too, under a `Total` header on the side it names. `pivotExpandLevel` sets the initial level, as `expandLevel`
+too, under a `Total` header on the side it names - the left by default, so the summary keeps its
+collapsed position and the group opens to its right. `pivotExpandLevel` sets the initial level, as `expandLevel`
 does for rows: 0 collapses the region, 1 shows the top-level groups collapsed, -1 (the default)
 expands everything. `expandPivotToLevel()` resets it later, with `expandAllPivotGroups()` and
 `collapseAllPivotGroups()` as shortcuts. Set `pivotGroupsCollapsible: false` to fix every group
@@ -170,7 +178,7 @@ view.updateQuery({pivot: null});
 ```
 
 `updateQuery` replaces the whole `pivot` block, so spread the current one to change a single
-member. Presentation settings change on the model itself - `columns`, `pivotValueSpecs`,
+member. Presentation settings change on the model itself - `columns`, `pivotColumns`,
 `pivotSortBy` and `showPivotSummaries` are all bindable, and `showSummary`
 delegates to the grid.
 
@@ -191,9 +199,10 @@ column binds the same cell under a `total>>` colId while expanded and a `collaps
 collapsed, so a fixed column can show the row total for a measure as well. Every path is a group headed by its value with a column per measure beneath, even
 with a single measure, so the measure name stays visible beside the fixed columns.
 
-`pivotValueSpecs` applies to every pivot column generated for a measure. Keys that identify or
-place a column - `colId`, `field`, `pinned`, `hidden`, `editable` and the rest of
-`RESERVED_PIVOT_VALUE_KEYS` - are stripped, so a spec shared with the fixed columns still applies
+`pivotColumns` holds one spec per measure, its `field` naming the value field, applied to every
+pivot column generated for that measure - so the same array can serve as the fixed `columns` too.
+Keys that identify or place a column - `colId`, `pinned`, `hidden`, `editable` and the rest of
+`RESERVED_PIVOT_COLUMN_KEYS` - are stripped, so a spec shared with the fixed columns still applies
 cleanly. Pivot columns are not hideable and stay out of the column chooser, as they cannot be
 moved or pinned: the region is the query's. Drop a measure from `pivot.valueFields` or filter the
 query to remove columns.
@@ -216,7 +225,7 @@ source records and re-aggregate everything, filter the query with `view.setFilte
 `updateQuery({filter})`. The two are different operations and both are useful.
 
 Export is leaf-columns-only, so every pivot column exports under its own short header. Set a
-qualified `exportName` per measure in `pivotValueSpecs` if a pivot with several paths needs
+qualified `exportName` per measure in `pivotColumns` if a pivot with several paths needs
 distinct column names in the exported sheet.
 
 ## Related Packages

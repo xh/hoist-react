@@ -20,12 +20,17 @@
   Create it from an existing `view` or from a `cube` and `query`. It owns its Store and tree-mode
   `GridModel`, takes the app's `columns` for the fixed region, and appends a column group per
   pivot path to their right when the query pivots, with docked summaries, collapsible groups
-  and per-measure column config. See the [CubeGrid README](cmp/cubegrid/README.md).
+  and per-measure column config, with `pivotColumnSpecFn` and `pivotColumnGroupSpecFn` for per-column
+  and per-group overrides. See the
+  [CubeGrid README](cmp/cubegrid/README.md).
 * Added Cube pivoting - a View can slice its measures across extra dimensions as columns. Set
   `QueryConfig.pivot` to pivot a Cube View. Cells are published as synthetic fields on each group
   row and described by `ViewResult.paths` and `cellFields`, and pivoted Views update
   incrementally like any other. See `PivotSpec` and the
   [Cube README](data/cube/README.md#pivoting-with-pivot).
+* Added `ViewResult.exception`. A View that declines its data with a routine `HoistException`,
+  such as a pivot over `maxPivotPaths`, publishes the exception and empties its result and stores
+  rather than throwing. `CubeGrid` renders an `ErrorMessage` in place of the grid while it does.
     * See the Admin Console's Activity Tracking tab for a working example - its new "Pivot by"
       option pivots the aggregate grid on a chosen dimension.
 * Every grid-bound field, button and label now takes any `GridLikeModel` via its `gridModel` prop

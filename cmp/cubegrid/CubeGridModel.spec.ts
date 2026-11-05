@@ -161,10 +161,10 @@ describe('CubeGridModel', () => {
             expect(colIds(gridModel.columns)).toEqual([
                 'cubeLabel',
                 'sum',
-                'Energy>>sum',
-                'Tech>>sum',
                 'total>>sum',
-                'collapsed>>sum'
+                'collapsed>>sum',
+                'Energy>>sum',
+                'Tech>>sum'
             ]);
             expect(gridModel.getColumn('total>>sum').field).toBe('sum');
         });
@@ -180,15 +180,15 @@ describe('CubeGridModel', () => {
         });
 
         it('places the summary columns on the side showPivotSummaries names, within the pivot region', () => {
-            const right = createModel({
+            const left = createModel({
                     query: PIVOT_QUERY,
                     columns: [{field: 'avg'}],
                     showPivotSummaries: true
                 }),
-                left = createModel({
+                right = createModel({
                     query: PIVOT_QUERY,
                     columns: [{field: 'avg'}],
-                    showPivotSummaries: 'left'
+                    showPivotSummaries: 'right'
                 });
 
             expect(colIds(right.gridModel.columns)).toEqual([
@@ -362,6 +362,75 @@ describe('CubeGridModel', () => {
 //------------------------
 // Fixtures
 //------------------------
+describe('pivotColumnSpecFn', () => {
+    it('merges overrides over the measure spec by path, field and kind', () => {
+        const model = createModel({
+                query: PIVOT_QUERY,
+                showPivotSummaries: true,
+                pivotColumns: [{field: 'sum', width: 100, align: 'right'}],
+                pivotColumnSpecFn: ({path, kind, spec}) =>
+                    kind === 'total'
+                        ? {cellClass: 'is-total'}
+                        : path.label === 'Tech'
+                          ? {width: spec.width + 50, colId: 'ignored'}
+                          : null
+            }),
+            cols = model.gridModel.getLeafColumns(),
+            tech = find(cols, {field: 'Tech>>sum'}),
+            energy = find(cols, {field: 'Energy>>sum'}),
+            total = find(cols, {colId: 'total>>sum'});
+
+        expect(tech.width).toBe(150);
+        expect(tech.align).toBe('right');
+        expect(energy.width).toBe(100);
+        expect(total.cellClass).toBe('is-total');
+        expect(total.width).toBe(100);
+        expect(find(cols, {colId: 'ignored'})).toBeUndefined();
+    });
+});
+
+describe('pivotColumnGroupSpecFn', () => {
+    it('merges overrides over each group by path and kind, keeping identity', () => {
+        const model = createModel({
+                query: PIVOT_QUERY,
+                showPivotSummaries: true,
+                pivotColumnGroupSpecFn: ({path, kind, spec}) =>
+                    kind === 'total'
+                        ? {headerClass: 'is-total', groupId: 'ignored'}
+                        : path.isRoot
+                          ? {headerAlign: 'center'}
+                          : {headerName: `${spec.headerName}`.toUpperCase()}
+            }),
+            groups = allGroups(model.gridModel.columns),
+            region = find(groups, {groupId: PIVOT_GROUP_ID}),
+            tech = find(groups, {groupId: 'Tech'}),
+            total = find(groups, {groupId: `${PIVOT_GROUP_ID}:total`});
+
+        expect(region.headerAlign).toBe('center');
+        expect(tech.headerName).toBe('TECH');
+        expect(total.headerClass).toBe('is-total');
+        expect(find(groups, {groupId: 'ignored'})).toBeUndefined();
+    });
+});
+
+describe('declined results', () => {
+    it('empties the grid and drops the pivot region, then rebuilds when the query fits', () => {
+        const pivot = {dimensions: ['sector'], valueFields: ['sum'], maxPivotPaths: 1},
+            model = createModel({query: {...PLAIN_QUERY, pivot}}),
+            {gridModel, view} = model;
+
+        expect(view.result.exception?.message).toMatch(/sector/);
+        expect(gridModel.store.count).toBe(0);
+        expect(gridModel.columns.some(it => groupIdOf(it) === PIVOT_GROUP_ID)).toBe(false);
+
+        view.updateQuery({pivot: {...pivot, maxPivotPaths: null}});
+
+        expect(view.result.exception).toBeNull();
+        expect(gridModel.store.count).toBeGreaterThan(0);
+        expect(gridModel.columns.some(it => groupIdOf(it) === PIVOT_GROUP_ID)).toBe(true);
+    });
+});
+
 const PLAIN_QUERY: QueryConfig = {
     dimensions: ['region'],
     fields: ['sum', 'avg'],
@@ -407,6 +476,11 @@ function createModel(config: Omit<ConstructorParameters<typeof CubeGridModel>[0]
 function autoDestroy<T extends {destroy(): void}>(obj: T): T {
     onTestFinished(() => obj.destroy());
     return obj;
+}
+
+/** Every column group, descending through nested groups. */
+function allGroups(cols: ColumnOrGroup[]): ColumnGroup[] {
+    return cols.flatMap(it => (it instanceof ColumnGroup ? [it, ...allGroups(it.children)] : []));
 }
 
 function groupIdOf(it: ColumnOrGroup): string {

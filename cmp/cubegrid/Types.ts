@@ -18,12 +18,11 @@ export type PivotSort = 'asc' | 'desc' | any[];
 
 /**
  * {@link ColumnSpec} keys managed by {@link CubeGridModel} and stripped from any
- * {@link CubeGridConfig.pivotValueSpecs} entry - column identity is derived from the pivot path,
+ * {@link CubeGridConfig.pivotColumns} entry - column identity is derived from the pivot path,
  * and the rest are reserved for this model's own use.
  */
-export const RESERVED_PIVOT_VALUE_KEYS = [
+export const RESERVED_PIVOT_COLUMN_KEYS = [
     'colId',
-    'field',
     'isTreeColumn',
     'hidden',
     'hideable',
@@ -40,26 +39,27 @@ export const RESERVED_PIVOT_VALUE_KEYS = [
 ] as const;
 
 /**
- * Config for a pivot value column. {@link RESERVED_PIVOT_VALUE_KEYS} are an error to write
- * inline, but a shared spec carrying them assigns cleanly and they are stripped.
+ * Config for the pivot columns of one measure, with `field` naming the value field.
+ * {@link RESERVED_PIVOT_COLUMN_KEYS} are an error to write inline, but a spec shared with the
+ * fixed columns and carrying them assigns cleanly and they are stripped.
  */
-export type PivotValueSpec = Omit<ColumnSpec, (typeof RESERVED_PIVOT_VALUE_KEYS)[number]>;
+export type PivotColumnSpec = Omit<ColumnSpec, (typeof RESERVED_PIVOT_COLUMN_KEYS)[number]>;
 
 /**
- * Which pivot column is being built - the argument to {@link CubeGridConfig.pivotValueSpecFn}.
+ * Which pivot column is being built - the argument to {@link CubeGridConfig.pivotColumnSpecFn}.
  * `cell` sits under a leaf path, `total` in a `Total` group, and `collapsed` stands in for a
  * collapsed group. Summaries take the root path for the row summaries. `spec` is the measure's
- * `pivotValueSpecs` entry the overrides merge over, so an app can derive from it.
+ * `pivotColumns` entry the overrides merge over, so an app can derive from it.
  */
-export interface PivotValueContext {
+export interface PivotColumnContext {
     path: PivotPath;
     field: CubeField;
     kind: 'cell' | 'total' | 'collapsed';
-    spec: PivotValueSpec;
+    spec: PivotColumnSpec;
 }
 
 /** Keys of a pivot column group that identify or structure it - stripped from app overrides. */
-export const RESERVED_PIVOT_GROUP_KEYS = [
+export const RESERVED_PIVOT_COLUMN_GROUP_KEYS = [
     'groupId',
     'children',
     'groupShowMode',
@@ -69,17 +69,20 @@ export const RESERVED_PIVOT_GROUP_KEYS = [
     'agOptions'
 ] as const;
 
-/** Overrides for a pivot column group - see {@link CubeGridConfig.pivotGroupSpecFn}. */
-export type PivotGroupSpec = Omit<ColumnGroupSpec, (typeof RESERVED_PIVOT_GROUP_KEYS)[number]>;
+/** Overrides for a pivot column group - see {@link CubeGridConfig.pivotColumnGroupSpecFn}. */
+export type PivotColumnGroupSpec = Omit<
+    ColumnGroupSpec,
+    (typeof RESERVED_PIVOT_COLUMN_GROUP_KEYS)[number]
+>;
 
 /**
  * Which pivot column group is being built - the argument to
- * {@link CubeGridConfig.pivotGroupSpecFn}. `path` is the group for a pivot path, with the root
+ * {@link CubeGridConfig.pivotColumnGroupSpecFn}. `path` is the group for a pivot path, with the root
  * path for the group over the whole region. `total` holds a path's summary columns. `spec` is
  * the group as built - header name, alignment and tooltip - which the overrides merge over.
  */
-export interface PivotGroupContext {
+export interface PivotColumnGroupContext {
     path: PivotPath;
     kind: 'path' | 'total';
-    spec: PivotGroupSpec;
+    spec: PivotColumnGroupSpec;
 }

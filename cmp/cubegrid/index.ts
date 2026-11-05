@@ -6,3 +6,4 @@
  */
 export * from './CubeGrid';
 export * from './CubeGridModel';
+export * from './Types';
