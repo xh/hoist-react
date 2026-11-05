@@ -16,6 +16,7 @@
     display: flex;
     flex-direction: row;
     align-items: center;
+    gap: var(--xh-pad-half-px);
     min-height: 32px;
     width: 100%;
 
@@ -23,8 +24,9 @@
       cursor: pointer;
     }
 
+    // The label sizes to its text, so the expand control sits right after it.
     span {
-      flex: 1;
+      min-width: 0;
       overflow: hidden;
       text-overflow: ellipsis;
     }
@@ -71,16 +73,20 @@
   }
 
   .xh-column-header-align-right {
-    .xh-grid-header,
-    .xh-grid-group-header {
+    .xh-grid-header {
       text-align: right;
+    }
+    .xh-grid-group-header {
+      justify-content: flex-end;
     }
   }
 
   .xh-column-header-align-center {
-    .xh-grid-header,
-    .xh-grid-group-header {
+    .xh-grid-header {
       text-align: center;
+    }
+    .xh-grid-group-header {
+      justify-content: center;
     }
   }
 
