@@ -6,7 +6,8 @@
  */
 import {elementFactory, hoistCmp, uses, XH} from '@xh/hoist/core';
 import {errorMessage} from '@xh/hoist/cmp/error';
-import {Component, ReactNode} from 'react';
+import type {ReactNode} from 'react';
+import {Component} from 'react';
 import {ErrorBoundaryModel} from './ErrorBoundaryModel';
 
 /**

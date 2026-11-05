@@ -16,10 +16,11 @@ import {
     VIEW_GROUP_DELIMITER
 } from '@xh/hoist/cmp/viewmanager';
 import {HoistModel, managed, XH} from '@xh/hoist/core';
-import {required, StoreRecord} from '@xh/hoist/data';
+import type {StoreRecord} from '@xh/hoist/data';
+import {required} from '@xh/hoist/data';
 import {bindable} from '@xh/hoist/mobx';
 import {pluralize} from '@xh/hoist/utils/js';
-import {ManageDialogModel} from '../ManageDialogModel';
+import type {ManageDialogModel} from '../ManageDialogModel';
 import {confirmGroupMergeIfExistsAsync} from '../Utils';
 
 /**

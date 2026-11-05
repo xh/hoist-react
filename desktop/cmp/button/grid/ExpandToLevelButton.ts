@@ -6,14 +6,17 @@
  */
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {div, vbox} from '@xh/hoist/cmp/layout';
-import {hoistCmp, MenuItemLike, useContextModel} from '@xh/hoist/core';
+import type {MenuItemLike} from '@xh/hoist/core';
+import {hoistCmp, useContextModel} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
-import {menu, popover, Position} from '@xh/hoist/kit/blueprint';
+import type {Position} from '@xh/hoist/kit/blueprint';
+import {menu, popover} from '@xh/hoist/kit/blueprint';
 import {parseMenuItems} from '@xh/hoist/desktop/cmp/menu/impl/MenuItems';
 import {logError, withDefault} from '@xh/hoist/utils/js';
-import {ReactNode} from 'react';
-import {button, ButtonProps} from '../Button';
+import type {ReactNode} from 'react';
+import type {ButtonProps} from '../Button';
+import {button} from '../Button';
 
 export interface ExpandToLevelButtonProps extends Omit<ButtonProps, 'title'> {
     /** GridModel to which this button should bind. Will find nearest in context if not provided. */

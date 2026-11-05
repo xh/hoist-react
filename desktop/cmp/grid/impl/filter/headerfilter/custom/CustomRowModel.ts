@@ -6,11 +6,11 @@
  */
 import type {GridFilterFieldSpec} from '@xh/hoist/cmp/grid';
 import {HoistModel} from '@xh/hoist/core';
-import {FieldFilterOperator, FieldFilterSpec} from '@xh/hoist/data';
-import {HeaderFilterModel} from '../HeaderFilterModel';
+import type {FieldFilterOperator, FieldFilterSpec} from '@xh/hoist/data';
+import type {HeaderFilterModel} from '../HeaderFilterModel';
 import {bindable, computedStruct} from '@xh/hoist/mobx';
 import {isArray, isEmpty, isNil} from 'lodash';
-import {CustomTabModel} from './CustomTabModel';
+import type {CustomTabModel} from './CustomTabModel';
 
 type OperatorOptionValue = 'blank' | 'not blank' | FieldFilterOperator;
 

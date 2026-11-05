@@ -4,10 +4,10 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {numberRenderer} from '@xh/hoist/format';
+import {numberTextRenderer} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
 import {tagsRenderer} from '../renderers/TagsRenderer';
-import {ColumnSpec} from './Column';
+import type {ColumnSpec} from './Column';
 
 /** Column config to render truthy values with a standardized green check icon. */
 export const boolCheck: ColumnSpec = {
@@ -19,7 +19,7 @@ export const boolCheck: ColumnSpec = {
 
 export const number: ColumnSpec = {
     align: 'right',
-    renderer: numberRenderer({})
+    textRenderer: numberTextRenderer({})
 };
 
 export const fileExt: ColumnSpec = {

@@ -4,19 +4,21 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {
+import type {
     RangeSliderProps as BpRangeSliderProps,
     SliderProps as BpSliderProps
 } from '@blueprintjs/core';
-import {HoistInputModel, HoistInputProps, useHoistInputModel} from '@xh/hoist/cmp/input';
+import type {HoistInputProps} from '@xh/hoist/cmp/input';
+import {HoistInputModel, useHoistInputModel} from '@xh/hoist/cmp/input';
 import {box} from '@xh/hoist/cmp/layout';
-import {hoistCmp, HoistProps, LayoutProps, Some} from '@xh/hoist/core';
+import type {HoistProps, LayoutProps, Some} from '@xh/hoist/core';
+import {hoistCmp} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {rangeSlider as bpRangeSlider, slider as bpSlider} from '@xh/hoist/kit/blueprint';
 import {throwIf, withDefault} from '@xh/hoist/utils/js';
 import {getLayoutProps} from '@xh/hoist/utils/react';
 import {isArray} from 'lodash';
-import {ReactNode} from 'react';
+import type {ReactNode} from 'react';
 import './Slider.scss';
 
 export interface SliderProps extends HoistProps, HoistInputProps, LayoutProps {

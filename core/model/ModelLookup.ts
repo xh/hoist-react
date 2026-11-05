@@ -4,7 +4,8 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {elementFactory, ModelSelector, HoistModel, ModelPublishMode} from './..';
+import type {ModelSelector, ModelPublishMode} from './..';
+import {elementFactory, HoistModel} from './..';
 import {isComputedProp, isObservableProp, untracked} from '@xh/hoist/mobx';
 import {find} from 'lodash';
 import {createContext} from 'react';

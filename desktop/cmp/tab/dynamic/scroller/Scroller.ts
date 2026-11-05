@@ -1,10 +1,12 @@
 import {hbox, vbox} from '@xh/hoist/cmp/layout';
-import {BoxProps, creates, hoistCmp, HoistProps} from '@xh/hoist/core';
+import type {BoxProps, HoistProps} from '@xh/hoist/core';
+import {creates, hoistCmp} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {ScrollerModel} from '@xh/hoist/desktop/cmp/tab/dynamic/scroller/ScrollerModel';
 import {Icon} from '@xh/hoist/icon';
 import {useComposedRefs, useOnResize} from '@xh/hoist/utils/react';
-import React, {ReactElement, Ref} from 'react';
+import type {ReactElement, Ref} from 'react';
+import type React from 'react';
 
 /**
  * A scroller component that displays a content component with directional scroll buttons when the

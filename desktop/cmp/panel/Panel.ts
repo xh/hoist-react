@@ -6,38 +6,28 @@
  */
 import {errorBoundary} from '@xh/hoist/cmp/error/ErrorBoundary';
 import {box, frame, vbox, vframe} from '@xh/hoist/cmp/layout';
+import type {BoxProps, HoistModel, HoistProps, Some, TaskObserver} from '@xh/hoist/core';
 import {
-    BoxProps,
     hoistCmp,
-    HoistModel,
-    HoistProps,
     refreshContextView,
-    Some,
-    TaskObserver,
     useContextModel,
     uses,
     type ContextMenuSpec
 } from '@xh/hoist/core';
 import {loadingIndicator} from '@xh/hoist/cmp/loadingindicator';
 import {mask} from '@xh/hoist/cmp/mask';
-import {banner, BannerProps} from '@xh/hoist/desktop/cmp/banner';
+import type {BannerProps} from '@xh/hoist/desktop/cmp/banner';
+import {banner} from '@xh/hoist/desktop/cmp/banner';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {useContextMenu, useHotkeys} from '@xh/hoist/desktop/hooks';
 import '@xh/hoist/desktop/register';
-import {HotkeyConfig} from '@xh/hoist/kit/blueprint';
+import type {HotkeyConfig} from '@xh/hoist/kit/blueprint';
 import {logWarn} from '@xh/hoist/utils/js';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import {castArray, isString, omitBy} from 'lodash';
-import {
-    Children,
-    cloneElement,
-    isValidElement,
-    ReactElement,
-    ReactNode,
-    useLayoutEffect,
-    useRef
-} from 'react';
+import type {ReactElement, ReactNode} from 'react';
+import {Children, cloneElement, isValidElement, useLayoutEffect, useRef} from 'react';
 import {modalSupport} from '../modalsupport/ModalSupport';
 import {panelHeader} from './impl/PanelHeader';
 import {resizeContainer} from './impl/ResizeContainer';

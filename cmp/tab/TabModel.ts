@@ -4,22 +4,20 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {
-    XH,
-    HoistModel,
-    managed,
-    ManagedRefreshContextModel,
+import type {
     RefreshMode,
     RenderMode,
     Content,
     RefreshContextModel,
     Thunkable
 } from '@xh/hoist/core';
+import {XH, HoistModel, managed, ManagedRefreshContextModel} from '@xh/hoist/core';
 import {action, computed, observable, bindable, bindableRef} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
 import {isArray, isUndefined, startCase} from 'lodash';
-import {TabContainerConfig, TabContainerModel, tabContainer} from '@xh/hoist/cmp/tab';
-import {ReactElement, ReactNode} from 'react';
+import type {TabContainerConfig} from '@xh/hoist/cmp/tab';
+import {TabContainerModel, tabContainer} from '@xh/hoist/cmp/tab';
+import type {ReactElement, ReactNode} from 'react';
 
 /**
  * Configuration for a {@link TabModel} - a single tab within a {@link TabContainerModel}.

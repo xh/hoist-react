@@ -4,12 +4,13 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {ColumnState, GridModel} from '@xh/hoist/cmp/grid';
-import {ColumnGroup} from '@xh/hoist/cmp/grid/columns/ColumnGroup';
+import type {ColumnState} from '@xh/hoist/cmp/grid';
+import {GridModel} from '@xh/hoist/cmp/grid';
+import type {ColumnGroup} from '@xh/hoist/cmp/grid/columns/ColumnGroup';
 import {hbox, span} from '@xh/hoist/cmp/layout';
 import type {HSide, Some} from '@xh/hoist/core';
 import {HoistModel, managed} from '@xh/hoist/core';
-import {StoreRecord, StoreRecordId} from '@xh/hoist/data';
+import type {StoreRecord, StoreRecordId} from '@xh/hoist/data';
 import {actionCol, calcActionColWidth} from '@xh/hoist/desktop/cmp/grid';
 import {Icon} from '@xh/hoist/icon';
 import {bindable, computed} from '@xh/hoist/mobx';
@@ -484,7 +485,7 @@ export class ColChooserBucketModel extends HoistModel implements ColChooserDropP
 
                 data.push({
                     id: instanceId,
-                    name: typeof group.headerName === 'string' ? group.headerName : group.groupId,
+                    name: group.chooserName,
                     description: '',
                     chooserGroup: '',
                     visible: false,

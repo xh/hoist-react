@@ -5,7 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {debounce as lodashDebounce, isFinite} from 'lodash';
-import {SyntheticEvent} from 'react';
+import type {SyntheticEvent} from 'react';
 
 /**
  * Is this element visible and not within a hidden sub-tree (e.g. hidden tab)?

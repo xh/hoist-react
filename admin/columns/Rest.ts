@@ -4,7 +4,7 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {ColumnSpec} from '@xh/hoist/cmp/grid/columns';
+import type {ColumnSpec} from '@xh/hoist/cmp/grid/columns';
 import * as Col from '@xh/hoist/cmp/grid/columns';
 import {dateTimeRenderer} from '@xh/hoist/format';
 

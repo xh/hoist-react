@@ -5,9 +5,9 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
-import {GridAutosizeOptions, GridModel} from '@xh/hoist/cmp/grid';
+import type {GridAutosizeOptions, GridModel} from '@xh/hoist/cmp/grid';
 import {HoistService} from '@xh/hoist/core';
-import {StoreRecord} from '@xh/hoist/data';
+import type {StoreRecord} from '@xh/hoist/data';
 import {runInAction} from '@xh/hoist/mobx';
 import {compact, isEmpty, isFinite, map, sortBy, sum} from 'lodash';
 import {ColumnWidthCalculator} from '../cmp/grid/impl/ColumnWidthCalculator';

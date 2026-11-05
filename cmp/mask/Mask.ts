@@ -4,20 +4,13 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {
-    hoistCmp,
-    HoistModel,
-    HoistProps,
-    Some,
-    TaskObserver,
-    useLocalModel,
-    XH
-} from '@xh/hoist/core';
+import type {HoistProps, Some} from '@xh/hoist/core';
+import {hoistCmp, HoistModel, TaskObserver, useLocalModel, XH} from '@xh/hoist/core';
 import {maskImpl as desktopMaskImpl} from '@xh/hoist/dynamics/desktop';
 import {maskImpl as mobileMaskImpl} from '@xh/hoist/dynamics/mobile';
 import {computed} from '@xh/hoist/mobx';
 import {withDefault} from '@xh/hoist/utils/js';
-import {ReactNode, MouseEvent} from 'react';
+import type {ReactNode, MouseEvent} from 'react';
 
 export interface MaskProps extends HoistProps {
     /** Task(s) that should be monitored to determine if the mask should be displayed. */

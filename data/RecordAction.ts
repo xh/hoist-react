@@ -6,10 +6,11 @@
  */
 
 import {isBoolean, isEmpty, isNil, isNumber, isString} from 'lodash';
-import {ReactElement, ReactNode} from 'react';
+import type {ReactElement, ReactNode} from 'react';
 import {type Intent, isMenuHeading, type MenuHeading, type TestSupportProps} from '../core';
-import {StoreRecord} from './StoreRecord';
-import {Column, type GridContextMenuItemLike, GridModel} from '../cmp/grid';
+import type {StoreRecord} from './StoreRecord';
+import type {Column, GridModel} from '../cmp/grid';
+import type {GridContextMenuItemLike} from '../cmp/grid';
 
 export interface RecordActionSpec extends TestSupportProps {
     /** Label to be displayed. */

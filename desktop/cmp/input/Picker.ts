@@ -4,20 +4,15 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {HoistInputModel, HoistInputProps, useHoistInputModel} from '@xh/hoist/cmp/input';
+import type {HoistInputProps} from '@xh/hoist/cmp/input';
+import {HoistInputModel, useHoistInputModel} from '@xh/hoist/cmp/input';
 import {div, filler, hbox, span, vbox} from '@xh/hoist/cmp/layout';
 import {textInput} from './TextInput';
-import {
-    elementFactory,
-    hoistCmp,
-    HoistProps,
-    LayoutProps,
-    SelectOption,
-    StyleProps,
-    Thunkable
-} from '@xh/hoist/core';
+import type {HoistProps, LayoutProps, SelectOption, StyleProps, Thunkable} from '@xh/hoist/core';
+import {elementFactory, hoistCmp} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
-import {button, ButtonProps} from '@xh/hoist/desktop/cmp/button';
+import type {ButtonProps} from '@xh/hoist/desktop/cmp/button';
+import {button} from '@xh/hoist/desktop/cmp/button';
 import {Icon} from '@xh/hoist/icon';
 import {popover} from '@xh/hoist/kit/blueprint';
 import {action, bindable, observable, bindableRef} from '@xh/hoist/mobx';
@@ -25,7 +20,7 @@ import {TEST_ID, getTestId, withDefault, pluralize, executeIfFunction} from '@xh
 import {getLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import {capitalize, castArray, isEmpty, isEqual, isPlainObject} from 'lodash';
-import {ReactNode} from 'react';
+import type {ReactNode} from 'react';
 import {List} from 'react-window';
 import './Picker.scss';
 

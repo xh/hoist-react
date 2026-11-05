@@ -4,9 +4,10 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {hoistCmp, HoistProps} from '@xh/hoist/core';
+import type {HoistProps} from '@xh/hoist/core';
+import {hoistCmp} from '@xh/hoist/core';
 import {reactMarkdown} from '@xh/hoist/kit/react-markdown';
-import {Options} from 'react-markdown';
+import type {Options} from 'react-markdown';
 import remarkBreaks from 'remark-breaks';
 import remarkGfm from 'remark-gfm';
 import type {PluggableList} from 'unified';

@@ -4,7 +4,8 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {BannerSpec, HoistModel} from '@xh/hoist/core';
+import type {BannerSpec} from '@xh/hoist/core';
+import {HoistModel} from '@xh/hoist/core';
 
 /**
  * Model for a single instance of a banner. Immutable.

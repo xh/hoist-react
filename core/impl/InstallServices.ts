@@ -4,7 +4,8 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {HoistService, HoistServiceClass, InitContext, Some, XH} from '@xh/hoist/core';
+import type {HoistService, HoistServiceClass, InitContext, Some} from '@xh/hoist/core';
+import {XH} from '@xh/hoist/core';
 import {instanceManager} from '@xh/hoist/core/impl/InstanceManager';
 import {createSingleton, throwIf} from '@xh/hoist/utils/js';
 import {camelCase, castArray} from 'lodash';

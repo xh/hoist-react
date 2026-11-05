@@ -10,13 +10,8 @@ import {
     FilterChooserModel
 } from '@xh/hoist/cmp/filter';
 import type {PersistOptions, PlainObject} from '@xh/hoist/core';
-import {
-    CompoundFilter,
-    type FieldFilterSpec,
-    type FilterLike,
-    parseFilter,
-    Store
-} from '@xh/hoist/data';
+import type {CompoundFilter} from '@xh/hoist/data';
+import {type FieldFilterSpec, type FilterLike, parseFilter, Store} from '@xh/hoist/data';
 import {wait} from '@xh/hoist/promise';
 import {initTestAppAsync} from '@xh/hoist/test-support';
 import {beforeAll, describe, expect, it, onTestFinished, vi} from 'vitest';

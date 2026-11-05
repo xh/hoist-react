@@ -4,7 +4,8 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {HoistModel, Theme, XH} from '@xh/hoist/core';
+import type {Theme} from '@xh/hoist/core';
+import {HoistModel, XH} from '@xh/hoist/core';
 import {action, observable} from '@xh/hoist/mobx';
 
 /**

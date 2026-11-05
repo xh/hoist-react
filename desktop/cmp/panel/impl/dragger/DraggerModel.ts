@@ -5,289 +5,315 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {HoistModel, lookup, XH} from '@xh/hoist/core';
+import {action, observable} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
 import {createObservableRef} from '@xh/hoist/utils/react';
 import {clamp, throttle} from 'lodash';
+import type {KeyboardEvent} from 'react';
 import {PanelModel} from '../../PanelModel';
+import {collapseToggleIcon} from '../CollapseToggleIcon';
 
+/** Arrow keys that grow (+1) or shrink (-1) a panel, by the side it collapses toward. */
+const ARROW_KEY_DIRS = {
+    left: {ArrowRight: 1, ArrowLeft: -1},
+    right: {ArrowLeft: 1, ArrowRight: -1},
+    top: {ArrowDown: 1, ArrowUp: -1},
+    bottom: {ArrowUp: 1, ArrowDown: -1}
+};
+
+/** Smallest drag-to-collapse threshold, so panels with no minSize can still drag-collapse. */
+const MIN_SNAP_SIZE = 24;
+
+/**
+ * Drives resizing of a panel from its splitter: pointer drag (mouse, pen, or touch), keyboard,
+ * and double-click, plus drag-to-collapse.
+ * @internal
+ */
 export class DraggerModel extends HoistModel {
     override xhImpl = true;
 
     @lookup(PanelModel)
     panelModel: PanelModel;
 
-    ref = createObservableRef();
+    /** The splitter's hit area element, which starts a drag. */
+    ref = createObservableRef<HTMLDivElement>();
 
-    resizeState = null;
-    startSize = null;
-    diff = null;
-    panelEl = null;
-    panelParent = null;
-    dragBar = null;
-    maxSize = null;
-    throttledSetSize;
+    /** True while a drag is past the drag-to-collapse threshold. */
+    @observable accessor snapPending = false;
+
+    private throttledSetSize;
+
+    // State of an in-progress drag.
+    private panelEl: HTMLElement = null;
+    private ghost: HTMLDivElement = null;
+    private startPos: number = null;
+    private startSize: number = null;
+    private startModelSize: number | string = null;
+    private maxSize: number = null;
+    private dragSize: number = null;
+
+    /** True if the panel can be resized now - i.e. it is resizable and not collapsed. */
+    get canResize(): boolean {
+        const {resizable, collapsed} = this.panelModel;
+        return resizable && !collapsed;
+    }
+
+    /** Reset a resizable panel to its default size, or toggle a collapsible-only panel. */
+    onDoubleClick = () => {
+        const {panelModel} = this;
+        if (this.canResize) {
+            panelModel.size = panelModel.defaultSize;
+        } else if (panelModel.collapsible) {
+            panelModel.toggleCollapsed();
+        }
+    };
+
+    /** Resize with the arrow keys (Shift for larger steps) and toggle collapse with Enter. */
+    onKeyDown = (e: KeyboardEvent) => {
+        const {panelModel} = this,
+            panelEl = panelModel._resizeRef?.current,
+            dir = ARROW_KEY_DIRS[panelModel.side]?.[e.key];
+
+        if (e.key === 'Enter' && panelModel.collapsible) {
+            panelModel.toggleCollapsed();
+        } else if (dir && this.canResize && panelEl) {
+            const currSize = this.getContentSize(panelEl),
+                maxSize = this.getMaxSize(currSize, panelEl);
+            panelModel.size = clamp(
+                currSize + dir * (e.shiftKey ? 50 : 10),
+                panelModel.minSize,
+                maxSize
+            );
+        } else {
+            return;
+        }
+        e.preventDefault();
+    };
 
     override onLinked() {
         this.throttledSetSize = throttle(size => (this.panelModel.size = size), 50);
 
-        // maintain listeners on el to ensure we can get non-passive handlers than can preventDefault()
-        // React synthetic touch events on certain browsers (e.g. airwatch) don't yield that
+        // Bind native listeners to the hit element so handlers can call preventDefault().
         this.addReaction({
             track: () => this.ref.current,
             run: (current, old) => {
-                this.toggleListeners(old, false);
-                this.toggleListeners(current, true);
+                old?.removeEventListener('pointerdown', this.onPointerDown);
+                current?.addEventListener('pointerdown', this.onPointerDown);
             }
         });
     }
 
-    private toggleListeners(el, add: boolean) {
-        if (!el) return;
-        const fn = (element, event, handler, options = undefined) => {
-            add
-                ? element.addEventListener(event, handler, options)
-                : element.removeEventListener(event, handler, options);
-        };
-        if (XH.isDesktop) {
-            fn(el, 'dragstart', this.onDragStart);
-            fn(el, 'dragend', this.onDragEnd);
-            this.isFirefox // drag co-ordinates not impl in firefox -- use 'dragover' on doc
-                ? fn(document, `dragover`, this.onDrag)
-                : fn(el, 'drag', this.onDrag);
-        } else {
-            fn(el, 'touchstart', this.onDragStart);
-            fn(el, 'touchmove', this.onDrag, {passive: false});
-            fn(el, 'touchend', this.onDragEnd);
-        }
+    override destroy() {
+        this.ref.current?.removeEventListener('pointerdown', this.onPointerDown);
+        if (this.isDragging) this.endDrag();
+        super.destroy();
     }
 
-    private onDragStart = e => {
-        const dragger = e.target;
-        this.panelEl = dragger.parentElement;
-        const {panelEl: panel, panelModel} = this,
-            {vertical} = panelModel;
+    //------------------
+    // Drag
+    //------------------
+    private get isDragging(): boolean {
+        return this.startPos != null;
+    }
+
+    private onPointerDown = (e: PointerEvent) => {
+        if (e.button !== 0 || !this.canResize || this.isDragging) return;
+
+        const {panelModel} = this,
+            {vertical} = panelModel,
+            panelEl = panelModel._resizeRef.current,
+            hit = this.ref.current;
 
         throwIf(
-            !panel.nextElementSibling && !panel.previousElementSibling,
+            !panelEl.nextElementSibling && !panelEl.previousElementSibling,
             'Resizable panel has no sibling panel against which to resize.'
         );
 
-        if (XH.isDesktop) this.setIframePointerEvents('none');
-
-        e.stopPropagation();
-
-        const {clientX, clientY} = this.parseEventPositions(e);
-        this.resizeState = {startX: clientX, startY: clientY};
-        this.startSize = panel[vertical ? 'offsetHeight' : 'offsetWidth'];
-        this.panelParent = panel.parentElement;
-        panelModel.setIsResizing(true);
-
-        if (!panelModel.resizeWhileDragging) {
-            this.dragBar = this.getDraggableSplitter();
-            this.panelParent.appendChild(this.dragBar);
-            this.diff = 0;
-        }
-
-        // We will use whichever is smaller - the calculated available size, or the configured max size
-        const calcMaxSize = this.startSize + this.getSiblingAvailSize();
-        this.maxSize = panelModel.maxSize ? Math.min(panelModel.maxSize, calcMaxSize) : calcMaxSize;
-    };
-
-    private onDrag = e => {
-        if (!this.resizeState) return;
-
+        // Stop text selection and focus changes. Click and double-click still fire.
         e.preventDefault();
         e.stopPropagation();
 
-        if (!this.isValidMouseEvent(e) && !this.isValidTouchEvent(e)) {
-            this.onDragEnd();
-            return;
-        }
+        hit.setPointerCapture(e.pointerId);
+        this.toggleMoveListeners(hit, true);
 
-        const {screenX, screenY, clientX, clientY} = this.parseEventPositions(e);
-        // Skip degenerate final drag event from dropping over non-target
-        if (screenX === 0 && screenY === 0) {
-            return;
-        }
+        this.panelEl = panelEl;
+        this.startPos = vertical ? e.clientY : e.clientX;
+        this.startSize = this.getContentSize(panelEl);
+        this.startModelSize = panelModel.size;
+        this.maxSize = this.getMaxSize(this.startSize, panelEl);
+        this.dragSize = null;
 
-        const {side, resizeWhileDragging} = this.panelModel,
-            {startX, startY} = this.resizeState;
+        // Force the resize cursor everywhere and block text selection for the whole drag.
+        if (XH.isDesktop) this.setIframePointerEvents('none');
+        document.body.classList.add(this.bodyDragCls);
+        panelModel.setIsResizing(true);
 
-        switch (side) {
-            case 'left':
-                this.diff = clientX - startX;
-                break;
-            case 'right':
-                this.diff = startX - clientX;
-                break;
-            case 'bottom':
-                this.diff = startY - clientY;
-                break;
-            case 'top':
-                this.diff = clientY - startY;
-                break;
-        }
+        if (!panelModel.resizeWhileDragging) this.ghost = this.createGhost(panelEl);
+    };
+
+    private onPointerMove = (e: PointerEvent) => {
+        if (!this.isDragging) return;
+        e.preventDefault();
+
+        const {side, vertical, collapsible, minSize, resizeWhileDragging} = this.panelModel,
+            pos = vertical ? e.clientY : e.clientX,
+            sign = side === 'left' || side === 'top' ? 1 : -1,
+            rawSize = this.startSize + sign * (pos - this.startPos),
+            size = clamp(rawSize, minSize, this.maxSize);
+
+        this.setSnapPending(collapsible && rawSize < Math.max(minSize / 2, MIN_SNAP_SIZE));
+        this.dragSize = size;
 
         if (resizeWhileDragging) {
-            this.updateSize(true);
+            this.throttledSetSize(size);
         } else {
-            this.moveDragBar();
+            this.moveGhost(size);
         }
     };
 
-    private onDragEnd = () => {
+    private onPointerEnd = () => {
+        if (!this.isDragging) return;
+
+        const {panelModel, snapPending, dragSize} = this;
+        if (snapPending) {
+            // Collapse, and keep the pre-drag size for the next expand.
+            this.throttledSetSize.cancel();
+            panelModel.size = this.startModelSize;
+            panelModel.setCollapsed(true);
+        } else if (panelModel.resizeWhileDragging) {
+            this.throttledSetSize.flush();
+        } else if (dragSize != null) {
+            panelModel.size = dragSize;
+        }
+
+        this.endDrag();
+    };
+
+    /** Clear all drag state and the document-level side effects of a drag. */
+    private endDrag() {
+        const hit = this.ref.current;
+        if (hit) this.toggleMoveListeners(hit, false);
+
         if (XH.isDesktop) this.setIframePointerEvents('auto');
+        document.body.classList.remove(this.bodyDragCls);
+        this.setSnapPending(false);
+        this.ghost?.remove();
+        this.panelModel.setIsResizing(false);
 
-        const {panelModel} = this;
-        if (!panelModel.isResizing) return;
-
-        panelModel.setIsResizing(false);
-
-        if (!panelModel.resizeWhileDragging) {
-            this.updateSize(false);
-            this.panelParent.removeChild(this.dragBar);
-        }
-
-        this.resizeState = null;
-        this.startSize = null;
-        this.maxSize = null;
-        this.diff = null;
         this.panelEl = null;
-        this.panelParent = null;
-        this.dragBar = null;
-    };
-
-    private updateSize(throttle: boolean) {
-        const {minSize} = this.panelModel,
-            {startSize} = this;
-
-        if (startSize !== null) {
-            const size = clamp(startSize + this.diff, minSize, this.maxSize);
-            if (throttle) {
-                this.throttledSetSize(size);
-            } else {
-                this.panelModel.size = size;
-            }
-        }
+        this.ghost = null;
+        this.startPos = null;
+        this.startSize = null;
+        this.startModelSize = null;
+        this.maxSize = null;
+        this.dragSize = null;
     }
 
-    private getDraggableSplitter() {
-        // clone .xh-resizable-splitter to get its styling
-        const splitter = this.panelModel.splitterRef.current,
-            ret = splitter.cloneNode() as HTMLDivElement;
+    private toggleMoveListeners(el: HTMLElement, add: boolean) {
+        const fn = add ? el.addEventListener : el.removeEventListener;
+        fn.call(el, 'pointermove', this.onPointerMove);
+        fn.call(el, 'pointerup', this.onPointerEnd);
+        fn.call(el, 'pointercancel', this.onPointerEnd);
+        fn.call(el, 'lostpointercapture', this.onPointerEnd);
+    }
 
-        ret.style.position = 'absolute';
-        ret.style.display = 'none'; // display = none needed to prevent flash
-        ret.classList.add('xh-resizable-dragger-visible');
+    @action
+    private setSnapPending(v: boolean) {
+        if (v === this.snapPending) return;
+        this.snapPending = v;
+        this.panelEl?.classList.toggle('xh-resizable--snap-pending', v);
+        this.ghost?.classList.toggle('xh-panel-splitter-ghost--snap', v);
+    }
 
+    private get bodyDragCls(): string {
+        return `xh-panel-splitter-dragging--${this.panelModel.vertical ? 'ns' : 'ew'}`;
+    }
+
+    //------------------
+    // Ghost line
+    //------------------
+    /** Accent line that tracks the pointer when the panel does not resize while dragging. */
+    private createGhost(panelEl: HTMLElement): HTMLDivElement {
+        const {vertical} = this.panelModel,
+            ret = document.createElement('div'),
+            {style} = ret;
+
+        ret.className = `xh-panel-splitter-ghost xh-panel-splitter-ghost--${vertical ? 'ns' : 'ew'}`;
+        style.display = 'none'; // until the first move, to prevent a flash
+        if (vertical) {
+            style.left = `${panelEl.offsetLeft}px`;
+            style.width = `${panelEl.offsetWidth}px`;
+        } else {
+            style.top = `${panelEl.offsetTop}px`;
+            style.height = `${panelEl.offsetHeight}px`;
+        }
+
+        // Drag-to-collapse cue, shown by CSS while the ghost has its snap class.
+        const badge = document.createElement('div');
+        badge.className = 'xh-panel-splitter-snap-badge';
+        badge.innerHTML = collapseToggleIcon(this.panelModel, {asHtml: true});
+        ret.appendChild(badge);
+
+        panelEl.parentElement.appendChild(ret);
         return ret;
     }
 
-    private moveDragBar() {
-        const {diff, dragBar, maxSize, panelModel, panelEl: panel, startSize} = this,
-            {side, minSize} = panelModel;
+    /** Center the ghost on where the splitter line would sit at the given size. */
+    private moveGhost(size: number) {
+        const {ghost, panelEl, startSize} = this,
+            {vertical, contentFirst} = this.panelModel;
+        if (!ghost) return;
 
-        if (!dragBar) return;
+        const panelStart = vertical ? panelEl.offsetTop : panelEl.offsetLeft,
+            lineOffset = contentFirst ? size : startSize - size;
 
-        const stl = dragBar.style;
-        stl.display = 'block';
-
-        if (diff + startSize <= minSize) {
-            // constrain to minSize (which could be 0)
-            switch (side) {
-                case 'left':
-                    stl.left = panel.offsetLeft + minSize + 'px';
-                    break;
-                case 'top':
-                    stl.top = panel.offsetTop + minSize + 'px';
-                    break;
-                case 'right':
-                    stl.left = panel.offsetLeft + startSize - minSize + 'px';
-                    break;
-                case 'bottom':
-                    stl.top = panel.offsetTop + startSize - minSize + 'px';
-                    break;
-            }
-        } else if (diff + startSize >= maxSize) {
-            // constrain to max-size
-            switch (side) {
-                case 'left':
-                    stl.left = panel.offsetLeft + maxSize + 'px';
-                    break;
-                case 'top':
-                    stl.top = panel.offsetTop + maxSize + 'px';
-                    break;
-                case 'right':
-                    stl.left = panel.offsetLeft + startSize - maxSize + 'px';
-                    break;
-                case 'bottom':
-                    stl.top = panel.offsetTop + startSize - maxSize + 'px';
-                    break;
-            }
-        } else {
-            switch (side) {
-                case 'left':
-                    stl.left = panel.offsetLeft + startSize + diff + 'px';
-                    break;
-                case 'top':
-                    stl.top = panel.offsetTop + startSize + diff + 'px';
-                    break;
-                case 'right':
-                    stl.left = panel.offsetLeft - diff + 'px';
-                    break;
-                case 'bottom':
-                    stl.top = panel.offsetTop - diff + 'px';
-                    break;
-            }
-        }
+        ghost.style[vertical ? 'top' : 'left'] = `${panelStart + lineOffset - 1}px`;
+        ghost.style.display = 'block';
     }
 
-    private getSiblingAvailSize() {
-        const {panelModel, panelEl} = this,
-            sib = panelModel.contentFirst
-                ? panelEl.nextElementSibling
-                : panelEl.previousElementSibling,
-            sibIsResizable = sib.classList.contains('xh-resizable'),
-            sibSplitter = sibIsResizable ? sib.querySelector('.xh-resizable-splitter') : null;
-
-        // Use 'clientWidth/Height', not 'offsetWidth/Height' here, because clientHeight does not count borders.
-        // Flexbox does not collapse borders when resizing.
-        return panelModel.vertical
-            ? sib.clientHeight - (sibIsResizable ? sibSplitter.offsetHeight : 0)
-            : sib.clientWidth - (sibIsResizable ? sibSplitter.offsetWidth : 0);
+    //------------------
+    // Sizing
+    //------------------
+    /** Size of the panel itself along its sizing dimension, excluding its splitter line. */
+    private getContentSize(panelEl: HTMLElement): number {
+        return this.getDimSize(panelEl) - this.getDimSize(this.panelModel.splitterRef.current);
     }
 
-    private parseEventPositions(e) {
-        const {screenX, screenY, clientX, clientY} = this.isValidTouchEvent(e) ? e.touches[0] : e;
-        return {screenX, screenY, clientX, clientY};
+    /** Max size the panel can reach - its configured max or all the room its sibling has. */
+    private getMaxSize(currSize: number, panelEl: HTMLElement): number {
+        const sibAvail = this.getSiblingAvailSize(panelEl),
+            calcMax = sibAvail == null ? Infinity : currSize + sibAvail,
+            {maxSize} = this.panelModel;
+        return maxSize ? Math.min(maxSize, calcMax) : calcMax;
     }
 
-    private isValidMouseEvent(e) {
-        // Note: We fall back to deprecated 'which' to work around a Safari issue where `buttons`
-        // was not being set. We may be able to remove in the future.
-        return (e.buttons && e.buttons !== 0) || (e.which && e.which !== 0);
+    /** Room the sibling panel can give up, or null if there is no sibling. */
+    private getSiblingAvailSize(panelEl: HTMLElement): number {
+        const {contentFirst, vertical} = this.panelModel,
+            sib = (
+                contentFirst ? panelEl.nextElementSibling : panelEl.previousElementSibling
+            ) as HTMLElement;
+        if (!sib) return null;
+
+        // A resizable sibling cannot give up the room taken by its own splitter. Use client
+        // (not offset) size, which excludes borders - flexbox does not collapse them on resize.
+        const sibSplitter = sib.querySelector<HTMLElement>(':scope > .xh-panel-splitter'),
+            sibSize = vertical ? sib.clientHeight : sib.clientWidth;
+        return sibSize - this.getDimSize(sibSplitter);
     }
 
-    private isValidTouchEvent(e) {
-        return e.touches && e.touches.length > 0;
-    }
-
-    private get isFirefox(): boolean {
-        return navigator.userAgent.toLowerCase().includes('firefox');
+    private getDimSize(el: HTMLElement): number {
+        if (!el) return 0;
+        return this.panelModel.vertical ? el.offsetHeight : el.offsetWidth;
     }
 
     /**
      * @param v - Workaround to allow dragging over iframe, which is its own
      *  separate document and cannot listen for events from main document.
      */
-    setIframePointerEvents(v: 'none' | 'auto') {
-        for (const el of document.getElementsByTagName('iframe') as any) {
-            el.style['pointer-events'] = v;
+    private setIframePointerEvents(v: 'none' | 'auto') {
+        for (const el of document.getElementsByTagName('iframe')) {
+            el.style.pointerEvents = v;
         }
-    }
-
-    override destroy() {
-        this.toggleListeners(this.ref.current, false);
-        super.destroy();
     }
 }

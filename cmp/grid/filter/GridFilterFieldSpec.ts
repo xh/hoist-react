@@ -4,22 +4,15 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {HoistInputProps} from '@xh/hoist/cmp/input';
-import {PlainObject} from '@xh/hoist/core';
-import {
-    CompoundFilter,
-    FieldFilter,
-    FieldFilterOperator,
-    Filter,
-    parseFilter
-} from '@xh/hoist/data';
-import {
-    BaseFilterFieldSpec,
-    BaseFilterFieldSpecConfig
-} from '@xh/hoist/data/filter/BaseFilterFieldSpec';
+import type {HoistInputProps} from '@xh/hoist/cmp/input';
+import type {PlainObject} from '@xh/hoist/core';
+import type {FieldFilterOperator, Filter} from '@xh/hoist/data';
+import {CompoundFilter, FieldFilter, parseFilter} from '@xh/hoist/data';
+import type {BaseFilterFieldSpecConfig} from '@xh/hoist/data/filter/BaseFilterFieldSpec';
+import {BaseFilterFieldSpec} from '@xh/hoist/data/filter/BaseFilterFieldSpec';
 import {castArray, compact, flatMap, isDate, isEmpty, uniqBy} from 'lodash';
-import {ReactNode} from 'react';
-import {GridFilterModel} from './GridFilterModel';
+import type {ReactNode} from 'react';
+import type {GridFilterModel} from './GridFilterModel';
 
 /**
  * Produces the display content for an entry in the Values tab of a column filter. Must be a pure
@@ -41,7 +34,8 @@ export interface GridFilterFieldSpecConfig extends BaseFilterFieldSpecConfig {
 
     /**
      * Pure function producing the display content for each entry in the values filter display. If
-     * not provided, the Column's renderer is used where it can be applied to a bare value.
+     * not provided, the Column's renderer or text renderer is used where it can be applied to a bare
+     * value.
      */
     renderer?: GridFilterRenderer;
 

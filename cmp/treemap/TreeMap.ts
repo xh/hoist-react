@@ -5,17 +5,8 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {box, div, placeholder} from '@xh/hoist/cmp/layout';
-import {
-    hoistCmp,
-    HoistModel,
-    HoistProps,
-    LayoutProps,
-    lookup,
-    TestSupportProps,
-    useLocalModel,
-    uses,
-    XH
-} from '@xh/hoist/core';
+import type {HoistProps, LayoutProps, TestSupportProps} from '@xh/hoist/core';
+import {hoistCmp, HoistModel, lookup, useLocalModel, uses, XH} from '@xh/hoist/core';
 import {errorMessage} from '@xh/hoist/cmp/error';
 import {mask} from '@xh/hoist/cmp/mask';
 import {Highcharts} from '@xh/hoist/kit/highcharts';

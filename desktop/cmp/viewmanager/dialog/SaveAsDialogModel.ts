@@ -7,7 +7,7 @@
 
 import {FormModel} from '@xh/hoist/cmp/form';
 import {fragment, p, strong} from '@xh/hoist/cmp/layout';
-import {ViewManagerModel} from '@xh/hoist/cmp/viewmanager';
+import type {ViewManagerModel} from '@xh/hoist/cmp/viewmanager';
 import {HoistModel, managed, XH} from '@xh/hoist/core';
 import {GroupFieldModel} from '@xh/hoist/desktop/cmp/viewmanager/dialog/editpanels/GroupFieldModel';
 import {normalizeGroupValue} from '@xh/hoist/desktop/cmp/viewmanager/dialog/Utils';

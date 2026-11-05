@@ -14,3 +14,8 @@
     border-top: 1px solid var(--xh-tbar-border-color);
   }
 }
+
+// Dim a panel's content while a drag past its collapse threshold previews the collapse.
+.xh-resizable--snap-pending > :not(.xh-panel-splitter) {
+  opacity: 0.45;
+}

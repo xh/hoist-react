@@ -4,7 +4,8 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {type CallContext, HoistModel, LoadSpec, Span, TaskObserver, XH} from '@xh/hoist/core';
+import type {LoadSpec, Span} from '@xh/hoist/core';
+import {type CallContext, HoistModel, TaskObserver, XH} from '@xh/hoist/core';
 import {never, wait} from '@xh/hoist/promise';
 import {hoistCore, initTestAppAsync} from '@xh/hoist/test-support';
 import {beforeAll, describe, expect, it} from 'vitest';

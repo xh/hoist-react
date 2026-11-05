@@ -5,19 +5,10 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {frame, placeholder} from '@xh/hoist/cmp/layout';
-import {
-    createElement,
-    hoistCmp,
-    HoistModel,
-    HoistProps,
-    LayoutProps,
-    lookup,
-    TestSupportProps,
-    useLocalModel,
-    uses,
-    XH
-} from '@xh/hoist/core';
-import {AgGridReact, GridOptions} from '@xh/hoist/kit/ag-grid';
+import type {HoistProps, LayoutProps, TestSupportProps} from '@xh/hoist/core';
+import {createElement, hoistCmp, HoistModel, lookup, useLocalModel, uses, XH} from '@xh/hoist/core';
+import type {GridOptions} from '@xh/hoist/kit/ag-grid';
+import {AgGridReact} from '@xh/hoist/kit/ag-grid';
 import {logError} from '@xh/hoist/utils/js';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
