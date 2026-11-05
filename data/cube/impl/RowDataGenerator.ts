@@ -160,8 +160,9 @@ export class RowDataGenerator {
     }
 
     /**
-     * A leaf carries a value for its own full-depth path alone, read through prototype getters over
-     * one `_pivotPathIdx` slot so every leaf keeps a single hidden class. Root-path cell fields are
+     * A leaf carries its own value for its full-depth path and every ancestor of it - the one path
+     * it belongs to at each depth - and null for the rest, read through prototype getters over one
+     * `_pivotPathIdx` slot so every leaf keeps a single hidden class. Root-path cell fields are
      * skipped - their name is the value field's, whose getter already answers.
      */
     private buildPivotLeafDataClass(): LeafDataClass {
@@ -178,7 +179,11 @@ export class RowDataGenerator {
                 valueName = valueField.name;
             Object.defineProperty(PivotLeafRowData.prototype, name, {
                 get(this: PlainObject) {
-                    return this._pivotPathIdx === pathIdx ? this._src[valueName] : null;
+                    const {pathParentIdx} = _pivot;
+                    for (let i = this._pivotPathIdx; i >= 0; i = pathParentIdx[i]) {
+                        if (i === pathIdx) return this._src[valueName];
+                    }
+                    return null;
                 },
                 enumerable: true
             });

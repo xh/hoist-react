@@ -52,6 +52,8 @@ export class PivotCells {
     cellFields: PivotCellField[] = [];
     /** Index of each path within `allPaths` - what an exposed leaf's `_pivotPathIdx` names. */
     pathIdx: Map<PivotPath, number> = new Map();
+    /** Index of each path's parent within `allPaths`, -1 for the root, by path index. */
+    pathParentIdx: Int32Array = new Int32Array(0);
 
     // Aggregation field lists for cell rows - the value fields plus their dependencies.
     cellAggFields: CubeField[] = [];
@@ -241,6 +243,7 @@ export class PivotCells {
         this.cellFields = [];
         this.cellFieldNamesByPath = new Map();
         this.pathIdx = new Map();
+        this.pathParentIdx = new Int32Array(0);
         this.cellRows = [];
     }
 
@@ -381,6 +384,7 @@ export class PivotCells {
         this.cellFields = cellFields;
         this.cellFieldNamesByPath = cellFieldNamesByPath;
         this.pathIdx = pathIdx;
+        this.pathParentIdx = Int32Array.from(specs, s => s.parentIdx);
     }
 
     /**

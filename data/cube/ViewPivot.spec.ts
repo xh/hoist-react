@@ -111,6 +111,22 @@ describe('View', () => {
             expect(leaf).toMatchObject({sum: 1, 'Tech>>sum': 1, 'Energy>>sum': null});
         });
 
+        it('exposes a leaf with every ancestor-path cell populated under a nested pivot', () => {
+            const view = pivotView(createCube(TRADES), {
+                    includeLeaves: true,
+                    pivot: {...QUERY.pivot, dimensions: ['sector', 'book']}
+                }),
+                leaf = rowAt(view, 'US').children.find(it => it.id === '1');
+
+            expect(leaf).toMatchObject({
+                sum: 1,
+                'Tech>>sum': 1,
+                'Tech>>A>>sum': 1,
+                'Tech>>B>>sum': null,
+                'Energy>>sum': null
+            });
+        });
+
         it('updates cells in place on a value tick, through both aggregation routes', async () => {
             const cube = createCube(TRADES),
                 view = pivotView(cube),
