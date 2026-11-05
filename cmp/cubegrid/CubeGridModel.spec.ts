@@ -86,7 +86,7 @@ describe('CubeGridModel', () => {
                 'sum',
                 'Energy>>sum',
                 'Tech>>sum',
-                'total>>sum'
+                'collapsed>>sum'
             ]);
         });
 
@@ -100,13 +100,13 @@ describe('CubeGridModel', () => {
             expect(showModes(region)).toEqual([
                 ['Energy', 'expanded'],
                 ['Tech', 'expanded'],
-                ['total>>sum', 'collapsed']
+                ['collapsed>>sum', 'collapsed']
             ]);
 
             const withSummary = createModel({query: PIVOT_QUERY, pivotValueSummary: true});
             expect(showModes(withSummary.gridModel.getColumnGroup(PIVOT_GROUP_ID))).toContainEqual([
-                'total>>sum',
-                'always'
+                'pivotValueSummary',
+                'expanded'
             ]);
 
             const collapsed = createModel({query: PIVOT_QUERY, pivotExpandLevel: 0});
@@ -147,6 +147,7 @@ describe('CubeGridModel', () => {
                 pivotValueSummary: true
             });
             expect(colIds(withSummary.gridModel.columns)).toContain('total>>sum');
+            expect(colIds(withSummary.gridModel.columns)).not.toContain('collapsed>>sum');
         });
 
         it('lets a fixed column and the row summary bind the same measure', () => {
@@ -162,9 +163,11 @@ describe('CubeGridModel', () => {
                 'sum',
                 'Energy>>sum',
                 'Tech>>sum',
-                'total>>sum'
+                'total>>sum',
+                'collapsed>>sum'
             ]);
             expect(gridModel.getColumn('total>>sum').field).toBe('sum');
+            expect(gridModel.getColumn('collapsed>>sum').excludeFromChooser).toBe(true);
         });
 
         it('leaves pivot columns hideable unless a value column spec locks them', () => {
@@ -195,12 +198,14 @@ describe('CubeGridModel', () => {
                 'avg',
                 'Energy>>sum',
                 'Tech>>sum',
-                'total>>sum'
+                'total>>sum',
+                'collapsed>>sum'
             ]);
             expect(colIds(left.gridModel.columns)).toEqual([
                 'cubeLabel',
                 'avg',
                 'total>>sum',
+                'collapsed>>sum',
                 'Energy>>sum',
                 'Tech>>sum'
             ]);
@@ -218,7 +223,7 @@ describe('CubeGridModel', () => {
                 'avg',
                 'Energy>>sum',
                 'Tech>>sum',
-                'total>>sum'
+                'collapsed>>sum'
             ]);
         });
 
@@ -232,7 +237,7 @@ describe('CubeGridModel', () => {
                 'Energy>>sum',
                 'Health>>sum',
                 'Tech>>sum',
-                'total>>sum'
+                'collapsed>>sum'
             ]);
         });
 
@@ -286,7 +291,12 @@ describe('CubeGridModel', () => {
                 })
             );
             second.gridModel.updateColumnState([{colId: 'Tech>>sum', width: 333}]);
-            expect(savedColIds()).toEqual(['cubeLabel', 'Energy>>sum', 'Tech>>sum', 'total>>sum']);
+            expect(savedColIds()).toEqual([
+                'cubeLabel',
+                'Energy>>sum',
+                'Tech>>sum',
+                'collapsed>>sum'
+            ]);
         });
 
         it('keeps pivot columns in view order across a rebuild, with widths and fixed order kept', () => {
@@ -311,7 +321,7 @@ describe('CubeGridModel', () => {
                 'sum',
                 'Energy>>sum',
                 'Tech>>sum',
-                'total>>sum'
+                'collapsed>>sum'
             ]);
             expect(stateFor('Tech>>sum').width).toBe(321);
         });
@@ -332,7 +342,7 @@ describe('CubeGridModel', () => {
                 'avg',
                 'Energy>>sum',
                 'Tech>>sum',
-                'total>>sum'
+                'collapsed>>sum'
             ]);
         });
 
@@ -345,7 +355,7 @@ describe('CubeGridModel', () => {
                 'avg',
                 'Energy>>sum',
                 'Tech>>sum',
-                'total>>sum'
+                'collapsed>>sum'
             ]);
         });
     });

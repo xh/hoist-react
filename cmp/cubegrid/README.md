@@ -135,7 +135,8 @@ The grid has two regions, always in this order:
 
 Column groups in the pivot region expand and collapse from their headers. The region collapses to
 the row summary, one column per value field holding each row's total, shown directly under the
-region's label as ag-Grid does. `pivotValueSummary` keeps that summary visible while expanded too.
+region's label as ag-Grid does. `pivotValueSummary` keeps that summary visible while expanded too,
+under a `Total` header.
 With two or more pivot dimensions, each parent path group collapses to its own summary the same
 way, governed by `pivotGroupSummary`. `pivotExpandLevel` sets the initial level, as `expandLevel`
 does for rows: 0 collapses the region, 1 shows the top-level groups collapsed, -1 (the default)
@@ -180,15 +181,15 @@ Each cell the View publishes becomes one column, bound to its synthetic field na
 
 | Column | Field on the row | Header |
 |--------|------------------|--------|
-| Row total for `pnl` | `pnl` | `Region › Sector` › `Pnl`, while collapsed |
+| Row total for `pnl` | `pnl` | `Total` › `Pnl` expanded, `Region › Sector` › `Pnl` collapsed |
 | Cell for region `US`, measure `pnl` | `US>>pnl` | `US` › `Pnl` |
-| Subtotal for `US` with a second pivot dimension | `US>>pnl` | `US` › `Pnl`, while collapsed |
+| Subtotal for `US` with a second pivot dimension | `US>>pnl` | `US` › `Total` › `Pnl` expanded, `US` › `Pnl` collapsed |
 | Cell for `US` › `Tech` | `US>>Tech>>pnl` | `US` › `Tech` › `Pnl` |
 
 The field name is also the column's `colId`, so column state persists across rebuilds for paths that
 remain in the data, and a path that leaves and returns comes back at its default width. A summary
-column binds the same cell under a `total>>` colId, so a fixed column can show the row total for a
-measure as well. Every path is a group headed by its value with a column per measure beneath, even
+column binds the same cell under a `total>>` colId while expanded, and a `collapsed>>` colId kept
+out of the chooser while collapsed, so a fixed column can show the row total for a measure as well. Every path is a group headed by its value with a column per measure beneath, even
 with a single measure, so the measure name stays visible beside the fixed columns.
 
 `pivotValueSpecs` applies to every pivot column generated for a measure. Keys that identify or

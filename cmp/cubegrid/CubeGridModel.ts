@@ -17,7 +17,7 @@ import type {
 } from '@xh/hoist/cmp/grid';
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {initPersist} from '@xh/hoist/cmp/grid/impl/InitPersist';
-import type {HSide, ReactionSpec, Some, VSide} from '@xh/hoist/core';
+import type {HAlign, HSide, ReactionSpec, Some, VSide} from '@xh/hoist/core';
 import {HoistModel, managed} from '@xh/hoist/core';
 import type {
     Cube,
@@ -441,7 +441,7 @@ export class CubeGridModel extends HoistModel implements GridLikeModel {
                 PIVOT_GROUP_ID,
                 this.query.pivot.dimensions.map(it => it.displayName).join(' › '),
                 this.buildGroupChildren(pathCols, this._rootPath, this.pivotValueSummarySide),
-                0
+                {level: 0}
             );
 
         this._pivotColIds = new Set(leafColIds([pivotGroup]));
@@ -487,12 +487,10 @@ export class CubeGridModel extends HoistModel implements GridLikeModel {
     private buildPathColumn(path: PivotPath): ColumnSpec | ColumnGroupSpec {
         // Always a group, so the measure name stays visible beside any fixed columns.
         if (isEmpty(path.children)) {
-            return this.buildColGroup(
-                path.key,
-                path.label,
-                this.buildValueColumns(path),
-                path.depth
-            );
+            return this.buildColGroup(path.key, path.label, this.buildValueColumns(path), {
+                level: path.depth,
+                headerAlign: 'center'
+            });
         }
 
         const childCols = this.sortPaths(path.children, path.depth).map(child =>
@@ -502,13 +500,14 @@ export class CubeGridModel extends HoistModel implements GridLikeModel {
             path.key,
             path.label,
             this.buildGroupChildren(childCols, path, this.pivotGroupSummarySide),
-            path.depth
+            {level: path.depth}
         );
     }
 
-    // Children of a group that collapses to its summary: the path groups show expanded, and the
-    // summary columns show collapsed, or always when the summary option asks for them. With
-    // collapsing off nothing carries a show mode, and the summary appears only when asked.
+    // Children of a group that collapses to its summary. The path groups show expanded. The
+    // summary shows while expanded under a Total header, when asked, and while collapsed as bare
+    // columns under the group's own label, as ag-Grid does. With collapsing off there is only the
+    // Total group, only when asked.
     private buildGroupChildren(
         pathCols: Array<ColumnSpec | ColumnGroupSpec>,
         summaryPath: PivotPath,
@@ -518,13 +517,25 @@ export class CubeGridModel extends HoistModel implements GridLikeModel {
             children = pivotGroupsCollapsible
                 ? pathCols.map(it => ({...it, groupShowMode: 'expanded' as const}))
                 : pathCols,
-            summaryCols =
-                summarySide || pivotGroupsCollapsible
-                    ? this.buildSummaryColumns(
-                          summaryPath,
-                          pivotGroupsCollapsible ? (summarySide ? 'always' : 'collapsed') : null
-                      )
-                    : [];
+            summaryCols: Array<ColumnSpec | ColumnGroupSpec> = [];
+
+        if (summarySide) {
+            summaryCols.push(
+                this.buildColGroup(
+                    summaryPath.isRoot ? 'pivotValueSummary' : `${summaryPath.key}:total`,
+                    'Total',
+                    this.buildSummaryColumns(summaryPath, 'total'),
+                    {
+                        headerAlign: 'center',
+                        groupShowMode: pivotGroupsCollapsible ? 'expanded' : null
+                    }
+                )
+            );
+        }
+        if (pivotGroupsCollapsible) {
+            summaryCols.push(...this.buildSummaryColumns(summaryPath, 'collapsed'));
+        }
+
         return summarySide === 'left'
             ? [...summaryCols, ...children]
             : [...children, ...summaryCols];
@@ -532,13 +543,15 @@ export class CubeGridModel extends HoistModel implements GridLikeModel {
 
     // Row summaries are the pivot summaries at the root path - the same cells at different depths.
     // A summary column binds the path's own cell but takes a colId of its own, so the root summary
-    // never collides with a fixed column bound to the same measure. Bare columns, not a group, so
-    // a collapsed group shows them one header row up under its own label, as ag-Grid does.
-    private buildSummaryColumns(path: PivotPath, groupShowMode: ColumnGroupShowMode): ColumnSpec[] {
+    // never collides with a fixed column bound to the same measure. The `collapsed` set stands in
+    // for the `total` set while its group is collapsed, so it stays out of the chooser.
+    private buildSummaryColumns(path: PivotPath, kind: 'total' | 'collapsed'): ColumnSpec[] {
+        const collapsed = kind === 'collapsed';
         return this.buildValueColumns(path).map(col => ({
             ...col,
-            colId: `total>>${col.colId}`,
-            groupShowMode
+            colId: `${kind}>>${col.colId}`,
+            groupShowMode: collapsed ? 'collapsed' : null,
+            excludeFromChooser: collapsed
         }));
     }
 
@@ -562,20 +575,28 @@ export class CubeGridModel extends HoistModel implements GridLikeModel {
         };
     }
 
-    // Left-aligned: a centered label on a wide group sits out of the viewport.
+    // A group with a `level` is a pivot group that expands and collapses. Wide groups are
+    // left-aligned, as a centered label on one sits out of the viewport.
     private buildColGroup(
         groupId: string,
         headerName: string,
         children: Array<ColumnSpec | ColumnGroupSpec>,
-        level: number
+        {
+            level,
+            headerAlign = 'left',
+            groupShowMode
+        }: {level?: number; headerAlign?: HAlign; groupShowMode?: ColumnGroupShowMode}
     ): ColumnGroupSpec {
-        this._pivotGroupLevels.set(groupId, level);
+        const isPivotLevel = level != null;
+        if (isPivotLevel) this._pivotGroupLevels.set(groupId, level);
         return {
             groupId,
             headerName,
-            headerAlign: 'left',
+            headerAlign,
             children,
-            collapsed: this.pivotGroupsCollapsible && !this.isPivotLevelExpanded(level)
+            groupShowMode,
+            collapsed:
+                isPivotLevel && this.pivotGroupsCollapsible && !this.isPivotLevelExpanded(level)
         };
     }
 
