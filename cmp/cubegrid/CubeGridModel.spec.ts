@@ -11,7 +11,7 @@ import {XH} from '@xh/hoist/core';
 import {Cube, type QueryConfig} from '@xh/hoist/data';
 import {initTestAppAsync} from '@xh/hoist/test-support';
 import {find} from 'lodash';
-import {beforeAll, describe, expect, it, onTestFinished} from 'vitest';
+import {beforeAll, describe, expect, it, onTestFinished, vi} from 'vitest';
 import {CubeGridModel, PIVOT_GROUP_ID} from './CubeGridModel';
 
 /**
@@ -86,7 +86,7 @@ describe('CubeGridModel', () => {
                 'sum',
                 'Energy>>sum',
                 'Tech>>sum',
-                'collapsed>>sum'
+                'total>>sum'
             ]);
         });
 
@@ -100,13 +100,13 @@ describe('CubeGridModel', () => {
             expect(showModes(region)).toEqual([
                 ['Energy', 'expanded'],
                 ['Tech', 'expanded'],
-                ['collapsed>>sum', 'collapsed']
+                ['pivot:total', 'collapsed']
             ]);
 
             const withSummary = createModel({query: PIVOT_QUERY, showPivotSummaries: true});
             expect(showModes(withSummary.gridModel.getColumnGroup(PIVOT_GROUP_ID))).toContainEqual([
                 'pivot:total',
-                'expanded'
+                null
             ]);
 
             const collapsed = createModel({query: PIVOT_QUERY, pivotExpandLevel: 0});
@@ -147,7 +147,6 @@ describe('CubeGridModel', () => {
                 showPivotSummaries: true
             });
             expect(colIds(withSummary.gridModel.columns)).toContain('total>>sum');
-            expect(colIds(withSummary.gridModel.columns)).not.toContain('collapsed>>sum');
         });
 
         it('lets a fixed column and the row summary bind the same measure', () => {
@@ -162,7 +161,6 @@ describe('CubeGridModel', () => {
                 'cubeLabel',
                 'sum',
                 'total>>sum',
-                'collapsed>>sum',
                 'Energy>>sum',
                 'Tech>>sum'
             ]);
@@ -172,7 +170,7 @@ describe('CubeGridModel', () => {
         it('keeps pivot columns out of the chooser and not hideable', () => {
             const {gridModel} = createModel({query: PIVOT_QUERY, showPivotSummaries: true});
 
-            ['Energy>>sum', 'total>>sum', 'collapsed>>sum'].forEach(colId => {
+            ['Energy>>sum', 'total>>sum'].forEach(colId => {
                 const col = gridModel.getColumn(colId);
                 expect(col.hideable).toBe(false);
                 expect(col.excludeFromChooser).toBe(true);
@@ -196,14 +194,12 @@ describe('CubeGridModel', () => {
                 'avg',
                 'Energy>>sum',
                 'Tech>>sum',
-                'total>>sum',
-                'collapsed>>sum'
+                'total>>sum'
             ]);
             expect(colIds(left.gridModel.columns)).toEqual([
                 'cubeLabel',
                 'avg',
                 'total>>sum',
-                'collapsed>>sum',
                 'Energy>>sum',
                 'Tech>>sum'
             ]);
@@ -221,7 +217,7 @@ describe('CubeGridModel', () => {
                 'avg',
                 'Energy>>sum',
                 'Tech>>sum',
-                'collapsed>>sum'
+                'total>>sum'
             ]);
         });
 
@@ -235,8 +231,34 @@ describe('CubeGridModel', () => {
                 'Energy>>sum',
                 'Health>>sum',
                 'Tech>>sum',
-                'collapsed>>sum'
+                'total>>sum'
             ]);
+        });
+
+        it('rebuilds the pivot columns on restoreDefaults, at their default state', async () => {
+            const cube = createCube([]),
+                appFn = vi.fn(),
+                model = autoDestroy(
+                    new CubeGridModel({
+                        cube,
+                        query: PIVOT_QUERY,
+                        gridConfig: {restoreDefaultsWarning: null, restoreDefaultsFn: appFn}
+                    })
+                ),
+                {gridModel} = model;
+
+            await cube.loadDataAsync(TRADES);
+            gridModel.updateColumnState([{colId: 'Tech>>sum', width: 321}]);
+            await gridModel.restoreDefaultsAsync();
+
+            expect(colIds(gridModel.columns)).toEqual([
+                'cubeLabel',
+                'Energy>>sum',
+                'Tech>>sum',
+                'total>>sum'
+            ]);
+            expect(find(gridModel.columnState, {colId: 'Tech>>sum'}).width).not.toBe(321);
+            expect(appFn).toHaveBeenCalledOnce();
         });
 
         it('restores persisted sort and width on a pivot column once paths exist', async () => {
@@ -289,12 +311,7 @@ describe('CubeGridModel', () => {
                 })
             );
             second.gridModel.updateColumnState([{colId: 'Tech>>sum', width: 333}]);
-            expect(savedColIds()).toEqual([
-                'cubeLabel',
-                'Energy>>sum',
-                'Tech>>sum',
-                'collapsed>>sum'
-            ]);
+            expect(savedColIds()).toEqual(['cubeLabel', 'Energy>>sum', 'Tech>>sum', 'total>>sum']);
         });
 
         it('keeps pivot columns in view order across a rebuild, with widths and fixed order kept', () => {
@@ -319,7 +336,7 @@ describe('CubeGridModel', () => {
                 'sum',
                 'Energy>>sum',
                 'Tech>>sum',
-                'collapsed>>sum'
+                'total>>sum'
             ]);
             expect(stateFor('Tech>>sum').width).toBe(321);
         });
@@ -340,7 +357,7 @@ describe('CubeGridModel', () => {
                 'avg',
                 'Energy>>sum',
                 'Tech>>sum',
-                'collapsed>>sum'
+                'total>>sum'
             ]);
         });
 
@@ -353,7 +370,7 @@ describe('CubeGridModel', () => {
                 'avg',
                 'Energy>>sum',
                 'Tech>>sum',
-                'collapsed>>sum'
+                'total>>sum'
             ]);
         });
     });
@@ -383,9 +400,41 @@ describe('pivotColumnSpecFn', () => {
         expect(tech.width).toBe(150);
         expect(tech.align).toBe('right');
         expect(energy.width).toBe(100);
-        expect(total.cellClass).toBe('is-total');
+        expect(total.cellClass).toEqual(['xh-cube-grid__total-cell', 'is-total']);
         expect(total.width).toBe(100);
         expect(find(cols, {colId: 'ignored'})).toBeUndefined();
+    });
+});
+
+describe('summary column classes', () => {
+    it('marks summary cells, headers and the Total group, leaving pivot cells unmarked', () => {
+        const model = createModel({query: PIVOT_QUERY, showPivotSummaries: true}),
+            cols = model.gridModel.getLeafColumns(),
+            total = find(cols, {colId: 'total>>sum'}),
+            cell = find(cols, {colId: 'Tech>>sum'}),
+            group = find(allGroups(model.gridModel.columns), {groupId: `${PIVOT_GROUP_ID}:total`});
+
+        expect(total.cellClass).toEqual(['xh-cube-grid__total-cell']);
+        expect(total.headerClass).toEqual(['xh-cube-grid__total-header']);
+        expect(group.headerClass).toEqual(['xh-cube-grid__total-header']);
+        expect(cell.cellClass).toBeFalsy();
+        expect(cell.headerClass).toBeFalsy();
+    });
+
+    it('keeps an app class function on a summary column, adding the total class', () => {
+        const model = createModel({
+                query: PIVOT_QUERY,
+                showPivotSummaries: true,
+                pivotColumns: [
+                    {field: 'sum', cellClass: () => 'is-app', headerClass: () => 'is-app'}
+                ]
+            }),
+            total = find(model.gridModel.getLeafColumns(), {colId: 'total>>sum'}),
+            cellClass = total.cellClass as (...args: any[]) => string[],
+            headerClass = total.headerClass as (...args: any[]) => string[];
+
+        expect(cellClass()).toEqual(['xh-cube-grid__total-cell', 'is-app']);
+        expect(headerClass()).toEqual(['xh-cube-grid__total-header', 'is-app']);
     });
 });
 
@@ -408,7 +457,7 @@ describe('pivotColumnGroupSpecFn', () => {
 
         expect(region.headerAlign).toBe('center');
         expect(tech.headerName).toBe('TECH');
-        expect(total.headerClass).toBe('is-total');
+        expect(total.headerClass).toEqual(['xh-cube-grid__total-header', 'is-total']);
         expect(find(groups, {groupId: 'ignored'})).toBeUndefined();
     });
 });

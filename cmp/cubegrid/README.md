@@ -132,8 +132,8 @@ The grid has two regions, always in this order:
    so `{field: 'mktVal'}` shows market value once even when the query pivots P&L by region.
 2. **Pivot columns** - derived from `result.paths` when the query pivots, one group per path with
    a column per `pivot.valueFields` entry, configured through `pivotColumns`, with
-   `pivotColumnSpecFn` overriding single columns by path, measure and kind (`cell`, `total` or
-   `collapsed`) - a class on the `Total` columns, say. `pivotColumnGroupSpecFn` does the same for the
+   `pivotColumnSpecFn` overriding single columns by path, measure and kind (`cell` or `total`) -
+   a width on the `Total` columns, say. `pivotColumnGroupSpecFn` does the same for the
    column groups, by path and kind (`path` or `total`), for header names, classes and alignment.
    Both receive the spec they override as `spec`, to derive from rather than replace.
    One group spans
@@ -141,11 +141,13 @@ The grid has two regions, always in this order:
    the side `showPivotSummaries` names.
 
 Column groups in the pivot region expand and collapse from their headers. The region collapses to
-the row summary, one column per value field holding each row's total, shown directly under the
-region's label as ag-Grid does. With two or more pivot dimensions, each parent path group collapses
-to its own summary the same way. `showPivotSummaries` keeps every summary visible while expanded
-too, under a `Total` header on the side it names - the left by default, so the summary keeps its
-collapsed position and the group opens to its right. `pivotExpandLevel` sets the initial level, as `expandLevel`
+the row summary, one column per value field holding each row's total, under a `Total` header. With
+two or more pivot dimensions, each parent path group collapses to its own summary the same way.
+`showPivotSummaries` keeps every summary visible while expanded too, on the side it names - the
+left by default, so the summary keeps its collapsed position and the group opens to its right.
+The `Total` header stays in place either way, so collapsing never changes the header depth. Summary cells and headers carry the
+`xh-cube-grid__total-cell` and `xh-cube-grid__total-header` classes, unstyled by default, for apps
+that want to set them apart. `pivotExpandLevel` sets the initial level, as `expandLevel`
 does for rows: 0 collapses the region, 1 shows the top-level groups collapsed, -1 (the default)
 expands everything. `expandPivotToLevel()` resets it later, with `expandAllPivotGroups()` and
 `collapseAllPivotGroups()` as shortcuts. Set `pivotGroupsCollapsible: false` to fix every group
@@ -188,15 +190,15 @@ Each cell the View publishes becomes one column, bound to its synthetic field na
 
 | Column | Field on the row | Header |
 |--------|------------------|--------|
-| Row total for `pnl` | `pnl` | `Total` › `Pnl` expanded, `Region › Sector` › `Pnl` collapsed |
+| Row total for `pnl` | `pnl` | `Region › Sector` › `Total` › `Pnl` |
 | Cell for region `US`, measure `pnl` | `US>>pnl` | `US` › `Pnl` |
-| Subtotal for `US` with a second pivot dimension | `US>>pnl` | `US` › `Total` › `Pnl` expanded, `US` › `Pnl` collapsed |
+| Subtotal for `US` with a second pivot dimension | `US>>pnl` | `US` › `Total` › `Pnl` |
 | Cell for `US` › `Tech` | `US>>Tech>>pnl` | `US` › `Tech` › `Pnl` |
 
 The field name is also the column's `colId`, so column state persists across rebuilds for paths that
 remain in the data, and a path that leaves and returns comes back at its default width. A summary
-column binds the same cell under a `total>>` colId while expanded and a `collapsed>>` colId while
-collapsed, so a fixed column can show the row total for a measure as well. Every path is a group headed by its value with a column per measure beneath, even
+column binds the same cell under a `total>>` colId, so a fixed column can show the row total for a
+measure as well. Every path is a group headed by its value with a column per measure beneath, even
 with a single measure, so the measure name stays visible beside the fixed columns.
 
 `pivotColumns` holds one spec per measure, its `field` naming the value field, applied to every

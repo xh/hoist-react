@@ -47,14 +47,14 @@ export type PivotColumnSpec = Omit<ColumnSpec, (typeof RESERVED_PIVOT_COLUMN_KEY
 
 /**
  * Which pivot column is being built - the argument to {@link CubeGridConfig.pivotColumnSpecFn}.
- * `cell` sits under a leaf path, `total` in a `Total` group, and `collapsed` stands in for a
- * collapsed group. Summaries take the root path for the row summaries. `spec` is the measure's
- * `pivotColumns` entry the overrides merge over, so an app can derive from it.
+ * `cell` sits under a leaf path, `total` in a `Total` group. Summaries take the root path for the
+ * row summaries. `spec` is the measure's `pivotColumns` entry the overrides merge over, so an app
+ * can derive from it.
  */
 export interface PivotColumnContext {
     path: PivotPath;
     field: CubeField;
-    kind: 'cell' | 'total' | 'collapsed';
+    kind: 'cell' | 'total';
     spec: PivotColumnSpec;
 }
 

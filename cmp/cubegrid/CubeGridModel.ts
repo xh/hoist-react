@@ -17,7 +17,7 @@ import type {
 } from '@xh/hoist/cmp/grid';
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {initPersist} from '@xh/hoist/cmp/grid/impl/InitPersist';
-import type {HAlign, HSide, ReactionSpec, Some, VSide} from '@xh/hoist/core';
+import type {Awaitable, HAlign, HSide, ReactionSpec, Some, VSide} from '@xh/hoist/core';
 import {HoistModel, managed} from '@xh/hoist/core';
 import type {
     Cube,
@@ -31,7 +31,19 @@ import type {
 } from '@xh/hoist/data';
 import {action, bindable, bindableRef, observable} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
-import {isArray, isEmpty, isEqual, keyBy, mapValues, omit, orderBy, pick, sortBy} from 'lodash';
+import {
+    castArray,
+    isArray,
+    isEmpty,
+    isEqual,
+    isFunction,
+    keyBy,
+    mapValues,
+    omit,
+    orderBy,
+    pick,
+    sortBy
+} from 'lodash';
 import type {
     PivotColumnGroupContext,
     PivotColumnGroupSpec,
@@ -110,6 +122,9 @@ export interface CubeGridConfig {
      * summary. True for the default 'left', where the summary keeps its collapsed position and
      * the group opens to its right, or an {@link HSide} to place it within the group. Default
      * false. Bind this rather than expecting the column chooser to restore it.
+     *
+     * Summary cells and headers carry the `xh-cube-grid__total-cell` and
+     * `xh-cube-grid__total-header` classes, unstyled, for apps that want to set them apart.
      */
     showPivotSummaries?: boolean | HSide;
 
@@ -352,8 +367,19 @@ export class CubeGridModel extends HoistModel implements GridLikeModel {
             ...config,
             store: this.store,
             treeMode: true,
-            columns: this.buildColumns()
+            columns: this.buildColumns(),
+            restoreDefaultsFn: () => this.restoreDefaultsAsync(config.restoreDefaultsFn)
         });
+    }
+
+    // The GridModel's defaults hold the columns it was built with, before the view had paths or
+    // at paths since gone. A restore rebuilds the pivot region at the current paths, state and
+    // all, then sizes it as the GridModel sized its own defaults.
+    private async restoreDefaultsAsync(appFn: () => Awaitable<void>) {
+        const {gridModel} = this;
+        gridModel.setColumns(this.buildColumns());
+        if (gridModel.autosizeOptions.mode === 'managed') await gridModel.autosizeAsync();
+        await appFn?.();
     }
 
     // `setColumns` resets column and group state. Cell field names and path keys are stable ids,
@@ -507,51 +533,44 @@ export class CubeGridModel extends HoistModel implements GridLikeModel {
     }
 
     // Children of a group that collapses to its summary. The path groups show expanded. The
-    // summary shows while expanded under a Total header, when asked, and while collapsed as bare
-    // columns under the group's own label, as ag-Grid does. With collapsing off there is only the
-    // Total group, only when asked.
+    // summary sits under a Total header, always when asked and otherwise only while collapsed,
+    // so collapsing a group never changes the header depth. With collapsing off there is only
+    // the Total group, only when asked.
     private buildGroupChildren(
         pathCols: Array<ColumnSpec | ColumnGroupSpec>,
         summaryPath: PivotPath
     ): Array<ColumnSpec | ColumnGroupSpec> {
-        const {pivotGroupsCollapsible, pivotSummarySide: summarySide} = this,
-            children = pivotGroupsCollapsible
+        const {pivotGroupsCollapsible, pivotSummarySide: summarySide} = this;
+        if (!summarySide && !pivotGroupsCollapsible) return pathCols;
+
+        const children = pivotGroupsCollapsible
                 ? pathCols.map(it => ({...it, groupShowMode: 'expanded' as const}))
                 : pathCols,
-            summaryCols: Array<ColumnSpec | ColumnGroupSpec> = [];
+            group = this.buildColGroup(
+                `${summaryPath.isRoot ? PIVOT_GROUP_ID : summaryPath.key}:total`,
+                'Total',
+                this.buildSummaryColumns(summaryPath),
+                {
+                    headerAlign: 'center',
+                    groupShowMode: summarySide ? null : 'collapsed',
+                    ctx: {path: summaryPath, kind: 'total'}
+                }
+            ),
+            total = {...group, headerClass: withClass(group.headerClass, TOTAL_HEADER_CLASS)};
 
-        if (summarySide) {
-            summaryCols.push(
-                this.buildColGroup(
-                    `${summaryPath.isRoot ? PIVOT_GROUP_ID : summaryPath.key}:total`,
-                    'Total',
-                    this.buildSummaryColumns(summaryPath, 'total'),
-                    {
-                        headerAlign: 'center',
-                        groupShowMode: pivotGroupsCollapsible ? 'expanded' : null,
-                        ctx: {path: summaryPath, kind: 'total'}
-                    }
-                )
-            );
-        }
-        if (pivotGroupsCollapsible) {
-            summaryCols.push(...this.buildSummaryColumns(summaryPath, 'collapsed'));
-        }
-
-        return summarySide === 'left'
-            ? [...summaryCols, ...children]
-            : [...children, ...summaryCols];
+        return summarySide === 'left' ? [total, ...children] : [...children, total];
     }
 
     // Row summaries are the pivot summaries at the root path - the same cells at different depths.
     // A summary column binds the path's own cell but takes a colId of its own, so the root summary
-    // never collides with a fixed column bound to the same measure. The `collapsed` set stands in
-    // for the `total` set while its group is collapsed.
-    private buildSummaryColumns(path: PivotPath, kind: 'total' | 'collapsed'): ColumnSpec[] {
-        return this.buildValueColumns(path, kind).map(col => ({
+    // never collides with a fixed column bound to the same measure. All carry the total classes,
+    // over any the app adds.
+    private buildSummaryColumns(path: PivotPath): ColumnSpec[] {
+        return this.buildValueColumns(path, 'total').map(col => ({
             ...col,
-            colId: `${kind}>>${col.colId}`,
-            groupShowMode: kind === 'collapsed' ? 'collapsed' : null
+            colId: `total>>${col.colId}`,
+            cellClass: withClass(col.cellClass, TOTAL_CELL_CLASS),
+            headerClass: withClass(col.headerClass, TOTAL_HEADER_CLASS)
         }));
     }
 
@@ -664,6 +683,19 @@ export class CubeGridModel extends HoistModel implements GridLikeModel {
 
 /** Group id of the column group spanning the pivot region. Its summary group is `pivot:total`. */
 export const PIVOT_GROUP_ID = 'pivot';
+
+const TOTAL_CELL_CLASS = 'xh-cube-grid__total-cell',
+    TOTAL_HEADER_CLASS = 'xh-cube-grid__total-header';
+
+// Prepends a class to a class spec, wrapping a class function.
+function withClass<T extends (...args: any[]) => Some<string>>(
+    spec: T | Some<string>,
+    cls: string
+): T | string[] {
+    return isFunction(spec)
+        ? (((...args) => [cls, ...castArray(spec(...args) ?? [])]) as T)
+        : [cls, ...castArray(spec ?? [])];
+}
 
 function leafColIds(cols: Array<ColumnSpec | ColumnGroupSpec>): string[] {
     return cols.flatMap(it => ('children' in it ? leafColIds(it.children) : it.colId));
