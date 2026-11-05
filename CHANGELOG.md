@@ -43,7 +43,8 @@
 
 ### ✨ Styles
 
-* Grid column group headers show their expand/collapse control before the label, as ag-Grid does.
+* Grid column group headers show their expand/collapse control before the label, as a chevron
+  pointing down when expanded and right when collapsed, matching tree rows.
 
 ### ⚙️ Typescript API Adjustments
 

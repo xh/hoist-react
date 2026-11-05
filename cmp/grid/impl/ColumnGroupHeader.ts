@@ -38,7 +38,7 @@ export const columnGroupHeader = hoistCmp.factory<ColumnGroupHeaderProps>({
             if (!isExpandable) return null;
 
             const icon = isExpanded
-                ? Icon.chevronLeft({size: 'sm'})
+                ? Icon.chevronDown({size: 'sm'})
                 : Icon.chevronRight({size: 'sm'});
             return div(icon);
         };
