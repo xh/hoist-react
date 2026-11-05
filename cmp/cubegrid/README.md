@@ -43,6 +43,7 @@ CubeGridModel
 ├── pivotValueSpecs                    # ColumnSpec per measure, applied across every path
 ├── pivotSortBy: PivotSort[]           # Display order per pivot level
 ├── pivotValueSummary, pivotGroupSummary      # Total columns, docked / per group: false|true|HSide
+├── pivotGroupsCollapsible             # Let pivot groups collapse from their headers (default)
 ├── pivotGroupsCollapsed               # Start the pivot region and its parent groups collapsed
 ├── showSummary                        # The grid's totals row, delegated - needs includeRoot
 └── rebuildColumns()                   # Runs when result.paths or `columns` changes
@@ -136,7 +137,8 @@ the row summary, one column per value field holding each row's total, shown dire
 region's label as ag-Grid does. `pivotValueSummary` keeps that summary visible while expanded too.
 With two or more pivot dimensions, each parent path group collapses to its own summary the same
 way, governed by `pivotGroupSummary`. Set
-`pivotGroupsCollapsed` to start every group collapsed. The state is the grid's own
+`pivotGroupsCollapsed` to start every group collapsed, or `pivotGroupsCollapsible: false` to fix
+every group open with summary columns only where asked. The state is the grid's own
 `columnGroupState`, keyed on the path and on `PIVOT_GROUP_ID` for the region, so it survives a
 rebuild and persists with `persistWith`.
 

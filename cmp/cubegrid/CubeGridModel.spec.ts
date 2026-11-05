@@ -113,6 +113,25 @@ describe('CubeGridModel', () => {
             expect(collapsed.gridModel.isColumnGroupExpanded(PIVOT_GROUP_ID)).toBe(false);
         });
 
+        it('fixes every group open when pivotGroupsCollapsible is false', () => {
+            const model = createModel({query: PIVOT_QUERY, pivotGroupsCollapsible: false}),
+                region = model.gridModel.getColumnGroup(PIVOT_GROUP_ID);
+
+            expect(region.children.every(it => it.groupShowMode == null)).toBe(true);
+            expect(colIds(model.gridModel.columns)).toEqual([
+                'cubeLabel',
+                'Energy>>sum',
+                'Tech>>sum'
+            ]);
+
+            const withSummary = createModel({
+                query: PIVOT_QUERY,
+                pivotGroupsCollapsible: false,
+                pivotValueSummary: true
+            });
+            expect(colIds(withSummary.gridModel.columns)).toContain('total>>sum');
+        });
+
         it('lets a fixed column and the row summary bind the same measure', () => {
             const model = createModel({
                     query: PIVOT_QUERY,
