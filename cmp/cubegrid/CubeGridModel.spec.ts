@@ -100,12 +100,12 @@ describe('CubeGridModel', () => {
             expect(showModes(region)).toEqual([
                 ['Energy', 'expanded'],
                 ['Tech', 'expanded'],
-                ['pivotValueSummary', 'collapsed']
+                ['total>>sum', 'collapsed']
             ]);
 
             const withSummary = createModel({query: PIVOT_QUERY, pivotValueSummary: true});
             expect(showModes(withSummary.gridModel.getColumnGroup(PIVOT_GROUP_ID))).toContainEqual([
-                'pivotValueSummary',
+                'total>>sum',
                 'always'
             ]);
 

@@ -41,6 +41,10 @@
 * The grid header's "Pin Column" menu is no longer offered for a column with `movable: false`.
   Pinning relocates the column, which header and chooser drags already refused for it.
 
+### ✨ Styles
+
+* Grid column group headers show their expand/collapse control before the label, as ag-Grid does.
+
 ### ⚙️ Typescript API Adjustments
 
 * Added `GridLikeModel`, the interface for a `GridModel` or a model wrapping one. It declares the

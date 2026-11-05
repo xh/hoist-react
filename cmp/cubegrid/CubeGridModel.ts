@@ -397,9 +397,10 @@ export class CubeGridModel extends HoistModel implements GridLikeModel {
                 ...this.buildPathColumn(path),
                 groupShowMode: 'expanded' as const
             })),
-            summaryCols = [
-                this.buildSummaryColumn(_rootPath, pivotValueSummarySide ? 'always' : 'collapsed')
-            ],
+            summaryCols = this.buildSummaryColumns(
+                _rootPath,
+                pivotValueSummarySide ? 'always' : 'collapsed'
+            ),
             pivotGroup = this.buildColGroup(
                 PIVOT_GROUP_ID,
                 this.query.pivot.dimensions.map(it => it.displayName).join(' › '),
@@ -461,9 +462,10 @@ export class CubeGridModel extends HoistModel implements GridLikeModel {
                 ...this.buildPathColumn(child),
                 groupShowMode: 'expanded' as const
             })),
-            summaryCols = [
-                this.buildSummaryColumn(path, pivotGroupSummarySide ? 'always' : 'collapsed')
-            ];
+            summaryCols = this.buildSummaryColumns(
+                path,
+                pivotGroupSummarySide ? 'always' : 'collapsed'
+            );
 
         return this.buildColGroup(
             path.key,
@@ -477,21 +479,14 @@ export class CubeGridModel extends HoistModel implements GridLikeModel {
 
     // Row summaries are the pivot summaries at the root path - the same cells at different depths.
     // A summary column binds the path's own cell but takes a colId of its own, so the root summary
-    // never collides with a fixed column bound to the same measure.
-    private buildSummaryColumn(
-        path: PivotPath,
-        groupShowMode?: ColumnGroupShowMode
-    ): ColumnGroupSpec {
-        const cols = this.buildValueColumns(path).map(col => ({
+    // never collides with a fixed column bound to the same measure. Bare columns, not a group, so
+    // a collapsed group shows them one header row up under its own label, as ag-Grid does.
+    private buildSummaryColumns(path: PivotPath, groupShowMode: ColumnGroupShowMode): ColumnSpec[] {
+        return this.buildValueColumns(path).map(col => ({
             ...col,
-            colId: `total>>${col.colId}`
+            colId: `total>>${col.colId}`,
+            groupShowMode
         }));
-        return this.buildColGroup(
-            path.isRoot ? 'pivotValueSummary' : `${path.key}:groupSummary`,
-            'Total',
-            cols,
-            {groupShowMode, headerAlign: 'center'}
-        );
     }
 
     private buildValueColumns(path: PivotPath): ColumnSpec[] {

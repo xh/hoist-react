@@ -132,9 +132,10 @@ The grid has two regions, always in this order:
    the side `pivotValueSummary` names.
 
 Column groups in the pivot region expand and collapse from their headers. The region collapses to
-the row summary, one column per value field holding each row's total, and `pivotValueSummary`
-keeps that summary visible while expanded too. With two or more pivot dimensions, each parent path
-group collapses to its own summary the same way, governed by `pivotGroupSummary`. Set
+the row summary, one column per value field holding each row's total, shown directly under the
+region's label as ag-Grid does. `pivotValueSummary` keeps that summary visible while expanded too.
+With two or more pivot dimensions, each parent path group collapses to its own summary the same
+way, governed by `pivotGroupSummary`. Set
 `pivotGroupsCollapsed` to start every group collapsed. The state is the grid's own
 `columnGroupState`, keyed on the path and on `PIVOT_GROUP_ID` for the region, so it survives a
 rebuild and persists with `persistWith`.
@@ -174,9 +175,9 @@ Each cell the View publishes becomes one column, bound to its synthetic field na
 
 | Column | Field on the row | Header |
 |--------|------------------|--------|
-| Row total for `pnl` | `pnl` | `Total` |
+| Row total for `pnl` | `pnl` | `Region › Sector` › `Pnl`, while collapsed |
 | Cell for region `US`, measure `pnl` | `US>>pnl` | `US` › `Pnl` |
-| Subtotal for `US` with a second pivot dimension | `US>>pnl` | `US` › `Total` |
+| Subtotal for `US` with a second pivot dimension | `US>>pnl` | `US` › `Pnl`, while collapsed |
 | Cell for `US` › `Tech` | `US>>Tech>>pnl` | `US` › `Tech` › `Pnl` |
 
 The field name is also the column's `colId`, so column state persists across rebuilds for paths that
