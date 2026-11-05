@@ -42,7 +42,7 @@ CubeGridModel
 ├── columns                            # The app's fixed columns, label column first by default
 ├── pivotValueSpecs                    # ColumnSpec per measure, applied across every path
 ├── pivotSortBy: PivotSort[]           # Display order per pivot level
-├── pivotValueSummary, pivotGroupSummary      # Total columns, docked / per group: false|true|HSide
+├── showPivotSummaries                 # Total columns per pivot group while expanded: false|true|HSide
 ├── pivotGroupsCollapsible             # Let pivot groups collapse from their headers (default)
 ├── pivotExpandLevel                   # Initial pivot header level, as expandLevel for rows
 ├── expandPivotToLevel(), expandAllPivotGroups(), collapseAllPivotGroups()
@@ -82,7 +82,7 @@ class PositionsModel extends HoistModel {
             includeRoot: true,
             pivot: {dimensions: ['region'], valueFields: ['mktVal', 'pnl']}
         },
-        pivotValueSummary: 'right',
+        showPivotSummaries: 'right',
         pivotValueSpecs: {
             mktVal: {width: 120, renderer: millionsRenderer({precision: 2, label: true})},
             pnl: {width: 110, renderer: numberRenderer({precision: 0, colorSpec: true})}
@@ -131,14 +131,13 @@ The grid has two regions, always in this order:
 2. **Pivot columns** - derived from `result.paths` when the query pivots, one group per path with
    a column per `pivot.valueFields` entry, configured through `pivotValueSpecs`. One group spans
    the region, titled by the pivot dimensions (`Region › Sector`), with the row summary column on
-   the side `pivotValueSummary` names.
+   the side `showPivotSummaries` names.
 
 Column groups in the pivot region expand and collapse from their headers. The region collapses to
 the row summary, one column per value field holding each row's total, shown directly under the
-region's label as ag-Grid does. `pivotValueSummary` keeps that summary visible while expanded too,
-under a `Total` header.
-With two or more pivot dimensions, each parent path group collapses to its own summary the same
-way, governed by `pivotGroupSummary`. `pivotExpandLevel` sets the initial level, as `expandLevel`
+region's label as ag-Grid does. With two or more pivot dimensions, each parent path group collapses
+to its own summary the same way. `showPivotSummaries` keeps every summary visible while expanded
+too, under a `Total` header on the side it names. `pivotExpandLevel` sets the initial level, as `expandLevel`
 does for rows: 0 collapses the region, 1 shows the top-level groups collapsed, -1 (the default)
 expands everything. `expandPivotToLevel()` resets it later, with `expandAllPivotGroups()` and
 `collapseAllPivotGroups()` as shortcuts. Set `pivotGroupsCollapsible: false` to fix every group
@@ -172,7 +171,7 @@ view.updateQuery({pivot: null});
 
 `updateQuery` replaces the whole `pivot` block, so spread the current one to change a single
 member. Presentation settings change on the model itself - `columns`, `pivotValueSpecs`,
-`pivotSortBy`, `pivotValueSummary` and `pivotGroupSummary` are all bindable, and `showSummary`
+`pivotSortBy` and `showPivotSummaries` are all bindable, and `showSummary`
 delegates to the grid.
 
 ### Pivot Columns and Cell Fields

@@ -93,7 +93,7 @@
             "mcpCategory": "package",
             "viewerCategory": "components",
             "description": "Cube View rendered as a tree grid with the app's columns, plus pivot paths as nested column groups, docked summaries, and per-measure column config when the query pivots.",
-            "keywords": ["CubeGridModel", "CubeGrid", "CubeGridConfig", "cube grid", "pivot", "PivotSpec", "valueFields", "cellFields", "PivotPath", "pivotValueSummary", "pivotGroupSummary", "pivotSortBy", "pivotValueSpecs", "showSummary"]
+            "keywords": ["CubeGridModel", "CubeGrid", "CubeGridConfig", "cube grid", "pivot", "PivotSpec", "valueFields", "cellFields", "PivotPath", "showPivotSummaries", "pivotExpandLevel", "pivotSortBy", "pivotValueSpecs", "showSummary"]
         },
         {
             "id": "cmp/form/README.md",

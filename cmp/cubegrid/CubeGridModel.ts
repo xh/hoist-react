@@ -115,25 +115,18 @@ export interface CubeGridConfig {
     pivotSortBy?: PivotSort[];
 
     /**
-     * Docked column per value field holding each row's aggregate across all pivot paths. The
-     * pivot region, collapsed, always shows it. True for the default 'right', or an {@link HSide},
-     * to show it while expanded too, on that side of the pivot columns. Default false. Bind this
-     * rather than expecting the column chooser to restore it.
+     * Summary columns while a pivot group is expanded, as {@link GridConfig.showSummary} is the
+     * summary row: a column per value field under a `Total` header, holding the pivot region's
+     * row totals and each parent pivot group's subtotals. A collapsed group always shows its
+     * summary. True for the default 'right', or an {@link HSide} to place it within the group.
+     * Default false. Bind this rather than expecting the column chooser to restore it.
      */
-    pivotValueSummary?: boolean | HSide;
-
-    /**
-     * Column per value field inside each parent pivot group holding that group's aggregate. A
-     * collapsed group always shows it. True for the default 'right', or an {@link HSide}, to show
-     * it while expanded too, on that side of the group. Default false. Only ever visible with 2+
-     * pivot dimensions, since a single dimension has no parent nodes.
-     */
-    pivotGroupSummary?: boolean | HSide;
+    showPivotSummaries?: boolean | HSide;
 
     /**
      * True (default) to let the pivot region and each parent pivot group collapse from its header
      * to its summary columns. False to fix every group open, with summary columns only where
-     * `pivotValueSummary` and `pivotGroupSummary` ask for them.
+     * `showPivotSummaries` asks for them.
      */
     pivotGroupsCollapsible?: boolean;
 
@@ -177,8 +170,7 @@ export class CubeGridModel extends HoistModel implements GridLikeModel {
     @bindableRef accessor columns: Array<ColumnSpec | ColumnGroupSpec>;
     @bindableRef accessor pivotValueSpecs: Record<string, PivotValueSpec>;
     @bindableRef accessor pivotSortBy: PivotSort[];
-    @bindable accessor pivotValueSummary: boolean | HSide;
-    @bindable accessor pivotGroupSummary: boolean | HSide;
+    @bindable accessor showPivotSummaries: boolean | HSide;
     @bindable accessor pivotGroupsCollapsible: boolean;
 
     //------------------------
@@ -196,8 +188,7 @@ export class CubeGridModel extends HoistModel implements GridLikeModel {
         columns = [],
         pivotValueSpecs = {},
         pivotSortBy = [],
-        pivotValueSummary = false,
-        pivotGroupSummary = false,
+        showPivotSummaries = false,
         pivotGroupsCollapsible = true,
         pivotExpandLevel = -1,
         gridConfig
@@ -214,8 +205,7 @@ export class CubeGridModel extends HoistModel implements GridLikeModel {
         this.columns = columns;
         this.pivotValueSpecs = pivotValueSpecs;
         this.pivotSortBy = pivotSortBy;
-        this.pivotValueSummary = pivotValueSummary;
-        this.pivotGroupSummary = pivotGroupSummary;
+        this.showPivotSummaries = showPivotSummaries;
         this.pivotGroupsCollapsible = pivotGroupsCollapsible;
         this.pivotExpandLevel = pivotExpandLevel;
 
@@ -327,12 +317,8 @@ export class CubeGridModel extends HoistModel implements GridLikeModel {
         return this.query.pivot?.valueFields ?? [];
     }
 
-    private get pivotValueSummarySide(): HSide {
-        return resolveSide(this.pivotValueSummary, 'right');
-    }
-
-    private get pivotGroupSummarySide(): HSide {
-        return resolveSide(this.pivotGroupSummary, 'right');
+    private get pivotSummarySide(): HSide {
+        return resolveSide(this.showPivotSummaries, 'right');
     }
 
     // `equals: 'shallow'` - the track fn allocates a fresh array per run.
@@ -342,8 +328,7 @@ export class CubeGridModel extends HoistModel implements GridLikeModel {
             track: () => [
                 this.view.result.paths,
                 this.columns,
-                this.pivotValueSummary,
-                this.pivotGroupSummary,
+                this.showPivotSummaries,
                 this.pivotGroupsCollapsible,
                 this.pivotSortBy,
                 this.pivotValueSpecs
@@ -440,7 +425,7 @@ export class CubeGridModel extends HoistModel implements GridLikeModel {
             pivotGroup = this.buildColGroup(
                 PIVOT_GROUP_ID,
                 this.query.pivot.dimensions.map(it => it.displayName).join(' › '),
-                this.buildGroupChildren(pathCols, this._rootPath, this.pivotValueSummarySide),
+                this.buildGroupChildren(pathCols, this._rootPath),
                 {level: 0}
             );
 
@@ -496,12 +481,9 @@ export class CubeGridModel extends HoistModel implements GridLikeModel {
         const childCols = this.sortPaths(path.children, path.depth).map(child =>
             this.buildPathColumn(child)
         );
-        return this.buildColGroup(
-            path.key,
-            path.label,
-            this.buildGroupChildren(childCols, path, this.pivotGroupSummarySide),
-            {level: path.depth}
-        );
+        return this.buildColGroup(path.key, path.label, this.buildGroupChildren(childCols, path), {
+            level: path.depth
+        });
     }
 
     // Children of a group that collapses to its summary. The path groups show expanded. The
@@ -510,10 +492,9 @@ export class CubeGridModel extends HoistModel implements GridLikeModel {
     // Total group, only when asked.
     private buildGroupChildren(
         pathCols: Array<ColumnSpec | ColumnGroupSpec>,
-        summaryPath: PivotPath,
-        summarySide: HSide
+        summaryPath: PivotPath
     ): Array<ColumnSpec | ColumnGroupSpec> {
-        const {pivotGroupsCollapsible} = this,
+        const {pivotGroupsCollapsible, pivotSummarySide: summarySide} = this,
             children = pivotGroupsCollapsible
                 ? pathCols.map(it => ({...it, groupShowMode: 'expanded' as const}))
                 : pathCols,
@@ -522,7 +503,7 @@ export class CubeGridModel extends HoistModel implements GridLikeModel {
         if (summarySide) {
             summaryCols.push(
                 this.buildColGroup(
-                    summaryPath.isRoot ? 'pivotValueSummary' : `${summaryPath.key}:total`,
+                    `${summaryPath.isRoot ? PIVOT_GROUP_ID : summaryPath.key}:total`,
                     'Total',
                     this.buildSummaryColumns(summaryPath, 'total'),
                     {
@@ -641,7 +622,7 @@ export class CubeGridModel extends HoistModel implements GridLikeModel {
     }
 }
 
-/** Group id of the column group spanning the pivot region. */
+/** Group id of the column group spanning the pivot region. Its summary group is `pivot:total`. */
 export const PIVOT_GROUP_ID = 'pivot';
 
 function leafColIds(cols: Array<ColumnSpec | ColumnGroupSpec>): string[] {

@@ -103,9 +103,9 @@ describe('CubeGridModel', () => {
                 ['collapsed>>sum', 'collapsed']
             ]);
 
-            const withSummary = createModel({query: PIVOT_QUERY, pivotValueSummary: true});
+            const withSummary = createModel({query: PIVOT_QUERY, showPivotSummaries: true});
             expect(showModes(withSummary.gridModel.getColumnGroup(PIVOT_GROUP_ID))).toContainEqual([
-                'pivotValueSummary',
+                'pivot:total',
                 'expanded'
             ]);
 
@@ -144,7 +144,7 @@ describe('CubeGridModel', () => {
             const withSummary = createModel({
                 query: PIVOT_QUERY,
                 pivotGroupsCollapsible: false,
-                pivotValueSummary: true
+                showPivotSummaries: true
             });
             expect(colIds(withSummary.gridModel.columns)).toContain('total>>sum');
             expect(colIds(withSummary.gridModel.columns)).not.toContain('collapsed>>sum');
@@ -154,7 +154,7 @@ describe('CubeGridModel', () => {
             const model = createModel({
                     query: PIVOT_QUERY,
                     columns: [{field: 'sum'}],
-                    pivotValueSummary: true
+                    showPivotSummaries: true
                 }),
                 {gridModel} = model;
 
@@ -181,16 +181,16 @@ describe('CubeGridModel', () => {
             expect(locked.gridModel.getColumn('Energy>>sum').hideable).toBe(false);
         });
 
-        it('places the summary column on the side pivotValueSummary names, within the pivot region', () => {
+        it('places the summary columns on the side showPivotSummaries names, within the pivot region', () => {
             const right = createModel({
                     query: PIVOT_QUERY,
                     columns: [{field: 'avg'}],
-                    pivotValueSummary: true
+                    showPivotSummaries: true
                 }),
                 left = createModel({
                     query: PIVOT_QUERY,
                     columns: [{field: 'avg'}],
-                    pivotValueSummary: 'left'
+                    showPivotSummaries: 'left'
                 });
 
             expect(colIds(right.gridModel.columns)).toEqual([
