@@ -232,7 +232,8 @@ const onContextMenu = (e, model) => {
  * Relay RGL's layout reports to the model, skipping any that predate the model's latest layout:
  * those made in a commit that changed the `layout` prop (RGL reports what it rendered before
  * syncing to it), and those arriving after the model was written again. Adopting either reverts
- * the model's write and can loop until React error #185. RGL reports the synced layout next commit.
+ * the model's write and can loop until React error #185. RGL reports the synced layout next commit,
+ * unless syncing leaves its layout unchanged - then the model keeps its uncompacted write.
  */
 function useRglLayoutChangeHandler(model: DashCanvasModel) {
     const {layout} = model,

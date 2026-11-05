@@ -20,12 +20,21 @@ describe('DashCanvas', () => {
         await initTestAppAsync();
     });
 
-    it('keeps the latest of two layout writes made before RGL catches up', async () => {
-        const model = new DashCanvasModel({
-            viewSpecs: [{id: 'chart', content: () => null, width: 6, height: 5}],
-            initialState: [item(0, 5), item(5, 5)]
+    it('adopts the layout RGL compacts from a model write', async () => {
+        const model = createCanvas();
+        renderCanvas(model);
+
+        // chart_0 grows over chart_1, which RGL pushes down and reports back.
+        await act(async () => model.loadState([item(0, 8), item(5, 5)]));
+
+        expect(layoutsById(model)).toEqual({
+            chart_0: {x: 0, y: 0, w: 6, h: 8},
+            chart_1: {x: 0, y: 8, w: 6, h: 5}
         });
-        onTestFinished(() => model.destroy());
+    });
+
+    it('keeps the latest of two layout writes made before RGL catches up', async () => {
+        const model = createCanvas();
 
         // Land the second write in the commit where RGL starts syncing to the first.
         const first = [item(0, 10), item(5, 5)],
@@ -41,6 +50,7 @@ describe('DashCanvas', () => {
         renderCanvas(model, onCommit);
         await act(async () => model.loadState(first));
 
+        expect(pending).toBe(false);
         expect(layoutsById(model)).toEqual({
             chart_0: {x: 0, y: 0, w: 6, h: 3},
             chart_1: {x: 0, y: 3, w: 6, h: 5}
@@ -48,7 +58,16 @@ describe('DashCanvas', () => {
     });
 });
 
-function renderCanvas(model: DashCanvasModel, onCommit: () => void) {
+function createCanvas(): DashCanvasModel {
+    const ret = new DashCanvasModel({
+        viewSpecs: [{id: 'chart', content: () => null, width: 6, height: 5}],
+        initialState: [item(0, 5), item(5, 5)]
+    });
+    onTestFinished(() => ret.destroy());
+    return ret;
+}
+
+function renderCanvas(model: DashCanvasModel, onCommit: () => void = () => {}) {
     // jsdom has no layout - DashCanvas holds off rendering RGL until it measures a width.
     const widthSpy = vi.spyOn(HTMLElement.prototype, 'clientWidth', 'get').mockReturnValue(1200);
     onTestFinished(() => widthSpy.mockRestore());
