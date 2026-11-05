@@ -319,8 +319,11 @@ cell. Cost scales with populated cells, not rows times paths. The planner behind
 `PivotStructure` in `data/cube/pivot/impl`, with its correctness properties pinned by its spec.
 
 **Limits.** Pivoting is not supported together with `bucketSpecFn` and `includeLeaves`, and a
-dimension cannot appear on both axes. `maxPivotPaths` (default 1000) throws when a pivot dimension
-is wider than intended; pick a lower-cardinality dimension or raise the cap deliberately.
+dimension cannot appear on both axes. `maxPivotPaths` (default 100) declines the result when a
+pivot dimension is wider than intended: the View publishes the reason as `ViewResult.exception`
+and empties its rows and stores, and a `CubeGrid` renders an `ErrorMessage` in its place. Pick a
+lower-cardinality dimension or raise the cap deliberately. Any routine `HoistException` thrown in
+the View's pipeline, such as from an app aggregator, is handled the same way.
 
 To render a View, pivoted or not, see [`/cmp/cubegrid/`](../../cmp/cubegrid/README.md).
 

@@ -6,6 +6,7 @@
  */
 
 import type {PlainObject} from '@xh/hoist/core';
+import {XH} from '@xh/hoist/core';
 
 /**
  * Pure combinatorial core of the pivot view: discovers the pivot path tree from a set of records,
@@ -50,7 +51,10 @@ export interface PivotPathDiscoveryConfig {
     /** Label for a null / blank pivot dimension value. Default '(empty)'. */
     emptyPathLabel?: string;
 
-    /** Throw if the discovered path count exceeds this. Default 1000; null to disable. */
+    /**
+     * Throw a routine exception if the discovered path count exceeds this. Default 100; null
+     * to disable.
+     */
     maxPivotPaths?: number;
 
     delimiter?: string;
@@ -119,7 +123,7 @@ export function discoverPivotPaths(
     pivotDimNames: string[],
     config: PivotPathDiscoveryConfig = {}
 ): PivotPathDiscoveryResult {
-    const {emptyPathLabel = '(empty)', maxPivotPaths = 1000, delimiter = PATH_DELIMITER} = config,
+    const {emptyPathLabel = '(empty)', maxPivotPaths = 100, delimiter = PATH_DELIMITER} = config,
         maxDepth = pivotDimNames.length;
 
     interface Node {
@@ -180,11 +184,17 @@ export function discoverPivotPaths(
             });
             cumulative += next.length;
             if (cumulative > maxPivotPaths) {
-                throw new Error(
-                    `Pivot dimension '${pivotDimNames[d]}' produces ${cumulative} pivot paths, ` +
-                        `exceeding maxPivotPaths of ${maxPivotPaths}. Pivot on a lower-cardinality ` +
-                        `dimension, or raise / disable the limit.`
-                );
+                // Routine - the data, not the code, is at fault. A View publishes it on its result.
+                throw XH.exception({
+                    message:
+                        `Pivot dimension '${pivotDimNames[d]}' produces ${cumulative} pivot paths, ` +
+                        `exceeding max of ${maxPivotPaths}. Pivot on a lower-cardinality ` +
+                        `dimension, or raise / disable the limit.`,
+                    isRoutine: true,
+                    dimension: pivotDimNames[d],
+                    pathCount: cumulative,
+                    maxPivotPaths
+                });
             }
             level = next;
         }

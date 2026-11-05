@@ -8,6 +8,8 @@
 import type {GridFilterBindTarget} from '@xh/hoist/cmp/grid';
 import type {PlainObject, Some} from '@xh/hoist/core';
 import {HoistBase} from '@xh/hoist/core';
+import type {HoistException} from '@xh/hoist/exception';
+import {isHoistException} from '@xh/hoist/exception';
 import {instanceManager} from '@xh/hoist/core/impl/InstanceManager';
 import type {
     CubeField,
@@ -98,6 +100,19 @@ export interface ViewResult {
      * `valueFields`-only change, even though the path tree itself is structurally unchanged.
      */
     cellFields: PivotCellField[];
+
+    /**
+     * Set when the View declined to produce a result from this data: a step in its pipeline threw
+     * a routine `HoistException`, such as the pivot cap in {@link PivotSpec.maxPivotPaths} or an
+     * app aggregator rejecting the values it was given. The query is valid and the code is
+     * correct, but this data does not fit it, so the message is addressed to the user. `rows`,
+     * `paths` and `cellFields` are empty and connected stores are cleared while set. Null
+     * otherwise.
+     *
+     * Any other exception is a bug and propagates from the update that hit it. Mark an exception
+     * routine only when the user, not the developer, can clear it.
+     */
+    exception: HoistException;
 }
 
 /**
@@ -474,13 +489,23 @@ export class View
     private fullUpdate(trigger: 'load' | 'update' | 'query', start: number) {
         this.filterRecords();
         this.createAggregationContext();
-        this._pivot?.discoverPaths();
-        this.generateRows();
-        this._pivot?.generateCells();
-        // Closed after cell generation, so cell rows count toward the generation.
-        this._rowCache.endGeneration();
+
+        let exception: HoistException = null;
+        try {
+            this._pivot?.discoverPaths();
+            this.generateRows();
+            this._pivot?.generateCells();
+            // Closed after cell generation, so cell rows count toward the generation.
+            this._rowCache.endGeneration();
+        } catch (e) {
+            // Routine means the data is at fault - publish and empty. See `ViewResult.exception`.
+            if (!isHoistException(e) || !e.isRoutine) throw e;
+            exception = e;
+            this.clearGeneratedRows();
+        }
+
         this.loadStores();
-        this.updateResults();
+        this.updateResults(exception);
 
         const {diagnostics} = this;
         switch (trigger) {
@@ -564,18 +589,29 @@ export class View
         store.loadData(_leafMap.size !== 0 ? _rowDatas : []);
     }
 
-    private updateResults() {
+    private updateResults(exception: HoistException = null) {
         const {_leafMap, _rowDatas, _pivot} = this;
         this.result = {
             rows: _rowDatas,
             // Hidden leaves adopt Cube record data outright - never publish them.
             leafMap: this.exposesLeaves ? (_leafMap as Map<StoreRecordId, ExposedLeafRow>) : null,
             paths: _pivot?.paths ?? EMPTY_PATHS,
-            cellFields: _pivot?.cellFields ?? EMPTY_CELL_FIELDS
+            cellFields: _pivot?.cellFields ?? EMPTY_CELL_FIELDS,
+            exception
         };
         this.info = this.cube.info;
         this.cubeUpdated = this.cube.lastUpdated;
         this.lastUpdated = Date.now();
+    }
+
+    // Rows and cells of a declined update are discarded whole, so stores load empty rather than
+    // stale. The next successful update rebuilds from scratch.
+    private clearGeneratedRows() {
+        this._rowCache.clear();
+        this._pivot?.reset();
+        this._leafMap = new Map();
+        this._rootRows = [];
+        this._rowDatas = [];
     }
 
     // Generate a new full data representation from the filtered records
@@ -733,6 +769,8 @@ export class View
     // false if leaf population changing, or aggregations are complex
     private getSimpleUpdates(t: RecordSetDelta): StoreRecord[] | false {
         if (!t) return [];
+        // A declined result has no leaves to patch - rerun in full.
+        if (this.result?.exception) return false;
         if (!this.aggregatorsAreSimple) return false;
         const {_leafMap, query} = this;
 

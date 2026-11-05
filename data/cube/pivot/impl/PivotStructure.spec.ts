@@ -21,6 +21,7 @@
  * oracle, to show property 2 is sufficient for them. Their semantics through a real View are
  * covered in `aggregate/Aggregators.spec.ts`.
  */
+import {isHoistException} from '@xh/hoist/exception';
 import type {Aggregator} from '../../aggregate/Aggregator';
 import {
     buildPivotStructure,
@@ -487,6 +488,21 @@ expectThrows(
     },
     'region'
 );
+
+suite('maxPivotPaths throws a routine exception', () => {
+    const errs: string[] = [];
+    const records: Rec[] = [];
+    for (let i = 0; i < 50; i++) records.push(rec('F1', 'S1', `R${i}`, 'x'));
+    try {
+        discoverPivotPaths(records, ['region'], {maxPivotPaths: 10});
+        errs.push('expected the cap to throw');
+    } catch (e) {
+        // A View publishes a routine exception on its result; anything else propagates as a bug.
+        if (!isHoistException(e) || !e.isRoutine)
+            errs.push('the cap must throw a routine exception');
+    }
+    check('maxPivotPaths throws a routine exception', errs);
+});
 
 suite('maxPivotPaths: null disables the guard', () => {
     const errs: string[] = [];

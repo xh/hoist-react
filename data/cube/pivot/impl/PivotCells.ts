@@ -225,6 +225,12 @@ export class PivotCells {
         return this.view.query.pivot?.valueFields ?? [];
     }
 
+    /** Drop all paths and cells, as when the View declines its data. */
+    reset() {
+        this.discovery = null;
+        this.clearCells();
+    }
+
     private clearCells() {
         this.clearVacatedCells(this.cellRows, EMPTY_CELLS);
         this.allPaths = [];

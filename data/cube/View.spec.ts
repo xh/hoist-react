@@ -6,6 +6,7 @@
  */
 import type {PlainObject} from '@xh/hoist/core';
 import {
+    Aggregator,
     Cube,
     getCubeLeaves,
     type QueryConfig,
@@ -374,6 +375,68 @@ const TRADES = [
     {id: 9, region: 'Asia', sector: 'Finance', symbol: 'HSBC', qty: 40, price: 60},
     {id: 10, region: 'Asia', sector: 'Finance', symbol: 'MUFG', qty: 90, price: 10}
 ];
+
+describe('declined results', () => {
+    const CAPPED: QueryConfig = {
+        dimensions: ['region'],
+        fields: ['qty'],
+        pivot: {dimensions: ['symbol'], valueFields: ['qty'], maxPivotPaths: 1}
+    };
+
+    it('publishes a routine exception and empties the result and stores', () => {
+        const view = createView(createCube(), CAPPED, {connect: true}),
+            store = autoDestroy(view.createStore({connect: true})),
+            {result} = view;
+
+        expect(result.exception?.isRoutine).toBe(true);
+        expect(result.exception.message).toMatch(/symbol/);
+        expect(result.rows).toEqual([]);
+        expect(result.paths).toEqual([]);
+        expect(result.cellFields).toEqual([]);
+        expect(store.count).toBe(0);
+    });
+
+    it('clears the exception and rebuilds when the query is changed to fit', () => {
+        const view = createView(createCube(), CAPPED, {connect: true}),
+            store = autoDestroy(view.createStore({connect: true}));
+
+        view.updateQuery({pivot: {...CAPPED.pivot, maxPivotPaths: null}});
+
+        expect(view.result.exception).toBeNull();
+        expect(view.result.rows.length).toBeGreaterThan(0);
+        expect(view.result.paths.length).toBeGreaterThan(1);
+        expect(store.count).toBeGreaterThan(0);
+    });
+
+    it('clears the exception when the data changes to fit', async () => {
+        const cube = createCube(),
+            view = createView(cube, CAPPED, {connect: true});
+        expect(view.result.exception).not.toBeNull();
+
+        await cube.loadDataAsync(TRADES.filter(it => it.symbol === TRADES[0].symbol));
+
+        expect(view.result.exception).toBeNull();
+        expect(view.result.paths.length).toBe(1);
+    });
+
+    it('propagates any exception that is not routine', () => {
+        class Boom extends Aggregator {
+            aggregate() {
+                throw new Error('boom');
+            }
+        }
+        const cube = autoDestroy(
+            new Cube({
+                fields: [
+                    {name: 'region', isDimension: true},
+                    {name: 'qty', type: 'int', aggregator: new Boom()}
+                ],
+                data: TRADES
+            })
+        );
+        expect(() => createView(cube, {dimensions: ['region'], fields: ['qty']})).toThrow('boom');
+    });
+});
 
 function createCube(): Cube {
     return autoDestroy(

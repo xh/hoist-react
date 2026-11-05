@@ -168,7 +168,10 @@ export interface PivotSpec {
      */
     excludeEmptyPivotValues?: boolean;
 
-    /** Throw if the discovered pivot path count exceeds this. Default 1000; null to disable. */
+    /**
+     * Decline the result if the discovered pivot path count exceeds this - see
+     * {@link ViewResult.exception}. Default 100; null to disable.
+     */
     maxPivotPaths?: number;
 }
 
@@ -370,7 +373,7 @@ export class Query {
                 valueFields,
                 emptyPathLabel = '(empty)',
                 excludeEmptyPivotValues = false,
-                maxPivotPaths = 1000
+                maxPivotPaths = 100
             } = spec,
             dims = this.parseDimensions(dimensions) ?? [];
 
