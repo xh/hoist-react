@@ -167,18 +167,16 @@ describe('CubeGridModel', () => {
                 'collapsed>>sum'
             ]);
             expect(gridModel.getColumn('total>>sum').field).toBe('sum');
-            expect(gridModel.getColumn('collapsed>>sum').excludeFromChooser).toBe(true);
         });
 
-        it('leaves pivot columns hideable unless a value column spec locks them', () => {
-            const open = createModel({query: PIVOT_QUERY}),
-                locked = createModel({
-                    query: PIVOT_QUERY,
-                    pivotValueSpecs: {sum: {hideable: false}}
-                });
+        it('keeps pivot columns out of the chooser and not hideable', () => {
+            const {gridModel} = createModel({query: PIVOT_QUERY, showPivotSummaries: true});
 
-            expect(open.gridModel.getColumn('Energy>>sum').hideable).toBe(true);
-            expect(locked.gridModel.getColumn('Energy>>sum').hideable).toBe(false);
+            ['Energy>>sum', 'total>>sum', 'collapsed>>sum'].forEach(colId => {
+                const col = gridModel.getColumn(colId);
+                expect(col.hideable).toBe(false);
+                expect(col.excludeFromChooser).toBe(true);
+            });
         });
 
         it('places the summary columns on the side showPivotSummaries names, within the pivot region', () => {

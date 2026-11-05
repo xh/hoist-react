@@ -49,7 +49,8 @@
 ### ✨ Styles
 
 * Grid column group headers show their expand/collapse control right after the label rather
-  than at the header's far edge.
+  than at the header's far edge, as a chevron pointing down when expanded and right when
+  collapsed, matching tree rows.
 
 ### ⚙️ Typescript API Adjustments
 

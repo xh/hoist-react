@@ -52,6 +52,8 @@ export const RESERVED_PIVOT_VALUE_KEYS = [
     'field',
     'isTreeColumn',
     'hidden',
+    'hideable',
+    'excludeFromChooser',
     'enableDotSeparatedFieldPath',
     'omit',
     'pinned',
@@ -105,9 +107,9 @@ export interface CubeGridConfig {
      * width, align, and so on. Keyed by value field name.
      *
      * Specs are expected to be shared with the fixed `columns`, so {@link RESERVED_PIVOT_VALUE_KEYS}
-     * are stripped rather than rejected. Pivot columns are hideable like any other - set
-     * `hideable: false` here to lock a measure's columns, and drop the field from the query's
-     * `pivot.valueFields` to remove them.
+     * are stripped rather than rejected. Pivot columns are not hideable and stay out of the column
+     * chooser - the region is the query's, so drop a field from `pivot.valueFields` to remove its
+     * columns.
      */
     pivotValueSpecs?: Record<string, PivotValueSpec>;
 
@@ -352,8 +354,8 @@ export class CubeGridModel extends HoistModel implements GridLikeModel {
 
     // `setColumns` resets column and group state. Cell field names and path keys are stable ids,
     // so prior state carries over: fixed columns keep their order, and pivot columns keep their
-    // width and hidden flag but take the order of the build, since that order is the view's, not
-    // the user's. Any fixed column dragged into the pivot region returns to its own.
+    // width but take the order of the build, since that order is the view's, not the user's. Any
+    // fixed column dragged into the pivot region returns to its own.
     @action
     private rebuildColumns() {
         const {gridModel, _pivotColIds} = this,
@@ -367,7 +369,7 @@ export class CubeGridModel extends HoistModel implements GridLikeModel {
                 .filter(it => _pivotColIds.has(it.colId))
                 .map(it => ({
                     ...it,
-                    ...pick(priorById[it.colId], 'width', 'hidden', 'manuallySized')
+                    ...pick(priorById[it.colId], 'width', 'manuallySized')
                 }));
 
         gridModel.setColumnState([...fixed, ...pivot]);
@@ -525,14 +527,12 @@ export class CubeGridModel extends HoistModel implements GridLikeModel {
     // Row summaries are the pivot summaries at the root path - the same cells at different depths.
     // A summary column binds the path's own cell but takes a colId of its own, so the root summary
     // never collides with a fixed column bound to the same measure. The `collapsed` set stands in
-    // for the `total` set while its group is collapsed, so it stays out of the chooser.
+    // for the `total` set while its group is collapsed.
     private buildSummaryColumns(path: PivotPath, kind: 'total' | 'collapsed'): ColumnSpec[] {
-        const collapsed = kind === 'collapsed';
         return this.buildValueColumns(path).map(col => ({
             ...col,
             colId: `${kind}>>${col.colId}`,
-            groupShowMode: collapsed ? 'collapsed' : null,
-            excludeFromChooser: collapsed
+            groupShowMode: kind === 'collapsed' ? 'collapsed' : null
         }));
     }
 
@@ -540,16 +540,17 @@ export class CubeGridModel extends HoistModel implements GridLikeModel {
         return this.valueFields.map(field => this.buildValueColumn(path, field));
     }
 
-    // Order within the pivot region is the view's, via `pivotSortBy`, so these never move. Field
-    // names are built from data values that may contain dots.
+    // The pivot region is the query's: these columns never move or hide, and the chooser does not
+    // list them. Field names are built from data values that may contain dots.
     private buildValueColumn(path: PivotPath, field: CubeField): ColumnSpec {
         const name = this.cellFieldName(path, field);
         return {
             ...this._valueSpecs[field.name],
             colId: name,
             field: name,
-            chooserName: `${path.isRoot ? 'Total' : path.label} › ${field.displayName}`,
             movable: false,
+            hideable: false,
+            excludeFromChooser: true,
             enableDotSeparatedFieldPath: false,
             // Keeps the pivot block trailing: a fixed column cannot be dropped inside it.
             agOptions: {lockPosition: 'right'}

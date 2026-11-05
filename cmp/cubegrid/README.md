@@ -149,8 +149,8 @@ Users reorder the fixed columns and the grid persists that through its normal co
 columns are not movable: their order is the view's, set through `pivotSortBy`, in the same way row
 order is set through the query rather than dragged. The regions never interleave. A header drag
 cannot drop a fixed column inside the pivot block, a drop made through the column chooser is moved
-back as soon as it lands, and a rebuild keeps each pivot column's width and hidden flag while taking
-its position from the build.
+back as soon as it lands, and a rebuild keeps each pivot column's width while taking its position
+from the build.
 
 ### Reconfiguring
 
@@ -187,16 +187,16 @@ Each cell the View publishes becomes one column, bound to its synthetic field na
 
 The field name is also the column's `colId`, so column state persists across rebuilds for paths that
 remain in the data, and a path that leaves and returns comes back at its default width. A summary
-column binds the same cell under a `total>>` colId while expanded, and a `collapsed>>` colId kept
-out of the chooser while collapsed, so a fixed column can show the row total for a measure as well. Every path is a group headed by its value with a column per measure beneath, even
+column binds the same cell under a `total>>` colId while expanded and a `collapsed>>` colId while
+collapsed, so a fixed column can show the row total for a measure as well. Every path is a group headed by its value with a column per measure beneath, even
 with a single measure, so the measure name stays visible beside the fixed columns.
 
 `pivotValueSpecs` applies to every pivot column generated for a measure. Keys that identify or
 place a column - `colId`, `field`, `pinned`, `hidden`, `editable` and the rest of
 `RESERVED_PIVOT_VALUE_KEYS` - are stripped, so a spec shared with the fixed columns still applies
-cleanly. Pivot columns are hideable through the column chooser like any other, and the hidden state
-persists by cell field name. Set `hideable: false` on a measure's spec to lock its columns, and drop
-the measure from `pivot.valueFields` to remove them.
+cleanly. Pivot columns are not hideable and stay out of the column chooser, as they cannot be
+moved or pinned: the region is the query's. Drop a measure from `pivot.valueFields` or filter the
+query to remove columns.
 
 ### Sorting the Pivot Axis
 
