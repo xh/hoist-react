@@ -4,7 +4,8 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {HoistModel, managed, MessageSpec, XH} from '@xh/hoist/core';
+import type {MessageSpec} from '@xh/hoist/core';
+import {HoistModel, managed, XH} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {action, observableRef} from '@xh/hoist/mobx';
 import {filter, isUndefined, partition} from 'lodash';

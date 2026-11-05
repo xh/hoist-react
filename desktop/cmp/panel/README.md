@@ -389,19 +389,54 @@ panel({
 | `minSize` | `0` | Minimum resize size in pixels. |
 | `maxSize` | `null` | Maximum resize size in pixels. |
 | `defaultCollapsed` | `false` | Start collapsed? |
-| `showSplitter` | `resizable \|\| collapsible` | Show a draggable splitter at the panel edge. |
-| `showSplitterCollapseButton` | `showSplitter && collapsible` | Show collapse button on the splitter. |
-| `showHeaderCollapseButton` | `true` | Show collapse button in the panel header (when `collapsible`). |
+| `showSplitter` | `resizable \|\| collapsible` | Show a splitter line at the panel edge. |
+| `showSplitterCollapseButton` | `showSplitter && collapsible` | Show a collapse button on the splitter, on hover. |
+| `showHeaderCollapseButton` | see description | Show a collapse button in the panel header (when `collapsible`). Defaults to `true` when collapsed. When expanded, defaults to `true` only if the splitter has no collapse button. An explicit value applies in both states. |
+| `showCollapsedStrip` | `true` | Show a thin clickable strip when the panel is collapsed and has no title or icon. Set to `false` to collapse to the splitter line only. |
 | `renderMode` | `'lazy'` | How collapsed content is rendered: `'lazy'` (render once, preserve), `'always'`, or `'unmountOnHide'`. |
 | `refreshMode` | `'onShowLazy'` | How collapsed content is refreshed when re-expanded. |
 | `resizeWhileDragging` | `false` | Redraw panel continuously during resize drag. |
 
+### App-Level Defaults
+
+`PanelModel.defaults` sets app-wide defaults for `resizeWhileDragging`,
+`showSplitterCollapseButton`, `showHeaderCollapseButton`, and `showCollapsedStrip`. Set them at app
+startup, for example in your `AppModel` constructor. Instance config takes precedence.
+
+```typescript
+import {PanelModel} from '@xh/hoist/desktop/cmp/panel';
+
+PanelModel.defaults.resizeWhileDragging = true;
+PanelModel.defaults.showHeaderCollapseButton = true; // header chevron on expanded panels too
+```
+
+Leave `showHeaderCollapseButton` at its `null` default to keep the state-aware behavior described
+in the table above.
+
+### Splitter
+
+The splitter is a 1px line with an invisible 8px grab area (20px on touch screens). On hover, an
+accent line and a collapse button fade in.
+
+- Drag to resize. Double-click to reset to `defaultSize`.
+- Drag a collapsible panel below half its `minSize` (at least 24px) to collapse it. The line turns
+  orange and the content dims to preview the collapse. Drag back to cancel.
+- The splitter is focusable. Arrow keys resize by 10px, or 50px with Shift. Enter toggles
+  collapse.
+
+Style it with the `--xh-panel-splitter-*` CSS variables. The strip uses
+`--xh-panel-collapsed-strip-*`.
+
 ### Collapse Behavior
 
 - Double-clicking the header toggles collapse.
+- A single click anywhere on a collapsed header expands the panel.
 - When collapsed to left or right, the header rotates vertically, showing the collapsed title/icon.
 - When collapsed to top or bottom, the header remains horizontal.
-- The splitter collapse button provides an additional collapse/expand affordance.
+- A collapsed panel with no title or icon shows a thin strip with a chevron. Click the strip to
+  expand the panel. Set `showCollapsedStrip: false` to turn the strip off.
+- The splitter collapse button shows on hover in both states. Its chevron points the way the
+  panel will move.
 
 ## collapsedTitle / collapsedIcon
 
@@ -605,14 +640,16 @@ panel({
 
 ### Collapsible panel without `collapsedTitle`
 
-A collapsible panel that has no `title`, `collapsedTitle`, or `icon` will not render a header
-when collapsed — it collapses down to just the splitter bar. This is supported and valid, but can
-make it difficult for users to locate the collapsed panel and find the small control on the
-splitter to re-expand it. Setting `collapsedTitle` and/or `collapsedIcon` ensures a visible,
-identifiable header is always shown when collapsed.
+A collapsible panel that has no `title`, `collapsedTitle`, or `icon` has no header to show when
+collapsed. It collapses to a thin strip with a chevron, which users can click to expand it. The
+strip keeps the panel findable, but it does not say what the panel holds. Set `collapsedTitle`
+and/or `collapsedIcon` so users can identify the collapsed panel.
+
+With `showCollapsedStrip: false`, such a panel collapses to just its splitter line. The app must
+then supply its own control to expand it, such as a toolbar toggle.
 
 ```typescript
-// ❌ Avoid: no title or collapsedTitle — collapses to splitter only
+// ❌ Avoid: no title or collapsedTitle - collapses to an unlabeled strip
 panel({
     modelConfig: {collapsible: true, side: 'right', defaultSize: 400},
     item: detailView()
@@ -634,6 +671,9 @@ panel({
 | `desktop/cmp/panel/Panel.ts` | Panel component — vframe layout, mask/toolbar parsing. |
 | `desktop/cmp/panel/PanelModel.ts` | Collapse/resize state, persistence, modal support config. |
 | `desktop/cmp/panel/impl/PanelHeader.ts` | Header rendering, collapsed title/icon switching. |
+| `desktop/cmp/panel/impl/Splitter.ts` | Splitter line, hit area, hover accent, and collapse button. |
+| `desktop/cmp/panel/impl/dragger/DraggerModel.ts` | Pointer drag, keyboard resize, and drag-to-collapse. |
+| `desktop/cmp/panel/impl/CollapsedStrip.ts` | Strip shown for a collapsed panel with no header. |
 | `desktop/cmp/toolbar/Toolbar.ts` | Toolbar with separator shortcut, compact mode, overflow menu. |
 | `desktop/cmp/modalsupport/ModalSupportModel.ts` | Modal pop-out config and state management. |
 | `desktop/cmp/modalsupport/ModalSupport.ts` | Portal-based modal implementation. |

@@ -4,14 +4,16 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {HoistModel, RefreshMode, RenderMode, XH} from '@xh/hoist/core';
+import type {RefreshMode, RenderMode} from '@xh/hoist/core';
+import {HoistModel, XH} from '@xh/hoist/core';
 import {action, bindable, bindableRef} from '@xh/hoist/mobx';
 import {ensureNotEmpty, ensureUniqueBy, throwIf, mergeDeep} from '@xh/hoist/utils/js';
 import {wait} from '@xh/hoist/promise';
 import {find, isEqual, keys} from 'lodash';
-import {Swiper} from 'swiper/types';
+import type {Swiper} from 'swiper/types';
 import '@xh/hoist/mobile/register';
-import {PageConfig, PageModel} from './PageModel';
+import type {PageConfig} from './PageModel';
+import {PageModel} from './PageModel';
 import {findScrollableParent, isDraggableEl} from './impl/Utils';
 
 /**

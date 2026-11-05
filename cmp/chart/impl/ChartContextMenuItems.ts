@@ -8,7 +8,7 @@ import type {ChartMenuContext, ChartMenuToken} from '@xh/hoist/cmp/chart/Types';
 import {bindMenuHeadingContext} from '@xh/hoist/cmp/menu/impl/Menus';
 import {logWarn} from '@xh/hoist/utils/js';
 import {cloneDeep, isEmpty, isString} from 'lodash';
-import {ChartModel} from '@xh/hoist/cmp/chart';
+import type {ChartModel} from '@xh/hoist/cmp/chart';
 import {isMenuHeading, isMenuItem, type MenuItem, type MenuItemLike} from '@xh/hoist/core';
 import {Highcharts} from '@xh/hoist/kit/highcharts';
 import {Icon} from '@xh/hoist/icon';

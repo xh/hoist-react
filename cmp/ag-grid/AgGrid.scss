@@ -82,7 +82,8 @@
       }
     }
 
-    &.ag-row-selected .ag-cell {
+    // On the row, so cells inherit it unless they carry a color class of their own.
+    &.ag-row-selected {
       color: var(--xh-grid-selected-row-text-color);
     }
 
@@ -243,6 +244,19 @@
   // cell instead, which holds for any row height and keeps ag-Grid's line spacing for wrapped text.
   .ag-cell.xh-cell--plain {
     align-content: center;
+  }
+
+  // Ledger-formatted positives reserve the width of a closing parenthesis, so a column of mixed
+  // signs aligns. The placeholder follows the element that holds the text: the plain cell, the
+  // value span inside ag-Grid's `autoHeight` / text-selection wrapper, or a tree column's inner
+  // wrapper. An inline editor replaces the text, so it gets no placeholder.
+  .ag-cell.xh-cell--ledger-align:not(.ag-cell-inline-editing) {
+    &.xh-cell--plain.ag-cell-value::after,
+    &.xh-cell--plain > .ag-cell-wrapper > .ag-cell-value::after,
+    &.xh-tree-column .ag-group-value > .xh-cell-inner-wrapper::after {
+      content: ')';
+      visibility: hidden;
+    }
   }
 
   // Vertical lines between columns, from the `columnBorder` param. Horizontal lines belong to

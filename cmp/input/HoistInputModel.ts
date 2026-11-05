@@ -5,13 +5,15 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {FieldModel} from '@xh/hoist/cmp/form';
-import {DefaultHoistProps, HoistModel, HoistModelClass, useLocalModel} from '@xh/hoist/core';
+import type {DefaultHoistProps, HoistModelClass} from '@xh/hoist/core';
+import {HoistModel, useLocalModel} from '@xh/hoist/core';
 import {maxSeverity} from '@xh/hoist/data';
 import {action, computed, observable, observableRef} from '@xh/hoist/mobx';
 import {createObservableRef} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import {isEqual, isString} from 'lodash';
-import {FocusEvent, ForwardedRef, ReactElement, useImperativeHandle} from 'react';
+import type {FocusEvent, ForwardedRef, ReactElement} from 'react';
+import {useImperativeHandle} from 'react';
 import './HoistInput.scss';
 
 /**

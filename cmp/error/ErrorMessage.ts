@@ -4,14 +4,15 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {BoxProps, hoistCmp, HoistProps, XH} from '@xh/hoist/core';
+import type {BoxProps, HoistProps} from '@xh/hoist/core';
+import {hoistCmp, XH} from '@xh/hoist/core';
 import {frame} from '@xh/hoist/cmp/layout';
 import {errorMessageImpl as desktopErrorMessageImpl} from '@xh/hoist/dynamics/desktop';
 import {errorMessageImpl as mobileErrorMessageImpl} from '@xh/hoist/dynamics/mobile';
 import type {ButtonProps as DesktopButtonProps} from '@xh/hoist/desktop/cmp/button';
 import type {ButtonProps as MobileButtonProps} from '@xh/hoist/mobile/cmp/button';
 import {isNil, isString} from 'lodash';
-import {ReactNode} from 'react';
+import type {ReactNode} from 'react';
 import './ErrorMessage.scss';
 
 export interface ErrorMessageProps extends HoistProps, Omit<BoxProps, 'title'> {

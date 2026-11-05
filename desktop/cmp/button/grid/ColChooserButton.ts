@@ -8,12 +8,14 @@ import {GridModel} from '@xh/hoist/cmp/grid';
 import {div, vbox} from '@xh/hoist/cmp/layout';
 import {hoistCmp, useContextModel} from '@xh/hoist/core';
 import {colChooser} from '@xh/hoist/desktop/cmp/grid/impl/colchooser/ColChooser';
-import {ModalColChooserModel} from '@xh/hoist/desktop/cmp/grid/impl/colchooser/ModalColChooserModel';
+import type {ModalColChooserModel} from '@xh/hoist/desktop/cmp/grid/impl/colchooser/ModalColChooserModel';
 import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
-import {popover, Position} from '@xh/hoist/kit/blueprint';
+import type {Position} from '@xh/hoist/kit/blueprint';
+import {popover} from '@xh/hoist/kit/blueprint';
 import {logError, stopPropagation, withDefault} from '@xh/hoist/utils/js';
-import {button, ButtonProps} from '../Button';
+import type {ButtonProps} from '../Button';
+import {button} from '../Button';
 
 export interface ColChooserButtonProps extends ButtonProps {
     /** GridModel to which this button should bind. Will find nearest in context if not provided. */

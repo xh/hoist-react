@@ -5,7 +5,8 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {div, filler, placeholder as placeholderCmp} from '@xh/hoist/cmp/layout';
-import {hoistCmp, HoistModel, HoistProps, lookup, useLocalModel, uses} from '@xh/hoist/core';
+import type {HoistProps} from '@xh/hoist/core';
+import {hoistCmp, HoistModel, lookup, useLocalModel, uses} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {dragDropContext, draggable, droppable} from '@xh/hoist/kit/react-beautiful-dnd';
 import {button} from '@xh/hoist/mobile/cmp/button';

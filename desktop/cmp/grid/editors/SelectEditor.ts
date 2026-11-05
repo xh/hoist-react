@@ -5,10 +5,11 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {hoistCmp} from '@xh/hoist/core';
-import {select, SelectProps} from '@xh/hoist/desktop/cmp/input';
+import type {SelectProps} from '@xh/hoist/desktop/cmp/input';
+import {select} from '@xh/hoist/desktop/cmp/input';
 import '@xh/hoist/desktop/register';
 import {wait} from '@xh/hoist/promise';
-import {EditorProps} from './EditorProps';
+import type {EditorProps} from './EditorProps';
 import './Editors.scss';
 import {useInlineEditorModel} from './impl/InlineEditorModel';
 

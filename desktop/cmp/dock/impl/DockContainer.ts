@@ -9,7 +9,7 @@ import '@xh/hoist/desktop/register';
 import classNames from 'classnames';
 import './Dock.scss';
 import {dockView} from './DockView';
-import {DockContainerProps} from '../DockContainer';
+import type {DockContainerProps} from '../DockContainer';
 
 /**
  * Desktop implementation of DockContainer.

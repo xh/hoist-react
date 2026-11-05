@@ -4,24 +4,21 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {FormModel} from '@xh/hoist/cmp/form';
+import type {FormModel} from '@xh/hoist/cmp/form';
 import {placeholder, span} from '@xh/hoist/cmp/layout';
-import {tabContainer, TabContainerModel, TabConfig} from '@xh/hoist/cmp/tab';
+import type {TabConfig} from '@xh/hoist/cmp/tab';
+import {tabContainer, TabContainerModel} from '@xh/hoist/cmp/tab';
 import {readonlyJsonInput} from '@xh/hoist/admin/AdminUtils';
-import {creates, hoistCmp, HoistModel, managed, PlainObject, XH} from '@xh/hoist/core';
+import type {PlainObject} from '@xh/hoist/core';
+import {creates, hoistCmp, HoistModel, managed, XH} from '@xh/hoist/core';
 import {formField} from '@xh/hoist/desktop/cmp/form';
-import {
-    CodeInputLineStyles,
-    jsonInput,
-    numberInput,
-    select,
-    textInput
-} from '@xh/hoist/desktop/cmp/input';
+import type {CodeInputLineStyles} from '@xh/hoist/desktop/cmp/input';
+import {jsonInput, numberInput, select, textInput} from '@xh/hoist/desktop/cmp/input';
 import {Icon} from '@xh/hoist/icon';
 import {observableRef} from '@xh/hoist/mobx';
 import classNames from 'classnames';
 import {isPlainObject, last, union} from 'lodash';
-import {ReactElement} from 'react';
+import type {ReactElement} from 'react';
 import {buildResolvedJson, changedKeysFromStored} from './ConfigUtils';
 import './ConfigValue.scss';
 

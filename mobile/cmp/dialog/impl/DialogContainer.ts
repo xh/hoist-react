@@ -5,7 +5,8 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {div} from '@xh/hoist/cmp/layout';
-import {hoistCmp, HoistProps} from '@xh/hoist/core';
+import type {HoistProps} from '@xh/hoist/core';
+import {hoistCmp} from '@xh/hoist/core';
 import '@xh/hoist/mobile/register';
 import {useEffect} from 'react';
 import {createPortal} from 'react-dom';

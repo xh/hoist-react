@@ -1,0 +1,26 @@
+.xh-panel-collapsed-strip {
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 12px;
+  color: var(--xh-panel-collapsed-strip-icon-color);
+  background-color: var(--xh-panel-collapsed-strip-bg);
+  transition:
+    background-color 120ms,
+    color 120ms;
+
+  &:hover {
+    color: var(--xh-text-color);
+    background-color: var(--xh-panel-collapsed-strip-hover-bg);
+  }
+
+  &--ew {
+    flex: 1;
+    width: var(--xh-panel-collapsed-strip-size-px);
+  }
+
+  &--ns {
+    flex: none;
+    height: var(--xh-panel-collapsed-strip-size-px);
+  }
+}

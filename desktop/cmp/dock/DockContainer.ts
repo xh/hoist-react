@@ -4,7 +4,8 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {hoistCmp, HoistProps, uses} from '@xh/hoist/core';
+import type {HoistProps} from '@xh/hoist/core';
+import {hoistCmp, uses} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {dockContainerImpl as desktopDockContainerImpl} from '@xh/hoist/dynamics/desktop';
 import {DockContainerModel} from './DockContainerModel';

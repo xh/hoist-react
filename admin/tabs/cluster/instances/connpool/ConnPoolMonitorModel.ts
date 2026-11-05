@@ -10,7 +10,8 @@ import {BaseInstanceModel} from '@xh/hoist/admin/tabs/cluster/instances/BaseInst
 import {ChartModel} from '@xh/hoist/cmp/chart';
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {br, fragment} from '@xh/hoist/cmp/layout';
-import {LoadSpec, managed, PlainObject, XH} from '@xh/hoist/core';
+import type {LoadSpec, PlainObject} from '@xh/hoist/core';
+import {managed, XH} from '@xh/hoist/core';
 import {fmtTime} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
 import {bindable, bindableRef} from '@xh/hoist/mobx';

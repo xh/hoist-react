@@ -4,11 +4,13 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {hoistCmp, HoistProps} from '@xh/hoist/core';
+import type {HoistProps} from '@xh/hoist/core';
+import {hoistCmp} from '@xh/hoist/core';
 import {useHotkeys as useHotkeysBp} from '@xh/hoist/kit/blueprint';
 import {isEqualWith, isFunction} from 'lodash';
-import {cloneElement, ReactElement, useRef} from 'react';
-import {HotkeyConfig} from '@blueprintjs/core/src/hooks/hotkeys/hotkeyConfig';
+import type {ReactElement} from 'react';
+import {cloneElement, useRef} from 'react';
+import type {HotkeyConfig} from '@blueprintjs/core/src/hooks/hotkeys/hotkeyConfig';
 
 /**
  * Hook to add Key handling support to a component.

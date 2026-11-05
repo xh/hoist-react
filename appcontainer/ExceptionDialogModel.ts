@@ -5,7 +5,8 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import type {HoistException} from '@xh/hoist/exception';
-import {ExceptionHandlerOptions, HoistModel, XH} from '@xh/hoist/core';
+import type {ExceptionHandlerOptions} from '@xh/hoist/core';
+import {HoistModel, XH} from '@xh/hoist/core';
 import {action, observable, bindable, observableRef} from '@xh/hoist/mobx';
 
 /**

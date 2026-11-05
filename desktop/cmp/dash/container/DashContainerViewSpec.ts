@@ -4,8 +4,8 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {DashViewSpec} from '@xh/hoist/desktop/cmp/dash/DashViewSpec';
-import {RefreshMode, RenderMode} from '@xh/hoist/core';
+import type {DashViewSpec} from '@xh/hoist/desktop/cmp/dash/DashViewSpec';
+import type {RefreshMode, RenderMode} from '@xh/hoist/core';
 
 /**
  * Spec used to generate DashContainerViews and DashContainerViewModels.

@@ -7,8 +7,9 @@
 
 import {card} from '@xh/hoist/cmp/card';
 import {div, vframe} from '@xh/hoist/cmp/layout';
-import {creates, hoistCmp, HoistProps, TestSupportProps, uses} from '@xh/hoist/core';
-import {DashCanvasModel, DashCanvasViewSpec} from '@xh/hoist/desktop/cmp/dash';
+import type {HoistProps, TestSupportProps} from '@xh/hoist/core';
+import {creates, hoistCmp, uses} from '@xh/hoist/core';
+import type {DashCanvasModel, DashCanvasViewSpec} from '@xh/hoist/desktop/cmp/dash';
 import {DashCanvasWidgetChooserModel} from '@xh/hoist/desktop/cmp/dash/canvas/widgetchooser/DashCanvasWidgetChooserModel';
 import {
     groupViewSpecs,

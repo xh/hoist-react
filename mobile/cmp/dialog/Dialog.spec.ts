@@ -7,7 +7,8 @@
 import {span} from '@xh/hoist/cmp/layout';
 import {hoistCmp, HoistModel, uses} from '@xh/hoist/core';
 import {button} from '@xh/hoist/mobile/cmp/button';
-import {dialog, DialogProps} from '@xh/hoist/mobile/cmp/dialog';
+import type {DialogProps} from '@xh/hoist/mobile/cmp/dialog';
+import {dialog} from '@xh/hoist/mobile/cmp/dialog';
 import {initTestAppAsync} from '@xh/hoist/test-support';
 import {fireEvent, render, screen} from '@testing-library/react';
 import {beforeAll, describe, expect, it, onTestFinished, vi} from 'vitest';

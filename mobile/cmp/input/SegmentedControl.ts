@@ -4,16 +4,16 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {
-    HoistInputModel,
+import type {
     HoistInputProps,
     OptionPrimitive,
     SegmentedControlNullOption,
-    SegmentedControlOption,
-    useHoistInputModel
+    SegmentedControlOption
 } from '@xh/hoist/cmp/input';
+import {HoistInputModel, useHoistInputModel} from '@xh/hoist/cmp/input';
 import {hbox, span} from '@xh/hoist/cmp/layout';
-import {hoistCmp, HoistProps, Intent} from '@xh/hoist/core';
+import type {HoistProps, Intent} from '@xh/hoist/core';
+import {hoistCmp} from '@xh/hoist/core';
 import {button} from '@xh/hoist/mobile/cmp/button';
 import '@xh/hoist/mobile/register';
 import {computed} from '@xh/hoist/mobx';

@@ -1,10 +1,10 @@
 # Hoist React v90 Upgrade Notes
 
-> **From:** v89.x → v90.0.0 | **Released:** TBD | **Difficulty:** 🟢 LOW
+> **From:** v89.x → v90.0.0 | **Released:** 2026-11-02 | **Difficulty:** 🟢 LOW
 
 ## Overview
 
-Hoist React v90 is a light upgrade. Its two required steps apply only to apps that use the
+Hoist React v90 is a light upgrade. Its required steps apply only to apps that use the
 affected APIs.
 
 - **Number `formatConfig` (required if used)** - v90 removes `NumberFormatOptions.formatConfig`
@@ -19,6 +19,27 @@ affected APIs.
   `reactWindowedSelect` exports from `@xh/hoist/kit/react-select` along with the
   react-windowed-select library. The `enableWindowed` prop of `Select` works as before - see
   Step 4.
+- **Column `renderer` reads (required if used)** - The built-in number and date column specs set
+  `textRenderer`, not `renderer`. Code that calls `col.renderer(...)` on such a column now throws.
+  Read `col.resolvedRenderer` instead - see Step 5.
+- **Panel splitter CSS (required if an app styled splitters)** - desktop panel splitters are now
+  a 1px line with their own `--xh-panel-splitter-*` variables. App overrides of
+  `--xh-resizable-*` variables no longer reach them - see Step 6.
+- **Renderer import paths (required if used)** - the `*Renderer` factories moved out of
+  `@xh/hoist/format/FormatNumber` and `@xh/hoist/format/FormatDate`. Import them from
+  `@xh/hoist/format` - see Step 7.
+- **Removed libraries (required if an app imports them)** - Hoist no longer depends on several
+  libraries, such as `semver` and `store2`. An app that imports one must declare it in its own
+  `package.json` - see Step 8.
+
+## Prerequisites
+
+Before starting, ensure:
+
+- [ ] Running hoist-react v89.x.
+- [ ] **hoist-core** at >= 40.5.0 (unchanged floor). **hoist-core 44.0 is recommended.** The new
+  Purge Connections buttons in the Admin Console Connection Pool Monitor call an endpoint that
+  older cores lack, so they fail there. See [Version Compatibility](../version-compatibility.md).
 
 ## Upgrade Steps
 
@@ -65,6 +86,23 @@ numberRenderer({label: 'ms', precision: 0, withCommas: false})
 
 An app that imports numbro itself, for example to call `numbro.unformat()`, must declare numbro in
 its own `package.json`.
+
+Ordinary values render exactly as before. These edge cases changed:
+
+| Input | Before | After | Why |
+|---|---|---|---|
+| `fmtNumber(-2.5, {precision: 0})` | `-2` | `-3` | Ties round half away from zero for both signs. numbro rounded negative ties toward zero. |
+| `fmtNumber(-1.005, {precision: 2})` | `-1.00` | `-1.01` | The same rule. `1.005` gives `1.01`, as before. |
+| `fmtPercent(-0.0045, {precision: 1})` | `-0.4%` | `-0.5%` | A negative value near a tie rounds as a positive one. `0.0045` gives `0.5%`, as before. |
+| `fmtNumber(9.9999999e-7, {precision: 6})` | `0.000000` | `0.000001` | At a fixed precision, values below 1e-6 round like any other. numbro truncated them. At `'auto'` precision they still show as zero. |
+| `fmtNumber(2390421244, {precision: 12})` | `2,390,421,243.999999500000` | `2,390,421,244.000000000000` | Past 15 significant digits the stored value shows. numbro added float noise when it shifted the decimal point. |
+| `fmtNumber(1234.0001, {precision: 2, zeroPad: 0, omitFourDigitComma: true})` | `1234` | `1,234` | A `zeroPad` of `0` is the same as `false`. |
+| `fmtNumber(Infinity)` | `Infinity` | `∞` | The `Intl.NumberFormat` symbol for infinity. |
+| `fmtNumber('1,234.5', {precision: 2})` | `1,234.50` | `NaN` | A string renders as JavaScript's `Number()` reads it. `'1234.5'` still formats. |
+| `fmtNumber('N/A')` | throws a `TypeError` | `NaN` | The same rule. |
+
+Parse formatted text with `parseNumber()` before you format it, and update tests or exports that
+match the text `Infinity`.
 
 ### 2. Update `DateInput` Picker Props
 
@@ -176,23 +214,6 @@ An app that imports `@blueprintjs/datetime` or `date-fns` itself must now declar
 `package.json`. Prefer dropping the Blueprint import, since a second calendar library adds a second
 copy of date-fns to the bundle.
 
-Ordinary values render exactly as before. These edge cases changed:
-
-| Input | Before | After | Why |
-|---|---|---|---|
-| `fmtNumber(-2.5, {precision: 0})` | `-2` | `-3` | Ties round half away from zero for both signs. numbro rounded negative ties toward zero. |
-| `fmtNumber(-1.005, {precision: 2})` | `-1.00` | `-1.01` | The same rule. `1.005` gives `1.01`, as before. |
-| `fmtPercent(-0.0045, {precision: 1})` | `-0.4%` | `-0.5%` | A negative value near a tie rounds as a positive one. `0.0045` gives `0.5%`, as before. |
-| `fmtNumber(9.9999999e-7, {precision: 6})` | `0.000000` | `0.000001` | At a fixed precision, values below 1e-6 round like any other. numbro truncated them. At `'auto'` precision they still show as zero. |
-| `fmtNumber(2390421244, {precision: 12})` | `2,390,421,243.999999500000` | `2,390,421,244.000000000000` | Past 15 significant digits the stored value shows. numbro added float noise when it shifted the decimal point. |
-| `fmtNumber(1234.0001, {precision: 2, zeroPad: 0, omitFourDigitComma: true})` | `1234` | `1,234` | A `zeroPad` of `0` is the same as `false`. |
-| `fmtNumber(Infinity)` | `Infinity` | `∞` | The `Intl.NumberFormat` symbol for infinity. |
-| `fmtNumber('1,234.5', {precision: 2})` | `1,234.50` | `NaN` | A string renders as JavaScript's `Number()` reads it. `'1234.5'` still formats. |
-| `fmtNumber('N/A')` | throws a `TypeError` | `NaN` | The same rule. |
-
-Parse formatted text with `parseNumber()` before you format it, and update tests or exports that
-match the text `Infinity`.
-
 ### 3. Update Mobile Styling That Targeted Onsen UI
 
 Hoist's mobile components used to render [Onsen UI](https://onsen.io/) custom elements, which
@@ -268,6 +289,168 @@ An app that rendered the kit's `WindowedSelect` or `reactWindowedSelect` directl
 `select({enableWindowed: true})` instead, or add react-windowed-select to its own `package.json`.
 Remove any `react-windowed-select` entry from the app's `resolutions` or `overrides`.
 
+### 5. Review Columns Built on the Number and Date Specs
+
+The `number`, `date`, `dateTime`, `dateTimeSec`, `time`, `compactDate` and `localDate` column specs
+now set a `Column.textRenderer` in place of a `renderer`. A text renderer returns the cell's display
+text, and ag-Grid writes it into a plain cell with no React component. Grids built on these specs
+get plain cells with no change. A `renderer` set on top of a spec still wins, so
+`{...number, renderer: myRenderer}` works as before. One side effect remains: app code that reads
+`renderer` from one of these specs, or from a `Column` built on one, finds none. Read
+`col.resolvedRenderer`, which returns whichever of the two the column has.
+
+**Find code that reads a column's renderer:**
+
+```bash
+# Matches `col.renderer` and `const {renderer} = col`
+grep -rnE "\.renderer\b|\{[^}]*\brenderer\b[^}]*\}\s*=" client-app/src/
+```
+
+**Other formatted columns can be plain too.** Switch them to the `numberTextRenderer`,
+`dateTextRenderer` and sibling factories in `@xh/hoist/format` as you touch them. Each takes the
+options of its renderer counterpart, less those that need markup. The compiler rejects those options.
+
+Before:
+
+```typescript
+{field: 'pnl', renderer: numberRenderer({precision: 0, ledger: true, colorSpec: true})}
+```
+
+After:
+
+```typescript
+{field: 'pnl', textRenderer: numberTextRenderer({precision: 0, ledger: true, colorSpec: true})}
+```
+
+A text renderer cell shows the same text, sign colors and alignment as the renderer cell it
+replaces.
+These differences remain:
+
+- `colorSpec` classes such as `xh-pos-val` sit on the cell, not on an inner span.
+- A `label` is plain text, with no `xh-units-label` span to style. Keep the renderer if the label
+  needs its own style.
+- Ledger alignment is a hidden `::after` on the cell. The cell text no longer ends in a hidden `)`.
+
+Keep the renderer where a cell needs an element, such as an icon or nested layout. Also keep it for
+`withSignGlyph`, `labelCls`, or a `colorSpec` with inline styles. A `tooltip` option does not need
+the renderer. Move it to `Column.tooltip`, for example `tooltip: v => fmtNumberTooltip(v)`.
+
+### 6. Move Panel Splitter Style Overrides
+
+Desktop panel splitters are now a 1px line with a hover accent and a hover collapse button. They
+no longer read the `--xh-resizable-*` CSS variables. Those variables still style the splitters in
+`DashContainer` and `SplitTreeMap`, so leave any override in place if the app wants to style
+those.
+
+**Find affected code:**
+
+```bash
+grep -rn "xh-resizable-" client-app/src/
+```
+
+Map each override that targeted panel splitters to its new variable:
+
+| Old variable | New variable |
+|--------------|--------------|
+| `--xh-resizable-border-color` | `--xh-panel-splitter-line-color` |
+| `--xh-resizable-button-bg` | `--xh-panel-splitter-button-bg` |
+| `--xh-resizable-button-icon-color` | `--xh-panel-splitter-button-icon-color` |
+| `--xh-resizable-border-width` | None. The line is always 1px. |
+| `--xh-resizable-size` | None. Use `--xh-panel-splitter-hit-size` to change the grab area. |
+| `--xh-resizable-bg` | None. The splitter has no bar. |
+
+Other new variables are `--xh-panel-splitter-accent-color`,
+`--xh-panel-splitter-accent-active-color`, `--xh-panel-splitter-snap-color`,
+`--xh-panel-splitter-hover-delay`, `--xh-panel-splitter-button-border-color`, and
+`--xh-panel-collapsed-strip-*` for the strip.
+
+App SCSS that targeted `.xh-resizable-splitter` should target `.xh-panel-splitter`. The
+`.xh-resizable-dragger` and `.xh-resizable-collapser-btn` classes are gone.
+
+**Header collapse button:** `showHeaderCollapseButton` now defaults to `false` on an expanded
+panel when its splitter shows a collapse button. A collapsed header still shows its chevron. To
+keep the header button on expanded panels, set `showHeaderCollapseButton: true`.
+
+```typescript
+// Before (v89) - header button shown by default
+panel({modelConfig: {side: 'left', defaultSize: 250}})
+
+// After (v90) - opt in to keep the header button when expanded
+panel({modelConfig: {side: 'left', defaultSize: 250, showHeaderCollapseButton: true}})
+```
+
+To keep the header button on every panel, set the default once at app startup, for example in
+your `AppModel` constructor:
+
+```typescript
+import {PanelModel} from '@xh/hoist/desktop/cmp/panel';
+
+PanelModel.defaults.showHeaderCollapseButton = true;
+```
+
+### 7. Import Renderer Factories from `@xh/hoist/format`
+
+The number and date renderer factories now live in their own files, next to the new text renderer
+factories. The `@xh/hoist/format` package still exports all of them, so apps that import from it
+need no change. An import of a renderer from `@xh/hoist/format/FormatNumber` or
+`@xh/hoist/format/FormatDate` fails to compile. The `fmt*` functions and option types such as
+`NumberFormatOptions` still import from those paths.
+
+The moved factories:
+
+| Old file | Factories |
+|---|---|
+| `FormatNumber` | `numberRenderer`, `thousandsRenderer`, `millionsRenderer`, `billionsRenderer`, `quantityRenderer`, `priceRenderer`, `percentRenderer` |
+| `FormatDate` | `dateRenderer`, `dateTimeRenderer`, `dateTimeSecRenderer`, `timeRenderer`, `compactDateRenderer` |
+
+**Find affected code:**
+
+```bash
+grep -rnE "@xh/hoist/format/Format(Number|Date)['\"]" client-app/src/
+```
+
+Check each match for a name that ends in `Renderer`.
+
+Before:
+
+```typescript
+import {fmtNumber, numberRenderer} from '@xh/hoist/format/FormatNumber';
+```
+
+After:
+
+```typescript
+import {fmtNumber, numberRenderer} from '@xh/hoist/format';
+```
+
+### 8. Declare Removed Libraries Your App Imports
+
+Hoist v90 drops the libraries below from its dependencies. An app could import any of them
+without declaring it, because Hoist installed them. Those imports now fail to resolve. For each
+library that an app imports, either add it to the app's `package.json` or switch to the Hoist API
+in the table.
+
+| Library | Hoist alternative |
+|---|---|
+| `numbro` | `fmtNumber` and its options - see Step 1 |
+| `date-fns`, `@blueprintjs/datetime` | `dayPicker` from `@xh/hoist/kit/react-day-picker` - see Step 2 |
+| `onsenui`, `react-onsenui` | Hoist's mobile components - see Step 3 |
+| `react-windowed-select` | `select({enableWindowed: true})` - see Step 4 |
+| `semver` | `checkVersion`, `checkMinVersion` and `checkMaxVersion` from `@xh/hoist/utils/js` |
+| `ua-parser-js` | `XH.isPhone`, `XH.isTablet` and `XH.isDesktop` |
+| `store2` | `XH.localStorageService` and `XH.sessionStorageService` |
+| `short-unique-id` | `genRandomId()` from `@xh/hoist/utils/js`, or `XH.genId()` |
+| `lodash-inflection` | `pluralize`, `singularize` and `ordinalize` from `@xh/hoist/utils/js` |
+| `http-status-codes` | None |
+
+**Find affected code:**
+
+```bash
+grep -rnE "from '(numbro|date-fns|@blueprintjs/datetime|onsenui|react-onsenui|react-windowed-select|semver|ua-parser-js|store2|short-unique-id|lodash-inflection|http-status-codes)['/]" client-app/src/
+```
+
+Skip any match for a library that the app's `package.json` already declares.
+
 ## Verification Checklist
 
 After completing all steps:
@@ -284,6 +467,13 @@ After completing all steps:
       `modifier`, and nothing imports from `@xh/hoist/kit/onsen`.
 - [ ] Mobile screens with inputs, tabs, dialogs, toasts and menus look as they did on v89.
 - [ ] No code imports `WindowedSelect` or `reactWindowedSelect` from `@xh/hoist/kit/react-select`.
+- [ ] Code that reads `Column.renderer` handles columns built on the number and date specs.
+- [ ] Styles on `xh-units-label` or on sign color classes inside grid cells still apply.
+- [ ] No app SCSS styles panel splitters with `--xh-resizable-*` variables or
+      `.xh-resizable-splitter`.
+- [ ] Nothing imports a `*Renderer` factory from `@xh/hoist/format/FormatNumber` or
+      `@xh/hoist/format/FormatDate`.
+- [ ] The app's `package.json` declares every library that the app imports.
 
 ## Reference
 

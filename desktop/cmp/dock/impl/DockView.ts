@@ -6,7 +6,8 @@
  */
 import {DockViewModel} from '@xh/hoist/desktop/cmp/dock';
 import {div, filler, hbox, span, vbox} from '@xh/hoist/cmp/layout';
-import {hoistCmp, HoistProps, refreshContextView, uses} from '@xh/hoist/core';
+import type {HoistProps} from '@xh/hoist/core';
+import {hoistCmp, refreshContextView, uses} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {modalSupport} from '@xh/hoist/desktop/cmp/modalsupport/ModalSupport';
 import '@xh/hoist/desktop/register';

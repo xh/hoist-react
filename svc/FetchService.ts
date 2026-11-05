@@ -4,24 +4,24 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {
+import type {
     Awaitable,
     CallContext,
     CallContextLike,
-    HoistService,
     PlainObject,
     TrackOptions,
-    XH,
-    formatTraceparent,
     Span,
     SpanConfig
 } from '@xh/hoist/core';
-import {Exception, HoistException, TimeoutException} from '@xh/hoist/exception';
-import {PromiseTimeoutSpec} from '@xh/hoist/promise';
+import {HoistService, XH, formatTraceparent} from '@xh/hoist/core';
+import type {HoistException, TimeoutException} from '@xh/hoist/exception';
+import {Exception} from '@xh/hoist/exception';
+import type {PromiseTimeoutSpec} from '@xh/hoist/promise';
 import {isLocalDate, SECONDS} from '@xh/hoist/utils/datetime';
 import {genRandomId, warnIf} from '@xh/hoist/utils/js';
 import {isDate, isFunction, isNil, isObject, isString, noop, omit, omitBy, truncate} from 'lodash';
-import {IStringifyOptions, stringify} from 'qs';
+import type {IStringifyOptions} from 'qs';
+import {stringify} from 'qs';
 import {NdjsonResultImpl} from './impl/NdjsonResultImpl';
 import {StringInterner} from './impl/StringInterner';
 

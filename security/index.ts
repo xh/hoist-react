@@ -6,4 +6,4 @@
  */
 export * from './BaseOAuthClient';
 export * from './Token';
-export * from './Types';
+export type * from './Types';

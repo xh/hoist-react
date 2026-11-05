@@ -4,7 +4,8 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {HoistBase, PlainObject} from '@xh/hoist/core';
+import type {PlainObject} from '@xh/hoist/core';
+import {HoistBase} from '@xh/hoist/core';
 import {autorun, bindable, bindableRef} from '@xh/hoist/mobx';
 import {isObservable} from 'mobx';
 import {describe, expect, it, onTestFinished, vi} from 'vitest';

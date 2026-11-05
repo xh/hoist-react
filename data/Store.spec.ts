@@ -4,7 +4,7 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {type PlainObject} from '@xh/hoist/core';
+import type {PlainObject} from '@xh/hoist/core';
 import {Store, type StoreConfig, type StoreRecord} from '@xh/hoist/data';
 import {reaction} from '@xh/hoist/mobx';
 import {initTestAppAsync} from '@xh/hoist/test-support';

@@ -5,23 +5,27 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import * as msal from '@azure/msal-browser';
-import {
+import type {
     AccountInfo,
-    BrowserPerformanceClient,
     Configuration,
-    InteractionRequiredAuthError,
     IPublicClientApplication,
-    LogLevel,
     SilentRequest
 } from '@azure/msal-browser';
-import {CommonAuthorizationUrlRequest} from '@azure/msal-common';
-import {AppState, PlainObject, ReactionSpec, XH} from '@xh/hoist/core';
+import {
+    BrowserPerformanceClient,
+    InteractionRequiredAuthError,
+    LogLevel
+} from '@azure/msal-browser';
+import type {CommonAuthorizationUrlRequest} from '@azure/msal-common';
+import type {PlainObject, ReactionSpec} from '@xh/hoist/core';
+import {AppState, XH} from '@xh/hoist/core';
 import {Token} from '@xh/hoist/security/Token';
 import {logDebug, logError, logInfo, logWarn, mergeDeep, throwIf} from '@xh/hoist/utils/js';
 import {withFormattedTimestamps} from '@xh/hoist/format';
 import {flatMap, union, uniq} from 'lodash';
-import {BaseOAuthClient, BaseOAuthClientConfig} from '../BaseOAuthClient';
-import {AccessTokenSpec, AuthMethod, TokenMap} from '../Types';
+import type {BaseOAuthClientConfig} from '../BaseOAuthClient';
+import {BaseOAuthClient} from '../BaseOAuthClient';
+import type {AccessTokenSpec, AuthMethod, TokenMap} from '../Types';
 
 /**
  * Configuration for a {@link MsalClient} - the Microsoft Entra ID (Azure AD) OAuth client.

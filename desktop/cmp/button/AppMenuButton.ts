@@ -5,15 +5,17 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {div} from '@xh/hoist/cmp/layout';
-import {hoistCmp, HoistProps, HoistUser, MenuItemLike, XH} from '@xh/hoist/core';
-import {ButtonProps, button} from '@xh/hoist/desktop/cmp/button';
+import type {HoistProps, HoistUser, MenuItemLike} from '@xh/hoist/core';
+import {hoistCmp, XH} from '@xh/hoist/core';
+import type {ButtonProps} from '@xh/hoist/desktop/cmp/button';
+import {button} from '@xh/hoist/desktop/cmp/button';
 import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
 import {menu, popover} from '@xh/hoist/kit/blueprint';
 import {parseMenuItems} from '@xh/hoist/desktop/cmp/menu/impl/MenuItems';
 import {withDefault} from '@xh/hoist/utils/js';
 import {isFunction} from 'lodash';
-import {ReactNode} from 'react';
+import type {ReactNode} from 'react';
 
 export interface AppMenuButtonProps extends ButtonProps {
     /**

@@ -4,18 +4,11 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {HoistInputModel, HoistInputProps, useHoistInputModel} from '@xh/hoist/cmp/input';
+import type {HoistInputProps} from '@xh/hoist/cmp/input';
+import {HoistInputModel, useHoistInputModel} from '@xh/hoist/cmp/input';
 import {box, div, fragment, hbox, span} from '@xh/hoist/cmp/layout';
-import {
-    Awaitable,
-    createElement,
-    hoistCmp,
-    HoistProps,
-    LayoutProps,
-    PlainObject,
-    SelectOption,
-    XH
-} from '@xh/hoist/core';
+import type {Awaitable, HoistProps, LayoutProps, PlainObject, SelectOption} from '@xh/hoist/core';
+import {createElement, hoistCmp, XH} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
 import {tooltip} from '@xh/hoist/kit/blueprint';
@@ -31,7 +24,7 @@ import {elemWithin, getTestId, mergeDeep, TEST_ID, throwIf, withDefault} from '@
 import {createObservableRef, getLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import {castArray, escapeRegExp, isEmpty, isEqual, isNil, isPlainObject, noop} from 'lodash';
-import {ReactElement, ReactNode} from 'react';
+import type {ReactElement, ReactNode} from 'react';
 import {components} from 'react-select';
 import {calcWindowedMenuWidth} from './impl/CalcWindowedMenuWidth';
 import {countOptions, WindowedMenuList, WINDOWED_OPTION_THRESHOLD} from './impl/WindowedMenuList';
