@@ -47,6 +47,11 @@ export interface ColumnGroupSpec {
     headerAlign?: HAlign;
     /** Tooltip text for grid header. */
     headerTooltip?: string;
+    /**
+     * Name to display within the column chooser. Defaults to `headerName` when that is a string,
+     * otherwise derived from `groupId`. Specify when `headerName` is a function or element.
+     */
+    chooserName?: string;
     /** True to render borders on column group edges. */
     borders?: boolean;
 
@@ -92,6 +97,7 @@ export class ColumnGroup {
     readonly headerClass: Some<string> | ColumnHeaderClassFn;
     readonly headerAlign: HAlign;
     readonly headerTooltip: string;
+    readonly chooserName: string;
     readonly borders: boolean;
     readonly groupShowMode: ColumnGroupShowMode;
     readonly collapsed: boolean;
@@ -123,6 +129,7 @@ export class ColumnGroup {
             headerClass,
             headerAlign,
             headerTooltip,
+            chooserName,
             agOptions,
             borders,
             groupShowMode,
@@ -143,6 +150,9 @@ export class ColumnGroup {
         this.headerClass = headerClass;
         this.headerAlign = headerAlign;
         this.headerTooltip = headerTooltip;
+        this.chooserName =
+            chooserName ??
+            (isString(this.headerName) ? this.headerName : genDisplayName(this.groupId));
         this.borders = withDefault(borders, true);
         this.groupShowMode = groupShowMode;
         this.collapsed = withDefault(collapsed, false);

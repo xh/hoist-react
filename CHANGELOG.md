@@ -14,6 +14,11 @@
 
 ## 91.0.0-SNAPSHOT - unreleased
 
+### 🎁 New Features
+
+* Added `ColumnGroupSpec.chooserName` to set a group's name in the desktop column chooser. Use it
+  when `headerName` is a function or element, which the chooser cannot display.
+
 ### 🐞 Bug Fixes
 
 * Fixed the impersonation bar re-requesting its list of users without end when the server returned
