@@ -60,7 +60,7 @@ export const columnGroupHeader = hoistCmp.factory<ColumnGroupHeaderProps>({
                 className,
                 isExpandable ? 'xh-grid-group-header--expandable' : null
             ),
-            items: [expandIcon(), span(headerName)],
+            items: [span(headerName), expandIcon()],
             onClick: e => {
                 if (!isExpandable) return;
 
