@@ -109,8 +109,25 @@ describe('CubeGridModel', () => {
                 'always'
             ]);
 
-            const collapsed = createModel({query: PIVOT_QUERY, pivotGroupsCollapsed: true});
+            const collapsed = createModel({query: PIVOT_QUERY, pivotExpandLevel: 0});
             expect(collapsed.gridModel.isColumnGroupExpanded(PIVOT_GROUP_ID)).toBe(false);
+        });
+
+        it('expands pivot groups to a level, with the region at level 0', () => {
+            const model = createModel({query: PIVOT_QUERY}),
+                {gridModel} = model;
+
+            model.expandPivotToLevel(0);
+            expect(gridModel.isColumnGroupExpanded(PIVOT_GROUP_ID)).toBe(false);
+            expect(model.pivotExpandLevel).toBe(0);
+
+            model.expandPivotToLevel(1);
+            expect(gridModel.isColumnGroupExpanded(PIVOT_GROUP_ID)).toBe(true);
+
+            model.collapseAllPivotGroups();
+            expect(gridModel.isColumnGroupExpanded(PIVOT_GROUP_ID)).toBe(false);
+            model.expandAllPivotGroups();
+            expect(gridModel.isColumnGroupExpanded(PIVOT_GROUP_ID)).toBe(true);
         });
 
         it('fixes every group open when pivotGroupsCollapsible is false', () => {

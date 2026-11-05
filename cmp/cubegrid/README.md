@@ -44,7 +44,8 @@ CubeGridModel
 ├── pivotSortBy: PivotSort[]           # Display order per pivot level
 ├── pivotValueSummary, pivotGroupSummary      # Total columns, docked / per group: false|true|HSide
 ├── pivotGroupsCollapsible             # Let pivot groups collapse from their headers (default)
-├── pivotGroupsCollapsed               # Start the pivot region and its parent groups collapsed
+├── pivotExpandLevel                   # Initial pivot header level, as expandLevel for rows
+├── expandPivotToLevel(), expandAllPivotGroups(), collapseAllPivotGroups()
 ├── showSummary                        # The grid's totals row, delegated - needs includeRoot
 └── rebuildColumns()                   # Runs when result.paths or `columns` changes
 
@@ -136,11 +137,13 @@ Column groups in the pivot region expand and collapse from their headers. The re
 the row summary, one column per value field holding each row's total, shown directly under the
 region's label as ag-Grid does. `pivotValueSummary` keeps that summary visible while expanded too.
 With two or more pivot dimensions, each parent path group collapses to its own summary the same
-way, governed by `pivotGroupSummary`. Set
-`pivotGroupsCollapsed` to start every group collapsed, or `pivotGroupsCollapsible: false` to fix
-every group open with summary columns only where asked. The state is the grid's own
-`columnGroupState`, keyed on the path and on `PIVOT_GROUP_ID` for the region, so it survives a
-rebuild and persists with `persistWith`.
+way, governed by `pivotGroupSummary`. `pivotExpandLevel` sets the initial level, as `expandLevel`
+does for rows: 0 collapses the region, 1 shows the top-level groups collapsed, -1 (the default)
+expands everything. `expandPivotToLevel()` resets it later, with `expandAllPivotGroups()` and
+`collapseAllPivotGroups()` as shortcuts. Set `pivotGroupsCollapsible: false` to fix every group
+open with summary columns only where asked. The state is the grid's own `columnGroupState`, keyed
+on the path and on `PIVOT_GROUP_ID` for the region, so it survives a rebuild and persists with
+`persistWith`.
 
 Users reorder the fixed columns and the grid persists that through its normal column state. Pivot
 columns are not movable: their order is the view's, set through `pivotSortBy`, in the same way row

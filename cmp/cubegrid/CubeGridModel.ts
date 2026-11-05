@@ -29,7 +29,7 @@ import type {
     StoreRecordOrId,
     View
 } from '@xh/hoist/data';
-import {action, bindable, bindableRef} from '@xh/hoist/mobx';
+import {action, bindable, bindableRef, observable} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
 import {isArray, isEmpty, isEqual, keyBy, mapValues, omit, orderBy, pick, sortBy} from 'lodash';
 
@@ -138,12 +138,13 @@ export interface CubeGridConfig {
     pivotGroupsCollapsible?: boolean;
 
     /**
-     * True to render the pivot region and each parent pivot group collapsed to its summary until
-     * the user expands it. Default false. Initial state only - thereafter
-     * {@link GridModel.columnGroupState} tracks each group, keyed on its path, and persists it
-     * with `gridConfig.persistWith`.
+     * Pivot header level to expand to on initial load, as {@link GridConfig.expandLevel} is for
+     * rows. 0 collapses the region to the row summary, 1 shows the top-level pivot groups
+     * collapsed to theirs, and so on. Default -1, all levels expanded. Initial state only -
+     * thereafter {@link GridModel.columnGroupState} tracks each group, keyed on its path, and
+     * persists it with `gridConfig.persistWith`. See {@link CubeGridModel.expandPivotToLevel}.
      */
-    pivotGroupsCollapsed?: boolean;
+    pivotExpandLevel?: number;
 
     /**
      * Config for the underlying GridModel. `store`, `treeMode` and `columns` are managed by this
@@ -169,7 +170,9 @@ export interface CubeGridConfig {
 export class CubeGridModel extends HoistModel implements GridLikeModel {
     /** View supplying this grid's data. Not swappable. */
     readonly view: View;
-    readonly pivotGroupsCollapsed: boolean;
+
+    /** Pivot header level last expanded to, or -1 for all. Set via {@link expandPivotToLevel}. */
+    @observable accessor pivotExpandLevel: number;
 
     @bindableRef accessor columns: Array<ColumnSpec | ColumnGroupSpec>;
     @bindableRef accessor pivotValueSpecs: Record<string, PivotValueSpec>;
@@ -196,7 +199,7 @@ export class CubeGridModel extends HoistModel implements GridLikeModel {
         pivotValueSummary = false,
         pivotGroupSummary = false,
         pivotGroupsCollapsible = true,
-        pivotGroupsCollapsed = false,
+        pivotExpandLevel = -1,
         gridConfig
     }: CubeGridConfig) {
         super();
@@ -214,7 +217,7 @@ export class CubeGridModel extends HoistModel implements GridLikeModel {
         this.pivotValueSummary = pivotValueSummary;
         this.pivotGroupSummary = pivotGroupSummary;
         this.pivotGroupsCollapsible = pivotGroupsCollapsible;
-        this.pivotGroupsCollapsed = pivotGroupsCollapsed;
+        this.pivotExpandLevel = pivotExpandLevel;
 
         this.store = this.view.createStore({connect: true});
         const {persistWith, ...restGridConfig} = gridConfig ?? {};
@@ -245,6 +248,35 @@ export class CubeGridModel extends HoistModel implements GridLikeModel {
 
     setShowSummary(v: boolean | VSide) {
         this.gridModel.showSummary = v;
+    }
+
+    /**
+     * Expand the pivot column groups to the given level, or all for -1, as
+     * {@link GridModel.expandToLevel} does for rows. The region is level 0 and each path group
+     * the level of its depth. Later rebuilds mint new groups at this level too.
+     */
+    @action
+    expandPivotToLevel(level: number) {
+        this.pivotExpandLevel = level;
+        const {gridModel, _pivotGroupLevels} = this;
+        gridModel.setColumnGroupState(
+            gridModel.columnGroupState.map(it =>
+                _pivotGroupLevels.has(it.groupId)
+                    ? {
+                          ...it,
+                          expanded: this.isPivotLevelExpanded(_pivotGroupLevels.get(it.groupId))
+                      }
+                    : it
+            )
+        );
+    }
+
+    expandAllPivotGroups() {
+        this.expandPivotToLevel(-1);
+    }
+
+    collapseAllPivotGroups() {
+        this.expandPivotToLevel(0);
     }
 
     get selModel() {
@@ -399,6 +431,7 @@ export class CubeGridModel extends HoistModel implements GridLikeModel {
 
         const fixed = this.buildFixedColumns();
         this._pivotColIds = new Set();
+        this._pivotGroupLevels = new Map();
         if (!this.query.isPivoted || isEmpty(paths)) return fixed;
 
         // One group over the whole region, titled by the pivot dimensions, collapses to the row
@@ -407,7 +440,8 @@ export class CubeGridModel extends HoistModel implements GridLikeModel {
             pivotGroup = this.buildColGroup(
                 PIVOT_GROUP_ID,
                 this.query.pivot.dimensions.map(it => it.displayName).join(' › '),
-                this.buildGroupChildren(pathCols, this._rootPath, this.pivotValueSummarySide)
+                this.buildGroupChildren(pathCols, this._rootPath, this.pivotValueSummarySide),
+                0
             );
 
         this._pivotColIds = new Set(leafColIds([pivotGroup]));
@@ -453,7 +487,12 @@ export class CubeGridModel extends HoistModel implements GridLikeModel {
     private buildPathColumn(path: PivotPath): ColumnSpec | ColumnGroupSpec {
         // Always a group, so the measure name stays visible beside any fixed columns.
         if (isEmpty(path.children)) {
-            return this.buildColGroup(path.key, path.label, this.buildValueColumns(path));
+            return this.buildColGroup(
+                path.key,
+                path.label,
+                this.buildValueColumns(path),
+                path.depth
+            );
         }
 
         const childCols = this.sortPaths(path.children, path.depth).map(child =>
@@ -462,7 +501,8 @@ export class CubeGridModel extends HoistModel implements GridLikeModel {
         return this.buildColGroup(
             path.key,
             path.label,
-            this.buildGroupChildren(childCols, path, this.pivotGroupSummarySide)
+            this.buildGroupChildren(childCols, path, this.pivotGroupSummarySide),
+            path.depth
         );
     }
 
@@ -526,16 +566,22 @@ export class CubeGridModel extends HoistModel implements GridLikeModel {
     private buildColGroup(
         groupId: string,
         headerName: string,
-        children: Array<ColumnSpec | ColumnGroupSpec>
+        children: Array<ColumnSpec | ColumnGroupSpec>,
+        level: number
     ): ColumnGroupSpec {
-        const {pivotGroupsCollapsible, pivotGroupsCollapsed} = this;
+        this._pivotGroupLevels.set(groupId, level);
         return {
             groupId,
             headerName,
             headerAlign: 'left',
             children,
-            collapsed: pivotGroupsCollapsible && pivotGroupsCollapsed
+            collapsed: this.pivotGroupsCollapsible && !this.isPivotLevelExpanded(level)
         };
+    }
+
+    private isPivotLevelExpanded(level: number): boolean {
+        const {pivotExpandLevel} = this;
+        return pivotExpandLevel < 0 || level < pivotExpandLevel;
     }
 
     // Display only - `result.paths` is immutable.
@@ -565,6 +611,7 @@ export class CubeGridModel extends HoistModel implements GridLikeModel {
     private _valueSpecs: Record<string, PivotValueSpec> = {};
     private _pendingPersistWith: GridModelPersistOptions = null;
     private _pivotColIds: Set<string> = new Set();
+    private _pivotGroupLevels: Map<string, number> = new Map();
 
     override destroy() {
         // The view registered this store rather than owning it, and outlives any grid bound to it.
