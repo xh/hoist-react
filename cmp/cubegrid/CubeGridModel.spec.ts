@@ -4,13 +4,13 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import type {ColumnOrGroup} from '@xh/hoist/cmp/grid';
+import type {ColumnOrGroup, ColumnSpec, GridModel} from '@xh/hoist/cmp/grid';
 import {ColumnGroup} from '@xh/hoist/cmp/grid';
 import type {PlainObject} from '@xh/hoist/core';
 import {XH} from '@xh/hoist/core';
 import {Cube, type QueryConfig} from '@xh/hoist/data';
 import {initTestAppAsync} from '@xh/hoist/test-support';
-import {find} from 'lodash';
+import {find, isFunction} from 'lodash';
 import {beforeAll, describe, expect, it, onTestFinished, vi} from 'vitest';
 import {CubeGridModel, PIVOT_GROUP_ID} from './CubeGridModel';
 
@@ -403,6 +403,70 @@ describe('pivotColumnSpecFn', () => {
         expect(total.cellClass).toEqual(['xh-cube-grid__total-cell', 'is-total']);
         expect(total.width).toBe(100);
         expect(find(cols, {colId: 'ignored'})).toBeUndefined();
+    });
+});
+
+describe('export names', () => {
+    const exportNameOf = (gridModel: GridModel, colId: string) => {
+        const column = gridModel.getColumn(colId),
+            {exportName} = column;
+        return isFunction(exportName)
+            ? exportName({column, gridModel, agParams: null})
+            : exportName;
+    };
+
+    it('joins the path labels and header, ignoring an exportName shared with the fixed columns', () => {
+        const query = {
+                ...PLAIN_QUERY,
+                pivot: {dimensions: ['sector', 'book'], valueFields: ['sum']}
+            },
+            shared: ColumnSpec = {field: 'sum', headerName: 'Sum', exportName: 'Shared'},
+            model = createModel({
+                query,
+                showPivotSummaries: true,
+                columns: [shared],
+                pivotColumns: [shared],
+                pivotColumnSpecFn: ({path}) =>
+                    path.label === 'Energy' ? {headerName: 'Energy sum'} : null
+            }),
+            {gridModel} = model;
+
+        expect(exportNameOf(gridModel, 'Tech>>A>>sum')).toBe('Tech › A › Sum');
+        expect(exportNameOf(gridModel, 'total>>Tech>>sum')).toBe('Tech › Total › Sum');
+        expect(exportNameOf(gridModel, 'total>>sum')).toBe('Total › Sum');
+        expect(exportNameOf(gridModel, 'total>>Energy>>sum')).toBe('Energy › Total › Energy sum');
+        expect(exportNameOf(gridModel, 'sum')).toBe('Shared');
+    });
+});
+
+describe('column filtering', () => {
+    it('binds the filter model to the view by default, or to the store when asked', () => {
+        const byDefault = createModel({query: PIVOT_QUERY, gridConfig: {filterModel: true}}),
+            toView = createModel({query: PIVOT_QUERY, gridConfig: {filterModel: {bind: 'view'}}}),
+            toStore = createModel({query: PIVOT_QUERY, gridConfig: {filterModel: {bind: 'store'}}});
+
+        expect(byDefault.gridModel.filterModel.bind).toBe(byDefault.view);
+        expect(toView.gridModel.filterModel.bind).toBe(toView.view);
+        expect(toStore.gridModel.filterModel.bind).toBe(toStore.store);
+        // Specs cover the query's fields, never the store's cell fields.
+        [byDefault, toStore].forEach(model => {
+            const fields = model.gridModel.filterModel.fieldSpecs.map(it => it.field);
+            expect(fields.sort()).toEqual(['avg', 'region', 'sector', 'sum']);
+        });
+        expect(createModel({query: PIVOT_QUERY}).gridModel.filterModel).toBeNull();
+    });
+
+    it('never makes a pivot column filterable, even from a shared filterable spec', () => {
+        const shared: ColumnSpec = {field: 'sum', filterable: true},
+            {gridModel} = createModel({
+                query: PIVOT_QUERY,
+                columns: [shared],
+                pivotColumns: [shared],
+                gridConfig: {filterModel: true}
+            });
+
+        expect(gridModel.getColumn('sum').filterable).toBe(true);
+        expect(gridModel.getColumn('Tech>>sum').filterable).toBe(false);
     });
 });
 

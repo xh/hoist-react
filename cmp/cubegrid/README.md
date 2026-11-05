@@ -203,8 +203,8 @@ with a single measure, so the measure name stays visible beside the fixed column
 
 `pivotColumns` holds one spec per measure, its `field` naming the value field, applied to every
 pivot column generated for that measure - so the same array can serve as the fixed `columns` too.
-Keys that identify or place a column - `colId`, `pinned`, `hidden`, `editable` and the rest of
-`RESERVED_PIVOT_COLUMN_KEYS` - are stripped, so a spec shared with the fixed columns still applies
+Keys that identify, place or name a column - `colId`, `pinned`, `hidden`, `exportName` and the
+rest of `RESERVED_PIVOT_COLUMN_KEYS` - are stripped, so a spec shared with the fixed columns still applies
 cleanly. Pivot columns are not hideable and stay out of the column chooser, as they cannot be
 moved or pinned: the region is the query's. Drop a measure from `pivot.valueFields` or filter the
 query to remove columns.
@@ -221,14 +221,20 @@ cubeGridModel.pivotSortBy = [['US', 'EU'], 'asc'];  // Regions in a fixed order,
 
 ## Filtering and Export
 
-A grid column filter on a cell field filters **group rows by their aggregate**, after pivoting,
-with no re-aggregation - the same caveat AG Grid documents for its own pivot mode. To filter the
-source records and re-aggregate everything, filter the query with `view.setFilter()` or
-`updateQuery({filter})`. The two are different operations and both are useful.
+A `gridConfig.filterModel` binds to the View by default - `{bind: 'view'}` - so a column filter
+on a dimension or measure filters the **source records** through the query and re-aggregates
+every row, total and pivot cell, as a pivot table's label filter does. Pivot columns are never filterable: a cell is an
+aggregate, and no query filter can express a condition on it.
 
-Export is leaf-columns-only, so every pivot column exports under its own short header. Set a
-qualified `exportName` per measure in `pivotColumns` if a pivot with several paths needs
-distinct column names in the exported sheet.
+Bind to the store instead - `filterModel: {bind: 'store'}` - to filter the **group
+rows by their aggregates** with no re-aggregation, as a pivot table's value filter does. A row
+then passes on its own total, and a failing parent stays visible while a child passes. The two
+are different operations and both are useful.
+
+Export is leaf-columns-only, and a pivot column's header repeats under every path, so each pivot
+column exports under its path labels and header joined - `US › Tech › P&L`, `Total › P&L`. The
+header is the column's `headerName`, or the field's display name when the header is an element.
+`exportName` is reserved on pivot columns, since one shared with the fixed columns would repeat.
 
 ## Related Packages
 

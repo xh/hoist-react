@@ -18,15 +18,17 @@ export type PivotSort = 'asc' | 'desc' | any[];
 
 /**
  * {@link ColumnSpec} keys managed by {@link CubeGridModel} and stripped from any
- * {@link CubeGridConfig.pivotColumns} entry - column identity is derived from the pivot path,
- * and the rest are reserved for this model's own use.
+ * {@link CubeGridConfig.pivotColumns} entry - column identity and the export header are derived
+ * from the pivot path, and the rest are reserved for this model's own use.
  */
 export const RESERVED_PIVOT_COLUMN_KEYS = [
     'colId',
     'isTreeColumn',
     'hidden',
     'hideable',
+    'filterable',
     'excludeFromChooser',
+    'exportName',
     'enableDotSeparatedFieldPath',
     'omit',
     'pinned',

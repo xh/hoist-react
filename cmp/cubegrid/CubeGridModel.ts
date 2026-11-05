@@ -10,6 +10,8 @@ import type {
     ColumnSpec,
     GridConfig,
     GridEnsureVisibleOptions,
+    GridFilterBindTarget,
+    GridFilterModelConfig,
     GridLikeModel,
     GridModelPersistOptions,
     GridSelectFirstOptions,
@@ -37,6 +39,7 @@ import {
     isEmpty,
     isEqual,
     isFunction,
+    isString,
     keyBy,
     mapValues,
     omit,
@@ -149,8 +152,17 @@ export interface CubeGridConfig {
      * model and cannot be set here; everything else is a default this config overrides. A
      * `showSummary` row needs `includeRoot` on the query, which is what produces it. `persistWith`
      * attaches once the pivot columns exist, so saved state can name them.
+     *
+     * A `filterModel` binds to `'view'` by default, filtering the source records and
+     * re-aggregating. Bind it to `'store'` to filter the group rows by their aggregates instead.
      */
-    gridConfig?: Omit<GridConfig, 'store' | 'treeMode' | 'columns'>;
+    gridConfig?: Omit<GridConfig, 'store' | 'treeMode' | 'columns' | 'filterModel'> & {
+        filterModel?:
+            | boolean
+            | (Omit<GridFilterModelConfig, 'bind'> & {
+                  bind?: GridFilterBindTarget | 'view' | 'store';
+              });
+    };
 }
 
 /**
@@ -365,11 +377,27 @@ export class CubeGridModel extends HoistModel implements GridLikeModel {
             stripeRows: true,
             rowBorders: true,
             ...config,
+            filterModel: this.parseFilterModel(config.filterModel),
             store: this.store,
             treeMode: true,
             columns: this.buildColumns(),
             restoreDefaultsFn: () => this.restoreDefaultsAsync(config.restoreDefaultsFn)
         });
+    }
+
+    // Column filters bind to the view, so they filter the source records and re-aggregate. The
+    // view and store are this model's own, so their names stand for them. Specs default to the
+    // query's fields either way, as the store's include a field per cell.
+    private parseFilterModel(
+        filterModel: CubeGridConfig['gridConfig']['filterModel']
+    ): GridConfig['filterModel'] {
+        if (!filterModel) return null;
+        const {bind = 'view', ...rest} = filterModel === true ? {} : filterModel;
+        return {
+            fieldSpecs: this.view.fieldNames,
+            ...rest,
+            bind: bind === 'view' ? this.view : bind === 'store' ? this.store : bind
+        };
     }
 
     // The GridModel's defaults hold the columns it was built with, before the view had paths or
@@ -460,7 +488,7 @@ export class CubeGridModel extends HoistModel implements GridLikeModel {
             pivotGroup = this.buildColGroup(
                 PIVOT_GROUP_ID,
                 this.query.pivot.dimensions.map(it => it.displayName).join(' › '),
-                this.buildGroupChildren(pathCols, this._rootPath),
+                this.buildGroupChildren(pathCols, this._rootPath, []),
                 {level: 0, ctx: {path: this._rootPath, kind: 'path'}}
             );
 
@@ -514,7 +542,7 @@ export class CubeGridModel extends HoistModel implements GridLikeModel {
 
         // Always a group, so the measure name stays visible beside any fixed columns.
         if (isEmpty(path.children)) {
-            return this.buildColGroup(path.key, path.label, this.buildValueColumns(path), {
+            return this.buildColGroup(path.key, path.label, this.buildValueColumns(path, labels), {
                 level: path.depth,
                 headerAlign: 'center',
                 headerTooltip,
@@ -525,11 +553,16 @@ export class CubeGridModel extends HoistModel implements GridLikeModel {
         const childCols = this.sortPaths(path.children, path.depth).map(child =>
             this.buildPathColumn(child, labels)
         );
-        return this.buildColGroup(path.key, path.label, this.buildGroupChildren(childCols, path), {
-            level: path.depth,
-            headerTooltip,
-            ctx: {path, kind: 'path'}
-        });
+        return this.buildColGroup(
+            path.key,
+            path.label,
+            this.buildGroupChildren(childCols, path, labels),
+            {
+                level: path.depth,
+                headerTooltip,
+                ctx: {path, kind: 'path'}
+            }
+        );
     }
 
     // Children of a group that collapses to its summary. The path groups show expanded. The
@@ -538,7 +571,8 @@ export class CubeGridModel extends HoistModel implements GridLikeModel {
     // the Total group, only when asked.
     private buildGroupChildren(
         pathCols: Array<ColumnSpec | ColumnGroupSpec>,
-        summaryPath: PivotPath
+        summaryPath: PivotPath,
+        labels: string[]
     ): Array<ColumnSpec | ColumnGroupSpec> {
         const {pivotGroupsCollapsible, pivotSummarySide: summarySide} = this;
         if (!summarySide && !pivotGroupsCollapsible) return pathCols;
@@ -549,7 +583,7 @@ export class CubeGridModel extends HoistModel implements GridLikeModel {
             group = this.buildColGroup(
                 `${summaryPath.isRoot ? PIVOT_GROUP_ID : summaryPath.key}:total`,
                 'Total',
-                this.buildSummaryColumns(summaryPath),
+                this.buildSummaryColumns(summaryPath, labels),
                 {
                     headerAlign: 'center',
                     groupShowMode: summarySide ? null : 'collapsed',
@@ -565,8 +599,8 @@ export class CubeGridModel extends HoistModel implements GridLikeModel {
     // A summary column binds the path's own cell but takes a colId of its own, so the root summary
     // never collides with a fixed column bound to the same measure. All carry the total classes,
     // over any the app adds.
-    private buildSummaryColumns(path: PivotPath): ColumnSpec[] {
-        return this.buildValueColumns(path, 'total').map(col => ({
+    private buildSummaryColumns(path: PivotPath, labels: string[]): ColumnSpec[] {
+        return this.buildValueColumns(path, [...labels, 'Total'], 'total').map(col => ({
             ...col,
             colId: `total>>${col.colId}`,
             cellClass: withClass(col.cellClass, TOTAL_CELL_CLASS),
@@ -576,16 +610,20 @@ export class CubeGridModel extends HoistModel implements GridLikeModel {
 
     private buildValueColumns(
         path: PivotPath,
+        labels: string[],
         kind: PivotColumnContext['kind'] = 'cell'
     ): ColumnSpec[] {
-        return this.valueFields.map(field => this.buildValueColumn(path, field, kind));
+        return this.valueFields.map(field => this.buildValueColumn(path, field, labels, kind));
     }
 
-    // The pivot region is the query's: these columns never move or hide, and the chooser does not
-    // list them. Field names are built from data values that may contain dots.
+    // The pivot region is the query's: these columns never move, hide or filter, and the chooser
+    // does not list them. A cell is an aggregate, so no query filter can express a condition on
+    // it. Field names are built from data values that may contain dots. The export header is the
+    // path's labels and the column's header, as the header alone repeats across paths.
     private buildValueColumn(
         path: PivotPath,
         field: CubeField,
+        labels: string[],
         kind: PivotColumnContext['kind']
     ): ColumnSpec {
         const name = this.cellFieldName(path, field),
@@ -598,8 +636,16 @@ export class CubeGridModel extends HoistModel implements GridLikeModel {
             field: name,
             movable: false,
             hideable: false,
+            filterable: false,
             excludeFromChooser: true,
             enableDotSeparatedFieldPath: false,
+            exportName: ({column, gridModel}) => {
+                const {headerName} = column,
+                    header = isFunction(headerName)
+                        ? headerName({column, gridModel, agParams: null})
+                        : headerName;
+                return [...labels, isString(header) ? header : field.displayName].join(' › ');
+            },
             // Keeps the pivot block trailing: a fixed column cannot be dropped inside it.
             agOptions: {lockPosition: 'right'}
         };
