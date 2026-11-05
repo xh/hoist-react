@@ -19,6 +19,11 @@
 * Added `ColumnGroupSpec.chooserName` to set a group's name in the desktop column chooser. Use it
   when `headerName` is a function or element, which the chooser cannot display.
 
+### 🐞 Bug Fixes
+
+* Fixed the impersonation bar re-requesting its list of users without end when the server returned
+  no users other than the current one.
+
 ## 90.0.0 - 2026-11-02
 
 ### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW - `formatConfig`, built-in column specs, `DateInput` props, mobile styling, panel splitter CSS, renderer imports, removed libraries)
