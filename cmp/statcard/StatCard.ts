@@ -7,7 +7,7 @@
 import classNames from 'classnames';
 import {isEmpty, max, sumBy} from 'lodash';
 import {Children, useId, useLayoutEffect, useRef, useState} from 'react';
-import type {KeyboardEvent, MouseEvent, ReactNode} from 'react';
+import type {KeyboardEvent, MouseEvent, ReactElement, ReactNode} from 'react';
 
 import {div, span} from '@xh/hoist/cmp/layout';
 import {hoistCmp} from '@xh/hoist/core';
@@ -60,6 +60,9 @@ export interface StatCardProps extends HoistProps, LayoutProps, TestSupportProps
      * Native browser tooltip - not available on touch devices.
      */
     infoTooltip?: string;
+
+    /** Icon that shows `infoTooltip`. Default `Icon.info()`. */
+    infoIcon?: ReactElement;
 
     /**
      * Flags the card with a semantic color on its border, as with {@link Card}. Does not color
@@ -119,6 +122,7 @@ export const [StatCard, statCard] = hoistCmp.withFactory<StatCardProps>({
                     subValue,
                     detail,
                     infoTooltip,
+                    infoIcon = Icon.info(),
                     intent,
                     accent,
                     size,
@@ -174,7 +178,7 @@ export const [StatCard, statCard] = hoistCmp.withFactory<StatCardProps>({
                             omit: !infoTooltip,
                             className: 'xh-stat-card__info',
                             title: infoTooltip,
-                            item: Icon.info()
+                            item: infoIcon
                         })
                     ]
                 }),

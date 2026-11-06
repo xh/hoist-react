@@ -41,6 +41,21 @@ describe('StatCard', () => {
         expect(line(container, 'detail')).toBeNull();
     });
 
+    it('shows the info tooltip on a custom icon when given one', () => {
+        const {container} = render(
+            statCard({
+                title: 'Orders',
+                value: 1,
+                infoTooltip: 'Shipped orders only',
+                infoIcon: span({className: 'custom-icon'})
+            })
+        );
+        const info = line(container, 'info');
+
+        expect(info.title).toBe('Shipped orders only');
+        expect(info.querySelector('.custom-icon')).not.toBeNull();
+    });
+
     it('applies intent and accent to the card, alongside layout props', () => {
         const {container} = render(
             statCard({title: 'Europe', value: 1, intent: 'danger', accent: 'red', width: 200})
