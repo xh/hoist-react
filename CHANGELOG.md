@@ -23,6 +23,8 @@
 
 * Fixed the impersonation bar re-requesting its list of users without end when the server returned
   no users other than the current one.
+* Fixed `DashCanvas` reverting a layout change when two layout writes landed close together, for
+  example two `autoHeight` views resizing during load. The revert could loop until React error #185.
 * Fixed grids scrolling diagonally on trackpad gestures under AG Grid 36. `AgGrid` now locks each
   two-axis wheel event to its dominant axis.
 
