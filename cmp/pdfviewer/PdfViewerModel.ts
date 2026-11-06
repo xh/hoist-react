@@ -4,8 +4,10 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {HoistModel, LoadSpec, PersistOptions, XH} from '@xh/hoist/core';
-import {loadPdfJsAsync, PdfJs} from '@xh/hoist/kit/pdfjs';
+import type {LoadSpec, PersistOptions} from '@xh/hoist/core';
+import {HoistModel, XH} from '@xh/hoist/core';
+import type {PdfJs} from '@xh/hoist/kit/pdfjs';
+import {loadPdfJsAsync} from '@xh/hoist/kit/pdfjs';
 import {action, computed, observable, observableRef, runInAction} from '@xh/hoist/mobx';
 import type {FetchOptions} from '@xh/hoist/svc';
 import {downloadBlob, throwIf, withDefault} from '@xh/hoist/utils/js';
@@ -609,7 +611,7 @@ export class PdfViewerModel extends HoistModel implements PdfViewerToolbarModel 
     override destroy() {
         this.settleFind('cancelled');
         this.destroyViewer();
-        this.closeDocumentAsync();
+        this.closeDocumentAsync().catch(e => this.logError('Error closing document', e));
         super.destroy();
     }
 }
