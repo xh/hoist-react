@@ -41,6 +41,14 @@
   `ExpandCollapseButton`.
 * `StoreFilterField` and `GridFindField` bound to a `DataViewModel` search every field, as a
   DataView has no visible columns to narrow them.
+* Added `PdfViewer` and `PdfViewerModel` in `@xh/hoist/cmp/pdfviewer`, built on Mozilla's pdf.js.
+  The viewer loads documents from a URL, `FetchOptions`, or a `Blob` / `File` / byte array. It
+  renders pages on demand with selectable text, and has a configurable toolbar for paging, zoom,
+  find, rotation, and download. The model exposes the same actions and state for app-built
+  controls. Apps opt in by adding `pdfjs-dist` to their dependencies - Hoist declares it as an
+  optional peer and loads it on first use, with no bootstrap or build config required.
+* Added `Icon.magnifyingGlassPlus()` and `Icon.magnifyingGlassMinus()` (aliased as
+  `Icon.zoomIn()` and `Icon.zoomOut()`), plus `Icon.rotateRight()`.
 * Added `ColumnGroupSpec.chooserName` to set a group's name in the desktop column chooser. Use it
   when `headerName` is a function or element, which the chooser cannot display.
 
@@ -50,6 +58,15 @@
   Pinning relocates the column, which header and chooser drags already refused for it.
 * Fixed the impersonation bar re-requesting its list of users without end when the server returned
   no users other than the current one.
+* Fixed `DashCanvas` reverting a layout change when two layout writes landed close together, for
+  example two `autoHeight` views resizing during load. The revert could loop until React error #185.
+* Fixed grids scrolling diagonally on trackpad gestures under AG Grid 36. `AgGrid` now locks each
+  two-axis wheel event to its dominant axis.
+* Fixed `DashCanvas` widgets lagging behind the pointer while dragged or resized. Hoist pins react-grid-layout to 2.2 until a fixed 2.3 release ships.
+
+### 📚 Libraries
+
+* react-grid-layout `2.3 → 2.2`
 
 ### ✨ Styles
 
