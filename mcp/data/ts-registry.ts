@@ -25,7 +25,12 @@ import type {
 import {resolve} from 'node:path';
 
 import {log} from '../util/logger.js';
-import {resolveRepoRoot, resolveRepoRootPosix, toPosixPath} from '../util/paths.js';
+import {
+    isLibrarySource,
+    resolveRepoRoot,
+    resolveRepoRootPosix,
+    toPosixPath
+} from '../util/paths.js';
 import {createImportPathResolver} from './import-paths.js';
 import {computeFingerprint, loadCache, writeCache} from './index-cache.js';
 
@@ -284,23 +289,6 @@ export function isPromiseExtension(entry: Pick<SymbolEntry, 'name' | 'filePath'>
 const MAX_DEFAULT_LENGTH = 60;
 
 /**
- * True if a file, given by its path relative to the repo root (with a leading slash), is library
- * source to index. Excludes dependencies, build output, this MCP sub-project, specs, and the CI
- * reporter for hoist-react's own tests - none of which ship. The test kit in `test-support/` ships
- * as `@xh/hoist/test-support`, so it is indexed.
- */
-function isLibrarySource(relPath: string | null): boolean {
-    return (
-        !!relPath &&
-        !relPath.startsWith('/node_modules/') &&
-        !relPath.includes('/build/') &&
-        !relPath.includes('/mcp/') &&
-        !relPath.startsWith('/test-support/report/') &&
-        !relPath.endsWith('.spec.ts')
-    );
-}
-
-/**
  * Derive the source package from a file's absolute path.
  * e.g. `/repo/core/HoistBase.ts` maps to `core`,
  *      `/repo/cmp/grid/GridModel.ts` maps to `cmp/grid`.
@@ -431,13 +419,7 @@ function buildSymbolIndex(proj: Project): {
     for (const sourceFile of proj.getSourceFiles()) {
         const filePath = sourceFile.getFilePath();
 
-        // Skip non-source files - use path relative to repoRoot so that
-        // hoist-react's own sources are included even when the package is
-        // installed under an app's node_modules directory.
-        const relPath = filePath.startsWith(repoRoot + '/')
-            ? filePath.slice(repoRoot.length)
-            : null;
-        if (!isLibrarySource(relPath)) continue;
+        if (!isLibrarySource(filePath, repoRoot)) continue;
 
         const pkg = derivePackage(filePath, repoRoot);
 
@@ -925,10 +907,7 @@ function enrichMemberIndexJsDoc(proj: Project): void {
 
     for (const sourceFile of proj.getSourceFiles()) {
         const filePath = sourceFile.getFilePath();
-        const relPath = filePath.startsWith(repoRoot + '/')
-            ? filePath.slice(repoRoot.length)
-            : null;
-        if (!isLibrarySource(relPath)) continue;
+        if (!isLibrarySource(filePath, repoRoot)) continue;
 
         for (const cls of sourceFile.getClasses()) {
             if (!shouldIndexClassMembers(cls)) continue;

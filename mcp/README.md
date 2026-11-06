@@ -67,6 +67,7 @@ mcp/
 │   ├── ts-registry.ts         # Lazy ts-morph symbol index with on-demand type extraction
 │   ├── ts-registry.spec.ts    # Path handling and live index integration checks
 │   ├── import-paths.ts        # Barrel import path resolution by walking package barrels
+│   ├── import-paths.spec.ts   # Source filtering and barrel resolution at installed roots (see Testing)
 │   ├── index-cache.ts         # Disk cache for the symbol and member indexes
 │   ├── symbol-search.ts       # MiniSearch (BM25) indexes over symbols and members, ranked search
 │   └── symbol-search.spec.ts  # Golden-set retrieval eval and tool acceptance checks (see Testing)
@@ -78,6 +79,7 @@ mcp/
 ├── tools/
 │   ├── docs.ts                # MCP documentation tools (search, list, read, ping)
 │   ├── docs.spec.ts           # MCP / CLI parity check for the doc tools
+│   ├── installed-package.spec.ts # CLIs run from a packed install in a fixture app (see Testing)
 │   ├── typescript.ts          # MCP TypeScript tools (search-symbols, get-symbol, get-members)
 │   └── typescript.spec.ts     # MCP / CLI parity check for the TypeScript tools
 ├── util/
@@ -988,8 +990,10 @@ typecheck. Both `pnpm lint` and `pnpm typecheck` cover `mcp/`, via its own ESLin
 | `data/doc-sections.spec.ts` | Section parsing, section-name resolution, and full / section / outline reads |
 | `data/doc-search.spec.ts` | Golden-set retrieval eval: top-3 hit rate (must stay at or above 85%), named experiment queries, and the default-search token budget (under 800) |
 | `data/ts-registry.spec.ts` | TypeScript symbol and member lookup, cross-platform path handling |
+| `data/import-paths.spec.ts` | `isLibrarySource()` and barrel import path resolution, at a checkout root and at installed roots (npm, pnpm store, under a `build/` or `mcp/` folder, Windows), in an in-memory ts-morph project. Covers `export *`, `export type *`, named re-exports, and barrel chains |
 | `data/symbol-search.spec.ts` | Golden-set retrieval eval for symbol search: top-3 hit rate (must stay at or above 85%), multi-word queries that must return their obvious hit, search token ceilings (`MAX_EXPERIMENT_TOKENS` 1000 for the experiment queries, `MAX_SEARCH_TOKENS` 1200 for all), barrel-exported golden symbols returning a barrel import path, a ranking guard that keeps file imports out of the top hits for `PanelModel`, `confirm`, `loading`, and `select input options`, the file import for `LeafRow` (top hit, hit-line tag, `barrelExport: false`, and the marked import line on `hoist-get-symbol` and `hoist-get-members`), the hidden exact match footer for an `impl/` symbol (`ColumnWidthCalculator`), the Props-owner, internal-code (hidden counts cover only location-hidden hits), no-fuzzy, and component-folding rules, and the tool-level acceptance cases (`ColumnSpec` import path and member summary, `ButtonProps` external `onClick`, the `FieldType` error and dual declarations, `XH` as an instance of `XHApi`, complete JSDoc on `ColumnSpec`, `PanelProps`, and `GridModel` filtered by `col`, the summary fallback for unfiltered `GridModel`, inherited JSDoc on `Column.headerName`, and the `PanelModel.collapsed` default) |
 | `tools/docs.spec.ts` | MCP / CLI parity - calls the doc tools through an in-memory MCP client and compares them with `hoist-docs` output and `--json` |
+| `tools/installed-package.spec.ts` | The tools as an app runs them. Lays out the `npm pack` file list under a fixture app's `node_modules`, then runs `hoist-ts` and `hoist-docs` from the app: barrel import paths (including `HoistRoute` through `export type *`), search, members, and doc search and reads. The slowest spec (about 20s), because it builds a fresh index |
 | `tools/typescript.spec.ts` | MCP / CLI parity for the three TypeScript tools, including filters, `kind` and `filePath` disambiguation, and error cases. Covers the import line for a barrel symbol, a file-import symbol (`LeafRow`), and a Promise extension, and the hidden exact match query. Runs the CLI in-process via `cli/ts-command.ts` (about 4s) and spawns the real bin once as a smoke check |
 
 Each golden set maps realistic agent queries to the doc section, symbol, or `Owner.member` that
@@ -1123,6 +1127,15 @@ comparing against or slicing a ts-morph path, use `resolveRepoRootPosix()` (and 
 any incoming file-path argument) from `util/paths.ts` rather than `resolveRepoRoot()`. Filesystem
 access that stays within Node's `path`/`fs` APIs (e.g. the doc registry, the index cache) can keep
 using `resolveRepoRoot()`, since those are separator-consistent on both sides.
+
+### Path Filters (Installed Package)
+
+In an app, the package root is `client-app/node_modules/@xh/hoist`, often inside the pnpm store.
+Every absolute path under it contains `/node_modules/`, and a folder above it may be named `build`
+or `mcp`. A filter that tests the absolute path for those segments rejects every file in an app,
+while every spec run from a checkout still passes. Test the path relative to the package root with
+`isLibrarySource()` from `util/paths.ts`. `tools/installed-package.spec.ts` runs the CLIs from a
+packed install to catch this class of bug.
 
 ### Registry Sync
 
