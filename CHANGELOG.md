@@ -43,7 +43,7 @@
 
 ## 90.0.0 - 2026-11-02
 
-### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW - `formatConfig`, built-in column specs, `DateInput` props, mobile styling, panel splitter CSS, renderer imports, removed libraries)
+### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW - `formatConfig`, built-in column specs, `DateInput` props, mobile styling, panel splitter CSS, renderer imports, removed libraries, router5 8)
 See [`docs/upgrade-notes/v90-upgrade-notes.md`](docs/upgrade-notes/v90-upgrade-notes.md) for
 detailed, step-by-step upgrade instructions with before/after code examples.
 
@@ -58,6 +58,8 @@ detailed, step-by-step upgrade instructions with before/after code examples.
   `format/FormatNumber.ts` and `format/FormatDate.ts`. Import them from `@xh/hoist/format`.
 * An app that imports a library Hoist no longer depends on, such as `semver` or `store2`, must
   declare it in its own `package.json`. The Libraries section below lists each removed library.
+* Updated router5 to 8.0. An app that declares its own `router5` must match it, or drop the
+  dependency and type its routes with `HoistRoute` from `@xh/hoist/core`.
 * Desktop `DateInput` now renders its calendar with react-day-picker 10, as the mobile `DateInput`
   already did, and its time picker is Hoist's own 24-hour control. `dayPickerProps` now takes
   react-day-picker 10 props - see the upgrade notes for the renames from v8. Removed
