@@ -116,6 +116,9 @@ detailed, step-by-step upgrade instructions with before/after code examples.
   pooled JDBC connections on one instance or across the cluster. Requires hoist-core v44+.
 * `@debounced` methods now do nothing once their `HoistBase` owner is destroyed, including a call
   pending at destroy.
+* Added `StatCard` and `StatCardStrip` to `@xh/hoist/cmp/statcard`, for calling out key figures
+  above a grid or in a detail panel. Callers pass pre-formatted values and an optional
+  `valueIntent`. Style through the new `--xh-stat-card-*` CSS variables.
 
 ### 🐞 Bug Fixes
 

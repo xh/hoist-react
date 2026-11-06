@@ -930,6 +930,27 @@ body {
   }
 
   //------------------------
+  // Stat Cards
+  //------------------------
+  --xh-stat-card-accent-width: var(--stat-card-accent-width, 3px);
+  --xh-stat-card-bg: var(--stat-card-bg, var(--xh-bg-alt));
+  --xh-stat-card-border: var(--stat-card-border, var(--xh-border-solid));
+  --xh-stat-card-border-radius: var(--stat-card-border-radius, var(--xh-border-radius-px));
+  --xh-stat-card-detail-color: var(--stat-card-detail-color, var(--xh-text-color-muted));
+  --xh-stat-card-detail-font-size: var(--stat-card-detail-font-size, var(--xh-font-size-small-em));
+  --xh-stat-card-padding: var(--stat-card-padding, #{8px 12px});
+  --xh-stat-card-secondary-font-size: var(--stat-card-secondary-font-size, 15px);
+  --xh-stat-card-strip-gap: var(--stat-card-strip-gap, 8px);
+  --xh-stat-card-strip-padding: var(--stat-card-strip-padding, 8px);
+  --xh-stat-card-title-color: var(--stat-card-title-color, var(--xh-text-color-muted));
+  --xh-stat-card-title-font-size: var(--stat-card-title-font-size, var(--xh-font-size-small-em));
+  --xh-stat-card-title-letter-spacing: var(--stat-card-title-letter-spacing, normal);
+  --xh-stat-card-title-text-transform: var(--stat-card-title-text-transform, none);
+  --xh-stat-card-value-font-size: var(--stat-card-value-font-size, 24px);
+  --xh-stat-card-value-font-weight: var(--stat-card-value-font-weight, 600);
+  --xh-stat-card-value-gap: var(--stat-card-value-gap, 6px);
+
+  //------------------------
   // Tabs
   //------------------------
   --xh-tab-text-color: var(--tab-text-color, var(--xh-text-color));
