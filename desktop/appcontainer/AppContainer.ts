@@ -12,6 +12,7 @@ import {mask} from '@xh/hoist/cmp/mask';
 import {createElement, hoistCmp, refreshContextView, uses, XH} from '@xh/hoist/core';
 import {changelogDialog} from '@xh/hoist/desktop/appcontainer/ChangelogDialog';
 import {cardHeaderImpl} from '@xh/hoist/desktop/cmp/card/impl/CardHeaderImpl';
+import {statCardInfoImpl} from '@xh/hoist/desktop/cmp/statcard/impl/StatCardInfoImpl';
 import {dockContainerImpl} from '@xh/hoist/desktop/cmp/dock/impl/DockContainer';
 import {errorMessageImpl} from '@xh/hoist/desktop/cmp/error/impl/ErrorMessage';
 import {colChooserDialog as colChooser} from '@xh/hoist/desktop/cmp/grid/impl/colchooser/ColChooserDialog';
@@ -68,7 +69,8 @@ installDesktopImpls({
     errorMessageImpl,
     maskImpl,
     DynamicTabSwitcherModel,
-    cardHeaderImpl
+    cardHeaderImpl,
+    statCardInfoImpl
 });
 /**
  * Top-level wrapper for Desktop applications.

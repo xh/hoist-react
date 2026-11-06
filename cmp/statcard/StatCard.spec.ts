@@ -7,7 +7,9 @@
 import {span} from '@xh/hoist/cmp/layout';
 import {statCard, statCardStrip} from '@xh/hoist/cmp/statcard';
 import {initTestAppAsync} from '@xh/hoist/test-support';
-import {fireEvent, render} from '@testing-library/react';
+import {statCardInfoImpl} from '@xh/hoist/desktop/cmp/statcard/impl/StatCardInfoImpl';
+import {installDesktopImpls} from '@xh/hoist/dynamics/desktop';
+import {fireEvent, render, screen} from '@testing-library/react';
 import {beforeAll, describe, expect, it, vi} from 'vitest';
 
 /**
@@ -41,19 +43,22 @@ describe('StatCard', () => {
         expect(line(container, 'detail')).toBeNull();
     });
 
-    it('shows the info tooltip on a custom icon when given one', () => {
+    it('shows element content in the info tooltip on desktop, on a custom icon', async () => {
+        // The desktop AppContainer installs this impl - a test renders without one.
+        installDesktopImpls({statCardInfoImpl});
         const {container} = render(
             statCard({
                 title: 'Orders',
                 value: 1,
-                infoTooltip: 'Shipped orders only',
+                infoTooltip: span({className: 'custom-tip', item: 'Shipped orders only'}),
                 infoIcon: span({className: 'custom-icon'})
             })
         );
         const info = line(container, 'info');
-
-        expect(info.title).toBe('Shipped orders only');
         expect(info.querySelector('.custom-icon')).not.toBeNull();
+
+        fireEvent.mouseEnter(info);
+        expect((await screen.findByText('Shipped orders only')).className).toBe('custom-tip');
     });
 
     it('applies intent and accent to the card, alongside layout props', () => {

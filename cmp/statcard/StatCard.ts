@@ -19,6 +19,7 @@ import type {
     LayoutProps,
     TestSupportProps
 } from '@xh/hoist/core';
+import {statCardInfoImpl} from '@xh/hoist/dynamics/desktop';
 import {Icon} from '@xh/hoist/icon';
 import {mergeDeep, TEST_ID} from '@xh/hoist/utils/js';
 import {composeRefs, splitLayoutProps, useOnResize} from '@xh/hoist/utils/react';
@@ -57,9 +58,9 @@ export interface StatCardProps extends HoistProps, LayoutProps, TestSupportProps
 
     /**
      * Supporting detail shown as a tooltip on an info icon after the title. Omit to render no icon.
-     * Native browser tooltip - not available on touch devices.
+     * Desktop only - on mobile the icon shows, but its tooltip does not.
      */
-    infoTooltip?: string;
+    infoTooltip?: ReactElement | string;
 
     /** Icon that shows `infoTooltip`. Default `Icon.info()`. */
     infoIcon?: ReactElement;
@@ -174,12 +175,7 @@ export const [StatCard, statCard] = hoistCmp.withFactory<StatCardProps>({
                             onMouseEnter: titleIfTruncated,
                             item: title
                         }),
-                        span({
-                            omit: !infoTooltip,
-                            className: 'xh-stat-card__info',
-                            title: infoTooltip,
-                            item: infoIcon
-                        })
+                        infoTooltip ? info(infoIcon, infoTooltip) : null
                     ]
                 }),
                 div({
@@ -255,6 +251,13 @@ export const [StatCardStrip, statCardStrip] = hoistCmp.withFactory<StatCardStrip
 //------------------
 // Implementation
 //------------------
+/** The info icon, with its tooltip on desktop. */
+function info(icon: ReactElement, content: ReactElement | string) {
+    return statCardInfoImpl
+        ? statCardInfoImpl({icon, content})
+        : span({className: 'xh-stat-card__info', item: icon});
+}
+
 /**
  * Columns for an even grid of a strip's cards, each as wide as the widest card's minimum. Null
  * while every card fits on one row at an equal share.
