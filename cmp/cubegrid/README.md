@@ -25,7 +25,7 @@ View's `Query`. `CubeGridModel` holds only presentation config, and apps reconfi
 data layer, including how cells are named and how they stay current.
 
 This guide covers how the pieces fit together. For every configuration key and prop with its
-defaults, see the JSDoc on `CubeGridConfig` and `CubeGridProps`.
+defaults, see the JSDoc on `CubeGridConfig`, `CubeGridPivotConfig` and `CubeGridProps`.
 
 ## Architecture
 
@@ -40,16 +40,19 @@ CubeGridModel
 ├── gridModel: GridModel               # The grid rendered; treeMode, managed columns
 ├── selectedRecord, selectAsync, ...   # Selection and `empty` delegated, as on ZoneGridModel
 ├── columns                            # The app's fixed columns, label column first by default
-├── pivotColumns                       # ColumnSpec per measure, applied across every path
-├── pivotColumnSpecFn                  # Overrides per column, by path, measure and kind
-├── pivotColumnGroupSpecFn             # Overrides per column group, by path and kind
-├── pivotSortBy: PivotSort[]           # Display order per pivot level
-├── showPivotSummaries                 # Total columns per pivot group while expanded: false|true|HSide
-├── pivotGroupsCollapsible             # Let pivot groups collapse from their headers (default)
-├── pivotExpandLevel                   # Initial pivot header level, as expandLevel for rows
-├── expandPivotToLevel(), expandAllPivotGroups(), collapseAllPivotGroups()
+├── pivotModel: CubeGridPivotModel     # Builds, sizes and expands the pivot region
+│   ├── columns                        # ColumnSpec per measure, applied across every path
+│   ├── columnSpecFn                   # Overrides per column, by path, measure and kind
+│   ├── columnGroupSpecFn              # Overrides per column group, by path and kind
+│   ├── sortBy: PivotSort[]            # Display order per pivot level
+│   ├── showSummaries                  # Total columns per group while expanded: false|true|HSide
+│   ├── groupsCollapsible              # Let pivot groups collapse from their headers (default)
+│   ├── collapsedTotalHeader           # Total header over a collapsed group's summary (default)
+│   ├── columnSizing                   # One width per measure: true|false|{headerFitMaxWidth}
+│   ├── expandLevel                    # Pivot header level, as expandLevel for rows
+│   └── expandToLevel(), expandAll(), collapseAll()
 ├── showSummary                        # The grid's totals row, delegated - needs includeRoot
-└── rebuildColumns()                   # Runs when result.paths or `columns` changes
+└── rebuildColumns()                   # Runs when result.paths, `columns` or a pivot option changes
 
 CubeGrid                               # Renders gridModel; layout props and agOptions
 ```
@@ -84,12 +87,14 @@ class PositionsModel extends HoistModel {
             includeRoot: true,
             pivot: {dimensions: ['region'], valueFields: ['mktVal', 'pnl']}
         },
-        showPivotSummaries: true,
-        pivotColumns: [
-            {field: 'mktVal', width: 120, renderer: millionsRenderer({precision: 2, label: true})},
-            {field: 'pnl', width: 110, renderer: numberRenderer({precision: 0, colorSpec: true})}
-        ],
-        gridConfig: {showSummary: 'top', sizingMode: 'compact', autosizeOptions: {mode: 'managed'}}
+        gridConfig: {showSummary: 'top', sizingMode: 'compact', autosizeOptions: {mode: 'managed'}},
+        pivotConfig: {
+            showSummaries: true,
+            columns: [
+                {field: 'mktVal', width: 120, renderer: millionsRenderer({precision: 2})},
+                {field: 'pnl', width: 110, renderer: numberRenderer({colorSpec: true})}
+            ]
+        }
     });
 
     override async doLoadAsync(loadSpec) {
@@ -131,32 +136,43 @@ The grid has two regions, always in this order:
    `SINGLE` aggregator, a leaf field, or a measure. A measure's bare field name is its row total,
    so `{field: 'mktVal'}` shows market value once even when the query pivots P&L by region.
 2. **Pivot columns** - derived from `result.paths` when the query pivots, one group per path with
-   a column per `pivot.valueFields` entry, configured through `pivotColumns`, with
-   `pivotColumnSpecFn` overriding single columns by path, measure and kind (`cell` or `total`) -
-   a width on the `Total` columns, say. `pivotColumnGroupSpecFn` does the same for the
+   a column per `pivot.valueFields` entry, configured through `pivotConfig.columns`, with
+   `columnSpecFn` overriding single columns by path, measure and kind (`cell` or `total`) -
+   a width on the `Total` columns, say. `columnGroupSpecFn` does the same for the
    column groups, by path and kind (`path` or `total`), for header names, classes and alignment.
    Both receive the spec they override as `spec`, to derive from rather than replace.
    One group spans
    the region, titled by the pivot dimensions (`Region › Sector`), with the row summary column on
-   the side `showPivotSummaries` names.
+   the side `showSummaries` names.
 
 Column groups in the pivot region expand and collapse from their headers. The region collapses to
 the row summary, one column per value field holding each row's total, under a `Total` header. With
 two or more pivot dimensions, each parent path group collapses to its own summary the same way.
-`showPivotSummaries` keeps every summary visible while expanded too, on the side it names - the
+`showSummaries` keeps every summary visible while expanded too, on the side it names - the
 left by default, so the summary keeps its collapsed position and the group opens to its right.
 The `Total` header stays in place either way, so collapsing never changes the header depth. Summary cells and headers carry the
 `xh-cube-grid__total-cell` and `xh-cube-grid__total-header` classes, unstyled by default, for apps
-that want to set them apart. `pivotExpandLevel` sets the initial level, as `expandLevel`
+that want to set them apart. `pivotConfig.expandLevel` sets the initial level, as `expandLevel`
 does for rows: 0 collapses the region, 1 shows the top-level groups collapsed, -1 (the default)
-expands everything. `expandPivotToLevel()` resets it later, with `expandAllPivotGroups()` and
-`collapseAllPivotGroups()` as shortcuts. Set `pivotGroupsCollapsible: false` to fix every group
+expands everything. `pivotModel.expandToLevel()` resets it later, with `expandAll()` and
+`collapseAll()` as shortcuts. Set `groupsCollapsible: false` to fix every group
 open with summary columns only where asked. The state is the grid's own `columnGroupState`, keyed
 on the path and on `PIVOT_GROUP_ID` for the region, so it survives a rebuild and persists with
 `persistWith`.
 
+Every pivot column of a measure shares one width, so the region reads as a regular grid. That
+width is the measure's widest data. Where a displayed group label needs more room than the data
+of the columns it spans - a leaf path label over its measures, or a collapsed group's label over
+its summary - the shortfall is shared evenly among those columns, so a narrow measure is not
+ballooned. Labels claim at most `columnSizing.headerFitMaxWidth` (default 140px) and
+truncate past it, with a tooltip. Data can go wider. The width follows as groups expand and
+collapse. A manual resize moves all of the measure's columns together and holds until the next
+autosize. Set `headerFitMaxWidth: 0` to size for data alone, or `columnSizing: false` to
+size each column on its own, as in any grid. Set `headerName` in `columnGroupSpecFn` to
+shorten labels.
+
 Users reorder the fixed columns and the grid persists that through its normal column state. Pivot
-columns are not movable: their order is the view's, set through `pivotSortBy`, in the same way row
+columns are not movable: their order is the view's, set through `sortBy`, in the same way row
 order is set through the query rather than dragged. The regions never interleave. A header drag
 cannot drop a fixed column inside the pivot block, a drop made through the column chooser is moved
 back as soon as it lands, and a rebuild keeps each pivot column's width while taking its position
@@ -180,9 +196,13 @@ view.updateQuery({pivot: null});
 ```
 
 `updateQuery` replaces the whole `pivot` block, so spread the current one to change a single
-member. Presentation settings change on the model itself - `columns`, `pivotColumns`,
-`pivotSortBy` and `showPivotSummaries` are all bindable, and `showSummary`
+member. Presentation settings change on the models - `columns` on the CubeGridModel and every
+pivot option on its `pivotModel` are bindable, as are the grid's own on `gridModel`. `showSummary`
 delegates to the grid.
+
+```typescript
+switchInput({bind: 'showSummaries', model: cubeGridModel.pivotModel, label: 'Totals'})
+```
 
 ### Pivot Columns and Cell Fields
 
@@ -198,26 +218,34 @@ Each cell the View publishes becomes one column, bound to its synthetic field na
 The field name is also the column's `colId`, so column state persists across rebuilds for paths that
 remain in the data, and a path that leaves and returns comes back at its default width. A summary
 column binds the same cell under a `total>>` colId, so a fixed column can show the row total for a
-measure as well. Every path is a group headed by its value with a column per measure beneath, even
-with a single measure, so the measure name stays visible beside the fixed columns.
+measure as well. With `collapsedTotalHeader: false`, a collapsed group's summary has no `Total`
+header and its own `collapsed>>` colIds. Every path is a group headed by its value with a column per
+measure beneath, even with a single measure, so the measure name stays visible beside the fixed
+columns.
 
-`pivotColumns` holds one spec per measure, its `field` naming the value field, applied to every
-pivot column generated for that measure - so the same array can serve as the fixed `columns` too.
-Keys that identify, place or name a column - `colId`, `pinned`, `hidden`, `exportName` and the
-rest of `RESERVED_PIVOT_COLUMN_KEYS` - are stripped, so a spec shared with the fixed columns still applies
-cleanly. Pivot columns are not hideable and stay out of the column chooser, as they cannot be
-moved or pinned: the region is the query's. Drop a measure from `pivot.valueFields` or filter the
+`pivotConfig.columns` holds one spec per measure, its `field` naming the value field, applied to
+every pivot column generated for that measure - so the same array can serve as the fixed `columns`
+too. Keys that identify, place or name a column - `colId`, `pinned`, `hidden`, `exportName` and the
+rest of `RESERVED_PIVOT_COLUMN_KEYS` - are stripped, so a spec shared with the fixed columns still
+applies cleanly. Pivot columns are not hideable and stay out of the column chooser, as they cannot
+be moved or pinned: the region is the query's. Drop a measure from `pivot.valueFields` or filter the
 query to remove columns.
 
 ### Sorting the Pivot Axis
 
-`pivotSortBy` takes one entry per pivot level: `'asc'`, `'desc'`, an explicit array of dimension
-values with anything unlisted following in view order, or `null` to keep the View's own ascending
-order. It is display-only; the View's `result.paths` is never reordered.
+`sortBy` takes one entry per pivot level: `'asc'`, `'desc'`, an explicit array of dimension
+values with anything unlisted following in view order, a comparator of two `PivotPath`s, or `null`
+to keep the View's own ascending order. It is display-only; the View's `result.paths` is never
+reordered.
 
 ```typescript
-cubeGridModel.pivotSortBy = [['US', 'EU'], 'asc'];  // Regions in a fixed order, sectors A-Z
+const {pivotModel} = cubeGridModel;
+pivotModel.sortBy = [['US', 'EU'], 'asc'];  // Regions in a fixed order, sectors A-Z
+pivotModel.sortBy = [(a, b) => tenorDays(a.value) - tenorDays(b.value)];  // 1W, 3M, 1Y
 ```
+
+A comparator runs on each rebuild, not on data changes, so set a new `sortBy` to re-sort when
+what it reads changes.
 
 ## Filtering and Export
 

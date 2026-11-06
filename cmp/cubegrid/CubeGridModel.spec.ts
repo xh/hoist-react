@@ -6,13 +6,16 @@
  */
 import type {ColumnOrGroup, ColumnSpec, GridModel} from '@xh/hoist/cmp/grid';
 import {ColumnGroup} from '@xh/hoist/cmp/grid';
+import {ColumnWidthCalculator} from '@xh/hoist/cmp/grid/impl/ColumnWidthCalculator';
 import type {PlainObject} from '@xh/hoist/core';
 import {XH} from '@xh/hoist/core';
 import {Cube, type QueryConfig} from '@xh/hoist/data';
 import {initTestAppAsync} from '@xh/hoist/test-support';
+import {wait} from '@xh/hoist/promise';
 import {find, isFunction} from 'lodash';
 import {beforeAll, describe, expect, it, onTestFinished, vi} from 'vitest';
-import {CubeGridModel, PIVOT_GROUP_ID} from './CubeGridModel';
+import {CubeGridModel} from './CubeGridModel';
+import {PIVOT_GROUP_ID} from './CubeGridPivotModel';
 
 /**
  * CubeGridModel is the grid for any Cube view. These tests pin its layout contract: the app's
@@ -90,6 +93,20 @@ describe('CubeGridModel', () => {
             ]);
         });
 
+        it('orders pivot paths by a sortBy comparator', () => {
+            const model = createModel({
+                query: PIVOT_QUERY,
+                pivotConfig: {sortBy: [(a, b) => b.label.localeCompare(a.label)]}
+            });
+
+            expect(colIds(model.gridModel.columns)).toEqual([
+                'cubeLabel',
+                'Tech>>sum',
+                'Energy>>sum',
+                'total>>sum'
+            ]);
+        });
+
         it('spans the pivot region with a group that collapses to the row summary', () => {
             const model = createModel({query: PIVOT_QUERY}),
                 region = model.gridModel.getColumnGroup(PIVOT_GROUP_ID),
@@ -103,35 +120,73 @@ describe('CubeGridModel', () => {
                 ['pivot:total', 'collapsed']
             ]);
 
-            const withSummary = createModel({query: PIVOT_QUERY, showPivotSummaries: true});
+            const withSummary = createModel({
+                query: PIVOT_QUERY,
+                pivotConfig: {showSummaries: true}
+            });
             expect(showModes(withSummary.gridModel.getColumnGroup(PIVOT_GROUP_ID))).toContainEqual([
                 'pivot:total',
                 null
             ]);
 
-            const collapsed = createModel({query: PIVOT_QUERY, pivotExpandLevel: 0});
+            const collapsed = createModel({query: PIVOT_QUERY, pivotConfig: {expandLevel: 0}});
             expect(collapsed.gridModel.isColumnGroupExpanded(PIVOT_GROUP_ID)).toBe(false);
+        });
+
+        it('drops the collapsed Total header when collapsedTotalHeader is false', () => {
+            const model = createModel({
+                    query: PIVOT_QUERY,
+                    pivotConfig: {collapsedTotalHeader: false}
+                }),
+                region = model.gridModel.getColumnGroup(PIVOT_GROUP_ID);
+
+            expect(region.children.map(it => [groupIdOf(it), it.groupShowMode])).toEqual([
+                ['Energy', 'expanded'],
+                ['Tech', 'expanded'],
+                ['collapsed>>sum', 'collapsed']
+            ]);
+        });
+
+        it('keeps the Total header beside expanded groups when the collapsed one is dropped', () => {
+            const model = createModel({
+                    query: PIVOT_QUERY,
+                    pivotConfig: {showSummaries: true, collapsedTotalHeader: false}
+                }),
+                {gridModel} = model,
+                region = gridModel.getColumnGroup(PIVOT_GROUP_ID);
+
+            expect(region.children.map(it => [groupIdOf(it), it.groupShowMode])).toEqual([
+                ['collapsed>>sum', 'collapsed'],
+                ['pivot:total', 'expanded'],
+                ['Energy', 'expanded'],
+                ['Tech', 'expanded']
+            ]);
+            expect(gridModel.getColumn('collapsed>>sum').excludeFromExport).toBe(true);
+            expect(gridModel.getColumn('total>>sum').excludeFromExport).toBeFalsy();
         });
 
         it('expands pivot groups to a level, with the region at level 0', () => {
             const model = createModel({query: PIVOT_QUERY}),
                 {gridModel} = model;
 
-            model.expandPivotToLevel(0);
+            model.pivotModel.expandToLevel(0);
             expect(gridModel.isColumnGroupExpanded(PIVOT_GROUP_ID)).toBe(false);
-            expect(model.pivotExpandLevel).toBe(0);
+            expect(model.pivotModel.expandLevel).toBe(0);
 
-            model.expandPivotToLevel(1);
+            model.pivotModel.expandToLevel(1);
             expect(gridModel.isColumnGroupExpanded(PIVOT_GROUP_ID)).toBe(true);
 
-            model.collapseAllPivotGroups();
+            model.pivotModel.collapseAll();
             expect(gridModel.isColumnGroupExpanded(PIVOT_GROUP_ID)).toBe(false);
-            model.expandAllPivotGroups();
+            model.pivotModel.expandAll();
             expect(gridModel.isColumnGroupExpanded(PIVOT_GROUP_ID)).toBe(true);
         });
 
-        it('fixes every group open when pivotGroupsCollapsible is false', () => {
-            const model = createModel({query: PIVOT_QUERY, pivotGroupsCollapsible: false}),
+        it('fixes every group open when groupsCollapsible is false', () => {
+            const model = createModel({
+                    query: PIVOT_QUERY,
+                    pivotConfig: {groupsCollapsible: false}
+                }),
                 region = model.gridModel.getColumnGroup(PIVOT_GROUP_ID);
 
             expect(region.children.every(it => it.groupShowMode == null)).toBe(true);
@@ -143,8 +198,7 @@ describe('CubeGridModel', () => {
 
             const withSummary = createModel({
                 query: PIVOT_QUERY,
-                pivotGroupsCollapsible: false,
-                showPivotSummaries: true
+                pivotConfig: {groupsCollapsible: false, showSummaries: true}
             });
             expect(colIds(withSummary.gridModel.columns)).toContain('total>>sum');
         });
@@ -153,7 +207,7 @@ describe('CubeGridModel', () => {
             const model = createModel({
                     query: PIVOT_QUERY,
                     columns: [{field: 'sum'}],
-                    showPivotSummaries: true
+                    pivotConfig: {showSummaries: true}
                 }),
                 {gridModel} = model;
 
@@ -168,7 +222,10 @@ describe('CubeGridModel', () => {
         });
 
         it('keeps pivot columns out of the chooser and not hideable', () => {
-            const {gridModel} = createModel({query: PIVOT_QUERY, showPivotSummaries: true});
+            const {gridModel} = createModel({
+                query: PIVOT_QUERY,
+                pivotConfig: {showSummaries: true}
+            });
 
             ['Energy>>sum', 'total>>sum'].forEach(colId => {
                 const col = gridModel.getColumn(colId);
@@ -177,16 +234,16 @@ describe('CubeGridModel', () => {
             });
         });
 
-        it('places the summary columns on the side showPivotSummaries names, within the pivot region', () => {
+        it('places the summary columns on the side showSummaries names, within the pivot region', () => {
             const left = createModel({
                     query: PIVOT_QUERY,
                     columns: [{field: 'avg'}],
-                    showPivotSummaries: true
+                    pivotConfig: {showSummaries: true}
                 }),
                 right = createModel({
                     query: PIVOT_QUERY,
                     columns: [{field: 'avg'}],
-                    showPivotSummaries: 'right'
+                    pivotConfig: {showSummaries: 'right'}
                 });
 
             expect(colIds(right.gridModel.columns)).toEqual([
@@ -379,18 +436,20 @@ describe('CubeGridModel', () => {
 //------------------------
 // Fixtures
 //------------------------
-describe('pivotColumnSpecFn', () => {
+describe('pivot columnSpecFn', () => {
     it('merges overrides over the measure spec by path, field and kind', () => {
         const model = createModel({
                 query: PIVOT_QUERY,
-                showPivotSummaries: true,
-                pivotColumns: [{field: 'sum', width: 100, align: 'right'}],
-                pivotColumnSpecFn: ({path, kind, spec}) =>
-                    kind === 'total'
-                        ? {cellClass: 'is-total'}
-                        : path.label === 'Tech'
-                          ? {width: spec.width + 50, colId: 'ignored'}
-                          : null
+                pivotConfig: {
+                    showSummaries: true,
+                    columns: [{field: 'sum', width: 100, align: 'right'}],
+                    columnSpecFn: ({path, kind, spec}) =>
+                        kind === 'total'
+                            ? {cellClass: 'is-total'}
+                            : path.label === 'Tech'
+                              ? {width: spec.width + 50, colId: 'ignored'}
+                              : null
+                }
             }),
             cols = model.gridModel.getLeafColumns(),
             tech = find(cols, {field: 'Tech>>sum'}),
@@ -423,11 +482,13 @@ describe('export names', () => {
             shared: ColumnSpec = {field: 'sum', headerName: 'Sum', exportName: 'Shared'},
             model = createModel({
                 query,
-                showPivotSummaries: true,
                 columns: [shared],
-                pivotColumns: [shared],
-                pivotColumnSpecFn: ({path}) =>
-                    path.label === 'Energy' ? {headerName: 'Energy sum'} : null
+                pivotConfig: {
+                    showSummaries: true,
+                    columns: [shared],
+                    columnSpecFn: ({path}) =>
+                        path.label === 'Energy' ? {headerName: 'Energy sum'} : null
+                }
             }),
             {gridModel} = model;
 
@@ -461,8 +522,8 @@ describe('column filtering', () => {
             {gridModel} = createModel({
                 query: PIVOT_QUERY,
                 columns: [shared],
-                pivotColumns: [shared],
-                gridConfig: {filterModel: true}
+                gridConfig: {filterModel: true},
+                pivotConfig: {columns: [shared]}
             });
 
         expect(gridModel.getColumn('sum').filterable).toBe(true);
@@ -472,7 +533,7 @@ describe('column filtering', () => {
 
 describe('summary column classes', () => {
     it('marks summary cells, headers and the Total group, leaving pivot cells unmarked', () => {
-        const model = createModel({query: PIVOT_QUERY, showPivotSummaries: true}),
+        const model = createModel({query: PIVOT_QUERY, pivotConfig: {showSummaries: true}}),
             cols = model.gridModel.getLeafColumns(),
             total = find(cols, {colId: 'total>>sum'}),
             cell = find(cols, {colId: 'Tech>>sum'}),
@@ -488,10 +549,12 @@ describe('summary column classes', () => {
     it('keeps an app class function on a summary column, adding the total class', () => {
         const model = createModel({
                 query: PIVOT_QUERY,
-                showPivotSummaries: true,
-                pivotColumns: [
-                    {field: 'sum', cellClass: () => 'is-app', headerClass: () => 'is-app'}
-                ]
+                pivotConfig: {
+                    showSummaries: true,
+                    columns: [
+                        {field: 'sum', cellClass: () => 'is-app', headerClass: () => 'is-app'}
+                    ]
+                }
             }),
             total = find(model.gridModel.getLeafColumns(), {colId: 'total>>sum'}),
             cellClass = total.cellClass as (...args: any[]) => string[],
@@ -502,17 +565,19 @@ describe('summary column classes', () => {
     });
 });
 
-describe('pivotColumnGroupSpecFn', () => {
+describe('pivot columnGroupSpecFn', () => {
     it('merges overrides over each group by path and kind, keeping identity', () => {
         const model = createModel({
                 query: PIVOT_QUERY,
-                showPivotSummaries: true,
-                pivotColumnGroupSpecFn: ({path, kind, spec}) =>
-                    kind === 'total'
-                        ? {headerClass: 'is-total', groupId: 'ignored'}
-                        : path.isRoot
-                          ? {headerAlign: 'center'}
-                          : {headerName: `${spec.headerName}`.toUpperCase()}
+                pivotConfig: {
+                    showSummaries: true,
+                    columnGroupSpecFn: ({path, kind, spec}) =>
+                        kind === 'total'
+                            ? {headerClass: 'is-total', groupId: 'ignored'}
+                            : path.isRoot
+                              ? {headerAlign: 'center'}
+                              : {headerName: `${spec.headerName}`.toUpperCase()}
+                }
             }),
             groups = allGroups(model.gridModel.columns),
             region = find(groups, {groupId: PIVOT_GROUP_ID}),
@@ -542,6 +607,156 @@ describe('declined results', () => {
         expect(gridModel.store.count).toBeGreaterThan(0);
         expect(gridModel.columns.some(it => groupIdOf(it) === PIVOT_GROUP_ID)).toBe(true);
     });
+});
+
+// The DOM has no layout under test, so a label measures 10px per character, plus the 5px
+// autosize buffer. An autosize is simulated by writing widths while the autosize task runs.
+describe('pivot column widths', () => {
+    beforeAll(() => initTestAppAsync());
+
+    const PIVOT_COLS = ['Energy>>sum', 'Tech>>sum', 'total>>sum'],
+        widthsOf = (model: CubeGridModel, colIds = PIVOT_COLS) =>
+            colIds.map(colId => model.gridModel.getStateForColumn(colId).width),
+        autosize = async (model: CubeGridModel, widths: number[], colIds = PIVOT_COLS) => {
+            let done: () => void;
+            new Promise<void>(resolve => (done = resolve)).linkTo(model.gridModel.autosizeTask);
+            model.gridModel.updateColumnState(
+                colIds.map((colId, idx) => ({colId, width: widths[idx]}))
+            );
+            done();
+            await wait();
+        },
+        measureByLength = () => {
+            const spy = vi
+                .spyOn(ColumnWidthCalculator.prototype, 'calcHeaderTextWidth')
+                .mockImplementation((_, text) => text.length * 10);
+            onTestFinished(() => spy.mockRestore());
+        },
+        // Labels of 21 characters, so 215px wanted and capped.
+        longLabels = ({path}) => ({headerName: `${path.label} Long Label`.padEnd(21, '.')});
+
+    it('gives every pivot column of a measure the widest autosized width', async () => {
+        const model = createModel({
+            query: PIVOT_QUERY,
+            pivotConfig: {columnSizing: {headerFitMaxWidth: 0}}
+        });
+
+        await autosize(model, [50, 70, 60]);
+        expect(widthsOf(model)).toEqual([70, 70, 70]);
+    });
+
+    it('leaves each column its own width when turned off', async () => {
+        const model = createModel({query: PIVOT_QUERY, pivotConfig: {columnSizing: false}});
+
+        await autosize(model, [50, 70, 60]);
+        expect(widthsOf(model)).toEqual([50, 70, 60]);
+
+        model.gridModel.updateColumnState([{colId: 'Tech>>sum', width: 90}]);
+        expect(widthsOf(model)).toEqual([50, 90, 60]);
+    });
+
+    it('moves every pivot column of a measure with a manual resize', async () => {
+        const model = createModel({
+            query: PIVOT_QUERY,
+            pivotConfig: {columnSizing: {headerFitMaxWidth: 0}}
+        });
+        await autosize(model, [50, 70, 60]);
+
+        model.gridModel.updateColumnState([{colId: 'Tech>>sum', width: 90}]);
+        expect(widthsOf(model)).toEqual([90, 90, 90]);
+    });
+
+    it('widens for a label only up to headerFitMaxWidth, while data may go past it', async () => {
+        measureByLength();
+        const model = createModel({
+            query: PIVOT_QUERY,
+            pivotConfig: {columnGroupSpecFn: longLabels, columnSizing: {headerFitMaxWidth: 120}}
+        });
+
+        await autosize(model, [50, 50, 50]);
+        expect(widthsOf(model)).toEqual([120, 120, 120]);
+
+        await autosize(model, [50, 150, 50]);
+        expect(widthsOf(model)).toEqual([150, 150, 150]);
+    });
+
+    it('autosizes a managed grid when the sizing changes', () => {
+        const model = createModel({
+                query: PIVOT_QUERY,
+                gridConfig: {autosizeOptions: {mode: 'managed'}},
+                pivotConfig: {columnSizing: {headerFitMaxWidth: 140}}
+            }),
+            spy = vi.spyOn(model.gridModel, 'autosizeAsync');
+
+        model.pivotModel.columnSizing = {headerFitMaxWidth: 140};
+        expect(spy).not.toHaveBeenCalled();
+
+        model.pivotModel.columnSizing = false;
+        expect(spy).toHaveBeenCalledOnce();
+    });
+
+    it('shares a label shortfall evenly, so a narrow measure is not ballooned', async () => {
+        measureByLength();
+        const colIds = [
+                'Energy>>sum',
+                'Energy>>avg',
+                'Tech>>sum',
+                'Tech>>avg',
+                'total>>sum',
+                'total>>avg'
+            ],
+            model = createModel({
+                query: {
+                    ...PIVOT_QUERY,
+                    pivot: {dimensions: ['sector'], valueFields: ['sum', 'avg']}
+                },
+                pivotConfig: {
+                    // 'Energy Fixed Inc' wants 165px, capped at 140 - 30px more than its
+                    // columns' data.
+                    columnGroupSpecFn: ({path}) =>
+                        path.label === 'Energy' ? {headerName: 'Energy Fixed Inc'} : null
+                }
+            });
+
+        await autosize(model, [30, 80, 30, 80, 30, 80], colIds);
+        expect(colIds.map(id => model.gridModel.getStateForColumn(id).width)).toEqual([
+            45, 95, 45, 95, 45, 95
+        ]);
+    });
+
+    it.each([
+        [true, 'total>>sum'],
+        [false, 'collapsed>>sum']
+    ])(
+        'fits a collapsed group label over its summary, and lets go on expand (Total header %s)',
+        async (collapsedTotalHeader, summaryColId) => {
+            measureByLength();
+            const colIds = ['Energy>>sum', 'Tech>>sum', summaryColId];
+            const model = createModel({
+                    query: PIVOT_QUERY,
+                    pivotConfig: {
+                        collapsedTotalHeader,
+                        // 'Region Long Label' wants 175px, capped at 140.
+                        columnGroupSpecFn: ({path, kind}) =>
+                            path.isRoot && kind === 'path'
+                                ? {headerName: 'Region Long Label'}
+                                : null
+                    }
+                }),
+                {gridModel} = model;
+            await autosize(model, [50, 50, 50], colIds);
+
+            // Expanded, the region label spans the two path columns.
+            expect(widthsOf(model, colIds)).toEqual([70, 70, 70]);
+
+            // Collapsed, it spans only the summary column.
+            gridModel.setColumnGroupExpanded(PIVOT_GROUP_ID, false);
+            expect(widthsOf(model, colIds)).toEqual([140, 140, 140]);
+
+            gridModel.setColumnGroupExpanded(PIVOT_GROUP_ID, true);
+            expect(widthsOf(model, colIds)).toEqual([70, 70, 70]);
+        }
+    );
 });
 
 const PLAIN_QUERY: QueryConfig = {

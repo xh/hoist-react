@@ -463,12 +463,6 @@ export class ActivityTrackingModel extends HoistModel implements ActivityDetailP
         return new CubeGridModel({
             cube: this.cube,
             query: this.queryConfig,
-            showPivotSummaries: true,
-            pivotColumns: [
-                {field: 'entryCount', width: 80},
-                {field: 'elapsed', width: 100, renderer: elapsedRenderer},
-                {field: 'elapsedMax', width: 100, renderer: elapsedRenderer}
-            ],
             columns: [
                 {
                     field: 'cubeLabel',
@@ -514,6 +508,14 @@ export class ActivityTrackingModel extends HoistModel implements ActivityDetailP
                 sortBy: ['cubeLabel'],
                 expandLevel: 1,
                 levelLabels: () => this.groupingChooserModel.valueDisplayNames
+            },
+            pivotConfig: {
+                showSummaries: true,
+                columns: [
+                    {field: 'entryCount', width: 80},
+                    {field: 'elapsed', width: 100, renderer: elapsedRenderer},
+                    {field: 'elapsedMax', width: 100, renderer: elapsedRenderer}
+                ]
             }
         });
     }

@@ -483,6 +483,16 @@
     display: block;
   }
 
+  // Spaced as the expand icon of a group header.
+  .xh-grid-header-expand-icon {
+    display: none;
+    margin-left: var(--xh-pad-half-px);
+  }
+
+  &--expand .xh-grid-header-expand-icon {
+    display: block;
+  }
+
   &--large {
     font-size: var(--xh-grid-large-header-font-size-px);
     padding: 0 var(--xh-grid-large-header-lr-pad-px);
