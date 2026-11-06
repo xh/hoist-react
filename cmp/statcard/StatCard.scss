@@ -21,6 +21,13 @@
       min-width: var(--xh-stat-card-min-content-width);
     }
   }
+
+  // Set when the cards no longer fit on one row. The component measures the column count, so later
+  // rows line up under the first instead of stretching to fill.
+  &--grid {
+    display: grid;
+    grid-template-columns: repeat(var(--xh-stat-card-strip-columns), minmax(0, 1fr));
+  }
 }
 
 .xh-stat-card {
@@ -118,7 +125,6 @@
   &__info {
     display: flex;
     flex: none;
-    color: var(--xh-text-color-muted);
     cursor: help;
   }
 
@@ -140,7 +146,7 @@
     .xh-units-label {
       font-size: var(--xh-stat-card-sub-value-font-size);
       font-weight: normal;
-      color: var(--xh-text-color-muted);
+      color: var(--xh-stat-card-detail-color);
     }
   }
 

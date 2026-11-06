@@ -5,8 +5,8 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import classNames from 'classnames';
-import {isEmpty} from 'lodash';
-import {Children, useId} from 'react';
+import {isEmpty, max} from 'lodash';
+import {Children, useId, useLayoutEffect, useRef, useState} from 'react';
 import type {KeyboardEvent, MouseEvent, ReactNode} from 'react';
 
 import {div, span} from '@xh/hoist/cmp/layout';
@@ -20,7 +20,7 @@ import type {
 } from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {mergeDeep, TEST_ID} from '@xh/hoist/utils/js';
-import {splitLayoutProps} from '@xh/hoist/utils/react';
+import {composeRefs, splitLayoutProps, useOnResize} from '@xh/hoist/utils/react';
 
 import './StatCard.scss';
 
@@ -199,9 +199,12 @@ export interface StatCardStripProps
  * A row of {@link StatCard}s, passed as `items`, each given an equal share of the strip's width.
  * Pass `flex` or `width` to a card to weight or fix its share.
  *
- * Cards wrap to a new row rather than get narrower than their value or the
- * `--xh-stat-card-min-width` CSS variable. Renders nothing if given no cards - use `omit` on a
- * card to leave it out.
+ * When the cards no longer fit on one row, the strip becomes an even grid with as many columns as
+ * fit its widest card, so cards on later rows line up under those above. A card is never narrower
+ * than its value or the `--xh-stat-card-min-content-width` CSS variable. A card's `flex` does not
+ * apply in the grid.
+ *
+ * Renders nothing if given no cards - use `omit` on a card to leave it out.
  */
 export const [StatCardStrip, statCardStrip] = hoistCmp.withFactory<StatCardStripProps>({
     displayName: 'StatCardStrip',
@@ -209,14 +212,24 @@ export const [StatCardStrip, statCardStrip] = hoistCmp.withFactory<StatCardStrip
     className: 'xh-stat-card-strip',
 
     render(props, ref) {
-        const [layoutProps, {className, children, testId, domAttrs}] = splitLayoutProps(props);
+        const [layoutProps, {className, children, testId, domAttrs}] = splitLayoutProps(props),
+            [columns, setColumns] = useState<number>(null),
+            stripRef = useRef<HTMLDivElement>(null),
+            resizeRef = useOnResize(() => setColumns(gridColumns(stripRef.current)));
+
+        // Card values change with the cards passed in, so measure on each change as well as on resize.
+        useLayoutEffect(() => setColumns(gridColumns(stripRef.current)), [children]);
 
         if (isEmpty(Children.toArray(children))) return null;
 
         return div({
-            ref,
+            ref: composeRefs(ref, stripRef, resizeRef),
             role: 'group',
-            ...mergeDeep({className}, {style: layoutProps}, {[TEST_ID]: testId, ...domAttrs}),
+            ...mergeDeep(
+                {className: classNames(className, columns && 'xh-stat-card-strip--grid')},
+                {style: {...layoutProps, '--xh-stat-card-strip-columns': columns}},
+                {[TEST_ID]: testId, ...domAttrs}
+            ),
             items: children
         });
     }
@@ -225,6 +238,56 @@ export const [StatCardStrip, statCardStrip] = hoistCmp.withFactory<StatCardStrip
 //------------------
 // Implementation
 //------------------
+/**
+ * Columns for an even grid of a strip's cards, each as wide as the widest card's minimum. Null
+ * while every card fits on one row at an equal share.
+ */
+function gridColumns(strip: HTMLElement): number {
+    const cards = strip ? (Array.from(strip.children) as HTMLElement[]) : [];
+    if (isEmpty(cards)) return null;
+
+    const {columnGap, paddingLeft, paddingRight} = window.getComputedStyle(strip),
+        gap = px(columnGap),
+        width = strip.clientWidth - px(paddingLeft) - px(paddingRight),
+        cardWidth = max(cards.map(minCardWidth)),
+        fit = Math.floor((width + gap) / (cardWidth + gap));
+
+    return fit >= cards.length ? null : Math.max(fit, 1);
+}
+
+/**
+ * The narrowest a card can get: the wider of its value and its header floor, plus padding and
+ * border. Reads layout without changing it, so measuring adds no layout pass of its own. Returns 0
+ * for an element that is not a StatCard.
+ */
+function minCardWidth(card: HTMLElement): number {
+    const header = card.querySelector<HTMLElement>(':scope > .xh-stat-card__header'),
+        valueLine = card.querySelector<HTMLElement>(':scope > .xh-stat-card__value');
+    if (!header || !valueLine) return 0;
+
+    const primary = valueLine.firstElementChild as HTMLElement,
+        hasSubValue = valueLine.childElementCount > 1,
+        // scrollWidth gives the value's full width even while truncated, rounded to a whole pixel.
+        valueWidth =
+            primary.scrollWidth +
+            1 +
+            (hasSubValue ? px(window.getComputedStyle(valueLine).columnGap) : 0),
+        {paddingLeft, paddingRight, borderLeftWidth, borderRightWidth} =
+            window.getComputedStyle(card);
+
+    return (
+        Math.max(valueWidth, px(window.getComputedStyle(header).minWidth)) +
+        px(paddingLeft) +
+        px(paddingRight) +
+        px(borderLeftWidth) +
+        px(borderRightWidth)
+    );
+}
+
+function px(v: string): number {
+    return parseFloat(v) || 0;
+}
+
 /**
  * Show a line's full text as a native tooltip, but only while it is truncated. Read from the DOM
  * on hover, so it covers element content (e.g. `fmtNumber` output) as well as strings.

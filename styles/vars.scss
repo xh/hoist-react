@@ -923,13 +923,13 @@ body {
   --xh-stat-card-accent-left: var(--stat-card-accent-left, 0);
   --xh-stat-card-accent-right: var(--stat-card-accent-right, 0);
   --xh-stat-card-accent-top: var(--stat-card-accent-top, 3px);
-  --xh-stat-card-bg: var(--stat-card-bg, var(--xh-bg-alt));
+  --xh-stat-card-bg: var(--stat-card-bg, var(--xh-bg));
   --xh-stat-card-border: var(--stat-card-border, var(--xh-border-solid));
   --xh-stat-card-border-radius: var(--stat-card-border-radius, var(--xh-border-radius-px));
   --xh-stat-card-danger-color: var(--stat-card-danger-color, var(--xh-intent-danger-text-color));
-  --xh-stat-card-detail-color: var(--stat-card-detail-color, var(--xh-text-color-muted));
+  --xh-stat-card-detail-color: var(--stat-card-detail-color, var(--xh-blue-gray));
   --xh-stat-card-detail-font-size: var(--stat-card-detail-font-size, var(--xh-font-size-small-em));
-  --xh-stat-card-hover-bg: var(--stat-card-hover-bg, var(--xh-bg));
+  --xh-stat-card-hover-bg: var(--stat-card-hover-bg, var(--xh-bg-alt));
   // Narrowest a card's content gets in a StatCardStrip before cards wrap to a new row.
   --xh-stat-card-min-content-width: var(--stat-card-min-content-width, 100px);
   --xh-stat-card-padding: var(--stat-card-padding, var(--xh-pad-half-px) var(--xh-pad-px));
@@ -938,14 +938,20 @@ body {
   --xh-stat-card-strip-padding: var(--stat-card-strip-padding, 0);
   --xh-stat-card-sub-value-font-size: var(--stat-card-sub-value-font-size, calc(var(--xh-font-size-px) * 1.15));
   --xh-stat-card-success-color: var(--stat-card-success-color, var(--xh-intent-success-text-color));
-  --xh-stat-card-title-color: var(--stat-card-title-color, var(--xh-text-color-muted));
+  --xh-stat-card-title-color: var(--stat-card-title-color, var(--xh-blue-gray));
   --xh-stat-card-title-font-size: var(--stat-card-title-font-size, var(--xh-font-size-small-em));
   --xh-stat-card-title-letter-spacing: var(--stat-card-title-letter-spacing, normal);
   --xh-stat-card-title-text-transform: var(--stat-card-title-text-transform, none);
   --xh-stat-card-value-font-size: var(--stat-card-value-font-size, calc(var(--xh-font-size-px) * 1.85));
-  --xh-stat-card-value-font-weight: var(--stat-card-value-font-weight, 600);
+  --xh-stat-card-value-font-weight: var(--stat-card-value-font-weight, 400);
   --xh-stat-card-value-gap: var(--stat-card-value-gap, var(--xh-pad-half-px));
   --xh-stat-card-warning-color: var(--stat-card-warning-color, var(--xh-intent-warning-text-color));
+
+  // The muted text color is too faint for captions on a light background, but reads well on a dark one.
+  &.xh-dark {
+    --xh-stat-card-detail-color: var(--stat-card-detail-color, var(--xh-text-color-muted));
+    --xh-stat-card-title-color: var(--stat-card-title-color, var(--xh-text-color-muted));
+  }
 
   //------------------------
   // Tabs
