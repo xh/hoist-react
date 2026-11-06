@@ -20,6 +20,14 @@
     > .xh-stat-card__header {
       min-width: var(--xh-stat-card-min-content-width);
     }
+
+    // The title and detail report no intrinsic width (`contain: inline-size`), so they truncate
+    // rather than set the card's minimum width. Only in a strip - a card on its own sizes to all
+    // of its lines.
+    > .xh-stat-card__header,
+    > .xh-stat-card__detail {
+      contain: inline-size;
+    }
   }
 
   // Set when the cards no longer fit on one row. The component measures the column count, so later
@@ -89,14 +97,6 @@
     }
   }
 
-  // Lines other than the value report no intrinsic width (`contain: inline-size`), so they
-  // truncate rather than set the card's minimum width.
-  &__header,
-  &__sub-value,
-  &__detail {
-    contain: inline-size;
-  }
-
   &__title,
   &__value-primary,
   &__sub-value,
@@ -150,9 +150,9 @@
     }
   }
 
-  // Takes whatever the value leaves, truncating first on a narrow card.
+  // Part of the value line, so it sets the card's minimum width along with the value.
   &__sub-value {
-    flex: 1 1 0;
+    flex: 0 1 auto;
     font-size: var(--xh-stat-card-sub-value-font-size);
     font-weight: normal;
     color: var(--xh-text-color);

@@ -5,7 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import classNames from 'classnames';
-import {isEmpty, max} from 'lodash';
+import {isEmpty, max, sumBy} from 'lodash';
 import {Children, useId, useLayoutEffect, useRef, useState} from 'react';
 import type {KeyboardEvent, MouseEvent, ReactNode} from 'react';
 
@@ -33,10 +33,10 @@ export interface StatCardProps extends HoistProps, LayoutProps, TestSupportProps
      * precision and color decisions belong to the caller. A unit added with `fmtNumber`'s `label`
      * option renders smaller than the figure.
      *
-     * The value is never truncated in normal layout - a card does not get narrower than its value,
-     * and a {@link StatCardStrip} wraps cards to a new row instead. Compact large values with
-     * `fmtNumber` (e.g. `$48.5m`). Only a card held narrower than its value - by an explicit
-     * `width` or `maxWidth` - shows an ellipsis.
+     * The value and sub-value are never truncated in normal layout - a card does not get narrower
+     * than them, and a {@link StatCardStrip} wraps cards to a new row instead. Compact large
+     * values with `fmtMillions` or `fmtQuantity` (e.g. `48.5m`). Only a card held narrower than
+     * its value - by an explicit `width` or `maxWidth` - shows an ellipsis.
      */
     value: ReactNode;
 
@@ -90,8 +90,9 @@ export interface StatCardProps extends HoistProps, LayoutProps, TestSupportProps
  * The card is presentation-only. Callers pass an already-formatted `value` - the card never
  * formats or colors a value based on its content.
  *
- * Lines other than the value truncate with an ellipsis when space is short, showing their full
- * text in a tooltip. See {@link StatCardStrip} to lay out several in a row.
+ * A card on its own sizes to its content. For a row of cards, use {@link StatCardStrip} rather
+ * than an `hbox` - a strip shares out the width, wraps cards before a value is cut short, and
+ * truncates other lines with an ellipsis, showing their full text in a tooltip.
  */
 export const [StatCard, statCard] = hoistCmp.withFactory<StatCardProps>({
     displayName: 'StatCard',
@@ -201,8 +202,8 @@ export interface StatCardStripProps
  *
  * When the cards no longer fit on one row, the strip becomes an even grid with as many columns as
  * fit its widest card, so cards on later rows line up under those above. A card is never narrower
- * than its value or the `--xh-stat-card-min-content-width` CSS variable. A card's `flex` does not
- * apply in the grid.
+ * than its value and sub-value, or than the `--xh-stat-card-min-content-width` CSS variable. A
+ * card's `flex` does not apply in the grid.
  *
  * Renders nothing if given no cards - use `omit` on a card to leave it out.
  */
@@ -256,7 +257,7 @@ function gridColumns(strip: HTMLElement): number {
 }
 
 /**
- * The narrowest a card can get: the wider of its value and its header floor, plus padding and
+ * The narrowest a card can get: the wider of its value line and its header floor, plus padding and
  * border. Reads layout without changing it, so measuring adds no layout pass of its own. Returns 0
  * for an element that is not a StatCard.
  */
@@ -265,13 +266,11 @@ function minCardWidth(card: HTMLElement): number {
         valueLine = card.querySelector<HTMLElement>(':scope > .xh-stat-card__value');
     if (!header || !valueLine) return 0;
 
-    const primary = valueLine.firstElementChild as HTMLElement,
-        hasSubValue = valueLine.childElementCount > 1,
-        // scrollWidth gives the value's full width even while truncated, rounded to a whole pixel.
+    // scrollWidth gives each part's full width even while truncated, rounded to a whole pixel.
+    const parts = Array.from(valueLine.children) as HTMLElement[],
         valueWidth =
-            primary.scrollWidth +
-            1 +
-            (hasSubValue ? px(window.getComputedStyle(valueLine).columnGap) : 0),
+            sumBy(parts, it => it.scrollWidth + 1) +
+            (parts.length - 1) * px(window.getComputedStyle(valueLine).columnGap),
         {paddingLeft, paddingRight, borderLeftWidth, borderRightWidth} =
             window.getComputedStyle(card);
 

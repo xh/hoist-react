@@ -931,7 +931,7 @@ body {
   --xh-stat-card-detail-font-size: var(--stat-card-detail-font-size, var(--xh-font-size-small-em));
   --xh-stat-card-hover-bg: var(--stat-card-hover-bg, var(--xh-bg-alt));
   // Narrowest a card's content gets in a StatCardStrip before cards wrap to a new row.
-  --xh-stat-card-min-content-width: var(--stat-card-min-content-width, 100px);
+  --xh-stat-card-min-content-width: var(--stat-card-min-content-width, 150px);
   --xh-stat-card-padding: var(--stat-card-padding, var(--xh-pad-half-px) var(--xh-pad-px));
   --xh-stat-card-primary-color: var(--stat-card-primary-color, var(--xh-intent-primary-text-color));
   --xh-stat-card-strip-gap: var(--stat-card-strip-gap, var(--xh-pad-px));
