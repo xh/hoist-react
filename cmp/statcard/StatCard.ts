@@ -5,13 +5,14 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import classNames from 'classnames';
-import {compact, isEmpty, isNumber, isString} from 'lodash';
-import type {ReactNode} from 'react';
+import {isEmpty} from 'lodash';
+import {Children, useId} from 'react';
+import type {KeyboardEvent, MouseEvent, ReactNode} from 'react';
 
 import {div, span} from '@xh/hoist/cmp/layout';
-import {
+import {hoistCmp} from '@xh/hoist/core';
+import type {
     DomAttrsProps,
-    hoistCmp,
     HoistProps,
     Intent,
     LayoutProps,
@@ -28,45 +29,69 @@ export interface StatCardProps extends HoistProps, LayoutProps, TestSupportProps
     title: ReactNode;
 
     /**
-     * Primary content, pre-formatted by the caller. The card never formats - currency, percent
-     * and precision decisions belong to the caller.
+     * Primary content, pre-formatted by the caller. The card never formats - currency, percent,
+     * precision and color decisions belong to the caller. A unit added with `fmtNumber`'s `label`
+     * option renders smaller than the figure.
+     *
+     * The value is never truncated in normal layout - a card does not get narrower than its value,
+     * and a {@link StatCardStrip} wraps cards to a new row instead. Compact large values with
+     * `fmtNumber` (e.g. `$48.5m`). Only a card held narrower than its value - by an explicit
+     * `width` or `maxWidth` - shows an ellipsis.
      */
     value: ReactNode;
 
     /**
-     * Semantic color for the value, e.g. `success`/`danger` for a gain/loss. Omit for the
-     * default text color - the card never derives an intent from the value itself.
+     * Smaller figure rendered inline after the value, e.g. a change vs. a prior period, a target
+     * or an average. Pass a `fmtNumber` result to color it by sign - and invert its `colorSpec`
+     * for a metric where down is good:
+     *
+     * ```ts
+     * subValue: fmtPercent(delta, {withSignGlyph: true, colorSpec: {pos: 'xh-neg-val', neg: 'xh-pos-val'}})
+     * ```
      */
-    valueIntent?: Intent;
+    subValue?: ReactNode;
 
-    /** Smaller label rendered inline after the value, e.g. a unit or currency code. */
-    secondary?: ReactNode;
-
-    /**
-     * Supporting detail shown as a tooltip on an info icon at the end of the value line. Omit to
-     * render no icon.
-     */
-    infoTooltip?: string;
-
-    /** Sub-line beneath the value. */
+    /** Sub-line beneath the value, e.g. what a change is measured against. */
     detail?: ReactNode;
 
     /**
-     * CSS color for an accent bar along the card's top border, e.g. `var(--xh-blue)`. A raw color
-     * rather than an `Intent`, so callers can mark a category or series identity.
+     * Supporting detail shown as a tooltip on an info icon after the title. Omit to render no icon.
+     * Native browser tooltip - not available on touch devices.
+     */
+    infoTooltip?: string;
+
+    /**
+     * Flags the card with a semantic color on its border, as with {@link Card}. Does not color
+     * the value - to do so, format the value with a `colorSpec` or wrap it in a styled element.
+     */
+    intent?: Intent;
+
+    /**
+     * CSS color for an accent bar, e.g. `var(--xh-blue)`, to mark a category or series identity.
+     * Use `intent` to flag a status.
+     *
+     * The bar runs along the top edge by default. Set the `--stat-card-accent-top`, `-right`,
+     * `-bottom` and `-left` CSS variables to choose its edge and thickness - e.g. a left bar with
+     * `--stat-card-accent-top: 0; --stat-card-accent-left: 4px`.
      */
     accent?: string;
+
+    /**
+     * Handler for a click or Enter/Space keypress on the card, e.g. to drill into the figure.
+     * Makes the card focusable and styles it as clickable.
+     */
+    onClick?: (e: MouseEvent<HTMLDivElement> | KeyboardEvent<HTMLDivElement>) => void;
 }
 
 /**
  * A tile that calls out a key figure: a caption over a prominent value, with an optional inline
- * secondary label, info tooltip and sub-line.
+ * sub-value, info tooltip and sub-line.
  *
- * The card is presentation-only. Callers pass an already-formatted `value` and, where wanted, an
- * explicit `valueIntent` - the card never formats or colors a value based on its content.
+ * The card is presentation-only. Callers pass an already-formatted `value` - the card never
+ * formats or colors a value based on its content.
  *
- * Every line truncates with an ellipsis when space is short, and string/number content carries a
- * native tooltip with its full text. See {@link StatCardStrip} to lay out several in a row.
+ * Lines other than the value truncate with an ellipsis when space is short, showing their full
+ * text in a tooltip. See {@link StatCardStrip} to lay out several in a row.
  */
 export const [StatCard, statCard] = hoistCmp.withFactory<StatCardProps>({
     displayName: 'StatCard',
@@ -80,46 +105,57 @@ export const [StatCard, statCard] = hoistCmp.withFactory<StatCardProps>({
                     className,
                     title,
                     value,
-                    valueIntent,
-                    secondary,
-                    infoTooltip,
+                    subValue,
                     detail,
+                    infoTooltip,
+                    intent,
                     accent,
+                    onClick,
                     testId,
                     domAttrs
                 }
             ] = splitLayoutProps(props),
+            titleId = useId(),
+            clickProps = onClick
+                ? {
+                      role: 'button',
+                      tabIndex: 0,
+                      onClick,
+                      onKeyDown: (e: KeyboardEvent<HTMLDivElement>) => {
+                          if (e.target !== e.currentTarget) return;
+                          if (e.key === 'Enter' || e.key === ' ') {
+                              e.preventDefault();
+                              onClick(e);
+                          }
+                      }
+                  }
+                : {role: 'group', 'aria-labelledby': titleId},
             divProps = mergeDeep(
-                {className: classNames(className, accent && 'xh-stat-card--accented')},
-                {style: {...layoutProps, borderTopColor: accent}},
+                {
+                    className: classNames(
+                        className,
+                        intent && `xh-stat-card--intent-${intent}`,
+                        accent && 'xh-stat-card--accented',
+                        onClick && 'xh-stat-card--clickable'
+                    )
+                },
+                {style: {...layoutProps, '--xh-stat-card-accent-color': accent}},
                 {[TEST_ID]: testId, ...domAttrs}
             );
 
         return div({
             ref,
+            ...clickProps,
             ...divProps,
             items: [
-                span({
-                    className: 'xh-stat-card__title',
-                    title: tooltipFor(title),
-                    item: title
-                }),
                 div({
-                    className: classNames(
-                        'xh-stat-card__value',
-                        valueIntent && `xh-stat-card__value--${valueIntent}`
-                    ),
+                    className: 'xh-stat-card__header',
                     items: [
                         span({
-                            className: 'xh-stat-card__value-primary',
-                            title: tooltipFor(value),
-                            item: value
-                        }),
-                        span({
-                            omit: secondary == null,
-                            className: 'xh-stat-card__secondary',
-                            title: tooltipFor(secondary),
-                            item: secondary
+                            id: titleId,
+                            className: 'xh-stat-card__title',
+                            onMouseEnter: titleIfTruncated,
+                            item: title
                         }),
                         span({
                             omit: !infoTooltip,
@@ -129,10 +165,26 @@ export const [StatCard, statCard] = hoistCmp.withFactory<StatCardProps>({
                         })
                     ]
                 }),
+                div({
+                    className: 'xh-stat-card__value',
+                    items: [
+                        span({
+                            className: 'xh-stat-card__value-primary',
+                            onMouseEnter: titleIfTruncated,
+                            item: value
+                        }),
+                        span({
+                            omit: subValue == null,
+                            className: 'xh-stat-card__sub-value',
+                            onMouseEnter: titleIfTruncated,
+                            item: subValue
+                        })
+                    ]
+                }),
                 span({
                     omit: detail == null,
                     className: 'xh-stat-card__detail',
-                    title: tooltipFor(detail),
+                    onMouseEnter: titleIfTruncated,
                     item: detail
                 })
             ]
@@ -141,17 +193,15 @@ export const [StatCard, statCard] = hoistCmp.withFactory<StatCardProps>({
 });
 
 export interface StatCardStripProps
-    extends HoistProps, LayoutProps, TestSupportProps, DomAttrsProps {
-    /**
-     * Cards to render left-to-right, each given an equal share of the strip's width. Null
-     * entries are skipped, so a caller can build this list from functions that may decline to
-     * render a card. Renders nothing if empty.
-     */
-    cards?: StatCardProps[];
-}
+    extends HoistProps, LayoutProps, TestSupportProps, DomAttrsProps {}
 
 /**
- * A horizontal row of {@link StatCard}s, each given an equal share of the strip's width.
+ * A row of {@link StatCard}s, passed as `items`, each given an equal share of the strip's width.
+ * Pass `flex` or `width` to a card to weight or fix its share.
+ *
+ * Cards wrap to a new row rather than get narrower than their value or the
+ * `--xh-stat-card-min-width` CSS variable. Renders nothing if given no cards - use `omit` on a
+ * card to leave it out.
  */
 export const [StatCardStrip, statCardStrip] = hoistCmp.withFactory<StatCardStripProps>({
     displayName: 'StatCardStrip',
@@ -159,15 +209,15 @@ export const [StatCardStrip, statCardStrip] = hoistCmp.withFactory<StatCardStrip
     className: 'xh-stat-card-strip',
 
     render(props, ref) {
-        const [layoutProps, {className, cards, testId, domAttrs}] = splitLayoutProps(props),
-            validCards = compact(cards);
+        const [layoutProps, {className, children, testId, domAttrs}] = splitLayoutProps(props);
 
-        if (isEmpty(validCards)) return null;
+        if (isEmpty(Children.toArray(children))) return null;
 
         return div({
             ref,
+            role: 'group',
             ...mergeDeep({className}, {style: layoutProps}, {[TEST_ID]: testId, ...domAttrs}),
-            items: validCards.map((card, idx) => statCard({...card, key: idx}))
+            items: children
         });
     }
 });
@@ -176,9 +226,14 @@ export const [StatCardStrip, statCardStrip] = hoistCmp.withFactory<StatCardStrip
 // Implementation
 //------------------
 /**
- * Full text for a line's native tooltip. Null for an element, whose text is unknowable here -
- * such content should carry its own tooltip.
+ * Show a line's full text as a native tooltip, but only while it is truncated. Read from the DOM
+ * on hover, so it covers element content (e.g. `fmtNumber` output) as well as strings.
  */
-function tooltipFor(content: ReactNode): string {
-    return isString(content) || isNumber(content) ? String(content) : null;
+function titleIfTruncated(e: MouseEvent<HTMLElement>) {
+    const el = e.currentTarget;
+    if (el.scrollWidth > el.clientWidth) {
+        el.title = el.textContent;
+    } else {
+        el.removeAttribute('title');
+    }
 }
