@@ -6,4 +6,4 @@
  */
 export * from './PdfViewer';
 export * from './PdfViewerModel';
-export * from './Types';
+export type * from './Types';

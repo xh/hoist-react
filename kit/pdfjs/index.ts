@@ -5,9 +5,11 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {checkVersion} from '@xh/hoist/utils/js';
+import type * as PdfJsLibModule from 'pdfjs-dist/legacy/build/pdf.mjs';
+import type * as PdfJsViewerLibModule from 'pdfjs-dist/legacy/web/pdf_viewer.mjs';
 
-export type PdfJsLib = typeof import('pdfjs-dist/legacy/build/pdf.mjs');
-export type PdfJsViewerLib = typeof import('pdfjs-dist/legacy/web/pdf_viewer.mjs');
+export type PdfJsLib = typeof PdfJsLibModule;
+export type PdfJsViewerLib = typeof PdfJsViewerLibModule;
 
 /** The pdf.js core and viewer component libraries, loaded on demand. */
 export interface PdfJs {

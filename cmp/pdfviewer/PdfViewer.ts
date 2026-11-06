@@ -7,7 +7,8 @@
 import {errorMessage} from '@xh/hoist/cmp/error';
 import {box, div, placeholder, vbox} from '@xh/hoist/cmp/layout';
 import {mask} from '@xh/hoist/cmp/mask';
-import {hoistCmp, HoistProps, LayoutProps, TestSupportProps, uses, XH} from '@xh/hoist/core';
+import type {HoistProps, LayoutProps, TestSupportProps} from '@xh/hoist/core';
+import {hoistCmp, uses, XH} from '@xh/hoist/core';
 import {pdfViewerToolbarImpl as desktopToolbarImpl} from '@xh/hoist/dynamics/desktop';
 import {pdfViewerToolbarImpl as mobileToolbarImpl} from '@xh/hoist/dynamics/mobile';
 import {Icon} from '@xh/hoist/icon';

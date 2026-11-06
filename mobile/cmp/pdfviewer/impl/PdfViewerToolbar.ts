@@ -9,7 +9,8 @@ import {PdfFindInputModel} from '@xh/hoist/cmp/pdfviewer/impl/PdfFindInputModel'
 import {getZoomOptions} from '@xh/hoist/cmp/pdfviewer/impl/ZoomOptions';
 import type {PdfViewerToolbarModel} from '@xh/hoist/cmp/pdfviewer/impl/PdfViewerToolbarModel';
 import type {PdfViewerToolbarItem} from '@xh/hoist/cmp/pdfviewer/Types';
-import {hoistCmp, HoistModel, useLocalModel, uses} from '@xh/hoist/core';
+import type {HoistModel} from '@xh/hoist/core';
+import {hoistCmp, useLocalModel, uses} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {button} from '@xh/hoist/mobile/cmp/button';
 import {select, textInput} from '@xh/hoist/mobile/cmp/input';
