@@ -23,6 +23,8 @@
 
 * Fixed the impersonation bar re-requesting its list of users without end when the server returned
   no users other than the current one.
+* Fixed grids scrolling diagonally on trackpad gestures under AG Grid 36. `AgGrid` now locks each
+  two-axis wheel event to its dominant axis.
 
 ## 90.0.0 - 2026-11-02
 
