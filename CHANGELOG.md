@@ -35,6 +35,11 @@
   example two `autoHeight` views resizing during load. The revert could loop until React error #185.
 * Fixed grids scrolling diagonally on trackpad gestures under AG Grid 36. `AgGrid` now locks each
   two-axis wheel event to its dominant axis.
+* Fixed `DashCanvas` widgets lagging behind the pointer while dragged or resized. Hoist pins react-grid-layout to 2.2 until a fixed 2.3 release ships.
+
+### 📚 Libraries
+
+* react-grid-layout `2.3 → 2.2`
 
 ## 90.0.0 - 2026-11-02
 
