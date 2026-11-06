@@ -167,9 +167,8 @@ class AgGridLocalModel extends HoistModel {
             ? AgGridCmp.getGroupRowHeightForSizingMode(this.model.sizingMode)
             : this.rowHeight;
 
-    // AG Grid 36 scrolls both axes in a single `overflow: auto` viewport, so the browser applies
-    // both deltas of a trackpad gesture and the grid drifts diagonally. Lock each wheel event to
-    // its dominant axis, as the separate vertical and horizontal viewports of earlier versions did.
+    // Lock each wheel event to its dominant axis, to stop trackpad gestures scrolling diagonally.
+    // Remove once fixed upstream - https://github.com/ag-grid/ag-grid/issues/15905
     wheelAxisLockRef = (el: HTMLElement) => {
         if (!el) return;
         el.addEventListener('wheel', this.onWheel, {passive: false});
