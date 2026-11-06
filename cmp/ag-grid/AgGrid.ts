@@ -10,7 +10,7 @@ import {createElement, hoistCmp, HoistModel, lookup, useLocalModel, uses, XH} fr
 import type {GridOptions} from '@xh/hoist/kit/ag-grid';
 import {AgGridReact} from '@xh/hoist/kit/ag-grid';
 import {logError} from '@xh/hoist/utils/js';
-import {splitLayoutProps} from '@xh/hoist/utils/react';
+import {splitLayoutProps, useComposedRefs} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import type {CSSProperties} from 'react';
 import './AgGrid.scss';
@@ -58,10 +58,11 @@ export const [AgGrid, agGrid] = hoistCmp.withFactory<AgGridProps>({
             } = model,
             {isDesktop} = XH;
 
-        const impl = useLocalModel(AgGridLocalModel);
+        const impl = useLocalModel(AgGridLocalModel),
+            frameRef = useComposedRefs(ref, impl.wheelAxisLockRef);
 
         return frame({
-            ref,
+            ref: frameRef,
             style: {
                 '--ag-row-height': `${impl.rowHeight}px`,
                 '--ag-header-height': `${impl.headerHeight}px`
@@ -165,6 +166,27 @@ class AgGridLocalModel extends HoistModel {
         node.group
             ? AgGridCmp.getGroupRowHeightForSizingMode(this.model.sizingMode)
             : this.rowHeight;
+
+    // Lock each wheel event to its dominant axis, to stop trackpad gestures scrolling diagonally.
+    // Remove once fixed upstream - https://github.com/ag-grid/ag-grid/issues/15905
+    wheelAxisLockRef = (el: HTMLElement) => {
+        if (!el) return;
+        el.addEventListener('wheel', this.onWheel, {passive: false});
+        return () => el.removeEventListener('wheel', this.onWheel);
+    };
+
+    private onWheel = (e: WheelEvent) => {
+        const {deltaX, deltaY, deltaMode, ctrlKey, defaultPrevented, currentTarget, target} = e;
+        if (!deltaX || !deltaY || deltaMode || ctrlKey || defaultPrevented) return;
+
+        const viewport = (target as Element).closest?.('.ag-grid-viewport');
+        if (!viewport || !(currentTarget as Element).contains(viewport)) return;
+
+        e.preventDefault();
+        Math.abs(deltaX) > Math.abs(deltaY)
+            ? viewport.scrollBy({left: deltaX})
+            : viewport.scrollBy({top: deltaY});
+    };
 
     noteGridReady = agParams => {
         this.model.handleGridReady(agParams);

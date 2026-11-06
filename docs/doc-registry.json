@@ -564,8 +564,8 @@
             "title": "v90 Upgrade Notes",
             "mcpCategory": "devops",
             "viewerCategory": "upgrade",
-            "description": "Upgrade guide from v89.x to v90.0.0. Low difficulty. Covers the removal of numbro and NumberFormatOptions.formatConfig.",
-            "keywords": ["upgrade", "migration", "breaking changes", "v90", "v89", "numbro", "formatConfig"]
+            "description": "Upgrade guide from v89.x to v90.0.0. Low difficulty. Covers the removal of numbro and formatConfig, DateInput on react-day-picker 10, the removal of Onsen UI from mobile, textRenderer on the built-in column specs, the panel splitter redesign, the move of the renderer factories out of FormatNumber and FormatDate, and the libraries Hoist no longer installs.",
+            "keywords": ["upgrade", "migration", "breaking changes", "v90", "v89", "numbro", "formatConfig", "timePickerProps", "onsen", "modifier", "WindowedSelect", "react-windowed-select", "xh-resizable-splitter", "store2", "semver", "ua-parser-js", "short-unique-id", "lodash-inflection", "http-status-codes", "date-fns", "@blueprintjs/datetime", "datePicker"]
         }
     ]
 }
