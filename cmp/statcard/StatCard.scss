@@ -54,6 +54,17 @@
   border-radius: var(--xh-stat-card-border-radius);
   color: var(--xh-text-color);
 
+  // Swaps in the large-size variables, so the rules below draw both sizes.
+  &--large {
+    --xh-stat-card-detail-font-size: var(--xh-stat-card-large-detail-font-size);
+    --xh-stat-card-min-content-width: var(--xh-stat-card-large-min-content-width);
+    --xh-stat-card-padding: var(--xh-stat-card-large-padding);
+    --xh-stat-card-sub-value-font-size: var(--xh-stat-card-large-sub-value-font-size);
+    --xh-stat-card-title-font-size: var(--xh-stat-card-large-title-font-size);
+    --xh-stat-card-value-font-size: var(--xh-stat-card-large-value-font-size);
+    --xh-stat-card-value-gap: var(--xh-stat-card-large-value-gap);
+  }
+
   &--intent-primary {
     border-color: var(--xh-stat-card-primary-color);
   }
@@ -137,6 +148,12 @@
     line-height: 1.25;
     // Hold the line's height when there is no value, so cards in a strip stay aligned.
     min-height: 1.25em;
+
+    // A card shows one figure, not a column of them, so drop the space that `fmtNumber` reserves
+    // after a positive ledger value to line it up with the ")" of negatives.
+    .xh-ledger-align {
+      display: none;
+    }
   }
 
   &__value-primary {

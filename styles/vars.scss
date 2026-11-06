@@ -931,6 +931,13 @@ body {
   --xh-stat-card-detail-font-size: var(--stat-card-detail-font-size, var(--xh-font-size-small-em));
   --xh-stat-card-hover-bg: var(--stat-card-hover-bg, var(--xh-bg-alt));
   // Narrowest a card's content gets in a StatCardStrip before cards wrap to a new row.
+  --xh-stat-card-large-detail-font-size: var(--stat-card-large-detail-font-size, 1em);
+  --xh-stat-card-large-min-content-width: var(--stat-card-large-min-content-width, 200px);
+  --xh-stat-card-large-padding: var(--stat-card-large-padding, var(--xh-pad-px) calc(var(--xh-pad-px) * 1.5));
+  --xh-stat-card-large-sub-value-font-size: var(--stat-card-large-sub-value-font-size, calc(var(--xh-font-size-px) * 1.5));
+  --xh-stat-card-large-title-font-size: var(--stat-card-large-title-font-size, 1em);
+  --xh-stat-card-large-value-font-size: var(--stat-card-large-value-font-size, calc(var(--xh-font-size-px) * 3));
+  --xh-stat-card-large-value-gap: var(--stat-card-large-value-gap, var(--xh-pad-px));
   --xh-stat-card-min-content-width: var(--stat-card-min-content-width, 150px);
   --xh-stat-card-padding: var(--stat-card-padding, var(--xh-pad-half-px) var(--xh-pad-px));
   --xh-stat-card-primary-color: var(--stat-card-primary-color, var(--xh-intent-primary-text-color));

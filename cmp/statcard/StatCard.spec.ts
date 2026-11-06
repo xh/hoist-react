@@ -53,6 +53,19 @@ describe('StatCard', () => {
         expect(card.style.width).toBe('200px');
     });
 
+    it('marks a large card with a modifier class, and a standard one with none', () => {
+        const {container} = render(
+            statCardStrip(
+                statCard({title: 'Large', value: 1, size: 'large'}),
+                statCard({title: 'Standard', value: 2, size: 'standard'})
+            )
+        );
+        const [large, standard] = Array.from(container.querySelectorAll('.xh-stat-card'));
+
+        expect(large.classList).toContain('xh-stat-card--large');
+        expect(standard.className).not.toMatch(/--large|--standard/);
+    });
+
     it('is a group labelled by its title when not clickable', () => {
         const {container} = render(statCard({title: 'Orders', value: 1}));
         const card = container.querySelector('.xh-stat-card');

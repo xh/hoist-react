@@ -12,6 +12,7 @@ import type {KeyboardEvent, MouseEvent, ReactNode} from 'react';
 import {div, span} from '@xh/hoist/cmp/layout';
 import {hoistCmp} from '@xh/hoist/core';
 import type {
+    ComponentSize,
     DomAttrsProps,
     HoistProps,
     Intent,
@@ -77,6 +78,15 @@ export interface StatCardProps extends HoistProps, LayoutProps, TestSupportProps
     accent?: string;
 
     /**
+     * Size of the card - `large` for a headline figure, with a bigger value, captions and padding.
+     * Default `standard`. Set the `--xh-stat-card-large-*` CSS variables to tune the large size.
+     *
+     * A large card stands best on its own or in a strip of large cards. In a wrapped strip, every
+     * column takes the width of the widest card.
+     */
+    size?: Extract<ComponentSize, 'standard' | 'large'>;
+
+    /**
      * Handler for a click or Enter/Space keypress on the card, e.g. to drill into the figure.
      * Makes the card focusable and styles it as clickable.
      */
@@ -111,6 +121,7 @@ export const [StatCard, statCard] = hoistCmp.withFactory<StatCardProps>({
                     infoTooltip,
                     intent,
                     accent,
+                    size,
                     onClick,
                     testId,
                     domAttrs
@@ -136,6 +147,7 @@ export const [StatCard, statCard] = hoistCmp.withFactory<StatCardProps>({
                     className: classNames(
                         className,
                         intent && `xh-stat-card--intent-${intent}`,
+                        size === 'large' && 'xh-stat-card--large',
                         accent && 'xh-stat-card--accented',
                         onClick && 'xh-stat-card--clickable'
                     )
