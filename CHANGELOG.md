@@ -16,6 +16,14 @@
 
 ### 🎁 New Features
 
+* Added `PdfViewer` and `PdfViewerModel` in `@xh/hoist/cmp/pdfviewer`, built on Mozilla's pdf.js.
+  The viewer loads documents from a URL, `FetchOptions`, or a `Blob` / `File` / byte array. It
+  renders pages on demand with selectable text, and has a configurable toolbar for paging, zoom,
+  find, rotation, and download. The model exposes the same actions and state for app-built
+  controls. Apps opt in by adding `pdfjs-dist` to their dependencies - Hoist declares it as an
+  optional peer and loads it on first use, with no bootstrap or build config required.
+* Added `Icon.magnifyingGlassPlus()` and `Icon.magnifyingGlassMinus()` (aliased as
+  `Icon.zoomIn()` and `Icon.zoomOut()`), plus `Icon.rotateRight()`.
 * Added `ColumnGroupSpec.chooserName` to set a group's name in the desktop column chooser. Use it
   when `headerName` is a function or element, which the chooser cannot display.
 

@@ -4,5 +4,5 @@
         "no-descending-specificity": null,
         "no-duplicate-selectors": null
     },
-    "ignoreFiles": ["node_modules/**/*", "build/**/*"]
+    "ignoreFiles": ["node_modules/**/*", "build/**/*", "kit/pdfjs/pdf_viewer.css"]
 }

@@ -202,6 +202,7 @@ techniques.
 | `/clock/` | Real-time clock display |
 | `/error/` | Error boundary and error message display |
 | `/markdown/` | Markdown rendering component |
+| `/pdfviewer/` | PDF document viewer built on pdf.js. [See README](./pdfviewer/README.md) |
 | `/pinpad/` | PIN entry interface |
 | `/relativetimestamp/` | Human-readable relative time display |
 | `/websocket/` | WebSocket indicator component |
