@@ -120,8 +120,7 @@ export class AggChartModel extends HoistModel {
     }
 
     private get data() {
-        const roots = this.activityTrackingModel.gridModel.store.allRootRecords;
-        return roots.length ? roots[0].children : [];
+        return this.activityTrackingModel.cubeGridModel.store.allRootRecords;
     }
 
     private createChartModel(): ChartModel {
@@ -147,7 +146,7 @@ export class AggChartModel extends HoistModel {
 
     private selectRow(e) {
         const id = `root>>${this.primaryDim}=[${e.point.name}]`;
-        this.activityTrackingModel.gridModel.selectAsync(id);
+        this.activityTrackingModel.cubeGridModel.selectAsync(id);
     }
 
     private loadChart() {

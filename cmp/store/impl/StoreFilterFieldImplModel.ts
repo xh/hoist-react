@@ -4,8 +4,9 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import type {Column} from '@xh/hoist/cmp/grid';
-import {GridModel} from '@xh/hoist/cmp/grid';
+import type {Column, GridLikeModel, GridModel} from '@xh/hoist/cmp/grid';
+import {isGridLikeModel} from '@xh/hoist/cmp/grid/impl/GridLikeModel';
+import {DataViewModel} from '@xh/hoist/cmp/dataview';
 import {ZoneGridModel} from '@xh/hoist/cmp/zoneGrid';
 import {HoistModel, lookup} from '@xh/hoist/core';
 import type {FilterMatchMode, StoreRecord, Store} from '@xh/hoist/data';
@@ -39,15 +40,12 @@ export class StoreFilterFieldImplModel extends HoistModel {
         return this.componentProps.matchMode ?? 'startWord';
     }
 
-    /** GridModel or ZoneGridModel to filter - from props, or the nearest found in context. */
+    /** Model to filter - from props, or the nearest found in context. */
     @computed
-    get boundModel(): GridModel | ZoneGridModel {
+    get boundModel(): GridLikeModel {
         const {gridModel, store} = this.componentProps;
         if (store) return null;
-        return (
-            gridModel ??
-            this.lookupModel(it => it instanceof GridModel || it instanceof ZoneGridModel)
-        );
+        return gridModel ?? this.lookupModel(isGridLikeModel);
     }
 
     @computed
@@ -236,19 +234,21 @@ export class StoreFilterFieldImplModel extends HoistModel {
     }
 
     private get innerGridModel(): GridModel {
-        const {boundModel} = this;
-        return boundModel instanceof ZoneGridModel ? boundModel.gridModel : boundModel;
+        return this.boundModel?.innerGridModel ?? null;
     }
 
     /**
      * Columns whose fields the user can see, and so should be able to search. A ZoneGrid renders
      * its mapped fields within two zone columns, so use the columns backing those fields instead.
+     * A DataView renders every field through one item renderer, so search them all.
      */
     private getSearchColumns(): Column[] {
-        const {boundModel} = this;
+        const {boundModel, innerGridModel} = this;
         if (!boundModel) return [];
-        return boundModel instanceof ZoneGridModel
-            ? boundModel.getMappedColumns()
-            : boundModel.getVisibleLeafColumns();
+        if (boundModel instanceof ZoneGridModel) return boundModel.getMappedColumns();
+        if (boundModel instanceof DataViewModel) {
+            return innerGridModel.getLeafColumns().filter(it => it.field);
+        }
+        return innerGridModel.getVisibleLeafColumns();
     }
 }

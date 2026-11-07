@@ -345,7 +345,8 @@ function createPinColumnItem(gridModel: GridModel): RecordAction {
     return new RecordAction({
         text: 'Pin Column',
         icon: Icon.pin(),
-        displayFn: ({column}) => ({hidden: !column || !gridModel.enableColumnPinning}),
+        // Pinning relocates the column, so a column that cannot move cannot pin either.
+        displayFn: ({column}) => ({hidden: !column?.movable || !gridModel.enableColumnPinning}),
         items: [pinItem('Left', 'left'), pinItem('Right', 'right'), pinItem('Unpin', null)]
     });
 }

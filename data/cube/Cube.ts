@@ -226,6 +226,11 @@ export class Cube extends HoistBase {
         return this.fields.filter(it => it.isDimension);
     }
 
+    /** Fields a pivot can show as measures - those with an aggregator, other than dimensions. */
+    get measures(): CubeField[] {
+        return this.fields.filter(it => it.aggregator && !it.isDimension);
+    }
+
     /** Records loaded in to this Cube. */
     get records(): StoreRecord[] {
         return this.store.records;
