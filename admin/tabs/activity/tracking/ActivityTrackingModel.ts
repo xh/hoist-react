@@ -79,7 +79,8 @@ export class ActivityTrackingModel extends HoistModel implements ActivityDetailP
 
     /**
      * Dimensions available to pivot on, carrying their distinct value count in the loaded data.
-     * Those already grouping the rows are left out; those too wide to pivot are disabled.
+     * Those already grouping the rows are left out. Those with a single value, which would only
+     * repeat the row summary, or too many to read are disabled.
      */
     @computed
     get pivotByOptions(): SelectOption[] {
@@ -92,7 +93,7 @@ export class ActivityTrackingModel extends HoistModel implements ActivityDetailP
                     value: it.name,
                     label: `${it.displayName} (${count})`,
                     displayName: it.displayName,
-                    isDisabled: count > PIVOT_MAX_PATHS
+                    isDisabled: count < 2 || count > PIVOT_MAX_PATHS
                 };
             });
     }
