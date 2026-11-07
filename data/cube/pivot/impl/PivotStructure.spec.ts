@@ -410,9 +410,9 @@ suite('path ordering: ascending by value, empty segment last', () => {
         ],
         {paths} = discoverPivotPaths(records, ['region']);
 
-    const labels = paths.filter(p => p.depth === 1).map(p => p.label);
-    if (!arrEqStr(labels, ['APAC', 'EU', 'US', '(empty)'])) {
-        errs.push(`expected ascending with empty last, got [${labels}]`);
+    const values = paths.filter(p => p.depth === 1).map(p => p.value);
+    if (!arrEqStr(values, ['APAC', 'EU', 'US', null])) {
+        errs.push(`expected ascending with empty last, got [${values}]`);
     }
     check('path ordering: ascending by value, empty segment last', errs);
 });
@@ -421,10 +421,10 @@ suite('path ordering: numeric values sort numerically, not lexically', () => {
     const errs: string[] = [],
         records = [rec('F1', 'S1', 10, 'x'), rec('F1', 'S1', 2, 'x'), rec('F1', 'S1', 100, 'x')],
         {paths} = discoverPivotPaths(records, ['region']),
-        labels = paths.filter(p => p.depth === 1).map(p => p.label);
+        values = paths.filter(p => p.depth === 1).map(p => p.value);
 
-    if (!arrEqStr(labels, ['2', '10', '100'])) {
-        errs.push(`numbers must sort numerically, got [${labels}]`);
+    if (!arrEq(values, [2, 10, 100])) {
+        errs.push(`numbers must sort numerically, got [${values}]`);
     }
     check('path ordering: numeric values sort numerically, not lexically', errs);
 });
@@ -446,34 +446,34 @@ suite('path keys are injective across every scenario', () => {
     check('path keys are injective across every scenario', errs);
 });
 
-suite('cell field naming: root path binds to the bare value field', () => {
+suite('cell field naming: root path binds to the bare measure', () => {
     const errs: string[] = [],
         records = [rec('F1', 'S1', 'US', 'x')],
         {paths} = discoverPivotPaths(records, ['region']),
         root = paths[0],
-        us = paths.find(p => p.label === 'US');
+        us = paths.find(p => p.value === 'US');
 
     if (root.key !== '') errs.push(`root key should be '', got "${root.key}"`);
     if (pivotCellFieldName(root.key, 'pnl') !== 'pnl') {
         errs.push(
-            `root cell field should be the bare value field, got "${pivotCellFieldName(root.key, 'pnl')}"`
+            `root cell field should be the bare measure, got "${pivotCellFieldName(root.key, 'pnl')}"`
         );
     }
     if (pivotCellFieldName(us.key, 'pnl') !== `US${PATH_DELIMITER}pnl`) {
         errs.push(`got "${pivotCellFieldName(us.key, 'pnl')}"`);
     }
-    check('cell field naming: root path binds to the bare value field', errs);
+    check('cell field naming: root path binds to the bare measure', errs);
 });
 
-suite('emptyPathLabel is honored and keeps a distinct key', () => {
+suite('an empty value has a null value and a distinct key', () => {
     const errs: string[] = [],
         records = [rec('F1', 'S1', 'US', 'x'), rec('F1', 'S1', null, 'x')],
-        {paths} = discoverPivotPaths(records, ['region'], {emptyPathLabel: 'N/A'}),
+        {paths} = discoverPivotPaths(records, ['region']),
         empty = paths.find(p => p.isEmpty);
 
-    if (empty?.label !== 'N/A') errs.push(`emptyPathLabel ignored, got "${empty?.label}"`);
+    if (empty?.value !== null) errs.push(`expected a null value, got "${empty?.value}"`);
     if (empty?.key === '') errs.push('empty path key must not collide with the root key');
-    check('emptyPathLabel is honored and keeps a distinct key', errs);
+    check('an empty value has a null value and a distinct key', errs);
 });
 
 //------------------

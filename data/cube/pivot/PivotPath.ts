@@ -23,9 +23,6 @@ export class PivotPath {
     /** Raw dimension value, null for an empty (null / blank) segment. */
     readonly value: any;
 
-    /** Display string - the query's `emptyPathLabel` for an empty segment. */
-    readonly label: string;
-
     /** Escaped, delimiter-joined path key. '' for the root path. */
     readonly key: string;
 
@@ -41,7 +38,6 @@ export class PivotPath {
     constructor(config: {
         dimension: CubeField;
         value: any;
-        label: string;
         key: string;
         depth: number;
         isEmpty: boolean;
@@ -56,16 +52,16 @@ export class PivotPath {
 
 /**
  * A single materialized measure within a pivoted {@link View} result - the pairing of a pivot path with
- * a value field, and the synthetic field name its value is written to on row data.
+ * a measure, and the synthetic field name its value is written to on row data.
  *
  * `CubeGridModel` declares one Store field per entry and binds value columns to `name`.
  */
 export interface PivotCellField {
-    /** Field name on published row data. The value field's own name at the root path. */
+    /** Field name on published row data. The measure's own name at the root path. */
     name: string;
 
     path: PivotPath;
 
     /** Source measure - supplies type and defaultValue when declaring Store fields. */
-    valueField: CubeField;
+    measure: CubeField;
 }

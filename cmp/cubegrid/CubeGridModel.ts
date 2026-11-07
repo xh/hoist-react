@@ -52,7 +52,7 @@ export interface CubeGridConfig {
 
     /**
      * Columns for the fixed region, as on {@link GridConfig.columns}. Bind them to the view's
-     * fields - a value field's bare name is the row total, whether or not the query pivots. When
+     * fields - a measure's bare name is its row summary, whether or not the query pivots. When
      * none is a tree column, a label column for the row dimensions is placed first. Pivot columns,
      * if any, follow this region.
      */
@@ -126,8 +126,9 @@ export class CubeGridModel extends HoistModel implements GridLikeModel {
         this._pendingPersistWith = persistWith;
         this.initPersistWhenReady();
 
-        this.pivotModel.initWidths();
+        // Rebuilds react first, so a pivot option change re-autosizes the rebuilt columns.
         this.addReaction(this.columnsReaction(), this.regionsReaction());
+        this.pivotModel.initWidths();
     }
 
     //------------------------
@@ -302,9 +303,7 @@ export class CubeGridModel extends HoistModel implements GridLikeModel {
     }
 
     private buildColumns(): Array<ColumnSpec | ColumnGroupSpec> {
-        const fixed = this.buildFixedColumns(),
-            pivotGroup = this.pivotModel.buildRegion();
-        return pivotGroup ? [...fixed, pivotGroup] : fixed;
+        return [...this.buildFixedColumns(), ...this.pivotModel.buildRegion()];
     }
 
     // The app's columns, with a default label column first unless the app supplied a tree column.

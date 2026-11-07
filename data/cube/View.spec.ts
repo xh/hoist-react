@@ -380,7 +380,7 @@ describe('declined results', () => {
     const CAPPED: QueryConfig = {
         dimensions: ['region'],
         fields: ['qty'],
-        pivot: {dimensions: ['symbol'], valueFields: ['qty'], maxPivotPaths: 1}
+        pivot: {dimensions: ['symbol'], measures: ['qty'], maxPivotPaths: 1}
     };
 
     it('publishes a routine exception and empties the result and stores', () => {

@@ -153,18 +153,15 @@ export interface PivotSpec {
     dimensions: string[] | CubeField[];
 
     /**
-     * Measures to aggregate per cell. Must specify an aggregator, and must not also be a grouping
-     * `dimension`. Added to the query's `fields` along with any {@link Aggregator.dependsOn}.
+     * Measures to aggregate per cell - fields with an aggregator, and not `isDimension`. Added to
+     * the query's `fields` along with any {@link Aggregator.dependsOn}.
      */
-    valueFields: string[] | CubeField[];
-
-    /** Label for a null / blank pivot dimension value. Default '(empty)'. */
-    emptyPathLabel?: string;
+    measures: string[] | CubeField[];
 
     /**
      * True to exclude records with a null / blank pivot dimension value entirely, via an implicit
-     * filter, so they leave the group aggregates too and a row total still equals the sum of its
-     * cells. Default false, which gives such records their own `emptyPathLabel` path.
+     * filter, so they leave the group aggregates too and a row's summary covers the same records
+     * as its cells. Default false, which gives such records their own empty path.
      */
     excludeEmptyPivotValues?: boolean;
 
@@ -179,8 +176,7 @@ export interface PivotSpec {
 export interface Pivot {
     dimensions: CubeField[];
     dimensionNames: string[];
-    valueFields: CubeField[];
-    emptyPathLabel: string;
+    measures: CubeField[];
     excludeEmptyPivotValues: boolean;
     maxPivotPaths: number;
 }
@@ -327,8 +323,8 @@ export class Query {
     invalidatesParents(other: Query): boolean {
         return (
             this.bucketSpecFn !== other.bucketSpecFn ||
-            // Cell rows aggregate `valueFields` alone, a set RowCache's own `fields` check cannot see.
-            !isEqual(this.pivot?.valueFields, other.pivot?.valueFields)
+            // Cell rows aggregate `measures` alone, a set RowCache's own `fields` check cannot see.
+            !isEqual(this.pivot?.measures, other.pivot?.measures)
         );
     }
 
@@ -345,10 +341,10 @@ export class Query {
 
     private parseDimensions(raw: CubeField[] | string[]): CubeField[] {
         if (!raw) return null;
-        if (raw[0] instanceof CubeField) return raw.slice() as CubeField[]; // force clone, we retain.
         const {fields} = this.cube;
-        return raw.map(name => {
-            const field = find(fields, {name});
+        return (raw as Array<CubeField | string>).map(it => {
+            const name = it instanceof CubeField ? it.name : it,
+                field = it instanceof CubeField ? it : find(fields, {name});
             throwIf(
                 !field?.isDimension,
                 `Dimension '${name}' is not a Field on this Cube, or is not specified with isDimension:true.`
@@ -368,33 +364,26 @@ export class Query {
     private parsePivot(spec: PivotSpec): Pivot {
         if (!spec) return null;
 
-        const {
-                dimensions,
-                valueFields,
-                emptyPathLabel = '(empty)',
-                excludeEmptyPivotValues = false,
-                maxPivotPaths = 100
-            } = spec,
+        const {dimensions, measures, excludeEmptyPivotValues = false, maxPivotPaths = 100} = spec,
             dims = this.parseDimensions(dimensions) ?? [];
 
         return {
             dimensions: dims,
             dimensionNames: dims.map(it => it.name),
-            valueFields: this.parseValueFields(valueFields),
-            emptyPathLabel,
+            measures: this.parseMeasures(measures),
             excludeEmptyPivotValues,
             maxPivotPaths
         };
     }
 
-    private parseValueFields(raw: CubeField[] | string[]): CubeField[] {
-        throwIf(isEmpty(raw), 'A pivot requires at least one entry in `valueFields`.');
+    private parseMeasures(raw: CubeField[] | string[]): CubeField[] {
+        throwIf(isEmpty(raw), 'A pivot requires at least one entry in `measures`.');
         if (raw[0] instanceof CubeField) return raw.slice() as CubeField[]; // force clone, we retain.
 
         const {fields} = this.cube;
         return (raw as string[]).map(name => {
             const field = find(fields, {name});
-            throwIf(!field, `Value field '${name}' is not a Field on this Cube.`);
+            throwIf(!field, `Measure '${name}' is not a Field on this Cube.`);
             return field;
         });
     }
@@ -404,10 +393,10 @@ export class Query {
         const {pivot, cube} = this;
         if (!pivot) return [];
 
-        const deps = pivot.valueFields.flatMap(f => f.aggregator?.dependsOn ?? []);
+        const deps = pivot.measures.flatMap(f => f.aggregator?.dependsOn ?? []);
         return [
             ...pivot.dimensions,
-            ...pivot.valueFields,
+            ...pivot.measures,
             ...compact(deps.map(n => cube.getField(n)))
         ];
     }
@@ -434,15 +423,11 @@ export class Query {
 
         const dimNames = (this.dimensions ?? []).map(it => it.name);
 
-        pivot.valueFields.forEach(field => {
-            const {name} = field;
-            throwIf(!field.aggregator, `Pivot value field '${name}' must specify an aggregator.`);
-            // The root path's cell field is the bare value field name, which a grouping dimension
-            // would also write.
-            throwIf(
-                dimNames.includes(name),
-                `Pivot value field '${name}' cannot also be a grouping dimension of this query.`
-            );
+        // A measure is never a dimension, so its bare name - the root path's cell field - is never
+        // also written by a grouping dimension.
+        pivot.measures.forEach(({name, aggregator, isDimension}) => {
+            throwIf(!aggregator, `Pivot measure '${name}' must specify an aggregator.`);
+            throwIf(isDimension, `Pivot measure '${name}' must not be a dimension.`);
         });
 
         const overlap = pivot.dimensionNames.filter(it => dimNames.includes(it));

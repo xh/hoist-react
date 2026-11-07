@@ -19,13 +19,16 @@
 * Added `CubeGrid` and `CubeGridModel` (`@xh/hoist/cmp/cubegrid`), a grid bound to a Cube View.
   Create it from an existing `view` or from a `cube` and `query`. It owns its Store and tree-mode
   `GridModel`, takes the app's `columns` for the fixed region, and appends a column group per pivot
-  path to their right when the query pivots, with docked summaries, collapsible groups, one shared
-  width per measure and per-measure column config. Pivot options are set through `pivotConfig` and
-  bindable on its `CubeGridPivotModel`. Column filters bind to the View and re-aggregate, and pivot
-  columns export under path-qualified headers. See the [CubeGrid README](cmp/cubegrid/README.md).
+  path to their right when the query pivots, with collapsible groups, summaries, labels and
+  classes per pivot dimension, one shared width per measure and column config per measure. Pivot
+  options are set through `pivotConfig` and bindable on its `CubeGridPivotModel`, which also lists
+  the dimensions and measures to offer a pivot picker. Column filters bind to the View and
+  re-aggregate, and pivot columns export under path-qualified headers. See the
+  [CubeGrid README](cmp/cubegrid/README.md).
 * Added Cube pivoting - a View can slice its measures across extra dimensions as columns. Set
-  `QueryConfig.pivot` to pivot a Cube View. Cells are published as synthetic fields on each group
-  row and described by `ViewResult.paths` and `cellFields`, and pivoted Views update
+  `QueryConfig.pivot` to pivot a Cube View by `dimensions` and `measures`, listed by
+  `Cube.dimensions` and the new `Cube.measures`. Cells are published as synthetic fields on each
+  group row and described by `ViewResult.paths` and `cellFields`, and pivoted Views update
   incrementally like any other. See `PivotSpec` and the
   [Cube README](data/cube/README.md#pivoting-with-pivot).
 * Added `ViewResult.exception`. A View that declines its data with a routine `HoistException`,

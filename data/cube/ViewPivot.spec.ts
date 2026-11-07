@@ -12,7 +12,7 @@ import {beforeAll, describe, expect, it, onTestFinished} from 'vitest';
 
 /**
  * A View whose query sets `pivot` slices each group row's aggregates across a second axis of
- * dimensions, publishing one synthetic field per (pivot path, value field) on the row. These tests
+ * dimensions, publishing one synthetic field per (pivot path, measure) on the row. These tests
  * pin the contract a CubeGrid relies on: which fields appear and what they are named, that a row's
  * total equals the sum of its top-level cells, that ticks keep cells current in place, and that
  * structural changes rebuild rather than leave stale cells behind. Expected values are accumulated
@@ -22,10 +22,10 @@ describe('View', () => {
     beforeAll(() => initTestAppAsync());
 
     describe('pivot', () => {
-        it('publishes a cell field per path and value field, with row totals on the bare name', () => {
+        it('publishes a cell field per path and measure, with row summaries on the bare name', () => {
             const view = pivotView(createCube(TRADES));
 
-            expect(view.result.paths.map(p => p.label)).toEqual(['Energy', 'Tech']);
+            expect(view.result.paths.map(p => p.value)).toEqual(['Energy', 'Tech']);
             expect(view.result.cellFields.map(cf => cf.name)).toEqual([
                 'sum',
                 'avg',
@@ -63,12 +63,12 @@ describe('View', () => {
 
         it('nests paths and subtotals for a second pivot dimension', () => {
             const view = pivotView(createCube(TRADES), {
-                pivot: {dimensions: ['sector', 'book'], valueFields: ['sum']}
+                pivot: {dimensions: ['sector', 'book'], measures: ['sum']}
             });
 
             const [energy, tech] = view.result.paths;
-            expect(tech.children.map(p => p.label)).toEqual(['A', 'B']);
-            expect(energy.children.map(p => p.label)).toEqual(['A']);
+            expect(tech.children.map(p => p.value)).toEqual(['A', 'B']);
+            expect(energy.children.map(p => p.value)).toEqual(['A']);
 
             expect(rowAt(view, 'US')).toMatchObject({
                 'Tech>>sum': 3,
@@ -89,13 +89,13 @@ describe('View', () => {
                 without = pivotView(createCube(trades), {
                     pivot: {
                         dimensions: ['sector'],
-                        valueFields: ['sum'],
+                        measures: ['sum'],
                         excludeEmptyPivotValues: true
                     }
                 });
 
             const empty = withBlank.result.paths.find(p => p.isEmpty);
-            expect(empty).toMatchObject({label: '(empty)', value: null});
+            expect(empty).toMatchObject({value: null, isEmpty: true});
             expect(rowAt(withBlank, 'US')[`${empty.key}>>sum`]).toBe(100);
             expect(rowAt(withBlank, 'US').sum).toBe(106);
 
@@ -161,16 +161,16 @@ describe('View', () => {
             await cube.updateDataAsync([trade(1, 'US', 'Health', 'A', 1)]);
 
             expect(view.result.paths).not.toBe(pathsBefore);
-            expect(view.result.paths.map(p => p.label)).toEqual(['Energy', 'Health', 'Tech']);
+            expect(view.result.paths.map(p => p.value)).toEqual(['Energy', 'Health', 'Tech']);
             expect(rowAt(view, 'US')).toMatchObject({'Health>>sum': 1, 'Tech>>sum': 2});
             expectMatchesFresh(view);
         });
 
-        it('swaps value fields on updateQuery, keeping the path keys', () => {
+        it('swaps measures on updateQuery, keeping the path keys', () => {
             const view = pivotView(createCube(TRADES)),
                 keysBefore = view.result.paths.map(p => p.key);
 
-            view.updateQuery({pivot: {...view.query.pivot, valueFields: ['avg']}});
+            view.updateQuery({pivot: {...view.query.pivot, measures: ['avg']}});
 
             expect(view.result.paths.map(p => p.key)).toEqual(keysBefore);
             expect(view.result.cellFields.map(cf => cf.name)).toEqual([
@@ -192,7 +192,7 @@ describe('View', () => {
             expect(rowAt(view, 'US')).toMatchObject({sum: 6, 'Tech>>sum': null});
             expectMatchesFresh(view, {
                 ...QUERY,
-                pivot: {dimensions: [], valueFields: ['sum', 'avg']}
+                pivot: {dimensions: [], measures: ['sum', 'avg']}
             });
 
             view.updateQuery({pivot: {...view.query.pivot, dimensions: ['sector']}});
@@ -216,17 +216,35 @@ describe('View', () => {
             expect(store.getById('root>>region=[US]').data['Health>>sum']).toBe(1);
         });
 
-        it('rejects a value field without an aggregator or shared with a grouping dimension', () => {
+        it('rejects a measure without an aggregator or that is a dimension', () => {
             const cube = createCube(TRADES);
 
             expect(() =>
                 cube.createView({
-                    query: {...QUERY, pivot: {dimensions: ['sector'], valueFields: ['qty']}}
+                    query: {...QUERY, pivot: {dimensions: ['sector'], measures: ['qty']}}
                 })
             ).toThrow('must specify an aggregator');
+            const withAggregatedDim = autoDestroy(
+                new Cube({
+                    fields: [
+                        {name: 'region', isDimension: true},
+                        {name: 'sector', isDimension: true},
+                        {name: 'book', isDimension: true, aggregator: 'UNIQUE'}
+                    ],
+                    data: TRADES
+                })
+            );
+            expect(() =>
+                withAggregatedDim.createView({
+                    query: {
+                        dimensions: ['region'],
+                        pivot: {dimensions: ['sector'], measures: ['book']}
+                    }
+                })
+            ).toThrow('must not be a dimension');
             expect(() =>
                 cube.createView({
-                    query: {...QUERY, pivot: {dimensions: ['region'], valueFields: ['sum']}}
+                    query: {...QUERY, pivot: {dimensions: ['region'], measures: ['sum']}}
                 })
             ).toThrow('cannot be both a grouping and a pivot dimension');
         });
@@ -240,7 +258,7 @@ const QUERY: QueryConfig = {
     dimensions: ['region'],
     includeRoot: true,
     omitRedundantNodes: false,
-    pivot: {dimensions: ['sector'], valueFields: ['sum', 'avg']}
+    pivot: {dimensions: ['sector'], measures: ['sum', 'avg']}
 };
 
 /** Two regions, two sectors, two books. EU has no Energy trades. */
@@ -287,9 +305,9 @@ function rowAt(view: View, ...labels: string[]): ViewRowData {
     return row;
 }
 
-/** Sum of a row's top-level cells for one value field - absent cells count as nothing. */
-function cellSum(view: View, row: ViewRowData, valueField: string): number {
-    return sumBy(view.result.paths, p => row[`${p.key}>>${valueField}`] ?? 0);
+/** Sum of a row's top-level cells for one measure - absent cells count as nothing. */
+function cellSum(view: View, row: ViewRowData, measure: string): number {
+    return sumBy(view.result.paths, p => row[`${p.key}>>${measure}`] ?? 0);
 }
 
 /** Assert the View's rows, cells included, equal those of a fresh query of the same Cube. */

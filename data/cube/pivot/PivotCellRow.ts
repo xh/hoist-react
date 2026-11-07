@@ -37,7 +37,7 @@ export class PivotCellRow extends ParentRow {
         return this.path.value;
     }
 
-    // Cells aggregate the value fields alone.
+    // Cells aggregate the measures alone.
     protected override get aggFields(): CubeField[] {
         return this.view._pivot.cellAggFields;
     }

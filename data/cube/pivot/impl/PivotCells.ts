@@ -48,14 +48,14 @@ export class PivotCells {
 
     /** Pivot path tree, top-level paths first - see {@link ViewResult.paths}. */
     paths: PivotPath[] = [];
-    /** One entry per (path, value field) - see {@link ViewResult.cellFields}. */
+    /** One entry per (path, measure) - see {@link ViewResult.cellFields}. */
     cellFields: PivotCellField[] = [];
     /** Index of each path within `allPaths` - what an exposed leaf's `_pivotPathIdx` names. */
     pathIdx: Map<PivotPath, number> = new Map();
     /** Index of each path's parent within `allPaths`, -1 for the root, by path index. */
     pathParentIdx: Int32Array = new Int32Array(0);
 
-    // Aggregation field lists for cell rows - the value fields plus their dependencies.
+    // Aggregation field lists for cell rows - the measures plus their dependencies.
     cellAggFields: CubeField[] = [];
     cellAggFieldNames: Set<string> = new Set();
     cellCanAggregateFnFields: CubeField[] = [];
@@ -63,8 +63,7 @@ export class PivotCells {
 
     private allPaths: PivotPath[] = [];
     private pathKeys: string[] = null;
-    private pathLabels: string[] = [];
-    private valueFieldNames: string[] = [];
+    private measureNames: string[] = [];
     /** Keyed on path identity. */
     private cellFieldNamesByPath: Map<PivotPath, string[]> = new Map();
     /** This generation's path discovery - see `discoverPaths`. */
@@ -86,7 +85,7 @@ export class PivotCells {
     buildIndices() {
         const {view} = this,
             names = new Set<string>();
-        this.valueFields.forEach(f => {
+        this.measures.forEach(f => {
             names.add(f.name);
             f.aggregator?.dependsOn?.forEach(n => names.add(n));
         });
@@ -117,7 +116,6 @@ export class PivotCells {
         if (query.isPivoted) {
             const {pivot} = query;
             this.discovery = discoverPivotPaths(view._records.list, pivot.dimensionNames, {
-                emptyPathLabel: pivot.emptyPathLabel,
                 maxPivotPaths: pivot.maxPivotPaths
             });
             this.syncPaths(this.discovery.paths);
@@ -188,7 +186,7 @@ export class PivotCells {
         // An unpivoted view mints a fresh empty array per build - compare emptiness too.
         if (prior === cellFields || (isEmpty(prior) && isEmpty(cellFields))) return;
 
-        // Replace only the fields declared last time. Root-path entries are the value fields,
+        // Replace only the fields declared last time. Root-path entries are the measures,
         // already present.
         const stale = new Set(prior?.map(it => it.name) ?? []),
             retained = store.fields.filter(f => !stale.has(f.name)),
@@ -196,12 +194,12 @@ export class PivotCells {
             added = cellFields
                 .filter(it => !retainedNames.has(it.name))
                 .map(
-                    ({name, valueField}) =>
+                    ({name, measure}) =>
                         new Field({
                             name,
-                            type: valueField.type,
-                            displayName: valueField.displayName,
-                            defaultValue: valueField.defaultValue
+                            type: measure.type,
+                            displayName: measure.displayName,
+                            defaultValue: measure.defaultValue
                         })
                 );
 
@@ -223,8 +221,8 @@ export class PivotCells {
     //------------------------
     // Implementation
     //------------------------
-    private get valueFields(): CubeField[] {
-        return this.view.query.pivot?.valueFields ?? [];
+    private get measures(): CubeField[] {
+        return this.view.query.pivot?.measures ?? [];
     }
 
     /** Drop all paths and cells, as when the View declines its data. */
@@ -237,8 +235,7 @@ export class PivotCells {
         this.clearVacatedCells(this.cellRows, EMPTY_CELLS);
         this.allPaths = [];
         this.pathKeys = [];
-        this.pathLabels = [];
-        this.valueFieldNames = [];
+        this.measureNames = [];
         this.paths = [];
         this.cellFields = [];
         this.cellFieldNamesByPath = new Map();
@@ -332,26 +329,23 @@ export class PivotCells {
      * identity is the structural-change signal consumers key off.
      */
     private syncPaths(specs: PivotPathSpec[]) {
-        // Labels and value fields can change while the keys do not.
+        // Measures can change while the keys do not.
         const keys = specs.map(s => s.key),
-            labels = specs.map(s => s.label),
-            valueFieldNames = this.valueFields.map(f => f.name);
+            measureNames = this.measures.map(f => f.name);
         if (
             this.pathKeys &&
             arraysEqual(this.pathKeys, keys) &&
-            arraysEqual(this.pathLabels, labels) &&
-            arraysEqual(this.valueFieldNames, valueFieldNames)
+            arraysEqual(this.measureNames, measureNames)
         ) {
             return;
         }
 
-        const {dimensions, valueFields} = this.view.query.pivot,
+        const {dimensions, measures} = this.view.query.pivot,
             all: PivotPath[] = specs.map(
                 s =>
                     new PivotPath({
                         dimension: s.dimIdx >= 0 ? dimensions[s.dimIdx] : null,
                         value: s.value,
-                        label: s.label,
                         key: s.key,
                         depth: s.depth,
                         isEmpty: s.isEmpty
@@ -366,19 +360,18 @@ export class PivotCells {
             cellFieldNamesByPath = new Map<PivotPath, string[]>(),
             pathIdx = new Map<PivotPath, number>();
         all.forEach((path, idx) => {
-            const names = valueFields.map(vf => pivotCellFieldName(path.key, vf.name));
+            const names = measures.map(vf => pivotCellFieldName(path.key, vf.name));
             cellFieldNamesByPath.set(path, names);
             pathIdx.set(path, idx);
-            valueFields.forEach((valueField, i) => {
-                cellFields.push({name: names[i], path, valueField});
+            measures.forEach((measure, i) => {
+                cellFields.push({name: names[i], path, measure});
             });
         });
 
         this.validateCellFieldNames(cellFields);
 
         this.pathKeys = keys;
-        this.pathLabels = labels;
-        this.valueFieldNames = valueFieldNames;
+        this.measureNames = measureNames;
         this.allPaths = all;
         this.paths = all[0].children;
         this.cellFields = cellFields;
@@ -389,7 +382,7 @@ export class PivotCells {
 
     /**
      * A cell field colliding with a Cube field would overwrite it on row data. Root-path entries
-     * are the value field itself.
+     * are the measure itself.
      */
     private validateCellFieldNames(cellFields: PivotCellField[]) {
         const cubeNames = new Set(this.view.cube.fields.map(f => f.name));
@@ -465,12 +458,12 @@ export class PivotCells {
         const names = this.cellFieldNames(cell),
             {data, ownerRow} = cell,
             ownerData = ownerRow.data,
-            {valueFields} = this;
+            {measures} = this;
 
         let changed = clearCellSlots(cell, ownerData, names, changedFields);
-        for (let i = 0; i < valueFields.length; i++) {
+        for (let i = 0; i < measures.length; i++) {
             const name = names[i],
-                val = data[valueFields[i].name];
+                val = data[measures[i].name];
             if (ownerData[name] !== val) {
                 ownerData[name] = val;
                 changedFields?.add(name);

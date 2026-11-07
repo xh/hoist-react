@@ -14,11 +14,13 @@ import type {
 import {ColumnWidthCalculator} from '@xh/hoist/cmp/grid/impl/ColumnWidthCalculator';
 import type {HAlign, HSide, ReactionSpec, Some, VSide} from '@xh/hoist/core';
 import {HoistModel} from '@xh/hoist/core';
-import type {CubeField, PivotCellField, PivotPath, View} from '@xh/hoist/data';
+import type {Cube, CubeField, PivotCellField, PivotPath, View} from '@xh/hoist/data';
 import {action, bindable, bindableRef, observable} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
 import {
     castArray,
+    compact,
+    find,
     forEach,
     groupBy,
     isArray,
@@ -36,15 +38,7 @@ import {
     sumBy
 } from 'lodash';
 import type {CubeGridModel} from './CubeGridModel';
-import type {
-    PivotColumnContext,
-    PivotColumnGroupContext,
-    PivotColumnGroupSpec,
-    PivotColumnSizingOptions,
-    PivotColumnSpec,
-    PivotSort
-} from './Types';
-import {RESERVED_PIVOT_COLUMN_GROUP_KEYS, RESERVED_PIVOT_COLUMN_KEYS} from './Types';
+import type {PivotLinkedSizingOptions, PivotDimensionSpec, PivotMeasureSpec} from './Types';
 
 /**
  * Configuration for the pivot region of a {@link CubeGridModel}, as `gridConfig` is for its
@@ -54,72 +48,50 @@ import {RESERVED_PIVOT_COLUMN_GROUP_KEYS, RESERVED_PIVOT_COLUMN_KEYS} from './Ty
  */
 export interface CubeGridPivotConfig {
     /**
-     * Column config per measure, applied to every pivot column built for it under every path -
-     * renderer, width, align, and so on. Each entry's `field` names a `pivot.valueFields` entry,
-     * and their order here is the order of the columns within each path group. A measure
-     * without an entry gets a default column.
+     * The dimensions this grid can pivot on, in the order to offer them, with settings for each
+     * over `dimensionDefaults`. A dimension's settings follow it to whatever level the query
+     * pivots it at. Entries the query does not pivot on are ignored, and a pivot on a dimension
+     * not listed takes the defaults. See {@link CubeGridPivotModel.availableDimensions}.
+     */
+    dimensions?: PivotDimensionSpec[];
+
+    /**
+     * Defaults for every pivot dimension, under its own settings in `dimensions` - sort,
+     * collapsing, summaries shown while expanded, labels and classes.
+     */
+    dimensionDefaults?: Omit<PivotDimensionSpec, 'field'>;
+
+    /**
+     * The measures this grid can pivot, in display order, with settings for each over
+     * `measureDefaults` - chiefly the column config applied to every pivot column built for it
+     * under every path. Measures the query pivots without an entry follow in query order. See
+     * {@link CubeGridPivotModel.availableMeasures}.
      *
-     * Specs are expected to be shared with the fixed `columns`, so {@link RESERVED_PIVOT_COLUMN_KEYS}
-     * are stripped rather than rejected. Pivot columns are not hideable and stay out of the column
-     * chooser - the region is the query's, so drop a field from `pivot.valueFields` to remove its
-     * columns.
+     * Pivot columns are not hideable and stay out of the column chooser - the region is the
+     * query's, so drop a measure from `pivot.measures` to remove its columns.
      */
-    columns?: PivotColumnSpec[];
+    measures?: PivotMeasureSpec[];
+
+    /** Defaults for every pivot measure, under its own settings in `measures`. */
+    measureDefaults?: Omit<PivotMeasureSpec, 'field'>;
 
     /**
-     * Overrides for one pivot column, merged over its `columns` entry - a class on the `total`
-     * columns, a width keyed on the path, and so on. Called per column on every rebuild. Return
-     * null for none. Reserved keys are stripped as for `columns`.
+     * True to put each measure outermost, with the pivot paths beneath it, to compare one measure
+     * across paths. Default false, nesting the measures under each path. Outermost, each measure
+     * is a root group that collapses to its own row summary, with no group over the whole
+     * region, so the header is one level shallower. Leaf paths head their columns directly, and
+     * summaries are single columns, so `showCollapsedLabel` has no effect.
      */
-    columnSpecFn?: (ctx: PivotColumnContext) => PivotColumnSpec;
+    measuresOutermost?: boolean;
 
     /**
-     * Overrides for one pivot column group, merged over the built group - a header class or
-     * alignment on the `total` groups, a header name keyed on the path, and so on. Called per
-     * group on every rebuild. Return null for none. {@link RESERVED_PIVOT_COLUMN_GROUP_KEYS} are
-     * stripped.
-     */
-    columnGroupSpecFn?: (ctx: PivotColumnGroupContext) => PivotColumnGroupSpec;
-
-    /** Display sort per pivot dimension, outermost first. Unspecified levels keep view order. */
-    sortBy?: PivotSort[];
-
-    /**
-     * Summary columns while a pivot group is expanded, as {@link GridConfig.showSummary} is the
-     * summary row: a column per value field under a `Total` header, holding the pivot region's
-     * row totals and each parent pivot group's subtotals. A collapsed group always shows its
-     * summary. True for the default 'left', where the summary keeps its collapsed position and
-     * the group opens to its right, or an {@link HSide} to place it within the group. Default
-     * false. Bind this rather than expecting the column chooser to restore it.
-     *
-     * Summary cells and headers carry the `xh-cube-grid__total-cell` and
-     * `xh-cube-grid__total-header` classes, unstyled, for apps that want to set them apart.
-     */
-    showSummaries?: boolean | HSide;
-
-    /**
-     * True (default) to let the pivot region and each parent pivot group collapse from its header
-     * to its summary columns. False to fix every group open, with summary columns only where
-     * `showSummaries` asks for them.
-     */
-    groupsCollapsible?: boolean;
-
-    /**
-     * True (default) to show a `Total` header over a collapsed group's summary columns. False to
-     * drop it, so their headers stretch up to the group's. The collapsed summary then has colIds
-     * of its own, prefixed `collapsed>>`, and is left out of exports while the `total>>` columns
-     * also show expanded.
-     */
-    collapsedTotalHeader?: boolean;
-
-    /**
-     * True (default) to give every pivot column of a measure one width, or options to tune it.
-     * The width is the measure's widest data, plus an even share of any room a displayed group
+     * True (default) to link every pivot column of a measure to one width, or options to tune it.
+     * The width is the measure's widest data, plus an even share of any room a displayed pivot
      * label needs beyond the data of the columns it spans, up to `headerFitMaxWidth`. It follows
      * as groups expand and collapse, and a manual resize moves all of the measure's columns. False
      * to size each column on its own, as in any grid.
      */
-    columnSizing?: boolean | PivotColumnSizingOptions;
+    linkedSizing?: boolean | PivotLinkedSizingOptions;
 
     /**
      * Pivot header level to expand to on initial load, as {@link GridConfig.expandLevel} is for
@@ -142,42 +114,36 @@ export class CubeGridPivotModel extends HoistModel {
     /** Pivot header level last expanded to, or -1 for all. Set via {@link expandToLevel}. */
     @observable accessor expandLevel: number;
 
-    @bindableRef accessor columns: PivotColumnSpec[];
-    @bindableRef accessor columnSpecFn: (ctx: PivotColumnContext) => PivotColumnSpec;
-    @bindableRef accessor columnGroupSpecFn: (ctx: PivotColumnGroupContext) => PivotColumnGroupSpec;
-    @bindableRef accessor sortBy: PivotSort[];
-    @bindable accessor showSummaries: boolean | HSide;
-    @bindable accessor groupsCollapsible: boolean;
-    @bindable accessor collapsedTotalHeader: boolean;
-    @bindableRef accessor columnSizing: boolean | PivotColumnSizingOptions;
+    @bindableRef accessor dimensions: PivotDimensionSpec[];
+    @bindableRef accessor dimensionDefaults: Omit<PivotDimensionSpec, 'field'>;
+    @bindableRef accessor measures: PivotMeasureSpec[];
+    @bindableRef accessor measureDefaults: Omit<PivotMeasureSpec, 'field'>;
+    @bindable accessor measuresOutermost: boolean;
+    @bindableRef accessor linkedSizing: boolean | PivotLinkedSizingOptions;
 
     private readonly cubeGridModel: CubeGridModel;
 
     /** @internal - created by {@link CubeGridModel}. */
     constructor(
         {
-            columns = [],
-            columnSpecFn = null,
-            columnGroupSpecFn = null,
-            sortBy = [],
-            showSummaries = false,
-            groupsCollapsible = true,
-            collapsedTotalHeader = true,
-            columnSizing = true,
+            dimensions = [],
+            dimensionDefaults = null,
+            measures = [],
+            measureDefaults = null,
+            measuresOutermost = false,
+            linkedSizing = true,
             expandLevel = -1
         }: CubeGridPivotConfig,
         cubeGridModel: CubeGridModel
     ) {
         super();
         this.cubeGridModel = cubeGridModel;
-        this.columns = columns;
-        this.columnSpecFn = columnSpecFn;
-        this.columnGroupSpecFn = columnGroupSpecFn;
-        this.sortBy = sortBy;
-        this.showSummaries = showSummaries;
-        this.groupsCollapsible = groupsCollapsible;
-        this.collapsedTotalHeader = collapsedTotalHeader;
-        this.columnSizing = columnSizing;
+        this.dimensions = dimensions;
+        this.dimensionDefaults = dimensionDefaults;
+        this.measures = measures;
+        this.measureDefaults = measureDefaults;
+        this.measuresOutermost = measuresOutermost;
+        this.linkedSizing = linkedSizing;
         this.expandLevel = expandLevel;
     }
 
@@ -210,16 +176,31 @@ export class CubeGridPivotModel extends HoistModel {
         this.expandToLevel(0);
     }
 
+    /**
+     * Dimensions to offer for pivoting - those listed in `dimensions`, or all of the cube's
+     * dimensions if none are.
+     */
+    get availableDimensions(): CubeField[] {
+        return this.availableFields(this.dimensions, this.cube.dimensions, 'dimension');
+    }
+
+    /**
+     * Measures to offer for pivoting - those listed in `measures`, or all of the cube's measures
+     * if none are.
+     */
+    get availableMeasures(): CubeField[] {
+        return this.availableFields(this.measures, this.cube.measures, 'measure');
+    }
+
     /** @internal - options the built region depends on, tracked by the parent's rebuild. */
     get regionDeps(): unknown[] {
         return [
-            this.showSummaries,
-            this.groupsCollapsible,
-            this.collapsedTotalHeader,
-            this.sortBy,
-            this.columns,
-            this.columnSpecFn,
-            this.columnGroupSpecFn
+            this.dimensions,
+            this.dimensionDefaults,
+            this.measures,
+            this.measureDefaults,
+            this.measuresOutermost,
+            this.linkedSizing
         ];
     }
 
@@ -238,41 +219,60 @@ export class CubeGridPivotModel extends HoistModel {
         this.addReaction(this.widthsReaction(), this.sizingReaction());
     }
 
-    /** @internal - builds the pivot region's column group, or null when the query has none. */
-    buildRegion(): ColumnGroupSpec {
+    /** @internal - builds the pivot region's root groups, or none when the query has no paths. */
+    buildRegion(): ColumnGroupSpec[] {
         const {paths, cellFields} = this.view.result;
 
         this.indexCellFields(cellFields);
 
-        // Stripped once per rebuild.
-        const {columns} = this;
-        columns.forEach(it =>
-            throwIf(!it.field, 'Each pivot `columns` entry must name a value field in `field`.')
+        // Resolved once per rebuild: each dimension's settings, by level, and each measure's
+        // column config, stripped of reserved keys.
+        const {dimensions, measures, dimensionDefaults, measureDefaults} = this;
+        [...dimensions, ...measures].forEach(it =>
+            throwIf(!it.field, 'Each pivot `dimensions` and `measures` entry must name a `field`.')
         );
-        this._columnsByField = mapValues(keyBy(columns, 'field'), it =>
-            omit(it, RESERVED_PIVOT_COLUMN_KEYS)
+        this._dimensionSpecs = (this.query.pivot?.dimensions ?? []).map(({name}) => ({
+            ...DIMENSION_DEFAULTS,
+            ...dimensionDefaults,
+            ...find(dimensions, {field: name})
+        }));
+        this._columnsByMeasure = mapValues(keyBy(measures, 'field'), it =>
+            omit({...measureDefaults?.column, ...it.column}, RESERVED_COLUMN_KEYS)
         );
+        this._defaultColumn = omit(measureDefaults?.column ?? {}, RESERVED_COLUMN_KEYS);
 
         this._colIds = new Set();
         this._groupLevels = new Map();
         this._measureByColId = new Map();
-        this._regionGroup = null;
+        this._rootGroups = [];
         this._labelWidths = new Map();
-        if (!this.query.isPivoted || isEmpty(paths)) return null;
+        if (!this.query.isPivoted || isEmpty(paths)) return [];
 
-        // One group over the whole region, titled by the pivot dimensions, collapses to the row
-        // summaries.
-        const pathCols = this.sortPaths(paths, 0).map(path => this.buildPathColumn(path, [])),
-            pivotGroup = this.buildColGroup(
-                PIVOT_GROUP_ID,
-                this.query.pivot.dimensions.map(it => it.displayName).join(' › '),
-                this.buildGroupChildren(pathCols, this._rootPath, []),
-                {level: 0, ctx: {path: this._rootPath, kind: 'path'}}
-            );
+        // Each root collapses to its row summaries: one group over the whole region, titled by
+        // the pivot dimensions, or one per measure.
+        const {_rootPath: rootPath, pivotMeasures} = this,
+            title = this.query.pivot.dimensions.map(it => it.displayName).join(' › '),
+            buildRoot = (fields: CubeField[], header: string) => {
+                const labels = this.measuresOutermost ? [header] : [],
+                    pathCols = this.sortPaths(paths, 0).map(path =>
+                        this.buildPathColumn(path, labels, [], fields)
+                    );
+                return this.buildColGroup(
+                    this.groupIdFor(PIVOT_GROUP_ID, fields),
+                    header,
+                    this.buildGroupChildren(pathCols, rootPath, labels, [], fields),
+                    {
+                        level: 0,
+                        headerTooltip: this.measuresOutermost ? `${header} by ${title}` : null
+                    }
+                );
+            };
 
-        this._regionGroup = pivotGroup;
-        this._colIds = new Set(leafColIds([pivotGroup]));
-        return pivotGroup;
+        this._rootGroups = this.measuresOutermost
+            ? pivotMeasures.map(field => buildRoot([field], this.measureHeader(field)))
+            : [buildRoot(pivotMeasures, title)];
+        this._colIds = new Set(leafColIds(this._rootGroups));
+        return this._rootGroups;
     }
 
     //------------------------
@@ -281,6 +281,19 @@ export class CubeGridPivotModel extends HoistModel {
 
     private get view(): View {
         return this.cubeGridModel.view;
+    }
+
+    private get cube(): Cube {
+        return this.view.cube;
+    }
+
+    private availableFields(specs: {field: string}[], all: CubeField[], kind: string): CubeField[] {
+        if (isEmpty(specs)) return all;
+        const byName = keyBy(all, 'name');
+        return specs.map(({field}) => {
+            throwIf(!byName[field], `Pivot ${kind} '${field}' is not a ${kind} of the cube.`);
+            return byName[field];
+        });
     }
 
     private get query() {
@@ -296,18 +309,52 @@ export class CubeGridPivotModel extends HoistModel {
         return expandLevel < 0 || level < expandLevel;
     }
 
-    // Measures in pivot `columns` order, then any the app left unconfigured in query order.
-    private get valueFields(): CubeField[] {
-        const fields = this.query.pivot?.valueFields ?? [],
-            listed = this.columns.map(it => it.field);
+    // Each path appears once per measure when measures are outermost, so its group ids carry it.
+    private groupIdFor(id: string, fields: CubeField[]): string {
+        return this.measuresOutermost ? `${fields[0].name}::${id}` : id;
+    }
+
+    private measureHeader(field: CubeField): string {
+        const {headerName} = this.measureColumn(field);
+        return isString(headerName) ? headerName : field.displayName;
+    }
+
+    private measureColumn(field: CubeField): Partial<ColumnSpec> {
+        return this._columnsByMeasure[field.name] ?? this._defaultColumn;
+    }
+
+    // The settings of the dimension whose summary a group at this level collapses to - the
+    // dimension at the level below it. Defaults beyond the innermost dimension.
+    private dimensionSpec(level: number): Omit<PivotDimensionSpec, 'field'> {
+        return this._dimensionSpecs[level] ?? DIMENSION_DEFAULTS;
+    }
+
+    // Measures in `measures` order, then any the app left unconfigured in query order.
+    private get pivotMeasures(): CubeField[] {
+        const fields = this.query.pivot?.measures ?? [],
+            listed = this.measures.map(it => it.field);
         return sortBy(fields, it => {
             const idx = listed.indexOf(it.name);
             return idx === -1 ? listed.length : idx;
         });
     }
 
-    private get summarySide(): HSide {
-        return resolveSide(this.showSummaries, 'left');
+    private summarySide(level: number): HSide {
+        return resolveSide(this.dimensionSpec(level).showSummary, 'left');
+    }
+
+    // A path's value belongs to the dimension at the level above it.
+    private pathLabel(path: PivotPath): string {
+        const {valueRenderer, emptyLabel} = this.dimensionSpec(path.depth - 1);
+        if (path.isEmpty) return emptyLabel;
+        return valueRenderer ? valueRenderer(path.value, path) : String(path.value);
+    }
+
+    private pathClass(path: PivotPath): string {
+        const {valueClass} = this.dimensionSpec(path.depth - 1);
+        return isFunction(valueClass)
+            ? valueClass(path.isEmpty ? null : path.value, path)
+            : valueClass;
     }
 
     // Keyed on path identity.
@@ -315,11 +362,11 @@ export class CubeGridPivotModel extends HoistModel {
         const byPath = new Map<PivotPath, Map<string, string>>();
         let rootPath: PivotPath = null;
 
-        cellFields.forEach(({name, path, valueField}) => {
+        cellFields.forEach(({name, path, measure}) => {
             if (path.isRoot) rootPath = path;
             let byField = byPath.get(path);
             if (!byField) byPath.set(path, (byField = new Map()));
-            byField.set(valueField.name, name);
+            byField.set(measure.name, name);
         });
 
         this._cellFieldNames = byPath;
@@ -327,58 +374,92 @@ export class CubeGridPivotModel extends HoistModel {
     }
 
     // The tooltip carries the full path, as an ancestor's header is often scrolled out of view.
+    // Each value's class goes to every header and cell beneath it.
     private buildPathColumn(
         path: PivotPath,
-        ancestorLabels: string[]
+        ancestorLabels: string[],
+        ancestorClasses: string[],
+        fields: CubeField[]
     ): ColumnSpec | ColumnGroupSpec {
-        const labels = [...ancestorLabels, path.label],
+        const label = this.pathLabel(path),
+            labels = [...ancestorLabels, label],
+            classes = compact([...ancestorClasses, this.pathClass(path)]),
             headerTooltip = labels.join(' › ');
 
-        // Always a group, so the measure name stays visible beside any fixed columns.
         if (isEmpty(path.children)) {
-            return this.buildColGroup(path.key, path.label, this.buildValueColumns(path, labels), {
-                level: path.depth,
-                headerAlign: 'center',
-                headerTooltip,
-                ctx: {path, kind: 'path'}
-            });
+            // With measures outermost the measure heads the root, so a leaf path heads its own column.
+            if (this.measuresOutermost) {
+                return {
+                    ...this.buildValueColumn(path, fields[0], ancestorLabels, classes, label),
+                    headerTooltip
+                };
+            }
+
+            // Otherwise always a group, so the measure name stays visible beside any fixed columns.
+            return this.buildColGroup(
+                path.key,
+                label,
+                this.buildValueColumns(path, labels, classes, fields),
+                {level: path.depth, headerAlign: 'center', headerTooltip, headerClass: classes}
+            );
         }
 
         const childCols = this.sortPaths(path.children, path.depth).map(child =>
-            this.buildPathColumn(child, labels)
+            this.buildPathColumn(child, labels, classes, fields)
         );
         return this.buildColGroup(
-            path.key,
-            path.label,
-            this.buildGroupChildren(childCols, path, labels),
-            {
-                level: path.depth,
-                headerTooltip,
-                ctx: {path, kind: 'path'}
-            }
+            this.groupIdFor(path.key, fields),
+            label,
+            this.buildGroupChildren(childCols, path, labels, classes, fields),
+            {level: path.depth, headerTooltip, headerClass: classes}
         );
     }
 
     // Children of a group that collapses to its summary. The path groups show expanded. The
-    // summary sits under a Total header, always when asked and otherwise only while collapsed.
+    // summary sits under a summary header, always when asked and otherwise only while collapsed.
     // Without that header on collapse, a second copy of the summary shows while collapsed, under
     // colIds of its own, as AG Grid reuses a column's prior group when it moves out of one. AG
     // Grid pads the copy, so the header depth stays fixed. With collapsing off there is only the
-    // Total group, only when asked.
+    // summary group, only when asked. With measures outermost the summary is one column, under
+    // colIds of its own for the same reason.
     private buildGroupChildren(
         pathCols: Array<ColumnSpec | ColumnGroupSpec>,
         summaryPath: PivotPath,
-        labels: string[]
+        labels: string[],
+        classes: string[],
+        fields: CubeField[]
     ): Array<ColumnSpec | ColumnGroupSpec> {
-        const {summarySide, groupsCollapsible, collapsedTotalHeader} = this;
-        if (!summarySide && !groupsCollapsible) return pathCols;
+        const {collapsible, summaryLabel, showCollapsedLabel, summaryClass} = this.dimensionSpec(
+                summaryPath.depth
+            ),
+            summarySide = this.summarySide(summaryPath.depth);
+        if (!summarySide && !collapsible) return pathCols;
 
-        const children = groupsCollapsible
-                ? pathCols.map(it => ({...it, groupShowMode: 'expanded' as const}))
-                : pathCols,
-            isBare = groupsCollapsible && !collapsedTotalHeader,
+        const children = collapsible
+            ? pathCols.map(it => ({...it, groupShowMode: 'expanded' as const}))
+            : pathCols;
+
+        if (this.measuresOutermost) {
+            const [col] = this.buildSummaryColumns(
+                    summaryPath,
+                    labels,
+                    classes,
+                    fields,
+                    MEASURE_SUMMARY_PREFIX
+                ),
+                summary = {...col, groupShowMode: summarySide ? null : ('collapsed' as const)};
+            return summarySide === 'left' ? [summary, ...children] : [...children, summary];
+        }
+
+        const isBare = collapsible && !showCollapsedLabel,
             summary: Array<ColumnSpec | ColumnGroupSpec> = isBare
-                ? this.buildSummaryColumns(summaryPath, labels, BARE_TOTAL_PREFIX).map(it => ({
+                ? this.buildSummaryColumns(
+                      summaryPath,
+                      labels,
+                      classes,
+                      fields,
+                      BARE_SUMMARY_PREFIX
+                  ).map(it => ({
                       ...it,
                       groupShowMode: 'collapsed' as const,
                       excludeFromExport: !!summarySide
@@ -386,17 +467,18 @@ export class CubeGridPivotModel extends HoistModel {
                 : [];
 
         if (summarySide || !isBare) {
-            const group = this.buildColGroup(
-                `${summaryPath.isRoot ? PIVOT_GROUP_ID : summaryPath.key}:total`,
-                'Total',
-                this.buildSummaryColumns(summaryPath, labels, TOTAL_PREFIX),
-                {
-                    headerAlign: 'center',
-                    groupShowMode: summarySide ? (isBare ? 'expanded' : null) : 'collapsed',
-                    ctx: {path: summaryPath, kind: 'total'}
-                }
+            summary.push(
+                this.buildColGroup(
+                    `${summaryPath.isRoot ? PIVOT_GROUP_ID : summaryPath.key}:summary`,
+                    summaryLabel,
+                    this.buildSummaryColumns(summaryPath, labels, classes, fields, SUMMARY_PREFIX),
+                    {
+                        headerAlign: 'center',
+                        groupShowMode: summarySide ? (isBare ? 'expanded' : null) : 'collapsed',
+                        headerClass: [SUMMARY_HEADER_CLASS, summaryClass, ...classes]
+                    }
+                )
             );
-            summary.push({...group, headerClass: withClass(group.headerClass, TOTAL_HEADER_CLASS)});
         }
 
         return summarySide === 'left' ? [...summary, ...children] : [...children, ...summary];
@@ -404,41 +486,64 @@ export class CubeGridPivotModel extends HoistModel {
 
     // Row summaries are the pivot summaries at the root path - the same cells at different depths.
     // A summary column binds the path's own cell but takes a colId of its own, so the root summary
-    // never collides with a fixed column bound to the same measure. All carry the total classes,
-    // over any the app adds.
-    private buildSummaryColumns(path: PivotPath, labels: string[], prefix: string): ColumnSpec[] {
-        return this.buildValueColumns(path, [...labels, 'Total'], 'total').map(col => ({
+    // never collides with a fixed column bound to the same measure. All carry the summary classes,
+    // then the dimension's, then any the app adds.
+    // With measures outermost a summary is a lone column, headed by its label.
+    private buildSummaryColumns(
+        path: PivotPath,
+        labels: string[],
+        classes: string[],
+        fields: CubeField[],
+        prefix: string
+    ): ColumnSpec[] {
+        const {summaryLabel, summaryClass} = this.dimensionSpec(path.depth),
+            cols = this.measuresOutermost
+                ? fields.map(field =>
+                      this.buildValueColumn(path, field, labels, classes, summaryLabel)
+                  )
+                : this.buildValueColumns(path, [...labels, summaryLabel], classes, fields);
+        return cols.map(col => ({
             ...col,
             colId: this.noteMeasure(`${prefix}${col.colId}`, this._measureByColId.get(col.colId)),
-            cellClass: withClass(col.cellClass, TOTAL_CELL_CLASS),
-            headerClass: withClass(col.headerClass, TOTAL_HEADER_CLASS)
+            cellClass: withClasses(col.cellClass, [SUMMARY_CELL_CLASS, summaryClass]),
+            headerClass: withClasses(col.headerClass, [SUMMARY_HEADER_CLASS, summaryClass])
         }));
     }
 
     private buildValueColumns(
         path: PivotPath,
         labels: string[],
-        kind: PivotColumnContext['kind'] = 'cell'
+        classes: string[],
+        fields: CubeField[]
     ): ColumnSpec[] {
-        return this.valueFields.map(field => this.buildValueColumn(path, field, labels, kind));
+        return fields.map(field => this.buildValueColumn(path, field, labels, classes));
     }
 
     // The pivot region is the query's: these columns never move, hide or filter, and the chooser
     // does not list them. A cell is an aggregate, so no query filter can express a condition on
     // it. Field names are built from data values that may contain dots. The export header is the
-    // path's labels and the column's header, as the header alone repeats across paths.
+    // path's labels and the column's header, as the header alone repeats across paths. A
+    // `headerName` given here is a pivot label, replacing the spec's. While widths are shared it
+    // is fitted as group labels are, not by autosize. The value classes go before the measure's.
     private buildValueColumn(
         path: PivotPath,
         field: CubeField,
         labels: string[],
-        kind: PivotColumnContext['kind']
+        classes: string[],
+        headerName?: string
     ): ColumnSpec {
         const name = this.cellFieldName(path, field),
-            spec = this._columnsByField[field.name] ?? {},
-            overrides = this.columnSpecFn?.({path, field, kind, spec});
+            spec = this.measureColumn(field);
         return {
+            ...(headerName && this.linkedSizing ? {autosizeIncludeHeader: false} : null),
             ...spec,
-            ...(overrides ? omit(overrides, RESERVED_PIVOT_COLUMN_KEYS) : null),
+            ...(headerName ? {headerName} : null),
+            ...(isEmpty(classes)
+                ? null
+                : {
+                      cellClass: withClasses(spec.cellClass, classes),
+                      headerClass: withClasses(spec.headerClass, classes)
+                  }),
             colId: this.noteMeasure(name, field.name),
             field: name,
             movable: false,
@@ -469,26 +574,30 @@ export class CubeGridPivotModel extends HoistModel {
             headerAlign = 'left',
             groupShowMode,
             headerTooltip,
-            ctx
+            headerClass
         }: {
             level?: number;
             headerAlign?: HAlign;
             groupShowMode?: ColumnGroupShowMode;
             headerTooltip?: string;
-            ctx: Pick<PivotColumnGroupContext, 'path' | 'kind'>;
+            headerClass?: string[];
         }
     ): ColumnGroupSpec {
         const isPivotLevel = level != null,
-            spec: PivotColumnGroupSpec = {headerName, headerAlign, headerTooltip},
-            overrides = this.columnGroupSpecFn?.({...ctx, spec});
+            classes = compact(headerClass);
         if (isPivotLevel) this._groupLevels.set(groupId, level);
         return {
-            ...spec,
-            ...(overrides ? omit(overrides, RESERVED_PIVOT_COLUMN_GROUP_KEYS) : null),
+            headerName,
+            headerAlign,
+            headerTooltip,
+            ...(isEmpty(classes) ? null : {headerClass: classes}),
             groupId,
             children,
             groupShowMode,
-            collapsed: isPivotLevel && this.groupsCollapsible && !this.isLevelExpanded(level)
+            collapsed:
+                isPivotLevel &&
+                this.dimensionSpec(level).collapsible &&
+                !this.isLevelExpanded(level)
         };
     }
 
@@ -507,16 +616,17 @@ export class CubeGridPivotModel extends HoistModel {
                 this.gridModel.columnState,
                 this.gridModel.columnGroupState,
                 this.gridModel.sizingMode,
-                this.columnSizing
+                this.linkedSizing
             ],
             run: () => this.syncPivotWidths()
         };
     }
 
-    // A new sizing needs fresh data widths - turned off, each column's own.
+    // A new sizing needs fresh data widths - turned off, each column's own - as does a new layout,
+    // which changes the cell columns' headers.
     private sizingReaction(): ReactionSpec {
         return {
-            track: () => this.columnSizing,
+            track: () => [this.linkedSizing, this.measuresOutermost],
             equals: 'structural',
             run: () => {
                 const {gridModel} = this;
@@ -525,10 +635,10 @@ export class CubeGridPivotModel extends HoistModel {
         };
     }
 
-    // Every pivot column of a measure shares one width - see `pivotConfig.columnSizing`. An autosize sizes
-    // each column to its data, and the measure takes the widest, plus any padding the displayed
-    // group labels need. Any other change from the width last applied is a user's resize, which
-    // the measure's other columns follow, as is, until the next autosize.
+    // Every pivot column of a measure shares one width - see `linkedSizing`. An autosize
+    // sizes each column to its data, and the measure takes the widest, plus any padding the
+    // displayed group labels need. Any other change from the width last applied is a user's
+    // resize, which the measure's other columns follow, as is, until the next autosize.
     @action
     private syncPivotWidths() {
         const {gridModel, _colIds, _measureByColId, _widths, _dataWidths, _manualWidths} = this,
@@ -540,7 +650,7 @@ export class CubeGridPivotModel extends HoistModel {
 
         // Off, columns size on their own. Applied widths are dropped, so turning it on again
         // takes the columns as they are.
-        if (!this.columnSizing) {
+        if (!this.linkedSizing) {
             _widths.clear();
             return;
         }
@@ -561,7 +671,9 @@ export class CubeGridPivotModel extends HoistModel {
         const padding = this.calcLabelPadding(),
             changes: Array<Partial<ColumnState>> = [];
         forEach(colsByMeasure, (cols, measure) => {
-            const width = _manualWidths.get(measure) ?? _dataWidths.get(measure) + padding;
+            const width =
+                _manualWidths.get(measure) ??
+                _dataWidths.get(measure) + (padding.get(measure) ?? 0);
             _widths.set(measure, width);
             cols.forEach(({colId, width: w}) => {
                 if (w !== width) changes.push({colId, width});
@@ -571,14 +683,15 @@ export class CubeGridPivotModel extends HoistModel {
         gridModel.updateColumnState(changes);
     }
 
-    // Width to add to every pivot column for the displayed group labels to fit, each claiming up
-    // to `headerFitMaxWidth`.
-    // A label short of the columns its group spans shares the shortfall evenly among them.
-    private calcLabelPadding(): number {
-        const {_regionGroup, _measureByColId, _manualWidths, _dataWidths} = this,
-            {columnSizing} = this,
-            maxWidth = (isObject(columnSizing) ? columnSizing.headerFitMaxWidth : null) ?? 140;
-        if (!maxWidth || !_regionGroup) return 0;
+    // Width to add to each measure's columns for the displayed pivot labels to fit, each claiming
+    // up to `headerFitMaxWidth`. A label short of the columns it spans shares the shortfall evenly
+    // among them, and only the measures it spans take its share.
+    private calcLabelPadding(): Map<string, number> {
+        const {_rootGroups, _measureByColId, _manualWidths, _dataWidths} = this,
+            {linkedSizing} = this,
+            maxWidth = (isObject(linkedSizing) ? linkedSizing.headerFitMaxWidth : null) ?? 140,
+            ret = new Map<string, number>();
+        if (!maxWidth) return ret;
 
         const {bufferPx} = this.gridModel.autosizeOptions,
             baseWidth = (colId: string) => {
@@ -586,16 +699,20 @@ export class CubeGridPivotModel extends HoistModel {
                 return _manualWidths.get(measure) ?? _dataWidths.get(measure) ?? 0;
             };
 
-        let ret = 0;
-        this.forEachDisplayedGroup(_regionGroup, (label, colIds, isExpandable) => {
-            const width = Math.min(this.measureLabel(label, isExpandable) + bufferPx, maxWidth),
-                shortfall = width - sumBy(colIds, baseWidth);
-            ret = Math.max(ret, Math.ceil(shortfall / colIds.length));
-        });
+        _rootGroups.forEach(root =>
+            this.forEachDisplayedGroup(root, (label, colIds, isExpandable) => {
+                const width = Math.min(this.measureLabel(label, isExpandable) + bufferPx, maxWidth),
+                    share = Math.ceil((width - sumBy(colIds, baseWidth)) / colIds.length);
+                colIds.forEach(colId => {
+                    const measure = _measureByColId.get(colId);
+                    ret.set(measure, Math.max(ret.get(measure) ?? 0, share));
+                });
+            })
+        );
         return ret;
     }
 
-    // Calls fn with each displayed group's label, the columns it spans and whether it shows an
+    // Calls fn with each displayed pivot label, the columns it spans and whether it shows an
     // expand icon, and returns the columns `group` spans.
     private forEachDisplayedGroup(
         group: ColumnGroupSpec,
@@ -614,6 +731,10 @@ export class CubeGridPivotModel extends HoistModel {
                 ret.push(...this.forEachDisplayedGroup(child, fn));
             } else {
                 ret.push(child.colId);
+                // With measures outermost, a column's own header is a pivot label too.
+                if (this.measuresOutermost && isString(child.headerName)) {
+                    fn(child.headerName, [child.colId], false);
+                }
             }
         });
         if (isString(group.headerName) && !isEmpty(ret)) fn(group.headerName, ret, isExpandable);
@@ -632,8 +753,9 @@ export class CubeGridPivotModel extends HoistModel {
     }
 
     // Display only - `result.paths` is immutable.
+    // Paths at a depth are the values of the dimension at that level.
     private sortPaths(paths: PivotPath[], depth: number): PivotPath[] {
-        const spec = this.sortBy[depth] ?? null;
+        const spec = this.dimensionSpec(depth).sortBy;
 
         if (spec === 'asc' || spec === 'desc') return orderBy(paths, 'value', spec);
 
@@ -650,17 +772,19 @@ export class CubeGridPivotModel extends HoistModel {
         return paths;
     }
 
-    // Falls back to the value field's own name, which is exactly the root-path cell field.
+    // Falls back to the measure's own name, which is exactly the root-path cell field.
     private cellFieldName(path: PivotPath, field: CubeField): string {
         return this._cellFieldNames.get(path)?.get(field.name) ?? field.name;
     }
 
     private _cellFieldNames: Map<PivotPath, Map<string, string>> = new Map();
     private _rootPath: PivotPath = null;
-    private _columnsByField: Record<string, PivotColumnSpec> = {};
+    private _dimensionSpecs: Omit<PivotDimensionSpec, 'field'>[] = [];
+    private _columnsByMeasure: Record<string, Partial<ColumnSpec>> = {};
+    private _defaultColumn: Partial<ColumnSpec> = {};
     private _colIds: Set<string> = new Set();
     private _groupLevels: Map<string, number> = new Map();
-    private _regionGroup: ColumnGroupSpec = null;
+    private _rootGroups: ColumnGroupSpec[] = [];
     private _measureByColId: Map<string, string> = new Map();
     private _widths: Map<string, number> = new Map();
     private _dataWidths: Map<string, number> = new Map();
@@ -668,24 +792,60 @@ export class CubeGridPivotModel extends HoistModel {
     private _labelWidths: Map<string, number> = new Map();
 }
 
-/** Group id of the column group spanning the pivot region. Its summary group is `pivot:total`. */
+/**
+ * Group id of the column group spanning the pivot region. Its summary group is `pivot:summary`. In
+ * `measuresOutermost` there is no such group - each measure's root is `{field}::pivot`.
+ */
 export const PIVOT_GROUP_ID = 'pivot';
 
-const TOTAL_CELL_CLASS = 'xh-cube-grid__total-cell',
-    TOTAL_HEADER_CLASS = 'xh-cube-grid__total-header';
+// ColumnSpec keys the grid sets on every pivot column, stripped from a measure's `column`.
+// Identity and the export header come from the path, and the rest are this model's own.
+const RESERVED_COLUMN_KEYS = [
+    'colId',
+    'isTreeColumn',
+    'hidden',
+    'hideable',
+    'filterable',
+    'excludeFromChooser',
+    'exportName',
+    'enableDotSeparatedFieldPath',
+    'omit',
+    'pinned',
+    'editable',
+    'editor',
+    'setValueFn',
+    'getValueFn',
+    'sortValue',
+    'agOptions'
+] as const;
 
-// colId prefixes of the summary columns: under a Total header, and bare while collapsed.
-const TOTAL_PREFIX = 'total>>',
-    BARE_TOTAL_PREFIX = 'collapsed>>';
+const SUMMARY_CELL_CLASS = 'xh-cube-grid__summary-cell',
+    SUMMARY_HEADER_CLASS = 'xh-cube-grid__summary-header';
 
-// Prepends a class to a class spec, wrapping a class function.
-function withClass<T extends (...args: any[]) => Some<string>>(
+// colId prefixes of the summary columns: under a summary header, bare while collapsed, and as the
+// lone summary columns with measures outermost.
+const SUMMARY_PREFIX = 'summary>>',
+    BARE_SUMMARY_PREFIX = 'collapsed>>',
+    MEASURE_SUMMARY_PREFIX = 'measureSummary>>';
+
+const DIMENSION_DEFAULTS: Omit<PivotDimensionSpec, 'field'> = {
+    sortBy: null,
+    collapsible: true,
+    showSummary: false,
+    summaryLabel: 'Total',
+    showCollapsedLabel: true,
+    emptyLabel: '(empty)'
+};
+
+// Prepends classes to a class spec, wrapping a class function.
+function withClasses<T extends (...args: any[]) => Some<string>>(
     spec: T | Some<string>,
-    cls: string
+    classes: string[]
 ): T | string[] {
+    const pre = compact(classes);
     return isFunction(spec)
-        ? (((...args) => [cls, ...castArray(spec(...args) ?? [])]) as T)
-        : [cls, ...castArray(spec ?? [])];
+        ? (((...args) => [...pre, ...castArray(spec(...args) ?? [])]) as T)
+        : [...pre, ...castArray(spec ?? [])];
 }
 
 // Shared across grids - it holds a hidden header element for measuring.

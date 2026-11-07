@@ -16,7 +16,7 @@ import {XH} from '@xh/hoist/core';
  * testable in isolation (see `PivotStructure.spec.ts`). Callers map index to row object.
  */
 
-/** Separator between path segments, and between a path key and its value field. */
+/** Separator between path segments, and between a path key and its measure. */
 export const PATH_DELIMITER = '>>';
 
 /** A cell's children are either all cells (group or pivot axis) or all leaf rows. */
@@ -37,8 +37,6 @@ export interface PivotPathSpec {
     dimIdx: number;
     /** Raw dimension value, null for an empty segment. */
     value: any;
-    /** Display string - `emptyPathLabel` for an empty segment. */
-    label: string;
     /** Escaped, delimiter-joined path key; '' for the root. */
     key: string;
     depth: number;
@@ -48,9 +46,6 @@ export interface PivotPathSpec {
 }
 
 export interface PivotPathDiscoveryConfig {
-    /** Label for a null / blank pivot dimension value. Default '(empty)'. */
-    emptyPathLabel?: string;
-
     /**
      * Throw a routine exception if the discovered path count exceeds this. Default 100; null
      * to disable.
@@ -123,12 +118,11 @@ export function discoverPivotPaths(
     pivotDimNames: string[],
     config: PivotPathDiscoveryConfig = {}
 ): PivotPathDiscoveryResult {
-    const {emptyPathLabel = '(empty)', maxPivotPaths = 100, delimiter = PATH_DELIMITER} = config,
+    const {maxPivotPaths = 100, delimiter = PATH_DELIMITER} = config,
         maxDepth = pivotDimNames.length;
 
     interface Node {
         value: any;
-        label: string;
         segKey: string;
         isEmpty: boolean;
         depth: number;
@@ -140,7 +134,6 @@ export function discoverPivotPaths(
 
     const mkNode = (value: any, isEmpty: boolean, depth: number): Node => ({
         value: isEmpty ? null : value,
-        label: isEmpty ? emptyPathLabel : String(value),
         segKey: isEmpty ? EMPTY_SEGMENT : escapeSegment(String(value)),
         isEmpty,
         depth,
@@ -208,7 +201,6 @@ export function discoverPivotPaths(
             idx: paths.length,
             dimIdx: node.dimIdx,
             value: node.value,
-            label: node.label,
             key: !parent
                 ? ''
                 : parent.depth === 0
@@ -246,14 +238,14 @@ export function discoverPivotPaths(
 
 /**
  * Synthetic field name a cell's value is written to on its owner row. The root path yields the
- * value field's own name, so row-total columns bind to the plain field.
+ * measure's own name, so row-total columns bind to the plain field.
  */
 export function pivotCellFieldName(
     pathKey: string,
-    valueFieldName: string,
+    measureName: string,
     delimiter: string = PATH_DELIMITER
 ): string {
-    return pathKey === '' ? valueFieldName : pathKey + delimiter + valueFieldName;
+    return pathKey === '' ? measureName : pathKey + delimiter + measureName;
 }
 
 /**

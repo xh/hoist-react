@@ -95,9 +95,9 @@ export interface ViewResult {
     paths: PivotPath[];
 
     /**
-     * One entry per (pivot path, value field), including the root-path row totals. Identity-stable
+     * One entry per (pivot path, measure), including the root-path row summaries. Identity-stable
      * with `paths` - track it to decide whether to re-declare Store fields. Note both move on a
-     * `valueFields`-only change, even though the path tree itself is structurally unchanged.
+     * `measures`-only change, even though the path tree itself is structurally unchanged.
      */
     cellFields: PivotCellField[];
 

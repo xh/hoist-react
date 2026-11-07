@@ -7,4 +7,4 @@
 export * from './CubeGrid';
 export * from './CubeGridModel';
 export * from './CubeGridPivotModel';
-export * from './Types';
+export type * from './Types';

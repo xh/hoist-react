@@ -23,7 +23,7 @@ import {Cube, getCubeLeaves} from '@xh/hoist/data';
 import {dateRenderer, dateTimeSecRenderer, numberRenderer} from '@xh/hoist/format';
 import {action, bindable, bindableRef, computed, observable, observableRef} from '@xh/hoist/mobx';
 import {LocalDate} from '@xh/hoist/utils/datetime';
-import {compact, get, isEmpty, isEqual, mapValues, round, takeRight} from 'lodash';
+import {compact, find, get, isEmpty, isEqual, isString, mapValues, round, takeRight} from 'lodash';
 import moment from 'moment';
 import type {ActivityDetailProvider} from './detail/ActivityDetailModel';
 
@@ -84,8 +84,8 @@ export class ActivityTrackingModel extends HoistModel implements ActivityDetailP
     @computed
     get pivotByOptions(): SelectOption[] {
         const {dimensions, pivotCardinality} = this;
-        return this.cube.dimensions
-            .filter(it => PIVOT_DIMENSIONS.includes(it.name) && !dimensions.includes(it.name))
+        return this.cubeGridModel.pivotModel.availableDimensions
+            .filter(it => !dimensions.includes(it.name))
             .map(it => {
                 const count = pivotCardinality[it.name] ?? 0;
                 return {
@@ -109,11 +109,11 @@ export class ActivityTrackingModel extends HoistModel implements ActivityDetailP
     }
 
     get pivotMeasureOptions(): SelectOption[] {
-        return [
-            {value: 'entryCount', label: 'Entries'},
-            {value: 'elapsed', label: 'Elapsed (avg)'},
-            {value: 'elapsedMax', label: 'Elapsed (max)'}
-        ];
+        const {measures, availableMeasures} = this.cubeGridModel.pivotModel;
+        return availableMeasures.map(it => {
+            const header = find(measures, {field: it.name})?.column?.headerName;
+            return {value: it.name, label: isString(header) ? header : it.displayName};
+        });
     }
 
     @computed
@@ -343,7 +343,7 @@ export class ActivityTrackingModel extends HoistModel implements ActivityDetailP
             includeRoot: true,
             provideLeaves: true,
             pivot: pivot
-                ? {dimensions: [pivot], valueFields: pivotMeasures, maxPivotPaths: PIVOT_MAX_PATHS}
+                ? {dimensions: [pivot], measures: pivotMeasures, maxPivotPaths: PIVOT_MAX_PATHS}
                 : null
         };
     }
@@ -510,11 +510,18 @@ export class ActivityTrackingModel extends HoistModel implements ActivityDetailP
                 levelLabels: () => this.groupingChooserModel.valueDisplayNames
             },
             pivotConfig: {
-                showSummaries: true,
-                columns: [
-                    {field: 'entryCount', width: 80},
-                    {field: 'elapsed', width: 100, renderer: elapsedRenderer},
-                    {field: 'elapsedMax', width: 100, renderer: elapsedRenderer}
+                dimensions: PIVOT_DIMENSIONS.map(field => ({field})),
+                dimensionDefaults: {showSummary: true},
+                measures: [
+                    {field: 'entryCount', column: {width: 80}},
+                    {
+                        field: 'elapsed',
+                        column: {headerName: 'Elapsed (avg)', width: 100, renderer: elapsedRenderer}
+                    },
+                    {
+                        field: 'elapsedMax',
+                        column: {headerName: 'Elapsed (max)', width: 100, renderer: elapsedRenderer}
+                    }
                 ]
             }
         });
@@ -562,7 +569,7 @@ export class ActivityTrackingModel extends HoistModel implements ActivityDetailP
     }
 }
 
-/** Dimensions offered for pivoting - those with a bounded set of values. */
+/** Dimensions offered for pivoting, in menu order - those with a bounded set of values. */
 const PIVOT_DIMENSIONS = [
     'day',
     'month',
