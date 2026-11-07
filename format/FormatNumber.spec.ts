@@ -211,7 +211,7 @@ describe('fmtNumber', () => {
         it('pads positive ledger values to align with the parentheses of negatives', () => {
             const opts: NumberFormatOptions = {precision: 2, ledger: true, asHtml: true};
             expect(fmtNumber(1234.56, opts)).toBe(
-                '1,234.56<span style="visibility:hidden">)</span>'
+                '1,234.56<span class="xh-ledger-align" style="visibility:hidden">)</span>'
             );
             expect(fmtNumber(-1234.56, opts)).toBe('(1,234.56)');
         });

@@ -34,8 +34,12 @@ const THOUSAND = 1000,
 // A formatted value (sign removed) that shows only zero digits - see `strictZero`.
 const UP_TICK = '▴',
     DOWN_TICK = '▾',
-    LEDGER_ALIGN_PLACEHOLDER = '<span style="visibility:hidden">)</span>',
-    LEDGER_ALIGN_PLACEHOLDER_EL = span({style: {visibility: 'hidden'}, item: ')'});
+    LEDGER_ALIGN_PLACEHOLDER = '<span class="xh-ledger-align" style="visibility:hidden">)</span>',
+    LEDGER_ALIGN_PLACEHOLDER_EL = span({
+        className: 'xh-ledger-align',
+        style: {visibility: 'hidden'},
+        item: ')'
+    });
 
 export type NumericPrecision = IntRange<0, 13>;
 export type Precision = NumericPrecision | 'auto';

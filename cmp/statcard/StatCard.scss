@@ -8,12 +8,33 @@
 .xh-stat-card-strip {
   display: flex;
   flex: none;
+  flex-wrap: wrap;
   gap: var(--xh-stat-card-strip-gap);
   padding: var(--xh-stat-card-strip-padding);
 
-  // Equal shares of the strip, regardless of content width.
+  // Equal shares of the strip, regardless of content width. A card's minimum width - its value, or
+  // the floor set on its header - decides when cards wrap to a new row.
   > .xh-stat-card {
     flex: 1 1 0;
+
+    > .xh-stat-card__header {
+      min-width: var(--xh-stat-card-min-content-width);
+    }
+
+    // The title and detail report no intrinsic width (`contain: inline-size`), so they truncate
+    // rather than set the card's minimum width. Only in a strip - a card on its own sizes to all
+    // of its lines.
+    > .xh-stat-card__header,
+    > .xh-stat-card__detail {
+      contain: inline-size;
+    }
+  }
+
+  // Set when the cards no longer fit on one row. The component measures the column count, so later
+  // rows line up under the first instead of stretching to fill.
+  &--grid {
+    display: grid;
+    grid-template-columns: repeat(var(--xh-stat-card-strip-columns), minmax(0, 1fr));
   }
 }
 
@@ -23,22 +44,73 @@
   // Main (vertical) axis - when a strip stretches a card to its tallest neighbor, split the slack
   // above and below so the text of adjacent cards reads as one row.
   justify-content: center;
-  min-width: 0;
-  overflow: hidden;
+  position: relative;
+  // Clip, not hidden - a flex item that is a scroll container loses its content-based minimum
+  // width, which is what keeps a card from getting narrower than its value.
+  overflow: clip;
   padding: var(--xh-stat-card-padding);
   background-color: var(--xh-stat-card-bg);
   border: var(--xh-stat-card-border);
   border-radius: var(--xh-stat-card-border-radius);
   color: var(--xh-text-color);
 
-  &--accented {
-    border-top-width: var(--xh-stat-card-accent-width);
+  // Swaps in the large-size variables, so the rules below draw both sizes.
+  &--large {
+    --xh-stat-card-detail-font-size: var(--xh-stat-card-large-detail-font-size);
+    --xh-stat-card-min-content-width: var(--xh-stat-card-large-min-content-width);
+    --xh-stat-card-padding: var(--xh-stat-card-large-padding);
+    --xh-stat-card-sub-value-font-size: var(--xh-stat-card-large-sub-value-font-size);
+    --xh-stat-card-title-font-size: var(--xh-stat-card-large-title-font-size);
+    --xh-stat-card-value-font-size: var(--xh-stat-card-large-value-font-size);
+    --xh-stat-card-value-gap: var(--xh-stat-card-large-value-gap);
   }
 
-  // Every line truncates rather than wrapping, as its width depends on how many cards share a strip.
+  &--intent-primary {
+    border-color: var(--xh-stat-card-primary-color);
+  }
+
+  &--intent-success {
+    border-color: var(--xh-stat-card-success-color);
+  }
+
+  &--intent-warning {
+    border-color: var(--xh-stat-card-warning-color);
+  }
+
+  &--intent-danger {
+    border-color: var(--xh-stat-card-danger-color);
+  }
+
+  // Drawn inside the card's border, so it shows whatever the border is set to and does not shift
+  // content between accented and plain cards.
+  &--accented::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    border-color: var(--xh-stat-card-accent-color);
+    border-radius: inherit;
+    border-style: solid;
+    border-width: var(--xh-stat-card-accent-top) var(--xh-stat-card-accent-right)
+      var(--xh-stat-card-accent-bottom) var(--xh-stat-card-accent-left);
+  }
+
+  &--clickable {
+    cursor: pointer;
+
+    &:hover {
+      background-color: var(--xh-stat-card-hover-bg);
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--xh-focus-outline-color);
+      outline-offset: -4px;
+    }
+  }
+
   &__title,
   &__value-primary,
-  &__secondary,
+  &__sub-value,
   &__detail {
     min-width: 0;
     overflow: hidden;
@@ -46,58 +118,60 @@
     white-space: nowrap;
   }
 
-  &__title {
+  &__header {
+    display: flex;
+    align-items: center;
+    gap: var(--xh-pad-half-px);
     font-size: var(--xh-stat-card-title-font-size);
     color: var(--xh-stat-card-title-color);
+  }
+
+  &__title {
+    flex: 0 1 auto;
     letter-spacing: var(--xh-stat-card-title-letter-spacing);
     text-transform: var(--xh-stat-card-title-text-transform);
+  }
+
+  // Never shrinks - the icon is what advertises its tooltip.
+  &__info {
+    display: flex;
+    flex: none;
   }
 
   &__value {
     display: flex;
     align-items: baseline;
     gap: var(--xh-stat-card-value-gap);
-    min-width: 0;
     font-size: var(--xh-stat-card-value-font-size);
     font-weight: var(--xh-stat-card-value-font-weight);
     line-height: 1.25;
+    // Hold the line's height when there is no value, so cards in a strip stay aligned.
+    min-height: 1.25em;
 
-    &--primary {
-      color: var(--xh-intent-primary-text-color);
-    }
-
-    &--success {
-      color: var(--xh-intent-success-text-color);
-    }
-
-    &--warning {
-      color: var(--xh-intent-warning-text-color);
-    }
-
-    &--danger {
-      color: var(--xh-intent-danger-text-color);
+    // A card shows one figure, not a column of them, so drop the space that `fmtNumber` reserves
+    // after a positive ledger value to line it up with the ")" of negatives.
+    .xh-ledger-align {
+      display: none;
     }
   }
 
-  // On a narrow card the secondary label gives up space before the value it elaborates on.
   &__value-primary {
     flex: 0 1 auto;
+
+    // A unit appended by `fmtNumber`'s `label` option.
+    .xh-units-label {
+      font-size: var(--xh-stat-card-sub-value-font-size);
+      font-weight: normal;
+      color: var(--xh-stat-card-detail-color);
+    }
   }
 
-  &__secondary {
-    flex: 0 4 auto;
-    font-size: var(--xh-stat-card-secondary-font-size);
+  // Part of the value line, so it sets the card's minimum width along with the value.
+  &__sub-value {
+    flex: 0 1 auto;
+    font-size: var(--xh-stat-card-sub-value-font-size);
     font-weight: normal;
     color: var(--xh-text-color);
-  }
-
-  // Never shrinks - the icon is what advertises its tooltip.
-  &__info {
-    flex: none;
-    font-size: var(--xh-stat-card-title-font-size);
-    font-weight: normal;
-    color: var(--xh-text-color-muted);
-    cursor: help;
   }
 
   &__detail {

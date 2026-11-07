@@ -7,80 +7,144 @@
 import {span} from '@xh/hoist/cmp/layout';
 import {statCard, statCardStrip} from '@xh/hoist/cmp/statcard';
 import {initTestAppAsync} from '@xh/hoist/test-support';
-import {render} from '@testing-library/react';
-import {beforeAll, describe, expect, it} from 'vitest';
+import {statCardInfoImpl} from '@xh/hoist/desktop/cmp/statcard/impl/StatCardInfoImpl';
+import {installDesktopImpls} from '@xh/hoist/dynamics/desktop';
+import {fireEvent, render, screen} from '@testing-library/react';
+import {beforeAll, describe, expect, it, vi} from 'vitest';
 
 /**
- * StatCard truncates every line, so the native tooltip on each line is how users read the full
- * text. StatCardStrip takes card lists that apps build from functions which may return null.
+ * StatCard truncates its secondary lines, so a tooltip on a truncated line is how users read its
+ * full text. A clickable card must work from the keyboard as well as the mouse. StatCardStrip
+ * takes cards that apps leave out with `omit`.
  */
 describe('StatCard', () => {
     beforeAll(() => initTestAppAsync());
 
-    it('gives string and number lines a tooltip with their full text', () => {
+    it('gives a truncated line a tooltip with its full text, including element content', () => {
         const {container} = render(
-            statCard({title: 'Net Revenue', value: 2483960, detail: 'All locations'})
+            statCard({title: 'Capacity', value: 1, detail: span('Across ', span('42 sites'))})
         );
+        const detail = line(container, 'detail');
 
-        expect(title(container, 'title')).toBe('Net Revenue');
-        expect(title(container, 'value-primary')).toBe('2483960');
-        expect(title(container, 'detail')).toBe('All locations');
+        setOverflow(detail, true);
+        fireEvent.mouseEnter(detail);
+        expect(detail.getAttribute('title')).toBe('Across 42 sites');
+
+        setOverflow(detail, false);
+        fireEvent.mouseEnter(detail);
+        expect(detail.hasAttribute('title')).toBe(false);
     });
 
-    it('gives element content no tooltip, as its text cannot be known', () => {
-        const {container} = render(statCard({title: 'Capacity', value: span('82%')}));
-
-        expect(container.querySelector('.xh-stat-card__value-primary').hasAttribute('title')).toBe(
-            false
-        );
-    });
-
-    it('omits the secondary label, info icon and detail unless given', () => {
+    it('omits the sub-value, info icon and detail unless given', () => {
         const {container} = render(statCard({title: 'Orders', value: 18375}));
 
-        expect(container.querySelector('.xh-stat-card__secondary')).toBeNull();
-        expect(container.querySelector('.xh-stat-card__info')).toBeNull();
-        expect(container.querySelector('.xh-stat-card__detail')).toBeNull();
+        expect(line(container, 'sub-value')).toBeNull();
+        expect(line(container, 'info')).toBeNull();
+        expect(line(container, 'detail')).toBeNull();
     });
 
-    it('applies valueIntent as a class on the value line', () => {
+    it('shows element content in the info tooltip on desktop, on a custom icon', async () => {
+        // The desktop AppContainer installs this impl - a test renders without one.
+        installDesktopImpls({statCardInfoImpl});
         const {container} = render(
-            statCard({title: 'Returns', value: '(87,412)', valueIntent: 'danger'})
+            statCard({
+                title: 'Orders',
+                value: 1,
+                infoTooltip: span({className: 'custom-tip', item: 'Shipped orders only'}),
+                infoIcon: span({className: 'custom-icon'})
+            })
         );
+        const info = line(container, 'info');
+        expect(info.querySelector('.custom-icon')).not.toBeNull();
 
-        expect(container.querySelector('.xh-stat-card__value--danger')).not.toBeNull();
+        fireEvent.mouseEnter(info);
+        expect((await screen.findByText('Shipped orders only')).className).toBe('custom-tip');
     });
 
-    it('applies accent as the top border color alongside layout props', () => {
+    it('applies intent and accent to the card, alongside layout props', () => {
         const {container} = render(
-            statCard({title: 'Europe', value: 1, accent: 'red', width: 200})
+            statCard({title: 'Europe', value: 1, intent: 'danger', accent: 'red', width: 200})
         );
         const card = container.querySelector<HTMLElement>('.xh-stat-card');
 
+        expect(card.classList).toContain('xh-stat-card--intent-danger');
         expect(card.classList).toContain('xh-stat-card--accented');
-        expect(card.style.borderTopColor).toBe('red');
+        expect(card.style.getPropertyValue('--xh-stat-card-accent-color')).toBe('red');
         expect(card.style.width).toBe('200px');
+    });
+
+    it('marks a large card with a modifier class, and a standard one with none', () => {
+        const {container} = render(
+            statCardStrip(
+                statCard({title: 'Large', value: 1, size: 'large'}),
+                statCard({title: 'Standard', value: 2, size: 'standard'})
+            )
+        );
+        const [large, standard] = Array.from(container.querySelectorAll('.xh-stat-card'));
+
+        expect(large.classList).toContain('xh-stat-card--large');
+        expect(standard.className).not.toMatch(/--large|--standard/);
+    });
+
+    it('is a group labelled by its title when not clickable', () => {
+        const {container} = render(statCard({title: 'Orders', value: 1}));
+        const card = container.querySelector('.xh-stat-card');
+
+        expect(card.getAttribute('role')).toBe('group');
+        expect(card.getAttribute('aria-labelledby')).toBe(line(container, 'title').id);
+    });
+
+    it('calls onClick on a click, Enter or Space, as a focusable button', () => {
+        const onClick = vi.fn(),
+            {container} = render(statCard({title: 'Orders', value: 1, onClick}));
+        const card = container.querySelector('.xh-stat-card');
+
+        expect(card.getAttribute('role')).toBe('button');
+        expect(card.getAttribute('tabindex')).toBe('0');
+
+        fireEvent.click(card);
+        fireEvent.keyDown(card, {key: 'Enter'});
+        fireEvent.keyDown(card, {key: ' '});
+        fireEvent.keyDown(card, {key: 'a'});
+        expect(onClick).toHaveBeenCalledTimes(3);
     });
 });
 
 describe('StatCardStrip', () => {
     beforeAll(() => initTestAppAsync());
 
-    it('renders a card for each non-null entry', () => {
+    it('renders each card not omitted', () => {
         const {container} = render(
-            statCardStrip({cards: [{title: 'A', value: 1}, null, {title: 'B', value: 2}]})
+            statCardStrip(
+                statCard({title: 'A', value: 1}),
+                statCard({title: 'B', value: 2, omit: true}),
+                statCard({title: 'C', value: 3})
+            )
         );
 
         expect(container.querySelectorAll('.xh-stat-card')).toHaveLength(2);
     });
 
-    it('renders nothing for an empty, all-null or absent card list', () => {
-        expect(render(statCardStrip({cards: []})).container.innerHTML).toBe('');
-        expect(render(statCardStrip({cards: [null]})).container.innerHTML).toBe('');
-        expect(render(statCardStrip({})).container.innerHTML).toBe('');
+    it('renders nothing when given no cards, or only omitted ones', () => {
+        expect(render(statCardStrip()).container.innerHTML).toBe('');
+        expect(
+            render(statCardStrip(statCard({title: 'A', value: 1, omit: true}))).container.innerHTML
+        ).toBe('');
+    });
+
+    it("lets a card's flex override its equal share", () => {
+        const {container} = render(statCardStrip(statCard({title: 'A', value: 1, flex: 2})));
+
+        expect(container.querySelector<HTMLElement>('.xh-stat-card').style.flex).toMatch(/^2/);
     });
 });
 
-function title(container: HTMLElement, line: string): string {
-    return container.querySelector(`.xh-stat-card__${line}`).getAttribute('title');
+function line(container: HTMLElement, name: string): HTMLElement {
+    return container.querySelector(`.xh-stat-card__${name}`);
+}
+
+/** jsdom has no layout, so stand in for a line whose text does or does not overflow. */
+function setOverflow(el: HTMLElement, overflows: boolean) {
+    Object.defineProperty(el, 'clientWidth', {configurable: true, value: 100});
+    Object.defineProperty(el, 'scrollWidth', {configurable: true, value: overflows ? 150 : 100});
 }
