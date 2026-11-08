@@ -83,14 +83,17 @@ describe('CubeGridModel', () => {
         });
 
         it('appends a column group per pivot path after the fixed columns', () => {
-            const model = createModel({query: PIVOT_QUERY, columns: [{field: 'sum'}]});
+            const model = createModel({query: NESTED_QUERY, columns: [{field: 'sum'}]});
 
             expect(colIds(model.gridModel.columns)).toEqual([
                 'cubeLabel',
                 'sum',
                 'Energy>>sum',
+                'Energy>>avg',
                 'Tech>>sum',
-                'summary>>sum'
+                'Tech>>avg',
+                'summary>>sum',
+                'summary>>avg'
             ]);
         });
 
@@ -108,17 +111,17 @@ describe('CubeGridModel', () => {
                 'cubeLabel',
                 'Tech>>sum',
                 'Energy>>sum',
-                'summary>>sum'
+                'measureSummary>>sum'
             ]);
         });
 
         it('spans the pivot region with a group that collapses to the row summary', () => {
-            const model = createModel({query: PIVOT_QUERY}),
+            const model = createModel({query: NESTED_QUERY}),
                 region = model.gridModel.getColumnGroup(PIVOT_GROUP_ID),
                 showModes = (group: ColumnGroup) =>
                     group.children.map(it => [groupIdOf(it), it.groupShowMode]);
 
-            expect(region.headerName).toBe('Sector');
+            expect(region.headerName).toBe('By Sector');
             expect(showModes(region)).toEqual([
                 ['Energy', 'expanded'],
                 ['Tech', 'expanded'],
@@ -126,7 +129,7 @@ describe('CubeGridModel', () => {
             ]);
 
             const withSummary = createModel({
-                query: PIVOT_QUERY,
+                query: NESTED_QUERY,
                 pivotConfig: {dimensionDefaults: {showSummary: true}}
             });
             expect(showModes(withSummary.gridModel.getColumnGroup(PIVOT_GROUP_ID))).toContainEqual([
@@ -134,13 +137,13 @@ describe('CubeGridModel', () => {
                 null
             ]);
 
-            const collapsed = createModel({query: PIVOT_QUERY, pivotConfig: {expandLevel: 0}});
+            const collapsed = createModel({query: NESTED_QUERY, pivotConfig: {expandLevel: 0}});
             expect(collapsed.gridModel.isColumnGroupExpanded(PIVOT_GROUP_ID)).toBe(false);
         });
 
         it('drops the collapsed summary label when showCollapsedLabel is false', () => {
             const model = createModel({
-                    query: PIVOT_QUERY,
+                    query: NESTED_QUERY,
                     pivotConfig: {dimensionDefaults: {showCollapsedLabel: false}}
                 }),
                 region = model.gridModel.getColumnGroup(PIVOT_GROUP_ID);
@@ -148,13 +151,14 @@ describe('CubeGridModel', () => {
             expect(region.children.map(it => [groupIdOf(it), it.groupShowMode])).toEqual([
                 ['Energy', 'expanded'],
                 ['Tech', 'expanded'],
-                ['collapsed>>sum', 'collapsed']
+                ['collapsed>>sum', 'collapsed'],
+                ['collapsed>>avg', 'collapsed']
             ]);
         });
 
         it('keeps the summary label beside expanded groups when the collapsed one is dropped', () => {
             const model = createModel({
-                    query: PIVOT_QUERY,
+                    query: NESTED_QUERY,
                     pivotConfig: {dimensionDefaults: {showSummary: true, showCollapsedLabel: false}}
                 }),
                 {gridModel} = model,
@@ -162,6 +166,7 @@ describe('CubeGridModel', () => {
 
             expect(region.children.map(it => [groupIdOf(it), it.groupShowMode])).toEqual([
                 ['collapsed>>sum', 'collapsed'],
+                ['collapsed>>avg', 'collapsed'],
                 ['pivot:summary', 'expanded'],
                 ['Energy', 'expanded'],
                 ['Tech', 'expanded']
@@ -171,7 +176,7 @@ describe('CubeGridModel', () => {
         });
 
         it('expands pivot groups to a level, with the region at level 0', () => {
-            const model = createModel({query: PIVOT_QUERY}),
+            const model = createModel({query: NESTED_QUERY}),
                 {gridModel} = model;
 
             model.pivotModel.expandToLevel(0);
@@ -189,7 +194,7 @@ describe('CubeGridModel', () => {
 
         it('fixes every group open when collapsible is false', () => {
             const model = createModel({
-                    query: PIVOT_QUERY,
+                    query: NESTED_QUERY,
                     pivotConfig: {dimensionDefaults: {collapsible: false}}
                 }),
                 region = model.gridModel.getColumnGroup(PIVOT_GROUP_ID);
@@ -198,11 +203,13 @@ describe('CubeGridModel', () => {
             expect(colIds(model.gridModel.columns)).toEqual([
                 'cubeLabel',
                 'Energy>>sum',
-                'Tech>>sum'
+                'Energy>>avg',
+                'Tech>>sum',
+                'Tech>>avg'
             ]);
 
             const withSummary = createModel({
-                query: PIVOT_QUERY,
+                query: NESTED_QUERY,
                 pivotConfig: {dimensionDefaults: {collapsible: false, showSummary: true}}
             });
             expect(colIds(withSummary.gridModel.columns)).toContain('summary>>sum');
@@ -219,11 +226,11 @@ describe('CubeGridModel', () => {
             expect(colIds(gridModel.columns)).toEqual([
                 'cubeLabel',
                 'sum',
-                'summary>>sum',
+                'measureSummary>>sum',
                 'Energy>>sum',
                 'Tech>>sum'
             ]);
-            expect(gridModel.getColumn('summary>>sum').field).toBe('sum');
+            expect(gridModel.getColumn('measureSummary>>sum').field).toBe('sum');
         });
 
         it('keeps pivot columns out of the chooser and not hideable', () => {
@@ -232,7 +239,7 @@ describe('CubeGridModel', () => {
                 pivotConfig: {dimensionDefaults: {showSummary: true}}
             });
 
-            ['Energy>>sum', 'summary>>sum'].forEach(colId => {
+            ['Energy>>sum', 'measureSummary>>sum'].forEach(colId => {
                 const col = gridModel.getColumn(colId);
                 expect(col.hideable).toBe(false);
                 expect(col.excludeFromChooser).toBe(true);
@@ -256,12 +263,12 @@ describe('CubeGridModel', () => {
                 'avg',
                 'Energy>>sum',
                 'Tech>>sum',
-                'summary>>sum'
+                'measureSummary>>sum'
             ]);
             expect(colIds(left.gridModel.columns)).toEqual([
                 'cubeLabel',
                 'avg',
-                'summary>>sum',
+                'measureSummary>>sum',
                 'Energy>>sum',
                 'Tech>>sum'
             ]);
@@ -279,21 +286,25 @@ describe('CubeGridModel', () => {
                 'avg',
                 'Energy>>sum',
                 'Tech>>sum',
-                'summary>>sum'
+                'measureSummary>>sum'
             ]);
         });
 
         it('adds a group when data introduces a new pivot path', async () => {
             const cube = createCube(TRADES),
-                model = autoDestroy(new CubeGridModel({cube, query: PIVOT_QUERY}));
+                model = autoDestroy(new CubeGridModel({cube, query: NESTED_QUERY}));
 
             await cube.updateDataAsync({add: [trade(99, 'US', 'Health', 'A', 1)]});
             expect(colIds(model.gridModel.columns)).toEqual([
                 'cubeLabel',
                 'Energy>>sum',
+                'Energy>>avg',
                 'Health>>sum',
+                'Health>>avg',
                 'Tech>>sum',
-                'summary>>sum'
+                'Tech>>avg',
+                'summary>>sum',
+                'summary>>avg'
             ]);
         });
 
@@ -317,7 +328,7 @@ describe('CubeGridModel', () => {
                 'cubeLabel',
                 'Energy>>sum',
                 'Tech>>sum',
-                'summary>>sum'
+                'measureSummary>>sum'
             ]);
             expect(find(gridModel.columnState, {colId: 'Tech>>sum'}).width).not.toBe(321);
             expect(appFn).toHaveBeenCalledOnce();
@@ -377,7 +388,7 @@ describe('CubeGridModel', () => {
                 'cubeLabel',
                 'Energy>>sum',
                 'Tech>>sum',
-                'summary>>sum'
+                'measureSummary>>sum'
             ]);
         });
 
@@ -403,7 +414,7 @@ describe('CubeGridModel', () => {
                 'sum',
                 'Energy>>sum',
                 'Tech>>sum',
-                'summary>>sum'
+                'measureSummary>>sum'
             ]);
             expect(stateFor('Tech>>sum').width).toBe(321);
         });
@@ -424,7 +435,7 @@ describe('CubeGridModel', () => {
                 'avg',
                 'Energy>>sum',
                 'Tech>>sum',
-                'summary>>sum'
+                'measureSummary>>sum'
             ]);
         });
 
@@ -437,7 +448,7 @@ describe('CubeGridModel', () => {
                 'avg',
                 'Energy>>sum',
                 'Tech>>sum',
-                'summary>>sum'
+                'measureSummary>>sum'
             ]);
         });
     });
@@ -449,7 +460,7 @@ describe('CubeGridModel', () => {
 describe('pivot dimensions and measures', () => {
     const TWO_DIM_QUERY: QueryConfig = {
         ...PLAIN_QUERY,
-        pivot: {dimensions: ['sector', 'book'], measures: ['sum']}
+        pivot: {dimensions: ['sector', 'book'], measures: ['sum', 'avg']}
     };
 
     it('gives each dimension its own summary, with named settings over the defaults', () => {
@@ -499,7 +510,7 @@ describe('pivot dimensions and measures', () => {
 
         expect(childIds('Tech')).toEqual(['Tech>>B', 'Tech>>A', 'Tech:summary']);
 
-        view.updateQuery({pivot: {dimensions: ['book', 'sector'], measures: ['sum']}});
+        view.updateQuery({pivot: {dimensions: ['book', 'sector'], measures: ['sum', 'avg']}});
         expect(childIds(PIVOT_GROUP_ID)).toEqual(['B', 'A', 'pivot:summary']);
     });
 
@@ -555,14 +566,14 @@ describe('pivot dimensions and measures', () => {
 describe('pivot labels and classes', () => {
     const SECTOR_BOOK_QUERY: QueryConfig = {
         ...PLAIN_QUERY,
-        pivot: {dimensions: ['sector', 'book'], measures: ['sum']}
+        pivot: {dimensions: ['sector', 'book'], measures: ['sum', 'avg']}
     };
 
     it("renders a dimension's labels, with its emptyLabel for an empty value", () => {
         const model = autoDestroy(
                 new CubeGridModel({
                     cube: createCube([...TRADES, trade(9, 'US', null, 'A', 1)]),
-                    query: PIVOT_QUERY,
+                    query: NESTED_QUERY,
                     pivotConfig: {
                         dimensions: [
                             {
@@ -636,18 +647,10 @@ describe('pivot labels and classes', () => {
 });
 
 describe('export names', () => {
-    const exportNameOf = (gridModel: GridModel, colId: string) => {
-        const column = gridModel.getColumn(colId),
-            {exportName} = column;
-        return isFunction(exportName)
-            ? exportName({column, gridModel, agParams: null})
-            : exportName;
-    };
-
     it('joins the path labels and header, ignoring an exportName shared with the fixed columns', () => {
         const query = {
                 ...PLAIN_QUERY,
-                pivot: {dimensions: ['sector', 'book'], measures: ['sum']}
+                pivot: {dimensions: ['sector', 'book'], measures: ['sum', 'avg']}
             },
             shared: ColumnSpec = {field: 'sum', headerName: 'Sum', exportName: 'Shared'},
             model = createModel({
@@ -702,7 +705,7 @@ describe('column filtering', () => {
 describe('summary column classes', () => {
     it('marks summary cells, headers and the summary group, leaving pivot cells unmarked', () => {
         const model = createModel({
-                query: PIVOT_QUERY,
+                query: NESTED_QUERY,
                 pivotConfig: {dimensionDefaults: {showSummary: true}}
             }),
             cols = model.gridModel.getLeafColumns(),
@@ -721,7 +724,7 @@ describe('summary column classes', () => {
 
     it('keeps an app class function on a summary column, adding the summary class', () => {
         const model = createModel({
-                query: PIVOT_QUERY,
+                query: NESTED_QUERY,
                 pivotConfig: {
                     dimensionDefaults: {showSummary: true},
                     measures: [
@@ -743,7 +746,7 @@ describe('summary column classes', () => {
 
 describe('declined results', () => {
     it('empties the grid and drops the pivot region, then rebuilds when the query fits', () => {
-        const pivot = {dimensions: ['sector'], measures: ['sum'], maxPivotPaths: 1},
+        const pivot = {dimensions: ['sector'], measures: ['sum', 'avg'], maxPivotPaths: 1},
             model = createModel({query: {...PLAIN_QUERY, pivot}}),
             {gridModel, view} = model;
 
@@ -778,9 +781,9 @@ describe('values outermost', () => {
             {gridModel} = model,
             roots = gridModel.columns.filter(it => it instanceof ColumnGroup) as ColumnGroup[];
 
-        expect(roots.map(it => [it.groupId, it.headerName])).toEqual([
-            ['sum::pivot', 'Qty'],
-            ['avg::pivot', 'Avg']
+        expect(roots.map(it => [it.groupId, it.headerName, it.headerTooltip])).toEqual([
+            ['sum::pivot', 'Sum by Sector', 'Sum by Sector › Book'],
+            ['avg::pivot', 'Avg by Sector', 'Avg by Sector › Book']
         ]);
         expect(gridModel.getColumnGroup(PIVOT_GROUP_ID)).toBeFalsy();
 
@@ -830,6 +833,68 @@ describe('values outermost', () => {
         ).toBe('Sum › Tech › A');
     });
 
+    it('lays out a single measure outermost, with nested group ids unless asked', () => {
+        const headersOf = (model: CubeGridModel) => {
+                const {columns} = model.gridModel;
+                return [allGroups(columns).map(it => it.headerName), colIds(columns)];
+            },
+            inner = createModel({query: PIVOT_QUERY}),
+            outer = createModel({query: PIVOT_QUERY, pivotConfig: {measuresOutermost: true}});
+
+        expect(headersOf(inner)).toEqual(headersOf(outer));
+        expect(inner.gridModel.getColumnGroup(PIVOT_GROUP_ID).headerName).toBe('Sum by Sector');
+        expect(outer.gridModel.getColumnGroup('sum::pivot')).toBeTruthy();
+
+        // A second measure gives the setting something to order.
+        inner.view.updateQuery({pivot: NESTED_QUERY.pivot});
+        expect(inner.gridModel.getColumnGroup(PIVOT_GROUP_ID)).toMatchObject({
+            headerName: 'By Sector',
+            headerTooltip: 'Sum, Avg by Sector'
+        });
+    });
+
+    it("names the dimension and measure in the header by the fields' shortDisplayName", () => {
+        const model = createModel(
+                {
+                    query: VALUE_QUERY,
+                    pivotConfig: {
+                        measuresOutermost: true,
+                        measures: [{field: 'sum', column: {headerName: 'Sum Of Quantity'}}]
+                    }
+                },
+                {sector: {shortDisplayName: 'Sec'}, sum: {shortDisplayName: 'Qty'}}
+            ),
+            roots = model.gridModel.columns.filter(it => it instanceof ColumnGroup);
+
+        expect(roots.map(it => [it.headerName, it.headerTooltip])).toEqual([
+            ['Qty by Sec', 'Qty by Sec › Book'],
+            ['Avg by Sec', 'Avg by Sec › Book']
+        ]);
+    });
+
+    it("heads pivot cell columns with the measure's shortDisplayName, exporting its full name", () => {
+        const model = createModel(
+                {query: NESTED_QUERY},
+                {sum: {displayName: 'Quantity', shortDisplayName: 'Qty'}}
+            ),
+            {gridModel} = model;
+
+        expect(gridModel.getColumn('Tech>>sum').headerName).toBe('Qty');
+        expect(exportNameOf(gridModel, 'Tech>>sum')).toBe('Tech › Quantity');
+        expect(gridModel.getColumn('Tech>>avg').headerName).toBe('Avg');
+    });
+
+    it('keeps group state when a second measure brings back the nested layout', () => {
+        const pivot = {dimensions: ['sector', 'book'], measures: ['sum']},
+            model = createModel({query: {...PIVOT_QUERY, pivot}}),
+            {gridModel} = model;
+        gridModel.setColumnGroupExpanded('Tech', false);
+
+        model.view.updateQuery({pivot: {...pivot, measures: ['sum', 'avg']}});
+        expect(gridModel.isColumnGroupExpanded('Tech')).toBe(false);
+        expect(gridModel.isColumnGroupExpanded('Energy')).toBe(true);
+    });
+
     it('keeps cell colIds and their width when measuresOutermost changes', () => {
         const model = createModel({
                 query: VALUE_QUERY,
@@ -851,7 +916,7 @@ describe('values outermost', () => {
 describe('pivot column widths', () => {
     beforeAll(() => initTestAppAsync());
 
-    const PIVOT_COLS = ['Energy>>sum', 'Tech>>sum', 'summary>>sum'],
+    const PIVOT_COLS = ['Energy>>sum', 'Tech>>sum', 'measureSummary>>sum'],
         widthsOf = (model: CubeGridModel, colIds = PIVOT_COLS) =>
             colIds.map(colId => model.gridModel.getStateForColumn(colId).width),
         autosize = async (model: CubeGridModel, widths: number[], colIds = PIVOT_COLS) => {
@@ -954,28 +1019,27 @@ describe('pivot column widths', () => {
                 'Tech>>avg',
                 'measureSummary>>avg'
             ],
-            model = createModel({
-                query: {
-                    ...PIVOT_QUERY,
-                    pivot: {dimensions: ['sector'], measures: ['sum', 'avg']}
+            // 'Average Of A Long Label by Sector' heads avg's root, capped at 300px over its two
+            // displayed columns - 150px each.
+            model = createModel(
+                {
+                    query: {
+                        ...PIVOT_QUERY,
+                        pivot: {dimensions: ['sector'], measures: ['sum', 'avg']}
+                    },
+                    pivotConfig: {measuresOutermost: true, linkedSizing: {headerFitMaxWidth: 300}}
                 },
-                pivotConfig: {
-                    measuresOutermost: true,
-                    // 'Average Of A Long Label' heads avg's root, wanting 236px over its two
-                    // displayed columns - 68px more each.
-                    measures: [{field: 'avg', column: {headerName: 'Average Of A Long Label'}}],
-                    linkedSizing: {headerFitMaxWidth: 300}
-                }
-            });
+                {avg: {shortDisplayName: 'Average Of A Long Label'}}
+            );
 
-        // Sum's widest label is 'Energy', wanting 65px.
+        // Sum's root, 'Sum by Sector', wants 135px over its two - 68px each.
         await autosize(model, [50, 50, 50, 50, 50, 50], colIds);
-        expect(widthsOf(model, colIds)).toEqual([65, 65, 65, 118, 118, 118]);
+        expect(widthsOf(model, colIds)).toEqual([68, 68, 68, 150, 150, 150]);
     });
 
     it('autosizes a managed grid when the sizing or measuresOutermost changes', () => {
         const model = createModel({
-                query: PIVOT_QUERY,
+                query: NESTED_QUERY,
                 gridConfig: {autosizeOptions: {mode: 'managed'}},
                 pivotConfig: {linkedSizing: {headerFitMaxWidth: 140}}
             }),
@@ -1031,7 +1095,7 @@ describe('pivot column widths', () => {
             const model = createModel({
                     query: {
                         ...PLAIN_QUERY,
-                        pivot: {dimensions: ['sector', 'book'], measures: ['sum']}
+                        pivot: {dimensions: ['sector', 'book'], measures: ['sum', 'avg']}
                     },
                     pivotConfig: {
                         // 'Tech Long Label' wants 155px, capped at 140.
@@ -1048,19 +1112,19 @@ describe('pivot column widths', () => {
                 colIds = [...pivotModel.colIds];
             await autosize(
                 model,
-                colIds.map(() => 50),
+                colIds.map(() => 30),
                 colIds
             );
 
-            // Expanded, Tech's label spans its two book columns.
-            expect(uniq(widthsOf(model, colIds))).toEqual([70]);
+            // Expanded, Tech's label spans its two books' four columns.
+            expect(uniq(widthsOf(model, colIds))).toEqual([35]);
 
-            // Collapsed, it spans only its summary column.
+            // Collapsed, it spans only its two summary columns.
             gridModel.setColumnGroupExpanded('Tech', false);
-            expect(uniq(widthsOf(model, colIds))).toEqual([140]);
+            expect(uniq(widthsOf(model, colIds))).toEqual([70]);
 
             gridModel.setColumnGroupExpanded('Tech', true);
-            expect(uniq(widthsOf(model, colIds))).toEqual([70]);
+            expect(uniq(widthsOf(model, colIds))).toEqual([35]);
         }
     );
 });
@@ -1076,6 +1140,12 @@ const PIVOT_QUERY: QueryConfig = {
     pivot: {dimensions: ['sector'], measures: ['sum']}
 };
 
+/** Two measures, which nest under each path - a lone measure is always laid out outermost. */
+const NESTED_QUERY: QueryConfig = {
+    ...PLAIN_QUERY,
+    pivot: {dimensions: ['sector'], measures: ['sum', 'avg']}
+};
+
 const TRADES = [
     trade(1, 'US', 'Tech', 'A', 1),
     trade(2, 'US', 'Tech', 'B', 2),
@@ -1087,24 +1157,26 @@ function trade(id: number, region: string, sector: string, book: string, qty: nu
     return {id, region, sector, book, qty, sum: qty, avg: qty};
 }
 
-function createCube(data: PlainObject[]): Cube {
+/** A cube over `data`, with any field's spec extended by `fieldSpecs` - a shortDisplayName, say. */
+function createCube(data: PlainObject[], fieldSpecs: PlainObject = {}): Cube {
+    const fields = [
+        {name: 'region', isDimension: true},
+        {name: 'sector', isDimension: true},
+        {name: 'book', isDimension: true},
+        {name: 'qty', type: 'int' as const},
+        {name: 'sum', type: 'int' as const, aggregator: 'SUM'},
+        {name: 'avg', type: 'number' as const, aggregator: 'AVG'}
+    ];
     return autoDestroy(
-        new Cube({
-            fields: [
-                {name: 'region', isDimension: true},
-                {name: 'sector', isDimension: true},
-                {name: 'book', isDimension: true},
-                {name: 'qty', type: 'int'},
-                {name: 'sum', type: 'int', aggregator: 'SUM'},
-                {name: 'avg', type: 'number', aggregator: 'AVG'}
-            ],
-            data
-        })
+        new Cube({fields: fields.map(it => ({...it, ...fieldSpecs[it.name]})), data})
     );
 }
 
-function createModel(config: Omit<ConstructorParameters<typeof CubeGridModel>[0], 'cube'>) {
-    return autoDestroy(new CubeGridModel({cube: createCube(TRADES), ...config}));
+function createModel(
+    config: Omit<ConstructorParameters<typeof CubeGridModel>[0], 'cube'>,
+    fieldSpecs?: PlainObject
+) {
+    return autoDestroy(new CubeGridModel({cube: createCube(TRADES, fieldSpecs), ...config}));
 }
 
 function autoDestroy<T extends {destroy(): void}>(obj: T): T {
@@ -1124,4 +1196,11 @@ function groupIdOf(it: ColumnOrGroup): string {
 /** Leaf column ids in display order, descending through groups. */
 function colIds(cols: ColumnOrGroup[]): string[] {
     return cols.flatMap(it => (it instanceof ColumnGroup ? colIds(it.children) : it.colId));
+}
+
+/** A column's export name, resolving the function form. */
+function exportNameOf(gridModel: GridModel, colId: string) {
+    const column = gridModel.getColumn(colId),
+        {exportName} = column;
+    return isFunction(exportName) ? exportName({column, gridModel, agParams: null}) : exportName;
 }

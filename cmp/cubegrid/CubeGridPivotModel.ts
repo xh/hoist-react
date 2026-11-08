@@ -77,9 +77,10 @@ export interface CubeGridPivotConfig {
 
     /**
      * True to put each measure outermost, with the pivot paths beneath it, to compare one measure
-     * across paths. Default false, nesting the measures under each path. Outermost, each measure
-     * is a root group that collapses to its own row summary, with no group over the whole
-     * region, so the header is one level shallower. Leaf paths head their columns directly, and
+     * across paths. Default false, nesting the measures under each path. Applies only with
+     * multiple measures - a single measure is always laid out outermost. Outermost, each measure
+     * is a root group that collapses to its own row summary, with no group over the whole region,
+     * so the header is one level shallower. Leaf paths head their columns directly, and
      * summaries are single columns, so `showCollapsedLabel` has no effect.
      */
     measuresOutermost?: boolean;
@@ -248,12 +249,18 @@ export class CubeGridPivotModel extends HoistModel {
         this._labelWidths = new Map();
         if (!this.query.isPivoted || isEmpty(paths)) return [];
 
-        // Each root collapses to its row summaries: one group over the whole region, titled by
-        // the pivot dimensions, or one per measure.
+        // Each root collapses to its row summaries: one group over the whole region, or one per
+        // measure. Its header names the first pivot dimension - the level directly beneath it -
+        // after the measure when it has one, with every dimension in the tooltip. Both use the
+        // fields' short display names, as the header has little room.
         const {_rootPath: rootPath, pivotMeasures} = this,
-            title = this.query.pivot.dimensions.map(it => it.displayName).join(' › '),
-            buildRoot = (fields: CubeField[], header: string) => {
-                const labels = this.measuresOutermost ? [header] : [],
+            dims = this.query.pivot.dimensions.map(it => it.shortDisplayName),
+            buildRoot = (fields: CubeField[]) => {
+                const measures = fields.map(it => it.shortDisplayName),
+                    perMeasure = this.isMeasuresOutermost,
+                    labels = perMeasure ? fields.map(it => this.measureHeader(it)) : [],
+                    header = perMeasure ? `${measures[0]} by ${dims[0]}` : `By ${dims[0]}`,
+                    tooltip = `${measures.join(', ')} by ${dims.join(' › ')}`,
                     pathCols = this.sortPaths(paths, 0).map(path =>
                         this.buildPathColumn(path, labels, [], fields)
                     );
@@ -261,16 +268,13 @@ export class CubeGridPivotModel extends HoistModel {
                     this.groupIdFor(PIVOT_GROUP_ID, fields),
                     header,
                     this.buildGroupChildren(pathCols, rootPath, labels, [], fields),
-                    {
-                        level: 0,
-                        headerTooltip: this.measuresOutermost ? `${header} by ${title}` : null
-                    }
+                    {level: 0, headerTooltip: tooltip !== header ? tooltip : null}
                 );
             };
 
-        this._rootGroups = this.measuresOutermost
-            ? pivotMeasures.map(field => buildRoot([field], this.measureHeader(field)))
-            : [buildRoot(pivotMeasures, title)];
+        this._rootGroups = this.isMeasuresOutermost
+            ? pivotMeasures.map(field => buildRoot([field]))
+            : [buildRoot(pivotMeasures)];
         this._colIds = new Set(leafColIds(this._rootGroups));
         return this._rootGroups;
     }
@@ -310,6 +314,8 @@ export class CubeGridPivotModel extends HoistModel {
     }
 
     // Each path appears once per measure when measures are outermost, so its group ids carry it.
+    // A lone measure laid out outermost keeps the nested ids, so its groups' state carries over
+    // when a second measure brings the nested layout back.
     private groupIdFor(id: string, fields: CubeField[]): string {
         return this.measuresOutermost ? `${fields[0].name}::${id}` : id;
     }
@@ -327,6 +333,11 @@ export class CubeGridPivotModel extends HoistModel {
     // dimension at the level below it. Defaults beyond the innermost dimension.
     private dimensionSpec(level: number): Omit<PivotDimensionSpec, 'field'> {
         return this._dimensionSpecs[level] ?? DIMENSION_DEFAULTS;
+    }
+
+    // With one measure there is nothing to nest, and outermost saves the redundant header row.
+    private get isMeasuresOutermost(): boolean {
+        return this.measuresOutermost || this.pivotMeasures.length === 1;
     }
 
     // Measures in `measures` order, then any the app left unconfigured in query order.
@@ -388,7 +399,7 @@ export class CubeGridPivotModel extends HoistModel {
 
         if (isEmpty(path.children)) {
             // With measures outermost the measure heads the root, so a leaf path heads its own column.
-            if (this.measuresOutermost) {
+            if (this.isMeasuresOutermost) {
                 return {
                     ...this.buildValueColumn(path, fields[0], ancestorLabels, classes, label),
                     headerTooltip
@@ -439,7 +450,7 @@ export class CubeGridPivotModel extends HoistModel {
             ? pathCols.map(it => ({...it, groupShowMode: 'expanded' as const}))
             : pathCols;
 
-        if (this.measuresOutermost) {
+        if (this.isMeasuresOutermost) {
             const [col] = this.buildSummaryColumns(
                     summaryPath,
                     labels,
@@ -497,7 +508,7 @@ export class CubeGridPivotModel extends HoistModel {
         prefix: string
     ): ColumnSpec[] {
         const {summaryLabel, summaryClass} = this.dimensionSpec(path.depth),
-            cols = this.measuresOutermost
+            cols = this.isMeasuresOutermost
                 ? fields.map(field =>
                       this.buildValueColumn(path, field, labels, classes, summaryLabel)
                   )
@@ -524,7 +535,8 @@ export class CubeGridPivotModel extends HoistModel {
     // it. Field names are built from data values that may contain dots. The export header is the
     // path's labels and the column's header, as the header alone repeats across paths. A
     // `headerName` given here is a pivot label, replacing the spec's. While widths are shared it
-    // is fitted as group labels are, not by autosize. The value classes go before the measure's.
+    // is fitted as group labels are, not by autosize. Without either, the header is the measure's
+    // short name and the export its full one. The value classes go before the measure's.
     private buildValueColumn(
         path: PivotPath,
         field: CubeField,
@@ -533,11 +545,12 @@ export class CubeGridPivotModel extends HoistModel {
         headerName?: string
     ): ColumnSpec {
         const name = this.cellFieldName(path, field),
-            spec = this.measureColumn(field);
+            spec = this.measureColumn(field),
+            isShortName = !headerName && spec.headerName === undefined;
         return {
             ...(headerName && this.linkedSizing ? {autosizeIncludeHeader: false} : null),
             ...spec,
-            ...(headerName ? {headerName} : null),
+            headerName: isShortName ? field.shortDisplayName : headerName || spec.headerName,
             ...(isEmpty(classes)
                 ? null
                 : {
@@ -556,7 +569,10 @@ export class CubeGridPivotModel extends HoistModel {
                     header = isFunction(headerName)
                         ? headerName({column, gridModel, agParams: null})
                         : headerName;
-                return [...labels, isString(header) ? header : field.displayName].join(' › ');
+                return [
+                    ...labels,
+                    !isShortName && isString(header) ? header : field.displayName
+                ].join(' › ');
             },
             // Keeps the pivot block trailing: a fixed column cannot be dropped inside it.
             agOptions: {lockPosition: 'right'}
@@ -626,7 +642,7 @@ export class CubeGridPivotModel extends HoistModel {
     // which changes the cell columns' headers.
     private sizingReaction(): ReactionSpec {
         return {
-            track: () => [this.linkedSizing, this.measuresOutermost],
+            track: () => [this.linkedSizing, this.isMeasuresOutermost],
             equals: 'structural',
             run: () => {
                 const {gridModel} = this;
@@ -732,7 +748,7 @@ export class CubeGridPivotModel extends HoistModel {
             } else {
                 ret.push(child.colId);
                 // With measures outermost, a column's own header is a pivot label too.
-                if (this.measuresOutermost && isString(child.headerName)) {
+                if (this.isMeasuresOutermost && isString(child.headerName)) {
                     fn(child.headerName, [child.colId], false);
                 }
             }
@@ -793,7 +809,7 @@ export class CubeGridPivotModel extends HoistModel {
 }
 
 /**
- * Group id of the column group spanning the pivot region. Its summary group is `pivot:summary`. In
+ * Group id of the column group spanning the pivot region. Its summary group is `pivot:summary`. With
  * `measuresOutermost` there is no such group - each measure's root is `{field}::pivot`.
  */
 export const PIVOT_GROUP_ID = 'pivot';

@@ -2143,7 +2143,7 @@ export class GridModel extends HoistModel implements GridLikeModel {
 
             if (!field) return col;
 
-            const {displayName, description, type} = field,
+            const {displayName, shortDisplayName, description, type} = field,
                 isNum = numTypes.includes(type),
                 isDate = dateTypes.includes(type),
                 align = isNum ? 'right' : undefined,
@@ -2153,12 +2153,23 @@ export class GridModel extends HoistModel implements GridLikeModel {
                       ? Column.DESC_FIRST
                       : Column.ASC_FIRST;
 
+            // A column that names itself keeps that name. Otherwise its header takes the field's
+            // short name, and its export the full one.
+            const shortName =
+                col.displayName == null &&
+                col.headerName === undefined &&
+                shortDisplayName != null &&
+                shortDisplayName !== displayName
+                    ? {headerName: shortDisplayName, exportName: displayName}
+                    : null;
+
             // TODO: Set the editor based on field type
             return {
                 displayName,
                 description,
                 sortingOrder,
                 align,
+                ...shortName,
                 ...col
             };
         });

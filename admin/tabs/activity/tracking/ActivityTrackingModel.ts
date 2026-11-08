@@ -375,8 +375,8 @@ export class ActivityTrackingModel extends HoistModel implements ActivityDetailP
             Col.dayRange.field,
             Col.device.field,
             Col.errorName.field,
-            Col.elapsed.field,
-            Col.elapsedMax.field,
+            {...(Col.elapsed.field as FieldSpec), displayName: 'Elapsed (avg)'},
+            {...(Col.elapsedMax.field as FieldSpec), displayName: 'Elapsed (max)'},
             Col.entryCount.field,
             Col.impersonating.field,
             Col.instance.field,
@@ -480,8 +480,8 @@ export class ActivityTrackingModel extends HoistModel implements ActivityDetailP
                 {...Col.browser, hidden},
                 {...Col.userAgent, hidden},
                 {...Col.impersonating, hidden},
-                {...Col.elapsed, displayName: 'Elapsed (avg)', hidden},
-                {...Col.elapsedMax, displayName: 'Elapsed (max)', hidden},
+                {...Col.elapsed, hidden},
+                {...Col.elapsedMax, hidden},
                 {...Col.dayRange, hidden},
                 {...Col.entryCount},
                 {field: 'count', chooserGroup: 'Core Data', hidden},
@@ -515,14 +515,8 @@ export class ActivityTrackingModel extends HoistModel implements ActivityDetailP
                 dimensionDefaults: {showSummary: true},
                 measures: [
                     {field: 'entryCount', column: {width: 80}},
-                    {
-                        field: 'elapsed',
-                        column: {headerName: 'Elapsed (avg)', width: 100, renderer: elapsedRenderer}
-                    },
-                    {
-                        field: 'elapsedMax',
-                        column: {headerName: 'Elapsed (max)', width: 100, renderer: elapsedRenderer}
-                    }
+                    {field: 'elapsed', column: {width: 100, renderer: elapsedRenderer}},
+                    {field: 'elapsedMax', column: {width: 100, renderer: elapsedRenderer}}
                 ]
             }
         });

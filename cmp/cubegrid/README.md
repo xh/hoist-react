@@ -45,7 +45,7 @@ CubeGridModel
 │   ├── dimensions, dimensionDefaults  # Per dimension: sort, collapsing, summaries, labels, classes
 │   ├── measures, measureDefaults      # Per measure: column config applied across every path
 │   ├── availableDimensions, availableMeasures  # What a pivot picker offers
-│   ├── measuresOutermost              # Measures outermost, paths beneath (default false)
+│   ├── measuresOutermost              # Measures outermost, paths beneath (default false; 2+ measures)
 │   ├── linkedSizing                   # One width per measure: true|false|{headerFitMaxWidth}
 │   ├── expandLevel                    # Pivot header level, as expandLevel for rows
 │   └── expandToLevel(), expandAll(), collapseAll()
@@ -135,7 +135,8 @@ The grid has two regions, always in this order:
    so `{field: 'mktVal'}` shows market value once even when the query pivots P&L by region.
 2. **Pivot columns** - derived from `result.paths` when the query pivots, one group per path with a
    column per `pivot.measures` entry, configured through `pivotConfig.measures`. One group spans the
-   region, titled by the pivot dimensions (`Region › Sector`).
+   region, titled by the first pivot dimension (`By Region`), with every dimension and measure in its
+   tooltip (`Mkt Val, Pnl by Region › Sector`). Both name fields by their `shortDisplayName`.
 
 Column groups in the pivot region expand and collapse from their headers. Each pivot dimension has a
 summary that aggregates its values: the first dimension's is the row summary, which the region
@@ -244,7 +245,7 @@ Each cell the View publishes becomes one column, bound to its synthetic field na
 
 | Column | Field on the row | Header |
 |--------|------------------|--------|
-| Row summary for `pnl` | `pnl` | `Region › Sector` › `Total` › `Pnl` |
+| Row summary for `pnl` | `pnl` | `By Region` › `Total` › `Pnl` |
 | Cell for region `US`, measure `pnl` | `US>>pnl` | `US` › `Pnl` |
 | Summary for `US` with a second pivot dimension | `US>>pnl` | `US` › `Total` › `Pnl` |
 | Cell for `US` › `Tech` | `US>>Tech>>pnl` | `US` › `Tech` › `Pnl` |
@@ -268,20 +269,23 @@ remove columns.
 ### Measures Outermost
 
 `measuresOutermost: true` puts each measure outermost, with the paths beneath it, to compare one
-measure across paths:
+measure across paths. It applies only with multiple measures: a single measure is always laid out
+this way, since nesting it would repeat its name under every path. Its groups keep the default
+layout's ids unless the option is set, so their expand state carries over as measures are added.
 
 ```
 Default                             measuresOutermost: true
-Region › Sector                     Pnl
+By Region                           Pnl by Region
 ├── US                              ├── US: Tech | Energy | Total
 │   ├── Tech: Pnl | MktVal          ├── EU: ...
 │   └── ...                         └── Total
 └── Total: Pnl | MktVal             MktVal ...
 ```
 
-Each measure is a root group, headed by its column's `headerName`, that collapses to its own row
-summary - there is no group over the whole region, so `PIVOT_GROUP_ID` is not present and the header
-is one level shallower. The pivot dimensions show in the measure's tooltip. Group ids carry the
+Each measure is a root group, headed by its column's `headerName` and the first pivot dimension
+(`Pnl by Region`), that collapses to its own row summary - there is no group over the whole region,
+so `PIVOT_GROUP_ID` is not present and the header is one level shallower. Every pivot dimension
+shows in the measure's tooltip. Group ids carry the
 measure, as `pnl::pivot` and `pnl::US`, so each measure expands on its own. Summaries still belong
 to their dimensions, so the first dimension's settings govern each measure's row summary. Leaf paths
 head their columns directly, and each summary is a single column under its own `measureSummary>>`

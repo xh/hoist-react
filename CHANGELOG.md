@@ -53,6 +53,9 @@
   `Icon.zoomIn()` and `Icon.zoomOut()`), plus `Icon.rotateRight()`.
 * Added `ColumnGroupSpec.chooserName` to set a group's name in the desktop column chooser. Use it
   when `headerName` is a function or element, which the chooser cannot display.
+* Added `Field.shortDisplayName`, a shorter name for headers. A grid column takes it as its default
+  `headerName` unless it sets its own `displayName`, and pivot headers in `CubeGrid` use it. The
+  column chooser, menus and exports keep `displayName`, which it defaults to.
 
 ### 🐞 Bug Fixes
 

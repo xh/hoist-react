@@ -127,6 +127,45 @@ describe('GridModel', () => {
             expect(tradeDate.sortingOrder).toEqual(Column.DESC_FIRST);
         });
 
+        it("heads a column with its field's shortDisplayName, keeping displayName elsewhere", () => {
+            const gridModel = createGridModel({
+                store: {
+                    fields: [
+                        {name: 'qty', displayName: 'Quantity', shortDisplayName: 'Qty'},
+                        {name: 'mktVal', displayName: 'Market Value', shortDisplayName: 'Mkt Val'},
+                        {name: 'pnl', displayName: 'Profit and Loss', shortDisplayName: 'P&L'}
+                    ]
+                },
+                columns: [
+                    {field: 'qty'},
+                    {field: 'mktVal', displayName: 'Value'},
+                    {field: 'pnl', headerName: 'PL'},
+                    {field: {name: 'price', displayName: 'Unit Price', shortDisplayName: 'Px'}}
+                ]
+            });
+
+            expect(gridModel.getColumn('qty')).toMatchObject({
+                headerName: 'Qty',
+                chooserName: 'Quantity',
+                exportName: 'Quantity'
+            });
+            // A column naming itself keeps that name.
+            expect(gridModel.getColumn('mktVal')).toMatchObject({
+                headerName: 'Value',
+                exportName: 'Value'
+            });
+            expect(gridModel.getColumn('pnl')).toMatchObject({
+                headerName: 'PL',
+                chooserName: 'Profit and Loss',
+                exportName: 'PL'
+            });
+            expect(gridModel.getColumn('price')).toMatchObject({
+                headerName: 'Px',
+                chooserName: 'Unit Price',
+                exportName: 'Unit Price'
+            });
+        });
+
         it('keeps a column textRenderer, such as a number spec has, over a default renderer', () => {
             const renderer = (v: unknown) => `${v ?? '-'}`,
                 textRenderer = (v: unknown) => `<${v}>`,

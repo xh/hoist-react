@@ -51,7 +51,7 @@ export interface PivotDimensionSpec {
     /**
      * True (default) to show `summaryLabel` over the summary while its group is collapsed. False
      * to drop it, so the summary's column headers stretch up to the group's. No effect with
-     * `measuresOutermost`, where a summary is one column headed by its label.
+     * measures outermost, or a single measure, where a summary is one column headed by its label.
      */
     showCollapsedLabel?: boolean;
 
@@ -87,9 +87,9 @@ export interface PivotMeasureSpec {
 
     /**
      * Column config applied to every pivot column built for the measure, under every path -
-     * renderer, width, align, and so on. Its `headerName` names the measure. Keys the grid sets
-     * itself - identity, placement, visibility, export name, editing and `agOptions` - are
-     * ignored, so a spec shared with the fixed `columns` applies cleanly.
+     * renderer, width, align, and so on. Its `headerName` heads the measure's columns. Keys the
+     * grid sets itself - identity, placement, visibility, export name, editing and `agOptions` -
+     * are ignored, so a spec shared with the fixed `columns` applies cleanly.
      */
     column?: Partial<ColumnSpec>;
 }
