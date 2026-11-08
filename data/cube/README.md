@@ -311,8 +311,8 @@ to consume a pivoted View without a grid.
 **Updates.** A pivoted View ticks like any other: a value change adjusts the affected cells and
 totals in place, while a record moving between pivot paths rebuilds, the same as a change to a row
 dimension. `updateQuery` with a different `pivot.dimensions` or `measures` reshapes the columns;
-an empty `pivot.dimensions` degenerates to an ordinary View so an app can toggle pivoting without
-swapping objects.
+an empty `pivot.dimensions` or `measures` degenerates to an ordinary View so an app can toggle
+pivoting without swapping objects.
 
 **How it works, briefly.** Each group row carries a hidden subtree of cell rows, one per populated
 pivot path. They are real rows in the aggregation network, so every aggregator - built-in or

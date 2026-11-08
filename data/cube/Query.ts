@@ -154,7 +154,8 @@ export interface PivotSpec {
 
     /**
      * Measures to aggregate per cell - fields with an aggregator, and not `isDimension`. Added to
-     * the query's `fields` along with any {@link Aggregator.dependsOn}.
+     * the query's `fields` along with any {@link Aggregator.dependsOn}. Empty degenerates to plain
+     * View behavior, as for `dimensions`.
      */
     measures: string[] | CubeField[];
 
@@ -310,6 +311,7 @@ export class Query {
     orphansParents(other: Query): boolean {
         return (
             !isEqual(this.dimensions, other.dimensions) ||
+            this.isPivoted !== other.isPivoted ||
             // Cell row ids are keyed on pivot path, whose keys carry dimension values alone.
             !isEqual(this.pivot?.dimensions, other.pivot?.dimensions)
         );
@@ -356,9 +358,9 @@ export class Query {
     //------------------------
     // Pivot
     //------------------------
-    /** True if this query pivots on at least one dimension. */
+    /** True if this query pivots on at least one dimension and measure. */
     get isPivoted(): boolean {
-        return !isEmpty(this.pivot?.dimensions);
+        return !isEmpty(this.pivot?.dimensions) && !isEmpty(this.pivot.measures);
     }
 
     private parsePivot(spec: PivotSpec): Pivot {
@@ -377,7 +379,7 @@ export class Query {
     }
 
     private parseMeasures(raw: CubeField[] | string[]): CubeField[] {
-        throwIf(isEmpty(raw), 'A pivot requires at least one entry in `measures`.');
+        if (isEmpty(raw)) return [];
         if (raw[0] instanceof CubeField) return raw.slice() as CubeField[]; // force clone, we retain.
 
         const {fields} = this.cube;

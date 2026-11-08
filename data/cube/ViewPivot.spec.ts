@@ -200,6 +200,21 @@ describe('View', () => {
             expectMatchesFresh(view);
         });
 
+        it('degenerates to a plain view with no measures, and pivots again', () => {
+            const view = pivotView(createCube(TRADES));
+
+            view.updateQuery({pivot: {...view.query.pivot, measures: []}});
+            expect(view.query.isPivoted).toBe(false);
+            expect(view.result.paths).toEqual([]);
+            expect(view.result.cellFields).toEqual([]);
+            expect('Tech>>sum' in rowAt(view, 'US')).toBe(false);
+            expectMatchesFresh(view, {...QUERY, pivot: {dimensions: ['sector'], measures: []}});
+
+            view.updateQuery({pivot: {...view.query.pivot, measures: ['sum', 'avg']}});
+            expect(rowAt(view, 'US')).toMatchObject({'Tech>>sum': 3, 'Energy>>sum': 3});
+            expectMatchesFresh(view);
+        });
+
         it('creates a store with cell fields declared and kept current', async () => {
             const cube = createCube(TRADES),
                 view = pivotView(cube),

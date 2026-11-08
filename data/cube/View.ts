@@ -454,7 +454,7 @@ export class View
         this._fieldsByName = new Map(this.fields.map(it => [it.name, it]));
         this._structuralDimNames = [
             ...(query.dimensions ?? []),
-            ...(query.pivot?.dimensions ?? [])
+            ...(query.isPivoted ? query.pivot.dimensions : [])
         ].map(it => it.name);
 
         // Aggregation eligibility is a function of level alone - dimensions apply in order, and
