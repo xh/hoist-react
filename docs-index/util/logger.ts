@@ -13,13 +13,13 @@ const quiet = !!process.env.HOIST_MCP_QUIET;
 
 export const log = {
     info: (...args: unknown[]) => {
-        if (!quiet) console.error('[hoist-mcp]', ...args);
+        if (!quiet) console.error('[hoist-docs-index]', ...args);
     },
-    warn: (...args: unknown[]) => console.error('[hoist-mcp] WARN:', ...args),
-    error: (...args: unknown[]) => console.error('[hoist-mcp] ERROR:', ...args),
+    warn: (...args: unknown[]) => console.error('[hoist-docs-index] WARN:', ...args),
+    error: (...args: unknown[]) => console.error('[hoist-docs-index] ERROR:', ...args),
     debug: (...args: unknown[]) => {
         if (process.env.HOIST_MCP_DEBUG) {
-            console.error('[hoist-mcp] DEBUG:', ...args);
+            console.error('[hoist-docs-index] DEBUG:', ...args);
         }
     }
 };

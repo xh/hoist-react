@@ -14,6 +14,14 @@
 
 ## 91.0.0-SNAPSHOT - unreleased
 
+### 💥 Breaking Changes (upgrade difficulty: 🎉 TRIVIAL)
+
+See [`docs/upgrade-notes/v91-upgrade-notes.md`](docs/upgrade-notes/v91-upgrade-notes.md) for
+detailed, step-by-step upgrade instructions with before/after code examples.
+
+* Removed the bundled stdio MCP server and the `hoist-mcp`, `hoist-docs` and `hoist-ts` CLIs.
+  Point agent configs at a [Hoist Docs](https://github.com/xh/hoist-docs) server instead.
+
 ### 🎁 New Features
 
 * Added `PdfViewer` and `PdfViewerModel` in `@xh/hoist/cmp/pdfviewer`, built on Mozilla's pdf.js.
@@ -39,6 +47,11 @@
 
 ### 🤖 AI Docs + Tooling
 
+* Moved MCP docs and symbol tooling to the Hoist Docs service, which serves hoist-react and
+  hoist-core over MCP Streamable HTTP, so agents can reach it through an MCP gateway. Added
+  `pnpm build:index` (in `docs-index/`), which builds the index file the service loads.
+* Removed the MCP-only runtime dependencies `@modelcontextprotocol/sdk`, `zod`, `commander` and
+  `minisearch`, and moved `ts-morph` and `tsx` to `devDependencies`. Apps no longer install them.
 * Fixed the `hoist-ts` CLI and MCP symbol tools giving a file import path for every symbol when run
   from an app's installed `@xh/hoist`. They now give the package barrel, such as
   `@xh/hoist/cmp/grid`, as they do in a hoist-react checkout.

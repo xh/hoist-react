@@ -18,7 +18,7 @@ let cachedHoistVersion: string | undefined;
 /**
  * Resolve the hoist-react repo root by walking up from this file's location.
  *
- * The file lives at `mcp/util/paths.ts`, so the repo root is two directories
+ * The file lives at `docs-index/util/paths.ts`, so the repo root is two directories
  * up. A sanity check verifies that `package.json` exists at the resolved root.
  * The result is cached after the first call.
  */
@@ -26,7 +26,7 @@ export function resolveRepoRoot(): string {
     if (cachedRepoRoot) return cachedRepoRoot;
 
     const thisFile = fileURLToPath(import.meta.url);
-    // mcp/util/paths.ts -> mcp/util/ -> mcp/ -> repo root
+    // docs-index/util/paths.ts -> docs-index/util/ -> docs-index/ -> repo root
     const repoRoot = resolve(dirname(thisFile), '..', '..');
 
     if (!existsSync(resolve(repoRoot, 'package.json'))) {
@@ -68,7 +68,7 @@ export function resolveRepoRootPosix(): string {
  * `@xh/hoist/test-support`, so it is indexed.
  *
  * Tests the path relative to `repoRoot`, never the absolute path. In an app, the package root
- * itself sits under `node_modules`, and a folder above it may be named `build` or `mcp`. A test
+ * itself sits under `node_modules`, and a folder above it may be named `build` or `docs-index`. A test
  * of the absolute path then rejects every file. The symbol indexer and the import path resolver
  * both filter with this function so that they always agree.
  *
@@ -81,7 +81,7 @@ export function isLibrarySource(filePath: string, repoRoot: string): boolean {
     return (
         !relPath.startsWith('/node_modules/') &&
         !relPath.includes('/build/') &&
-        !relPath.includes('/mcp/') &&
+        !relPath.includes('/docs-index/') &&
         !relPath.startsWith('/test-support/report/') &&
         !relPath.endsWith('.spec.ts')
     );

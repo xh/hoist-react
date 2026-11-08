@@ -32,10 +32,10 @@ export default defineConfig(
         }),
         {
             test: {
-                // mcp/ has its own node:test specs, run by `pnpm test:mcp`. Dot-directories are
+                // docs-index/ has its own node:test specs, run by `pnpm test:docs-index`. Dot-directories are
                 // excluded so a run from the main checkout never collects specs from worktrees
                 // under .claude/.
-                exclude: [...configDefaults.exclude, 'build/**', 'mcp/**', '.*/**'],
+                exclude: [...configDefaults.exclude, 'build/**', 'docs-index/**', '.*/**'],
                 // Record each test's line number, for links from reports to the spec source.
                 includeTaskLocation: true,
                 // Show values interpolated into it.each() test names in full - they describe the

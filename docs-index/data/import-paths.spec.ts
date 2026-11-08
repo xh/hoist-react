@@ -1,6 +1,6 @@
 /**
  * Test harness for library source filtering and barrel import path resolution. Run with:
- *   npx tsx mcp/data/import-paths.spec.ts
+ *   npx tsx docs-index/data/import-paths.spec.ts
  *
  * Self-contained, exit-coded driver (the repo has no general test framework). The tools run both
  * from a hoist-react checkout and from an app's installed `@xh/hoist`, where the package root
@@ -12,7 +12,6 @@
  *   - `createImportPathResolver`: barrel paths through `export *`, `export type *`, and named
  *     re-exports, and null for a symbol no barrel reaches
  *
- * `mcp/tools/installed-package.spec.ts` runs the real CLIs from a packed install.
  */
 import {Project} from 'ts-morph';
 import {createImportPathResolver} from './import-paths.js';
@@ -49,7 +48,7 @@ const ROOTS: Record<string, string> = {
     'app install (pnpm store)':
         '/home/dev/my-app/client-app/node_modules/.pnpm/@xh+hoist@91.0.0/node_modules/@xh/hoist',
     'app under a build/ folder': '/ci/build/my-app/client-app/node_modules/@xh/hoist',
-    'app under an mcp/ folder': '/srv/mcp/my-app/client-app/node_modules/@xh/hoist',
+    'app under a docs-index/ folder': '/srv/docs-index/my-app/client-app/node_modules/@xh/hoist',
     'Windows app install': 'C:/dev/my-app/client-app/node_modules/@xh/hoist'
 };
 
@@ -65,7 +64,7 @@ const SOURCE_CASES: [string, boolean][] = [
     ['test-support/index.ts', true],
     ['node_modules/mobx/dist/mobx.d.ts', false],
     ['build/types/core/XH.d.ts', false],
-    ['mcp/data/ts-registry.ts', false],
+    ['docs-index/data/ts-registry.ts', false],
     ['core/XH.spec.ts', false],
     ['test-support/report/reporter.ts', false]
 ];

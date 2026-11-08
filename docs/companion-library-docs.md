@@ -1,5 +1,10 @@
 # Companion Library Docs
 
+> **Out of date.** hoist-react no longer ships the stdio MCP server and `hoist-docs` CLI described
+> below. Hoist docs are now served by the [Hoist Docs](https://github.com/xh/hoist-docs) service,
+> which does not yet load companion library docs. The registry format below is unchanged and will be
+> read by a companion library's own index build once the service supports it.
+
 A companion library is an npm package that builds on Hoist. Examples are `@xh/hoist-chat-kit` and
 a client firm's shared package of Hoist overrides and components. Such a library can serve its own
 docs through the hoist-react MCP server and the `hoist-docs` CLI. It needs no MCP server or CLI of

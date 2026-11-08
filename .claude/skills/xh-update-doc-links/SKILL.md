@@ -111,8 +111,8 @@ When new or recently changed docs are detected, look for cross-linking opportuni
 ## Step 6: Reconcile Document Registry
 
 Ensure `docs/doc-registry.json` reflects the current documentation on disk. This JSON file is
-the single source of truth for both the MCP server (which loads it at startup via
-`mcp/data/doc-registry.ts`) and the toolbox documentation viewer.
+the single source of truth for the docs index builder (`docs-index/data/doc-registry.ts`), whose
+index the Hoist Docs service serves to agents and in its docs viewer.
 
 1. **Read and parse** `docs/doc-registry.json`. Each entry in the `entries` array is a JSON
    object. The entry's `id` field is also the file path relative to the repo root (e.g.

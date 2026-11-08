@@ -8,7 +8,7 @@
     "skipLibCheck": true,
     "types": ["node"],
     "resolveJsonModule": true,
-    "outDir": "../build/mcp",
+    "outDir": "../build/docs-index",
     "rootDir": ".",
     "declaration": false,
     "noEmit": true

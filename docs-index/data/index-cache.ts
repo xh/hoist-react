@@ -42,20 +42,28 @@ import type {SymbolEntry, MemberIndexEntry, SymbolDetail} from './ts-registry.js
 const CACHE_SCHEMA_VERSION = 2;
 
 /** Directories pruned from the fingerprint walk - mirrors `buildSymbolIndex` filters. */
-const EXCLUDED_DIRS = new Set(['node_modules', 'build', 'mcp', '.git', '.idea', '.vscode', 'docs']);
+const EXCLUDED_DIRS = new Set([
+    'node_modules',
+    'build',
+    'docs-index',
+    '.git',
+    '.idea',
+    '.vscode',
+    'docs'
+]);
 
 /**
  * Indexer source files whose changes invalidate the cache despite living under
- * the excluded `mcp/` tree. Without this, a Hoist developer editing the
+ * the excluded `docs-index/` tree. Without this, a Hoist developer editing the
  * indexer logic would keep loading caches built by the previous version of
  * the code until an unrelated source file changed. Paths are relative to
  * repoRoot.
  */
 const INDEXER_SOURCES = [
-    'mcp/data/ts-registry.ts',
-    'mcp/data/import-paths.ts',
-    'mcp/data/index-cache.ts',
-    'mcp/util/paths.ts'
+    'docs-index/data/ts-registry.ts',
+    'docs-index/data/import-paths.ts',
+    'docs-index/data/index-cache.ts',
+    'docs-index/util/paths.ts'
 ];
 
 interface CachePayload {
@@ -73,7 +81,7 @@ export interface CachedIndexes {
 }
 
 function cachePath(repoRoot: string): string {
-    return resolve(repoRoot, 'node_modules', '.cache', 'hoist-mcp', 'index-v1.json');
+    return resolve(repoRoot, 'node_modules', '.cache', 'hoist-docs-index', 'index-v1.json');
 }
 
 /**
@@ -135,7 +143,7 @@ export function computeFingerprint(repoRoot: string): string {
             hash.update(`indexer:${rel}:${stat.mtimeMs}:${stat.size}`);
         } catch {
             // Indexer sources may be absent in unusual setups (e.g. a stripped
-            // package without the `mcp/` tree). Skip the mix-in rather than
+            // package without the `docs-index/` tree). Skip the mix-in rather than
             // fail; the index would just be unbuildable in that environment.
         }
     }

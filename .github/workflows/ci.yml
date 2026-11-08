@@ -65,10 +65,10 @@ jobs:
         - name: Check vendored files
           run: pnpm check:vendored
 
-        # Self-contained spec scripts for the MCP server and CLI tools, including the doc-search
-        # golden-set eval. See mcp/README.md.
-        - name: MCP tests
-          run: pnpm test:mcp
+        # Spec scripts for the Hoist Docs index builder, including schema conformance. See
+        # docs-index/README.md.
+        - name: Docs index tests
+          run: pnpm test:docs-index
 
         # Gates merges on a clean production-dependency audit for high and
         # critical advisories. The first, un-gated run prints lower-severity

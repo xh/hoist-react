@@ -280,12 +280,12 @@
             "keywords": ["InspectorPanel", "InspectorModel", "StatsModel", "InstancesModel", "DiagnosticsModel", "property watchlist", "model leak detection"]
         },
         {
-            "id": "mcp/README.md",
-            "title": "MCP Server",
+            "id": "docs-index/README.md",
+            "title": "Docs Index Builder",
             "mcpCategory": "package",
             "viewerCategory": "devops",
-            "description": "Model Context Protocol server providing AI assistants with documentation search, TypeScript type exploration, and code generation prompts.",
-            "keywords": ["MCP", "Model Context Protocol", "AI assistant", "Claude Code", "tools", "resources", "prompts", "search", "symbols", "documentation"]
+            "description": "Builds the index file of hoist-react docs and TypeScript symbols that the Hoist Docs service serves to AI assistants over MCP and to people in its docs viewer.",
+            "keywords": ["MCP", "Model Context Protocol", "AI assistant", "Claude Code", "Hoist Docs", "index", "build:index", "symbols", "documentation"]
         },
         {
             "id": "docs/companion-library-docs.md",
@@ -558,6 +558,14 @@
             "viewerCategory": "upgrade",
             "description": "Upgrade guide from v88.x to v89.0.0. Low difficulty. Covers the move to TypeScript 7.",
             "keywords": ["upgrade", "migration", "breaking changes", "v89", "v88"]
+        },
+        {
+            "id": "docs/upgrade-notes/v91-upgrade-notes.md",
+            "title": "v91 Upgrade Notes",
+            "mcpCategory": "devops",
+            "viewerCategory": "upgrade",
+            "description": "Upgrade guide from v90.x to v91.0.0. Trivial difficulty. Covers moving agent configs from the removed stdio MCP server and hoist-docs / hoist-ts CLIs to the Hoist Docs service.",
+            "keywords": ["upgrade", "migration", "breaking changes", "v91", "v90", "MCP", "hoist-mcp", "hoist-docs", "hoist-ts", "Hoist Docs", ".mcp.json"]
         },
         {
             "id": "docs/upgrade-notes/v90-upgrade-notes.md",
