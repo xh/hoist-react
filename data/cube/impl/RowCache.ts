@@ -6,7 +6,7 @@
  */
 
 import type {StoreRecord} from '@xh/hoist/data';
-import {map} from 'lodash';
+import {isEqual, map} from 'lodash';
 import type {Query} from '../Query';
 import {BaseRow} from '../row/BaseRow';
 import {ExposedLeafRow, type LeafRow} from '../row/LeafRow';
@@ -140,8 +140,11 @@ export class RowCache {
             oldFieldNames = new Set(map(oldQuery.fields, 'name')),
             fieldsGained = query.fields.some(it => !oldFieldNames.has(it.name)),
             bucketsRemoved = oldQuery.bucketSpecFn && !query.bucketSpecFn,
-            // Any other change leaving parents holding state the new query does not ask for.
-            parentsInvalid = query.invalidatesParents(oldQuery);
+            // Any other change leaving parents holding state the new query does not ask for. Cell
+            // rows aggregate `measures` alone, a set the `fields` check above cannot see.
+            parentsInvalid =
+                query.bucketSpecFn !== oldQuery.bucketSpecFn ||
+                !isEqual(query.pivot?.measures, oldQuery.pivot?.measures);
 
         // 1) Leaf-mode flips, field gains on exposed leaves, and bucket removal invalidate
         // wholesale - existing rows' data was minted without the gained fields. (Dropped fields
@@ -161,8 +164,13 @@ export class RowCache {
         // 3) Otherwise retain everything...
 
         // but where the change moves the ids parents generate under, throw out any unused rows at
-        // end, once reusable "upper tree" nodes are rescued.
-        if (query.orphansParents(oldQuery)) {
+        // end, once reusable "upper tree" nodes are rescued. Cell row ids are keyed on pivot path,
+        // whose keys carry dimension values alone.
+        if (
+            !isEqual(query.dimensions, oldQuery.dimensions) ||
+            query.isPivoted !== oldQuery.isPivoted ||
+            !isEqual(query.pivot?.dimensions, oldQuery.pivot?.dimensions)
+        ) {
             this.usedParents = new Set();
         }
     }

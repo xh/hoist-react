@@ -303,33 +303,6 @@ export class Query {
         );
     }
 
-    /**
-     * True if a change from `other` moves the ids cached parent rows are generated under, so
-     * unused rows must be swept. See {@link RowCache}.
-     * @internal
-     */
-    orphansParents(other: Query): boolean {
-        return (
-            !isEqual(this.dimensions, other.dimensions) ||
-            this.isPivoted !== other.isPivoted ||
-            // Cell row ids are keyed on pivot path, whose keys carry dimension values alone.
-            !isEqual(this.pivot?.dimensions, other.pivot?.dimensions)
-        );
-    }
-
-    /**
-     * True if a change from `other` leaves cached parent rows holding state no longer asked for, so
-     * they must be rebuilt. See {@link RowCache}.
-     * @internal
-     */
-    invalidatesParents(other: Query): boolean {
-        return (
-            this.bucketSpecFn !== other.bucketSpecFn ||
-            // Cell rows aggregate `measures` alone, a set RowCache's own `fields` check cannot see.
-            !isEqual(this.pivot?.measures, other.pivot?.measures)
-        );
-    }
-
     //------------------------
     // Implementation
     //------------------------
