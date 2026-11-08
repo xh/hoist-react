@@ -31,11 +31,11 @@
   group row and described by `ViewResult.paths` and `cellFields`, and pivoted Views update
   incrementally like any other. See `PivotSpec` and the
   [Cube README](data/cube/README.md#pivoting-with-pivot).
+    * See the Admin Console's Activity Tracking tab for a working example - its new "Pivot by"
+      option pivots the aggregate grid on a chosen dimension.
 * Added `ViewResult.exception`. A View that declines its data with a routine `HoistException`,
   such as a pivot over `maxPivotPaths`, publishes the exception and empties its result and stores
   rather than throwing. `CubeGrid` renders an `ErrorMessage` in place of the grid while it does.
-    * See the Admin Console's Activity Tracking tab for a working example - its new "Pivot by"
-      option pivots the aggregate grid on a chosen dimension.
 * Every grid-bound field, button and label now takes any `GridLikeModel` via its `gridModel` prop
   or from context - a `GridModel`, `ZoneGridModel`, `DataViewModel` or `CubeGridModel` - and acts
   on the `GridModel` behind it. This covers `StoreFilterField`, `GridFindField`, `GridCountLabel`,

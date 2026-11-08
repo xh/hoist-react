@@ -231,6 +231,20 @@ describe('View', () => {
             expect(store.getById('root>>region=[US]').data['Health>>sum']).toBe(1);
         });
 
+        it("keeps a store's measure fields, with their spec, as paths change and on unpivot", async () => {
+            const cube = createCube(TRADES),
+                view = pivotView(cube),
+                store = autoDestroy(view.createStore({connect: true})),
+                measureField = store.getField('sum');
+
+            await cube.updateDataAsync([trade(1, 'US', 'Health', 'A', 1)]);
+            expect(store.getField('sum')).toBe(measureField);
+
+            view.updateQuery({pivot: null});
+            expect(store.getField('sum')).toBe(measureField);
+            expect(store.getField('Health>>sum')).toBeFalsy();
+        });
+
         it('rejects a measure without an aggregator or that is a dimension', () => {
             const cube = createCube(TRADES);
 

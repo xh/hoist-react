@@ -186,9 +186,9 @@ export class PivotCells {
         // An unpivoted view mints a fresh empty array per build - compare emptiness too.
         if (prior === cellFields || (isEmpty(prior) && isEmpty(cellFields))) return;
 
-        // Replace only the fields declared last time. Root-path entries are the measures,
-        // already present.
-        const stale = new Set(prior?.map(it => it.name) ?? []),
+        // Replace only the fields declared last time. Root-path entries are the measures' own
+        // fields - never stale, so they keep their full spec and outlive the pivot.
+        const stale = new Set(prior?.filter(it => !it.path.isRoot).map(it => it.name)),
             retained = store.fields.filter(f => !stale.has(f.name)),
             retainedNames = new Set(retained.map(f => f.name)),
             added = cellFields

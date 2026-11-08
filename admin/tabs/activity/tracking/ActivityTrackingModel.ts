@@ -317,19 +317,12 @@ export class ActivityTrackingModel extends HoistModel implements ActivityDetailP
     //------------------------
     // Impl - query
     //------------------------
-    /** Requery the view to match the grouping and pivot controls. The grid follows on its own. */
+    /**
+     * Requery the view to match the grouping and pivot controls. The grid follows on its own, and
+     * shows the path cap's error in its place if the pivot outgrows it.
+     */
     private syncQuery() {
-        const {pivotBy} = this;
-        try {
-            this.cubeGridModel.view.updateQuery(this.queryConfig);
-        } catch (e) {
-            // Most likely the path cap - a pivot on `day` outgrows it as the period widens.
-            this.logWarn('Unable to pivot', e);
-            XH.warningToast(
-                `Too many distinct ${this.getDisplayName(pivotBy)} values to pivot on - narrow the period or choose another dimension.`
-            );
-            this.pivotBy = null;
-        }
+        this.cubeGridModel.view.updateQuery(this.queryConfig);
     }
 
     private get queryConfig(): QueryConfig {
