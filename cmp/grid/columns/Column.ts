@@ -676,14 +676,9 @@ export class Column {
         this.displayName = displayName ?? this.fieldSpec?.displayName ?? genDisplayName(this.colId);
         this.description = description ?? this.fieldSpec?.description;
 
-        // In contrast, headerName supports a null or '' value when no header label is desired. A
-        // column naming itself keeps that name, else it takes its own field spec's short name -
-        // GridModel applies a Store field's before this ctor runs.
-        const shortHeader =
-            headerName === undefined && displayName == null
-                ? this.fieldSpec?.shortDisplayName
-                : null;
-        this.headerName = withDefault(headerName, shortHeader ?? this.displayName);
+        // In contrast, headerName supports a null or '' value when no header label is desired.
+        // GridModel may have defaulted it from the field's `shortDisplayName` already.
+        this.headerName = withDefault(headerName, this.displayName);
 
         this.headerTooltip = withDefault(headerTooltip, this.description);
         this.headerHasExpandCollapse = withDefault(headerHasExpandCollapse, true);
@@ -745,8 +740,7 @@ export class Column {
         // ExportName must be non-empty string. Default to headerName if unspecified (it supports
         // the function form of headerName) and fallback to colId. Note GridExportService can
         // fallback again to colId internally if headerName is or returns an Element.
-        this.exportName =
-            exportName || (shortHeader ? this.displayName : (this.headerName as any)) || this.colId;
+        this.exportName = exportName || (this.headerName as any) || this.colId;
         this.exportValue = exportValue;
         this.excludeFromExport = withDefault(excludeFromExport, !this.field);
 

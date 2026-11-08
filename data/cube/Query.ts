@@ -352,12 +352,11 @@ export class Query {
     }
 
     private parseMeasures(raw: CubeField[] | string[]): CubeField[] {
-        if (isEmpty(raw)) return [];
-        if (raw[0] instanceof CubeField) return raw.slice() as CubeField[]; // force clone, we retain.
-
+        if (!raw) return [];
         const {fields} = this.cube;
-        return (raw as string[]).map(name => {
-            const field = find(fields, {name});
+        return (raw as Array<CubeField | string>).map(it => {
+            const name = it instanceof CubeField ? it.name : it,
+                field = it instanceof CubeField ? it : find(fields, {name});
             throwIf(!field, `Measure '${name}' is not a Field on this Cube.`);
             return field;
         });

@@ -6,7 +6,7 @@
  */
 /**
  * Correctness suite for the pure pivot structure module. Scenario matrices collect error strings
- * and `check` asserts each list empty - see `SpecSupport`.
+ * and `check` asserts each list empty - see the Harness section below.
  *
  * Every scenario is checked against `PivotReference`, which computes each cell's leaf set from
  * first principles. Three properties are asserted per scenario:
@@ -23,6 +23,14 @@
  */
 import {isHoistException} from '@xh/hoist/exception';
 import type {Aggregator} from '../../aggregate/Aggregator';
+import {isEqual} from 'lodash';
+import {describe, expect, it} from 'vitest';
+import {AverageAggregator} from '../../aggregate/AverageAggregator';
+import {AverageStrictAggregator} from '../../aggregate/AverageStrictAggregator';
+import {ChildCountAggregator} from '../../aggregate/ChildCountAggregator';
+import {SumAggregator} from '../../aggregate/SumAggregator';
+import {SumStrictAggregator} from '../../aggregate/SumStrictAggregator';
+import {UniqueAggregator} from '../../aggregate/UniqueAggregator';
 import {
     buildPivotStructure,
     CHILD_KIND_LEAF,
@@ -38,28 +46,142 @@ import {
     referenceLeafSets,
     type ReferenceGroupTree
 } from './PivotReference';
-import {
-    AGG_NAME,
-    aggOf,
-    type AggRow,
-    arrEq,
-    arrEqStr,
-    AVG,
-    AVG_STRICT,
-    capped,
-    check,
-    CHILD_COUNT,
-    expectThrows,
-    leafOf,
-    ORACLE,
-    SUM,
-    SUM_STRICT,
-    suite,
-    UF,
-    UNIQUE,
-    valEq,
-    VF
-} from '../../impl/SpecSupport';
+
+//------------------
+// Harness
+//------------------
+/** One test over a scenario matrix, passing when the block collected no error strings. */
+function check(name: string, errs: string[]) {
+    it(name, () => expect(errs).toEqual([]));
+}
+
+/** A `describe` block of checks. */
+function suite(name: string, fn: () => void) {
+    describe(name, fn);
+}
+
+function expectThrows(name: string, fn: () => void, expectMsg: string) {
+    it(name, () => expect(fn).toThrow(expectMsg));
+}
+
+/** Cap a long failure list, so a broad matrix reports its first hits rather than burying them. */
+function capped(errs: string[], n = 8): string[] {
+    return errs.length > n ? [...errs.slice(0, n), `... and ${errs.length - n} more`] : errs;
+}
+
+function arrEq(a: ArrayLike<number>, b: ArrayLike<number>): boolean {
+    if (a.length !== b.length) return false;
+    for (let i = 0; i < a.length; i++) if (a[i] !== b[i]) return false;
+    return true;
+}
+
+function arrEqStr(a: string[], b: string[]): boolean {
+    return a.length === b.length && a.every((v, i) => v === b[i]);
+}
+
+function valEq(a: any, b: any): boolean {
+    if (a == null || b == null) return a == null && b == null;
+    if (typeof a === 'number' && typeof b === 'number') {
+        return Math.abs(a - b) <= 1e-9 * Math.max(1, Math.abs(a), Math.abs(b));
+    }
+    return isEqual(a, b);
+}
+
+//------------------
+// Aggregator fixtures
+//------------------
+const VF = 'v',
+    UF = 'u';
+
+const SUM = new SumAggregator(),
+    SUM_STRICT = new SumStrictAggregator(),
+    AVG = new AverageAggregator(),
+    AVG_STRICT = new AverageStrictAggregator(),
+    UNIQUE = new UniqueAggregator(),
+    CHILD_COUNT = new ChildCountAggregator();
+
+const AGG_NAME = new Map<Aggregator, string>([
+    [SUM, 'SUM'],
+    [SUM_STRICT, 'SUM_STRICT'],
+    [AVG, 'AVG'],
+    [AVG_STRICT, 'AVG_STRICT'],
+    [UNIQUE, 'UNIQUE'],
+    [CHILD_COUNT, 'CHILD_COUNT']
+]);
+
+function sumOf(vals: any[]): number {
+    return vals.reduce((t, v) => (v == null ? t : t + v), 0);
+}
+
+/**
+ * Expected value per aggregator, computed directly from the value list the aggregator reads. Never
+ * routed through an aggregator, so a broken implementation cannot agree with itself - and
+ * cross-checked against hand-written literals in the aggregator spec, so a broken oracle cannot go
+ * unnoticed either.
+ */
+const ORACLE = new Map<Aggregator, (vals: any[]) => any>([
+    [SUM, vals => (vals.every(v => v == null) ? null : sumOf(vals))],
+    [SUM_STRICT, vals => (vals.some(v => v == null) ? null : sumOf(vals))],
+    [
+        AVG,
+        vals => {
+            const nn = vals.filter(v => v != null);
+            return nn.length ? sumOf(nn) / nn.length : null;
+        }
+    ],
+    [AVG_STRICT, vals => (vals.some(v => v == null) ? null : sumOf(vals) / vals.length)],
+    [UNIQUE, vals => (vals.every(v => isEqual(v, vals[0])) ? vals[0] : null)],
+    [CHILD_COUNT, vals => vals.length]
+]);
+
+/** Duck-typed row - the shape `Aggregator` implementations read. */
+interface AggRow {
+    isLeaf: boolean;
+    children: AggRow[];
+    data: Record<string, any>;
+    /** Written by compositional aggregators via the context - see {@link ParentRow.aggStates}. */
+    aggStates?: Record<string, any>;
+}
+
+/**
+ * Stand-in for {@link AggregationContext}: tracks the active row and field, and stores aggregator
+ * state on the row, exactly as the real one does. Everything else on the real context needs a View.
+ */
+class FakeAggregationContext {
+    activeRow: AggRow = null;
+    activeField: {name: string} = null;
+
+    aggregate(agg: Aggregator, rows: AggRow[], field: string, row: AggRow): any {
+        this.activeRow = row;
+        this.activeField = {name: field};
+        try {
+            return agg.aggregate(rows as any, field, this as any);
+        } finally {
+            this.activeRow = this.activeField = null;
+        }
+    }
+
+    setAggState(state: any) {
+        (this.activeRow.aggStates ??= {})[this.activeField.name] = state;
+    }
+
+    getAggState(row: AggRow = this.activeRow): any {
+        return row.aggStates?.[this.activeField.name];
+    }
+}
+
+const CONTEXT = new FakeAggregationContext();
+
+function leafOf(val: any, field = VF): AggRow {
+    return {isLeaf: true, children: null, data: {[field]: val}};
+}
+
+/** Non-leaf row holding its own aggregate over `children`, as the real network materializes it. */
+function aggOf(agg: Aggregator, children: AggRow[], field = VF): AggRow {
+    const row: AggRow = {isLeaf: false, children, data: {}};
+    row.data[field] = CONTEXT.aggregate(agg, children, field, row);
+    return row;
+}
 
 interface Rec {
     data: Record<string, any>;
