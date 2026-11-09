@@ -178,21 +178,21 @@ export class CubeGridPivotModel extends HoistModel {
         this.expandToLevel(0);
     }
 
-    /** Number of pivot dimensions, or 0 when the region is empty. */
+    /** @internal - number of pivot dimensions, or 0 when the region is empty. */
     get maxDepth(): number {
         return isEmpty(this._rootGroups) ? 0 : this.query.pivot.dimensions.length;
     }
 
     /**
-     * Labels for each level in {@link expandToLevel}, naming the pivot dimension it shows. Level 0
-     * shows none and has no label - {@link collapseAll} reaches it.
+     * @internal - labels for each level in {@link expandToLevel}, naming the pivot dimension it
+     * shows. Level 0 shows none and has no label - {@link collapseAll} reaches it.
      */
     get resolvedLevelLabels(): string[] {
         if (!this.maxDepth) return null;
         return [null, ...this.query.pivot.dimensions.map(it => it.displayName)];
     }
 
-    /** True if the given level is current, as {@link GridModel.isCurrentExpandLevel}. */
+    /** @internal - true if the level is current, as {@link GridModel.isCurrentExpandLevel}. */
     isCurrentExpandLevel(idx: number): boolean {
         const {expandLevel, maxDepth} = this;
         return expandLevel === idx || (idx === maxDepth && (expandLevel < 0 || expandLevel > idx));
