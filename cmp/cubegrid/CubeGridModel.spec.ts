@@ -7,9 +7,11 @@
 import type {ColumnOrGroup, ColumnSpec, GridModel} from '@xh/hoist/cmp/grid';
 import {ColumnGroup} from '@xh/hoist/cmp/grid';
 import {ColumnWidthCalculator} from '@xh/hoist/cmp/grid/impl/ColumnWidthCalculator';
+import {getAgGridMenuItems} from '@xh/hoist/cmp/grid/impl/MenuSupport';
 import type {PlainObject} from '@xh/hoist/core';
 import {XH} from '@xh/hoist/core';
-import {Cube, type QueryConfig} from '@xh/hoist/data';
+import {Cube, type QueryConfig, type RecordActionSpec} from '@xh/hoist/data';
+import type {GetMainMenuItemsParams, MenuItemDef} from '@xh/hoist/kit/ag-grid';
 import {initTestAppAsync} from '@xh/hoist/test-support';
 import {wait} from '@xh/hoist/promise';
 import {find, isFunction, map, uniq} from 'lodash';
@@ -190,6 +192,44 @@ describe('CubeGridModel', () => {
             expect(gridModel.isColumnGroupExpanded(PIVOT_GROUP_ID)).toBe(false);
             model.pivotModel.expandAll();
             expect(gridModel.isColumnGroupExpanded(PIVOT_GROUP_ID)).toBe(true);
+        });
+
+        it('offers pivot expand and collapse in header menus over the pivot region only', () => {
+            const model = createModel({query: NESTED_QUERY}),
+                {gridModel, pivotModel} = model,
+                pivotIds = [...pivotModel.colIds],
+                fixedId = colIds(gridModel.columns).find(it => !pivotModel.colIds.has(it)),
+                expandItems = ['Expand All', 'Collapse All'];
+
+            const overGroup = headerItems(model, null, pivotIds);
+            expect(texts(overGroup).slice(0, 2)).toEqual(expandItems);
+            expect(texts(headerItems(model, pivotIds[0])).slice(0, 2)).toEqual(expandItems);
+            expect(texts(headerItems(model, fixedId))).not.toContain('Expand All');
+
+            item(overGroup, 'Collapse All').action(null);
+            expect(gridModel.isColumnGroupExpanded(PIVOT_GROUP_ID)).toBe(false);
+        });
+
+        it('labels row levels by the query dimensions, unless the app supplies labels', () => {
+            const model = createModel({query: PLAIN_QUERY}),
+                {gridModel} = model;
+            expect(gridModel.resolvedLevelLabels).toEqual(['Region']);
+
+            model.view.updateQuery({dimensions: ['region', 'sector']});
+            expect(gridModel.resolvedLevelLabels).toEqual(['Region', 'Sector']);
+
+            const custom = createModel({query: PLAIN_QUERY, gridConfig: {levelLabels: ['R']}});
+            expect(custom.gridModel.resolvedLevelLabels).toEqual(['R']);
+        });
+
+        it('offers pivot "Expand to..." by dimension only with two or more dimensions', () => {
+            const model = createModel({query: NESTED_QUERY}),
+                expandTo = () => headerItems(model, null, [...model.pivotModel.colIds]);
+            expect(texts(expandTo())).not.toContain('Expand to...');
+
+            model.view.updateQuery({pivot: {dimensions: ['sector', 'book'], measures: ['sum']}});
+            const items = item(expandTo(), 'Expand to...').menuItemParams.displaySpec.items;
+            expect(texts(items as RecordActionSpec[])).toEqual(['Sector', 'Book']);
         });
 
         it('fixes every group open when collapsible is false', () => {
@@ -1203,4 +1243,32 @@ function exportNameOf(gridModel: GridModel, colId: string) {
     const column = gridModel.getColumn(colId),
         {exportName} = column;
     return isFunction(exportName) ? exportName({column, gridModel, agParams: null}) : exportName;
+}
+
+/** Items for a header right-click on `colId`, or on a group over `groupLeafIds` when null. */
+function headerItems(
+    model: CubeGridModel,
+    colId: string,
+    groupLeafIds: string[] = []
+): Array<string | MenuItemDef> {
+    const {gridModel} = model,
+        agCol = (id: string) => ({getColId: () => id}),
+        params = {
+            column: colId ? agCol(colId) : null,
+            columnGroup: colId ? null : {getLeafColumns: () => groupLeafIds.map(agCol)},
+            defaultItems: []
+        } as unknown as GetMainMenuItemsParams;
+    return getAgGridMenuItems(params, gridModel, gridModel.headerContextMenu) ?? [];
+}
+
+function texts(items: Array<string | MenuItemDef | RecordActionSpec>): string[] {
+    return items.map(it =>
+        typeof it === 'string' ? it : ((it as MenuItemDef).menuItemParams?.displaySpec ?? it).text
+    );
+}
+
+function item(items: Array<string | MenuItemDef>, text: string): MenuItemDef {
+    const ret = items.find(it => typeof it !== 'string' && texts([it])[0] === text);
+    expect(ret, `menu item '${text}'`).toBeDefined();
+    return ret as MenuItemDef;
 }
