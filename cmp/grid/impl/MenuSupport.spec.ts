@@ -184,6 +184,22 @@ describe('Grid header context menu', () => {
 //------------------------
 // Helpers
 //------------------------
+describe('Grid context menu row expansion', () => {
+    beforeAll(() => initTestAppAsync());
+
+    it('offers "Expand to..." for a single grouped level', () => {
+        const items = (config: GridConfig) => {
+            const gridModel = createGridModel(config),
+                params = {node: null, column: null} as unknown as GetMainMenuItemsParams;
+            return texts(getAgGridMenuItems(params, gridModel, gridModel.contextMenu) ?? []);
+        };
+
+        expect(items({groupBy: 'region', levelLabels: ['Total', 'Region']})).toContain(
+            'Expand to...'
+        );
+    });
+});
+
 function createGridModel(config: GridConfig = {}): GridModel {
     const ret = new GridModel({
         columns: [{field: 'name'}, {field: 'region'}, {field: 'pnl', absSort: true}],

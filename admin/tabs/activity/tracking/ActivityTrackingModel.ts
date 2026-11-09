@@ -500,8 +500,7 @@ export class ActivityTrackingModel extends HoistModel implements ActivityDetailP
                 exportOptions: {filename: exportFilename('activity-summary')},
                 emptyText: 'No activity reported.',
                 sortBy: ['cubeLabel'],
-                expandLevel: 1,
-                levelLabels: () => this.groupingChooserModel.valueDisplayNames
+                expandLevel: 1
             },
             pivotConfig: {
                 dimensions: PIVOT_DIMENSIONS.map(field => ({field})),

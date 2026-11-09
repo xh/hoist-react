@@ -18,12 +18,13 @@ import type {
 } from '@xh/hoist/cmp/grid';
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {initPersist} from '@xh/hoist/cmp/grid/impl/InitPersist';
+import {createExpandCollapseItem} from '@xh/hoist/cmp/grid/impl/MenuSupport';
 import type {Awaitable, ReactionSpec, Some, VSide} from '@xh/hoist/core';
 import {HoistModel, managed} from '@xh/hoist/core';
 import type {Cube, QueryConfig, Store, StoreRecordOrId, View} from '@xh/hoist/data';
 import {action, bindableRef} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
-import {isEmpty, isEqual, keyBy, pick} from 'lodash';
+import {isEmpty, isEqual, isFunction, keyBy, pick} from 'lodash';
 import type {CubeGridPivotConfig} from './CubeGridPivotModel';
 import {CubeGridPivotModel} from './CubeGridPivotModel';
 
@@ -211,13 +212,41 @@ export class CubeGridModel extends HoistModel implements GridLikeModel {
             colChooserModel: true,
             stripeRows: true,
             rowBorders: true,
+            levelLabels: () => this.rowLevelLabels,
             ...config,
             filterModel: this.parseFilterModel(config.filterModel),
+            headerContextMenu: this.parseHeaderContextMenu(config),
             store: this.store,
             treeMode: true,
             columns: this.buildColumns(),
             restoreDefaultsFn: () => this.restoreDefaultsAsync(config.restoreDefaultsFn)
         });
+    }
+
+    // Each row dimension. The root, if any, loads as the summary record, not a tree level. Read on
+    // use, so it follows the query.
+    private get rowLevelLabels(): string[] {
+        return this.query.dimensions.map(it => it.displayName);
+    }
+
+    // In a header menu, `expandCollapse` expands the pivot columns, and shows only over them. It
+    // leads the default menu. A grid with no context menu gets no default header menu.
+    private parseHeaderContextMenu({
+        headerContextMenu: spec,
+        contextMenu
+    }: CubeGridConfig['gridConfig']): GridConfig['headerContextMenu'] {
+        if (spec === false) return false;
+        if (spec == null && (contextMenu === false || contextMenu === null)) return undefined;
+        const {pivotModel} = this,
+            items = spec ?? ['expandCollapse', '-', ...GridModel.defaults.headerContextMenu];
+        return (agParams, gridModel) =>
+            (isFunction(items) ? items(agParams, gridModel) : items).flatMap(it =>
+                it === 'expandCollapse'
+                    ? pivotModel.isInRegion(agParams)
+                        ? createExpandCollapseItem(pivotModel)
+                        : []
+                    : it
+            );
     }
 
     // Column filters bind to the view, so they filter the source records and re-aggregate. The

@@ -151,6 +151,9 @@ it while collapsed and the summary's column headers stretch up to the group's.
 `pivotConfig.expandLevel` sets the initial level, as `expandLevel` does for rows: 0 collapses the
 region, 1 shows the top-level groups collapsed, -1 (the default) expands everything.
 `pivotModel.expandToLevel()` resets it later, with `expandAll()` and `collapseAll()` as shortcuts.
+The header menu offers the same over pivot columns, via its `expandCollapse` token. Its "Expand
+to..." lists the pivot dimensions, as the row menu lists the row dimensions, which the model
+supplies as `levelLabels` unless the app sets its own.
 The state is the grid's own `columnGroupState`, keyed on the path and on `PIVOT_GROUP_ID` for the
 region, so it survives a rebuild and persists with `persistWith`.
 
