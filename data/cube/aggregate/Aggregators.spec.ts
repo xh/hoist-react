@@ -17,7 +17,7 @@ import {
     type ViewRowData
 } from '@xh/hoist/data';
 import {initTestAppAsync} from '@xh/hoist/test-support';
-import {sumBy} from 'lodash';
+import {isArray, sumBy} from 'lodash';
 import {beforeAll, describe, expect, it, onTestFinished} from 'vitest';
 
 /**
@@ -235,6 +235,75 @@ describe('Aggregator', () => {
             });
         });
     });
+
+    describe('incremental update', () => {
+        // A connected View applies a value-only tick through each aggregator's replace() rather
+        // than re-aggregating. These pin that replace() lands exactly where a rebuild would.
+        it('SUM becomes null when its last value is nulled, and holds a genuine zero', async () => {
+            const {cube, view} = createValuesView('SUM');
+
+            await cube.updateDataAsync([valueUpdate(1, null)]);
+            expectReplaced(view);
+            expect(valuesByPath(view, 'value')).toMatchObject({'US/Tech': null, US: 4, Total: 13});
+
+            await cube.updateDataAsync([valueUpdate(3, 0)]);
+            expectReplaced(view);
+            expect(valuesByPath(view, 'value')).toMatchObject({'US/Energy': 0, US: 0, Total: 9});
+        });
+
+        it('SUM_STRICT re-aggregates at every level as the nulls beneath it are filled', async () => {
+            const {cube, view} = createValuesView('SUM_STRICT');
+
+            await cube.updateDataAsync([valueUpdate(2, 5)]);
+            expectReplaced(view);
+            expect(valuesByPath(view, 'value')).toMatchObject({'US/Tech': 15, US: 19, Total: null});
+
+            await cube.updateDataAsync([valueUpdate(4, 1), valueUpdate(5, 2)]);
+            expectReplaced(view);
+            expect(valuesByPath(view, 'value')).toMatchObject({EU: 3, Total: 31});
+        });
+
+        it('AVG re-averages over all leaves beneath, not over child averages', async () => {
+            const {cube, view} = createValuesView('AVG');
+
+            await cube.updateDataAsync([valueUpdate(3, 10)]);
+            expectReplaced(view);
+            expect(valuesByPath(view, 'value')).toMatchObject({'US/Tech': 10, US: 10, Total: 5.8});
+        });
+
+        it('LEAF_COUNT and CHILD_COUNT are unchanged by a value tick', async () => {
+            const {cube, view} = createValuesView('LEAF_COUNT');
+
+            await cube.updateDataAsync([valueUpdate(1, 99)]);
+            expectReplaced(view);
+            expect(valuesByPath(view, 'value')).toMatchObject({US: 3, Total: 8});
+        });
+
+        it('UNIQUE re-collapses on a tick, comparing values deeply', async () => {
+            const cube = autoDestroy(
+                    new Cube({
+                        fields: [
+                            {name: 'region', isDimension: true},
+                            {name: 'sector', isDimension: true},
+                            {name: 'tag', type: 'json', aggregator: 'UNIQUE'}
+                        ],
+                        data: [
+                            {id: 1, region: 'US', sector: 'Tech', tag: {a: 1}},
+                            {id: 2, region: 'US', sector: 'Tech', tag: {a: 1}}
+                        ]
+                    })
+                ),
+                view = autoDestroy(cube.createView({query: QUERY, connect: true}));
+
+            await cube.updateDataAsync([{id: 2, region: 'US', sector: 'Tech', tag: {a: 2}}]);
+            expectReplaced(view, 'tag');
+            expect(valuesByPath(view, 'tag')).toMatchObject({'US/Tech': null, Total: null});
+
+            await cube.updateDataAsync([{id: 2, region: 'US', sector: 'Tech', tag: {a: 1}}]);
+            expectReplaced(view, 'tag');
+            expect(valuesByPath(view, 'tag')).toMatchObject({'US/Tech': {a: 1}, Total: {a: 1}});
+        });
+    });
 });
 
 //------------------
@@ -337,6 +406,11 @@ class PctOfTotalAggregator extends Aggregator {
 
 /** Aggregate VALUES with the given aggregator, returning its result at each row by path. */
 function aggregateValues(aggregator: AggregatorToken): PlainObject {
+    return valuesByPath(createValuesView(aggregator).view, 'value');
+}
+
+/** A connected View over VALUES, with `value` aggregated by the given aggregator. */
+function createValuesView(aggregator: AggregatorToken): {cube: Cube; view: View} {
     const cube = autoDestroy(
             new Cube({
                 fields: [
@@ -347,8 +421,19 @@ function aggregateValues(aggregator: AggregatorToken): PlainObject {
                 data: VALUES
             })
         ),
-        view = autoDestroy(cube.createView({query: QUERY}));
-    return valuesByPath(view, 'value');
+        view = autoDestroy(cube.createView({query: QUERY, connect: true}));
+    return {cube, view};
+}
+
+/** The VALUES record with the given id, carrying a new value. */
+function valueUpdate(id: number, value: number): PlainObject {
+    return {...VALUES.find(it => it.id === id), value};
+}
+
+/** Assert the last tick ran through replace(), landing where a fresh aggregation would. */
+function expectReplaced(view: View, field = 'value') {
+    expect(view.diagnostics.update.last.type).toBe('dataOnly');
+    expect(valuesByPath(view, field)).toEqual(valuesByPath(view.cube.executeQuery(QUERY), field));
 }
 
 function createPositionsCube(priceAggregator: Aggregator): Cube {
@@ -361,16 +446,17 @@ function createPositionsCube(priceAggregator: Aggregator): Cube {
     return autoDestroy(new Cube({fields, data: POSITIONS}));
 }
 
-/** A field's value at each row of a View with a grand total, keyed by path - e.g. 'US/Tech'. */
-function valuesByPath(view: View, field: string): PlainObject {
-    const ret = {},
+/** A field's value at each row of a grand-total result, keyed by path - e.g. 'US/Tech'. */
+function valuesByPath(source: View | ViewRowData[], field: string): PlainObject {
+    const rows = isArray(source) ? source : source.result.rows,
+        ret = {},
         visit = (row: ViewRowData, path: string) => {
             ret[path] = row[field];
             row.children?.forEach(it =>
                 visit(it, path === 'Total' ? it.cubeLabel : `${path}/${it.cubeLabel}`)
             );
         };
-    visit(view.result.rows[0], 'Total');
+    visit(rows[0], 'Total');
     return ret;
 }
 

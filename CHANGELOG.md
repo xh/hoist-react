@@ -16,6 +16,33 @@
 
 ### 🎁 New Features
 
+* Added `CubeGrid` and `CubeGridModel` (`@xh/hoist/cmp/cubegrid`), a grid bound to a Cube View.
+  Create it from an existing `view` or from a `cube` and `query`. It owns its Store and tree-mode
+  `GridModel`, takes the app's `columns` for the fixed region, and appends a column group per pivot
+  path to their right when the query pivots, with collapsible groups, summaries, labels and
+  classes per pivot dimension, one shared width per measure and column config per measure. Pivot
+  options are set through `pivotConfig` and bindable on its `CubeGridPivotModel`, which also lists
+  the dimensions and measures to offer a pivot picker. Column filters bind to the View and
+  re-aggregate, and pivot columns export under path-qualified headers. See the
+  [CubeGrid README](cmp/cubegrid/README.md).
+* Added Cube pivoting - a View can slice its measures across extra dimensions as columns. Set
+  `QueryConfig.pivot` to pivot a Cube View by `dimensions` and `measures`, listed by
+  `Cube.dimensions` and the new `Cube.measures`. Cells are published as synthetic fields on each
+  group row and described by `ViewResult.paths` and `cellFields`, and pivoted Views update
+  incrementally like any other. See `PivotSpec` and the
+  [Cube README](data/cube/README.md#pivoting-with-pivot).
+    * See the Admin Console's Activity Tracking tab for a working example - its new "Pivot by"
+      option pivots the aggregate grid on a chosen dimension.
+* Added `ViewResult.exception`. A View that declines its data with a routine `HoistException`,
+  such as a pivot over `maxPivotPaths`, publishes the exception and empties its result and stores
+  rather than throwing. `CubeGrid` renders an `ErrorMessage` in place of the grid while it does.
+* Every grid-bound field, button and label now takes any `GridLikeModel` via its `gridModel` prop
+  or from context - a `GridModel`, `ZoneGridModel`, `DataViewModel` or `CubeGridModel` - and acts
+  on the `GridModel` behind it. This covers `StoreFilterField`, `GridFindField`, `GridCountLabel`,
+  `ExportButton`, `ColChooserButton`, `ColAutosizeButton`, `ExpandToLevelButton` and the mobile
+  `ExpandCollapseButton`.
+* `StoreFilterField` and `GridFindField` bound to a `DataViewModel` search every field, as a
+  DataView has no visible columns to narrow them.
 * Added `PdfViewer` and `PdfViewerModel` in `@xh/hoist/cmp/pdfviewer`, built on Mozilla's pdf.js.
   The viewer loads documents from a URL, `FetchOptions`, or a `Blob` / `File` / byte array. It
   renders pages on demand with selectable text, and has a configurable toolbar for paging, zoom,
@@ -26,9 +53,14 @@
   `Icon.zoomIn()` and `Icon.zoomOut()`), plus `Icon.rotateRight()`.
 * Added `ColumnGroupSpec.chooserName` to set a group's name in the desktop column chooser. Use it
   when `headerName` is a function or element, which the chooser cannot display.
+* Added `Field.shortDisplayName`, a shorter name for headers. A grid column takes it as its default
+  `headerName` unless it sets its own `displayName`, and pivot headers in `CubeGrid` use it. The
+  column chooser, menus and exports keep `displayName`, which it defaults to.
 
 ### 🐞 Bug Fixes
 
+* The grid header's "Pin Column" menu is no longer offered for a column with `movable: false`.
+  Pinning relocates the column, which header and chooser drags already refused for it.
 * Fixed the impersonation bar re-requesting its list of users without end when the server returned
   no users other than the current one.
 * Fixed `DashCanvas` reverting a layout change when two layout writes landed close together, for
@@ -46,6 +78,23 @@
 ### 📚 Libraries
 
 * react-grid-layout `2.3 → 2.2`
+
+### ✨ Styles
+
+* Grid column group headers show their expand/collapse control right after the label rather
+  than at the header's far edge, as a chevron pointing down when expanded and right when
+  collapsed, matching tree rows.
+
+### ⚙️ Typescript API Adjustments
+
+* Added `GridLikeModel`, the interface for a `GridModel` or a model wrapping one. It declares the
+  shared `store`, `empty` and selection members, plus `innerGridModel` to reach the `GridModel`
+  behind it. `GridModel`, `ZoneGridModel`, `DataViewModel` and `CubeGridModel` implement it.
+* Added `GridSelectOptions`, `GridSelectFirstOptions` and `GridEnsureVisibleOptions`, the option
+  types of `GridModel.selectAsync`, `selectFirstAsync` and `ensureSelectionVisibleAsync`. The
+  `ZoneGridModel` and `DataViewModel` delegates now share them, so they accept every option the
+  `GridModel` methods take - previously `ensureVisiblePosition` and `expandParentGroups` were
+  dropped.
 
 ## 90.0.0 - 2026-11-02
 

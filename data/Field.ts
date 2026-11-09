@@ -30,6 +30,13 @@ export interface FieldSpec {
      */
     displayName?: string;
 
+    /**
+     * Shorter name for headers, where space is tight - a grid column's default `headerName`, and a
+     * pivot grid's headers. Choosers, menus and exports keep `displayName`. Defaults to
+     * `displayName`.
+     */
+    shortDisplayName?: string;
+
     /** Supplementary descriptive text for this field, for use in tooltips and other UI. */
     description?: string;
 
@@ -79,6 +86,7 @@ export class Field {
     readonly name: string;
     readonly type: FieldType;
     readonly displayName: string;
+    readonly shortDisplayName: string;
     readonly description: string;
     readonly defaultValue: any;
     readonly isDimension: boolean;
@@ -89,6 +97,7 @@ export class Field {
         name,
         type = 'auto',
         displayName,
+        shortDisplayName,
         description,
         defaultValue = null,
         isDimension = false,
@@ -98,6 +107,7 @@ export class Field {
         this.name = name;
         this.type = type;
         this.displayName = withDefault(displayName, genDisplayName(name));
+        this.shortDisplayName = withDefault(shortDisplayName, this.displayName);
         this.description = description;
         this.isDimension = isDimension;
         this.rules = this.processRuleSpecs(rules);

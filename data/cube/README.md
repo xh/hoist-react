@@ -260,6 +260,75 @@ const grandTotal = rows.find(r => r.isRoot);
 Use `createView()` when you need connected auto-updates or store integration;
 use `executeQuery()` for lightweight, fire-and-forget queries.
 
+## Pivoting with `pivot`
+
+A query can slice its aggregates across a second axis of dimensions, so a measure appears once per
+value of a *pivot* dimension - the classic region-by-sector table. Set `QueryConfig.pivot`:
+
+```typescript
+const view = cube.createView({
+    query: {
+        dimensions: ['fund', 'trader'],              // Row hierarchy, as usual
+        includeRoot: true,
+        pivot: {
+            dimensions: ['region'],                  // Columns - 1 is typical, 3 the ceiling
+            measures: ['mktVal', 'pnl']              // Measures aggregated per cell
+        }
+    },
+    connect: true
+});
+```
+
+`dimensions` keeps its meaning as the row hierarchy; the two axes are orthogonal. Pivot dimensions
+are fields with `isDimension: true`, and measures are fields with an aggregator that are not -
+`Cube.dimensions` and `Cube.measures` list them. See `PivotSpec` for the remaining options -
+excluding records with a blank pivot value entirely, and a cap on the number of paths.
+
+**What the result carries.** Every group row still holds its normal aggregates. In addition, each
+cell is written onto the row as a synthetic field named `{path}>>{measure}`:
+
+```typescript
+view.result.rows[0].children[0];
+// {cubeLabel: 'Fund A', mktVal: 42, pnl: 7,          <- the row summaries, as without a pivot
+//  'US>>mktVal': 30, 'US>>pnl': 5,                     <- cells for the US path
+//  'EU>>mktVal': 12, 'EU>>pnl': 2}                     <- cells for the EU path
+
+view.result.paths;       // PivotPath tree - US, EU, each with `children` for deeper dimensions
+view.result.cellFields;  // One {name, path, measure} per cell field, including the row summaries
+```
+
+A row's summary aggregates the same records as its top-level cells, so for an additive measure it
+equals their sum. Cells are sparse: a (row, path) pair with no records beneath it has no field at
+all, and a blank pivot value forms its own path, with `isEmpty` set and a null `value`, unless
+`excludeEmptyPivotValues` drops those records - from the row summaries too. `paths` and
+`cellFields` keep their identity while the pivot structure is unchanged, so a consumer can track
+them to decide when to rebuild columns, which is what `CubeGridModel` does.
+
+**Loading a store.** Cell fields are discovered from the data, so a connected Store has to learn
+them as paths come and go. `CubeGridModel` handles this for its own Store; read `result` directly
+to consume a pivoted View without a grid.
+
+**Updates.** A pivoted View ticks like any other: a value change adjusts the affected cells and
+totals in place, while a record moving between pivot paths rebuilds, the same as a change to a row
+dimension. `updateQuery` with a different `pivot.dimensions` or `measures` reshapes the columns;
+an empty `pivot.dimensions` or `measures` degenerates to an ordinary View so an app can toggle
+pivoting without swapping objects.
+
+**How it works, briefly.** Each group row carries a hidden subtree of cell rows, one per populated
+pivot path. They are real rows in the aggregation network, so every aggregator - built-in or
+custom - works on them unchanged, and a leaf propagates each tick up both its group parent and its
+cell. Cost scales with populated cells, not rows times paths. The planner behind this is
+`PivotStructure` in `data/cube/pivot/impl`, with its correctness properties pinned by its spec.
+
+**Limits.** Pivoting is not supported together with `bucketSpecFn` and `includeLeaves`, and a
+dimension cannot appear on both axes. `maxPivotPaths` (default 100) declines the result when a
+pivot dimension is wider than intended: the View publishes the reason as `ViewResult.exception`
+and empties its rows and stores, and a `CubeGrid` renders an `ErrorMessage` in its place. Pick a
+lower-cardinality dimension or raise the cap deliberately. Any routine `HoistException` thrown in
+the View's pipeline, such as from an app aggregator, is handled the same way.
+
+To render a View, pivoted or not, see [`/cmp/cubegrid/`](../../cmp/cubegrid/README.md).
+
 ## Accessing View Data
 
 There are two ways to consume View results:
@@ -316,4 +385,5 @@ records from `cube.store` directly if you need them.
 
 - [`/data/`](../README.md) - Store, Field, Filter, Validation - the core data layer
 - [`/cmp/grid/`](../../cmp/grid/README.md) - GridModel consumes Store for data display
+- [`/cmp/cubegrid/`](../../cmp/cubegrid/README.md) - CubeGrid renders a View as a grid, pivoted or not
 - `/cmp/grouping/` - GroupingChooser for specifying multi-level dimension groupings

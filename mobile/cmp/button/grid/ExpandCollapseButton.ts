@@ -4,7 +4,8 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {GridModel} from '@xh/hoist/cmp/grid';
+import type {GridLikeModel} from '@xh/hoist/cmp/grid';
+import {isGridLikeModel} from '@xh/hoist/cmp/grid/impl/GridLikeModel';
 import {hoistCmp, useContextModel} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import type {ButtonProps} from '@xh/hoist/mobile/cmp/button';
@@ -15,10 +16,10 @@ import {isEmpty} from 'lodash';
 
 export interface ExpandCollapseButtonProps extends ButtonProps {
     /**
-     * `GridModel` to which this button should bind.
-     * Optional, will find nearest GridModel in context if not provided.
+     * GridModel, or a model wrapping one, to which this button should bind. Will find the
+     * nearest in context if not provided.
      */
-    gridModel?: GridModel;
+    gridModel?: GridLikeModel;
 }
 
 /**
@@ -30,8 +31,11 @@ export const [ExpandCollapseButton, expandCollapseButton] =
         className: 'xh-expand-collapse-button',
         model: false,
 
-        render({className, gridModel, onClick, ...props}) {
-            gridModel = withDefault(gridModel, useContextModel(GridModel));
+        render({className, gridModel: boundModel, onClick, ...props}) {
+            const gridModel = withDefault(
+                boundModel,
+                useContextModel<GridLikeModel>(isGridLikeModel)
+            )?.innerGridModel;
 
             // Validate bound model available and suitable for use.
             if (!onClick && !gridModel) {

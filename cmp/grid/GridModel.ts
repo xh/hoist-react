@@ -130,8 +130,11 @@ import type {
     ColumnGroupState,
     ColumnState,
     ColumnStateOptions,
+    GridEnsureVisibleOptions,
+    GridLikeModel,
     GridModelPersistOptions,
-    GridScrollPosition,
+    GridSelectFirstOptions,
+    GridSelectOptions,
     GroupRowRenderer,
     RowClassFn,
     RowClassRuleFn
@@ -499,7 +502,7 @@ export interface GridModelDefaults {
  *
  * @mcpHint model backing all grid components
  */
-export class GridModel extends HoistModel {
+export class GridModel extends HoistModel implements GridLikeModel {
     /**
      * Ceilings (ms) on how long deferred grid work may be held back, calibrated to what going
      * stale costs the user: a deferred sort leaves row order wrong, while a deferred autosize
@@ -943,20 +946,7 @@ export class GridModel extends HoistModel {
      * @param records - one or more record(s) / ID(s) to select.
      * @param opts - additional post-selection options
      */
-    async selectAsync(
-        records: Some<StoreRecordOrId>,
-        opts: {
-            /**
-             * True (default) to scroll the grid or expand nodes as needed to make selection
-             * visible if it is within a collapsed node or outside of the visible scroll window.
-             */
-            ensureVisible?: boolean;
-            /** Position of the selection in the viewport - default null scrolls minimally. */
-            ensureVisiblePosition?: GridScrollPosition;
-            /** True (default) to clear previous selection (rather than add to it). */
-            clearSelection?: boolean;
-        } = {}
-    ) {
+    async selectAsync(records: Some<StoreRecordOrId>, opts: GridSelectOptions = {}) {
         const {ensureVisible = true, ensureVisiblePosition = null, clearSelection = true} = opts;
         this.selModel.select(records, clearSelection);
         if (ensureVisible) {
@@ -971,20 +961,7 @@ export class GridModel extends HoistModel {
      * any pre-existing selection unchanged, which is what apps typically want when reloading an
      * already-populated grid.
      */
-    async selectFirstAsync(
-        opts: {
-            /**
-             * True (default) to expand nodes as needed to allow selection when the first selectable
-             * node is in a collapsed group.
-             */
-            expandParentGroups?: boolean;
-            /**
-             * True (default) to scroll the grid or expand nodes as needed to make selection
-             * visible if it is outside of the visible scroll window.
-             */
-            ensureVisible?: boolean;
-        } = {}
-    ) {
+    async selectFirstAsync(opts: GridSelectFirstOptions = {}) {
         const {expandParentGroups = true, ensureVisible = true} = opts;
         await this.whenReadyAsync();
         if (!this.isReady) return;
@@ -1028,12 +1005,7 @@ export class GridModel extends HoistModel {
      *
      * @param opts - additional scrolling options
      */
-    async ensureSelectionVisibleAsync(
-        opts: {
-            /** Position of the selection in the viewport - default null scrolls minimally. */
-            position?: GridScrollPosition;
-        } = {}
-    ) {
+    async ensureSelectionVisibleAsync(opts: GridEnsureVisibleOptions = {}) {
         await this.whenReadyAsync();
         if (!this.isReady) return;
 
@@ -1055,10 +1027,7 @@ export class GridModel extends HoistModel {
      */
     async ensureRecordsVisibleAsync(
         records: Some<StoreRecord>,
-        opts: {
-            /** Position of the record in the viewport - default null scrolls minimally. */
-            position?: GridScrollPosition;
-        } = {}
+        opts: GridEnsureVisibleOptions = {}
     ) {
         const {position = null} = opts;
 
@@ -1147,6 +1116,10 @@ export class GridModel extends HoistModel {
     /** True if this grid has no records to show in its store. */
     get empty(): boolean {
         return this.store.empty;
+    }
+
+    get innerGridModel(): GridModel {
+        return this;
     }
 
     /**
@@ -2118,18 +2091,27 @@ export class GridModel extends HoistModel {
         storeOrConfig?: Store | StoreConfig
     ): ColumnOrGroupSpec[] {
         const store = storeOrConfig || this.store,
-            storeFields = store?.fields,
-            fieldsByName: Record<string, Field | FieldSpec> = {};
+            storeFieldsByName: Record<string, Field | FieldSpec> = {};
 
         // Extract field definitions in all supported forms: pull Field instances/configs from
         // storeFields first...
-        storeFields?.forEach(sf => {
+        store?.fields?.forEach(sf => {
             if (sf && !isString(sf)) {
-                fieldsByName[sf.name] = sf;
+                storeFieldsByName[sf.name] = sf;
             }
         });
 
-        // Then fill in with any col-level `field` config objects.
+        return this.enhanceColConfigs(colConfigs, storeFieldsByName);
+    }
+
+    // Store fields are resolved once and shared across the recursion.
+    private enhanceColConfigs(
+        colConfigs: ColumnOrGroupSpec[],
+        storeFieldsByName: Record<string, Field | FieldSpec>
+    ): ColumnOrGroupSpec[] {
+        // Col-level `field` configs stay scoped to their own level; copy-on-write so the common
+        // case shares the store's map.
+        let fieldsByName = storeFieldsByName;
         colConfigs.forEach(cc => {
             if (
                 isColumnSpec(cc) &&
@@ -2137,6 +2119,7 @@ export class GridModel extends HoistModel {
                 !isString(cc.field) &&
                 !fieldsByName[cc.field.name]
             ) {
+                if (fieldsByName === storeFieldsByName) fieldsByName = {...storeFieldsByName};
                 fieldsByName[cc.field.name] = cc.field;
             }
         });
@@ -2151,7 +2134,7 @@ export class GridModel extends HoistModel {
             if (!isColumnSpec(col)) {
                 return {
                     ...col,
-                    children: this.enhanceColConfigsFromStore(col.children, storeOrConfig)
+                    children: this.enhanceColConfigs(col.children, storeFieldsByName)
                 };
             }
 
@@ -2160,7 +2143,7 @@ export class GridModel extends HoistModel {
 
             if (!field) return col;
 
-            const {displayName, description, type} = field,
+            const {displayName, shortDisplayName, description, type} = field,
                 isNum = numTypes.includes(type),
                 isDate = dateTypes.includes(type),
                 align = isNum ? 'right' : undefined,
@@ -2170,12 +2153,23 @@ export class GridModel extends HoistModel {
                       ? Column.DESC_FIRST
                       : Column.ASC_FIRST;
 
+            // A column that names itself keeps that name. Otherwise its header takes the field's
+            // short name, and its export the full one.
+            const shortName =
+                col.displayName == null &&
+                col.headerName === undefined &&
+                shortDisplayName != null &&
+                shortDisplayName !== displayName
+                    ? {headerName: shortDisplayName, exportName: displayName}
+                    : null;
+
             // TODO: Set the editor based on field type
             return {
                 displayName,
                 description,
                 sortingOrder,
                 align,
+                ...shortName,
                 ...col
             };
         });
