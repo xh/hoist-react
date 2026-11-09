@@ -12,7 +12,10 @@ import type {
     FilterMatchMode,
     FilterValueSource,
     Store,
-    StoreRecord
+    StoreRecord,
+    StoreRecordId,
+    StoreRecordOrId,
+    StoreSelectionModel
 } from '@xh/hoist/data';
 import type {
     CellClassParams,
@@ -86,6 +89,60 @@ export type GridGroupSortFn = (
 
 /** Position of a row in the viewport when scrolled into view - default null scrolls minimally. */
 export type GridScrollPosition = 'top' | 'middle' | 'bottom';
+
+/** Options for {@link GridModel.selectAsync}. */
+export interface GridSelectOptions {
+    /**
+     * True (default) to scroll the grid or expand nodes as needed to make selection visible if it
+     * is within a collapsed node or outside of the visible scroll window.
+     */
+    ensureVisible?: boolean;
+    /** Position of the selection in the viewport - default null scrolls minimally. */
+    ensureVisiblePosition?: GridScrollPosition;
+    /** True (default) to clear previous selection (rather than add to it). */
+    clearSelection?: boolean;
+}
+
+/** Options for {@link GridModel.selectFirstAsync}. */
+export interface GridSelectFirstOptions {
+    /**
+     * True (default) to expand nodes as needed to allow selection when the first selectable node
+     * is in a collapsed group.
+     */
+    expandParentGroups?: boolean;
+    /**
+     * True (default) to scroll the grid or expand nodes as needed to make selection visible if it
+     * is outside of the visible scroll window.
+     */
+    ensureVisible?: boolean;
+}
+
+/** Options for {@link GridModel.ensureSelectionVisibleAsync} and `ensureRecordsVisibleAsync`. */
+export interface GridEnsureVisibleOptions {
+    /** Position of the record(s) in the viewport - default null scrolls minimally. */
+    position?: GridScrollPosition;
+}
+
+/**
+ * A GridModel, or a model wrapping one that exposes its store and selection - what grid-bound
+ * fields and buttons accept. Implemented by {@link GridModel}, `ZoneGridModel`, `DataViewModel`
+ * and `CubeGridModel`.
+ */
+export interface GridLikeModel extends HoistModel {
+    /** The GridModel behind this model - itself, for a GridModel. */
+    readonly innerGridModel: GridModel;
+    readonly store: Store;
+    readonly empty: boolean;
+    readonly selModel: StoreSelectionModel;
+    readonly hasSelection: boolean;
+    readonly selectedRecords: StoreRecord[];
+    readonly selectedRecord: StoreRecord;
+    readonly selectedId: StoreRecordId;
+    selectAsync(records: Some<StoreRecordOrId>, opts?: GridSelectOptions): Promise<void>;
+    preSelectFirstAsync(): Promise<void>;
+    selectFirstAsync(opts?: GridSelectFirstOptions): Promise<void>;
+    ensureSelectionVisibleAsync(opts?: GridEnsureVisibleOptions): Promise<void>;
+}
 
 /**
  * Closure to generate CSS class names for a row.
