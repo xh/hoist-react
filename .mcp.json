@@ -1,8 +1,10 @@
 {
   "mcpServers": {
     "hoist-docs": {
-      "type": "http",
-      "url": "${HOIST_DOCS_MCP_URL:-http://localhost:8080/mcp}"
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "@xh/hoist-docs@^1"],
+      "env": {"INDEX_DIR": "${HOIST_DOCS_INDEX_DIR:-}"}
     },
     "github": {
       "command": "bash",

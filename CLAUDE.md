@@ -20,12 +20,13 @@ as `@xh/hoist` and consumed by Hoist application projects. The server-side count
 package READMEs and concept docs are the authoritative reference for how Hoist works - skipping them
 risks producing code that conflicts with established patterns or misses built-in functionality.
 
-**Hoist Docs MCP server (`hoist-docs`)** - The [Hoist Docs](https://github.com/xh/hoist-docs) service
-serves hoist-react and hoist-core documentation and API reference over MCP. `.mcp.json` points at
-`HOIST_DOCS_MCP_URL`, defaulting to `http://localhost:8080/mcp`. Use `hoist-search-docs`,
-`hoist-list-docs`, `hoist-read-doc`, `hoist-search-symbols`, `hoist-get-symbol`, and
-`hoist-get-members`, plus `hoist://docs/{id}` resources. To run a server locally against this
-checkout, build an index with `pnpm build:index` and follow the hoist-docs README.
+**Hoist Docs MCP server (`hoist-docs`)** - [Hoist Docs](https://github.com/xh/hoist-docs) serves
+hoist-react and hoist-core documentation and API reference over MCP. `.mcp.json` runs it locally
+over stdio (`npx @xh/hoist-docs`); in this checkout it serves both libraries' `develop` indexes.
+Use `hoist-search-docs`, `hoist-list-docs`, `hoist-read-doc`, `hoist-search-symbols`,
+`hoist-get-symbol`, and `hoist-get-members`, plus `hoist://docs/{id}` resources. To serve this
+checkout's current state instead, build indexes in a hoist-docs checkout (`pnpm build:react --root
+../hoist-react`) and set `HOIST_DOCS_INDEX_DIR` to its `indexes` directory.
 
 **Without the server**, read the docs directly: start at [`docs/README.md`](docs/README.md), whose
 "Quick Reference by Task" table maps goals to the right README or concept doc, then read the
