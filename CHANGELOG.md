@@ -19,8 +19,9 @@
 See [`docs/upgrade-notes/v91-upgrade-notes.md`](docs/upgrade-notes/v91-upgrade-notes.md) for
 detailed, step-by-step upgrade instructions with before/after code examples.
 
-* Removed the bundled stdio MCP server and the `hoist-mcp`, `hoist-docs` and `hoist-ts` CLIs.
-  Point agent configs at a [Hoist Docs](https://github.com/xh/hoist-docs) server instead.
+* Removed the bundled stdio MCP server and the `hoist-mcp`, `hoist-docs` and `hoist-ts` CLIs. Add
+  [Hoist Docs](https://github.com/xh/hoist-docs) (`@xh/hoist-docs`) as a `client-app` dev
+  dependency and point `.mcp.json` at it instead - see the upgrade notes.
 
 ### 🎁 New Features
 
@@ -79,9 +80,16 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 
 ### 🤖 AI Docs + Tooling
 
-* Moved MCP docs and symbol tooling to the Hoist Docs service, which serves hoist-react and
-  hoist-core over MCP Streamable HTTP, so agents can reach it through an MCP gateway. Added
-  `pnpm build:index` (in `docs-index/`), which builds the index file the service loads.
+* Moved MCP docs and symbol tooling to [Hoist Docs](https://github.com/xh/hoist-docs)
+  (`@xh/hoist-docs`), one MCP server for hoist-react and hoist-core. Apps add it as a dev
+  dependency; the agent launches it over stdio, and it answers for the app's installed Hoist
+  versions from prebuilt index files fetched through npm. The same package also runs over HTTP
+  behind an MCP gateway. Tools keep their names and output.
+* Hoist Docs is built on the MCP TypeScript SDK v2 (`@modelcontextprotocol/server`), which
+  implements the 2026-07-28 MCP spec - stateless serving and `server/discover` - while still
+  serving clients on the 2025 `initialize` handshake. The bundled server was on SDK v1, which stops
+  at the 2025-11-25 spec.
+* Added `pnpm build:index` (in `docs-index/`), which builds the index file Hoist Docs loads.
 * Removed the MCP-only runtime dependencies `@modelcontextprotocol/sdk`, `zod`, `commander` and
   `minisearch`, and moved `ts-morph` and `tsx` to `devDependencies`. Apps no longer install them.
 * Fixed the `hoist-ts` CLI and MCP symbol tools giving a file import path for every symbol when run
