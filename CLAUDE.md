@@ -148,15 +148,12 @@ local skill change, install the plugin from that path as hoist-ai's own `CLAUDE.
 
 ```bash
 pnpm install                     # Install dependencies
-pnpm lint                        # Lint all code (library JS/TS, docs index builder, SCSS)
+pnpm lint                        # Lint all code (library JS/TS, SCSS)
 pnpm lint:code                   # Lint library JavaScript/TypeScript only
-pnpm lint:docs-index             # Lint the docs index builder (docs-index/) only
 pnpm lint:styles                 # Lint SCSS only
-pnpm typecheck                   # Type check library and docs index builder
+pnpm typecheck                   # Type check library
 pnpm test                        # Run library unit tests (Vitest)
 pnpm test data/Store             # Run unit tests in spec files whose path contains "data/Store"
-pnpm test:docs-index             # Run docs index builder specs
-pnpm build:index                 # Build the Hoist Docs index file for this checkout
 ```
 
 Linting and type-checking are separate concerns, and neither subsumes the other — run both. ESLint

@@ -41,7 +41,6 @@ module.exports = defineConfig([
         '.vitest/**/*',
         'build/**/*',
         'node_modules/**/*',
-        'docs-index/**/*',
         'bin/**/*',
         'docs/codemod/**/*',
         'docs/planning/**/*',

@@ -65,8 +65,7 @@ See [`docs-roadmap.md`](./planning/docs-roadmap.md) for documentation coverage t
 | Set up builds, CI/CD, or deployment | [Build & Publish Hoist React](./build-and-publish.md), [Build & Deploy Apps](./build-and-deploy-app.md) |
 | Configure local development environment | [Development Environment](./development-environment.md)                                                             |
 | Write or run unit tests, in an app or hoist-react | [Unit Testing](./unit-testing.md) |
-| Use MCP tools with AI assistants | [`/docs-index/`](../docs-index/README.md)                                                                                         |
-| Serve a Hoist library's docs through the MCP tools | [Companion Library Docs](./companion-library-docs.md) |
+| Serve a Hoist library's docs through Hoist Docs | [Companion Library Docs](./companion-library-docs.md) |
 | Customize colors, fonts, spacing, or theme | [`/styles/`](../styles/README.md)                                                                                   |
 | Follow XH coding conventions | [Coding Conventions](./coding-conventions.md)                                                                       |
 | Check hoist-react / hoist-core / hoist-dev-utils version compatibility | [Version Compatibility](./version-compatibility.md)                                              |
@@ -162,8 +161,7 @@ for planned coverage:
 
 | Tool | Description |
 |------|-------------|
-| [Docs Index Builder](../docs-index/README.md) | Builds the docs and TypeScript symbol index served to AI assistants over MCP by the Hoist Docs service |
-| [Companion Library Docs](./companion-library-docs.md) | How a library that builds on Hoist serves its docs through the MCP server and `hoist-docs` CLI, using a `hoist.docRegistry` field in its `package.json` |
+| [Companion Library Docs](./companion-library-docs.md) | How a library that builds on Hoist ships a Hoist Docs index in its npm package, so agents get its docs and API next to Hoist's |
 
 ## Upgrade Notes
 

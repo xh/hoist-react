@@ -94,4 +94,3 @@ Also update:
 ## Reference
 
 - [Hoist Docs](https://github.com/xh/hoist-docs) - the tool, its design, and gateway deployment
-- [`docs-index/README.md`](../../docs-index/README.md) - building the index the service serves

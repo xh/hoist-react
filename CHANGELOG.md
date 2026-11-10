@@ -83,15 +83,19 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 * Moved MCP docs and symbol tooling to [Hoist Docs](https://github.com/xh/hoist-docs)
   (`@xh/hoist-docs`), one MCP server for hoist-react and hoist-core. Apps add it as a dev
   dependency; the agent launches it over stdio, and it answers for the app's installed Hoist
-  versions from prebuilt index files fetched through npm. The same package also runs over HTTP
-  behind an MCP gateway. Tools keep their names and output.
+  versions. The same package also runs over HTTP behind an MCP gateway. Tools keep their names and
+  output.
 * Hoist Docs is built on the MCP TypeScript SDK v2 (`@modelcontextprotocol/server`), which
   implements the 2026-07-28 MCP spec - stateless serving and `server/discover` - while still
   serving clients on the 2025 `initialize` handshake. The bundled server was on SDK v1, which stops
   at the 2025-11-25 spec.
-* Added `pnpm build:index` (in `docs-index/`), which builds the index file Hoist Docs loads.
-* Removed the MCP-only runtime dependencies `@modelcontextprotocol/sdk`, `zod`, `commander` and
-  `minisearch`, and moved `ts-morph` and `tsx` to `devDependencies`. Apps no longer install them.
+* `@xh/hoist` now ships its Hoist Docs index (`hoist-docs/index.json.gz`, about 1.6 MB), built at
+  publish by `@xh/hoist-docs-builder` and declared by `hoistDocs` in `package.json`. Hoist Docs
+  reads it from the installed package, so every build, snapshots included, carries docs for exactly
+  its own code. Companion libraries can do the same - see
+  [Companion Library Docs](docs/companion-library-docs.md).
+* Removed the MCP-only dependencies `@modelcontextprotocol/sdk`, `zod`, `commander`, `minisearch`,
+  `ts-morph` and `tsx`. Apps no longer install them.
 * Fixed the `hoist-ts` CLI and MCP symbol tools giving a file import path for every symbol when run
   from an app's installed `@xh/hoist`. They now give the package barrel, such as
   `@xh/hoist/cmp/grid`, as they do in a hoist-react checkout.

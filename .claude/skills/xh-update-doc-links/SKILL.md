@@ -111,8 +111,8 @@ When new or recently changed docs are detected, look for cross-linking opportuni
 ## Step 6: Reconcile Document Registry
 
 Ensure `docs/doc-registry.json` reflects the current documentation on disk. This JSON file is
-the single source of truth for the docs index builder (`docs-index/data/doc-registry.ts`), whose
-index the Hoist Docs service serves to agents and in its docs viewer.
+the single source of truth for the Hoist Docs index that ships in the package (built by
+`prepack`), which Hoist Docs serves to agents and Toolbox's docs viewer shows to people.
 
 1. **Read and parse** `docs/doc-registry.json`. Each entry in the `entries` array is a JSON
    object. The entry's `id` field is also the file path relative to the repo root (e.g.

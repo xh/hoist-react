@@ -44,6 +44,3 @@ SECURITY.md
 # Internal docs - not served by the MCP doc registry, not useful to consumers
 docs/planning
 docs/archive
-
-# Hoist Docs index builder - dev tooling run in CI, not used by apps
-docs-index
