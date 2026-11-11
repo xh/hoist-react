@@ -3,7 +3,7 @@
     "hoist-docs": {
       "type": "stdio",
       "command": "npx",
-      "args": ["-y", "@xh/hoist-docs@0.0.1"],
+      "args": ["-y", "@xh/hoist-docs@next"],
       "env": {"INDEX_DIR": "${HOIST_DOCS_INDEX_DIR:-}"}
     },
     "github": {

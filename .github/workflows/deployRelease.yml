@@ -87,6 +87,11 @@ jobs:
         - name: Install dependencies
           run: pnpm install --frozen-lockfile
 
+        # Build the Hoist Docs index with the newest builder (its `next` dist-tag), not the one
+        # the lockfile recorded, so builder changes reach every published build.
+        - name: Update the Hoist Docs builder
+          run: pnpm update @xh/hoist-docs-builder --no-save
+
         - name: Lint
           run: pnpm lint:all
 
