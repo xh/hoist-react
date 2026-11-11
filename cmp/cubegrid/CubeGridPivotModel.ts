@@ -15,6 +15,7 @@ import {ColumnWidthCalculator} from '@xh/hoist/cmp/grid/impl/ColumnWidthCalculat
 import type {HAlign, HSide, ReactionSpec, Some, VSide} from '@xh/hoist/core';
 import {HoistModel} from '@xh/hoist/core';
 import type {Cube, CubeField, PivotCellField, PivotPath, View} from '@xh/hoist/data';
+import type {GetMainMenuItemsParams} from '@xh/hoist/kit/ag-grid';
 import {action, bindable, bindableRef, observable} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
 import {
@@ -175,6 +176,32 @@ export class CubeGridPivotModel extends HoistModel {
 
     collapseAll() {
         this.expandToLevel(0);
+    }
+
+    /** @internal - number of pivot dimensions, or 0 when the region is empty. */
+    get maxDepth(): number {
+        return isEmpty(this._rootGroups) ? 0 : this.query.pivot.dimensions.length;
+    }
+
+    /**
+     * @internal - labels for each level in {@link expandToLevel}, naming the pivot dimension it
+     * shows. Level 0 shows none and has no label - {@link collapseAll} reaches it.
+     */
+    get resolvedLevelLabels(): string[] {
+        if (!this.maxDepth) return null;
+        return [null, ...this.query.pivot.dimensions.map(it => it.displayName)];
+    }
+
+    /** @internal - true if the level is current, as {@link GridModel.isCurrentExpandLevel}. */
+    isCurrentExpandLevel(idx: number): boolean {
+        const {expandLevel, maxDepth} = this;
+        return expandLevel === idx || (idx === maxDepth && (expandLevel < 0 || expandLevel > idx));
+    }
+
+    /** @internal - true if a header menu's column or group lies within the pivot region. */
+    isInRegion({column, columnGroup}: GetMainMenuItemsParams): boolean {
+        const cols = column ? [column] : (columnGroup?.getLeafColumns() ?? []);
+        return cols.some(it => this._colIds.has(it.getColId()));
     }
 
     /**
