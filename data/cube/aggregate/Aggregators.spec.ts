@@ -12,6 +12,7 @@ import {
     Cube,
     type CubeFieldSpec,
     type QueryConfig,
+    SumIfUniqueAggregator,
     type View,
     type ViewRow,
     type ViewRowData
@@ -79,6 +80,18 @@ describe('Aggregator', () => {
             expect(aggregateValues('MAX')).toMatchObject({US: 10, EU: null, Asia: 6, Total: 10});
         });
 
+        it('MEDIAN takes the median of non-null values over all leaves, not of child medians', () => {
+            // Medians of child medians would give Asia 3.75 and Total 4.5.
+            expect(aggregateValues('MEDIAN')).toMatchObject({
+                'US/Tech': 10,
+                US: 7,
+                EU: null,
+                'Asia/Tech': 1.5,
+                Asia: 2,
+                Total: 4
+            });
+        });
+
         it('LEAF_COUNT counts the leaves beneath a row, CHILD_COUNT its direct children', () => {
             expect(aggregateValues('LEAF_COUNT')).toMatchObject({US: 3, EU: 2, Total: 8});
             expect(aggregateValues('CHILD_COUNT')).toMatchObject({US: 2, EU: 1, Total: 3});
@@ -109,6 +122,47 @@ describe('Aggregator', () => {
 
             // Fixed in 59.5.0 (#3548) - equal dates held in separate objects compared unequal.
             expect(root.tradeDate).toEqual(new Date(2026, 0, 5));
+        });
+    });
+
+    describe('SumIfUniqueAggregator', () => {
+        it('sums only where all leaves with a value share the unique field, at any depth', () => {
+            const view = autoDestroy(createAmountsCube().createView({query: QUERY}));
+
+            // Both US groups are mixed, so publish a null currency. Comparing those published
+            // values would wrongly find the US children in agreement.
+            expect(valuesByPath(view, 'amount')).toMatchObject({
+                'US/Tech': null,
+                'US/Energy': null,
+                US: null,
+                'EU/Tech': 7,
+                EU: 7,
+                Asia: 5,
+                LatAm: null,
+                Total: null
+            });
+        });
+
+        it('recomputes when only the unique field changes', async () => {
+            const cube = createAmountsCube(),
+                view = autoDestroy(cube.createView({query: QUERY, connect: true}));
+
+            await cube.updateDataAsync([{...AMOUNTS[1], currency: 'USD'}]);
+            expectReplaced(view, 'amount');
+            expect(valuesByPath(view, 'amount')).toMatchObject({'US/Tech': 15, US: null});
+
+            await cube.updateDataAsync([{...AMOUNTS[3], currency: 'USD'}]);
+            expectReplaced(view, 'amount');
+            expect(valuesByPath(view, 'amount')).toMatchObject({'US/Energy': 5, US: 20});
+        });
+
+        it('reads the unique field from source records, so it need not be queried', () => {
+            const view = autoDestroy(
+                createAmountsCube().createView({
+                    query: {...QUERY, fields: ['region', 'sector', 'amount'], includeLeaves: true}
+                })
+            );
+            expect(valuesByPath(view, 'amount')).toMatchObject({US: null, EU: 7, Asia: 5});
         });
     });
 
@@ -271,6 +325,14 @@ describe('Aggregator', () => {
             expect(valuesByPath(view, 'value')).toMatchObject({'US/Tech': 10, US: 10, Total: 5.8});
         });
 
+        it('MEDIAN re-takes the median over all leaves beneath', async () => {
+            const {cube, view} = createValuesView('MEDIAN');
+
+            await cube.updateDataAsync([valueUpdate(3, 10)]);
+            expectReplaced(view);
+            expect(valuesByPath(view, 'value')).toMatchObject({US: 10, Total: 6});
+        });
+
         it('LEAF_COUNT and CHILD_COUNT are unchanged by a value tick', async () => {
             const {cube, view} = createValuesView('LEAF_COUNT');
 
@@ -330,6 +392,19 @@ const POSITIONS = [
     {id: 2, region: 'US', sector: 'Tech', qty: 300, price: 30},
     {id: 3, region: 'US', sector: 'Energy', qty: 100, price: 5},
     {id: 4, region: 'EU', sector: 'Tech', qty: 100, price: 45}
+];
+
+// Amounts in mixed currencies - both US groups mix them, and EU has an unpriced leaf.
+const AMOUNTS = [
+    {id: 1, region: 'US', sector: 'Tech', currency: 'USD', amount: 10},
+    {id: 2, region: 'US', sector: 'Tech', currency: 'EUR', amount: 5},
+    {id: 3, region: 'US', sector: 'Energy', currency: 'USD', amount: 4},
+    {id: 4, region: 'US', sector: 'Energy', currency: 'EUR', amount: 1},
+    {id: 5, region: 'EU', sector: 'Tech', currency: 'EUR', amount: 7},
+    {id: 6, region: 'EU', sector: 'Tech', currency: 'USD', amount: null},
+    {id: 7, region: 'Asia', sector: 'Tech', currency: 'JPY', amount: 2},
+    {id: 8, region: 'Asia', sector: 'Energy', currency: 'JPY', amount: 3},
+    {id: 9, region: 'LatAm', sector: 'Tech', currency: 'BRL', amount: null}
 ];
 
 /** The aggregator from the Cube README - a weighted average, composed from aggregator state. */
@@ -444,6 +519,21 @@ function createPositionsCube(priceAggregator: Aggregator): Cube {
         {name: 'price', type: 'int', aggregator: priceAggregator}
     ];
     return autoDestroy(new Cube({fields, data: POSITIONS}));
+}
+
+function createAmountsCube(): Cube {
+    return autoDestroy(
+        new Cube({
+            fields: [
+                {name: 'region', isDimension: true},
+                {name: 'sector', isDimension: true},
+                // Apps typically label groups with a UNIQUE currency - null where mixed.
+                {name: 'currency', aggregator: 'UNIQUE'},
+                {name: 'amount', type: 'number', aggregator: new SumIfUniqueAggregator('currency')}
+            ],
+            data: AMOUNTS
+        })
+    );
 }
 
 /** A field's value at each row of a grand-total result, keyed by path - e.g. 'US/Tech'. */
