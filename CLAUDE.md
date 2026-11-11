@@ -16,60 +16,29 @@ as `@xh/hoist` and consumed by Hoist application projects. The server-side count
 
 ## Hoist Developer Tools and Documentation
 
-**IMPORTANT: Do not guess at hoist-react APIs, component props, or framework patterns.** Hoist-react
-ships dedicated tools that provide structured access to all framework documentation and TypeScript
-type information. **You MUST use these tools before modifying or extending hoist-react code** to
-understand existing architecture, configuration patterns, and common pitfalls. The package READMEs
-and concept docs are the authoritative reference for how Hoist works -- skipping them risks producing
-code that conflicts with established patterns or misses built-in functionality.
+**IMPORTANT: Do not guess at hoist-react APIs, component props, or framework patterns.** The
+package READMEs and concept docs are the authoritative reference for how Hoist works - skipping them
+risks producing code that conflicts with established patterns or misses built-in functionality.
 
-Two interfaces are available. Both share the same underlying registries and produce identical output:
+**Hoist Docs MCP server (`hoist-docs`)** - [Hoist Docs](https://github.com/xh/hoist-docs) serves
+hoist-react and hoist-core documentation and API reference over MCP. `.mcp.json` runs it locally
+over stdio (`npx @xh/hoist-docs`); in this checkout it serves both libraries' `develop` indexes.
+Use `hoist-search-docs`, `hoist-list-docs`, `hoist-read-doc`, `hoist-search-symbols`,
+`hoist-get-symbol`, and `hoist-get-members`, plus `hoist://docs/{id}` resources. To serve this
+checkout's current state instead, build indexes in a hoist-docs checkout (`pnpm build:react --root
+../hoist-react`) and set `HOIST_DOCS_INDEX_DIR` to its `indexes` directory.
 
-**MCP Server (hoist-react)** -- When working in the hoist-react repository, an MCP server is
-configured via `.mcp.json` and is very likely already available. Use the `hoist-search-docs`,
-`hoist-list-docs`, `hoist-read-doc`, `hoist-search-symbols`, `hoist-get-symbol`, and
-`hoist-get-members` tools, plus `hoist://docs/{id}` resources for direct document access.
+**Without the server**, read the docs directly: start at [`docs/README.md`](docs/README.md), whose
+"Quick Reference by Task" table maps goals to the right README or concept doc, then read the
+TypeScript source for exact signatures.
 
-**CLI Tools** -- For environments without MCP support, or when you prefer shell commands. These are
-real `bin` entries in the hoist-react `package.json` — invoke them exactly as shown with `npx`:
-
-```bash
-# Documentation
-npx hoist-docs search "grid sorting"         # Search all docs - returns ranked sections
-npx hoist-docs read cmp/grid                 # Read a specific doc by ID
-npx hoist-docs read cmp/grid --outline       # List a doc's sections with token counts
-npx hoist-docs read cmp/grid -s "Sorting"    # Read one section (cheaper than the whole doc)
-npx hoist-docs list                          # List all available docs
-npx hoist-docs conventions                   # Print coding conventions
-npx hoist-docs index                         # Print the documentation catalog
-
-# TypeScript symbols and types
-npx hoist-ts search GridModel                # Ranked search: symbols and members, one line each
-npx hoist-ts search headerName               # Find which class or config owns a property
-npx hoist-ts symbol GridModel                # Import line, signature, docs, member summary
-npx hoist-ts members GridModel --filter col  # Members whose name contains "col", with docs
-```
-
-**Use `search` for discovery** - one strong keyword works best, ideally an API name
-(`GridModel`, `persistWith`, `headerName`); camelCase names match their parts. Multi-word
-queries rank hits by how many terms they match, so extra words narrow rather than exclude
-(`"StoreRecord raw"` finds `StoreRecord.raw`, `"panel modal"` finds `ModalSupportModel`). Every
-hit carries its import path: the package barrel when one exists, otherwise the file. Prefer the
-barrel path when shown. Members of every exported class and every `*Config`, `*Spec`, and
-`*Options` interface are searched too, so `"groupSortFn"` reaches both `GridModel` and
-`GridConfig`; `*Props` members appear when the query names the component. `impl/` and `admin/`
-code is excluded unless you pass `--include-internal`.
-Use `symbol` when you know the exact name - for classes and interfaces it includes a member
-summary, usually enough to write the code - and `members` with `--filter` for member docs. When
-multiple symbols share a name (e.g. `View` exists in both `cmp/viewmanager` and `data/cube`),
-pass the file path with `--file` to disambiguate - the tools will hint when this is needed. Run
-`npx hoist-docs --help` and `npx hoist-ts --help` for full usage.
-
-**Recommended workflow:** Start with the documentation index (`hoist-docs index` or `hoist://docs/index`)
-to discover available docs. Use the "Quick Reference by Task" table to find the right doc for your
-goal, then read the relevant README(s). Supplement with TypeScript symbol lookups for precise API
-details. The docs provide architectural context and common pitfalls; the TypeScript tools provide
-exact signatures, decorators, and member listings.
+**Using the tools:** for how-to and concept questions start with `hoist-search-docs` and read one
+returned section with `hoist-read-doc {id, section}`. For exact names and signatures start with
+`hoist-search-symbols` - one strong keyword, ideally an API name (`GridModel`, `persistWith`,
+`headerName`); camelCase names match their parts. Then `hoist-get-symbol` gives the import line,
+signature, docs, and a member summary, and `hoist-get-members` with `filter` gives member docs.
+Prefer the package barrel import path when one is shown. `impl/` and `admin/` code is excluded
+unless you pass `includeInternal: true`.
 
 ### GitHub MCP Server (opt-in)
 
@@ -88,7 +57,7 @@ it requires Docker and an authenticated GitHub CLI, which not every developer ke
    merge with the shared `settings.json` — enabling locally does not affect other developers):
    ```json
    {
-     "enabledMcpjsonServers": ["hoist-react", "github"]
+     "enabledMcpjsonServers": ["hoist-docs", "github"]
    }
    ```
 
@@ -111,7 +80,7 @@ for yourself (local settings merge with the shared `settings.json`):
 
 ```json
 {
-  "enabledMcpjsonServers": ["hoist-react", "idea"]
+  "enabledMcpjsonServers": ["hoist-docs", "idea"]
 }
 ```
 
@@ -148,7 +117,7 @@ profile. To check that the port is open, run `curl -s http://127.0.0.1:9222/json
 
 ```json
 {
-  "enabledMcpjsonServers": ["hoist-react", "chrome-devtools"]
+  "enabledMcpjsonServers": ["hoist-docs", "chrome-devtools"]
 }
 ```
 
@@ -161,9 +130,10 @@ skills apply in this repo:
 - `xh:clear-writing` - house style for CHANGELOG entries, PR descriptions, docs, and comments.
   Prose written here follows its rules. Lint a draft with its script before you commit it.
 - `xh:setup-worktree` - provisions a runnable worktree. It knows this repo has no `client-app/`.
-- `xh:using-hoist-react-reference` - routes Hoist API questions to the MCP and CLI tools above.
-  It restates what this file already says, so it adds little here. It is the skill that app
-  developers rely on, and this repo is where changes to its tools land first, so keep it enabled.
+- `xh:using-hoist-react-reference` - routes Hoist API questions to the MCP tools above. It
+  restates what this file already says, so it adds little here. It is the skill that app
+  developers rely on, so keep it enabled. It still describes the stdio server and CLI tools this
+  repo used to ship, and needs updating for the Hoist Docs service.
 
 The other skills are for Hoist applications and do not apply to this library:
 
@@ -178,14 +148,12 @@ local skill change, install the plugin from that path as hoist-ai's own `CLAUDE.
 
 ```bash
 pnpm install                     # Install dependencies
-pnpm lint                        # Lint all code (library JS/TS, MCP tools, SCSS)
+pnpm lint                        # Lint all code (library JS/TS, SCSS)
 pnpm lint:code                   # Lint library JavaScript/TypeScript only
-pnpm lint:mcp                    # Lint MCP server and CLI tools (mcp/) only
 pnpm lint:styles                 # Lint SCSS only
-pnpm typecheck                   # Type check library and MCP tools
+pnpm typecheck                   # Type check library
 pnpm test                        # Run library unit tests (Vitest)
 pnpm test data/Store             # Run unit tests in spec files whose path contains "data/Store"
-pnpm test:mcp                    # Run MCP spec scripts, incl. the doc-search golden set
 ```
 
 Linting and type-checking are separate concerns, and neither subsumes the other — run both. ESLint

@@ -14,6 +14,15 @@
 
 ## 91.0.0-SNAPSHOT - unreleased
 
+### 💥 Breaking Changes (upgrade difficulty: 🎉 TRIVIAL)
+
+See [`docs/upgrade-notes/v91-upgrade-notes.md`](docs/upgrade-notes/v91-upgrade-notes.md) for
+detailed, step-by-step upgrade instructions with before/after code examples.
+
+* Removed the bundled stdio MCP server and the `hoist-mcp`, `hoist-docs` and `hoist-ts` CLIs. Add
+  [Hoist Docs](https://github.com/xh/hoist-docs) (`@xh/hoist-docs`) as a `client-app` dev
+  dependency and point `.mcp.json` at it instead - see the upgrade notes.
+
 ### 🎁 New Features
 
 * Added `CubeGrid` and `CubeGridModel` (`@xh/hoist/cmp/cubegrid`), a grid bound to a Cube View.
@@ -71,6 +80,22 @@
 
 ### 🤖 AI Docs + Tooling
 
+* Moved MCP docs and symbol tooling to [Hoist Docs](https://github.com/xh/hoist-docs)
+  (`@xh/hoist-docs`), one MCP server for hoist-react and hoist-core. Apps add it as a dev
+  dependency; the agent launches it over stdio, and it answers for the app's installed Hoist
+  versions. The same package also runs over HTTP behind an MCP gateway. Tools keep their names and
+  output.
+* Hoist Docs is built on the MCP TypeScript SDK v2 (`@modelcontextprotocol/server`), which
+  implements the 2026-07-28 MCP spec - stateless serving and `server/discover` - while still
+  serving clients on the 2025 `initialize` handshake. The bundled server was on SDK v1, which stops
+  at the 2025-11-25 spec.
+* `@xh/hoist` now ships its Hoist Docs index (`hoist-docs/index.json.gz`, about 1.6 MB), built at
+  publish by `@xh/hoist-docs-builder` and declared by `hoistDocs` in `package.json`. Hoist Docs
+  reads it from the installed package, so every build, snapshots included, carries docs for exactly
+  its own code. Companion libraries can do the same - see
+  [Companion Library Docs](docs/companion-library-docs.md).
+* Removed the MCP-only dependencies `@modelcontextprotocol/sdk`, `zod`, `commander`, `minisearch`,
+  `ts-morph` and `tsx`. Apps no longer install them.
 * Fixed the `hoist-ts` CLI and MCP symbol tools giving a file import path for every symbol when run
   from an app's installed `@xh/hoist`. They now give the package barrel, such as
   `@xh/hoist/cmp/grid`, as they do in a hoist-react checkout.

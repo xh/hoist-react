@@ -1,12 +1,10 @@
 {
   "mcpServers": {
-    "hoist-react": {
+    "hoist-docs": {
       "type": "stdio",
-      "command": "node",
-      "args": [
-        "bin/hoist-mcp.mjs"
-      ],
-      "env": {}
+      "command": "npx",
+      "args": ["-y", "@xh/hoist-docs@next"],
+      "env": {"INDEX_DIR": "${HOIST_DOCS_INDEX_DIR:-}"}
     },
     "github": {
       "command": "bash",

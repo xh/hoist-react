@@ -65,8 +65,7 @@ See [`docs-roadmap.md`](./planning/docs-roadmap.md) for documentation coverage t
 | Set up builds, CI/CD, or deployment | [Build & Publish Hoist React](./build-and-publish.md), [Build & Deploy Apps](./build-and-deploy-app.md) |
 | Configure local development environment | [Development Environment](./development-environment.md)                                                             |
 | Write or run unit tests, in an app or hoist-react | [Unit Testing](./unit-testing.md) |
-| Use MCP tools with AI assistants | [`/mcp/`](../mcp/README.md)                                                                                         |
-| Serve a Hoist library's docs through the MCP tools | [Companion Library Docs](./companion-library-docs.md) |
+| Serve a Hoist library's docs through Hoist Docs | [Companion Library Docs](./companion-library-docs.md) |
 | Customize colors, fonts, spacing, or theme | [`/styles/`](../styles/README.md)                                                                                   |
 | Follow XH coding conventions | [Coding Conventions](./coding-conventions.md)                                                                       |
 | Check hoist-react / hoist-core / hoist-dev-utils version compatibility | [Version Compatibility](./version-compatibility.md)                                              |
@@ -162,8 +161,7 @@ for planned coverage:
 
 | Tool | Description |
 |------|-------------|
-| [MCP Server](../mcp/README.md) | Model Context Protocol server providing AI assistants with structured access to documentation, TypeScript types, and code generation prompts |
-| [Companion Library Docs](./companion-library-docs.md) | How a library that builds on Hoist serves its docs through the MCP server and `hoist-docs` CLI, using a `hoist.docRegistry` field in its `package.json` |
+| [Companion Library Docs](./companion-library-docs.md) | How a library that builds on Hoist ships a Hoist Docs index in its npm package, so agents get its docs and API next to Hoist's |
 
 ## Upgrade Notes
 
@@ -178,6 +176,7 @@ breaking changes, before/after code examples, and verification checklists.
 
 | Version | Released | Difficulty | Key Changes |
 |---------|----------|------------|-------------|
+| [v91](./upgrade-notes/v91-upgrade-notes.md) | unreleased | 🎉 TRIVIAL | stdio MCP server and `hoist-docs` / `hoist-ts` CLIs removed in favor of the Hoist Docs service |
 | [v90](./upgrade-notes/v90-upgrade-notes.md) | 2026-11-02 | 🟢 LOW | numbro removed (`formatConfig`), desktop `DateInput` on react-day-picker 10, Onsen UI removed from mobile, `Column.textRenderer` on built-in column specs, panel splitter redesign, renderer import paths, removed libraries |
 | [v89](./upgrade-notes/v89-upgrade-notes.md) | 2026-10-13 | 🟢 LOW | TypeScript 7 (strongly recommended), `GridFilterModelConfig.fieldSpecs` no longer an allow-list |
 | [v88](./upgrade-notes/v88-upgrade-notes.md) | 2026-09-28 | 🔴 HIGH | TC39 decorators (`accessor`, no `makeObservable`) + dev-utils 16 / Rsbuild, MobX 7 named exports, AG Grid 36 + Theming API, React 19.3, v86 scheduled removals |
