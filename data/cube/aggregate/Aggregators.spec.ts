@@ -81,7 +81,7 @@ describe('Aggregator', () => {
         });
 
         it('MEDIAN takes the median of non-null values over all leaves, not of child medians', () => {
-            // Medians of child medians would give Asia 3.75 and Total 4.5.
+            // Medians of child medians would give Asia 3.75 and Total 5.375.
             expect(aggregateValues('MEDIAN')).toMatchObject({
                 'US/Tech': 10,
                 US: 7,
@@ -154,6 +154,32 @@ describe('Aggregator', () => {
             await cube.updateDataAsync([{...AMOUNTS[3], currency: 'USD'}]);
             expectReplaced(view, 'amount');
             expect(valuesByPath(view, 'amount')).toMatchObject({'US/Energy': 5, US: 20});
+        });
+
+        it('recomputes when an amount change resolves a mix', async () => {
+            const cube = createAmountsCube(),
+                view = autoDestroy(cube.createView({query: QUERY, connect: true}));
+
+            // Nulling the only EUR amount in each US group leaves them all USD.
+            await cube.updateDataAsync([{...AMOUNTS[1], amount: null}]);
+            expectReplaced(view, 'amount');
+            expect(valuesByPath(view, 'amount')).toMatchObject({'US/Tech': 10, US: null});
+
+            await cube.updateDataAsync([{...AMOUNTS[3], amount: null}]);
+            expectReplaced(view, 'amount');
+            expect(valuesByPath(view, 'amount')).toMatchObject({'US/Energy': 4, US: 14});
+        });
+
+        it('treats a null in the unique field as a value of its own', () => {
+            const view = autoDestroy(
+                createAmountsCube([
+                    {id: 1, region: 'US', sector: 'Tech', currency: 'USD', amount: 10},
+                    {id: 2, region: 'US', sector: 'Tech', currency: null, amount: 5},
+                    {id: 3, region: 'EU', sector: 'Tech', currency: null, amount: 2},
+                    {id: 4, region: 'EU', sector: 'Energy', currency: null, amount: 3}
+                ]).createView({query: QUERY})
+            );
+            expect(valuesByPath(view, 'amount')).toMatchObject({US: null, EU: 5, Total: null});
         });
 
         it('reads the unique field from source records, so it need not be queried', () => {
@@ -331,6 +357,53 @@ describe('Aggregator', () => {
             await cube.updateDataAsync([valueUpdate(3, 10)]);
             expectReplaced(view);
             expect(valuesByPath(view, 'value')).toMatchObject({US: 10, Total: 6});
+
+            // Asia/Tech holds its median of 1.5, but the values behind it move - Asia must follow.
+            await cube.updateDataAsync([valueUpdate(6, 0), valueUpdate(7, 3)]);
+            expectReplaced(view);
+            expect(valuesByPath(view, 'value')).toMatchObject({'Asia/Tech': 1.5, Asia: 3});
+        });
+
+        it('MEDIAN re-aggregates a parent when a child holds its median over new leaves', async () => {
+            const {cube, view} = createValuesView('MEDIAN');
+
+            // US/Tech holds its median of 10, but US now takes the median of 10, 10 and 4.
+            await cube.updateDataAsync({add: [{id: 9, region: 'US', sector: 'Tech', value: 10}]});
+            expect(valuesByPath(view, 'value')).toMatchObject({'US/Tech': 10, US: 10, Total: 5});
+            expect(valuesByPath(view, 'value')).toEqual(
+                valuesByPath(cube.executeQuery(QUERY), 'value')
+            );
+        });
+
+        it('MEDIAN leaves out the leaves of a row whose canAggregateFn returns false', async () => {
+            // As AVG and the other built-ins do - the row publishes null, and its parent skips it.
+            const cube = autoDestroy(
+                    new Cube({
+                        fields: [
+                            {name: 'region', isDimension: true},
+                            {name: 'sector', isDimension: true},
+                            {
+                                name: 'value',
+                                type: 'number',
+                                aggregator: 'MEDIAN',
+                                canAggregateFn: (dim, val, applied) =>
+                                    !(dim === 'sector' && val === 'Tech' && applied.region === 'US')
+                            }
+                        ],
+                        data: VALUES
+                    })
+                ),
+                view = autoDestroy(cube.createView({query: QUERY, connect: true}));
+
+            expect(valuesByPath(view, 'value')).toMatchObject({'US/Tech': null, US: 4, Total: 3});
+
+            await cube.updateDataAsync([valueUpdate(1, 100)]);
+            expectReplaced(view);
+            expect(valuesByPath(view, 'value')).toMatchObject({US: 4, Total: 3});
+
+            await cube.updateDataAsync([valueUpdate(3, 8)]);
+            expectReplaced(view);
+            expect(valuesByPath(view, 'value')).toMatchObject({US: 8, Total: 4});
         });
 
         it('LEAF_COUNT and CHILD_COUNT are unchanged by a value tick', async () => {
@@ -521,7 +594,7 @@ function createPositionsCube(priceAggregator: Aggregator): Cube {
     return autoDestroy(new Cube({fields, data: POSITIONS}));
 }
 
-function createAmountsCube(): Cube {
+function createAmountsCube(data: PlainObject[] = AMOUNTS): Cube {
     return autoDestroy(
         new Cube({
             fields: [
@@ -531,7 +604,7 @@ function createAmountsCube(): Cube {
                 {name: 'currency', aggregator: 'UNIQUE'},
                 {name: 'amount', type: 'number', aggregator: new SumIfUniqueAggregator('currency')}
             ],
-            data: AMOUNTS
+            data
         })
     );
 }

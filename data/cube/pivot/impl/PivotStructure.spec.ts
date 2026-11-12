@@ -23,11 +23,12 @@
  */
 import {isHoistException} from '@xh/hoist/exception';
 import type {Aggregator} from '../../aggregate/Aggregator';
-import {isEqual} from 'lodash';
+import {isEqual, sortBy} from 'lodash';
 import {describe, expect, it} from 'vitest';
 import {AverageAggregator} from '../../aggregate/AverageAggregator';
 import {AverageStrictAggregator} from '../../aggregate/AverageStrictAggregator';
 import {ChildCountAggregator} from '../../aggregate/ChildCountAggregator';
+import {MedianAggregator} from '../../aggregate/MedianAggregator';
 import {SumAggregator} from '../../aggregate/SumAggregator';
 import {SumStrictAggregator} from '../../aggregate/SumStrictAggregator';
 import {UniqueAggregator} from '../../aggregate/UniqueAggregator';
@@ -97,6 +98,7 @@ const SUM = new SumAggregator(),
     SUM_STRICT = new SumStrictAggregator(),
     AVG = new AverageAggregator(),
     AVG_STRICT = new AverageStrictAggregator(),
+    MEDIAN = new MedianAggregator(),
     UNIQUE = new UniqueAggregator(),
     CHILD_COUNT = new ChildCountAggregator();
 
@@ -105,6 +107,7 @@ const AGG_NAME = new Map<Aggregator, string>([
     [SUM_STRICT, 'SUM_STRICT'],
     [AVG, 'AVG'],
     [AVG_STRICT, 'AVG_STRICT'],
+    [MEDIAN, 'MEDIAN'],
     [UNIQUE, 'UNIQUE'],
     [CHILD_COUNT, 'CHILD_COUNT']
 ]);
@@ -130,6 +133,15 @@ const ORACLE = new Map<Aggregator, (vals: any[]) => any>([
         }
     ],
     [AVG_STRICT, vals => (vals.some(v => v == null) ? null : sumOf(vals) / vals.length)],
+    [
+        MEDIAN,
+        vals => {
+            const nn = sortBy(vals.filter(v => v != null)),
+                mid = Math.floor(nn.length / 2);
+            if (!nn.length) return null;
+            return nn.length % 2 ? nn[mid] : (nn[mid - 1] + nn[mid]) / 2;
+        }
+    ],
     [UNIQUE, vals => (vals.every(v => isEqual(v, vals[0])) ? vals[0] : null)],
     [CHILD_COUNT, vals => vals.length]
 ]);
@@ -768,6 +780,7 @@ suite('aggregation composes over the structure', () => {
             [SUM_STRICT, VF],
             [AVG, VF],
             [AVG_STRICT, VF],
+            [MEDIAN, VF],
             [UNIQUE, UF]
         ] as Array<[Aggregator, string]>) {
             const name = AGG_NAME.get(agg),
