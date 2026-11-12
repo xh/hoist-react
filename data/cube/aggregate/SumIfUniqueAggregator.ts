@@ -10,22 +10,12 @@ import {Aggregator} from './Aggregator';
 
 /**
  * Sums numeric values across all leaf rows, but only if every leaf with a value shares the same
- * value for a second field. For example, it sums amounts only where they share a currency.
- * Returns null if those leaves disagree, so a total never mixes units, and null if no leaf has a
- * value.
- *
- * Only leaves with a non-null value take part in the check. A leaf with no amount adds nothing,
- * so its currency cannot make the total ambiguous. A null in the second field counts as a value
- * of its own, distinct from all others.
- *
- * Composes from its direct children via a running total and shared value held as aggregator
- * state, so the check covers every leaf beneath a row at any depth of grouping. Reading a
- * child's published `UNIQUE` value for the second field would not: a child with mixed values
- * publishes null, and two such children would wrongly agree.
+ * value for a second field - for example, amounts that share a currency. Returns null if those
+ * leaves disagree, or if no leaf has a value. A null in the second field counts as a value of its
+ * own.
  *
  * Reads the second field from each leaf's source record, so the query need not include it.
- * Takes parameters, so is not a singleton like the token-aliased aggregators. Instantiate it per
- * field: `{name: 'amount', aggregator: new SumIfUniqueAggregator('currency')}`.
+ * Create one per field: `{name: 'amount', aggregator: new SumIfUniqueAggregator('currency')}`.
  */
 export class SumIfUniqueAggregator extends Aggregator {
     readonly uniqueField: string;
@@ -49,6 +39,8 @@ export class SumIfUniqueAggregator extends Aggregator {
         for (const row of rows) {
             let val: number, rowShared: any;
 
+            // Compose from child state, not the children's published `UNIQUE` values - two children
+            // with mixed values both publish null, and would wrongly agree.
             const state: SumIfUniqueState = row.isLeaf ? null : context.getAggState(row);
             if (state) {
                 if (state.mixed) {
@@ -58,7 +50,7 @@ export class SumIfUniqueAggregator extends Aggregator {
                 val = state.total;
                 rowShared = state.shared;
             } else {
-                // A leaf, or a rare child grouped by this field - read both values directly.
+                // A leaf, or a row that did not aggregate the field - read its values directly.
                 const data = row.isLeaf ? row.cubeRecord.data : row.data;
                 val = data[fieldName];
                 rowShared = data[this.uniqueField];
