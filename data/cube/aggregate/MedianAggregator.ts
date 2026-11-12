@@ -6,6 +6,7 @@
  */
 
 import {shallowEqualArrays} from '@xh/hoist/utils/impl';
+import {sortedIndex, sortedIndexOf} from 'lodash';
 import type {AggregationContext} from './AggregationContext';
 import {Aggregator} from './Aggregator';
 import type {ViewRow} from '../ViewRow';
@@ -14,10 +15,10 @@ import type {ViewRow} from '../ViewRow';
  * Takes the median of numeric values across all leaf rows, skipping nulls. Returns null if no leaf
  * has a value.
  *
- * A median cannot be composed from child medians, so each aggregation walks and sorts the values
- * beneath the row. An update to a leaf does this for every ancestor of that leaf, once per updated
- * leaf, so a large batch of updates to a large View is costly. Best suited to Views of modest size
- * or with infrequent updates.
+ * A median cannot be composed from child medians, so each row holds the sorted values beneath it
+ * as aggregator state. A full aggregation walks and sorts those values. An update to a leaf moves
+ * its value within the sorted values of each ancestor - a binary search, then an array shift
+ * linear in the number of values.
  *
  * A row whose `canAggregateFn` returned false contributes its published null, not the leaves
  * beneath it.
@@ -36,8 +37,29 @@ export class MedianAggregator extends Aggregator {
         // row is not marked as changed.
         const prev: MedianState = context.getAggState();
         context.setAggState(prev && shallowEqualArrays(prev.vals, vals) ? prev : {vals});
-        if (!vals.length) return null;
+        return this.median(vals);
+    }
 
+    override replace(rows, currVal, update, context) {
+        const state: MedianState = context.getAggState();
+        if (!state) return super.replace(rows, currVal, update, context);
+
+        const {vals} = state,
+            {leafOldValue, leafNewValue} = update;
+        if (leafOldValue != null) {
+            const idx = sortedIndexOf(vals, leafOldValue);
+            // Not expected - state out of step with the leaves, so rebuild it.
+            if (idx < 0) return super.replace(rows, currVal, update, context);
+            vals.splice(idx, 1);
+        }
+        if (leafNewValue != null) {
+            vals.splice(sortedIndex(vals, leafNewValue), 0, leafNewValue);
+        }
+        return this.median(vals);
+    }
+
+    private median(vals: number[]): number {
+        if (!vals.length) return null;
         const mid = Math.floor(vals.length / 2);
         return vals.length % 2 ? vals[mid] : (vals[mid - 1] + vals[mid]) / 2;
     }

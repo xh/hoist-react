@@ -19,7 +19,7 @@ import {
     type ViewRowData
 } from '@xh/hoist/data';
 import {initTestAppAsync} from '@xh/hoist/test-support';
-import {isArray, sumBy} from 'lodash';
+import {isArray, pick, sortBy, sumBy} from 'lodash';
 import {beforeAll, describe, expect, it, onTestFinished} from 'vitest';
 
 /**
@@ -452,6 +452,46 @@ describe('Aggregator', () => {
             expect(usDigests()).toEqual(before);
         });
 
+        it('MEDIAN tracks random batches of ticks, plain and pivoted', async () => {
+            // Small integers with nulls, so ties and moves to and from null are common.
+            const rand = seededRandom(1),
+                randValue = () => (rand(6) ? rand(10) : null),
+                data = Array.from({length: 60}, (_, id) => ({
+                    id,
+                    region: ['US', 'EU', 'Asia'][id % 3],
+                    sector: ['Tech', 'Energy'][id % 2],
+                    book: ['A', 'B', 'C'][(id % 5) % 3],
+                    value: randValue()
+                })),
+                cube = autoDestroy(
+                    new Cube({
+                        fields: [
+                            {name: 'region', isDimension: true},
+                            {name: 'sector', isDimension: true},
+                            {name: 'book', isDimension: true},
+                            {name: 'value', type: 'number', aggregator: 'MEDIAN'}
+                        ],
+                        data
+                    })
+                ),
+                queries: QueryConfig[] = [
+                    QUERY,
+                    {...QUERY, pivot: {dimensions: ['book'], measures: ['value']}}
+                ],
+                views = queries.map(query => autoDestroy(cube.createView({query, connect: true})));
+
+            for (let batch = 0; batch < 50; batch++) {
+                const ids = new Set(Array.from({length: 1 + rand(15)}, () => rand(60)));
+                await cube.updateDataAsync([...ids].map(id => ({...data[id], value: randValue()})));
+                views.forEach((view, idx) => {
+                    const names = ['value', ...view.result.cellFields.map(cf => cf.name)];
+                    expect(normalizeRows(view.result.rows, names)).toEqual(
+                        normalizeRows(cube.executeQuery(queries[idx]), names)
+                    );
+                });
+            }
+        });
+
         it('LEAF_COUNT and CHILD_COUNT are unchanged by a value tick', async () => {
             const {cube, view} = createValuesView('LEAF_COUNT');
 
@@ -672,4 +712,21 @@ function valuesByPath(source: View | ViewRowData[], field: string): PlainObject 
 function autoDestroy<T extends {destroy(): void}>(obj: T): T {
     onTestFinished(() => obj.destroy());
     return obj;
+}
+
+/** Rows as nested plain objects of the named fields, ordered by id - for comparing results. */
+function normalizeRows(rows: ViewRowData[], fieldNames: string[]): PlainObject[] {
+    if (!rows) return null;
+    return sortBy(rows, 'id').map(row => ({
+        ...pick(row, ['id', ...fieldNames]),
+        children: normalizeRows(row.children, fieldNames)
+    }));
+}
+
+/** A seeded generator of integers in [0, n) - repeatable, unlike `Math.random`. */
+function seededRandom(seed: number): (n: number) => number {
+    return n => {
+        seed = (seed * 16807) % 2147483647;
+        return seed % n;
+    };
 }
