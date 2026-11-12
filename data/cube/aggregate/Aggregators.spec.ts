@@ -191,6 +191,88 @@ describe('Aggregator', () => {
             );
             expect(valuesByPath(view, 'amount')).toMatchObject({US: null, EU: 7, Asia: 5});
         });
+        it('chooses a new value to track when the last leaf holding it changes', async () => {
+            const cube = createAmountsCube([
+                    {id: 1, region: 'US', sector: 'Tech', currency: 'USD', amount: 10},
+                    {id: 2, region: 'US', sector: 'Tech', currency: 'USD', amount: 5},
+                    {id: 3, region: 'US', sector: 'Tech', currency: 'EUR', amount: 2}
+                ]),
+                view = autoDestroy(cube.createView({query: QUERY, connect: true}));
+
+            // US/Tech tracks USD, held by two leaves - moving both leaves it with only EUR.
+            await cube.updateDataAsync([
+                {id: 1, region: 'US', sector: 'Tech', currency: 'EUR', amount: 10}
+            ]);
+            expect(valuesByPath(view, 'amount')).toMatchObject({'US/Tech': null, US: null});
+
+            await cube.updateDataAsync([
+                {id: 2, region: 'US', sector: 'Tech', currency: 'EUR', amount: 5}
+            ]);
+            expectReplaced(view, 'amount');
+            expect(valuesByPath(view, 'amount')).toMatchObject({'US/Tech': 17, US: 17, Total: 17});
+
+            // A null amount drops a leaf, rather than leaving its currency behind.
+            await cube.updateDataAsync([
+                {id: 3, region: 'US', sector: 'Tech', currency: 'USD', amount: null}
+            ]);
+            expect(valuesByPath(view, 'amount')).toMatchObject({'US/Tech': 15, Total: 15});
+        });
+
+        it('tracks random batches of amount and currency changes, plain and pivoted', async () => {
+            const rand = seededRandom(7),
+                currencies = ['USD', 'EUR', 'JPY', null],
+                randAmount = () => (rand(5) ? rand(10) : null),
+                // Mostly USD, so groups often share a currency and the tracked one often moves.
+                randCurrency = () => (rand(3) ? 'USD' : currencies[rand(4)]),
+                current = Array.from({length: 60}, (_, id) => ({
+                    id,
+                    region: ['US', 'EU', 'Asia'][id % 3],
+                    sector: ['Tech', 'Energy'][id % 2],
+                    book: ['A', 'B', 'C'][(id % 5) % 3],
+                    currency: randCurrency(),
+                    amount: randAmount()
+                })),
+                cube = autoDestroy(
+                    new Cube({
+                        fields: [
+                            {name: 'region', isDimension: true},
+                            {name: 'sector', isDimension: true},
+                            {name: 'book', isDimension: true},
+                            {name: 'currency'},
+                            {
+                                name: 'amount',
+                                type: 'number',
+                                aggregator: new SumIfSameAggregator('currency')
+                            }
+                        ],
+                        data: current
+                    })
+                ),
+                queries: QueryConfig[] = [
+                    QUERY,
+                    {...QUERY, pivot: {dimensions: ['book'], measures: ['amount']}}
+                ],
+                views = queries.map(query => autoDestroy(cube.createView({query, connect: true})));
+
+            for (let batch = 0; batch < 100; batch++) {
+                const ids = new Set(Array.from({length: 1 + rand(15)}, () => rand(60)));
+                ids.forEach(id => {
+                    const change = rand(3);
+                    current[id] = {
+                        ...current[id],
+                        ...(change !== 1 ? {amount: randAmount()} : {}),
+                        ...(change !== 0 ? {currency: randCurrency()} : {})
+                    };
+                });
+                await cube.updateDataAsync([...ids].map(id => current[id]));
+                views.forEach((view, idx) => {
+                    const names = ['amount', ...view.result.cellFields.map(cf => cf.name)];
+                    expect(normalizeRows(view.result.rows, names)).toEqual(
+                        normalizeRows(cube.executeQuery(queries[idx]), names)
+                    );
+                });
+            }
+        });
     });
 
     describe('custom subclass', () => {
