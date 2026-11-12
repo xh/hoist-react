@@ -31,6 +31,9 @@ affected APIs.
 - **Removed libraries (required if an app imports them)** - Hoist no longer depends on several
   libraries, such as `semver` and `store2`. An app that imports one must declare it in its own
   `package.json` - see Step 8.
+- **router5 8 (required if an app declares router5)** - Hoist moves to router5 8. An app that
+  declares its own `router5` must match that version, or drop the dependency and type its routes
+  with `HoistRoute` - see Step 9.
 
 ## Prerequisites
 
@@ -451,6 +454,49 @@ grep -rnE "from '(numbro|date-fns|@blueprintjs/datetime|onsenui|react-onsenui|re
 
 Skip any match for a library that the app's `package.json` already declares.
 
+### 9. Align Your App's router5 Dependency
+
+Hoist v90 updates router5 and router5-plugin-browser from 7.0 to 8.0. An app that declares its own
+`router5` at 7.x installs a second copy of the library beside Hoist's.
+
+Most apps declare router5 only to import its `Route` type for `getRoutes()`. Import `HoistRoute`
+from `@xh/hoist/core` instead. It is router5's `Route` plus Hoist's `omit` key, and it is the type
+that `HoistAppModel.getRoutes()` returns. Then remove `router5` from the app's `package.json`.
+
+Before:
+
+```typescript
+import type {Route} from 'router5';
+
+override getRoutes(): Route[] {
+```
+
+After:
+
+```typescript
+import type {HoistRoute} from '@xh/hoist/core';
+
+override getRoutes(): HoistRoute[] {
+```
+
+If the app still imports from router5 for anything else, update its own dependency to `~8.0.1`.
+router5 8 moved its type files from `types/` to `dist/`, so an import from `router5/types/...` no
+longer resolves. Import those types from `router5` itself.
+
+**Find affected code:**
+
+```bash
+grep -n '"router5' client-app/package.json
+grep -rnE "from 'router5(-plugin-browser)?['/]" client-app/src/
+```
+
+**Review deep links with `@`, `=` or `|` in a path parameter.** router5 8 percent-encodes path
+parameter values. Values that contain `/`, `&`, `?` or `#` now work, where router5 7 threw an error.
+But router5 8 does not match a URL from router5 7 whose path parameter holds a bare `@` or `=`, or
+an encoded `|`. A bookmark to `/app/users/jane@example.com`, for example, no longer finds its route.
+This applies to path parameters only. See [Route Parameters](../routing.md#route-parameters)
+for a server limit on `/` in path parameters.
+
 ## Verification Checklist
 
 After completing all steps:
@@ -474,6 +520,9 @@ After completing all steps:
 - [ ] Nothing imports a `*Renderer` factory from `@xh/hoist/format/FormatNumber` or
       `@xh/hoist/format/FormatDate`.
 - [ ] The app's `package.json` declares every library that the app imports.
+- [ ] The app's `package.json` declares no `router5` dependency, or declares `~8.0.1`, and
+      `getRoutes()` returns `HoistRoute[]`.
+- [ ] Deep links that carry `@`, `=` or `|` in a path parameter still open the right route.
 
 ## Reference
 

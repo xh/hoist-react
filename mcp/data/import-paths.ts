@@ -13,6 +13,7 @@
  * disk cache carries it. The file path is derived at output time.
  */
 import type {Project, SourceFile} from 'ts-morph';
+import {isLibrarySource} from '../util/paths.js';
 
 /** Resolve the barrel import path of `name` declared in `filePath` (POSIX, absolute). */
 export type ImportPathResolver = (filePath: string, name: string) => string | null;
@@ -30,18 +31,13 @@ interface ExportEdge {
  * lazily per barrel and memoized, since most barrels are only consulted for their own subtree.
  */
 export function createImportPathResolver(project: Project, repoRoot: string): ImportPathResolver {
-    const prefix = repoRoot + '/',
-        isIndexable = (path: string) =>
-            path.startsWith(prefix) &&
-            !path.includes('/node_modules/') &&
-            !path.includes('/build/') &&
-            !path.includes('/mcp/');
+    const prefix = repoRoot + '/';
 
     // Barrel file path keyed by its directory, relative to the repo root (`cmp/grid`).
     const barrels = new Map<string, SourceFile>();
     for (const sf of project.getSourceFiles()) {
         const path = sf.getFilePath();
-        if (!isIndexable(path) || !path.endsWith('/index.ts')) continue;
+        if (!isLibrarySource(path, repoRoot) || !path.endsWith('/index.ts')) continue;
         barrels.set(path.slice(prefix.length, -'/index.ts'.length), sf);
     }
 
@@ -109,7 +105,7 @@ export function createImportPathResolver(project: Project, repoRoot: string): Im
     }
 
     return (filePath, name) => {
-        if (!isIndexable(filePath)) return null;
+        if (!isLibrarySource(filePath, repoRoot)) return null;
         const segments = filePath.slice(prefix.length).split('/').slice(0, -1);
         for (let depth = 1; depth <= segments.length; depth++) {
             const dir = segments.slice(0, depth).join('/'),

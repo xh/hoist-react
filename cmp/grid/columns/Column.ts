@@ -123,7 +123,8 @@ export interface ColumnSpec {
 
     /**
      * User-facing text/element displayed in the Column header, or a function to produce the same.
-     * Defaulted from `displayName`.
+     * Defaulted from the field's `shortDisplayName` unless this Column sets its own `displayName`,
+     * then from `displayName`.
      */
     headerName?: ColumnHeaderNameFn | ReactNode;
 
@@ -676,6 +677,7 @@ export class Column {
         this.description = description ?? this.fieldSpec?.description;
 
         // In contrast, headerName supports a null or '' value when no header label is desired.
+        // GridModel may have defaulted it from the field's `shortDisplayName` already.
         this.headerName = withDefault(headerName, this.displayName);
 
         this.headerTooltip = withDefault(headerTooltip, this.description);

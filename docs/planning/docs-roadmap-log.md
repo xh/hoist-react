@@ -555,9 +555,35 @@
   (Done), and `docs/doc-registry.json`; cross-linked from the `/cmp/` and `/desktop/` README
   package tables.
 
+### 2026-10-01
+- Added `cmp/pdfviewer/README.md` covering the new `PdfViewer` and `PdfViewerModel`: install via
+  the optional `pdfjs-dist` peer, document sources, toolbar tokens, the model API, CSS variables,
+  how the lazy-loaded pdf.js integration works, and current limitations.
+- Indexed in `docs/README.md` (Quick Reference and Components), the roadmap Priority 2 table
+  (Done), and `docs/doc-registry.json`; cross-linked from the `/cmp/` catalog and the `/kit/`
+  README.
+
 ### 2026-10-04
 - Added `docs/unit-testing.md`, covering the new Vitest unit test suite: how it runs, the fake
   hoist-core server and `initTestAppAsync()`, conventions for writing tests, the test reports, CI,
   and working with AI agents.
 - Indexed in `docs/README.md` (Quick Reference and DevOps and Environment) and
   `docs/doc-registry.json`. Linked from the README, `CLAUDE.md`, and `docs/build-and-publish.md`.
+
+### 2026-10-08
+- Added `cmp/pivotgrid/README.md`, covering `PivotGridModel` and `PivotGrid`: how a pivoted View
+  maps to columns and cell fields, reconfiguring through the query, summaries, pivot sort, and the
+  filter and export caveats.
+- Added a "Pivoting with `pivot`" section to `data/cube/README.md` for the data layer: the
+  `PivotSpec` query option, result shape, `View.createStore()`, updates, and limits.
+- Indexed in `docs/README.md` (Quick Reference and Components), the roadmap Priority 2 table
+  (Done), and `docs/doc-registry.json`; cross-linked from the `/cmp/` and `/data/cube/` READMEs.
+
+### 2026-11-03
+- Renamed `cmp/pivotgrid/README.md` to `cmp/cubegrid/README.md` with the `CubeGridModel` rename:
+  the model is now the entry point for any Cube-backed grid, with the app's fixed `columns`
+  first and pivot columns appended when the query pivots. Rewrote the usage, added "A Grid
+  Without Pivoting" and "Fixed Columns and Pivot Columns" sections.
+- `data/cube/README.md` no longer documents `View.createStore()`, now `@internal`.
+- Updated the index entries in `docs/README.md`, the roadmap, `cmp/README.md` and
+  `docs/doc-registry.json` to the new path and names.

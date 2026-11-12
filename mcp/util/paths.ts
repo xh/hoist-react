@@ -62,6 +62,32 @@ export function resolveRepoRootPosix(): string {
 }
 
 /**
+ * True if a source file is library source to index. Excludes files outside the repo root and,
+ * within it, dependencies, build output, this MCP sub-project, specs, and the CI reporter for
+ * hoist-react's own tests - none of which ship. The test kit in `test-support/` ships as
+ * `@xh/hoist/test-support`, so it is indexed.
+ *
+ * Tests the path relative to `repoRoot`, never the absolute path. In an app, the package root
+ * itself sits under `node_modules`, and a folder above it may be named `build` or `mcp`. A test
+ * of the absolute path then rejects every file. The symbol indexer and the import path resolver
+ * both filter with this function so that they always agree.
+ *
+ * @param filePath - absolute POSIX path, as ts-morph `getFilePath()` reports it.
+ * @param repoRoot - repo root in POSIX form - see {@link resolveRepoRootPosix}.
+ */
+export function isLibrarySource(filePath: string, repoRoot: string): boolean {
+    if (!filePath.startsWith(repoRoot + '/')) return false;
+    const relPath = filePath.slice(repoRoot.length);
+    return (
+        !relPath.startsWith('/node_modules/') &&
+        !relPath.includes('/build/') &&
+        !relPath.includes('/mcp/') &&
+        !relPath.startsWith('/test-support/report/') &&
+        !relPath.endsWith('.spec.ts')
+    );
+}
+
+/**
  * Resolve the `@xh/hoist` library version from the repo root `package.json`.
  *
  * Used by the connectivity-check surfaces (`hoist-ping` tool, `hoist-docs ping`

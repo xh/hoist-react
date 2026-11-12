@@ -9,6 +9,10 @@ import type {
     ColumnRenderer,
     ColumnSpec,
     GridConfig,
+    GridEnsureVisibleOptions,
+    GridLikeModel,
+    GridSelectFirstOptions,
+    GridSelectOptions,
     GroupRowRenderer,
     RowClassFn,
     RowClassRuleFn,
@@ -152,7 +156,7 @@ export type ItemHeightFn = (params: {
  * @see DataView
  * @see DataViewConfig
  */
-export class DataViewModel extends HoistModel {
+export class DataViewModel extends HoistModel implements GridLikeModel {
     @managed gridModel: GridModel;
     @bindableRef accessor itemHeight: number | ItemHeightFn;
     @bindable accessor groupRowHeight: number;
@@ -236,6 +240,10 @@ export class DataViewModel extends HoistModel {
     get store() {
         return this.gridModel.store;
     }
+    get innerGridModel(): GridModel {
+        return this.gridModel;
+    }
+
     get empty() {
         return this.gridModel.empty;
     }
@@ -261,10 +269,7 @@ export class DataViewModel extends HoistModel {
         return this.gridModel.sortBy;
     }
 
-    selectAsync(
-        records: Some<StoreRecordOrId>,
-        opts?: {ensureVisible?: boolean; clearSelection?: boolean}
-    ) {
+    selectAsync(records: Some<StoreRecordOrId>, opts?: GridSelectOptions) {
         return this.gridModel.selectAsync(records, opts);
     }
 
@@ -272,12 +277,12 @@ export class DataViewModel extends HoistModel {
         return this.gridModel.preSelectFirstAsync();
     }
 
-    selectFirstAsync(opts: {ensureVisible?: boolean} = {}) {
+    selectFirstAsync(opts?: GridSelectFirstOptions) {
         return this.gridModel.selectFirstAsync(opts);
     }
 
-    ensureSelectionVisibleAsync() {
-        return this.gridModel.ensureSelectionVisibleAsync();
+    ensureSelectionVisibleAsync(opts?: GridEnsureVisibleOptions) {
+        return this.gridModel.ensureSelectionVisibleAsync(opts);
     }
 
     override doLoadAsync(loadSpec: LoadSpec) {

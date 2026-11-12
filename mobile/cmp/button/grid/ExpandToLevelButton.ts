@@ -4,7 +4,8 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {GridModel} from '@xh/hoist/cmp/grid';
+import type {GridLikeModel} from '@xh/hoist/cmp/grid';
+import {isGridLikeModel} from '@xh/hoist/cmp/grid/impl/GridLikeModel';
 import type {MenuItemLike} from '@xh/hoist/core';
 import {hoistCmp, useContextModel} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
@@ -15,10 +16,10 @@ import {menuButton} from '../../menu';
 
 export interface ExpandToLevelButtonProps extends MenuButtonProps {
     /**
-     * `GridModel` to which this button should bind.
-     * Optional, will find nearest GridModel in context if not provided.
+     * GridModel, or a model wrapping one, to which this button should bind. Will find the
+     * nearest in context if not provided.
      */
-    gridModel?: GridModel;
+    gridModel?: GridLikeModel;
 }
 
 /**
@@ -32,8 +33,11 @@ export const [ExpandToLevelButton, expandToLevelButton] =
         className: 'xh-expand-to-level-button',
         model: false,
 
-        render({gridModel, className, icon, disabled, ...rest}) {
-            gridModel = withDefault(gridModel, useContextModel(GridModel));
+        render({gridModel: boundModel, className, icon, disabled, ...rest}) {
+            const gridModel = withDefault(
+                boundModel,
+                useContextModel<GridLikeModel>(isGridLikeModel)
+            )?.innerGridModel;
             icon = withDefault(icon, Icon.treeList());
 
             const disabledButton = () =>

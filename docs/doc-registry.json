@@ -58,8 +58,8 @@
             "title": "Cube Aggregation",
             "mcpCategory": "package",
             "viewerCategory": "core",
-            "description": "Client-side OLAP-style aggregation with dimensions, measures, Views, and Queries.",
-            "keywords": ["Cube", "CubeField", "View", "Query", "QueryConfig", "aggregator", "dimension", "measure", "SUM", "AVG", "includeRoot", "includeLeaves", "createView"]
+            "description": "Client-side OLAP-style aggregation with dimensions, measures, Views, Queries, and pivoting.",
+            "keywords": ["Cube", "CubeField", "View", "Query", "QueryConfig", "aggregator", "dimension", "measure", "SUM", "AVG", "includeRoot", "includeLeaves", "createView", "pivot", "PivotSpec", "cubeLabelValue"]
         },
         {
             "id": "svc/README.md",
@@ -86,6 +86,14 @@
             "viewerCategory": "components",
             "description": "Primary data grid built on ag-Grid.",
             "keywords": ["GridModel", "Column", "ColumnGroup", "sorting", "grouping", "filtering", "selection", "inline editing", "export", "tree grid", "GridFilterModel", "ag-Grid", "column chooser", "context menu"]
+        },
+        {
+            "id": "cmp/cubegrid/README.md",
+            "title": "CubeGrid Package",
+            "mcpCategory": "package",
+            "viewerCategory": "components",
+            "description": "Cube View rendered as a tree grid with the app's columns, plus pivot paths as nested column groups, docked summaries, and per-measure column config when the query pivots.",
+            "keywords": ["CubeGridModel", "CubeGrid", "CubeGridConfig", "CubeGridPivotModel", "CubeGridPivotConfig", "pivotConfig", "cube grid", "pivot", "PivotSpec", "measures", "cellFields", "PivotPath", "PivotDimensionSpec", "PivotMeasureSpec", "measuresOutermost", "summaryLabel", "valueRenderer", "emptyLabel", "valueClass", "summaryClass", "showSummary"]
         },
         {
             "id": "cmp/form/README.md",
@@ -134,6 +142,14 @@
             "viewerCategory": "components",
             "description": "Period selection as presets, relative lookbacks, months/years, or custom ranges, resolved to dates and filters.",
             "keywords": ["DateRangePickerModel", "DateRangePicker", "DateRangeSelection", "dateRangePresets", "DateRangePreset", "LocalDateRange", "anchorDate", "currentRangeFilter", "priorRange", "business days"]
+        },
+        {
+            "id": "cmp/pdfviewer/README.md",
+            "title": "PDF Viewer Package",
+            "mcpCategory": "package",
+            "viewerCategory": "components",
+            "description": "PDF document viewer built on pdf.js, with a configurable toolbar and an observable model API for paging, zoom, find, and download.",
+            "keywords": ["PdfViewerModel", "PdfViewer", "PdfSource", "PdfScale", "PdfViewerToolbarToken", "pdfjs-dist", "pdf.js", "PDF", "document preview"]
         },
         {
             "id": "desktop/cmp/dash/README.md",

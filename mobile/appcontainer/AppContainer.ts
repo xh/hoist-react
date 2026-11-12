@@ -15,6 +15,7 @@ import {installMobileImpls} from '@xh/hoist/dynamics/mobile';
 import {colChooser} from '@xh/hoist/mobile/cmp/grid/impl/ColChooser';
 import {ColChooserModel} from '@xh/hoist/mobile/cmp/grid/impl/ColChooserModel';
 import {mask} from '@xh/hoist/cmp/mask';
+import {pdfViewerToolbarImpl} from '@xh/hoist/mobile/cmp/pdfviewer/impl/PdfViewerToolbar';
 import {pinPadImpl} from '@xh/hoist/mobile/cmp/pinpad/impl/PinPad';
 import {storeFilterFieldImpl} from '@xh/hoist/mobile/cmp/store/impl/StoreFilterField';
 import {tabContainerImpl} from '@xh/hoist/mobile/cmp/tab/impl/TabContainer';
@@ -44,7 +45,8 @@ installMobileImpls({
     zoneMapper,
     errorMessageImpl,
     maskImpl,
-    cardHeaderImpl
+    cardHeaderImpl,
+    pdfViewerToolbarImpl
 });
 
 /**

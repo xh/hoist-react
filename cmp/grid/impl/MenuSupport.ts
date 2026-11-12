@@ -4,7 +4,7 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {isEmpty, isFunction, isNil, isString, sortBy, uniq} from 'lodash';
+import {compact, isEmpty, isFunction, isNil, isString, sortBy, uniq} from 'lodash';
 import {copyToClipboard, TEST_ID} from '@xh/hoist/utils/js';
 import {hoistCmp, type HoistProps, type HSide, isMenuHeading, type Some, XH} from '@xh/hoist/core';
 import type {Column, GridModel} from '@xh/hoist/cmp/grid';
@@ -345,7 +345,8 @@ function createPinColumnItem(gridModel: GridModel): RecordAction {
     return new RecordAction({
         text: 'Pin Column',
         icon: Icon.pin(),
-        displayFn: ({column}) => ({hidden: !column || !gridModel.enableColumnPinning}),
+        // Pinning relocates the column, so a column that cannot move cannot pin either.
+        displayFn: ({column}) => ({hidden: !column?.movable || !gridModel.enableColumnPinning}),
         items: [pinItem('Left', 'left'), pinItem('Right', 'right'), pinItem('Unpin', null)]
     });
 }
@@ -371,43 +372,58 @@ function createSortItems(gridModel: GridModel, column: Column): RecordAction[] {
     });
 }
 
-function createExpandCollapseItem(gridModel: GridModel): RecordAction[] {
-    if (!gridModel || gridModel.maxDepth === 0) return null;
+/** Levels that expand and collapse together - the rows of a GridModel, or a pivot's columns. */
+export interface ExpandLevelTarget {
+    maxDepth: number;
+    /** Label per level, by index. A null label leaves its level out of "Expand to...". */
+    resolvedLevelLabels: string[];
+    isCurrentExpandLevel(idx: number): boolean;
+    expandToLevel(level: number): void;
+    expandAll(): void;
+    collapseAll(): void;
+}
+
+/** @internal - Expand All, Collapse All and Expand to... items for the target's levels. */
+export function createExpandCollapseItem(target: ExpandLevelTarget): RecordAction[] {
+    if (!target || target.maxDepth === 0) return null;
 
     return [
         new RecordAction({
             text: 'Expand All',
             icon: Icon.groupRowExpanded(),
-            actionFn: () => gridModel.expandAll()
+            actionFn: () => target.expandAll()
         }),
         new RecordAction({
             text: 'Collapse All',
             icon: Icon.groupRowCollapsed(),
-            actionFn: () => gridModel.collapseAll()
+            actionFn: () => target.collapseAll()
         }),
-        levelExpandAction(gridModel)
+        levelExpandAction(target)
     ];
 }
 
-function levelExpandAction(gridModel: GridModel): RecordAction {
+function levelExpandAction(target: ExpandLevelTarget): RecordAction {
     return new RecordAction({
         text: 'Expand to...',
         displayFn: () => {
-            const {maxDepth, resolvedLevelLabels} = gridModel;
-
-            // Don't show for flat grid models or if we don't have labels
+            const {maxDepth, resolvedLevelLabels} = target;
             if (!maxDepth || !resolvedLevelLabels) return {hidden: true};
 
-            const items = resolvedLevelLabels.map((label, idx) => {
-                const isCurrLevel = gridModel.isCurrentExpandLevel(idx);
+            const items = compact(
+                resolvedLevelLabels.map((label, idx) => {
+                    if (label == null) return null;
+                    const isCurrLevel = target.isCurrentExpandLevel(idx);
 
-                return {
-                    icon: isCurrLevel ? Icon.check() : null,
-                    text: label,
-                    actionFn: () => wait().then(() => gridModel.expandToLevel(idx))
-                };
-            });
-            return {items};
+                    return {
+                        icon: isCurrLevel ? Icon.check() : null,
+                        text: label,
+                        actionFn: () => wait().then(() => target.expandToLevel(idx))
+                    };
+                })
+            );
+
+            // A lone level adds nothing to Expand All.
+            return items.length < 2 ? {hidden: true} : {items};
         }
     });
 }

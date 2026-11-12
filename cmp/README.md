@@ -149,6 +149,7 @@ techniques.
 | `/chart/` | Highcharts integration for data visualization |
 | `/treemap/` | Hierarchical treemap and split treemap visualizations |
 | `/zoneGrid/` | Multi-zone grid layout for complex record displays |
+| `/cubegrid/` | Cube View as a tree grid, with pivot paths as nested column groups when pivoted. [See README](./cubegrid/README.md) |
 | `/statcard/` | Tiles that call out key figures (StatCard), laid out in equal-width rows (StatCardStrip) |
 
 ### Layout and Containers
@@ -203,6 +204,7 @@ techniques.
 | `/clock/` | Real-time clock display |
 | `/error/` | Error boundary and error message display |
 | `/markdown/` | Markdown rendering component |
+| `/pdfviewer/` | PDF document viewer built on pdf.js. [See README](./pdfviewer/README.md) |
 | `/pinpad/` | PIN entry interface |
 | `/relativetimestamp/` | Human-readable relative time display |
 | `/websocket/` | WebSocket indicator component |
