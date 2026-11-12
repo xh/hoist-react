@@ -15,16 +15,16 @@ import {Aggregator} from './Aggregator';
  * own.
  *
  * Reads the second field from each leaf's source record, so the query need not include it.
- * Create one per field: `{name: 'amount', aggregator: new SumIfUniqueAggregator('currency')}`.
+ * Create one per field: `{name: 'amount', aggregator: new SumIfSameAggregator('currency')}`.
  */
-export class SumIfUniqueAggregator extends Aggregator {
-    readonly uniqueField: string;
+export class SumIfSameAggregator extends Aggregator {
+    readonly matchField: string;
     private readonly _dependsOn: string[];
 
-    constructor(uniqueField: string) {
+    constructor(matchField: string) {
         super();
-        this.uniqueField = uniqueField;
-        this._dependsOn = [uniqueField];
+        this.matchField = matchField;
+        this._dependsOn = [matchField];
     }
 
     override get dependsOn() {
@@ -41,7 +41,7 @@ export class SumIfUniqueAggregator extends Aggregator {
 
             // Compose from child state, not the children's published `UNIQUE` values - two children
             // with mixed values both publish null, and would wrongly agree.
-            const state: SumIfUniqueState = row.isLeaf ? null : context.getAggState(row);
+            const state: SumIfSameState = row.isLeaf ? null : context.getAggState(row);
             if (state) {
                 if (state.mixed) {
                     mixed = true;
@@ -53,7 +53,7 @@ export class SumIfUniqueAggregator extends Aggregator {
                 // A leaf, or a row that did not aggregate the field - read its values directly.
                 const data = row.isLeaf ? row.cubeRecord.data : row.data;
                 val = data[fieldName];
-                rowShared = data[this.uniqueField];
+                rowShared = data[this.matchField];
             }
 
             if (val == null) continue;
@@ -71,11 +71,11 @@ export class SumIfUniqueAggregator extends Aggregator {
     }
 }
 
-interface SumIfUniqueState {
+interface SumIfSameState {
     /** Sum of contributing values, or null if none contributed or they disagreed. */
     total: number;
-    /** Value of the unique field shared by all contributing leaves. */
+    /** Value of the match field shared by all contributing leaves. */
     shared: any;
-    /** True if contributing leaves disagreed on the unique field. */
+    /** True if contributing leaves disagreed on the match field. */
     mixed: boolean;
 }

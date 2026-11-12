@@ -81,13 +81,13 @@ const cube = new Cube({
 | `'LEAF_COUNT'` | Count of leaf records |
 | `'CHILD_COUNT'` | Count of immediate children |
 | `WeightedAverageAggregator` | Average weighted by a second field, e.g. price by quantity |
-| `SumIfUniqueAggregator` | Total only if all leaves with a value share a second field, such as a currency |
+| `SumIfSameAggregator` | Total only if all leaves with a value share a second field, such as a currency |
 
 `WeightedAverageAggregator` takes the name of its weight field, so is instantiated per field rather
 than aliased by token: `{name: 'price', aggregator: new WeightedAverageAggregator('qty')}`. It
 reads the weight from each leaf's source record, so the weight field need not be queried, and
-updates incrementally on a change to either field. `SumIfUniqueAggregator` takes the name of the
-field its leaves must share in the same way: `new SumIfUniqueAggregator('currency')`.
+updates incrementally on a change to either field. `SumIfSameAggregator` takes the name of the
+field its leaves must share in the same way: `new SumIfSameAggregator('currency')`.
 
 A field is never aggregated at or below the level at which it is applied as a dimension - rows
 there publish the dimension value, and rows above aggregate over those values, one per grouped row.

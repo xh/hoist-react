@@ -32,7 +32,7 @@ export * from './cube/aggregate/MinAggregator';
 export * from './cube/aggregate/NullAggregator';
 export * from './cube/aggregate/SingleAggregator';
 export * from './cube/aggregate/SumAggregator';
-export * from './cube/aggregate/SumIfUniqueAggregator';
+export * from './cube/aggregate/SumIfSameAggregator';
 export * from './cube/aggregate/SumStrictAggregator';
 export * from './cube/aggregate/UniqueAggregator';
 export * from './cube/aggregate/WeightedAverageAggregator';

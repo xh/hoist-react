@@ -9,10 +9,11 @@ import {
     type AggregationContext,
     Aggregator,
     type AggregatorToken,
+    BucketSpec,
     Cube,
     type CubeFieldSpec,
     type QueryConfig,
-    SumIfUniqueAggregator,
+    SumIfSameAggregator,
     type View,
     type ViewRow,
     type ViewRowData
@@ -125,8 +126,8 @@ describe('Aggregator', () => {
         });
     });
 
-    describe('SumIfUniqueAggregator', () => {
-        it('sums only where all leaves with a value share the unique field, at any depth', () => {
+    describe('SumIfSameAggregator', () => {
+        it('sums only where all leaves with a value share the match field, at any depth', () => {
             const view = autoDestroy(createAmountsCube().createView({query: QUERY}));
 
             // Both US groups are mixed, so publish a null currency. Comparing those published
@@ -143,7 +144,7 @@ describe('Aggregator', () => {
             });
         });
 
-        it('recomputes when only the unique field changes', async () => {
+        it('recomputes when only the match field changes', async () => {
             const cube = createAmountsCube(),
                 view = autoDestroy(cube.createView({query: QUERY, connect: true}));
 
@@ -170,7 +171,7 @@ describe('Aggregator', () => {
             expect(valuesByPath(view, 'amount')).toMatchObject({'US/Energy': 4, US: 14});
         });
 
-        it('treats a null in the unique field as a value of its own', () => {
+        it('treats a null in the match field as a value of its own', () => {
             const view = autoDestroy(
                 createAmountsCube([
                     {id: 1, region: 'US', sector: 'Tech', currency: 'USD', amount: 10},
@@ -182,7 +183,7 @@ describe('Aggregator', () => {
             expect(valuesByPath(view, 'amount')).toMatchObject({US: null, EU: 5, Total: null});
         });
 
-        it('reads the unique field from source records, so it need not be queried', () => {
+        it('reads the match field from source records, so it need not be queried', () => {
             const view = autoDestroy(
                 createAmountsCube().createView({
                     query: {...QUERY, fields: ['region', 'sector', 'amount'], includeLeaves: true}
@@ -406,6 +407,51 @@ describe('Aggregator', () => {
             expect(valuesByPath(view, 'value')).toMatchObject({US: 8, Total: 4});
         });
 
+        it('MEDIAN leaves rows unchanged when the values beneath them are unchanged', async () => {
+            // Bucket rows re-aggregate on every rebuild, so would publish new state each time.
+            const cube = autoDestroy(
+                    new Cube({
+                        fields: [
+                            {name: 'region', isDimension: true},
+                            {name: 'sector', isDimension: true},
+                            {name: 'value', type: 'number', aggregator: 'MEDIAN'}
+                        ],
+                        data: VALUES
+                    })
+                ),
+                view = autoDestroy(
+                    cube.createView({
+                        query: {
+                            ...QUERY,
+                            includeLeaves: true,
+                            bucketSpecFn: rows =>
+                                rows[0]?.isLeaf
+                                    ? new BucketSpec({
+                                          name: 'size',
+                                          bucketFn: row => (row.data.value > 5 ? 'big' : 'small')
+                                      })
+                                    : null
+                        },
+                        connect: true
+                    })
+                ),
+                usDigests = () => {
+                    const us = view.result.rows[0].children.find(it => it.cubeLabel === 'US'),
+                        ret = {};
+                    const walk = (row: ViewRowData) => {
+                        if (row.cubeRowType === 'leaf') return;
+                        ret[row.id] = row.cubeRowDigest;
+                        row.children?.forEach(walk);
+                    };
+                    walk(us);
+                    return ret;
+                };
+
+            const before = usDigests();
+            await cube.updateDataAsync({add: [{id: 9, region: 'EU', sector: 'Tech', value: 1}]});
+            expect(usDigests()).toEqual(before);
+        });
+
         it('LEAF_COUNT and CHILD_COUNT are unchanged by a value tick', async () => {
             const {cube, view} = createValuesView('LEAF_COUNT');
 
@@ -602,7 +648,7 @@ function createAmountsCube(data: PlainObject[] = AMOUNTS): Cube {
                 {name: 'sector', isDimension: true},
                 // Apps typically label groups with a UNIQUE currency - null where mixed.
                 {name: 'currency', aggregator: 'UNIQUE'},
-                {name: 'amount', type: 'number', aggregator: new SumIfUniqueAggregator('currency')}
+                {name: 'amount', type: 'number', aggregator: new SumIfSameAggregator('currency')}
             ],
             data
         })

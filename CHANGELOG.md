@@ -50,7 +50,7 @@
   controls. Apps opt in by adding `pdfjs-dist` to their dependencies - Hoist declares it as an
   optional peer and loads it on first use, with no bootstrap or build config required.
 * Added two Cube aggregators. `MedianAggregator`, aliased as the `'MEDIAN'` token, takes the
-  median of a measure over every leaf beneath a row. `SumIfUniqueAggregator` sums a measure only
+  median of a measure over every leaf beneath a row. `SumIfSameAggregator` sums a measure only
   where every leaf with a value shares a second field, such as a currency, and is otherwise null.
 * Added `Icon.magnifyingGlassPlus()` and `Icon.magnifyingGlassMinus()` (aliased as
   `Icon.zoomIn()` and `Icon.zoomOut()`), plus `Icon.rotateRight()`.
