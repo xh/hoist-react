@@ -59,6 +59,14 @@
 * Added `Field.shortDisplayName`, a shorter name for headers. A grid column takes it as its default
   `headerName` unless it sets its own `displayName`, and pivot headers in `CubeGrid` use it. The
   column chooser, menus and exports keep `displayName`, which it defaults to.
+* Added `StatCard` and `StatCardStrip` to `@xh/hoist/cmp/statcard`, for calling out key figures
+  above a grid or in a detail panel. Callers pass pre-formatted values. A strip lays cards out in
+  equal shares and wraps them before a value is cut short. Set `size: 'large'` for a headline
+  figure. Style through the `--xh-stat-card-*` CSS variables.
+* Added the `ComponentSize` type to `@xh/hoist/core` for a component's `size` prop, with `compact`,
+  `standard` and `large` values. It is a size the developer picks, unlike the user's `SizingMode`.
+* Added the `xh-ledger-align` class to the hidden placeholder that `fmtNumber` adds after positive
+  ledger values, so a component can drop the space where values do not sit in a column.
 
 ### 🐞 Bug Fixes
 
