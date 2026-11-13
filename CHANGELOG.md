@@ -69,6 +69,10 @@
   two-axis wheel event to its dominant axis.
 * Fixed `DashCanvas` widgets lagging behind the pointer while dragged or resized. Hoist pins react-grid-layout to 2.2 until a fixed 2.3 release ships.
 
+### ⚙️ Technical
+
+* Grid autosizing now stops when its grid unmounts or is destroyed partway through a pass.
+
 ### 🤖 AI Docs + Tooling
 
 * Fixed the `hoist-ts` CLI and MCP symbol tools giving a file import path for every symbol when run

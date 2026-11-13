@@ -72,9 +72,7 @@ export class GridAutosizeService extends HoistService {
             );
 
         if (!requiredWidths) {
-            this.logDebug(
-                'Autosize aborted, grid data has changed since autosize operation began.'
-            );
+            this.logDebug('Autosize aborted - grid data changed, or grid unmounted or destroyed.');
             return;
         }
 
@@ -125,8 +123,13 @@ export class GridAutosizeService extends HoistService {
             );
             if (isFinite(width)) ret.push({colId, width, manuallySized});
 
-            // Bail out if GridModel has moved on to new data.
-            if (startRecords !== gridModel.store._filtered) return null;
+            if (
+                gridModel.isDestroyed ||
+                !gridModel.isReady ||
+                startRecords !== gridModel.store._filtered
+            ) {
+                return null;
+            }
         }
 
         return ret;
