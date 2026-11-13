@@ -69,6 +69,11 @@
   two-axis wheel event to its dominant axis.
 * Fixed `DashCanvas` widgets lagging behind the pointer while dragged or resized. Hoist pins react-grid-layout to 2.2 until a fixed 2.3 release ships.
 
+### ⚙️ Technical
+
+* `StoreRecord.getValues()` is faster for records with many fields, and so is spreading or copying
+  its result. It now returns an object in V8's compact fast-properties mode.
+
 ### 🤖 AI Docs + Tooling
 
 * Fixed the `hoist-ts` CLI and MCP symbol tools giving a file import path for every symbol when run

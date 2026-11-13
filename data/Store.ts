@@ -412,6 +412,7 @@ export class Store
     private _fieldDefaults: Omit<FieldSpec, 'name'>;
     private _dataTemplate: PlainObject = null;
     private _dataDefaults: PlainObject = null;
+    private _valuesTemplate: PlainObject = null;
     private _denseRecordThreshold: number;
     private _digestSpec: StoreRecordDigestSpec;
     private _digestFn: (raw: PlainObject) => StoreRecordDigest;
@@ -483,8 +484,7 @@ export class Store
         this.resetRecords();
 
         this.validator = new StoreValidator({store: this});
-        this._dataDefaults = this.createDataDefaults();
-        this._dataTemplate = {...this._dataDefaults}; // Clone for fast-props mode.
+        this.initDataTemplates();
         this._denseRecordThreshold =
             this.experimental.denseRecordThreshold ?? DENSE_RECORD_THRESHOLD;
         if (data) this.loadData(data);
@@ -1003,8 +1003,7 @@ export class Store
     setFields(fields: Array<string | FieldSpec | Field>) {
         this.fields = this.parseFields(fields, this._fieldDefaults);
         this._fieldMap = this.createFieldMap();
-        this._dataDefaults = this.createDataDefaults();
-        this._dataTemplate = {...this._dataDefaults}; // Clone for fast-props mode.
+        this.initDataTemplates();
 
         this.resetRecords();
     }
@@ -1621,6 +1620,20 @@ export class Store
             this.projectionOnly,
             `Store.${op}() is not supported with 'projectionOnly' - this store is a read-only projection of data owned by its provider. Data updates flow in via loadData()/updateData().`
         );
+    }
+
+    /**
+     * @internal - a new object with `id` and every Field, in the fixed shape described at
+     * `createDataDefaults()`. Backs `StoreRecord.getValues()`.
+     */
+    cloneValuesTemplate(): PlainObject {
+        return {...this._valuesTemplate};
+    }
+
+    private initDataTemplates() {
+        this._dataDefaults = this.createDataDefaults();
+        this._dataTemplate = {...this._dataDefaults};
+        this._valuesTemplate = {id: null, ...this._dataDefaults};
     }
 
     /**
