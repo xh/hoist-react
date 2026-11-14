@@ -834,15 +834,11 @@ body {
   --xh-resizable-bg: #{mc('blue-grey', '50')};
   --xh-resizable-border-color: #{mc('blue-grey', '100')};
   --xh-resizable-border-width: 1px;
-  --xh-resizable-button-bg: rgba(0, 0, 0, 0.05);
-  --xh-resizable-button-icon-color: var(--xh-blue-gray);
   --xh-resizable-size: 8px;
 
   &:where(.xh-dark) {
     --xh-resizable-bg: #{mc('blue-grey', '800')};
     --xh-resizable-border-color: #{mc('blue-grey', '900')};
-    --xh-resizable-button-bg: rgba(255, 255, 255, 0.08);
-    --xh-resizable-button-icon-color: #{mc('blue-grey', '900')};
   }
 
   //------------------------

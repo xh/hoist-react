@@ -25,6 +25,9 @@
  *      `calc(var(--xh-toolbar-item-spacing) * 2px)` → `calc(var(--xh-toolbar-item-spacing) * 2)`
  *
  * Removed variables (see REMOVED) are reported, not rewritten - none of them had any effect.
+ * Markdown files are never rewritten, since a changelog or release note must keep the names it
+ * was written with. The script lists each line that mentions an old or removed name instead, so
+ * living docs (a README, CLAUDE.md or AGENTS.md) can be updated by hand.
  * The script also warns about patterns it cannot safely rewrite: `calc()` expressions that add a
  * bare number to a size variable or divide by one, size variables assigned numbers from code, and
  * code referencing a size variable by name (which may read a value that now includes its unit).
@@ -34,7 +37,7 @@
  *
  * Paths default to `./client-app/src` if present, else the current directory - pass `src` when
  * running from `client-app`. Files are walked recursively, scanning .scss/.sass/.css/.less/.ts/
- * .tsx/.js/.jsx/.mjs/.md. Skips node_modules, build/, dist/, and .git/. `--dry` reports without
+ * .tsx/.js/.jsx/.mjs, and reporting on .md. Skips node_modules, build/, dist/, and .git/. `--dry` reports without
  * writing. `--no-hooks` skips step 1.
  *
  * Review the diff afterwards - in particular every hook migration listed in the output, and any
@@ -202,6 +205,9 @@ const RENAMES = {
 // Variables removed outright, with the reason. Reported, never rewritten.
 const REMOVED = {
     '--xh-chart-bg': 'Never applied - charts take their background from the Highcharts theme.',
+    '--xh-resizable-button-bg': 'Unused since v90 - use --xh-panel-splitter-button-bg.',
+    '--xh-resizable-button-icon-color':
+        'Unused since v90 - use --xh-panel-splitter-button-icon-color.',
     '--xh-tab-border-width': 'Never applied.',
     '--xh-tab-border-width-px': 'Never applied.',
     '--xh-toolbar-button-bg': 'Never applied.'
@@ -682,7 +688,7 @@ const roots = (paths.length ? paths : [defaultRoot]).map(p => path.resolve(p));
 
 const NAME = '--[a-zA-Z0-9_-]*[a-zA-Z0-9_]';
 const tokenRe = name => new RegExp(`${escapeRe(name)}(?![a-zA-Z0-9_-])`, 'g');
-const report = {files: 0, changed: 0, hooks: [], renames: 0, units: 0, calcs: 0, dropped: 0, removed: [], warnings: []};
+const report = {files: 0, changed: 0, hooks: [], renames: 0, units: 0, calcs: 0, dropped: 0, removed: [], warnings: [], docs: []};
 
 const files = [];
 for (const root of roots) await collect(root);
@@ -707,10 +713,15 @@ for (const f of files) {
     let src = before;
     const rel = path.relative(process.cwd(), f);
 
+    if (DOC_EXTS.has(ext)) {
+        reportDoc(src, rel);
+        continue;
+    }
+
     if (STYLE_EXTS.has(ext) && migratedHooks.size) src = migrateHooks(src, rel);
     src = applyRenames(src);
     if (STYLE_EXTS.has(ext)) src = addUnits(src);
-    if (!DOC_EXTS.has(ext)) src = cleanCalcs(src);
+    src = cleanCalcs(src);
     if (STYLE_EXTS.has(ext)) src = dropSelfReferences(src);
     warn(src, rel, ext);
 
@@ -838,6 +849,16 @@ function warn(src, rel, ext) {
     });
 }
 
+// Markdown is report-only - list each line naming a renamed or removed variable.
+function reportDoc(src, rel) {
+    src.split('\n').forEach((line, i) => {
+        const names = new Set(
+            [...line.matchAll(/--xh-[a-z0-9-]*[a-z0-9]/g)].map(m => m[0]).filter(n => RENAMES[n] || REMOVED[n])
+        );
+        if (names.size) report.docs.push(`${rel}:${i + 1}  ${[...names].join(', ')}`);
+    });
+}
+
 //------------------------
 // Helpers
 //------------------------
@@ -902,7 +923,7 @@ async function collect(p) {
 }
 
 function printReport() {
-    const {files, changed, hooks, renames, units, calcs, dropped, removed, warnings} = report;
+    const {files, changed, hooks, renames, units, calcs, dropped, removed, warnings, docs} = report;
     console.log(
         `\n${DRY ? '[dry] ' : ''}Done - scanned ${files} files, modified ${changed}. ` +
             `${hooks.length} hook migrations, ${renames} renames, ${units} unit additions, ` +
@@ -919,5 +940,12 @@ function printReport() {
     if (warnings.length) {
         console.log(`\nWarnings - review by hand:`);
         warnings.forEach(w => console.log(`  ${w}`));
+    }
+    if (docs.length) {
+        console.log(
+            `\nMarkdown naming old or removed variables - not rewritten. Update living docs by hand, ` +
+                `and leave changelogs and release notes as written:`
+        );
+        docs.forEach(d => console.log(`  ${d}`));
     }
 }

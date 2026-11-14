@@ -62,7 +62,7 @@ node node_modules/@xh/hoist/docs/codemod/v91/codemod-css-vars.mjs src
 The codemod skips `node_modules`. A Hoist package that ships its own styles needs the same
 migration in its own repo, and a new release, before apps on v91 pick it up.
 
-It scans `.scss`, `.css`, `.ts`, `.tsx`, `.js`, `.jsx`, and `.md` files and:
+It scans `.scss`, `.css`, `.ts`, `.tsx`, and `.js` files and:
 
 1. **Migrates unprefixed hooks** to their `--xh-*` variable, including the handful whose names
    never matched (see [Old Hook Name Mismatches](#old-hook-name-mismatches)). Only declarations
@@ -122,6 +122,9 @@ The codemod ends with a report. Work through each section of it:
   references a size variable by name. For the last, check whether the code reads the variable's
   value - e.g. via `getComputedStyle(...).getPropertyValue()` - and appends a unit, which now
   doubles up (`41pxpx`).
+- **Markdown naming old or removed variables** - the codemod never edits `.md` files. Update
+  living docs such as a README or `CLAUDE.md` by hand. Leave changelogs and release notes as
+  written.
 
 ### 2. Review What the Codemod Cannot Migrate
 
@@ -289,6 +292,8 @@ Beyond the renames below, two rules cover every other retired name:
 | Variable | Note |
 |---|---|
 | `--xh-chart-bg` | Charts take their background from the Highcharts theme. |
+| `--xh-resizable-button-bg` | Unused since v90. Panel splitters read `--xh-panel-splitter-button-bg`. |
+| `--xh-resizable-button-icon-color` | Unused since v90. Panel splitters read `--xh-panel-splitter-button-icon-color`. |
 | `--xh-tab-border-width` | Never applied. |
 | `--xh-toolbar-button-bg` | Never applied. |
 
