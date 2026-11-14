@@ -45,6 +45,12 @@ detailed, step-by-step upgrade instructions with before/after code examples.
   `--xh-tab-active-indicator-color`.
 * Mobile tabs now read the `--xh-tab-*` variables, and mobile dialogs read `--xh-popup-bg` and
   `--xh-popup-title-font-family`, as on desktop.
+* Added `.xh-border-rounded` for a solid border with rounded corners, and `.xh-rounded` for rounded
+  corners with no border. Both use `--xh-border-radius`.
+* Removed `!important` from the `.xh-border-top`, `-right`, `-bottom` and `-left`, `.xh-pad-none`
+  and `.xh-margin-none` utility classes, to match the other utility classes. Inline styles,
+  including layout props such as `padding`, now win over them. Check any use that relied on them to
+  override a more specific rule or an inline style.
 * Desktop `Select` now rounds its corners to match other inputs (4px, up from 3px). A desktop
   `TabSwitcher` placed at the bottom now marks its active tab in the active tab color, as one at
   the top does, rather than in the resting text color.

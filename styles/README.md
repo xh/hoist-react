@@ -422,20 +422,35 @@ card({className: 'my-app-card', title: 'Summary', ...})
 
 ## Utility Classes
 
-`XH.scss` defines a set of utility classes, scoped under `body.xh-app`, for common styling needs:
+`XH.scss` defines utility classes for common styling needs. Use one in place of a one-off SCSS rule
+when it does the job. The table lists every class:
 
-| Category | Classes | Example |
-|----------|---------|---------|
-| **Colors** | `.xh-blue`, `.xh-red`, `.xh-text-color-muted`, etc. | Quick text coloring |
-| **Intents** | `.xh-intent-primary`, `.xh-bg-intent-danger` | Intent-based text/background |
-| **Pos/Neg** | `.xh-pos-val`, `.xh-neg-val`, `.xh-neutral-val` | Financial value coloring |
-| **Alignment** | `.xh-align-center`, `.xh-align-left`, `.xh-align-right` | Text + flex alignment |
-| **Backgrounds** | `.xh-bg`, `.xh-bg-alt`, `.xh-bg-highlight` | Background colors |
-| **Borders** | `.xh-border`, `.xh-border-top`, `.xh-border-dotted` | Quick borders |
-| **Typography** | `.xh-bold`, `.xh-font-family-mono`, `.xh-font-size-large` | Text styling |
-| **Spacing** | `.xh-pad`, `.xh-pad-half`, `.xh-margin-lr`, `.xh-pad-none` | Padding/margin |
+| Category | Classes | Effect |
+|----------|---------|--------|
+| **Text colors** | `.xh-black`, `.xh-white`, `.xh-gray`, `.xh-gray-dark`, `.xh-gray-light`, `.xh-blue`, `.xh-blue-dark`, `.xh-blue-light`, `.xh-blue-muted`, `.xh-blue-gray`, `.xh-blue-gray-dark`, `.xh-blue-gray-light`, `.xh-green`, `.xh-green-muted`, `.xh-orange`, `.xh-orange-muted`, `.xh-red`, `.xh-red-muted`, `.xh-yellow`, `.xh-yellow-light`, `.xh-transparent` | Text color from the matching `--xh-*` var |
+| **Theme text** | `.xh-text-color`, `.xh-text-color-accent`, `.xh-text-color-muted` | Theme text colors |
+| **Intents** | `.xh-intent-primary`, `.xh-intent-success`, `.xh-intent-warning`, `.xh-intent-danger` | Intent text color |
+| **Intent backgrounds** | `.xh-bg-intent-primary`, `.xh-bg-intent-success`, `.xh-bg-intent-warning`, `.xh-bg-intent-danger` | Intent background with white text |
+| **Pos/Neg** | `.xh-pos-val`, `.xh-neg-val`, `.xh-neutral-val` | Colors for positive, negative and zero values |
+| **File icons** | `.xh-file-icon-excel`, `.xh-file-icon-mail`, `.xh-file-icon-pdf`, `.xh-file-icon-powerpoint`, `.xh-file-icon-word` | Brand colors for file-type icons |
+| **Alignment** | `.xh-align-left`, `.xh-align-center`, `.xh-align-right` | Text and flex alignment |
+| **Backgrounds** | `.xh-bg`, `.xh-bg-alt`, `.xh-bg-highlight` | Theme background colors |
+| **Borders** | `.xh-border` (or `.xh-border-solid`), `.xh-border-dotted`, `.xh-border-rounded` | Border on all sides - solid, dotted, or solid with rounded corners |
+| **Border sides** | `.xh-border-top`, `.xh-border-right`, `.xh-border-bottom`, `.xh-border-left` | Solid border on one side |
+| **Corners** | `.xh-rounded` | Rounded corners only, with no border. Use on a box with a background. |
+| **Typography** | `.xh-bold`, `.xh-font-family-headings`, `.xh-font-family-mono`, `.xh-font-size-large`, `.xh-font-size-small` | Font weight, family and size |
+| **Padding** | `.xh-pad`, `.xh-pad-half`, `.xh-pad-double`, `.xh-pad-top`, `.xh-pad-right`, `.xh-pad-bottom`, `.xh-pad-left`, `.xh-pad-lr`, `.xh-pad-tb`, `.xh-pad-none` | Padding from `--xh-spacing` |
+| **Margin** | `.xh-margin`, `.xh-margin-half`, `.xh-margin-double`, `.xh-margin-top`, `.xh-margin-right`, `.xh-margin-bottom`, `.xh-margin-left`, `.xh-margin-lr`, `.xh-margin-tb`, `.xh-margin-none` | Margin from `--xh-spacing` |
+| **Patterns** | `.xh-tiled-bg` | Lightly tiled background, with a dark theme variant |
 
-These utility classes all read CSS vars, so they adapt to the active theme automatically.
+Each class reads a CSS var, so it follows the active theme. Every class except `.xh-tiled-bg` is
+scoped under `body.xh-app`. That scope beats a single-class component rule. The classes do not use
+`!important`, so an inline style wins over them. This includes layout props such as `padding` on a
+`Box`.
+
+When two classes set the same property, the one later in `XH.scss` wins. The `-none` classes come
+last in their groups, so `xh-pad xh-pad-none` has no padding. Classes that set different properties
+combine, so `xh-border xh-rounded` matches `xh-border-rounded`.
 
 ## SCSS Usage in Hoist
 

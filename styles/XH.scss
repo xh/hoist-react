@@ -156,12 +156,17 @@ body.xh-app {
   .xh-bg-highlight {background-color: var(--xh-bg-highlight)}
 
   .xh-border { border: var(--xh-border-solid); }
-  .xh-border-bottom { border-bottom: var(--xh-border-solid) !important; }
+  .xh-border-bottom { border-bottom: var(--xh-border-solid); }
   .xh-border-dotted { border: var(--xh-border-dotted); }
-  .xh-border-left { border-left: var(--xh-border-solid) !important; }
-  .xh-border-right { border-right: var(--xh-border-solid) !important; }
+  .xh-border-left { border-left: var(--xh-border-solid); }
+  .xh-border-right { border-right: var(--xh-border-solid); }
+  .xh-border-rounded {
+    border: var(--xh-border-solid);
+    border-radius: var(--xh-border-radius);
+  }
   .xh-border-solid { border: var(--xh-border-solid); }
-  .xh-border-top { border-top: var(--xh-border-solid) !important; }
+  .xh-border-top { border-top: var(--xh-border-solid); }
+  .xh-rounded { border-radius: var(--xh-border-radius); }
 
   .xh-bold { font-weight: 600; } // note this is technically demi-bold - 700 often too heavy
   .xh-font-family-headings { font-family: var(--xh-font-family-headings); }
@@ -178,7 +183,7 @@ body.xh-app {
   .xh-margin-left { margin-left: var(--xh-spacing); }
   .xh-margin-lr { margin: 0 var(--xh-spacing); }
   .xh-margin-tb { margin: var(--xh-spacing) 0; }
-  .xh-margin-none { margin: 0 !important; }
+  .xh-margin-none { margin: 0; }
 
   .xh-pad { padding: var(--xh-spacing); }
   .xh-pad-double { padding: var(--xh-spacing-double); }
@@ -189,7 +194,7 @@ body.xh-app {
   .xh-pad-left { padding-left: var(--xh-spacing); }
   .xh-pad-lr { padding: 0 var(--xh-spacing); }
   .xh-pad-tb { padding: var(--xh-spacing) 0; }
-  .xh-pad-none { padding: 0 !important; }
+  .xh-pad-none { padding: 0; }
 }
 
 // Lightly patterned background with light and dark theme variants.
