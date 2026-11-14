@@ -27,7 +27,7 @@ detailed, step-by-step upgrade instructions with before/after code examples.
     * Size variables now hold lengths with units (`--xh-spacing: 10px`), and every `-px` companion
       (`--xh-pad-px`, `--xh-font-size-px`, etc.) was removed - read the base variable instead.
       Hoist logs a development-mode warning if a size variable resolves to a bare number.
-    * Renamed about 40 variables to follow one naming grammar, e.g. `--xh-pad` -> `--xh-spacing`,
+    * Renamed variables to follow one naming grammar, e.g. `--xh-pad` -> `--xh-spacing`,
       `--xh-tbar-*` -> `--xh-toolbar-*`, `--xh-grid-bg-hover` -> `--xh-grid-row-hover-bg`.
     * Removed `--xh-chart-bg`, `--xh-tab-border-width`, `--xh-toolbar-button-bg`, and
       `--xh-resizable-button-bg` and `-icon-color`, none of which had any effect.

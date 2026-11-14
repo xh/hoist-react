@@ -16,7 +16,7 @@ nearly all of the migration.
     - **Sizes carry units.** Size variables hold real lengths (`--xh-spacing: 10px`) instead of
       unitless numbers, and every `-px` companion variable (`--xh-pad-px`, `--xh-font-size-px`,
       ...) is gone - read the base variable directly.
-    - **Consistent names.** About 40 variables were renamed to follow one naming grammar - e.g.
+    - **Consistent names.** Variables were renamed to follow one naming grammar - e.g.
       `--xh-pad` → `--xh-spacing`, `--xh-tbar-*` → `--xh-toolbar-*`, `--xh-appbar-color` →
       `--xh-appbar-text-color`. See [Renamed Variables](#renamed-variables) and the naming
       conventions in [`styles/README.md`](../../styles/README.md#naming-conventions).
@@ -299,7 +299,7 @@ Beyond the renames below, two rules cover every other retired name:
 
 ## Old Hook Name Mismatches
 
-Nine v90 unprefixed hooks were named differently from the variable they configured. The codemod
+Some v90 unprefixed hooks were named differently from the variable they configured. The codemod
 handles these; for reference, their v91 variables are:
 
 | v90 unprefixed hook | v91 variable |
