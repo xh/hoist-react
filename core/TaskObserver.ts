@@ -8,7 +8,7 @@
 import {sumBy, head} from 'lodash';
 import {action, computed, observable, observableRef} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
-import {ReactNode} from 'react';
+import type {ReactNode} from 'react';
 /**
  * Tracks the execution state of one or more asynchronous tasks.
  *

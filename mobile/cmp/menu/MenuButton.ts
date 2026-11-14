@@ -13,13 +13,15 @@ import {
     useLocalModel
 } from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
-import {button, ButtonProps} from '@xh/hoist/mobile/cmp/button';
-import {popover, PopoverProps} from '@xh/hoist/mobile/cmp/popover';
+import type {ButtonProps} from '@xh/hoist/mobile/cmp/button';
+import {button} from '@xh/hoist/mobile/cmp/button';
+import type {PopoverProps} from '@xh/hoist/mobile/cmp/popover';
+import {popover} from '@xh/hoist/mobile/cmp/popover';
 import '@xh/hoist/mobile/register';
 import {bindable, bindableRef} from '@xh/hoist/mobx';
 import {executeIfFunction, getTestId} from '@xh/hoist/utils/js';
 import {isFunction} from 'lodash';
-import {ReactNode} from 'react';
+import type {ReactNode} from 'react';
 import {menu} from './impl/Menu';
 
 export interface MenuButtonProps extends Omit<ButtonProps, 'title'> {

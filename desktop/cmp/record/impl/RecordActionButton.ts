@@ -4,10 +4,11 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {Column, GridModel} from '@xh/hoist/cmp/grid';
+import type {Column, GridModel} from '@xh/hoist/cmp/grid';
 import {hoistCmp} from '@xh/hoist/core';
-import {RecordAction, StoreRecord, StoreSelectionModel} from '@xh/hoist/data';
-import {button, ButtonProps} from '@xh/hoist/desktop/cmp/button';
+import type {RecordAction, StoreRecord, StoreSelectionModel} from '@xh/hoist/data';
+import type {ButtonProps} from '@xh/hoist/desktop/cmp/button';
+import {button} from '@xh/hoist/desktop/cmp/button';
 import classNames from 'classnames';
 import {first} from 'lodash';
 

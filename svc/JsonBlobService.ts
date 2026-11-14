@@ -4,7 +4,8 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {CallContextLike, HoistService, PlainObject, XH} from '@xh/hoist/core';
+import type {CallContextLike, PlainObject} from '@xh/hoist/core';
+import {HoistService, XH} from '@xh/hoist/core';
 import {pick} from 'lodash';
 
 export interface JsonBlob {

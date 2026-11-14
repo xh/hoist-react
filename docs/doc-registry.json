@@ -58,8 +58,8 @@
             "title": "Cube Aggregation",
             "mcpCategory": "package",
             "viewerCategory": "core",
-            "description": "Client-side OLAP-style aggregation with dimensions, measures, Views, and Queries.",
-            "keywords": ["Cube", "CubeField", "View", "Query", "QueryConfig", "aggregator", "dimension", "measure", "SUM", "AVG", "includeRoot", "includeLeaves", "createView"]
+            "description": "Client-side OLAP-style aggregation with dimensions, measures, Views, Queries, and pivoting.",
+            "keywords": ["Cube", "CubeField", "View", "Query", "QueryConfig", "aggregator", "dimension", "measure", "SUM", "AVG", "includeRoot", "includeLeaves", "createView", "pivot", "PivotSpec", "cubeLabelValue"]
         },
         {
             "id": "svc/README.md",
@@ -76,7 +76,7 @@
             "mcpCategory": "package",
             "viewerCategory": "components",
             "description": "Cross-platform component overview and catalog.",
-            "keywords": ["component categories", "factory pattern", "DataView", "DataViewModel", "Treemap", "ZoneGrid", "Badge", "Spinner", "LoadingIndicator", "RelativeTimestamp", "Markdown"],
+            "keywords": ["component categories", "factory pattern", "DataView", "DataViewModel", "Treemap", "ZoneGrid", "Badge", "Spinner", "LoadingIndicator", "RelativeTimestamp", "Markdown", "StatCard", "StatCardStrip"],
             "aliases": ["components"]
         },
         {
@@ -86,6 +86,14 @@
             "viewerCategory": "components",
             "description": "Primary data grid built on ag-Grid.",
             "keywords": ["GridModel", "Column", "ColumnGroup", "sorting", "grouping", "filtering", "selection", "inline editing", "export", "tree grid", "GridFilterModel", "ag-Grid", "column chooser", "context menu"]
+        },
+        {
+            "id": "cmp/cubegrid/README.md",
+            "title": "CubeGrid Package",
+            "mcpCategory": "package",
+            "viewerCategory": "components",
+            "description": "Cube View rendered as a tree grid with the app's columns, plus pivot paths as nested column groups, docked summaries, and per-measure column config when the query pivots.",
+            "keywords": ["CubeGridModel", "CubeGrid", "CubeGridConfig", "CubeGridPivotModel", "CubeGridPivotConfig", "pivotConfig", "cube grid", "pivot", "PivotSpec", "measures", "cellFields", "PivotPath", "PivotDimensionSpec", "PivotMeasureSpec", "measuresOutermost", "summaryLabel", "valueRenderer", "emptyLabel", "valueClass", "summaryClass", "showSummary"]
         },
         {
             "id": "cmp/form/README.md",
@@ -136,6 +144,14 @@
             "keywords": ["DateRangePickerModel", "DateRangePicker", "DateRangeSelection", "dateRangePresets", "DateRangePreset", "LocalDateRange", "anchorDate", "currentRangeFilter", "priorRange", "business days"]
         },
         {
+            "id": "cmp/pdfviewer/README.md",
+            "title": "PDF Viewer Package",
+            "mcpCategory": "package",
+            "viewerCategory": "components",
+            "description": "PDF document viewer built on pdf.js, with a configurable toolbar and an observable model API for paging, zoom, find, and download.",
+            "keywords": ["PdfViewerModel", "PdfViewer", "PdfSource", "PdfScale", "PdfViewerToolbarToken", "pdfjs-dist", "pdf.js", "PDF", "document preview"]
+        },
+        {
             "id": "desktop/cmp/dash/README.md",
             "title": "Dashboard System",
             "mcpCategory": "package",
@@ -173,7 +189,7 @@
             "mcpCategory": "package",
             "viewerCategory": "utilities",
             "description": "Number, date, and miscellaneous formatting for grids and display.",
-            "keywords": ["fmtNumber", "fmtPercent", "fmtMillions", "fmtDate", "fmtThousands", "numberRenderer", "dateRenderer", "ledger", "colorSpec", "column renderer", "currency", "auto-precision", "localization", "locale", "i18n"]
+            "keywords": ["fmtNumber", "fmtPercent", "fmtMillions", "fmtDate", "fmtThousands", "numberRenderer", "dateRenderer", "numberTextRenderer", "dateTextRenderer", "ledger", "colorSpec", "column renderer", "column text renderer", "currency", "auto-precision", "localization", "locale", "i18n"]
         },
         {
             "id": "appcontainer/README.md",
@@ -556,8 +572,16 @@
             "title": "v90 Upgrade Notes",
             "mcpCategory": "devops",
             "viewerCategory": "upgrade",
-            "description": "Upgrade guide from v89.x to v90.0.0. Medium difficulty. Covers the CSS custom property overhaul (codemod, removed override hooks, renamed variables, units) and the removal of numbro and NumberFormatOptions.formatConfig.",
-            "keywords": ["upgrade", "migration", "breaking changes", "v90", "v89", "numbro", "formatConfig", "css variables", "custom properties", "override hooks", "codemod", "renamed variables", "units", "--xh-"]
+            "description": "Upgrade guide from v89.x to v90.0.0. Low difficulty. Covers the removal of numbro and formatConfig, DateInput on react-day-picker 10, the removal of Onsen UI from mobile, textRenderer on the built-in column specs, the panel splitter redesign, the move of the renderer factories out of FormatNumber and FormatDate, and the libraries Hoist no longer installs.",
+            "keywords": ["upgrade", "migration", "breaking changes", "v90", "v89", "numbro", "formatConfig", "timePickerProps", "onsen", "modifier", "WindowedSelect", "react-windowed-select", "xh-resizable-splitter", "store2", "semver", "ua-parser-js", "short-unique-id", "lodash-inflection", "http-status-codes", "date-fns", "@blueprintjs/datetime", "datePicker"]
+        },
+        {
+            "id": "docs/upgrade-notes/v91-upgrade-notes.md",
+            "title": "v91 Upgrade Notes",
+            "mcpCategory": "devops",
+            "viewerCategory": "upgrade",
+            "description": "Upgrade guide from v90.x to v91.0.0. Medium difficulty. Covers the CSS custom property overhaul - codemod, removed override hooks, renamed variables, and units in size values.",
+            "keywords": ["upgrade", "migration", "breaking changes", "v91", "v90", "css variables", "custom properties", "override hooks", "codemod", "renamed variables", "units", "--xh-"]
         }
     ]
 }

@@ -5,12 +5,18 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
-import {CallContext, XH} from '@xh/hoist/core';
+import type {CallContext} from '@xh/hoist/core';
+import {XH} from '@xh/hoist/core';
 import {pluralize, throwIf} from '@xh/hoist/utils/js';
 import {map} from 'lodash';
 import {ViewInfo} from './ViewInfo';
 import {View} from './View';
-import {ViewManagerModel, ViewUserState, ViewUpdateSpec, ViewCreateSpec} from './ViewManagerModel';
+import type {
+    ViewManagerModel,
+    ViewUserState,
+    ViewUpdateSpec,
+    ViewCreateSpec
+} from './ViewManagerModel';
 
 /**
  * Supporting class for accessing and updating ViewManager and View data.

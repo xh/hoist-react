@@ -5,8 +5,9 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {box, div, hframe, span} from '@xh/hoist/cmp/layout';
-import {TabContainerModel, TabModel} from '@xh/hoist/cmp/tab';
-import {TabSwitcherMenuContext, TabSwitcherProps} from '@xh/hoist/cmp/tab/Types';
+import type {TabModel} from '@xh/hoist/cmp/tab';
+import {TabContainerModel} from '@xh/hoist/cmp/tab';
+import type {TabSwitcherMenuContext, TabSwitcherProps} from '@xh/hoist/cmp/tab/Types';
 import {hoistCmp, HoistModel, useLocalModel, uses} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import '@xh/hoist/desktop/register';
@@ -41,7 +42,7 @@ import {
 } from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import {compact, find, isEmpty, isFinite} from 'lodash';
-import {CSSProperties, ReactElement, ReactNode, KeyboardEvent} from 'react';
+import type {CSSProperties, ReactElement, ReactNode, KeyboardEvent} from 'react';
 
 /**
  * Component to indicate and control the active tab of a TabContainer.

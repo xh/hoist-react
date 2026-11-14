@@ -7,14 +7,11 @@
 import {div} from '@xh/hoist/cmp/layout';
 import {elementFactory} from '@xh/hoist/core';
 import {isArray, isFunction} from 'lodash';
+import type {ReactElement, ReactNode, Ref, RefObject} from 'react';
 import {
     Children,
     cloneElement,
     isValidElement,
-    ReactElement,
-    ReactNode,
-    Ref,
-    RefObject,
     useCallback,
     useEffect,
     useMemo,
@@ -22,7 +19,8 @@ import {
     useState
 } from 'react';
 import type {MenuListProps} from 'react-select';
-import {List, ListImperativeAPI, useDynamicRowHeight} from 'react-window';
+import type {ListImperativeAPI} from 'react-window';
+import {List, useDynamicRowHeight} from 'react-window';
 
 /** Option count at or above which a `Select` in windowed mode virtualizes its menu. */
 export const WINDOWED_OPTION_THRESHOLD = 100;

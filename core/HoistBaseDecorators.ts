@@ -5,7 +5,8 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {throwIf} from '../utils/js';
-import {PersistableState, PersistenceProvider, PersistOptions, persistOptions} from './';
+import type {PersistOptions} from './';
+import {PersistableState, PersistenceProvider, persistOptions} from './';
 
 type FieldOrAccessorOrGetterContext =
     ClassFieldDecoratorContext | ClassAccessorDecoratorContext | ClassGetterDecoratorContext;

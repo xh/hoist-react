@@ -4,8 +4,9 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {TabSwitcherProps} from '@xh/hoist/cmp/tab/Types';
-import {BoxProps, hoistCmp, HoistProps, refreshContextView, uses, XH} from '@xh/hoist/core';
+import type {TabSwitcherProps} from '@xh/hoist/cmp/tab/Types';
+import type {BoxProps, HoistProps} from '@xh/hoist/core';
+import {hoistCmp, refreshContextView, uses, XH} from '@xh/hoist/core';
 import {tabContainerImpl as desktopTabContainerImpl} from '@xh/hoist/dynamics/desktop';
 import {tabContainerImpl as mobileTabContainerImpl} from '@xh/hoist/dynamics/mobile';
 import {TabContainerModel} from './TabContainerModel';
@@ -22,8 +23,7 @@ export interface TabContainerProps extends HoistProps<TabContainerModel>, BoxPro
      * that returns props based on the tabId and depth of the child container.
      */
     childContainerProps?:
-        | TabContainerProps
-        | ((ctx: {tabId: string; depth: number}) => TabContainerProps);
+        TabContainerProps | ((ctx: {tabId: string; depth: number}) => TabContainerProps);
 }
 
 /**

@@ -4,18 +4,11 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {TEST_ID} from '@xh/hoist/utils/js';
+import type {TEST_ID} from '@xh/hoist/utils/js';
 import {castArray, isFunction, isNil, isPlainObject} from 'lodash';
-import {
-    ComponentType,
-    createElement as reactCreateElement,
-    isValidElement,
-    JSX,
-    Key,
-    ReactElement,
-    ReactNode
-} from 'react';
-import {PlainObject, Thunkable} from './types/Types';
+import type {ComponentType, JSX, Key, ReactElement, ReactNode} from 'react';
+import {createElement as reactCreateElement, isValidElement} from 'react';
+import type {PlainObject, Thunkable} from './types/Types';
 
 /**
  * Alternative format for specifying React Elements in render functions. This type is designed to

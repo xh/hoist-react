@@ -161,7 +161,8 @@ The `vars.scss` file organizes its CSS custom properties into these categories:
 
 Components with dedicated variable sets include: AppBar, Badge, Button, Card, Chart, Form Field,
 Grid (including Large, Compact, Tiny, and ZoneGrid variants), Input, Loading Indicator, Mask, Menu,
-Panel, Popup, Resizable Splitter, Scrollbar, Tab, Title, Toolbar, Tooltip, and Viewport.
+Panel (including Panel Splitter and Collapsed Strip), Popup, Resizable Splitter (used by
+`DashContainer` and `SplitTreeMap`), Scrollbar, Tab, Title, Toolbar, Tooltip, and Viewport.
 
 ### Units
 
@@ -557,8 +558,8 @@ body.xh-app { --xh-font-size: 14px; }
 
 A bare number is not a valid length, so it silently breaks every property and derived variable
 that uses it - e.g. `calc(var(--xh-font-size) * 1.2)` for `--xh-font-size-large`. Hoist versions
-before v90 used unitless size variables; see the
-[v90 upgrade notes](../docs/upgrade-notes/v90-upgrade-notes.md) for the migration.
+before v91 used unitless size variables; see the
+[v91 upgrade notes](../docs/upgrade-notes/v91-upgrade-notes.md) for the migration.
 
 ### High-Specificity Selectors
 

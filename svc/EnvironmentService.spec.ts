@@ -4,7 +4,8 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {PlainObject, XH} from '@xh/hoist/core';
+import type {PlainObject} from '@xh/hoist/core';
+import {XH} from '@xh/hoist/core';
 import {EnvironmentService} from '@xh/hoist/svc';
 import {hoistCore, initTestAppAsync, server, xhUrl} from '@xh/hoist/test-support';
 import {http, HttpResponse} from 'msw';

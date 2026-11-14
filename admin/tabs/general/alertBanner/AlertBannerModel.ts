@@ -8,11 +8,12 @@ import {AppModel} from '@xh/hoist/admin/AppModel';
 import {BannerModel} from '@xh/hoist/appcontainer/BannerModel';
 import {FormModel} from '@xh/hoist/cmp/form';
 import {fragment, p} from '@xh/hoist/cmp/layout';
-import {HoistModel, Intent, LoadSpec, managed, PlainObject, XH} from '@xh/hoist/core';
+import type {Intent, LoadSpec, PlainObject} from '@xh/hoist/core';
+import {HoistModel, managed, XH} from '@xh/hoist/core';
 import {dateIs, required} from '@xh/hoist/data';
 import {action, computed, observableRef, bindableRef} from '@xh/hoist/mobx';
 import {Icon} from '@xh/hoist/icon';
-import {AlertBannerSpec} from '@xh/hoist/svc';
+import type {AlertBannerSpec} from '@xh/hoist/svc';
 import {isEqual, isMatch, sortBy, without} from 'lodash';
 
 export class AlertBannerModel extends HoistModel {

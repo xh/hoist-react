@@ -4,7 +4,8 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {HoistModel, managed, ToastSpec, XH} from '@xh/hoist/core';
+import type {ToastSpec} from '@xh/hoist/core';
+import {HoistModel, managed, XH} from '@xh/hoist/core';
 import {action, observableRef} from '@xh/hoist/mobx';
 import {isString, partition} from 'lodash';
 import {ToastModel} from './ToastModel';

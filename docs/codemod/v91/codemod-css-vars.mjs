@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 /*
- * One-shot codemod for the hoist-react v90 CSS variable overhaul.
+ * One-shot codemod for the hoist-react v91 CSS variable overhaul.
  *
- * v90 resets Hoist's CSS custom properties onto a simpler baseline. This codemod migrates app
- * stylesheets and TypeScript from any v89-era usage to the v90 names and conventions:
+ * v91 resets Hoist's CSS custom properties onto a simpler baseline. This codemod migrates app
+ * stylesheets and TypeScript from any v90-era (or earlier) usage to the v91 names and conventions:
  *
  *   1. Unprefixed override hooks → `--xh-*` variables.
  *      `body.xh-app { --grid-bg: #fafafa; }`  →  `body.xh-app { --xh-grid-bg: #fafafa; }`
@@ -30,7 +30,7 @@
  * code referencing a size variable by name (which may read a value that now includes its unit).
  *
  * Usage, from an app's `client-app` directory:
- *   node node_modules/@xh/hoist/docs/codemod/v90/codemod-css-vars.mjs [--dry] [--no-hooks] [path ...]
+ *   node node_modules/@xh/hoist/docs/codemod/v91/codemod-css-vars.mjs [--dry] [--no-hooks] [path ...]
  *
  * Paths default to `./client-app/src` if present, else the current directory - pass `src` when
  * running from `client-app`. Files are walked recursively, scanning .scss/.sass/.css/.less/.ts/
@@ -150,7 +150,10 @@ const RENAMES = {
     '--xh-pad-safe-right': '--xh-safe-area-inset-right',
     '--xh-pad-safe-top': '--xh-safe-area-inset-top',
     '--xh-panel-border-width-px': '--xh-panel-border-width',
+    '--xh-panel-collapsed-strip-size-px': '--xh-panel-collapsed-strip-size',
+    '--xh-panel-splitter-hit-size-px': '--xh-panel-splitter-hit-size',
     '--xh-panel-title-font-size-px': '--xh-panel-title-font-size',
+    '--xh-pdf-viewer-page-gap-px': '--xh-pdf-viewer-page-gap',
     '--xh-popup-border-width-px': '--xh-popup-border-width',
     '--xh-popup-title-font-size-px': '--xh-popup-title-font-size',
     '--xh-radio-card-input-border-radius-px': '--xh-radio-card-input-border-radius',
@@ -162,6 +165,8 @@ const RENAMES = {
     '--xh-segmented-control-border-radius-px': '--xh-segmented-control-border-radius',
     '--xh-segmented-control-pad': '--xh-segmented-control-padding',
     '--xh-segmented-control-pad-px': '--xh-segmented-control-padding',
+    '--xh-stat-card-detail-color': '--xh-stat-card-detail-text-color',
+    '--xh-stat-card-title-color': '--xh-stat-card-title-text-color',
     '--xh-tab-font-size-px': '--xh-tab-font-size',
     '--xh-tbar-bg': '--xh-toolbar-bg',
     '--xh-tbar-border-color': '--xh-toolbar-border-color',
@@ -202,7 +207,7 @@ const REMOVED = {
     '--xh-toolbar-button-bg': 'Never applied.'
 };
 
-// Size variables that held a unitless number in v89 and now hold a length (v90 names).
+// Size variables that held a unitless number in v90 and now hold a length (v91 names).
 const LENGTHS = new Set([
     '--xh-appbar-height', '--xh-appbar-title-font-size', '--xh-border-radius', '--xh-border-width',
     '--xh-button-font-size', '--xh-card-border-radius', '--xh-card-header-font-size',
@@ -217,7 +222,8 @@ const LENGTHS = new Set([
     '--xh-grid-large-header-padding-inline', '--xh-grid-tiny-cell-padding-inline',
     '--xh-grid-tiny-font-size', '--xh-grid-tiny-header-font-size',
     '--xh-grid-tiny-header-padding-inline', '--xh-grid-tooltip-font-size', '--xh-input-font-size',
-    '--xh-input-label-font-size', '--xh-panel-border-width', '--xh-panel-title-font-size',
+    '--xh-input-label-font-size', '--xh-panel-border-width', '--xh-panel-collapsed-strip-size',
+    '--xh-panel-splitter-hit-size', '--xh-panel-title-font-size',
     '--xh-popup-border-width', '--xh-popup-title-font-size', '--xh-radio-card-input-border-radius',
     '--xh-resizable-border-width', '--xh-resizable-size', '--xh-segmented-control-border-radius',
     '--xh-segmented-control-padding', '--xh-spacing', '--xh-spacing-double', '--xh-spacing-half',
@@ -228,7 +234,7 @@ const LENGTHS = new Set([
     '--xh-tooltip-font-size', '--xh-zone-grid-bottom-font-size', '--xh-zone-grid-top-font-size'
 ]);
 
-// v89 unprefixed override hooks → the `--xh-*` variable they fed (v89 names - RENAMES applies after).
+// v90 unprefixed override hooks → the `--xh-*` variable they fed (v90 names - RENAMES applies after).
 const HOOKS = {
     '--accent-color': '--xh-accent-color',
     '--appbar-bg': '--xh-appbar-bg',
@@ -504,10 +510,28 @@ const HOOKS = {
     '--panel-bg': '--xh-panel-bg',
     '--panel-border-color': '--xh-panel-border-color',
     '--panel-border-width': '--xh-panel-border-width',
+    '--panel-collapsed-strip-bg': '--xh-panel-collapsed-strip-bg',
+    '--panel-collapsed-strip-hover-bg': '--xh-panel-collapsed-strip-hover-bg',
+    '--panel-collapsed-strip-icon-color': '--xh-panel-collapsed-strip-icon-color',
+    '--panel-collapsed-strip-size': '--xh-panel-collapsed-strip-size',
+    '--panel-splitter-accent-active-color': '--xh-panel-splitter-accent-active-color',
+    '--panel-splitter-accent-color': '--xh-panel-splitter-accent-color',
+    '--panel-splitter-button-bg': '--xh-panel-splitter-button-bg',
+    '--panel-splitter-button-border-color': '--xh-panel-splitter-button-border-color',
+    '--panel-splitter-button-icon-color': '--xh-panel-splitter-button-icon-color',
+    '--panel-splitter-hit-size': '--xh-panel-splitter-hit-size',
+    '--panel-splitter-hover-delay': '--xh-panel-splitter-hover-delay',
+    '--panel-splitter-line-color': '--xh-panel-splitter-line-color',
+    '--panel-splitter-snap-color': '--xh-panel-splitter-snap-color',
     '--panel-title-bg': '--xh-panel-title-bg',
     '--panel-title-font-family': '--xh-panel-title-font-family',
     '--panel-title-font-size': '--xh-panel-title-font-size',
     '--panel-title-text-color': '--xh-panel-title-text-color',
+    '--pdf-viewer-bg': '--xh-pdf-viewer-bg',
+    '--pdf-viewer-highlight-bg': '--xh-pdf-viewer-highlight-bg',
+    '--pdf-viewer-highlight-selected-bg': '--xh-pdf-viewer-highlight-selected-bg',
+    '--pdf-viewer-page-gap-px': '--xh-pdf-viewer-page-gap-px',
+    '--pdf-viewer-page-shadow': '--xh-pdf-viewer-page-shadow',
     '--popover-backdrop': '--xh-popover-backdrop-bg',
     '--popover-shadow': '--xh-popover-box-shadow',
     '--popup-bg': '--xh-popup-bg',
@@ -543,6 +567,39 @@ const HOOKS = {
     '--segmented-control-text-color': '--xh-segmented-control-text-color',
     '--slider-handle-focused-box-shadow': '--xh-slider-handle-focused-box-shadow',
     '--spinner-color': '--xh-spinner-color',
+    '--stat-card-accent-bottom': '--xh-stat-card-accent-bottom',
+    '--stat-card-accent-left': '--xh-stat-card-accent-left',
+    '--stat-card-accent-right': '--xh-stat-card-accent-right',
+    '--stat-card-accent-top': '--xh-stat-card-accent-top',
+    '--stat-card-bg': '--xh-stat-card-bg',
+    '--stat-card-border': '--xh-stat-card-border',
+    '--stat-card-border-radius': '--xh-stat-card-border-radius',
+    '--stat-card-danger-color': '--xh-stat-card-danger-color',
+    '--stat-card-detail-color': '--xh-stat-card-detail-color',
+    '--stat-card-detail-font-size': '--xh-stat-card-detail-font-size',
+    '--stat-card-hover-bg': '--xh-stat-card-hover-bg',
+    '--stat-card-large-detail-font-size': '--xh-stat-card-large-detail-font-size',
+    '--stat-card-large-min-content-width': '--xh-stat-card-large-min-content-width',
+    '--stat-card-large-padding': '--xh-stat-card-large-padding',
+    '--stat-card-large-sub-value-font-size': '--xh-stat-card-large-sub-value-font-size',
+    '--stat-card-large-title-font-size': '--xh-stat-card-large-title-font-size',
+    '--stat-card-large-value-font-size': '--xh-stat-card-large-value-font-size',
+    '--stat-card-large-value-gap': '--xh-stat-card-large-value-gap',
+    '--stat-card-min-content-width': '--xh-stat-card-min-content-width',
+    '--stat-card-padding': '--xh-stat-card-padding',
+    '--stat-card-primary-color': '--xh-stat-card-primary-color',
+    '--stat-card-strip-gap': '--xh-stat-card-strip-gap',
+    '--stat-card-strip-padding': '--xh-stat-card-strip-padding',
+    '--stat-card-sub-value-font-size': '--xh-stat-card-sub-value-font-size',
+    '--stat-card-success-color': '--xh-stat-card-success-color',
+    '--stat-card-title-color': '--xh-stat-card-title-color',
+    '--stat-card-title-font-size': '--xh-stat-card-title-font-size',
+    '--stat-card-title-letter-spacing': '--xh-stat-card-title-letter-spacing',
+    '--stat-card-title-text-transform': '--xh-stat-card-title-text-transform',
+    '--stat-card-value-font-size': '--xh-stat-card-value-font-size',
+    '--stat-card-value-font-weight': '--xh-stat-card-value-font-weight',
+    '--stat-card-value-gap': '--xh-stat-card-value-gap',
+    '--stat-card-warning-color': '--xh-stat-card-warning-color',
     '--tab-active-text-color': '--xh-tab-active-text-color',
     '--tab-border-width': '--xh-tab-border-width',
     '--tab-disabled-text-color': '--xh-tab-disabled-text-color',

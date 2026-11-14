@@ -4,14 +4,14 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {PlainObject} from '@xh/hoist/core';
-import {ValidationResult} from '@xh/hoist/data/validation/Types';
+import type {PlainObject} from '@xh/hoist/core';
+import type {ValidationResult} from '@xh/hoist/data/validation/Types';
 import {throwIf} from '@xh/hoist/utils/js';
 import {isNil, flatMap, isMatch, isEmpty} from 'lodash';
-import {Store} from './Store';
-import {ValidationState} from './validation/ValidationState';
-import {RecordValidator} from './impl/RecordValidator';
-import {Field} from './Field';
+import type {Store} from './Store';
+import type {ValidationState} from './validation/ValidationState';
+import type {RecordValidator} from './impl/RecordValidator';
+import type {Field} from './Field';
 import equal from 'fast-deep-equal';
 
 /**

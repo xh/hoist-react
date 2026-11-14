@@ -1,47 +1,48 @@
 # Hoist React v90 Upgrade Notes
 
-> **From:** v89.x → v90.0.0 | **Released:** TBD | **Difficulty:** 🟠 MEDIUM
+> **From:** v89.x → v90.0.0 | **Released:** 2026-11-02 | **Difficulty:** 🟢 LOW
 
 ## Overview
 
-Hoist React v90 resets Hoist's CSS custom properties onto a simpler baseline, and removes Onsen UI
-from the mobile toolkit. A codemod automates nearly all of the CSS migration. The other required
-steps apply only to apps that use the affected APIs or styles.
+Hoist React v90 is a light upgrade. Its required steps apply only to apps that use the
+affected APIs.
 
 - **Number `formatConfig` (required if used)** - v90 removes `NumberFormatOptions.formatConfig`
   with numbro. A few number edge cases also changed, such as negative ties - see Step 1.
-- **CSS variables (required if your app customizes or reads Hoist's CSS variables)** - see Steps
-  2-5. The new baseline is designed to read the way developers - and AI coding agents - expect CSS
-  variables to work:
-    - **One tier of variables.** The unprefixed override hooks are gone. Previously Hoist defined
-      each variable as `--xh-grid-bg: var(--grid-bg, var(--xh-bg))`, with the unprefixed
-      `--grid-bg` as the app-level hook. Apps now set the `--xh-*` variables directly.
-    - **Sizes carry units.** Size variables hold real lengths (`--xh-spacing: 10px`) instead of
-      unitless numbers, and every `-px` companion variable (`--xh-pad-px`, `--xh-font-size-px`,
-      ...) is gone - read the base variable directly.
-    - **Consistent names.** About 40 variables were renamed to follow one naming grammar - e.g.
-      `--xh-pad` → `--xh-spacing`, `--xh-tbar-*` → `--xh-toolbar-*`, `--xh-appbar-color` →
-      `--xh-appbar-text-color`. See [Renamed Variables](#renamed-variables) and the naming
-      conventions in [`styles/README.md`](../../styles/README.md#naming-conventions).
-    - **Overrides on `body.xh-app` always win**, in every theme and platform combination.
-    - **Three variables that never had any effect were removed.**
 - **`DateInput` picker props (required if used)** - the desktop `DateInput` calendar is now
   react-day-picker 10, so `dayPickerProps` takes v10 props, and `timePickerProps` is gone. Apps
-  that rendered Blueprint's `datePicker` from the kit need another calendar - see Step 6.
+  that rendered Blueprint's `datePicker` from the kit need another calendar - see Step 2.
 - **Mobile styling (required if an app styled Onsen class names)** - mobile components no longer
   render Onsen UI elements. App SCSS that targeted Onsen's class names or CSS variables, and any
-  use of the `modifier` prop, needs updating - see Step 7.
+  use of the `modifier` prop, needs updating - see Step 3.
 - **`WindowedSelect` kit exports (required if used)** - v90 removes the `WindowedSelect` and
   `reactWindowedSelect` exports from `@xh/hoist/kit/react-select` along with the
   react-windowed-select library. The `enableWindowed` prop of `Select` works as before - see
-  Step 8.
+  Step 4.
+- **Column `renderer` reads (required if used)** - The built-in number and date column specs set
+  `textRenderer`, not `renderer`. Code that calls `col.renderer(...)` on such a column now throws.
+  Read `col.resolvedRenderer` instead - see Step 5.
+- **Panel splitter CSS (required if an app styled splitters)** - desktop panel splitters are now
+  a 1px line with their own `--xh-panel-splitter-*` variables. App overrides of
+  `--xh-resizable-*` variables no longer reach them - see Step 6.
+- **Renderer import paths (required if used)** - the `*Renderer` factories moved out of
+  `@xh/hoist/format/FormatNumber` and `@xh/hoist/format/FormatDate`. Import them from
+  `@xh/hoist/format` - see Step 7.
+- **Removed libraries (required if an app imports them)** - Hoist no longer depends on several
+  libraries, such as `semver` and `store2`. An app that imports one must declare it in its own
+  `package.json` - see Step 8.
+- **router5 8 (required if an app declares router5)** - Hoist moves to router5 8. An app that
+  declares its own `router5` must match that version, or drop the dependency and type its routes
+  with `HoistRoute` - see Step 9.
 
-The most significant CSS impacts are:
+## Prerequisites
 
-- **Old names and unitless values fail silently.** An app still setting `--grid-bg`, `--xh-pad`, or
-  `--xh-font-size: 14` loses that customization without an error. Run the codemod, and watch for
-  Hoist's development-mode console warning about unitless size variables.
-- **Overrides set on `:root` or `html` no longer apply** - move them to `body.xh-app`.
+Before starting, ensure:
+
+- [ ] Running hoist-react v89.x.
+- [ ] **hoist-core** at >= 40.5.0 (unchanged floor). **hoist-core 44.0 is recommended.** The new
+  Purge Connections buttons in the Admin Console Connection Pool Monitor call an endpoint that
+  older cores lack, so they fail there. See [Version Compatibility](../version-compatibility.md).
 
 ## Upgrade Steps
 
@@ -106,168 +107,7 @@ Ordinary values render exactly as before. These edge cases changed:
 Parse formatted text with `parseNumber()` before you format it, and update tests or exports that
 match the text `Infinity`.
 
-### 2. Run the CSS Variable Codemod
-
-From your `client-app` directory, after installing v90:
-
-```bash
-# Preview first - reports every change without writing.
-node node_modules/@xh/hoist/docs/codemod/v90/codemod-css-vars.mjs --dry src
-
-# Then apply.
-node node_modules/@xh/hoist/docs/codemod/v90/codemod-css-vars.mjs src
-```
-
-The codemod skips `node_modules`. A Hoist package that ships its own styles needs the same
-migration in its own repo, and a new release, before apps on v90 pick it up.
-
-It scans `.scss`, `.css`, `.ts`, `.tsx`, `.js`, `.jsx`, and `.md` files and:
-
-1. **Migrates unprefixed hooks** to their `--xh-*` variable, including the handful whose names
-   never matched (see [Old Hook Name Mismatches](#old-hook-name-mismatches)). Only declarations
-   inside a root-level selector (`body`, `html`, `:root`, `.xh-app`, `.xh-dark`, `.xh-mobile`, and
-   combinations) are migrated - the only places the hooks ever worked. Pass `--no-hooks` to skip.
-2. **Renames** every renamed or retired `--xh-*` variable, anywhere it appears.
-3. **Adds `px`** to size variables set to a bare number: `--xh-spacing: 8;` → `--xh-spacing: 8px;`.
-4. **Simplifies arithmetic** that re-applied the unit: `calc(var(--xh-spacing) * 1px)` →
-   `var(--xh-spacing)`, and `calc(var(--xh-toolbar-item-spacing) * 2px)` →
-   `calc(var(--xh-toolbar-item-spacing) * 2)`.
-
-Before:
-```scss
-body.xh-app {
-  --pad: 8;
-  --border-color: #cccccc;
-  --tbar-min-size: 50;
-  --grid-header-cell-lr-pad: 14;
-
-  &.xh-dark {
-    --tbar-bg: #1d272c;
-  }
-}
-
-.my-panel__header {
-  padding: var(--xh-pad-half-px) var(--xh-pad-px);
-  font-size: var(--xh-font-size-small-px);
-}
-```
-
-After:
-```scss
-body.xh-app {
-  --xh-spacing: 8px;
-  --xh-border-color: #cccccc;
-  --xh-toolbar-min-size: 50px;
-  --xh-grid-header-padding-inline: 14px;
-
-  &.xh-dark {
-    --xh-toolbar-bg: #1d272c;
-  }
-}
-
-.my-panel__header {
-  padding: var(--xh-spacing-half) var(--xh-spacing);
-  font-size: var(--xh-font-size-small);
-}
-```
-
-The codemod ends with a report. Work through each section of it:
-
-- **Hook migrations** - every unprefixed name it converted, with file and line. Confirm each was a
-  Hoist hook rather than an app variable that happened to share a hook's name (e.g. `--gray`).
-- **Removed variables still referenced** - delete these usages; the variables never had any effect.
-- **Warnings** - `calc()` expressions that add a bare number to a size variable (add a unit to the
-  number) or divide by one, TypeScript assigning a size variable a bare number, and code that
-  references a size variable by name. For the last, check whether the code reads the variable's
-  value - e.g. via `getComputedStyle(...).getPropertyValue()` - and appends a unit, which now
-  doubles up (`41pxpx`).
-
-### 3. Review What the Codemod Cannot Migrate
-
-**Hooks set outside a root-level selector.** An unprefixed hook set on a container never had any
-effect - Hoist read the hooks only on `body` - so the codemod leaves these alone. Search for any that
-remain:
-
-```bash
-# Unprefixed custom properties. Add your own app prefix (e.g. --myapp-) to the exclusion list.
-grep -rnE '^\s*--[a-z][a-z0-9-]*\s*:' --include='*.scss' --include='*.css' src \
-  | grep -vE -- '--(xh|ag|bp[0-9]?|fa|myapp)-'
-```
-
-For any hit that names a Hoist hook, decide whether you want it at all: renamed to its `--xh-*`
-variable, it will *start* applying within that subtree for the first time.
-
-**Names built at runtime.** Variable names assembled dynamically - SCSS interpolation such as
-`--xh-grid-tree-group-color-level-#{$i}`, or strings concatenated in TypeScript - are not detected.
-Search for `--xh-` near `#{` or string concatenation and update them by hand using the
-[Renamed Variables](#renamed-variables) table.
-
-**Unit math on your own variables.** The codemod fixes `* 1px`-style arithmetic only where it reads
-a Hoist size variable directly. If your own variable copies one, such as
-`--my-font-size: var(--xh-grid-font-size)`, arithmetic on it is not detected. Fix it by hand:
-`calc(var(--my-font-size) * 0.5px)` → `calc(var(--my-font-size) * 0.5)`.
-
-**Form-field validation colors.** In prior versions the
-`--form-field-{info,invalid,warning}-border-color` hooks fed *two* variables each: the
-`-border-color` variable (as intended) and, by mistake, the matching `-box-shadow` variable - so an
-app that set the hook to a color replaced the whole `box-shadow` value with a bare color, an
-invalid value that browsers silently dropped. That app therefore saw its color on the validation
-border but no inset shadow. In v90 the shadow variables reference the `-border-color` variables
-properly, so setting `--xh-form-field-invalid-border-color` colors both the border and the inset
-shadow. To keep the prior no-shadow appearance, add e.g.
-`--xh-form-field-invalid-box-shadow: none;` alongside the color.
-
-### 4. Check Override Selectors
-
-Set overrides on `body.xh-app`. Hoist declares its defaults on `body`, wrapping its dark-theme and
-mobile variants in `:where()` so every framework declaration has the specificity of a bare `body`
-selector. A `body.xh-app` override therefore wins in every theme and platform combination - the
-same reach the old unprefixed hooks had.
-
-Two selectors that worked with the old hooks no longer do:
-
-- **Bare `body`** ties with Hoist's declarations and wins only by source order.
-- **`:root` or `html`** has no effect at all. Values set there reach `body` only by inheritance,
-  and Hoist's own declarations on `body` take precedence. The old hooks were read wherever Hoist
-  declared its variables, so an inherited hook value worked; an inherited `--xh-*` value does not.
-
-Before:
-```scss
-:root {
-  --grid-large-font-size: 16;
-}
-```
-
-After:
-```scss
-body.xh-app {
-  --xh-grid-large-font-size: 16px;
-}
-```
-
-The codemod migrates the name and unit here but leaves the selector - change `:root` / `html` to
-`body.xh-app` by hand. Where you want per-theme values, nest an `&.xh-dark` block as in Step 2.
-
-**Scoped overrides** - setting a variable on a container rather than `body.xh-app` - only reach CSS
-that reads that exact variable. Variables derived from it were resolved once on `body`, so
-`.my-panel { --xh-spacing: 4px; }` does not change `--xh-spacing-half` within the panel. See "Base
-vs. Derived Variables" in [`styles/README.md`](../../styles/README.md#base-vs-derived-variables).
-
-### 5. Check the Console and the UI
-
-Start the app in development mode. Hoist logs a warning at startup if any size variable resolves to
-a bare number - almost always an override the codemod could not see, such as one set from
-TypeScript or built with interpolation:
-
-```
-[ThemeModel] | CSS size variables must include a unit as of Hoist v90 (e.g. '8px', not '8').
-Unitless values found for: --xh-spacing, ...
-```
-
-The check covers the active theme at startup; switch themes and reload to check the other. Then
-review the app in both light and dark themes, and on mobile if applicable.
-
-### 6. Update `DateInput` Picker Props
+### 2. Update `DateInput` Picker Props
 
 The desktop `DateInput` popover now renders its calendar with react-day-picker 10, the library the
 mobile `DateInput` already uses, and a time picker of Hoist's own. Hoist no longer depends on
@@ -377,7 +217,7 @@ An app that imports `@blueprintjs/datetime` or `date-fns` itself must now declar
 `package.json`. Prefer dropping the Blueprint import, since a second calendar library adds a second
 copy of date-fns to the bundle.
 
-### 7. Update Mobile Styling That Targeted Onsen UI
+### 3. Update Mobile Styling That Targeted Onsen UI
 
 Hoist's mobile components used to render [Onsen UI](https://onsen.io/) custom elements, which
 stamped their own class names into the DOM. In v90 they render native elements under `xh-` class
@@ -435,7 +275,8 @@ applies `${testId}-switcher` and `${testId}-switcher-${tabId}`, which were deskt
 - Mobile `TextInput`, `NumberInput` and `SearchInput` apply `domAttrs` to the `<input>` itself.
 - Pull-down-to-refresh on the `Navigator` and the Escape key on a cancelable `Dialog` work as
   before.
-### 8. Remove `WindowedSelect` Imports
+
+### 4. Remove `WindowedSelect` Imports
 
 The desktop `Select` now windows a large option list itself, with react-window 2, so Hoist no
 longer depends on react-windowed-select. Apps that set `enableWindowed` need no change. The menu
@@ -450,6 +291,212 @@ grep -rn "WindowedSelect\|react-windowed-select" client-app/src/
 An app that rendered the kit's `WindowedSelect` or `reactWindowedSelect` directly should use
 `select({enableWindowed: true})` instead, or add react-windowed-select to its own `package.json`.
 Remove any `react-windowed-select` entry from the app's `resolutions` or `overrides`.
+
+### 5. Review Columns Built on the Number and Date Specs
+
+The `number`, `date`, `dateTime`, `dateTimeSec`, `time`, `compactDate` and `localDate` column specs
+now set a `Column.textRenderer` in place of a `renderer`. A text renderer returns the cell's display
+text, and ag-Grid writes it into a plain cell with no React component. Grids built on these specs
+get plain cells with no change. A `renderer` set on top of a spec still wins, so
+`{...number, renderer: myRenderer}` works as before. One side effect remains: app code that reads
+`renderer` from one of these specs, or from a `Column` built on one, finds none. Read
+`col.resolvedRenderer`, which returns whichever of the two the column has.
+
+**Find code that reads a column's renderer:**
+
+```bash
+# Matches `col.renderer` and `const {renderer} = col`
+grep -rnE "\.renderer\b|\{[^}]*\brenderer\b[^}]*\}\s*=" client-app/src/
+```
+
+**Other formatted columns can be plain too.** Switch them to the `numberTextRenderer`,
+`dateTextRenderer` and sibling factories in `@xh/hoist/format` as you touch them. Each takes the
+options of its renderer counterpart, less those that need markup. The compiler rejects those options.
+
+Before:
+
+```typescript
+{field: 'pnl', renderer: numberRenderer({precision: 0, ledger: true, colorSpec: true})}
+```
+
+After:
+
+```typescript
+{field: 'pnl', textRenderer: numberTextRenderer({precision: 0, ledger: true, colorSpec: true})}
+```
+
+A text renderer cell shows the same text, sign colors and alignment as the renderer cell it
+replaces.
+These differences remain:
+
+- `colorSpec` classes such as `xh-pos-val` sit on the cell, not on an inner span.
+- A `label` is plain text, with no `xh-units-label` span to style. Keep the renderer if the label
+  needs its own style.
+- Ledger alignment is a hidden `::after` on the cell. The cell text no longer ends in a hidden `)`.
+
+Keep the renderer where a cell needs an element, such as an icon or nested layout. Also keep it for
+`withSignGlyph`, `labelCls`, or a `colorSpec` with inline styles. A `tooltip` option does not need
+the renderer. Move it to `Column.tooltip`, for example `tooltip: v => fmtNumberTooltip(v)`.
+
+### 6. Move Panel Splitter Style Overrides
+
+Desktop panel splitters are now a 1px line with a hover accent and a hover collapse button. They
+no longer read the `--xh-resizable-*` CSS variables. Those variables still style the splitters in
+`DashContainer` and `SplitTreeMap`, so leave any override in place if the app wants to style
+those.
+
+**Find affected code:**
+
+```bash
+grep -rn "xh-resizable-" client-app/src/
+```
+
+Map each override that targeted panel splitters to its new variable:
+
+| Old variable | New variable |
+|--------------|--------------|
+| `--xh-resizable-border-color` | `--xh-panel-splitter-line-color` |
+| `--xh-resizable-button-bg` | `--xh-panel-splitter-button-bg` |
+| `--xh-resizable-button-icon-color` | `--xh-panel-splitter-button-icon-color` |
+| `--xh-resizable-border-width` | None. The line is always 1px. |
+| `--xh-resizable-size` | None. Use `--xh-panel-splitter-hit-size` to change the grab area. |
+| `--xh-resizable-bg` | None. The splitter has no bar. |
+
+Other new variables are `--xh-panel-splitter-accent-color`,
+`--xh-panel-splitter-accent-active-color`, `--xh-panel-splitter-snap-color`,
+`--xh-panel-splitter-hover-delay`, `--xh-panel-splitter-button-border-color`, and
+`--xh-panel-collapsed-strip-*` for the strip.
+
+App SCSS that targeted `.xh-resizable-splitter` should target `.xh-panel-splitter`. The
+`.xh-resizable-dragger` and `.xh-resizable-collapser-btn` classes are gone.
+
+**Header collapse button:** `showHeaderCollapseButton` now defaults to `false` on an expanded
+panel when its splitter shows a collapse button. A collapsed header still shows its chevron. To
+keep the header button on expanded panels, set `showHeaderCollapseButton: true`.
+
+```typescript
+// Before (v89) - header button shown by default
+panel({modelConfig: {side: 'left', defaultSize: 250}})
+
+// After (v90) - opt in to keep the header button when expanded
+panel({modelConfig: {side: 'left', defaultSize: 250, showHeaderCollapseButton: true}})
+```
+
+To keep the header button on every panel, set the default once at app startup, for example in
+your `AppModel` constructor:
+
+```typescript
+import {PanelModel} from '@xh/hoist/desktop/cmp/panel';
+
+PanelModel.defaults.showHeaderCollapseButton = true;
+```
+
+### 7. Import Renderer Factories from `@xh/hoist/format`
+
+The number and date renderer factories now live in their own files, next to the new text renderer
+factories. The `@xh/hoist/format` package still exports all of them, so apps that import from it
+need no change. An import of a renderer from `@xh/hoist/format/FormatNumber` or
+`@xh/hoist/format/FormatDate` fails to compile. The `fmt*` functions and option types such as
+`NumberFormatOptions` still import from those paths.
+
+The moved factories:
+
+| Old file | Factories |
+|---|---|
+| `FormatNumber` | `numberRenderer`, `thousandsRenderer`, `millionsRenderer`, `billionsRenderer`, `quantityRenderer`, `priceRenderer`, `percentRenderer` |
+| `FormatDate` | `dateRenderer`, `dateTimeRenderer`, `dateTimeSecRenderer`, `timeRenderer`, `compactDateRenderer` |
+
+**Find affected code:**
+
+```bash
+grep -rnE "@xh/hoist/format/Format(Number|Date)['\"]" client-app/src/
+```
+
+Check each match for a name that ends in `Renderer`.
+
+Before:
+
+```typescript
+import {fmtNumber, numberRenderer} from '@xh/hoist/format/FormatNumber';
+```
+
+After:
+
+```typescript
+import {fmtNumber, numberRenderer} from '@xh/hoist/format';
+```
+
+### 8. Declare Removed Libraries Your App Imports
+
+Hoist v90 drops the libraries below from its dependencies. An app could import any of them
+without declaring it, because Hoist installed them. Those imports now fail to resolve. For each
+library that an app imports, either add it to the app's `package.json` or switch to the Hoist API
+in the table.
+
+| Library | Hoist alternative |
+|---|---|
+| `numbro` | `fmtNumber` and its options - see Step 1 |
+| `date-fns`, `@blueprintjs/datetime` | `dayPicker` from `@xh/hoist/kit/react-day-picker` - see Step 2 |
+| `onsenui`, `react-onsenui` | Hoist's mobile components - see Step 3 |
+| `react-windowed-select` | `select({enableWindowed: true})` - see Step 4 |
+| `semver` | `checkVersion`, `checkMinVersion` and `checkMaxVersion` from `@xh/hoist/utils/js` |
+| `ua-parser-js` | `XH.isPhone`, `XH.isTablet` and `XH.isDesktop` |
+| `store2` | `XH.localStorageService` and `XH.sessionStorageService` |
+| `short-unique-id` | `genRandomId()` from `@xh/hoist/utils/js`, or `XH.genId()` |
+| `lodash-inflection` | `pluralize`, `singularize` and `ordinalize` from `@xh/hoist/utils/js` |
+| `http-status-codes` | None |
+
+**Find affected code:**
+
+```bash
+grep -rnE "from '(numbro|date-fns|@blueprintjs/datetime|onsenui|react-onsenui|react-windowed-select|semver|ua-parser-js|store2|short-unique-id|lodash-inflection|http-status-codes)['/]" client-app/src/
+```
+
+Skip any match for a library that the app's `package.json` already declares.
+
+### 9. Align Your App's router5 Dependency
+
+Hoist v90 updates router5 and router5-plugin-browser from 7.0 to 8.0. An app that declares its own
+`router5` at 7.x installs a second copy of the library beside Hoist's.
+
+Most apps declare router5 only to import its `Route` type for `getRoutes()`. Import `HoistRoute`
+from `@xh/hoist/core` instead. It is router5's `Route` plus Hoist's `omit` key, and it is the type
+that `HoistAppModel.getRoutes()` returns. Then remove `router5` from the app's `package.json`.
+
+Before:
+
+```typescript
+import type {Route} from 'router5';
+
+override getRoutes(): Route[] {
+```
+
+After:
+
+```typescript
+import type {HoistRoute} from '@xh/hoist/core';
+
+override getRoutes(): HoistRoute[] {
+```
+
+If the app still imports from router5 for anything else, update its own dependency to `~8.0.1`.
+router5 8 moved its type files from `types/` to `dist/`, so an import from `router5/types/...` no
+longer resolves. Import those types from `router5` itself.
+
+**Find affected code:**
+
+```bash
+grep -n '"router5' client-app/package.json
+grep -rnE "from 'router5(-plugin-browser)?['/]" client-app/src/
+```
+
+**Review deep links with `@`, `=` or `|` in a path parameter.** router5 8 percent-encodes path
+parameter values. Values that contain `/`, `&`, `?` or `#` now work, where router5 7 threw an error.
+But router5 8 does not match a URL from router5 7 whose path parameter holds a bare `@` or `=`, or
+an encoded `|`. A bookmark to `/app/users/jane@example.com`, for example, no longer finds its route.
+This applies to path parameters only. See [Route Parameters](../routing.md#route-parameters)
+for a server limit on `/` in path parameters.
+
 ## Verification Checklist
 
 After completing all steps:
@@ -459,17 +506,6 @@ After completing all steps:
 - [ ] `pnpm typecheck` / `npx tsc --noEmit` passes.
 - [ ] The application builds and loads without console errors.
 - [ ] No code passes `formatConfig` to a number formatter or renderer.
-- [ ] The CSS codemod report has been reviewed - hook migrations, removed variables, and warnings.
-- [ ] No CSS variable overrides remain on `:root`, `html`, or bare `body`.
-- [ ] The application loads in development mode without the unitless size variable warning.
-- [ ] Custom colors, spacing, and typography render correctly in both light and dark themes (and on
-  mobile, if applicable).
-- [ ] Form validation styling looks as intended if you override any `-border-color` (Step 3 note).
-- [ ] No references to retired CSS variable names remain:
-  ```bash
-  # Should return nothing
-  grep -rnE -- '--xh-[a-z0-9-]+-px\b|--xh-(pad|tbar)(-|\b)' src
-  ```
 - [ ] No code passes `timePickerProps` to a `dateInput`, and `dayPickerProps` keys use
       react-day-picker 10 names.
 - [ ] Nothing imports `datePicker` or `DatePicker` from `@xh/hoist/kit/blueprint`.
@@ -477,89 +513,17 @@ After completing all steps:
       `modifier`, and nothing imports from `@xh/hoist/kit/onsen`.
 - [ ] Mobile screens with inputs, tabs, dialogs, toasts and menus look as they did on v89.
 - [ ] No code imports `WindowedSelect` or `reactWindowedSelect` from `@xh/hoist/kit/react-select`.
-
-## Renamed Variables
-
-Beyond the renames below, two rules cover every other retired name:
-
-- **Every `-px` variable** is replaced by its base name, which now holds a length:
-  `--xh-font-size-px` → `--xh-font-size`, `--xh-scrollbar-size-px` → `--xh-scrollbar-size`.
-- **`--xh-tbar-*`** is now **`--xh-toolbar-*`**, and **`-lr-pad`** is now **`-padding-inline`**:
-  `--xh-grid-cell-lr-pad` → `--xh-grid-cell-padding-inline`.
-
-| v89 | v90 |
-|---|---|
-| `--xh-appbar-color` | `--xh-appbar-text-color` |
-| `--xh-appbar-title-color` | `--xh-appbar-title-text-color` |
-| `--xh-date-range-picker-accent` | `--xh-date-range-picker-accent-color` |
-| `--xh-font-size-large-em` | `--xh-font-size-large-relative` |
-| `--xh-font-size-small-em` | `--xh-font-size-small-relative` |
-| `--xh-form-field-info-color` | `--xh-form-field-info-text-color` |
-| `--xh-form-field-invalid-color` | `--xh-form-field-invalid-text-color` |
-| `--xh-form-field-label-color` | `--xh-form-field-label-text-color` |
-| `--xh-form-field-msg-font-size` | `--xh-form-field-message-font-size` |
-| `--xh-form-field-msg-line-height` | `--xh-form-field-message-line-height` |
-| `--xh-form-field-msg-margin` | `--xh-form-field-message-margin` |
-| `--xh-form-field-msg-text-transform` | `--xh-form-field-message-text-transform` |
-| `--xh-form-field-warning-color` | `--xh-form-field-warning-text-color` |
-| `--xh-grid-bg-hover` | `--xh-grid-row-hover-bg` |
-| `--xh-grid-bg-odd` | `--xh-grid-odd-row-bg` |
-| `--xh-grid-cell-change-bg-highlight` | `--xh-grid-cell-changed-bg` |
-| `--xh-grid-cell-focus-border-color` | `--xh-grid-cell-focused-border-color` |
-| `--xh-grid-selected-row-bg` | `--xh-grid-row-selected-bg` |
-| `--xh-grid-selected-row-text-color` | `--xh-grid-row-selected-text-color` |
-| `--xh-grid-tree-group-color-level-0` | `--xh-grid-tree-group-level-0-bg` |
-| `--xh-grid-tree-icon-px` | `--xh-grid-tree-icon-size` |
-| `--xh-loading-indicator-color` | `--xh-loading-indicator-text-color` |
-| `--xh-mobile-input-font-size` | `--xh-input-font-size` |
-| `--xh-mobile-input-height-px` | `--xh-input-height` |
-| `--xh-mobile-input-label-font-size` | `--xh-input-label-font-size` |
-| `--xh-pad` | `--xh-spacing` |
-| `--xh-pad-double` | `--xh-spacing-double` |
-| `--xh-pad-half` | `--xh-spacing-half` |
-| `--xh-pad-safe-all` | `--xh-safe-area-inset` |
-| `--xh-pad-safe-bottom` | `--xh-safe-area-inset-bottom` |
-| `--xh-pad-safe-left` | `--xh-safe-area-inset-left` |
-| `--xh-pad-safe-right` | `--xh-safe-area-inset-right` |
-| `--xh-pad-safe-top` | `--xh-safe-area-inset-top` |
-| `--xh-scrollbar-thumb` | `--xh-scrollbar-thumb-color` |
-| `--xh-segmented-control-pad` | `--xh-segmented-control-padding` |
-| `--xh-tbar-item-pad` | `--xh-toolbar-item-spacing` |
-| `--xh-title-pad` | `--xh-title-padding` |
-| `--xh-zone-grid-cell-lr-pad-px` | `--xh-zone-grid-cell-padding-inline` |
-| `--xh-zone-grid-delimiter-color` | `--xh-zone-grid-delimiter-text-color` |
-| `--xh-zone-grid-label-color` | `--xh-zone-grid-label-text-color` |
-
-`--xh-grid-tree-group-color-level-1` through `-9` follow the same pattern as level 0.
-
-**Removed** - none of these had any effect:
-
-| Variable | Note |
-|---|---|
-| `--xh-chart-bg` | Charts take their background from the Highcharts theme. |
-| `--xh-tab-border-width` | Never applied. |
-| `--xh-toolbar-button-bg` | Never applied. |
-
-## Old Hook Name Mismatches
-
-Nine v89 unprefixed hooks were named differently from the variable they configured. The codemod
-handles these; for reference, their v90 variables are:
-
-| v89 unprefixed hook | v90 variable |
-|---|---|
-| `--form-field-info-border-color` | `--xh-form-field-info-border-color` (see Step 3 note) |
-| `--form-field-invalid-border-color` | `--xh-form-field-invalid-border-color` (see Step 3 note) |
-| `--form-field-warning-border-color` | `--xh-form-field-warning-border-color` (see Step 3 note) |
-| `--grid-cell-bg-highlight` | `--xh-grid-cell-changed-bg` |
-| `--grid-header-cell-lr-pad` | `--xh-grid-header-padding-inline` |
-| `--input-placeholder-color` | `--xh-input-placeholder-text-color` |
-| `--popover-backdrop` | `--xh-popover-backdrop-bg` |
-| `--popover-shadow` | `--xh-popover-box-shadow` |
-| `--zone-grid-cell-pad-px` | `--xh-zone-grid-cell-padding-inline` |
+- [ ] Code that reads `Column.renderer` handles columns built on the number and date specs.
+- [ ] Styles on `xh-units-label` or on sign color classes inside grid cells still apply.
+- [ ] No app SCSS styles panel splitters with `--xh-resizable-*` variables or
+      `.xh-resizable-splitter`.
+- [ ] Nothing imports a `*Renderer` factory from `@xh/hoist/format/FormatNumber` or
+      `@xh/hoist/format/FormatDate`.
+- [ ] The app's `package.json` declares every library that the app imports.
+- [ ] The app's `package.json` declares no `router5` dependency, or declares `~8.0.1`, and
+      `getRoutes()` returns `HoistRoute[]`.
+- [ ] Deep links that carry `@`, `=` or `|` in a path parameter still open the right route.
 
 ## Reference
 
 - [Toolbox on GitHub](https://github.com/xh/toolbox) - canonical example of a Hoist app.
-- [`styles/README.md`](../../styles/README.md) - CSS variable system documentation, including
-  naming conventions.
-- [`codemod-css-vars.mjs`](../codemod/v90/codemod-css-vars.mjs) - the CSS variable migration codemod.

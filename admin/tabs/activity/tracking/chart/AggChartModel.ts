@@ -5,8 +5,9 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {ChartModel} from '@xh/hoist/cmp/chart';
-import {HoistModel, lookup, managed, SelectOption} from '@xh/hoist/core';
-import {Cube, StoreRecord} from '@xh/hoist/data';
+import type {SelectOption} from '@xh/hoist/core';
+import {HoistModel, lookup, managed} from '@xh/hoist/core';
+import type {Cube, StoreRecord} from '@xh/hoist/data';
 import {bindable, computed} from '@xh/hoist/mobx';
 import {LocalDate} from '@xh/hoist/utils/datetime';
 import {pluralize} from '@xh/hoist/utils/js';
@@ -119,8 +120,7 @@ export class AggChartModel extends HoistModel {
     }
 
     private get data() {
-        const roots = this.activityTrackingModel.gridModel.store.allRootRecords;
-        return roots.length ? roots[0].children : [];
+        return this.activityTrackingModel.cubeGridModel.store.allRootRecords;
     }
 
     private createChartModel(): ChartModel {
@@ -146,7 +146,7 @@ export class AggChartModel extends HoistModel {
 
     private selectRow(e) {
         const id = `root>>${this.primaryDim}=[${e.point.name}]`;
-        this.activityTrackingModel.gridModel.selectAsync(id);
+        this.activityTrackingModel.cubeGridModel.selectAsync(id);
     }
 
     private loadChart() {

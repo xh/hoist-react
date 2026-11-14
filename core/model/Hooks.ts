@@ -7,15 +7,8 @@
 
 import {useContext, useEffect, useState} from 'react';
 import {throwIf} from '@xh/hoist/utils/js';
-import {
-    HoistModel,
-    HoistModelClass,
-    ModelSelector,
-    ModelLookupContext,
-    ModelLookup,
-    formatSelector,
-    RefreshContextModel
-} from './';
+import type {HoistModel, HoistModelClass, ModelSelector, ModelLookup} from './';
+import {ModelLookupContext, formatSelector, RefreshContextModel} from './';
 
 import {XH} from '../';
 import {untracked} from '@xh/hoist/mobx';

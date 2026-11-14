@@ -4,7 +4,8 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {CallContextLike, XH} from '@xh/hoist/core';
+import type {CallContextLike} from '@xh/hoist/core';
+import {XH} from '@xh/hoist/core';
 import type {FetchOptions} from '../FetchService';
 
 /**

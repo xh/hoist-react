@@ -5,7 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
-import {AppContainerModel} from '@xh/hoist/appcontainer/AppContainerModel';
+import type {AppContainerModel} from '@xh/hoist/appcontainer/AppContainerModel';
 import {XH, hoistCmp} from '@xh/hoist/core';
 import {vframe, div, p} from '@xh/hoist/cmp/layout';
 import {panel} from '@xh/hoist/mobile/cmp/panel';

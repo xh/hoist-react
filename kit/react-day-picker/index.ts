@@ -5,7 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {elementFactory} from '@xh/hoist/core';
-import {ComponentType} from 'react';
+import type {ComponentType} from 'react';
 import {DayPicker} from '@daypicker/react';
 import '@daypicker/react/style.css';
 import './styles.scss';

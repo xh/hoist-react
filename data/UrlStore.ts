@@ -5,18 +5,11 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
-import {
-    Loadable,
-    LoadSpec,
-    LoadSpecConfig,
-    LoadSupport,
-    managed,
-    PlainObject,
-    TaskObserver,
-    XH
-} from '@xh/hoist/core';
+import type {Loadable, LoadSpec, LoadSpecConfig, PlainObject, TaskObserver} from '@xh/hoist/core';
+import {LoadSupport, managed, XH} from '@xh/hoist/core';
 
-import {Store, StoreConfig} from './Store';
+import type {StoreConfig} from './Store';
+import {Store} from './Store';
 
 export interface UrlStoreConfig extends StoreConfig {
     /** URL from which to load data. */

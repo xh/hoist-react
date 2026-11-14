@@ -9,7 +9,7 @@ import {swiper, swiperSlide, EffectCreative} from '@xh/hoist/kit/swiper';
 import '@xh/hoist/mobile/register';
 import './Navigator.scss';
 import {NavigatorModel} from './NavigatorModel';
-import {PageModel} from './PageModel';
+import type {PageModel} from './PageModel';
 import {gestureRefresh} from './impl/GestureRefresh';
 import {page} from './impl/Page';
 

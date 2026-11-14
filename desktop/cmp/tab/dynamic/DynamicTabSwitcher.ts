@@ -6,16 +6,9 @@
  */
 import {box, div, hframe} from '@xh/hoist/cmp/layout';
 import {TabContainerModel, TabModel} from '@xh/hoist/cmp/tab';
-import {TabSwitcherMenuContext, TabSwitcherProps} from '@xh/hoist/cmp/tab/Types';
-import {
-    hoistCmp,
-    HoistModel,
-    HoistProps,
-    Side,
-    useContextModel,
-    useLocalModel,
-    uses
-} from '@xh/hoist/core';
+import type {TabSwitcherMenuContext, TabSwitcherProps} from '@xh/hoist/cmp/tab/Types';
+import type {HoistProps, Side} from '@xh/hoist/core';
+import {hoistCmp, HoistModel, useContextModel, useLocalModel, uses} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {contextMenu} from '@xh/hoist/desktop/cmp/contextmenu';
 import {scroller} from '@xh/hoist/desktop/cmp/tab/dynamic/scroller/Scroller';
@@ -29,7 +22,8 @@ import {composeRefs, getLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import {first, isFinite, last} from 'lodash';
 import {computed} from '@xh/hoist/mobx';
-import {CSSProperties, ReactElement, Ref, useEffect, useRef} from 'react';
+import type {CSSProperties, ReactElement, Ref} from 'react';
+import {useEffect, useRef} from 'react';
 import {DynamicTabSwitcherModel} from './DynamicTabSwitcherModel';
 import './DynamicTabSwitcher.scss';
 

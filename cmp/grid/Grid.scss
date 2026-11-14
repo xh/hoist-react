@@ -16,6 +16,7 @@
     display: flex;
     flex-direction: row;
     align-items: center;
+    gap: var(--xh-spacing-half);
     min-height: 32px;
     width: 100%;
 
@@ -23,8 +24,9 @@
       cursor: pointer;
     }
 
+    // The label sizes to its text, so the expand control sits right after it.
     span {
-      flex: 1;
+      min-width: 0;
       overflow: hidden;
       text-overflow: ellipsis;
     }
@@ -71,16 +73,20 @@
   }
 
   .xh-column-header-align-right {
-    .xh-grid-header,
-    .xh-grid-group-header {
+    .xh-grid-header {
       text-align: right;
+    }
+    .xh-grid-group-header {
+      justify-content: flex-end;
     }
   }
 
   .xh-column-header-align-center {
-    .xh-grid-header,
-    .xh-grid-group-header {
+    .xh-grid-header {
       text-align: center;
+    }
+    .xh-grid-group-header {
+      justify-content: center;
     }
   }
 
@@ -427,6 +433,12 @@
     display: inline-block;
   }
 
+  // Measure a text renderer's ledger alignment - see the matching rule for cells in AgGrid.scss.
+  &.xh-cell--ledger-align::after {
+    content: ')';
+    visibility: hidden;
+  }
+
   &--large {
     font-size: var(--xh-grid-large-font-size);
     padding: 0 var(--xh-grid-large-cell-padding-inline);
@@ -468,6 +480,16 @@
   }
 
   &--menu .xh-grid-header-menu-icon {
+    display: block;
+  }
+
+  // Spaced as the expand icon of a group header.
+  .xh-grid-header-expand-icon {
+    display: none;
+    margin-left: var(--xh-spacing-half);
+  }
+
+  &--expand .xh-grid-header-expand-icon {
     display: block;
   }
 

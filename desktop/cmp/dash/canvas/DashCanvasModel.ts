@@ -6,9 +6,11 @@
  */
 import {wait} from '@xh/hoist/promise';
 import type {LayoutItem} from 'react-grid-layout';
-import {Persistable, PersistableState, PersistenceProvider, XH} from '@xh/hoist/core';
+import type {Persistable} from '@xh/hoist/core';
+import {PersistableState, PersistenceProvider, XH} from '@xh/hoist/core';
 import {required} from '@xh/hoist/data';
-import {DashCanvasViewModel, DashCanvasViewSpec, DashConfig, DashViewState, DashModel} from '../';
+import type {DashCanvasViewSpec, DashConfig, DashViewState} from '../';
+import {DashCanvasViewModel, DashModel} from '../';
 import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
 import {action, bindable, observableRef, computedStruct, bindableRef} from '@xh/hoist/mobx';

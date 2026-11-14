@@ -6,17 +6,8 @@
  */
 import {AgGrid} from '@xh/hoist/cmp/ag-grid';
 import {grid} from '@xh/hoist/cmp/grid';
-import {
-    hoistCmp,
-    HoistModel,
-    HoistProps,
-    LayoutProps,
-    lookup,
-    PlainObject,
-    TestSupportProps,
-    useLocalModel,
-    uses
-} from '@xh/hoist/core';
+import type {HoistProps, LayoutProps, PlainObject, TestSupportProps} from '@xh/hoist/core';
+import {hoistCmp, HoistModel, lookup, useLocalModel, uses} from '@xh/hoist/core';
 import type {GridOptions} from '@xh/hoist/kit/ag-grid';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
 import {isFunction, isNumber} from 'lodash';

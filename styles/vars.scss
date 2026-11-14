@@ -742,6 +742,20 @@ body {
   }
 
 
+  //------------------------
+  // PDF Viewer
+  //------------------------
+  --xh-pdf-viewer-bg: var(--xh-bg-alt);
+  --xh-pdf-viewer-page-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
+  --xh-pdf-viewer-page-gap: 10px;
+  --xh-pdf-viewer-highlight-bg: #{mc-trans('amber', '400', 0.4)};
+  --xh-pdf-viewer-highlight-selected-bg: #{mc-trans('orange', '700', 0.5)};
+
+  &:where(.xh-dark) {
+    --xh-pdf-viewer-page-shadow: 0 1px 6px rgba(0, 0, 0, 0.6);
+  }
+
+
   //---------------------------------------
   // Popovers - e.g. mobile app menu.
   // Applicable to mobile only at this time
@@ -831,6 +845,35 @@ body {
     --xh-resizable-button-icon-color: #{mc('blue-grey', '900')};
   }
 
+  //------------------------
+  // Panel splitters
+  //------------------------
+  --xh-panel-splitter-line-color: var(--xh-panel-border-color);
+  --xh-panel-splitter-accent-color: var(--xh-intent-primary);
+  --xh-panel-splitter-accent-active-color: var(--xh-intent-primary-darker);
+  --xh-panel-splitter-snap-color: var(--xh-intent-warning);
+  --xh-panel-splitter-hit-size: 8px;
+  --xh-panel-splitter-hover-delay: 250ms;
+  --xh-panel-splitter-button-bg: var(--xh-bg);
+  --xh-panel-splitter-button-border-color: #{mc('blue-grey', '200')};
+  --xh-panel-splitter-button-icon-color: var(--xh-text-color);
+  --xh-panel-collapsed-strip-size: 20px;
+  --xh-panel-collapsed-strip-bg: #{mc('blue-grey', '50')};
+  --xh-panel-collapsed-strip-hover-bg: #{mc('blue-grey', '100')};
+  --xh-panel-collapsed-strip-icon-color: var(--xh-blue-gray);
+
+  @media (pointer: coarse) {
+    --xh-panel-splitter-hit-size: 20px;
+  }
+
+  &:where(.xh-dark) {
+    --xh-panel-splitter-button-border-color: #{mc('blue-grey', '700')};
+    --xh-panel-splitter-button-icon-color: #{mc('blue-grey', '100')};
+    --xh-panel-collapsed-strip-bg: #{mc('blue-grey', '900')};
+    --xh-panel-collapsed-strip-hover-bg: #{mc('blue-grey', '800')};
+    --xh-panel-collapsed-strip-icon-color: #{mc('blue-grey', '300')};
+  }
+
 
   //------------------------
   // Scrollbars
@@ -852,6 +895,51 @@ body {
 
   &:where(.xh-dark) {
     --xh-spinner-color: var(--xh-blue-gray);
+  }
+
+  //------------------------
+  // Stat Cards
+  //------------------------
+  // Widths of the accent bar on each edge of an accented card - a top bar by default.
+  --xh-stat-card-accent-bottom: 0;
+  --xh-stat-card-accent-left: 0;
+  --xh-stat-card-accent-right: 0;
+  --xh-stat-card-accent-top: 3px;
+  --xh-stat-card-bg: var(--xh-bg);
+  --xh-stat-card-border: var(--xh-border-solid);
+  --xh-stat-card-border-radius: var(--xh-border-radius);
+  --xh-stat-card-danger-color: var(--xh-intent-danger-text-color);
+  --xh-stat-card-detail-font-size: var(--xh-font-size-small-relative);
+  --xh-stat-card-detail-text-color: var(--xh-blue-gray);
+  --xh-stat-card-hover-bg: var(--xh-bg-alt);
+  // Narrowest a card's content gets in a StatCardStrip before cards wrap to a new row.
+  --xh-stat-card-large-detail-font-size: 1em;
+  --xh-stat-card-large-min-content-width: 200px;
+  --xh-stat-card-large-padding: var(--xh-spacing) calc(var(--xh-spacing) * 1.5);
+  --xh-stat-card-large-sub-value-font-size: calc(var(--xh-font-size) * 1.5);
+  --xh-stat-card-large-title-font-size: 1em;
+  --xh-stat-card-large-value-font-size: calc(var(--xh-font-size) * 3);
+  --xh-stat-card-large-value-gap: var(--xh-spacing);
+  --xh-stat-card-min-content-width: 150px;
+  --xh-stat-card-padding: var(--xh-spacing-half) var(--xh-spacing);
+  --xh-stat-card-primary-color: var(--xh-intent-primary-text-color);
+  --xh-stat-card-strip-gap: var(--xh-spacing);
+  --xh-stat-card-strip-padding: 0;
+  --xh-stat-card-sub-value-font-size: calc(var(--xh-font-size) * 1.15);
+  --xh-stat-card-success-color: var(--xh-intent-success-text-color);
+  --xh-stat-card-title-font-size: var(--xh-font-size-small-relative);
+  --xh-stat-card-title-letter-spacing: normal;
+  --xh-stat-card-title-text-color: var(--xh-blue-gray);
+  --xh-stat-card-title-text-transform: none;
+  --xh-stat-card-value-font-size: calc(var(--xh-font-size) * 1.85);
+  --xh-stat-card-value-font-weight: 400;
+  --xh-stat-card-value-gap: var(--xh-spacing-half);
+  --xh-stat-card-warning-color: var(--xh-intent-warning-text-color);
+
+  // The muted text color is too faint for captions on a light background, but reads well on a dark one.
+  &:where(.xh-dark) {
+    --xh-stat-card-detail-text-color: var(--xh-text-color-muted);
+    --xh-stat-card-title-text-color: var(--xh-text-color-muted);
   }
 
   //------------------------

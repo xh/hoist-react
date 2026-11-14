@@ -5,15 +5,16 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
-import {FormModel} from '@xh/hoist/cmp/form';
+import type {FormModel} from '@xh/hoist/cmp/form';
 import {hbox, hspacer, vbox} from '@xh/hoist/cmp/layout';
-import {ViewInfo} from '@xh/hoist/cmp/viewmanager';
-import {hoistCmp, HoistModel, HoistProps} from '@xh/hoist/core';
+import type {ViewInfo} from '@xh/hoist/cmp/viewmanager';
+import type {HoistModel, HoistProps} from '@xh/hoist/core';
+import {hoistCmp} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {Icon} from '@xh/hoist/icon';
 import {pluralize} from '@xh/hoist/utils/js';
 import {every, isEmpty} from 'lodash';
-import {ManageDialogModel} from '../ManageDialogModel';
+import type {ManageDialogModel} from '../ManageDialogModel';
 
 /** Common surface of the edit panel models backing the shared {@link formButtons}. */
 export interface EditPanelModel extends HoistModel {

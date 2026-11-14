@@ -5,15 +5,11 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
-import {
-    HoistModel,
-    PersistableState,
-    PersistenceProvider,
-    PersistOptions,
-    persistOptions
-} from '@xh/hoist/core';
+import type {PersistOptions} from '@xh/hoist/core';
+import {HoistModel, PersistableState, PersistenceProvider, persistOptions} from '@xh/hoist/core';
 import type {GridModel} from '@xh/hoist/cmp/grid';
-import {Field, genDisplayName, View} from '@xh/hoist/data';
+import type {Field} from '@xh/hoist/data';
+import {genDisplayName, View} from '@xh/hoist/data';
 import {action, computed, observableRef, computedStruct} from '@xh/hoist/mobx';
 import {executeIfFunction, throwIf} from '@xh/hoist/utils/js';
 import {isArray, isEmpty, isEqual, isObject, isString, keys, sortBy} from 'lodash';

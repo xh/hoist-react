@@ -5,9 +5,9 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
-import {AggregationContext} from './AggregationContext';
-import {RowUpdate} from '../row/RowUpdate';
-import {ViewLeafRow, ViewRow} from '../ViewRow';
+import type {AggregationContext} from './AggregationContext';
+import type {RowUpdate} from '../row/RowUpdate';
+import type {ViewLeafRow, ViewRow} from '../ViewRow';
 
 /**
  * Abstract base class for Cube field aggregation functions.

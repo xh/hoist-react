@@ -4,5 +4,5 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-export * from './Types';
+export type * from './Types';
 export * from './Exception';

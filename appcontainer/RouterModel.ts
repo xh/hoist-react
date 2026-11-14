@@ -4,11 +4,13 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {HoistModel, HoistRoute} from '../core';
+import type {HoistRoute} from '../core';
+import {HoistModel} from '../core';
 import {action, observableRef} from '@xh/hoist/mobx';
 import {mergeDeep} from '@xh/hoist/utils/js';
 import {isOmitted} from '@xh/hoist/utils/impl';
-import {createRouter, Router, State} from 'router5';
+import type {Router, State} from 'router5';
+import {createRouter} from 'router5';
 import browserPlugin from 'router5-plugin-browser';
 // Required so downstream consumers pick up Router TS augmentation (buildUrl, etc.).
 import 'router5-plugin-browser';

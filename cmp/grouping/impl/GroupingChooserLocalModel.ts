@@ -5,7 +5,8 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
-import {HoistModel, lookup, SelectOption} from '@xh/hoist/core';
+import type {SelectOption} from '@xh/hoist/core';
+import {HoistModel, lookup} from '@xh/hoist/core';
 import {action, computed, observable, observableRef} from '@xh/hoist/mobx';
 import {createObservableRef} from '@xh/hoist/utils/react';
 import {compact, difference, isEmpty, isEqual, sortBy} from 'lodash';

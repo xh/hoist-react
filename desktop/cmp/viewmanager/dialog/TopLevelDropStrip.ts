@@ -4,11 +4,11 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {GridModel} from '@xh/hoist/cmp/grid';
+import type {GridModel} from '@xh/hoist/cmp/grid';
 import {div, span} from '@xh/hoist/cmp/layout';
 import {hoistCmp, HoistModel, useContextModel, useLocalModel} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
-import {GridApi, RowDropZoneParams} from '@xh/hoist/kit/ag-grid';
+import type {GridApi, RowDropZoneParams} from '@xh/hoist/kit/ag-grid';
 import {createObservableRef} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import {ManageDialogModel} from './ManageDialogModel';

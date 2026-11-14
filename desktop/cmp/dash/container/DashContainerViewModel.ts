@@ -1,5 +1,6 @@
-import {DashContainerViewSpec, DashViewModel} from '@xh/hoist/desktop/cmp/dash';
-import {DashViewConfig} from '../DashViewModel';
+import type {DashContainerViewSpec} from '@xh/hoist/desktop/cmp/dash';
+import {DashViewModel} from '@xh/hoist/desktop/cmp/dash';
+import type {DashViewConfig} from '../DashViewModel';
 
 /**
  * Model for a content item within a DashContainer.

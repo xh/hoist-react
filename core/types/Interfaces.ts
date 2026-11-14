@@ -5,12 +5,13 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
-import {BaseFieldConfig} from '@xh/hoist/cmp/form/field/BaseFieldModel';
-import {RuleLike} from '@xh/hoist/data';
+import type {BaseFieldConfig} from '@xh/hoist/cmp/form/field/BaseFieldModel';
+import type {RuleLike} from '@xh/hoist/data';
 import {isNil, isString} from 'lodash';
-import {isValidElement, MouseEvent, ReactElement, ReactNode} from 'react';
+import type {MouseEvent, ReactElement, ReactNode} from 'react';
+import {isValidElement} from 'react';
 import type {TestSupportProps} from '../HoistProps';
-import {Intent, Thunkable} from './Types';
+import type {Intent, Thunkable} from './Types';
 
 //------------------------
 // Identity

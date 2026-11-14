@@ -6,15 +6,12 @@
  */
 import {AgGrid} from '@xh/hoist/cmp/ag-grid';
 import {div} from '@xh/hoist/cmp/layout';
-import {AppOptionSpec, SizingMode, XH} from '@xh/hoist/core';
-import {
-    radioCardInput,
-    RadioCardInputProps,
-    segmentedControl,
-    SegmentedControlProps
-} from '@xh/hoist/desktop/cmp/input';
+import type {AppOptionSpec} from '@xh/hoist/core';
+import {SizingMode, XH} from '@xh/hoist/core';
+import type {RadioCardInputProps, SegmentedControlProps} from '@xh/hoist/desktop/cmp/input';
+import {radioCardInput, segmentedControl} from '@xh/hoist/desktop/cmp/input';
 import {startCase, times, values} from 'lodash';
-import {FormFieldProps} from '@xh/hoist/desktop/cmp/form';
+import type {FormFieldProps} from '@xh/hoist/desktop/cmp/form';
 import '@xh/hoist/desktop/register';
 import type {ReactElement} from 'react';
 import './SizingModeAppOption.scss';

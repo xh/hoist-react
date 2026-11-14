@@ -55,7 +55,8 @@ import {
     Tree
 } from '@blueprintjs/core';
 import {elementFactory} from '@xh/hoist/core';
-import React, {createElement as reactCreateElement} from 'react';
+import type React from 'react';
+import {createElement as reactCreateElement} from 'react';
 
 // Wrap Dialog and Popover to disable fade/scale-in transitions by default.
 // See also popover & overlay related CSS overrides in ./styles.scss.

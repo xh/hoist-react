@@ -4,9 +4,10 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {loadAllAsync, Loadable, LoadSpec} from '../load';
+import type {Loadable, LoadSpec} from '../load';
+import {loadAllAsync} from '../load';
 import {RefreshContextModel} from './';
-import {RefreshMode} from '../';
+import type {RefreshMode} from '../';
 
 export type ManagedRefreshTarget = Loadable & {isActive: boolean; refreshMode: RefreshMode};
 /**

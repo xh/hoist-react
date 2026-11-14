@@ -26,15 +26,8 @@ FocusStyleManager.onlyShowFocusOnTabs();
 //---------------------
 // Re-exports
 //---------------------
-export {
-    useHotkeys,
-    HotkeyConfig,
-    Classes,
-    PopoverInteractionKind,
-    Position,
-    OverlayToaster,
-    ToasterPosition
-};
+export type {HotkeyConfig, ToasterPosition};
+export {useHotkeys, Classes, PopoverInteractionKind, Position, OverlayToaster};
 export * from './Wrappers';
 export * from './Dialog';
 export * from './ContextMenu';

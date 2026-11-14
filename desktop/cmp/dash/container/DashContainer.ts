@@ -5,7 +5,8 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {div, frame, vbox, vspacer} from '@xh/hoist/cmp/layout';
-import {hoistCmp, HoistProps, refreshContextView, TestSupportProps, uses} from '@xh/hoist/core';
+import type {HoistProps, TestSupportProps} from '@xh/hoist/core';
+import {hoistCmp, refreshContextView, uses} from '@xh/hoist/core';
 import {mask} from '@xh/hoist/cmp/mask';
 import {dashContainerView} from '@xh/hoist/desktop/cmp/dash/container/impl/DashContainerView';
 import {Classes, overlay} from '@xh/hoist/kit/blueprint';

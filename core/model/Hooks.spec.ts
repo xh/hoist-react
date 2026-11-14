@@ -5,11 +5,11 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {div, span} from '@xh/hoist/cmp/layout';
+import type {LoadSpec} from '@xh/hoist/core';
 import {
     creates,
     hoistCmp,
     HoistModel,
-    LoadSpec,
     lookup,
     RefreshContextModel,
     refreshContextView,

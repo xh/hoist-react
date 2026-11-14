@@ -4,18 +4,23 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {PopperBoundary, PopperModifierOverrides} from '@blueprintjs/core';
-import {HoistInputModel, HoistInputProps, useHoistInputModel} from '@xh/hoist/cmp/input';
+import type {PopperBoundary, PopperModifierOverrides} from '@blueprintjs/core';
+import type {HoistInputProps} from '@xh/hoist/cmp/input';
+import {HoistInputModel, useHoistInputModel} from '@xh/hoist/cmp/input';
 import {getDayPickerProps, resolveBoundDate} from '@xh/hoist/cmp/input/impl/DayPickerUtils';
 import {div, filler, hbox, vbox} from '@xh/hoist/cmp/layout';
-import {hoistCmp, HoistProps, LayoutProps, Some} from '@xh/hoist/core';
+import type {HoistProps, LayoutProps, Some} from '@xh/hoist/core';
+import {hoistCmp} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
-import {textInput, TextInputModel} from '@xh/hoist/desktop/cmp/input';
+import type {TextInputModel} from '@xh/hoist/desktop/cmp/input';
+import {textInput} from '@xh/hoist/desktop/cmp/input';
 import '@xh/hoist/desktop/register';
 import {fmtDate} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
-import {popover, Position} from '@xh/hoist/kit/blueprint';
-import {dayPicker, DayPickerProps} from '@xh/hoist/kit/react-day-picker';
+import type {Position} from '@xh/hoist/kit/blueprint';
+import {popover} from '@xh/hoist/kit/blueprint';
+import type {DayPickerProps} from '@xh/hoist/kit/react-day-picker';
+import {dayPicker} from '@xh/hoist/kit/react-day-picker';
 import {bindable} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 import {isLocalDate, LocalDate} from '@xh/hoist/utils/datetime';
@@ -25,7 +30,8 @@ import classNames from 'classnames';
 import type {Property} from 'csstype';
 import {castArray, clone, isEmpty, trim} from 'lodash';
 import moment from 'moment';
-import {createRef, ReactElement, ReactNode} from 'react';
+import type {ReactElement, ReactNode} from 'react';
+import {createRef} from 'react';
 import {timePicker} from './impl/TimePicker';
 import './DateInput.scss';
 

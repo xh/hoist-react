@@ -6,7 +6,7 @@
  */
 import {hoistCmp} from '@xh/hoist/core';
 import {box, div, vbox, vspacer} from '@xh/hoist/cmp/layout';
-import {MaskProps} from '@xh/hoist/cmp/mask';
+import type {MaskProps} from '@xh/hoist/cmp/mask';
 import {spinner as spinnerCmp} from '@xh/hoist/cmp/spinner';
 import '@xh/hoist/mobile/register';
 import './Mask.scss';

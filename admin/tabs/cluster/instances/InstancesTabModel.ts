@@ -17,15 +17,17 @@ import {memoryMonitorPanel} from '@xh/hoist/admin/tabs/cluster/instances/memory/
 import {servicePanel} from '@xh/hoist/admin/tabs/cluster/instances/services/ServicePanel';
 import {badge} from '@xh/hoist/cmp/badge';
 import * as Col from '@xh/hoist/cmp/grid/columns';
-import {GridContextMenuSpec, GridModel} from '@xh/hoist/cmp/grid';
+import type {GridContextMenuSpec} from '@xh/hoist/cmp/grid';
+import {GridModel} from '@xh/hoist/cmp/grid';
 import {span} from '@xh/hoist/cmp/layout';
 import {getRelativeTimestamp} from '@xh/hoist/cmp/relativetimestamp';
 import {TabContainerModel, TabModel} from '@xh/hoist/cmp/tab';
-import {HoistModel, LoadSpec, lookup, managed, PlainObject, XH} from '@xh/hoist/core';
+import type {LoadSpec, PlainObject} from '@xh/hoist/core';
+import {HoistModel, lookup, managed, XH} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {Timer} from '@xh/hoist/utils/async';
 import {SECONDS} from '@xh/hoist/utils/datetime';
-import {ReactNode} from 'react';
+import type {ReactNode} from 'react';
 
 export class InstancesTabModel extends HoistModel {
     override telemetryPrefix = 'xh.client.admin.instances';

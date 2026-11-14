@@ -6,9 +6,11 @@
  */
 
 import {errorMessage} from '@xh/hoist/cmp/error';
-import {grid, GridConfig, gridCountLabel} from '@xh/hoist/cmp/grid';
+import type {GridConfig} from '@xh/hoist/cmp/grid';
+import {grid, gridCountLabel} from '@xh/hoist/cmp/grid';
 import {a, box, filler, fragment, hframe, label, li, p, span, ul, vbox} from '@xh/hoist/cmp/layout';
-import {hoistCmp, HoistProps, SelectOption, useLocalModel} from '@xh/hoist/core';
+import type {HoistProps, SelectOption} from '@xh/hoist/core';
+import {hoistCmp, useLocalModel} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {clipboardButton} from '@xh/hoist/desktop/cmp/clipboard';
 import {buttonGroupInput, jsonInput, select, textInput} from '@xh/hoist/desktop/cmp/input';

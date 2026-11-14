@@ -9,7 +9,8 @@ import {castArray} from 'lodash';
 import type {ReactElement} from 'react';
 
 import {div} from '@xh/hoist/cmp/layout';
-import {BoxProps, hoistCmp, HoistProps, Intent} from '@xh/hoist/core';
+import type {BoxProps, HoistProps, Intent} from '@xh/hoist/core';
+import {hoistCmp} from '@xh/hoist/core';
 import {TEST_ID, mergeDeep} from '@xh/hoist/utils/js';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
 

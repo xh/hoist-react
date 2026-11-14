@@ -4,13 +4,16 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {HoistInputModel, HoistInputProps, useHoistInputModel} from '@xh/hoist/cmp/input';
+import type {HoistInputProps} from '@xh/hoist/cmp/input';
+import {HoistInputModel, useHoistInputModel} from '@xh/hoist/cmp/input';
 import {getDayPickerProps, resolveBoundDate} from '@xh/hoist/cmp/input/impl/DayPickerUtils';
 import {box, div, hbox} from '@xh/hoist/cmp/layout';
-import {hoistCmp, HoistProps, LayoutProps, StyleProps} from '@xh/hoist/core';
+import type {HoistProps, LayoutProps, StyleProps} from '@xh/hoist/core';
+import {hoistCmp} from '@xh/hoist/core';
 import {fmtDate} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
-import {dayPicker, DayPickerProps} from '@xh/hoist/kit/react-day-picker';
+import type {DayPickerProps} from '@xh/hoist/kit/react-day-picker';
+import {dayPicker} from '@xh/hoist/kit/react-day-picker';
 import {button} from '@xh/hoist/mobile/cmp/button';
 import {dialog} from '@xh/hoist/mobile/cmp/dialog';
 import '@xh/hoist/mobile/register';
@@ -20,7 +23,7 @@ import {getTestId, TEST_ID, withDefault} from '@xh/hoist/utils/js';
 import {getLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import type {Property} from 'csstype';
-import {ReactElement} from 'react';
+import type {ReactElement} from 'react';
 import './DateInput.scss';
 
 export interface DateInputProps extends HoistProps, HoistInputProps, StyleProps, LayoutProps {

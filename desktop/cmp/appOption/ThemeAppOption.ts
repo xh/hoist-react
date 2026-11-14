@@ -6,14 +6,10 @@
  */
 import {div} from '@xh/hoist/cmp/layout';
 import {XH} from '@xh/hoist/core';
-import {
-    radioCardInput,
-    RadioCardInputProps,
-    segmentedControl,
-    SegmentedControlProps
-} from '@xh/hoist/desktop/cmp/input';
+import type {RadioCardInputProps, SegmentedControlProps} from '@xh/hoist/desktop/cmp/input';
+import {radioCardInput, segmentedControl} from '@xh/hoist/desktop/cmp/input';
 import {Icon} from '@xh/hoist/icon/Icon';
-import {FormFieldProps} from '@xh/hoist/desktop/cmp/form';
+import type {FormFieldProps} from '@xh/hoist/desktop/cmp/form';
 import '@xh/hoist/desktop/register';
 import type {ReactElement} from 'react';
 import './ThemeAppOption.scss';

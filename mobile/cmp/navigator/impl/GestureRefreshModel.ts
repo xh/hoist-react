@@ -7,7 +7,7 @@
 import {HoistModel, lookup, XH} from '@xh/hoist/core';
 import {action, computed, observable} from '@xh/hoist/mobx';
 import {clamp, isFinite} from 'lodash';
-import {TouchEvent} from 'react';
+import type {TouchEvent} from 'react';
 import {NavigatorModel} from '../NavigatorModel';
 import {hasDraggableParent} from './Utils';
 

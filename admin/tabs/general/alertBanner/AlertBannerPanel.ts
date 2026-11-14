@@ -40,7 +40,7 @@ import {Icon} from '@xh/hoist/icon';
 import {menu, menuItem, popover} from '@xh/hoist/kit/blueprint';
 import {LocalDate} from '@xh/hoist/utils/datetime';
 import {isEmpty} from 'lodash';
-import {ReactNode} from 'react';
+import type {ReactNode} from 'react';
 import {AlertBannerModel} from './AlertBannerModel';
 import './AlertBannerPanel.scss';
 

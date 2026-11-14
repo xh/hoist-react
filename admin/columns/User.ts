@@ -5,7 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {tagsRenderer} from '@xh/hoist/cmp/grid';
-import {ColumnSpec} from '@xh/hoist/cmp/grid/columns';
+import type {ColumnSpec} from '@xh/hoist/cmp/grid/columns';
 import {Icon} from '@xh/hoist/icon';
 import * as Col from '@xh/hoist/cmp/grid/columns';
 

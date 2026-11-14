@@ -5,7 +5,8 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {table, tbody, td, th, tr} from '@xh/hoist/cmp/layout';
-import {AboutDialogItem, HoistModel, XH} from '@xh/hoist/core';
+import type {AboutDialogItem} from '@xh/hoist/core';
+import {HoistModel, XH} from '@xh/hoist/core';
 import {action, observable} from '@xh/hoist/mobx';
 import {isOmitted} from '@xh/hoist/utils/impl';
 import {copyToClipboard, warnIf} from '@xh/hoist/utils/js';

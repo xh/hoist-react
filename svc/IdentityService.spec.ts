@@ -4,7 +4,8 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {HoistUser, XH} from '@xh/hoist/core';
+import type {HoistUser} from '@xh/hoist/core';
+import {XH} from '@xh/hoist/core';
 import {IdentityService} from '@xh/hoist/svc';
 import {
     hoistCore,

@@ -6,11 +6,12 @@
  */
 import {box, frame, hframe, input, vframe} from '@xh/hoist/cmp/layout';
 import {mask} from '@xh/hoist/cmp/mask';
-import {BoxProps, Content, hoistCmp, HoistProps, uses} from '@xh/hoist/core';
+import type {BoxProps, Content, HoistProps} from '@xh/hoist/core';
+import {hoistCmp, uses} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {dropzone} from '@xh/hoist/kit/react-dropzone';
 import {elementFromContent, getLayoutProps} from '@xh/hoist/utils/react';
-import {FileRejection} from 'react-dropzone';
+import type {FileRejection} from 'react-dropzone';
 import {FileChooserModel} from './FileChooserModel';
 import {isEmpty} from 'lodash';
 import classNames from 'classnames';

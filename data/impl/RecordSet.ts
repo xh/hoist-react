@@ -7,9 +7,9 @@
 
 import {logWarn, throwIf} from '@xh/hoist/utils/js';
 import {clamp, isEmpty, isNil, maxBy} from 'lodash';
-import {StoreRecord, StoreRecordId} from '../StoreRecord';
-import {Store} from '../Store';
-import {Filter} from '../filter/Filter';
+import type {StoreRecord, StoreRecordId} from '../StoreRecord';
+import type {Store} from '../Store';
+import type {Filter} from '../filter/Filter';
 
 type StoreRecordMap = Map<StoreRecordId, StoreRecord>;
 type ChildRecordMap = Map<StoreRecordId, StoreRecord[]>;

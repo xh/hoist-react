@@ -6,14 +6,16 @@
  */
 import {div, hbox, hframe} from '@xh/hoist/cmp/layout';
 import {markdown} from '@xh/hoist/cmp/markdown';
-import {hoistCmp, HoistProps, Intent, StyleProps, TestSupportProps} from '@xh/hoist/core';
-import {button, ButtonProps} from '@xh/hoist/desktop/cmp/button';
+import type {HoistProps, Intent, StyleProps, TestSupportProps} from '@xh/hoist/core';
+import {hoistCmp} from '@xh/hoist/core';
+import type {ButtonProps} from '@xh/hoist/desktop/cmp/button';
+import {button} from '@xh/hoist/desktop/cmp/button';
 import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
 import {getTestId} from '@xh/hoist/utils/js';
 import classNames from 'classnames';
 import {isEmpty, isString} from 'lodash';
-import {ReactElement, ReactNode} from 'react';
+import type {ReactElement, ReactNode} from 'react';
 import './Banner.scss';
 
 export interface BannerProps extends HoistProps<null>, StyleProps, TestSupportProps {

@@ -54,7 +54,8 @@ const EXCLUDED_DIRS = new Set(['node_modules', 'build', 'mcp', '.git', '.idea', 
 const INDEXER_SOURCES = [
     'mcp/data/ts-registry.ts',
     'mcp/data/import-paths.ts',
-    'mcp/data/index-cache.ts'
+    'mcp/data/index-cache.ts',
+    'mcp/util/paths.ts'
 ];
 
 interface CachePayload {

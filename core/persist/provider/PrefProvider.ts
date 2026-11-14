@@ -6,7 +6,8 @@
  */
 
 import {XH} from '@xh/hoist/core/';
-import {PersistenceProvider, PersistenceProviderConfig} from '../PersistenceProvider';
+import type {PersistenceProviderConfig} from '../PersistenceProvider';
+import {PersistenceProvider} from '../PersistenceProvider';
 import {throwIf} from '@xh/hoist/utils/js';
 
 /**

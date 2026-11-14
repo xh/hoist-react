@@ -4,7 +4,8 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {HoistService, InitContext, managed, persist, XH} from '@xh/hoist/core';
+import type {InitContext} from '@xh/hoist/core';
+import {HoistService, managed, persist, XH} from '@xh/hoist/core';
 import {Cube, Store, View} from '@xh/hoist/data';
 import {action, observable, observableRef, bindableRef} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';

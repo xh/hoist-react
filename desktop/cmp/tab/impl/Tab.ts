@@ -5,15 +5,10 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {frame} from '@xh/hoist/cmp/layout';
-import {TabContainerProps, TabModel} from '@xh/hoist/cmp/tab';
-import {
-    hoistCmp,
-    HoistProps,
-    PlainObject,
-    refreshContextView,
-    TestSupportProps,
-    uses
-} from '@xh/hoist/core';
+import type {TabContainerProps} from '@xh/hoist/cmp/tab';
+import {TabModel} from '@xh/hoist/cmp/tab';
+import type {HoistProps, PlainObject, TestSupportProps} from '@xh/hoist/core';
+import {hoistCmp, refreshContextView, uses} from '@xh/hoist/core';
 import {elementFromContent} from '@xh/hoist/utils/react';
 import {isFunction} from 'lodash';
 import {useRef} from 'react';

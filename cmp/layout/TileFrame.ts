@@ -4,7 +4,8 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {hoistCmp, useLocalModel, HoistModel, BoxProps, HoistProps} from '@xh/hoist/core';
+import type {BoxProps, HoistProps} from '@xh/hoist/core';
+import {hoistCmp, useLocalModel, HoistModel} from '@xh/hoist/core';
 import {frame, box} from '@xh/hoist/cmp/layout';
 import {useComposedRefs, useOnResize} from '@xh/hoist/utils/react';
 import {useState, useLayoutEffect} from 'react';

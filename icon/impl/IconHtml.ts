@@ -4,14 +4,8 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {
-    AbstractElement,
-    findIconDefinition,
-    icon,
-    IconName,
-    IconPrefix,
-    toHtml
-} from '@fortawesome/fontawesome-svg-core';
+import type {AbstractElement, IconName, IconPrefix} from '@fortawesome/fontawesome-svg-core';
+import {findIconDefinition, icon, toHtml} from '@fortawesome/fontawesome-svg-core';
 import classNames from 'classnames';
 import {isString} from 'lodash';
 

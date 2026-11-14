@@ -6,17 +6,15 @@
  */
 
 import {box, fieldset} from '@xh/hoist/cmp/layout';
-import {
+import type {
     BoxProps,
     DomAttrsProps,
-    hoistCmp,
     HoistProps,
     Intent,
     LayoutProps,
-    TestSupportProps,
-    uses,
-    XH
+    TestSupportProps
 } from '@xh/hoist/core';
+import {hoistCmp, uses, XH} from '@xh/hoist/core';
 import {cardHeaderImpl as desktopCardHeaderImpl} from '@xh/hoist/dynamics/desktop';
 import {cardHeaderImpl as mobileCardHeaderImpl} from '@xh/hoist/dynamics/mobile';
 import {mergeDeep, TEST_ID, warnIf} from '@xh/hoist/utils/js';

@@ -5,21 +5,21 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {div, hspacer} from '@xh/hoist/cmp/layout';
-import {
+import type {
     DomAttrsProps,
     LayoutProps,
     StyleProps,
-    hoistCmp,
     HoistModel,
     HoistProps,
     TestSupportProps,
     Intent
 } from '@xh/hoist/core';
+import {hoistCmp} from '@xh/hoist/core';
 import '@xh/hoist/mobile/register';
 import {TEST_ID} from '@xh/hoist/utils/js';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
-import {ReactNode, ReactElement, MouseEvent} from 'react';
+import type {ReactNode, ReactElement, MouseEvent} from 'react';
 import './Button.scss';
 
 export interface ButtonProps<M extends HoistModel = HoistModel>

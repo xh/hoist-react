@@ -4,26 +4,21 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {GridApi, AgColumnState} from '@xh/hoist/kit/ag-grid';
+import type {GridApi, AgColumnState} from '@xh/hoist/kit/ag-grid';
 
 import {agGrid} from '@xh/hoist/cmp/ag-grid';
-import {ColumnGroupState, ColumnState, getTreeStyleClasses} from '@xh/hoist/cmp/grid';
+import type {ColumnGroupState, ColumnState} from '@xh/hoist/cmp/grid';
+import {getTreeStyleClasses} from '@xh/hoist/cmp/grid';
 import {getAgGridMenuItems} from '@xh/hoist/cmp/grid/impl/MenuSupport';
 import {div, fragment, frame, hframe} from '@xh/hoist/cmp/layout';
-import {
-    hoistCmp,
-    HoistModel,
+import type {
     HoistProps,
     LayoutProps,
-    lookup,
-    managed,
     PlainObject,
     ReactionSpec,
-    TestSupportProps,
-    useLocalModel,
-    uses,
-    XH
+    TestSupportProps
 } from '@xh/hoist/core';
+import {hoistCmp, HoistModel, lookup, managed, useLocalModel, uses, XH} from '@xh/hoist/core';
 import type {Filter} from '@xh/hoist/data';
 import type {RecordSet, RecordSetDelta} from '@xh/hoist/data/impl/RecordSet';
 import {GridTransactionManager} from '@xh/hoist/cmp/grid/impl/GridTransactionManager';
@@ -55,8 +50,8 @@ import {consumeEvent, isDisplayed, warnIf} from '@xh/hoist/utils/js';
 import {useComposedRefs, createObservableRef, getLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import {compact, debounce, isBoolean, isEmpty, isEqual, isNil, merge} from 'lodash';
-import {type MouseEvent} from 'react';
-import {PartialDeep} from 'type-fest';
+import type {MouseEvent} from 'react';
+import type {PartialDeep} from 'type-fest';
 import './Grid.scss';
 import {GridModel} from './GridModel';
 import {columnGroupHeader} from './impl/ColumnGroupHeader';

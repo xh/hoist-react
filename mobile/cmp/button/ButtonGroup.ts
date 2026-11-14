@@ -5,8 +5,10 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {hbox} from '@xh/hoist/cmp/layout';
-import {BoxProps, hoistCmp, HoistProps, Intent, XH} from '@xh/hoist/core';
-import {Button, ButtonProps} from '@xh/hoist/mobile/cmp/button';
+import type {BoxProps, HoistProps, Intent} from '@xh/hoist/core';
+import {hoistCmp, XH} from '@xh/hoist/core';
+import type {ButtonProps} from '@xh/hoist/mobile/cmp/button';
+import {Button} from '@xh/hoist/mobile/cmp/button';
 import '@xh/hoist/mobile/register';
 import {Children, cloneElement, isValidElement} from 'react';
 import './ButtonGroup.scss';

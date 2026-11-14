@@ -7,21 +7,20 @@
 
 import {li, ul} from '@xh/hoist/cmp/layout';
 import {card} from '@xh/hoist/cmp/card/Card';
+import type {BoxProps, HoistProps, Intent} from '@xh/hoist/core';
 import {
-    BoxProps,
     elementFactory,
     hoistCmp,
-    HoistProps,
-    Intent,
     type LayoutProps,
     type TestSupportProps,
     uses,
     XH
 } from '@xh/hoist/core';
-import {ValidationSeverity} from '@xh/hoist/data';
+import type {ValidationSeverity} from '@xh/hoist/data';
 import {FormFieldSetModel} from '@xh/hoist/cmp/form/formfieldset/FormFieldSetModel';
 import {runInAction} from '@xh/hoist/mobx';
-import {createContext, ReactElement, type ReactNode, useContext, useEffect} from 'react';
+import type {ReactElement} from 'react';
+import {createContext, type ReactNode, useContext, useEffect} from 'react';
 import './FormFieldSet.scss';
 
 export interface FormFieldSetProps

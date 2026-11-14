@@ -4,18 +4,18 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
+import type {PersistOptions} from '@xh/hoist/core';
 import {
     DashViewProvider,
     PersistableState,
     PersistenceProvider,
     persistOptions,
-    PersistOptions,
     ViewManagerProvider
 } from '@xh/hoist/core';
 import {isEqual, isObject} from 'lodash';
 import {runInAction} from '@xh/hoist/mobx';
-import {GridModel} from '../GridModel';
-import {ColumnState, GridModelPersistOptions} from '../Types';
+import type {GridModel} from '../GridModel';
+import type {ColumnState, GridModelPersistOptions} from '../Types';
 
 /**
  * Initialize persistence for a {@link GridModel} by applying its `persistWith` config.

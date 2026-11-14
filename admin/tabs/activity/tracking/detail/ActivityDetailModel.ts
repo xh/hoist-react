@@ -6,11 +6,13 @@
  */
 import {exportFilename} from '@xh/hoist/admin/AdminUtils';
 import * as Col from '@xh/hoist/admin/columns';
-import {ActivityTrackingDataFieldSpec} from '@xh/hoist/admin/tabs/activity/tracking/datafields/DataFieldsEditorModel';
+import type {ActivityTrackingDataFieldSpec} from '@xh/hoist/admin/tabs/activity/tracking/datafields/DataFieldsEditorModel';
 import {FormModel} from '@xh/hoist/cmp/form';
-import {ColumnSpec, GridModel} from '@xh/hoist/cmp/grid';
-import {HoistModel, lookup, managed, PersistOptions, PlainObject} from '@xh/hoist/core';
-import {StoreRecord} from '@xh/hoist/data';
+import type {ColumnSpec} from '@xh/hoist/cmp/grid';
+import {GridModel} from '@xh/hoist/cmp/grid';
+import type {PersistOptions, PlainObject} from '@xh/hoist/core';
+import {HoistModel, lookup, managed} from '@xh/hoist/core';
+import type {StoreRecord} from '@xh/hoist/data';
 import {timestampReplacer} from '@xh/hoist/format';
 import {action, bindable, computed, observable, observableRef} from '@xh/hoist/mobx';
 import {get, isString} from 'lodash';

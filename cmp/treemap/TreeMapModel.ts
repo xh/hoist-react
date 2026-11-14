@@ -4,14 +4,15 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {HoistModel, PlainObject, Theme} from '@xh/hoist/core';
-import {Store, StoreRecord, StoreRecordId} from '@xh/hoist/data';
-import {GridModel} from '@xh/hoist/cmp/grid';
-import {FilterLike} from '@xh/hoist/data/filter/Types';
+import type {PlainObject, Theme} from '@xh/hoist/core';
+import {HoistModel} from '@xh/hoist/core';
+import type {Store, StoreRecord, StoreRecordId} from '@xh/hoist/data';
+import type {GridModel} from '@xh/hoist/cmp/grid';
+import type {FilterLike} from '@xh/hoist/data/filter/Types';
 import {numberRenderer} from '@xh/hoist/format';
 import {action, bindable, computed, observableRef, bindableRef} from '@xh/hoist/mobx';
 import {throwIf, withDefault} from '@xh/hoist/utils/js';
-import {ReactNode} from 'react';
+import type {ReactNode} from 'react';
 import {cloneDeep, get, isEmpty, isFinite, max, set, sortBy, sumBy, unset} from 'lodash';
 
 export interface TreeMapConfig {

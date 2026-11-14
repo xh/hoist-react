@@ -5,25 +5,26 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {frame, vbox} from '@xh/hoist/cmp/layout';
-import {
+import type {
     BoxProps,
     TaskObserver,
-    useContextModel,
     Some,
     HoistProps,
     ElementFactory,
-    hoistCmp,
     HoistModel
 } from '@xh/hoist/core';
+import {useContextModel, hoistCmp} from '@xh/hoist/core';
 import {loadingIndicator} from '@xh/hoist/cmp/loadingindicator';
 import {mask} from '@xh/hoist/cmp/mask';
-import {banner, BannerProps} from '@xh/hoist/mobile/cmp/banner';
+import type {BannerProps} from '@xh/hoist/mobile/cmp/banner';
+import {banner} from '@xh/hoist/mobile/cmp/banner';
 import {toolbar} from '@xh/hoist/mobile/cmp/toolbar';
 import '@xh/hoist/mobile/register';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import {castArray, isString, omitBy} from 'lodash';
-import {Children, cloneElement, isValidElement, ReactNode, ReactElement} from 'react';
+import type {ReactNode, ReactElement} from 'react';
+import {Children, cloneElement, isValidElement} from 'react';
 import {panelHeader} from './impl/PanelHeader';
 import './Panel.scss';
 import {logWarn} from '@xh/hoist/utils/js';

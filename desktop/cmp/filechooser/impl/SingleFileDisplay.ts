@@ -4,7 +4,7 @@ import {button} from '@xh/hoist/desktop/cmp/button';
 import {FileChooserModel} from '../FileChooserModel';
 import {Icon} from '@xh/hoist/icon';
 import {filesize} from 'filesize';
-import {MouseEvent} from 'react';
+import type {MouseEvent} from 'react';
 import './SingleFileDisplay.scss';
 
 /**

@@ -4,27 +4,16 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {PopoverPosition, PopperBoundary} from '@blueprintjs/core';
-import {
-    BaseFormFieldProps,
-    FieldModel,
-    FormContext,
-    FormContextType,
-    FormFieldSetContext
-} from '@xh/hoist/cmp/form';
+import type {PopoverPosition, PopperBoundary} from '@blueprintjs/core';
+import type {BaseFormFieldProps, FormContextType} from '@xh/hoist/cmp/form';
+import {FieldModel, FormContext, FormFieldSetContext} from '@xh/hoist/cmp/form';
 import {box, div, label as labelEl, li, span, ul} from '@xh/hoist/cmp/layout';
-import {
-    DefaultHoistProps,
-    hoistCmp,
-    HoistProps,
-    HSide,
-    TestSupportProps,
-    uses,
-    XH
-} from '@xh/hoist/core';
+import type {DefaultHoistProps, HoistProps, HSide, TestSupportProps} from '@xh/hoist/core';
+import {hoistCmp, uses, XH} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {instanceManager} from '@xh/hoist/core/impl/InstanceManager';
-import {maxSeverity, ValidationResult} from '@xh/hoist/data';
+import type {ValidationResult} from '@xh/hoist/data';
+import {maxSeverity} from '@xh/hoist/data';
 import {fmtDate, fmtDateTime, fmtJson, fmtNumber} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
 import {tooltip} from '@xh/hoist/kit/blueprint';
@@ -49,15 +38,8 @@ import {
     isUndefined,
     kebabCase
 } from 'lodash';
-import {
-    Children,
-    cloneElement,
-    ReactElement,
-    ReactNode,
-    useContext,
-    useEffect,
-    useState
-} from 'react';
+import type {ReactElement, ReactNode} from 'react';
+import {Children, cloneElement, useContext, useEffect, useState} from 'react';
 import './FormField.scss';
 
 export interface FormFieldProps extends BaseFormFieldProps {

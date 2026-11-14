@@ -5,12 +5,13 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {ChartModel} from '@xh/hoist/cmp/chart';
-import {HoistModel, lookup, managed, PlainObject} from '@xh/hoist/core';
+import type {PlainObject} from '@xh/hoist/core';
+import {HoistModel, lookup, managed} from '@xh/hoist/core';
 import {bindable, computed} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 import {compact, isEmpty, isMatch, sortBy, sumBy} from 'lodash';
 import {RoleModel} from '../RoleModel';
-import {EffectiveRoleMember, HoistRole} from '../Types';
+import type {EffectiveRoleMember, HoistRole} from '../Types';
 
 export class RoleGraphModel extends HoistModel {
     @lookup(RoleModel) readonly roleModel: RoleModel;

@@ -7,11 +7,12 @@
 
 import {FormModel} from '@xh/hoist/cmp/form';
 import {fragment, p, strong} from '@xh/hoist/cmp/layout';
-import {HoistModel, managed, TaskObserver, XH} from '@xh/hoist/core';
+import type {TaskObserver} from '@xh/hoist/core';
+import {HoistModel, managed, XH} from '@xh/hoist/core';
 import {capitalize, isEmpty} from 'lodash';
-import {ReactNode} from 'react';
-import {ManageDialogModel} from '../ManageDialogModel';
-import {ViewInfo} from '@xh/hoist/cmp/viewmanager';
+import type {ReactNode} from 'react';
+import type {ManageDialogModel} from '../ManageDialogModel';
+import type {ViewInfo} from '@xh/hoist/cmp/viewmanager';
 import {normalizeGroupValue} from '../Utils';
 import {GroupFieldModel} from './GroupFieldModel';
 

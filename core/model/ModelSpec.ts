@@ -5,7 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
-import {CreatesSpec, UsesSpec, HoistModel} from './';
+import type {CreatesSpec, UsesSpec, HoistModel} from './';
 
 /**
  * Specification for model to be rendered by a HoistComponent.

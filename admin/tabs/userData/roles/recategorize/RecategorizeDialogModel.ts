@@ -4,9 +4,9 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {RoleModel} from '@xh/hoist/admin/tabs/userData/roles/RoleModel';
+import type {RoleModel} from '@xh/hoist/admin/tabs/userData/roles/RoleModel';
 import {HoistModel, TaskObserver, XH} from '@xh/hoist/core';
-import {StoreRecord} from '@xh/hoist/data';
+import type {StoreRecord} from '@xh/hoist/data';
 import {Icon} from '@xh/hoist/icon/Icon';
 import {action, bindable, observable} from '@xh/hoist/mobx';
 import {compact, every, filter, map, uniq} from 'lodash';

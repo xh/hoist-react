@@ -7,18 +7,20 @@
 import {getAppModel} from '@xh/hoist/admin/AdminUtils';
 import {RecategorizeDialogModel} from '@xh/hoist/admin/tabs/userData/roles/recategorize/RecategorizeDialogModel';
 import {FilterChooserModel} from '@xh/hoist/cmp/filter';
-import {GridContextMenuItemLike, GridModel, tagsRenderer, TreeStyle} from '@xh/hoist/cmp/grid';
+import type {GridContextMenuItemLike} from '@xh/hoist/cmp/grid';
+import {GridModel, tagsRenderer, TreeStyle} from '@xh/hoist/cmp/grid';
 import * as Col from '@xh/hoist/cmp/grid/columns';
 import {fragment, p} from '@xh/hoist/cmp/layout';
-import {HoistModel, LoadSpec, managed, XH} from '@xh/hoist/core';
-import {RecordActionSpec} from '@xh/hoist/data';
+import type {LoadSpec} from '@xh/hoist/core';
+import {HoistModel, managed, XH} from '@xh/hoist/core';
+import type {RecordActionSpec} from '@xh/hoist/data';
 import {actionCol, calcActionColWidth} from '@xh/hoist/desktop/cmp/grid';
 import {Icon} from '@xh/hoist/icon';
 import {action, bindable, runInAction, observableRef} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 import {compact, groupBy, isEmpty, isString, mapValues, uniq} from 'lodash';
 import {RoleEditorModel} from './editor/RoleEditorModel';
-import {DirectoryGroupInfo, HoistRole, RoleModuleConfig} from './Types';
+import type {DirectoryGroupInfo, HoistRole, RoleModuleConfig} from './Types';
 
 export class RoleModel extends HoistModel {
     override telemetryPrefix = 'xh.client.admin.roles';

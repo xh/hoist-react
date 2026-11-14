@@ -7,7 +7,7 @@
 import {div, filler, hbox} from '@xh/hoist/cmp/layout';
 import {hoistCmp} from '@xh/hoist/core';
 import {isEmpty} from 'lodash';
-import {PanelProps} from '../Panel';
+import type {PanelProps} from '../Panel';
 
 /**
  * A standardized header for a Panel component

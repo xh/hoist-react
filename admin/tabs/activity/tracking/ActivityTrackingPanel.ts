@@ -7,7 +7,7 @@
 import {dataFieldsEditor} from '@xh/hoist/admin/tabs/activity/tracking/datafields/DataFieldsEditor';
 import {errorMessage} from '@xh/hoist/cmp/error';
 import {form} from '@xh/hoist/cmp/form';
-import {grid} from '@xh/hoist/cmp/grid';
+import {cubeGrid} from '@xh/hoist/cmp/cubegrid';
 import {div, filler, hframe} from '@xh/hoist/cmp/layout';
 import {creates, hoistCmp} from '@xh/hoist/core';
 import {button, colChooserButton, exportButton} from '@xh/hoist/desktop/cmp/button';
@@ -111,13 +111,34 @@ const aggregateView = hoistCmp.factory<ActivityTrackingModel>(({model}) => {
             compact: true,
             items: [
                 groupingChooser({flex: 10, maxWidth: 300}),
+                select({
+                    bind: 'pivotBy',
+                    options: model.pivotByOptions,
+                    // Count shown in the menu only - the control reads better without it.
+                    valueRenderer: opt => opt.displayName,
+                    placeholder: 'Pivot by...',
+                    enableClear: true,
+                    enableFilter: false,
+                    width: 150
+                }),
+                select({
+                    bind: 'pivotMeasures',
+                    options: model.pivotMeasureOptions,
+                    enableMulti: true,
+                    enableClear: false,
+                    enableFilter: false,
+                    hideDropdownIndicator: true,
+                    placeholder: 'Measures...',
+                    width: 260,
+                    omit: !model.pivotBy
+                }),
                 filler(),
-                colChooserButton(),
-                exportButton()
+                colChooserButton({gridModel: model.cubeGridModel}),
+                exportButton({gridModel: model.cubeGridModel})
             ]
         }),
         items: [
-            grid({flex: 1}),
+            cubeGrid({flex: 1, model: model.cubeGridModel}),
             div({
                 className: 'xh-admin-activity-panel__max-rows-alert',
                 items: [

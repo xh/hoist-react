@@ -14,7 +14,7 @@ import {FormModel} from '@xh/hoist/cmp/form';
 import {TabContainerModel} from '@xh/hoist/cmp/tab';
 import {HoistModel, lookup, managed} from '@xh/hoist/core';
 import {fmtDateTimeSec} from '@xh/hoist/format';
-import {HoistRole} from '../Types';
+import type {HoistRole} from '../Types';
 
 export class RoleDetailsModel extends HoistModel {
     @lookup(() => RoleModel) readonly roleModel: RoleModel;

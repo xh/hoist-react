@@ -7,7 +7,8 @@
 import {hoistCmp} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {fmtJson} from '@xh/hoist/format';
-import {codeInput, CodeInputProps} from './CodeInput';
+import type {CodeInputProps} from './CodeInput';
+import {codeInput} from './CodeInput';
 import {jsonlint} from './impl/jsonlint.js';
 
 export type JsonInputProps = CodeInputProps;

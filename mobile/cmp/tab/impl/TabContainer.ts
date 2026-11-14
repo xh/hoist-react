@@ -5,7 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {div, placeholder, vbox} from '@xh/hoist/cmp/layout';
-import {TabContainerProps, TabSwitcherProps} from '@xh/hoist/cmp/tab';
+import type {TabContainerProps, TabSwitcherProps} from '@xh/hoist/cmp/tab';
 import '@xh/hoist/mobile/register';
 import {getTestId, throwIf} from '@xh/hoist/utils/js';
 import {getLayoutProps} from '@xh/hoist/utils/react';

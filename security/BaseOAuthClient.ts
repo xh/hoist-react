@@ -6,12 +6,13 @@
  */
 import {br, fragment} from '@xh/hoist/cmp/layout';
 import {isHoistException} from '@xh/hoist/exception';
-import {CallContextLike, HoistBase, managed, XH} from '@xh/hoist/core';
+import type {CallContextLike} from '@xh/hoist/core';
+import {HoistBase, managed, XH} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {action} from '@xh/hoist/mobx';
 import {never, wait} from '@xh/hoist/promise';
-import {Token} from '@xh/hoist/security/Token';
-import {AccessTokenSpec, AuthMethod, TokenMap} from './Types';
+import type {Token} from '@xh/hoist/security/Token';
+import type {AccessTokenSpec, AuthMethod, TokenMap} from './Types';
 import {Timer} from '@xh/hoist/utils/async';
 import {MINUTES, olderThan, ONE_MINUTE, SECONDS} from '@xh/hoist/utils/datetime';
 import {genRandomId, isJSON, logError, throwIf} from '@xh/hoist/utils/js';

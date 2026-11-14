@@ -4,15 +4,11 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {
-    FieldModel,
-    FormContext,
-    FormContextType,
-    BaseFormFieldProps,
-    FormFieldSetContext
-} from '@xh/hoist/cmp/form';
+import type {FormContextType, BaseFormFieldProps} from '@xh/hoist/cmp/form';
+import {FieldModel, FormContext, FormFieldSetContext} from '@xh/hoist/cmp/form';
 import {box, div, span} from '@xh/hoist/cmp/layout';
-import {DefaultHoistProps, hoistCmp, HoistProps, TestSupportProps, uses, XH} from '@xh/hoist/core';
+import type {DefaultHoistProps, HoistProps, TestSupportProps} from '@xh/hoist/core';
+import {hoistCmp, uses, XH} from '@xh/hoist/core';
 import {instanceManager} from '@xh/hoist/core/impl/InstanceManager';
 import {maxSeverity} from '@xh/hoist/data';
 import {fmtDate, fmtDateTime, fmtNumber} from '@xh/hoist/format';
@@ -23,7 +19,8 @@ import {errorIf, getTestId, TEST_ID, throwIf, withDefault} from '@xh/hoist/utils
 import {getLayoutProps, useComposedRefs, useOnMount, useOnUnmount} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import {first, isBoolean, isDate, isEmpty, isFinite, isUndefined} from 'lodash';
-import {Children, cloneElement, ReactNode, useContext, useEffect} from 'react';
+import type {ReactNode} from 'react';
+import {Children, cloneElement, useContext, useEffect} from 'react';
 import './FormField.scss';
 
 export interface FormFieldProps extends BaseFormFieldProps {}

@@ -12,20 +12,15 @@
   3. Plain ASCII punctuation only. Use " - " for in-sentence breaks, never an em dash.
 -->
 
-## 90.0.0-SNAPSHOT - unreleased
+## 91.0.0-SNAPSHOT - unreleased
 
-### 💥 Breaking Changes (upgrade difficulty: 🟠 MEDIUM - CSS variables, mobile styling, `DateInput`)
+### 💥 Breaking Changes (upgrade difficulty: 🟠 MEDIUM - CSS variables)
 
-See [`docs/upgrade-notes/v90-upgrade-notes.md`](docs/upgrade-notes/v90-upgrade-notes.md) for
+See [`docs/upgrade-notes/v91-upgrade-notes.md`](docs/upgrade-notes/v91-upgrade-notes.md) for
 detailed, step-by-step upgrade instructions with before/after code examples.
 
-The changes below are grouped by area. The CSS variable changes affect any app that customizes or
-reads Hoist's CSS variables. The rest apply only to mobile apps or to apps using the named APIs.
-
-#### CSS Variables
-
 * Overhauled Hoist's CSS custom properties onto a simpler, consistently named baseline. Run
-  `docs/codemod/v90/codemod-css-vars.mjs` to migrate app stylesheets and code.
+  `docs/codemod/v91/codemod-css-vars.mjs` to migrate app stylesheets and code.
     * Removed the unprefixed override hooks (e.g. `--grid-bg`, `--pad`). Apps now set the `--xh-*`
       variables directly on `body.xh-app`, which now wins over Hoist's defaults in every theme and
       platform combination. Overrides set on `:root` or `html` no longer have any effect.
@@ -37,50 +32,194 @@ reads Hoist's CSS variables. The rest apply only to mobile apps or to apps using
     * Removed `--xh-chart-bg`, `--xh-tab-border-width`, and `--xh-toolbar-button-bg`, none of which
       had any effect.
 
-#### Mobile - Onsen UI Removal
+### 🐞 Bug Fixes
 
-* Mobile components no longer render Onsen UI custom elements. `Button`, `TextInput`,
-  `NumberInput`, `SearchInput`, `Checkbox`, `SwitchInput`, `Dialog`, `DialogPanel`, `Toast`,
-  `TabContainer` and `MenuButton` menus render plain elements under `xh-` class names. App SCSS
-  that targeted Onsen's class names (`.button`, `.text-input`, `.dialog`, `.tabbar`, `.toast`,
-  `.page__content` and others) or its CSS variables must target Hoist's instead.
-* Removed `@xh/hoist/kit/onsen`, along with the `onsenui` and `react-onsenui` dependencies.
-* Mobile components now render in the app font. Onsen applied the system font to its buttons,
-  dialogs, tabs, menus and toasts, so any of those an app had not styled change typeface.
-* Removed the `modifier` prop from mobile `Button`, `TextInput`, `NumberInput`, `SearchInput`,
-  `Checkbox` and `SwitchInput`. It passed an Onsen modifier string and has no equivalent.
-* Mobile `Checkbox` and `SwitchInput` now put their `testId` on the native `<input>` rather than
-  on a wrapper, as on desktop.
+* Fixed mobile `FormField` ignoring the `--xh-form-field-inline-label-*` custom properties for
+  inline labels - it referenced stale names left behind by an earlier rename.
 
-#### Other
+### ✨ Styles
 
+* Added CSS variables for concerns some components lacked: `--xh-input-border-radius`,
+  `--xh-popup-border-radius`, `--xh-title-font-weight` (with `--xh-panel-title-font-weight`,
+  `--xh-popup-title-font-weight` and `--xh-card-header-font-weight`), `--xh-tab-font-weight` and
+  `--xh-tab-active-indicator-color`.
+* Mobile tabs now read the `--xh-tab-*` variables, and mobile dialogs read `--xh-popup-bg` and
+  `--xh-popup-title-font-family`, as on desktop.
+* Desktop `Select` now rounds its corners to match other inputs (4px, up from 3px). A desktop
+  `TabSwitcher` placed at the bottom now marks its active tab in the active tab color, as one at
+  the top does, rather than in the resting text color.
+
+## 90.1.0 - 2026-11-13
+
+### 🎁 New Features
+
+* Added `CubeGrid` and `CubeGridModel` (`@xh/hoist/cmp/cubegrid`), a grid bound to a Cube View.
+  Create it from an existing `view` or from a `cube` and `query`. It owns its Store and tree-mode
+  `GridModel`, takes the app's `columns` for the fixed region, and appends a column group per pivot
+  path to their right when the query pivots, with collapsible groups, summaries, labels and
+  classes per pivot dimension, one shared width per measure and column config per measure. Pivot
+  options are set through `pivotConfig` and bindable on its `CubeGridPivotModel`, which also lists
+  the dimensions and measures to offer a pivot picker. Column filters bind to the View and
+  re-aggregate, and pivot columns export under path-qualified headers. See the
+  [CubeGrid README](cmp/cubegrid/README.md).
+* Added Cube pivoting - a View can slice its measures across extra dimensions as columns. Set
+  `QueryConfig.pivot` to pivot a Cube View by `dimensions` and `measures`, listed by
+  `Cube.dimensions` and the new `Cube.measures`. Cells are published as synthetic fields on each
+  group row and described by `ViewResult.paths` and `cellFields`, and pivoted Views update
+  incrementally like any other. See `PivotSpec` and the
+  [Cube README](data/cube/README.md#pivoting-with-pivot).
+    * See the Admin Console's Activity Tracking tab for a working example - its new "Pivot by"
+      option pivots the aggregate grid on a chosen dimension.
+* Added `ViewResult.exception`. A View that declines its data with a routine `HoistException`,
+  such as a pivot over `maxPivotPaths`, publishes the exception and empties its result and stores
+  rather than throwing. `CubeGrid` renders an `ErrorMessage` in place of the grid while it does.
+* Every grid-bound field, button and label now takes any `GridLikeModel` via its `gridModel` prop
+  or from context - a `GridModel`, `ZoneGridModel`, `DataViewModel` or `CubeGridModel` - and acts
+  on the `GridModel` behind it. This covers `StoreFilterField`, `GridFindField`, `GridCountLabel`,
+  `ExportButton`, `ColChooserButton`, `ColAutosizeButton`, `ExpandToLevelButton` and the mobile
+  `ExpandCollapseButton`.
+* `StoreFilterField` and `GridFindField` bound to a `DataViewModel` search every field, as a
+  DataView has no visible columns to narrow them.
+* Added `PdfViewer` and `PdfViewerModel` in `@xh/hoist/cmp/pdfviewer`, built on Mozilla's pdf.js.
+  The viewer loads documents from a URL, `FetchOptions`, or a `Blob` / `File` / byte array. It
+  renders pages on demand with selectable text, and has a configurable toolbar for paging, zoom,
+  find, rotation, and download. The model exposes the same actions and state for app-built
+  controls. Apps opt in by adding `pdfjs-dist` to their dependencies - Hoist declares it as an
+  optional peer and loads it on first use, with no bootstrap or build config required.
+* Added two Cube aggregators. `MedianAggregator`, aliased as the `'MEDIAN'` token, takes the
+  median of a measure over every leaf beneath a row. `SumIfSameAggregator` sums a measure only
+  where every leaf with a value shares a second field, such as a currency, and is otherwise null.
+* Added `Icon.magnifyingGlassPlus()` and `Icon.magnifyingGlassMinus()` (aliased as
+  `Icon.zoomIn()` and `Icon.zoomOut()`), plus `Icon.rotateRight()`.
+* Added `ColumnGroupSpec.chooserName` to set a group's name in the desktop column chooser. Use it
+  when `headerName` is a function or element, which the chooser cannot display.
+* Added `Field.shortDisplayName`, a shorter name for headers. A grid column takes it as its default
+  `headerName` unless it sets its own `displayName`, and pivot headers in `CubeGrid` use it. The
+  column chooser, menus and exports keep `displayName`, which it defaults to.
+* Added `StatCard` and `StatCardStrip` to `@xh/hoist/cmp/statcard`, for calling out key figures
+  above a grid or in a detail panel. Callers pass pre-formatted values. A strip lays cards out in
+  equal shares and wraps them before a value is cut short. Set `size: 'large'` for a headline
+  figure. Style through the `--xh-stat-card-*` CSS variables.
+* Added the `ComponentSize` type to `@xh/hoist/core` for a component's `size` prop, with `compact`,
+  `standard` and `large` values. It is a size the developer picks, unlike the user's `SizingMode`.
+* Added the `xh-ledger-align` class to the hidden placeholder that `fmtNumber` adds after positive
+  ledger values, so a component can drop the space where values do not sit in a column.
+
+### 🐞 Bug Fixes
+
+* The grid header's "Pin Column" menu is no longer offered for a column with `movable: false`.
+  Pinning relocates the column, which header and chooser drags already refused for it.
+* Fixed the impersonation bar re-requesting its list of users without end when the server returned
+  no users other than the current one.
+* Fixed `DashCanvas` reverting a layout change when two layout writes landed close together, for
+  example two `autoHeight` views resizing during load. The revert could loop until React error #185.
+* Fixed grids scrolling diagonally on trackpad gestures under AG Grid 36. `AgGrid` now locks each
+  two-axis wheel event to its dominant axis.
+* Fixed `DashCanvas` widgets lagging behind the pointer while dragged or resized. Hoist pins react-grid-layout to 2.2 until a fixed 2.3 release ships.
+
+### 🤖 AI Docs + Tooling
+
+* Fixed the `hoist-ts` CLI and MCP symbol tools giving a file import path for every symbol when run
+  from an app's installed `@xh/hoist`. They now give the package barrel, such as
+  `@xh/hoist/cmp/grid`, as they do in a hoist-react checkout.
+
+### 📚 Libraries
+
+* react-grid-layout `2.3 → 2.2`
+
+### ✨ Styles
+
+* Grid column group headers show their expand/collapse control right after the label rather
+  than at the header's far edge, as a chevron pointing down when expanded and right when
+  collapsed, matching tree rows.
+
+### ⚙️ Typescript API Adjustments
+
+* Added `GridLikeModel`, the interface for a `GridModel` or a model wrapping one. It declares the
+  shared `store`, `empty` and selection members, plus `innerGridModel` to reach the `GridModel`
+  behind it. `GridModel`, `ZoneGridModel`, `DataViewModel` and `CubeGridModel` implement it.
+* Added `GridSelectOptions`, `GridSelectFirstOptions` and `GridEnsureVisibleOptions`, the option
+  types of `GridModel.selectAsync`, `selectFirstAsync` and `ensureSelectionVisibleAsync`. The
+  `ZoneGridModel` and `DataViewModel` delegates now share them, so they accept every option the
+  `GridModel` methods take - previously `ensureVisiblePosition` and `expandParentGroups` were
+  dropped.
+
+## 90.0.0 - 2026-11-02
+
+### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW - `formatConfig`, built-in column specs, `DateInput` props, mobile styling, panel splitter CSS, renderer imports, removed libraries, router5 8)
+See [`docs/upgrade-notes/v90-upgrade-notes.md`](docs/upgrade-notes/v90-upgrade-notes.md) for
+detailed, step-by-step upgrade instructions with before/after code examples.
+
+* Replaced numbro with `Intl.NumberFormat` in `fmtNumber` and the formatters built on it.
+  Removed `NumberFormatOptions.formatConfig`, which took a numbro format. Use `precision`,
+  `zeroPad` and `withCommas` instead. Edge cases such as negative ties and `Infinity` now render
+  differently.
+* The built-in `number`, `date`, `dateTime`, `dateTimeSec`, `time`, `compactDate` and `localDate`
+  column specs now set a `textRenderer` in place of a `renderer`. Their cells are plain, and code
+  that reads their `renderer` finds none.
+* Moved the `*Renderer` factories, such as `numberRenderer` and `compactDateRenderer`, out of
+  `format/FormatNumber.ts` and `format/FormatDate.ts`. Import them from `@xh/hoist/format`.
+* An app that imports a library Hoist no longer depends on, such as `semver` or `store2`, must
+  declare it in its own `package.json`. The Libraries section below lists each removed library.
+* Updated router5 to 8.0. An app that declares its own `router5` must match it, or drop the
+  dependency and type its routes with `HoistRoute` from `@xh/hoist/core`.
 * Desktop `DateInput` now renders its calendar with react-day-picker 10, as the mobile `DateInput`
   already did, and its time picker is Hoist's own 24-hour control. `dayPickerProps` now takes
   react-day-picker 10 props - see the upgrade notes for the renames from v8. Removed
   `timePickerProps`, which took Blueprint `TimePicker` options such as `useAmPm`.
-* Removed the `datePicker` and `DatePicker` exports from `@xh/hoist/kit/blueprint`, along with the
-  `@blueprintjs/datetime` dependency. Use `dayPicker` from `@xh/hoist/kit/react-day-picker`.
-* Removed the `WindowedSelect` and `reactWindowedSelect` exports from `@xh/hoist/kit/react-select`.
-  Use `select({enableWindowed: true})`.
-* Removed `NumberFormatOptions.formatConfig`, which took a numbro format. Use `precision`, `zeroPad`
-  and `withCommas` instead.
+* Removed `datePicker` and `DatePicker` from `@xh/hoist/kit/blueprint`. Render `dayPicker` from
+  `@xh/hoist/kit/react-day-picker` instead.
+* Removed `WindowedSelect` and `reactWindowedSelect` from `@xh/hoist/kit/react-select`. Desktop
+  `Select` windows large option lists itself, so `enableWindowed` works as before.
+* Mobile components now render plain elements under `xh-` class names, in place of Onsen UI custom
+  elements, and `@xh/hoist/kit/onsen` is removed. App SCSS that targeted Onsen's class names or
+  CSS variables must target Hoist's instead.
+* Mobile components now render in the app font, not the system font that Onsen applied.
+* Removed the `modifier` prop from mobile buttons and inputs. It passed an Onsen modifier string and
+  has no equivalent.
+* Mobile `Checkbox` and `SwitchInput` now put their `testId` on the native `<input>` rather than
+  on a wrapper, as on desktop.
+* Desktop panel splitters now use new `--xh-panel-splitter-*` CSS variables and an
+  `.xh-panel-splitter` class, in place of the `--xh-resizable-*` variables and `.xh-resizable-*`
+  classes. The `--xh-resizable-*` variables still style `DashContainer` and `SplitTreeMap`.
+* `PanelConfig.showHeaderCollapseButton` now defaults to `false` on an expanded panel whose
+  splitter shows a collapse button.
 
 ### 🎁 New Features
 
+* Added `Column.textRenderer`, a function that returns a cell's display text. AG Grid writes the
+  text into a plain cell, with no React component. The `numberTextRenderer`, `dateTextRenderer` and
+  sibling factories in `@xh/hoist/format` build one, with `colorSpec` and ledger alignment as cell
+  classes. `Column.resolvedRenderer` returns whichever of `renderer` and `textRenderer` is set.
+* Added `ColorClassSpec`, a `colorSpec` type that holds class names only. Renderer and text renderer
+  factories both accept it, so apps can share one spec between them.
 * Added `GridModel.headerContextMenu`, a context menu shown on right-click of a desktop grid column
   header. By default it sorts, pins, hides and autosizes the clicked column and opens the column
   chooser. Set `false` to show none. Grids that disable `contextMenu` get no header menu by default.
 * Added `sort`, `pinColumn`, `hideColumn` and `autosizeColumn` grid menu tokens, which act on the
   clicked column, and `Column.availableSorts`. The `sort` token offers one item per sort the column
   offers.
-* Added `genRandomId()` to `@xh/hoist/utils/js` for short random alphanumeric IDs.
+* Redesigned desktop panel splitters as a 1px line with a wider invisible grab area. An accent
+  line and collapse button fade in on hover. Splitters also support keyboard resizing,
+  double-click to reset size, and drag-to-collapse.
+* Added a clickable strip for collapsed panels that have no title or icon, so they stay easy to find
+  and expand. A single click on any collapsed panel header now expands the panel.
+* Added `genRandomId()` and `genUuid()` to `@xh/hoist/utils/js`, for short random alphanumeric IDs
+  and version 4 UUIDs. `genUuid()` works on plain HTTP, where browsers omit `crypto.randomUUID()`.
+* Added `htmlButton`, `mark` and `caption` element factories to `@xh/hoist/cmp/layout`.
 * Mobile `TabContainer` now applies `${testId}-switcher` to its switcher and
   `${testId}-switcher-${tabId}` to each switcher button, as on desktop.
 * Added "Purge Connections" buttons to the Admin Console Connection Pool Monitor, to close all
   pooled JDBC connections on one instance or across the cluster. Requires hoist-core v44+.
+* `@debounced` methods now do nothing once their `HoistBase` owner is destroyed, including a call
+  pending at destroy.
 
 ### 🐞 Bug Fixes
 
+* `GridModel.localExport` now exports every cell's raw value, as copy and `exportAsync` do. It had
+  called a column's `agOptions.valueFormatter` with a bare value, which exported blanks.
+* Fixed a column's `agOptions.cellClassRules` replacing its own `cellClassRules`, flags and editable
+  styling. They now add to them, and win for a class that both define.
 * Fixed column group borders not following their columns when reordered or hidden via the column
   chooser.
 * Fixed grid row borders and the row drag drop line stopping at the last column when the columns
@@ -94,17 +233,19 @@ reads Hoist's CSS variables. The rest apply only to mobile apps or to apps using
   debounced or in flight.
 * Fixed `ViewManagerModel` sending overlapping user state writes, which could fail on the server
   and lose a pin, auto-save or current view change. It now sends one write per burst of changes.
-* Fixed mobile `FormField` ignoring the `--xh-form-field-inline-label-*` custom properties for
-  inline labels - it referenced stale names left behind by an earlier rename.
 * Fixed mobile `TabContainer` not rendering a tab with `excludeFromSwitcher`, so activating one
   showed nothing. Such tabs now render as on desktop, only without a switcher button.
 * Fixed mobile `TextInput`, `NumberInput` and `SearchInput` applying `domAttrs` to a wrapper
   element rather than to the `<input>` itself.
 * Fixed `Markdown` rendering "No model found" in place of its content when no Hoist model was in
   context, such as inside another React library's components.
+* Fixed a rare `window is not defined` error at the end of a spec file that uses
+  `@xh/hoist/test-support`.
 
 ### ⚙️ Technical
 
+* Added `getOwn()` to `@xh/hoist/utils/js`, which reads an own property of an object and never one
+  inherited from `Object.prototype`. Use it to look up untrusted keys in a plain-object map.
 * Removed two runtime dependencies with security histories in favor of small Hoist
   implementations, each pinned by a spec recorded from the library it replaces:
     * `semver` - `checkVersion()` and friends compare versions with a numeric parser, with no
@@ -113,55 +254,45 @@ reads Hoist's CSS variables. The rest apply only to mobile apps or to apps using
       with the same iPadOS and Chromium `userAgentData` checks. Smart TVs and other agents that
       are neither phone nor tablet now count as desktop, where before none of `XH.isPhone`,
       `isTablet` and `isDesktop` was true.
-* Desktop and mobile `DateInput` build their calendar props with one shared helper and share one
-  react-day-picker theme, in `@xh/hoist/kit/react-day-picker`, for light and dark modes. Dropping
-  Blueprint's date picker also drops the second copies of date-fns and react-day-picker it pulled
-  into every app.
-* Desktop `Select` now windows large option lists with react-window 2 directly, dropping
-  react-windowed-select and the second copy of react-window it pinned into every app.
 * `LocalStorageService` and `SessionStorageService` now read and write browser storage directly.
   Keys and JSON values are stored exactly as before.  Removed the unused `isFake` getter - when
   storage is unavailable the service logs a warning and holds values in memory, as before.
-* Removed Onsen UI from the mobile toolkit, with the `@xh/hoist/kit/onsen` wrappers. Each mobile
-  component now owns its DOM and styles.
+* Barrels of type-only modules now use `export type *`, so SWC no longer emits a runtime re-export
+  of them. ESLint also requires `import type` and `export type` for all type-only imports and
+  exports, as Toolbox and hoist-chat-kit already do.
 
 ### ✨ Styles
 
-* Added CSS variables for concerns some components lacked: `--xh-input-border-radius`,
-  `--xh-popup-border-radius`, `--xh-title-font-weight` (with `--xh-panel-title-font-weight`,
-  `--xh-popup-title-font-weight` and `--xh-card-header-font-weight`), `--xh-tab-font-weight` and
-  `--xh-tab-active-indicator-color`.
-* Mobile tabs now read the `--xh-tab-*` variables, and mobile dialogs read `--xh-popup-bg` and
-  `--xh-popup-title-font-family`, as on desktop.
-* Desktop `Select` now rounds its corners to match other inputs (4px, up from 3px). A desktop
-  `TabSwitcher` placed at the bottom now marks its active tab in the active tab color, as one at
-  the top does, rather than in the resting text color.
+* Moved the selected grid row's text color from its cells to the row. A cell with its own color
+  class, such as a text renderer's sign color, now keeps that color when its row is selected.
 * Mobile apps no longer load Onsen UI's stylesheet or its icon fonts. Touch-device defaults that
-  the Onsen stylesheet supplied - no tap highlight, no focus rings on controls, `touch-action:
-  manipulation`, heading sizes, and a body sized to the viewport - are now set by the mobile
-  `AppContainer` stylesheet.
+  the Onsen stylesheet supplied are now set by the mobile `AppContainer` stylesheet.
 * Mobile `Dialog` and `DialogPanel` render into a portal on the document body, so they cover the
   viewport wherever they sit in the component tree.
 
 ### 📚 Libraries
 
-* router5 `7.0 → 8.0`
-* router5-plugin-browser `7.0 → 8.0`
-* mobx `7.0 → 7.1` - `toJS` now includes `@observable accessor` fields, which it previously left out
-* react-window `2.3 → 2.4`
-* react-windowed-select `removed`
-* semver `removed`
-* ua-parser-js `removed`
-* http-status-codes `removed`
-* inflection `added` - replaces lodash-inflection behind `pluralize`, `singularize` and `ordinalize`
-* lodash-inflection `removed`
-* short-unique-id `removed`
-* store2 `removed`
-* numbro `removed`
+* @auth0/auth0-spa-js `2.28 → 2.29`
+* @azure/msal-browser `5.25 → 5.27`
+* @azure/msal-common `16.14 → 16.15`
 * @blueprintjs/datetime `removed`
+* core-js `3.50 → 3.51`
 * date-fns `removed`
+* http-status-codes `removed`
+* inflection `added @ 3.0` - replaces lodash-inflection behind `pluralize`, `singularize` and `ordinalize`
+* lodash-inflection `removed`
+* mobx `7.0 → 7.1` - `toJS` now includes `@observable accessor` fields, which it previously left out
+* numbro `removed`
 * onsenui `removed`
 * react-onsenui `removed`
+* react-window `2.3 → 2.5`
+* react-windowed-select `removed`
+* router5 `7.0 → 8.0`
+* router5-plugin-browser `7.0 → 8.0`
+* semver `removed`
+* short-unique-id `removed`
+* store2 `removed`
+* ua-parser-js `removed`
 
 
 ## 89.3.1 - 2026-10-21
@@ -212,6 +343,9 @@ reads Hoist's CSS variables. The rest apply only to mobile apps or to apps using
   `items` submenu. Items a `prepareFn` adds now also receive the tab in their `actionFn`.
 * Fixed `XH.safeDestroy()` stopping at the first `destroy()` that threw, which left the remaining
   objects - and the rest of a model's managed children - undestroyed. It now logs the error.
+* Fixed a grouped `Grid` showing its grouped column again on any column state change, such as a
+  resize, an autosize or a view restore. A header drag while grouped also saved the column as
+  hidden, so it stayed hidden after ungrouping.
 
 ### ⚙️ Technical
 
@@ -244,19 +378,10 @@ reads Hoist's CSS variables. The rest apply only to mobile apps or to apps using
 * Fixed desktop `NumberInput` with `min` or `max` rendering blank on mount when its formatted value
   was not a plain number, as with `displayWithCommas` and a value of 1,000 or more, or a
   `valueLabel`. Changing `min` or `max` on such an input could also set its value to 0.
-* Fixed a grouped `Grid` showing its grouped column again on any column state change, such as a
-  resize, an autosize or a view restore. A header drag while grouped also saved the column as
-  hidden, so it stayed hidden after ungrouping.
 * Fixed `onShowLazy` tabs and other managed refresh contexts replaying a missed auto-refresh as a
   manual refresh when shown. The replay now stays an auto-refresh unless a missed refresh was manual.
 * Fixed a model created with `creates()` re-running `onLinked()` on every render when its component
   had no Hoist model above it, as in a component test rendered at the root.
-
-### ⚙️ Technical
-
-* `fmtNumber` and the formatters built on it now format digits with a cached `Intl.NumberFormat` in
-  place of numbro. This speeds up bulk formatting such as all-rows grid autosizing. Ordinary values
-  render as before. Edge cases such as negative ties and `Infinity` changed - see the upgrade notes.
 
 ### 🤖 AI Docs + Tooling
 

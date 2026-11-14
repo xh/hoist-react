@@ -4,14 +4,14 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {
+import type {
     ColChooserConfig,
     ColChooserMode,
     ColumnState,
     GridModel,
     IColChooserModel
 } from '@xh/hoist/cmp/grid';
-import {ColChooserOptionsModel} from '@xh/hoist/appcontainer/ColChooserOptionsModel';
+import type {ColChooserOptionsModel} from '@xh/hoist/appcontainer/ColChooserOptionsModel';
 import {ColumnGroup} from '@xh/hoist/cmp/grid/columns/ColumnGroup';
 import type {ColumnOrGroup} from '@xh/hoist/cmp/grid/Types';
 import {HoistModel, managed, XH} from '@xh/hoist/core';

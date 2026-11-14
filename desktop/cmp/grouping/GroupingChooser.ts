@@ -18,8 +18,10 @@ import {
     vbox,
     vframe
 } from '@xh/hoist/cmp/layout';
-import {hoistCmp, Side, useLocalModel, uses} from '@xh/hoist/core';
-import {button, ButtonProps} from '@xh/hoist/desktop/cmp/button';
+import type {Side} from '@xh/hoist/core';
+import {hoistCmp, useLocalModel, uses} from '@xh/hoist/core';
+import type {ButtonProps} from '@xh/hoist/desktop/cmp/button';
+import {button} from '@xh/hoist/desktop/cmp/button';
 import {select} from '@xh/hoist/desktop/cmp/input';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import '@xh/hoist/desktop/register';
@@ -32,7 +34,7 @@ import {splitLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import {isEmpty, isNil} from 'lodash';
 import './GroupingChooser.scss';
-import {ReactNode} from 'react';
+import type {ReactNode} from 'react';
 
 export interface GroupingChooserProps extends ButtonProps<GroupingChooserModel> {
     /** Title for value-editing portion of popover, or null to suppress. */

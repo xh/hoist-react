@@ -7,7 +7,8 @@
 
 import type {DashViewModel} from '@xh/hoist/desktop/cmp/dash'; // Import type only
 import {throwIf} from '@xh/hoist/utils/js';
-import {PersistenceProvider, PersistenceProviderConfig} from '../PersistenceProvider';
+import type {PersistenceProviderConfig} from '../PersistenceProvider';
+import {PersistenceProvider} from '../PersistenceProvider';
 
 /**
  * PersistenceProvider that stores state within a DashViewModel.

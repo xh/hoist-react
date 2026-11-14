@@ -5,8 +5,9 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {webSocketIndicator} from '@xh/hoist/cmp/websocket';
-import {AppOptionSpec, HoistModel, HoistRoute, InitContext, Thunkable} from './';
-import {ReactNode} from 'react';
+import type {AppOptionSpec, HoistRoute, InitContext, Thunkable} from './';
+import {HoistModel} from './';
+import type {ReactNode} from 'react';
 /**
  * Specialized base class for defining the central model for a Hoist app as specified by its
  * See the {@link AppSpec.modelClass} config, which should reference a concrete implementation class

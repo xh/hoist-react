@@ -7,14 +7,17 @@
 
 import {grid} from '@xh/hoist/cmp/grid';
 import {fragment} from '@xh/hoist/cmp/layout';
-import {hoistCmp, HoistProps, PlainObject, uses} from '@xh/hoist/core';
-import {MaskProps} from '@xh/hoist/cmp/mask';
-import {panel, PanelProps} from '@xh/hoist/desktop/cmp/panel';
+import type {HoistProps, PlainObject} from '@xh/hoist/core';
+import {hoistCmp, uses} from '@xh/hoist/core';
+import type {MaskProps} from '@xh/hoist/cmp/mask';
+import type {PanelProps} from '@xh/hoist/desktop/cmp/panel';
+import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import '@xh/hoist/desktop/register';
 import {getTestId} from '@xh/hoist/utils/js';
 import {isArray} from 'lodash';
-import {cloneElement, isValidElement, ReactElement, ReactNode} from 'react';
+import type {ReactElement, ReactNode} from 'react';
+import {cloneElement, isValidElement} from 'react';
 
 import {restForm} from './impl/RestForm';
 import {restGridToolbar} from './impl/RestGridToolbar';

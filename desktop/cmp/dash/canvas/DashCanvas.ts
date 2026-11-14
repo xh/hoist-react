@@ -15,20 +15,14 @@ import {correctBounds} from 'react-grid-layout/core';
 import {GridBackground, type GridBackgroundProps, wrapCompactor} from 'react-grid-layout/extras';
 import {useComposedRefs, useOnResize} from '@xh/hoist/utils/react';
 import {div, vbox, vspacer} from '@xh/hoist/cmp/layout';
-import {
-    elementFactory,
-    hoistCmp,
-    HoistProps,
-    refreshContextView,
-    TestSupportProps,
-    uses
-} from '@xh/hoist/core';
+import type {HoistProps, TestSupportProps} from '@xh/hoist/core';
+import {elementFactory, hoistCmp, refreshContextView, uses} from '@xh/hoist/core';
 import {dashCanvasAddViewButton} from '@xh/hoist/desktop/cmp/button/DashCanvasAddViewButton';
 import '@xh/hoist/desktop/register';
 import {Classes, overlay, showContextMenu} from '@xh/hoist/kit/blueprint';
 import {consumeEvent, mergeDeep, TEST_ID} from '@xh/hoist/utils/js';
 import classNames from 'classnames';
-import {useCallback, useState} from 'react';
+import {useCallback, useEffect, useRef, useState} from 'react';
 import {DashCanvasModel} from './DashCanvasModel';
 import {dashCanvasContextMenu} from './impl/DashCanvasContextMenu';
 import {dashCanvasView} from './impl/DashCanvasView';
@@ -73,6 +67,7 @@ export const [DashCanvas, dashCanvas] = hoistCmp.withFactory<DashCanvasProps>({
             initialWidthMeasured = width != null,
             // Make RGL's rendered height available to the grid background.
             rglHeightRef = useOnResize(rect => (model.rglHeight = rect.height), {debounce: 100}),
+            onLayoutChange = useRglLayoutChangeHandler(model),
             defaultDroppedItemDims = {
                 w: Math.floor(model.columns / 3),
                 h: Math.floor(model.columns / 3)
@@ -111,7 +106,7 @@ export const [DashCanvas, dashCanvas] = hoistCmp.withFactory<DashCanvasProps>({
                         onDrop: (layout: LayoutItem[], layoutItem: LayoutItem, evt: Event) =>
                             model.onDrop(layout, layoutItem, evt),
                         compactor,
-                        onLayoutChange: (layout: LayoutItem[]) => model.onRglLayoutChange(layout),
+                        onLayoutChange,
                         onResizeStart: () => (model.isResizing = true),
                         onResizeStop: () => (model.isResizing = false)
                     },
@@ -232,6 +227,29 @@ const onContextMenu = (e, model) => {
         );
     }
 };
+
+/**
+ * Relay RGL's layout reports to the model, skipping any that predate the model's latest layout:
+ * those made in a commit that changed the `layout` prop (RGL reports what it rendered before
+ * syncing to it), and those arriving after the model was written again. Adopting either reverts
+ * the model's write and can loop until React error #185. RGL reports the synced layout next commit,
+ * unless syncing leaves its layout unchanged - then the model keeps its uncompacted write.
+ */
+function useRglLayoutChangeHandler(model: DashCanvasModel) {
+    const {layout} = model,
+        committedLayoutRef = useRef(layout);
+
+    // Runs after RGL's own effects, so they see the previous commit's layout here.
+    useEffect(() => {
+        committedLayoutRef.current = layout;
+    });
+
+    return (rglLayout: LayoutItem[]) => {
+        if (layout === committedLayoutRef.current && layout === model.layout) {
+            model.onRglLayoutChange(rglLayout);
+        }
+    };
+}
 
 /**
  * Track the content width of the canvas - measured on attach (before first paint, and even in a

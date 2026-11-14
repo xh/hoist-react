@@ -4,12 +4,15 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {RowClickedEvent, RowDoubleClickedEvent, RowHeightParams} from '@xh/hoist/kit/ag-grid';
-import {
+import type {RowClickedEvent, RowDoubleClickedEvent, RowHeightParams} from '@xh/hoist/kit/ag-grid';
+import type {
     ColumnRenderer,
     ColumnSpec,
     GridConfig,
-    GridModel,
+    GridEnsureVisibleOptions,
+    GridLikeModel,
+    GridSelectFirstOptions,
+    GridSelectOptions,
     GroupRowRenderer,
     RowClassFn,
     RowClassRuleFn,
@@ -17,8 +20,10 @@ import {
     GridContextMenuSpec,
     GridGroupSortFn
 } from '@xh/hoist/cmp/grid';
-import {HoistModel, LoadSpec, managed, PlainObject, Some} from '@xh/hoist/core';
-import {
+import {GridModel} from '@xh/hoist/cmp/grid';
+import type {LoadSpec, PlainObject, Some} from '@xh/hoist/core';
+import {HoistModel, managed} from '@xh/hoist/core';
+import type {
     Store,
     StoreConfig,
     StoreRecord,
@@ -30,7 +35,7 @@ import {
 import {bindable, bindableRef} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
 import {isFunction, isNumber} from 'lodash';
-import {ReactNode} from 'react';
+import type {ReactNode} from 'react';
 
 /**
  * Configuration for a {@link DataViewModel} - a list-style data component that renders
@@ -151,7 +156,7 @@ export type ItemHeightFn = (params: {
  * @see DataView
  * @see DataViewConfig
  */
-export class DataViewModel extends HoistModel {
+export class DataViewModel extends HoistModel implements GridLikeModel {
     @managed gridModel: GridModel;
     @bindableRef accessor itemHeight: number | ItemHeightFn;
     @bindable accessor groupRowHeight: number;
@@ -235,6 +240,10 @@ export class DataViewModel extends HoistModel {
     get store() {
         return this.gridModel.store;
     }
+    get innerGridModel(): GridModel {
+        return this.gridModel;
+    }
+
     get empty() {
         return this.gridModel.empty;
     }
@@ -260,10 +269,7 @@ export class DataViewModel extends HoistModel {
         return this.gridModel.sortBy;
     }
 
-    selectAsync(
-        records: Some<StoreRecordOrId>,
-        opts?: {ensureVisible?: boolean; clearSelection?: boolean}
-    ) {
+    selectAsync(records: Some<StoreRecordOrId>, opts?: GridSelectOptions) {
         return this.gridModel.selectAsync(records, opts);
     }
 
@@ -271,12 +277,12 @@ export class DataViewModel extends HoistModel {
         return this.gridModel.preSelectFirstAsync();
     }
 
-    selectFirstAsync(opts: {ensureVisible?: boolean} = {}) {
+    selectFirstAsync(opts?: GridSelectFirstOptions) {
         return this.gridModel.selectFirstAsync(opts);
     }
 
-    ensureSelectionVisibleAsync() {
-        return this.gridModel.ensureSelectionVisibleAsync();
+    ensureSelectionVisibleAsync(opts?: GridEnsureVisibleOptions) {
+        return this.gridModel.ensureSelectionVisibleAsync(opts);
     }
 
     override doLoadAsync(loadSpec: LoadSpec) {

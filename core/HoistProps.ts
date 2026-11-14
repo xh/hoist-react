@@ -4,9 +4,9 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {HoistModel} from '@xh/hoist/core';
-import {Property} from 'csstype';
-import {CSSProperties, HTMLAttributes, LegacyRef, ReactNode, Ref} from 'react';
+import type {HoistModel} from '@xh/hoist/core';
+import type {Property} from 'csstype';
+import type {CSSProperties, HTMLAttributes, LegacyRef, ReactNode, Ref} from 'react';
 
 /**
  * Props interface for Hoist Components.

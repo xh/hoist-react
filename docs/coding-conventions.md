@@ -187,8 +187,8 @@ import {observable} from 'mobx';
 
 ### Type Imports
 
-Use `import type` for type-only imports that are erased at compile time. This can be a standalone
-`import type` statement or inline `type` qualifiers within a regular import:
+Use `import type` for type-only imports that are erased at compile time. ESLint enforces this, and
+`eslint --fix` writes a separate `import type` statement. Inline `type` qualifiers also pass:
 
 ```typescript
 // Standalone type import

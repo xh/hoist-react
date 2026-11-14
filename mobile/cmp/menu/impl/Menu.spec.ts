@@ -4,7 +4,8 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {HoistModel, MenuItemLike} from '@xh/hoist/core';
+import type {MenuItemLike} from '@xh/hoist/core';
+import {HoistModel} from '@xh/hoist/core';
 import {menu} from '@xh/hoist/mobile/cmp/menu/impl/Menu';
 import {initTestAppAsync} from '@xh/hoist/test-support';
 import {fireEvent, render, screen, waitFor} from '@testing-library/react';

@@ -5,7 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
-import {HoistService, HoistModel} from '../';
+import type {HoistService, HoistModel} from '../';
 import {isNil} from 'lodash';
 import type {Cube, Store, View} from '@xh/hoist/data';
 import {observableShallow} from '@xh/hoist/mobx';

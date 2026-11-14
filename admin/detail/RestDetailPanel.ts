@@ -5,16 +5,18 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {valOrNa} from '@xh/hoist/admin/AdminUtils';
-import {form, FormModel} from '@xh/hoist/cmp/form';
+import type {FormModel} from '@xh/hoist/cmp/form';
+import {form} from '@xh/hoist/cmp/form';
 import {filler, placeholder, vframe} from '@xh/hoist/cmp/layout';
-import {creates, hoistCmp, HoistProps, PersistOptions} from '@xh/hoist/core';
-import {StoreRecord} from '@xh/hoist/data';
+import type {HoistProps, PersistOptions} from '@xh/hoist/core';
+import {creates, hoistCmp} from '@xh/hoist/core';
+import type {StoreRecord} from '@xh/hoist/data';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {Icon} from '@xh/hoist/icon';
 import {startCase} from 'lodash';
-import {ReactElement, ReactNode} from 'react';
+import type {ReactElement, ReactNode} from 'react';
 import {RestDetailModel} from './RestDetailModel';
 
 export interface RestDetailPanelProps extends HoistProps<RestDetailModel> {

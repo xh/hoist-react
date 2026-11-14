@@ -4,15 +4,17 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {managed, PlainObject, Thunkable, XH} from '@xh/hoist/core';
-import {ValidationResult, ValidationState} from '@xh/hoist/data';
+import type {PlainObject, Thunkable} from '@xh/hoist/core';
+import {managed, XH} from '@xh/hoist/core';
+import type {ValidationResult, ValidationState} from '@xh/hoist/data';
 import {action, computed, observableRef, bindableRef} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
 import {clone, defaults, isEqual, flatMap, isArray, partition, without} from 'lodash';
 import {executeIfFunction, withDefault} from '../../../utils/js';
 import {FormModel} from '../FormModel';
-import {BaseFieldModel, BaseFieldConfig} from './BaseFieldModel';
-import {FormConfig} from '../FormModel';
+import type {BaseFieldConfig} from './BaseFieldModel';
+import {BaseFieldModel} from './BaseFieldModel';
+import type {FormConfig} from '../FormModel';
 
 export interface SubformsFieldConfig extends BaseFieldConfig {
     /**

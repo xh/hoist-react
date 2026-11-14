@@ -4,11 +4,12 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {HoistModel, Theme, XH} from '@xh/hoist/core';
+import type {Theme} from '@xh/hoist/core';
+import {HoistModel, XH} from '@xh/hoist/core';
 import {action, observable} from '@xh/hoist/mobx';
 
 /**
- * Size variables that held unitless numbers before v90 and now require a length (e.g. `8px`).
+ * Size variables that held unitless numbers before v91 and now require a length (e.g. `8px`).
  * Checked in development mode to catch app overrides left in the old form, which silently break
  * every size derived from them.
  */
@@ -48,6 +49,8 @@ const LENGTH_VARS = [
     '--xh-input-font-size',
     '--xh-input-label-font-size',
     '--xh-panel-border-width',
+    '--xh-panel-collapsed-strip-size',
+    '--xh-panel-splitter-hit-size',
     '--xh-panel-title-font-size',
     '--xh-popup-border-width',
     '--xh-popup-title-font-size',
@@ -174,7 +177,7 @@ export class ThemeModel extends HoistModel {
 
     /**
      * Warn about any size variable resolving to a bare number - almost always an app override not
-     * yet migrated to v90, where these variables carry units. Checks the current theme only.
+     * yet migrated to v91, where these variables carry units. Checks the current theme only.
      */
     private warnOnUnitlessLengthVars() {
         const style = window.getComputedStyle(document.body),
@@ -183,9 +186,9 @@ export class ThemeModel extends HoistModel {
             );
         if (unitless.length) {
             this.logWarn(
-                `CSS size variables must include a unit as of Hoist v90 (e.g. '8px', not '8'). ` +
+                `CSS size variables must include a unit as of Hoist v91 (e.g. '8px', not '8'). ` +
                     `Unitless values found for: ${unitless.join(', ')}. ` +
-                    `See docs/upgrade-notes/v90-upgrade-notes.md.`
+                    `See docs/upgrade-notes/v91-upgrade-notes.md.`
             );
         }
     }

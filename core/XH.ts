@@ -4,13 +4,13 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {RouterModel} from '@xh/hoist/appcontainer/RouterModel';
-import {HoistAuthModel} from '@xh/hoist/core/HoistAuthModel';
-import {Cube, Store, View} from '@xh/hoist/data';
+import type {RouterModel} from '@xh/hoist/appcontainer/RouterModel';
+import type {HoistAuthModel} from '@xh/hoist/core/HoistAuthModel';
+import type {Cube, Store, View} from '@xh/hoist/data';
 import {Icon} from '@xh/hoist/icon';
 import {action} from '@xh/hoist/mobx';
 import {never} from '@xh/hoist/promise';
-import {
+import type {
     AlertBannerService,
     AutoRefreshService,
     ChangelogService,
@@ -35,22 +35,23 @@ import {
     TraceService,
     WebSocketService
 } from '@xh/hoist/svc';
-import {genRandomId, getLogLevel, logError, LogLevel, setLogLevel} from '@xh/hoist/utils/js';
+import type {LogLevel} from '@xh/hoist/utils/js';
+import {genRandomId, getLogLevel, logError, setLogLevel} from '@xh/hoist/utils/js';
 import {camelCase, flatten, isString, uniqueId} from 'lodash';
-import {Router, State} from 'router5';
-import {SetOptional} from 'type-fest';
+import type {Router, State} from 'router5';
+import type {SetOptional} from 'type-fest';
 import {AppContainerModel} from '../appcontainer/AppContainerModel';
-import {BannerModel} from '../appcontainer/BannerModel';
-import {ToastModel} from '../appcontainer/ToastModel';
+import type {BannerModel} from '../appcontainer/BannerModel';
+import type {ToastModel} from '../appcontainer/ToastModel';
 import '../styles/XH.scss';
-import {Exception, HoistException} from '../exception';
+import type {HoistException} from '../exception';
+import {Exception} from '../exception';
 
-import {
+import type {
     AppSpec,
     AppState,
     AppSuspendData,
     BannerSpec,
-    ExceptionHandler,
     ExceptionHandlerOptions,
     CallContextLike,
     HoistAppModel,
@@ -69,9 +70,10 @@ import {
     ToastSpec,
     TrackOptions
 } from './';
+import {ExceptionHandler} from './';
 import {installServicesAsync} from './impl/InstallServices';
 import {instanceManager} from './impl/InstanceManager';
-import {HoistModel, ModelSelector, RefreshContextModel} from './model';
+import type {HoistModel, ModelSelector, RefreshContextModel} from './model';
 
 export const MIN_HOIST_CORE_VERSION = '40.5.0';
 

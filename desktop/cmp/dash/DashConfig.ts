@@ -5,10 +5,10 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
-import {MenuItemLike, PersistOptions} from '@xh/hoist/core';
-import {DashViewState} from '@xh/hoist/desktop/cmp/dash/DashViewModel';
-import {DashViewSpec} from '@xh/hoist/desktop/cmp/dash/DashViewSpec';
-import {SetOptional} from 'type-fest';
+import type {MenuItemLike, PersistOptions} from '@xh/hoist/core';
+import type {DashViewState} from '@xh/hoist/desktop/cmp/dash/DashViewModel';
+import type {DashViewSpec} from '@xh/hoist/desktop/cmp/dash/DashViewSpec';
+import type {SetOptional} from 'type-fest';
 
 /**
  * Base interface for {@link DashCanvasConfig} and {@link DashContainerConfig}.

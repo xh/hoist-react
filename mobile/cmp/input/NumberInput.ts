@@ -4,13 +4,8 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {
-    getPasswordManagerAttrs,
-    HoistInputModel,
-    HoistInputProps,
-    PasswordManagerSupportProps,
-    useHoistInputModel
-} from '@xh/hoist/cmp/input';
+import type {HoistInputProps, PasswordManagerSupportProps} from '@xh/hoist/cmp/input';
+import {getPasswordManagerAttrs, HoistInputModel, useHoistInputModel} from '@xh/hoist/cmp/input';
 import {
     addCommasWhileEditing,
     getCaretSkippingCommas,
@@ -18,8 +13,10 @@ import {
     skipCommaOnDelete
 } from '@xh/hoist/cmp/input/impl/LiveCommas';
 import {hbox, input} from '@xh/hoist/cmp/layout';
-import {hoistCmp, HoistProps, LayoutProps, StyleProps} from '@xh/hoist/core';
-import {fmtNumber, NumericPrecision, Precision, ZeroPad} from '@xh/hoist/format';
+import type {HoistProps, LayoutProps, StyleProps} from '@xh/hoist/core';
+import {hoistCmp} from '@xh/hoist/core';
+import type {NumericPrecision, Precision, ZeroPad} from '@xh/hoist/format';
+import {fmtNumber} from '@xh/hoist/format';
 import '@xh/hoist/mobile/register';
 import {wait} from '@xh/hoist/promise';
 import {TEST_ID, throwIf, withDefault} from '@xh/hoist/utils/js';

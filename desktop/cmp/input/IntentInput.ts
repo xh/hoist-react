@@ -4,9 +4,11 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {HoistInputModel, HoistInputProps, useHoistInputModel} from '@xh/hoist/cmp/input';
-import {div} from '@xh/hoist/cmp/layout';
-import {elementFactory, hoistCmp, HoistProps, Intent} from '@xh/hoist/core';
+import type {HoistInputProps} from '@xh/hoist/cmp/input';
+import {HoistInputModel, useHoistInputModel} from '@xh/hoist/cmp/input';
+import {div, htmlButton} from '@xh/hoist/cmp/layout';
+import type {HoistProps, Intent} from '@xh/hoist/core';
+import {hoistCmp} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
 import {computed} from '@xh/hoist/mobx';
@@ -14,7 +16,7 @@ import {getTestId, TEST_ID} from '@xh/hoist/utils/js';
 import {getLayoutProps, getNonLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import {capitalize, filter, isEmpty} from 'lodash';
-import {KeyboardEvent} from 'react';
+import type {KeyboardEvent} from 'react';
 import './IntentInput.scss';
 
 export const INTENTS: Intent[] = ['primary', 'success', 'warning', 'danger'];
@@ -67,8 +69,6 @@ export const [IntentInput, intentInput] = hoistCmp.withFactory<IntentInputProps>
 //-----------------------
 // Implementation
 //-----------------------
-const buttonEl = elementFactory('button');
-
 class IntentInputModel extends HoistInputModel {
     override xhImpl = true;
 
@@ -170,7 +170,7 @@ const cmp = hoistCmp.factory<IntentInputModel>(({model, className, ...props}, re
                 isNull = intent == null,
                 name = isNull ? 'None' : capitalize(intent);
 
-            return buttonEl({
+            return htmlButton({
                 key: intent ?? 'none',
                 type: 'button',
                 className: classNames(

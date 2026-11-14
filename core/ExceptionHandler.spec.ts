@@ -4,14 +4,8 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {
-    ExceptionHandler,
-    ExceptionHandlerOptions,
-    HoistModel,
-    LoadSpec,
-    ToastSpec,
-    XH
-} from '@xh/hoist/core';
+import type {ExceptionHandlerOptions, LoadSpec, ToastSpec} from '@xh/hoist/core';
+import {ExceptionHandler, HoistModel, XH} from '@xh/hoist/core';
 import type {HoistException} from '@xh/hoist/exception';
 import {hoistCore, hoistError, initTestAppAsync, server, xhUrl} from '@xh/hoist/test-support';
 import {delay, http, HttpResponse} from 'msw';

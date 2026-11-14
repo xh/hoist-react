@@ -19,6 +19,13 @@ updates:
     schedule:
       interval: "weekly"
     open-pull-requests-limit: 5
+    # Skip react-grid-layout 2.3.0, which makes DashCanvas drag lag the pointer
+    # (upstream react-grid-layout/react-grid-layout#2303). Hoist pins ~2.2.4 until a
+    # fixed release ships. Ignoring only 2.3.0 still lets a later fix through.
+    # Remove this entry when unpinning - see xh/hoist-react#4951.
+    ignore:
+      - dependency-name: "react-grid-layout"
+        versions: ["2.3.0"]
     # Group routine version bumps to keep the PR volume manageable. Major
     # bumps are excluded so they always surface as their own PR for review.
     #

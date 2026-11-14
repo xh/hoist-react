@@ -5,8 +5,9 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {XH} from '@xh/hoist/core';
-import {switchInput, SwitchInputProps} from '@xh/hoist/desktop/cmp/input';
-import {FormFieldProps} from '@xh/hoist/desktop/cmp/form';
+import type {SwitchInputProps} from '@xh/hoist/desktop/cmp/input';
+import {switchInput} from '@xh/hoist/desktop/cmp/input';
+import type {FormFieldProps} from '@xh/hoist/desktop/cmp/form';
 import '@xh/hoist/desktop/register';
 
 interface AutoRefreshAppOptionSpec {

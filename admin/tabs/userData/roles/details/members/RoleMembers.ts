@@ -6,14 +6,15 @@
  */
 import {grid} from '@xh/hoist/cmp/grid';
 import {filler, span} from '@xh/hoist/cmp/layout';
-import {creates, hoistCmp, PlainObject} from '@xh/hoist/core';
+import type {PlainObject} from '@xh/hoist/core';
+import {creates, hoistCmp} from '@xh/hoist/core';
 import {gridFindField} from '@xh/hoist/desktop/cmp/grid';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import './BaseMembers.scss';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {filter, keyBy} from 'lodash';
-import {ReactNode} from 'react';
-import {HoistRole} from '../../Types';
+import type {ReactNode} from 'react';
+import type {HoistRole} from '../../Types';
 import {BaseMembersModel} from './BaseMembersModel';
 
 export const roleMembers = hoistCmp.factory({
