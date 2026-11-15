@@ -33,6 +33,7 @@ interacts with Hoist.
 | `/cmp/cubegrid/` | 3 | CubeGrid - Cube View as a tree grid with app columns, plus pivot paths as nested column groups, docked summaries, per-measure column config | [Done](../../cmp/cubegrid/README.md) |
 | `/cmp/pdfviewer/` | 6 | PdfViewer - PDF display built on pdf.js, with sources, toolbar tokens, model API, and styling; platform toolbars in `/desktop/cmp/pdfviewer/` and `/mobile/cmp/pdfviewer/` | [Done](../../cmp/pdfviewer/README.md) |
 | `/cmp/sparkline/` | 3 | Sparkline - small inline trend chart in plain SVG, with StatCard and grid column usage, the shared scale, and CSS variables | [Done](../../cmp/sparkline/README.md) |
+| `/cmp/itemlist/` | 3 | ItemList - short, static list of entries with a title, description, icon and trailing detail; when to use it or DataView | [Done](../../cmp/itemlist/README.md) |
 | `/mobile/` | 131 | Mobile-specific components and app container | [Done](../../mobile/README.md) |
 
 ## Priority 3 - Key Utilities

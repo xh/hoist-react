@@ -39,6 +39,10 @@
   sets none of them renders as before.
 * `CardModel.collapsible` is now observable and settable after construction. Setting it false
   expands a collapsed card.
+* Added `ItemList` to `@xh/hoist/cmp/itemlist`, a short, static list of `entries` with a title,
+  description, icon and trailing detail each, for a handful of alerts or search results. It needs
+  no Store or model and sizes each entry to its content. Use `DataView` for long lists. See the
+  [ItemList README](cmp/itemlist/README.md).
 
 ## 90.1.0 - 2026-11-13
 
