@@ -1,0 +1,184 @@
+/*
+ * This file belongs to Hoist, an application development toolkit
+ * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
+ *
+ * Copyright © 2026 Extremely Heavy Industries Inc.
+ */
+import classNames from 'classnames';
+import {clamp, isFinite, isNumber, isString} from 'lodash';
+import {useId} from 'react';
+import type {ReactNode} from 'react';
+
+import {div, span} from '@xh/hoist/cmp/layout';
+import {hoistCmp} from '@xh/hoist/core';
+import type {
+    DomAttrsProps,
+    HoistProps,
+    Intent,
+    LayoutProps,
+    TestSupportProps
+} from '@xh/hoist/core';
+import {mergeDeep, TEST_ID} from '@xh/hoist/utils/js';
+import {splitLayoutProps} from '@xh/hoist/utils/react';
+
+import './ProgressBar.scss';
+
+export interface ProgressBarProps extends HoistProps, LayoutProps, TestSupportProps, DomAttrsProps {
+    /**
+     * Value to show, from `min` to `max`. A value outside that range draws an empty or a full bar.
+     * Omit it, or pass null, for an indeterminate bar: an animated fill for work of unknown
+     * length. The animation stops for users who ask their system for reduced motion.
+     */
+    value?: number;
+
+    /** Value of an empty bar. Default 0. */
+    min?: number;
+
+    /** Value of a full bar. Default 100. */
+    max?: number;
+
+    /** Caption shown above the bar, naming what it measures. Also the bar's accessible name. */
+    label?: ReactNode;
+
+    /**
+     * Figure shown above the bar, opposite the label, pre-formatted by the caller. For example
+     * `72 of 100 GB`, or a `fmtNumber` result. Defaults to the value as a whole percent of the
+     * range. An indeterminate bar has no default figure.
+     */
+    valueLabel?: ReactNode;
+
+    /** False to hide the figure and draw the bar only. Default true. */
+    showValueLabel?: boolean;
+
+    /**
+     * Semantic color for the fill, for example `danger` for a limit that is close. The fill takes
+     * the primary color by default. Set the `--progress-bar-fill-bg` CSS variable to change that
+     * default.
+     */
+    intent?: Intent;
+
+    /**
+     * Value to mark on the track with a thin line, for a threshold or a goal. Takes the same
+     * scale as `value`. No marker shows on an indeterminate bar.
+     */
+    target?: number;
+}
+
+/**
+ * A horizontal bar that shows a value against a maximum: the progress of a task, or usage against
+ * a limit. A bar with no value is indeterminate, for work of unknown length.
+ *
+ * The bar is presentation-only. It fills the width of its container and has no outer margin. Set
+ * the `--xh-progress-bar-*` CSS variables to change its height, radius and colors.
+ *
+ * A bar never fails on odd data. It draws an empty bar with no figure when it cannot place the
+ * value, as with a NaN value or a `max` that is not above `min`.
+ *
+ * The root element takes `role="progressbar"`, named by its `label`. Pass an `aria-label` through
+ * `domAttrs` for a bar with no label.
+ */
+export const [ProgressBar, progressBar] = hoistCmp.withFactory<ProgressBarProps>({
+    displayName: 'ProgressBar',
+    model: false,
+    className: 'xh-progress-bar',
+
+    render(props, ref) {
+        const [
+                layoutProps,
+                {
+                    className,
+                    value,
+                    min = 0,
+                    max = 100,
+                    label,
+                    valueLabel,
+                    showValueLabel = true,
+                    intent,
+                    target,
+                    testId,
+                    domAttrs
+                }
+            ] = splitLayoutProps(props),
+            labelId = useId(),
+            indeterminate = value == null,
+            fraction = indeterminate ? null : fractionOf(value, min, max),
+            targetFraction = indeterminate ? null : fractionOf(target, min, max),
+            figure = showValueLabel ? (valueLabel ?? percentOf(fraction)) : null,
+            hasLabel = label != null,
+            ariaProps = {
+                role: 'progressbar',
+                'aria-labelledby': hasLabel ? labelId : null,
+                'aria-valuemin': fraction != null ? min : null,
+                'aria-valuemax': fraction != null ? max : null,
+                'aria-valuenow': fraction != null ? clamp(value, min, max) : null,
+                'aria-valuetext': isString(figure) || isNumber(figure) ? `${figure}` : null
+            },
+            divProps = mergeDeep(
+                {
+                    className: classNames(
+                        className,
+                        intent && `xh-progress-bar--intent-${intent}`,
+                        indeterminate && 'xh-progress-bar--indeterminate'
+                    )
+                },
+                {style: layoutProps},
+                {[TEST_ID]: testId, ...domAttrs}
+            );
+
+        return div({
+            ref,
+            ...ariaProps,
+            ...divProps,
+            items: [
+                div({
+                    omit: !hasLabel && figure == null,
+                    className: 'xh-progress-bar__header',
+                    items: [
+                        span({
+                            omit: !hasLabel,
+                            id: labelId,
+                            className: 'xh-progress-bar__label',
+                            item: label
+                        }),
+                        span({
+                            omit: figure == null,
+                            className: 'xh-progress-bar__value-label',
+                            item: figure
+                        })
+                    ]
+                }),
+                div({
+                    className: 'xh-progress-bar__track',
+                    items: [
+                        div({
+                            className: 'xh-progress-bar__fill',
+                            style: indeterminate ? null : {width: `${(fraction ?? 0) * 100}%`}
+                        }),
+                        div({
+                            omit: targetFraction == null,
+                            className: 'xh-progress-bar__target',
+                            style: {left: `${targetFraction * 100}%`}
+                        })
+                    ]
+                })
+            ]
+        });
+    }
+});
+
+//------------------
+// Implementation
+//------------------
+/**
+ * Where a value sits in its range, from 0 to 1 and clamped to it. Null when there is no place to
+ * put it: a value or bound that is not a number, or a range that is not above zero.
+ */
+function fractionOf(value: number, min: number, max: number): number {
+    if (!isNumber(value) || !isFinite(min) || !isFinite(max) || !(max > min)) return null;
+    const ret = (clamp(value, min, max) - min) / (max - min);
+    return isFinite(ret) ? ret : null;
+}
+
+function percentOf(fraction: number): string {
+    return fraction == null ? null : `${Math.round(fraction * 100)}%`;
+}

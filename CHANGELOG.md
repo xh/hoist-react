@@ -14,6 +14,16 @@
 
 ## 91.0.0-SNAPSHOT - unreleased
 
+### 🎁 New Features
+
+* Added `ProgressBar` to `@xh/hoist/cmp/progressbar`, a cross-platform bar that shows a value
+  against a maximum, with an optional label, figure, `intent` and `target` marker. A bar with no
+  `value` is indeterminate. Style through the `--xh-progress-bar-*` CSS variables.
+* Added `Steps` to `@xh/hoist/cmp/steps`, a cross-platform sequence of steps with a status each,
+  for an order lifecycle, a wizard header or a checklist. Set `current` to derive each status, or
+  set a `status` per step. Lays out as a `horizontal` row or a `vertical` list, and takes an
+  optional `onStepClick`. Style through the `--xh-steps-*` CSS variables.
+
 ## 90.1.0 - 2026-11-13
 
 ### 🎁 New Features

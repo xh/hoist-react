@@ -857,6 +857,20 @@ body {
   }
 
   //------------------------
+  // Progress Bars
+  //------------------------
+  --xh-progress-bar-border-radius: var(--progress-bar-border-radius, calc(var(--xh-progress-bar-height) / 2));
+  --xh-progress-bar-fill-bg: var(--progress-bar-fill-bg, var(--xh-intent-primary));
+  --xh-progress-bar-font-size: var(--progress-bar-font-size, inherit);
+  --xh-progress-bar-gap: var(--progress-bar-gap, var(--xh-pad-half-px));
+  --xh-progress-bar-height: var(--progress-bar-height, 8px);
+  --xh-progress-bar-label-color: var(--progress-bar-label-color, var(--xh-text-color));
+  --xh-progress-bar-target-color: var(--progress-bar-target-color, var(--xh-text-color));
+  --xh-progress-bar-target-width: var(--progress-bar-target-width, 2px);
+  --xh-progress-bar-track-bg: var(--progress-bar-track-bg, var(--xh-border-color));
+  --xh-progress-bar-value-label-color: var(--progress-bar-value-label-color, var(--xh-text-color));
+
+  //------------------------
   // Resizable splitters
   //------------------------
   --xh-resizable-bg: var(--resizable-bg, #{mc('blue-grey', '50')});
@@ -972,6 +986,32 @@ body {
   &.xh-dark {
     --xh-stat-card-detail-color: var(--stat-card-detail-color, var(--xh-text-color-muted));
     --xh-stat-card-title-color: var(--stat-card-title-color, var(--xh-text-color-muted));
+  }
+
+  //------------------------
+  // Steps
+  //------------------------
+  --xh-steps-complete-color: var(--steps-complete-color, var(--xh-intent-primary));
+  --xh-steps-complete-icon-color: var(--steps-complete-icon-color, white);
+  --xh-steps-connector-color: var(--steps-connector-color, var(--xh-border-color));
+  // Space between a marker and each end of the line that connects it to the next.
+  --xh-steps-connector-inset: var(--steps-connector-inset, 4px);
+  --xh-steps-connector-width: var(--steps-connector-width, 2px);
+  --xh-steps-current-color: var(--steps-current-color, var(--xh-intent-primary-text-color));
+  --xh-steps-description-color: var(--steps-description-color, var(--xh-blue-gray));
+  --xh-steps-description-font-size: var(--steps-description-font-size, var(--xh-font-size-small-em));
+  --xh-steps-error-color: var(--steps-error-color, var(--xh-intent-danger-text-color));
+  --xh-steps-marker-font-size: var(--steps-marker-font-size, var(--xh-font-size-small-em));
+  --xh-steps-marker-size: var(--steps-marker-size, 24px);
+  --xh-steps-pending-color: var(--steps-pending-color, var(--xh-blue-gray));
+  // Space between the text of one step and the next in a vertical sequence.
+  --xh-steps-vertical-gap: var(--steps-vertical-gap, calc(var(--xh-pad-px) * 2));
+  --xh-steps-warning-color: var(--steps-warning-color, var(--xh-intent-warning-text-color));
+
+  // As with stat cards, the muted text color reads well on a dark background only.
+  &.xh-dark {
+    --xh-steps-description-color: var(--steps-description-color, var(--xh-text-color-muted));
+    --xh-steps-pending-color: var(--steps-pending-color, var(--xh-text-color-muted));
   }
 
   //------------------------

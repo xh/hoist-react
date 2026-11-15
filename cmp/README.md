@@ -194,7 +194,9 @@ techniques.
 | `/badge/` | Badge component for counts and status indicators         |
 | `/loadingindicator/` | Loading state display in a compact and non-blocking form |
 | `/mask/` | Overlay mask for blocking interactions                   |
+| `/progressbar/` | Bar that shows a value against a maximum, or indeterminate progress (ProgressBar) |
 | `/spinner/` | Loading spinner animations                               |
+| `/steps/` | Ordered sequence of steps with a status each, as a row or a list (Steps) |
 
 ### Utilities
 
@@ -335,6 +337,108 @@ CardModel supports `collapsible` state with configurable `renderMode` (`'always'
 **FormFieldSet** (`/cmp/form/formfieldset/`) extends Card to group related `FormField` components,
 displaying their aggregate validation state as intent-colored borders and tooltips. See the
 [Form README](./form/README.md#formfieldset) for details.
+
+### ProgressBar (`/progressbar/`)
+
+A horizontal bar that shows a value against a maximum: the progress of a task, or usage against a
+limit. The bar is presentation-only and takes no model. It fills the width of its container.
+
+```typescript
+import {progressBar} from '@xh/hoist/cmp/progressbar';
+
+// A value on the default scale of 0 to 100, shown as a whole percent
+progressBar({label: 'Upload', value: 72})
+
+// A custom scale, a pre-formatted figure, an intent and a marker at a threshold
+progressBar({
+    label: 'Desk A risk',
+    value: 8.1,
+    max: 10,
+    valueLabel: '$8.1m of $10m',
+    target: 7.5,
+    intent: 'warning'
+})
+
+// No value - an indeterminate bar for work of unknown length
+progressBar({label: 'Loading positions'})
+```
+
+| Prop | Type | Description |
+|------|------|-------------|
+| `value` | `number` | Value to show, clamped to the range. Omit it for an indeterminate bar |
+| `min` / `max` | `number` | Values of an empty and a full bar. Default 0 and 100 |
+| `label` | `ReactNode` | Caption above the bar. Also the accessible name of the bar |
+| `valueLabel` | `ReactNode` | Figure above the bar, pre-formatted by the caller. Defaults to a whole percent |
+| `showValueLabel` | `boolean` | False to hide the figure. Default true |
+| `intent` | `Intent` | Semantic color for the fill. Default is the primary color |
+| `target` | `number` | Value to mark on the track, for a threshold or a goal |
+
+The bar never fails on odd data. A value outside the range draws an empty or a full bar. A NaN
+value, or a `max` that is not above `min`, draws an empty bar with no figure.
+
+The root element has `role="progressbar"` and reports its range and value to screen readers. Pass
+an `aria-label` through `domAttrs` for a bar with no `label`. The indeterminate animation stops
+for users who ask their system for reduced motion.
+
+Set the `--xh-progress-bar-*` CSS variables to change the height, radius and colors.
+
+### Steps (`/steps/`)
+
+An ordered sequence of steps, each with a status: the lifecycle of an order, the stages of a
+wizard, a workflow or a checklist. A line connects each step to the next. The component is
+presentation-only and takes no model.
+
+```typescript
+import {steps} from '@xh/hoist/cmp/steps';
+
+// `current` derives each status: steps before it are complete, steps after it are pending
+steps({
+    current: 2,
+    steps: [{title: 'Submitted'}, {title: 'Approved'}, {title: 'Routed'}, {title: 'Filled'}]
+})
+
+// A vertical list with a status on each step - doubles as a simple timeline
+steps({
+    orientation: 'vertical',
+    steps: [
+        {title: 'Submitted', status: 'complete', detail: '09:30'},
+        {title: 'Approved', status: 'complete', detail: '09:42', description: 'By the risk desk'},
+        {title: 'Routed', status: 'error', description: 'The venue rejected the order'},
+        {title: 'Filled'}
+    ]
+})
+
+// Clickable steps for a wizard
+steps({
+    current: model.stepIndex,
+    steps: wizardSteps,
+    onStepClick: (step, index) => model.goToStep(index)
+})
+```
+
+| Prop | Type | Description |
+|------|------|-------------|
+| `steps` | `StepSpec[]` | Steps to show, in order |
+| `current` | `number` | Index of the current step, from 0. An index past the last step completes them all |
+| `orientation` | `'horizontal' \| 'vertical'` | Direction of the sequence. Default `horizontal` |
+| `onStepClick` | `(step, index) => void` | Handler for a click or Enter/Space keypress. Makes every step a focusable button |
+
+| `StepSpec` key | Type | Description |
+|----------------|------|-------------|
+| `title` | `ReactNode` | Name of the step |
+| `description` | `ReactNode` | Longer text beneath the title |
+| `detail` | `ReactNode` | Short secondary text, for example a timestamp |
+| `status` | `StepStatus` | `pending`, `current`, `complete`, `warning` or `error`. Takes priority over `current` |
+| `icon` | `ReactElement` | Icon for the marker, in place of the number or the status icon |
+
+A horizontal sequence gives each step an equal share of the width, with its text centered under
+its marker. Text wraps and is never truncated, so the row gets taller in a narrow container and
+does not overflow it. Use `vertical` for long descriptions.
+
+The component renders an ordered list and sets `aria-current="step"` on the current step. A
+marker that shows its status by icon alone names that status for screen readers.
+
+Set the `--xh-steps-*` CSS variables to change the colors and sizes.
 
 ### Layout (`/layout/`)
 
