@@ -18,6 +18,8 @@
 .xh-progress-bar {
   display: flex;
   flex-direction: column;
+  // Keeps the track at the bottom when a row stretches the bar, so bars in a row line up.
+  justify-content: flex-end;
   gap: var(--xh-progress-bar-gap);
   min-width: 0;
   font-size: var(--xh-progress-bar-font-size);
@@ -38,28 +40,34 @@
     --xh-progress-bar-fill-bg: var(--xh-progress-bar-danger-color);
   }
 
+  // The figure drops below the label when the two do not fit on one line.
   &__header {
     display: flex;
+    flex-wrap: wrap;
     align-items: baseline;
     justify-content: space-between;
-    gap: var(--xh-pad-px);
+    column-gap: var(--xh-pad-px);
   }
 
-  // A long label wraps beside the figure, which stays on one line.
+  // Text breaks between words. Only a word wider than the bar breaks inside.
+  &__label,
+  &__value-label {
+    max-width: 100%;
+    overflow-wrap: break-word;
+  }
+
   &__label {
     flex: 0 1 auto;
-    min-width: 0;
-    overflow-wrap: anywhere;
     color: var(--xh-progress-bar-label-color);
   }
 
   &__value-label {
     flex: none;
-    // Holds the right edge when there is no label.
+    // Holds the right edge when there is no label, and when it drops below the label.
     margin-left: auto;
     color: var(--xh-progress-bar-value-label-color);
     font-variant-numeric: tabular-nums;
-    white-space: nowrap;
+    text-align: right;
   }
 
   &__track {
