@@ -16,9 +16,10 @@ import {hoistCmp, XH} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {rangeSlider as bpRangeSlider, slider as bpSlider} from '@xh/hoist/kit/blueprint';
 import {logWarn, withDefault} from '@xh/hoist/utils/js';
-import {getLayoutProps} from '@xh/hoist/utils/react';
+import {composeRefs, getLayoutProps, useOnResize} from '@xh/hoist/utils/react';
 import {castArray, isArray, isEmpty, isFinite} from 'lodash';
 import type {ReactNode} from 'react';
+import {useLayoutEffect, useRef} from 'react';
 import './Slider.scss';
 
 export interface SliderProps extends HoistProps, HoistInputProps, LayoutProps {
@@ -108,7 +109,13 @@ class SliderInputModel extends HoistInputModel {
 
 const cmp = hoistCmp.factory<SliderInputModel>(({model, className, ...props}, ref) => {
     const {width, ...layoutProps} = getLayoutProps(props),
-        scale = getSafeScale(props);
+        scale = getSafeScale(props),
+        boxRef = useRef<HTMLElement>(null),
+        // Blueprint places the handles once it has measured its track, after this effect runs.
+        resizeRef = useOnResize(() => fitLabels(boxRef.current));
+
+    // Runs after every render, so a handle label follows its handle as it moves.
+    useLayoutEffect(() => fitLabels(boxRef.current));
 
     model.warnOfScaleChanges(scale.changes);
 
@@ -159,9 +166,40 @@ const cmp = hoistCmp.factory<SliderInputModel>(({model, className, ...props}, re
 
         onBlur: model.onBlur,
         onFocus: model.onFocus,
-        ref
+        ref: composeRefs(ref, boxRef, resizeRef)
     });
 });
+
+//-----------------------
+// Labels
+//-----------------------
+/**
+ * Shift each label that crosses an edge of the slider back inside it. Blueprint centers a label on
+ * its tick or handle, so a long label at either end of the track runs past the side padding. Only
+ * the end labels of the axis and the handle labels can reach an edge. A label that fits keeps its
+ * centered place.
+ */
+function fitLabels(el: HTMLElement) {
+    if (!el || el.querySelector('.bp6-slider.bp6-vertical')) return;
+
+    const labels = [
+        el.querySelector<HTMLElement>('.bp6-slider-axis > .bp6-slider-label:first-child'),
+        el.querySelector<HTMLElement>('.bp6-slider-axis > .bp6-slider-label:last-child'),
+        ...Array.from(el.querySelectorAll<HTMLElement>('.bp6-slider-handle .bp6-slider-label'))
+    ];
+
+    // Reset every label before measuring, so that no shift is measured as part of a label.
+    labels.forEach(label => label?.style.removeProperty('translate'));
+
+    const {left, right} = el.getBoundingClientRect();
+    labels.forEach(label => {
+        if (!label) return;
+        const rect = label.getBoundingClientRect(),
+            shift =
+                rect.left < left ? left - rect.left : rect.right > right ? right - rect.right : 0;
+        if (shift) label.style.translate = `${shift}px`;
+    });
+}
 
 //-----------------------
 // Scale
