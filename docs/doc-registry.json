@@ -96,6 +96,14 @@
             "keywords": ["CubeGridModel", "CubeGrid", "CubeGridConfig", "CubeGridPivotModel", "CubeGridPivotConfig", "pivotConfig", "cube grid", "pivot", "PivotSpec", "measures", "cellFields", "PivotPath", "PivotDimensionSpec", "PivotMeasureSpec", "measuresOutermost", "summaryLabel", "valueRenderer", "emptyLabel", "valueClass", "summaryClass", "showSummary"]
         },
         {
+            "id": "cmp/sparkline/README.md",
+            "title": "Sparkline",
+            "mcpCategory": "package",
+            "viewerCategory": "components",
+            "description": "Small inline trend chart in plain SVG, for a stat card or a grid cell.",
+            "keywords": ["Sparkline", "sparkline", "trend", "inline chart", "line", "area", "bar", "colorByTrend", "colorNegative", "showLast", "showMinMax", "baseline", "shared scale", "StatCard detail", "grid column renderer"]
+        },
+        {
             "id": "cmp/form/README.md",
             "title": "Form Infrastructure",
             "mcpCategory": "package",

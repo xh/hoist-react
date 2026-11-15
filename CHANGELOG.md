@@ -14,6 +14,13 @@
 
 ## 91.0.0-SNAPSHOT - unreleased
 
+### 🎁 New Features
+
+* Added `Sparkline` to `@xh/hoist/cmp/sparkline`, a small inline trend chart with no axes, for a
+  `StatCard` or a grid cell. It draws a `line`, `area` or `bar` series in plain SVG, and can color
+  the series by `intent` or by trend. Style through the `--xh-sparkline-*` CSS variables. See the
+  [Sparkline README](cmp/sparkline/README.md).
+
 ## 90.1.0 - 2026-11-13
 
 ### 🎁 New Features
