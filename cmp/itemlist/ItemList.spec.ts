@@ -6,7 +6,7 @@
  */
 import {itemList} from '@xh/hoist/cmp/itemlist';
 import type {ItemListEntry, ItemListProps} from '@xh/hoist/cmp/itemlist';
-import {span} from '@xh/hoist/cmp/layout';
+import {a, htmlButton, span} from '@xh/hoist/cmp/layout';
 import {Icon} from '@xh/hoist/icon';
 import {initTestAppAsync} from '@xh/hoist/test-support';
 import {fireEvent, render} from '@testing-library/react';
@@ -156,6 +156,24 @@ describe('ItemList', () => {
             expect(part(without, 'marker--icon').childElementCount).toBe(0);
         });
 
+        it('shows a dot for the intent of an entry with no icon, in a list with icons', () => {
+            const root = renderRoot({
+                    entries: [
+                        {title: 'A', icon: Icon.warning(), intent: 'warning'},
+                        {title: 'B', intent: 'danger'},
+                        {title: 'C'}
+                    ]
+                }),
+                [withIcon, withIntent, plain] = entriesOf(root);
+
+            expect(part(withIcon, 'dot')).toBeNull();
+            expect(
+                part(withIntent, 'marker--icon').querySelector('.xh-item-list__dot')
+            ).not.toBeNull();
+            expect(withIntent.classList).toContain('xh-item-list__entry--intent-danger');
+            expect(part(plain, 'dot')).toBeNull();
+        });
+
         it('numbers the entries shown in an ordered list, in place of icons', () => {
             const root = renderRoot({
                 ordered: true,
@@ -273,15 +291,31 @@ describe('ItemList', () => {
             );
         });
 
-        it('ignores a keypress on a control inside an entry', () => {
+        it.each([
+            ['a button', () => htmlButton({className: 'inner', item: 'Dismiss'})],
+            ['a link', () => a({className: 'inner', href: '#', item: 'Open'})],
+            ['an element inside a button', () => htmlButton(span({className: 'inner', item: 'X'}))],
+            ['a role="button" element', () => span({className: 'inner', role: 'button'})]
+        ])('leaves a click or keypress on %s inside an entry to that control', (name, control) => {
+            const onEntryClick = vi.fn(),
+                root = renderRoot({entries: [{title: 'A', detail: control()}], onEntryClick}),
+                inner = root.querySelector('.inner');
+
+            fireEvent.click(inner);
+            fireEvent.keyDown(inner, {key: 'Enter'});
+            fireEvent.keyDown(inner, {key: ' '});
+            expect(onEntryClick).not.toHaveBeenCalled();
+        });
+
+        it('still responds to a click on plain content inside an entry', () => {
             const onEntryClick = vi.fn(),
                 root = renderRoot({
-                    entries: [{title: 'A', detail: span({className: 'inner', tabIndex: 0})}],
+                    entries: [{title: span({className: 'inner', item: 'A'})}],
                     onEntryClick
                 });
 
-            fireEvent.keyDown(root.querySelector('.inner'), {key: 'Enter'});
-            expect(onEntryClick).not.toHaveBeenCalled();
+            fireEvent.click(root.querySelector('.inner'));
+            expect(onEntryClick).toHaveBeenCalledTimes(1);
         });
     });
 });

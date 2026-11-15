@@ -804,6 +804,7 @@ body {
   --xh-item-list-description-font-size: var(--item-list-description-font-size, var(--xh-font-size-small-em));
   --xh-item-list-disabled-opacity: var(--item-list-disabled-opacity, 0.5);
   --xh-item-list-divider: var(--item-list-divider, var(--xh-border-solid));
+  --xh-item-list-dot-size: var(--item-list-dot-size, 0.5em);
   --xh-item-list-empty-color: var(--item-list-empty-color, var(--xh-blue-gray));
   // Space between an entry's icon, text and detail.
   --xh-item-list-entry-gap: var(--item-list-entry-gap, var(--xh-pad-px));

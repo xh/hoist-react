@@ -6,9 +6,9 @@
  */
 import classNames from 'classnames';
 import {isEmpty} from 'lodash';
-import type {KeyboardEvent, ReactElement, ReactNode} from 'react';
+import type {KeyboardEvent, MouseEvent, ReactElement, ReactNode} from 'react';
 
-import {div, li, ol, ul} from '@xh/hoist/cmp/layout';
+import {div, li, ol, span, ul} from '@xh/hoist/cmp/layout';
 import {hoistCmp} from '@xh/hoist/core';
 import type {
     ComponentSize,
@@ -47,9 +47,10 @@ export interface ItemListEntry {
     icon?: ReactElement;
 
     /**
-     * Flags the entry with a semantic color on its icon or number. In a list where no entry has
-     * an icon or number, it draws a thin colored bar before the text instead. Does not color the
-     * text, so say what the color means in the text as well.
+     * Flags the entry with a semantic color on its icon or number. An entry with no icon, in a
+     * list where another entry has one, shows a small dot in that color in the icon's place. In
+     * a list where no entry has an icon or number, it draws a thin colored bar before the text
+     * instead. Does not color the text, so say what the color means in the text as well.
      */
     intent?: Intent;
 
@@ -88,7 +89,8 @@ export interface ItemListProps extends HoistProps, LayoutProps, TestSupportProps
 
     /**
      * Handler for a click or Enter/Space keypress on an entry. Makes every entry that is not
-     * `disabled` a focusable button with a hover style.
+     * `disabled` a focusable button with a hover style. A click or keypress on a control inside
+     * an entry, such as a button in its `detail`, goes to that control only.
      *
      * Called with the entry and its index in the `entries` array as given. That index counts
      * null and omitted entries, so it also finds the source of an entry in an array that
@@ -171,6 +173,9 @@ export const [ItemList, itemList] = hoistCmp.withFactory<ItemListProps>({
 //------------------
 // Implementation
 //------------------
+/** Elements that handle their own clicks and keys. `Steps` tests for the same set. */
+const INTERACTIVE_SELECTOR = 'button, a, input, select, textarea, [role="button"]';
+
 /** What leads each entry of a list: its number, its icon, a bar in its intent color, or nothing. */
 type MarkerType = 'number' | 'icon' | 'accent';
 
@@ -185,6 +190,22 @@ function markerType(entries: ItemListEntry[], ordered: boolean): MarkerType {
     return null;
 }
 
+function markerContent(entry: ItemListEntry, position: number, marker: MarkerType): ReactNode {
+    if (marker === 'number') return position + 1;
+    if (marker !== 'icon') return null;
+    // A dot carries the intent of an entry with no icon, drawn in the marker's color.
+    return entry.icon ?? (entry.intent ? span({className: 'xh-item-list__dot'}) : null);
+}
+
+/**
+ * True if an event comes from an interactive element inside the entry, which handles the event
+ * itself. The entry is a `role="button"` too, so the nearest match must be another element.
+ */
+function isFromNestedControl(e: MouseEvent<HTMLElement> | KeyboardEvent<HTMLElement>): boolean {
+    const control = (e.target as Element).closest?.(INTERACTIVE_SELECTOR);
+    return control != null && control !== e.currentTarget;
+}
+
 function isBlankEntry({title, description, detail}: ItemListEntry): boolean {
     return isBlankNode(title) && isBlankNode(description) && isBlankNode(detail);
 }
@@ -196,7 +217,7 @@ function renderEntry(
     marker: MarkerType,
     onEntryClick: ItemListProps['onEntryClick']
 ) {
-    const {title, description, detail, icon, intent, disabled} = entry,
+    const {title, description, detail, intent, disabled} = entry,
         isDisabled = !!onEntryClick && !!disabled,
         clickProps = isDisabled
             ? {role: 'button', 'aria-disabled': true}
@@ -204,9 +225,11 @@ function renderEntry(
               ? {
                     role: 'button',
                     tabIndex: 0,
-                    onClick: () => onEntryClick(entry, index),
+                    onClick: (e: MouseEvent<HTMLDivElement>) => {
+                        if (!isFromNestedControl(e)) onEntryClick(entry, index);
+                    },
                     onKeyDown: (e: KeyboardEvent<HTMLDivElement>) => {
-                        if (e.target !== e.currentTarget) return;
+                        if (isFromNestedControl(e)) return;
                         if (e.key === 'Enter' || e.key === ' ') {
                             e.preventDefault();
                             onEntryClick(entry, index);
@@ -231,7 +254,7 @@ function renderEntry(
                     omit: !marker,
                     className: `xh-item-list__marker xh-item-list__marker--${marker}`,
                     'aria-hidden': true,
-                    item: marker === 'number' ? position + 1 : marker === 'icon' ? icon : null
+                    item: markerContent(entry, position, marker)
                 }),
                 div({
                     className: 'xh-item-list__content',
