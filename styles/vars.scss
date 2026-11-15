@@ -935,6 +935,31 @@ body {
 
 
   //------------------------
+  // Sparklines
+  //------------------------
+  --xh-sparkline-area-opacity: var(--sparkline-area-opacity, 0.15);
+  --xh-sparkline-baseline-color: var(--sparkline-baseline-color, var(--xh-text-color-muted));
+  --xh-sparkline-color: var(--sparkline-color, var(--xh-blue-gray));
+  --xh-sparkline-danger-color: var(--sparkline-danger-color, var(--xh-intent-danger-text-color));
+  --xh-sparkline-dot-size: var(--sparkline-dot-size, 5px);
+  --xh-sparkline-height: var(--sparkline-height, 24px);
+  --xh-sparkline-line-width: var(--sparkline-line-width, 1.5px);
+  --xh-sparkline-negative-color: var(--sparkline-negative-color, var(--xh-neg-val-color));
+  // Space between the box and the plot, so a dot or stroke on the edge of the scale is not cut off.
+  --xh-sparkline-padding: var(--sparkline-padding, 3px);
+  --xh-sparkline-positive-color: var(--sparkline-positive-color, var(--xh-pos-val-color));
+  --xh-sparkline-primary-color: var(--sparkline-primary-color, var(--xh-intent-primary-text-color));
+  --xh-sparkline-success-color: var(--sparkline-success-color, var(--xh-intent-success-text-color));
+  --xh-sparkline-warning-color: var(--sparkline-warning-color, var(--xh-intent-warning-text-color));
+  --xh-sparkline-width: var(--sparkline-width, 80px);
+
+  // The muted text color is too faint for a thin line on a light background, but reads well on a dark one.
+  &.xh-dark {
+    --xh-sparkline-color: var(--sparkline-color, var(--xh-text-color-muted));
+  }
+
+
+  //------------------------
   // Spinner
   //------------------------
   --xh-spinner-color: var(--spinner-color, #{mc('blue-grey', '400')});
