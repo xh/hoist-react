@@ -14,6 +14,12 @@
 
 ## 91.0.0-SNAPSHOT - unreleased
 
+### 🎁 New Features
+
+* Added `KeyValueList` to `@xh/hoist/cmp/keyvaluelist`, a display-only list of labeled values such
+  as the fields of a record in a detail panel. It lays its `entries` out in aligned columns that
+  fit the available width, with the label beside or above each value.
+
 ## 90.1.0 - 2026-11-13
 
 ### 🎁 New Features

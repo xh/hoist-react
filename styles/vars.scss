@@ -388,6 +388,36 @@ body {
 
 
   //------------------------
+  // Key Value Lists
+  //------------------------
+  // Gap between the columns of a multi-column list.
+  --xh-key-value-list-column-gap: var(--key-value-list-column-gap, calc(var(--xh-pad-px) * 2));
+  --xh-key-value-list-compact-font-size: var(--key-value-list-compact-font-size, var(--xh-font-size-small-em));
+  --xh-key-value-list-compact-row-gap: var(--key-value-list-compact-row-gap, 2px);
+  --xh-key-value-list-danger-color: var(--key-value-list-danger-color, var(--xh-intent-danger-text-color));
+  --xh-key-value-list-divider: var(--key-value-list-divider, var(--xh-border-solid));
+  --xh-key-value-list-empty-color: var(--key-value-list-empty-color, var(--xh-text-color-muted));
+  --xh-key-value-list-font-size: var(--key-value-list-font-size, inherit);
+  --xh-key-value-list-label-color: var(--key-value-list-label-color, var(--xh-blue-gray));
+  --xh-key-value-list-label-font-size: var(--key-value-list-label-font-size, inherit);
+  --xh-key-value-list-label-font-weight: var(--key-value-list-label-font-weight, normal);
+  // Gap between a label and its value, when the label is on the left.
+  --xh-key-value-list-label-gap: var(--key-value-list-label-gap, var(--xh-pad-px));
+  // Widest a column of labels gets, when the label is on the left. Longer labels wrap.
+  --xh-key-value-list-label-max-width: var(--key-value-list-label-max-width, 16em);
+  --xh-key-value-list-primary-color: var(--key-value-list-primary-color, var(--xh-intent-primary-text-color));
+  --xh-key-value-list-row-gap: var(--key-value-list-row-gap, var(--xh-pad-half-px));
+  --xh-key-value-list-success-color: var(--key-value-list-success-color, var(--xh-intent-success-text-color));
+  --xh-key-value-list-value-font-weight: var(--key-value-list-value-font-weight, normal);
+  --xh-key-value-list-warning-color: var(--key-value-list-warning-color, var(--xh-intent-warning-text-color));
+
+  // The muted text color is too faint for labels on a light background, but reads well on a dark one.
+  &.xh-dark {
+    --xh-key-value-list-label-color: var(--key-value-list-label-color, var(--xh-text-color-muted));
+  }
+
+
+  //------------------------
   // Menus
   //------------------------
   --xh-menu-bg: var(--menu-bg, var(--xh-bg));
