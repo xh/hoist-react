@@ -47,6 +47,8 @@
 
 ### 🐞 Bug Fixes
 
+* Fixed `StatCard` titles and values not lining up across a `StatCardStrip` whose cards differ in
+  height. A card now starts its content at the top. Set `--xh-stat-card-justify-content` to change.
 * Fixed desktop `Slider` hanging, flooding the page with labels or throwing on a scale it cannot
   draw, such as a `stepSize` near zero or a `max` not above `min`. It now falls back to a safe
   scale, renders disabled when it has no range, and logs a warning in development mode.

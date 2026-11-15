@@ -41,9 +41,9 @@
 .xh-stat-card {
   display: flex;
   flex-direction: column;
-  // Main (vertical) axis - when a strip stretches a card to its tallest neighbor, split the slack
-  // above and below so the text of adjacent cards reads as one row.
-  justify-content: center;
+  // Content starts at the top, so a card stretched to its tallest neighbor in a strip keeps its
+  // title and value on the same lines as theirs, with its free space at the bottom.
+  justify-content: var(--xh-stat-card-justify-content);
   position: relative;
   // Clip, not hidden - a flex item that is a scroll container loses its content-based minimum
   // width, which is what keeps a card from getting narrower than its value.

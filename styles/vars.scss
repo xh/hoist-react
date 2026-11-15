@@ -1086,6 +1086,7 @@ body {
   --xh-stat-card-detail-color: var(--stat-card-detail-color, var(--xh-blue-gray));
   --xh-stat-card-detail-font-size: var(--stat-card-detail-font-size, var(--xh-font-size-small-em));
   --xh-stat-card-hover-bg: var(--stat-card-hover-bg, var(--xh-bg-alt));
+  --xh-stat-card-justify-content: var(--stat-card-justify-content, flex-start);
   // Narrowest a card's content gets in a StatCardStrip before cards wrap to a new row.
   --xh-stat-card-large-detail-font-size: var(--stat-card-large-detail-font-size, 1em);
   --xh-stat-card-large-min-content-width: var(--stat-card-large-min-content-width, 200px);
