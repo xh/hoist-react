@@ -24,7 +24,7 @@ export interface SeparatorProps extends HoistProps, LayoutProps, TestSupportProp
      */
     orientation?: 'horizontal' | 'vertical';
 
-    /** Caption shown within the rule, e.g. the title of the section that follows. */
+    /** Caption shown within the rule, such as the title of the section that follows. */
     label?: ReactNode;
 
     /**

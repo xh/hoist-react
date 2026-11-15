@@ -76,7 +76,7 @@ export interface KeyValueListProps
 }
 
 /**
- * A display-only list of labeled values, e.g. the fields of a record in a detail panel. Renders
+ * A display-only list of labeled values, such as the fields of a record in a detail panel. Renders
  * as an HTML description list.
  *
  * The list is presentation-only. Callers pass each `value` already formatted.

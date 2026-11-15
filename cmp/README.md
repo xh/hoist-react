@@ -151,7 +151,7 @@ techniques.
 | `/zoneGrid/` | Multi-zone grid layout for complex record displays |
 | `/cubegrid/` | Cube View as a tree grid, with pivot paths as nested column groups when pivoted. [See README](./cubegrid/README.md) |
 | `/statcard/` | Tiles that call out key figures (StatCard), laid out in equal-width rows (StatCardStrip) |
-| `/keyvaluelist/` | Display-only list of labeled values (KeyValueList), e.g. the fields of a record in a detail panel |
+| `/keyvaluelist/` | Display-only list of labeled values (KeyValueList), such as the fields of a record in a detail panel |
 
 ### Layout and Containers
 
