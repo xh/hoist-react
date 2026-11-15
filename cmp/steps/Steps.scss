@@ -191,6 +191,10 @@
   //------------------
   // Clickable
   //------------------
+  &__step--disabled > &__step-inner {
+    opacity: var(--xh-steps-disabled-opacity);
+  }
+
   &__step--clickable > &__step-inner {
     cursor: pointer;
     border-radius: var(--xh-border-radius-px);

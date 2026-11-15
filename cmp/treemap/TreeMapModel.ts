@@ -66,8 +66,8 @@ export interface TreeMapConfig {
     algorithm?: TreeMapAlgorithm;
 
     /**
-     * Heat color distribution mode. The `linear` and `wash` modes need the Highcharts color axis,
-     * from `highcharts/modules/heatmap` or `highcharts/modules/coloraxis`.
+     * Heat color distribution mode. Every mode needs the Highcharts color axis, from
+     * `highcharts/modules/heatmap` or `highcharts/modules/coloraxis`.
      */
     colorMode?: TreeMapColorMode;
 
@@ -117,12 +117,12 @@ export interface TreeMapModelDefaults {
  * controls how:
  * - 'linear' - distributes values across the colorAxis according to the heatField.
  * - 'wash' - ignores heat intensity, applying a single positive/negative color.
- * - 'none' - ignores the colorAxis entirely, using the neutral color.
+ * - 'none' - ignores the heatField, giving every node the neutral color of the colorAxis.
  *
- * The colorAxis is not part of the Highcharts `treemap` module. The 'linear' and 'wash' modes
- * need the app to import `highcharts/modules/heatmap` or `highcharts/modules/coloraxis` in its
- * `Bootstrap.ts`, before `highcharts/modules/treemap`. Without one, Highcharts draws every node
- * in one default color, and TreeMap logs a warning to the console.
+ * The colorAxis is not part of the Highcharts `treemap` module. Every mode takes its colors from
+ * it, so the app must import `highcharts/modules/heatmap` or `highcharts/modules/coloraxis` in
+ * its `Bootstrap.ts`, before `highcharts/modules/treemap`. Without one, Highcharts draws every
+ * node in one default color, and TreeMap logs a warning to the console.
  *
  * Color customization can be managed by setting colorAxis stops via `highchartsConfig`.
  * See {@link https://www.highcharts.com/docs/chart-and-series-types/treemap} for Highcharts
@@ -306,15 +306,20 @@ export class TreeMapModel extends HoistModel {
         100
     );
 
+    /** True if the store had no records when `data` was last built. */
+    private sourceWasEmpty = true;
+
     /**
-     * Rebuild `data` after a change to the store or to a setting that shapes it. A map that shows
-     * data debounces the work, as changes often come in bursts. A map with no data to show does it
-     * at once, so that its empty placeholder never shows over records that are ready.
+     * Rebuild `data` after a change to the store or to a setting that shapes it. The work is
+     * debounced, as changes often come in bursts and each one reads every record. The exception
+     * is a store that gets its first records: the map reads them at once, so that its empty
+     * placeholder never shows over records that are ready.
      */
     private onSourceChange() {
-        if (this.empty) {
+        const {rootRecords} = this.store;
+        if (this.sourceWasEmpty && !isEmpty(rootRecords)) {
             this.debouncedProcessData.cancel();
-            this.processAndSetData(this.store.rootRecords);
+            this.processAndSetData(rootRecords);
         } else {
             this.debouncedProcessData();
         }
@@ -322,6 +327,7 @@ export class TreeMapModel extends HoistModel {
 
     @action
     processAndSetData(sourceRecords) {
+        this.sourceWasEmpty = isEmpty(sourceRecords);
         let data = this.processRecordsRecursive(sourceRecords);
         data = this.limitLabels(data);
         this.data = this.normaliseColorValues(data);

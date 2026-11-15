@@ -6,7 +6,7 @@
  */
 import classNames from 'classnames';
 import {capitalize, includes, isEmpty} from 'lodash';
-import type {KeyboardEvent, ReactElement, ReactNode} from 'react';
+import type {KeyboardEvent, MouseEvent, ReactElement, ReactNode} from 'react';
 
 import {div, li, ol} from '@xh/hoist/cmp/layout';
 import {hoistCmp} from '@xh/hoist/core';
@@ -47,8 +47,9 @@ export interface StepSpec {
     icon?: ReactElement;
 
     /**
-     * True to make the step ignore `onStepClick`. A disabled step is not a button: it takes no
-     * focus and no click. Use it for a step the user cannot go to yet.
+     * True to make the step ignore `onStepClick`. A disabled step takes no focus and no click.
+     * It shows dimmed, and reports itself as a disabled button to screen readers. Use it for a
+     * step the user cannot go to yet. Has no effect with no `onStepClick`.
      */
     disabled?: boolean;
 
@@ -84,7 +85,8 @@ export interface StepsProps extends HoistProps, LayoutProps, TestSupportProps, D
 
     /**
      * Handler for a click or Enter/Space keypress on a step, called with the step and its index
-     * in `steps`. Makes each step a focusable button, except a step with `disabled` set.
+     * in `steps`. Makes each step a focusable button, except a step with `disabled` set. A click
+     * or keypress on a control inside a step, such as a button in its `detail`, does not call it.
      */
     onStepClick?: (step: StepSpec, index: number) => void;
 }
@@ -145,6 +147,8 @@ export const [Steps, steps] = hoistCmp.withFactory<StepsProps>({
 //------------------
 // Implementation
 //------------------
+const CONTROL_SELECTOR = 'button, a, input, select, textarea, [role="button"]';
+
 const STATUSES: StepStatus[] = ['pending', 'current', 'complete', 'warning', 'error'];
 
 /** Statuses that a marker shows by icon alone, so the marker names them for screen readers. */
@@ -164,39 +168,45 @@ function renderStep(
     onStepClick: StepsProps['onStepClick']
 ) {
     const {title, description, detail, disabled} = step,
-        clickable = !!onStepClick && !disabled,
+        isButton = !!onStepClick,
+        isDisabled = isButton && !!disabled,
         hasTitle = !isBlankNode(title),
         hasDetail = !isBlankNode(detail),
         hasDescription = !isBlankNode(description),
         currentProps = status === 'current' ? {'aria-current': 'step' as const} : {},
-        clickProps = clickable
-            ? {
-                  role: 'button',
-                  tabIndex: 0,
-                  onClick: () => onStepClick(step, index),
-                  onKeyDown: (e: KeyboardEvent<HTMLDivElement>) => {
-                      if (e.target !== e.currentTarget) return;
-                      if (e.key === 'Enter' || e.key === ' ') {
-                          e.preventDefault();
-                          onStepClick(step, index);
-                      }
-                  }
-              }
-            : {};
+        clickProps = isDisabled
+            ? {role: 'button', 'aria-disabled': true}
+            : isButton
+              ? {
+                    role: 'button',
+                    tabIndex: 0,
+                    onClick: (e: MouseEvent<HTMLDivElement>) => {
+                        if (!isFromNestedControl(e)) onStepClick(step, index);
+                    },
+                    onKeyDown: (e: KeyboardEvent<HTMLDivElement>) => {
+                        if (isFromNestedControl(e)) return;
+                        if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault();
+                            onStepClick(step, index);
+                        }
+                    }
+                }
+              : {};
 
-    // The focusable element reports the current step, so a screen reader says it on focus.
+    // The button reports the current step, so a screen reader says it on focus.
     return li({
         key: index,
         className: classNames(
             'xh-steps__step',
             `xh-steps__step--${status}`,
-            clickable && 'xh-steps__step--clickable'
+            isButton && !isDisabled && 'xh-steps__step--clickable',
+            isDisabled && 'xh-steps__step--disabled'
         ),
-        ...(clickable ? {} : currentProps),
+        ...(isButton ? {} : currentProps),
         item: div({
             className: 'xh-steps__step-inner',
             ...clickProps,
-            ...(clickable ? currentProps : {}),
+            ...(isButton ? currentProps : {}),
             items: [
                 marker(step, number, status),
                 div({
@@ -225,6 +235,15 @@ function renderStep(
             ]
         })
     });
+}
+
+/**
+ * True if an event came from a control inside the step, such as a button in its detail. That
+ * control handles the event, so the step must not act on it too.
+ */
+function isFromNestedControl(e: MouseEvent<HTMLElement> | KeyboardEvent<HTMLElement>): boolean {
+    const control = (e.target as Element).closest?.(CONTROL_SELECTOR);
+    return control != null && control !== e.currentTarget;
 }
 
 function marker(step: StepSpec, number: number, status: StepStatus) {

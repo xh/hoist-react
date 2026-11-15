@@ -1126,6 +1126,7 @@ body {
   --xh-steps-current-color: var(--steps-current-color, var(--xh-intent-primary-text-color));
   --xh-steps-description-color: var(--steps-description-color, var(--xh-blue-gray));
   --xh-steps-description-font-size: var(--steps-description-font-size, var(--xh-font-size-small-em));
+  --xh-steps-disabled-opacity: var(--steps-disabled-opacity, 0.5);
   --xh-steps-error-color: var(--steps-error-color, var(--xh-intent-danger-text-color));
   --xh-steps-marker-font-size: var(--steps-marker-font-size, var(--xh-font-size-small-em));
   --xh-steps-marker-size: var(--steps-marker-size, 24px);

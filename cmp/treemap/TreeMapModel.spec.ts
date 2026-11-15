@@ -56,6 +56,22 @@ describe('TreeMapModel', () => {
             expect(model.data.map(it => it.name)).toEqual([1]);
         });
 
+        it('debounces changes while a loaded store gives it no data to show', async () => {
+            vi.useFakeTimers();
+            // A record with no value draws no node, so this map stays empty over a loaded store.
+            const store = createStore([{name: 'A', value: 0, heat: 1}]),
+                model = new TreeMapModel({store}),
+                process = vi.spyOn(model, 'processAndSetData');
+
+            model.labelField = 'heat';
+            model.maxDepth = 2;
+            store.loadData([{id: 0, name: 'B', value: 0, heat: 1}]);
+            expect(process).not.toHaveBeenCalled();
+
+            await vi.advanceTimersByTimeAsync(150);
+            expect(process).toHaveBeenCalledTimes(1);
+        });
+
         it('drops a pending change when destroyed', async () => {
             vi.useFakeTimers();
             const store = createStore(rows),

@@ -12,7 +12,7 @@ import type {ReactNode} from 'react';
  * @internal
  */
 export const cardHeaderImpl = hoistCmp.factory<CardModel>({
-    render({icon, intent, title, subtitle, headerItems, tooltip, model}, ref) {
+    render({icon, intent, title, subtitle, headerItems, headerId, tooltip, model}, ref) {
         const subtitleEl = cardSubtitle(subtitle);
         let item: ReactNode = null;
 
@@ -35,6 +35,6 @@ export const cardHeaderImpl = hoistCmp.factory<CardModel>({
 
         if (item && tooltip) item = bpTooltip({item, content: tooltip, intent});
 
-        return cardLegend(item, headerItems);
+        return cardLegend(item, headerItems, headerId);
     }
 });

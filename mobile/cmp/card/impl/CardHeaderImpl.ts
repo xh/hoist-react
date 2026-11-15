@@ -12,7 +12,7 @@ import type {ReactNode} from 'react';
  * @internal
  */
 export const cardHeaderImpl = hoistCmp.factory<CardModel>({
-    render({icon, intent, title, subtitle, headerItems, tooltip, model}, ref) {
+    render({icon, intent, title, subtitle, headerItems, headerId, tooltip, model}, ref) {
         warnIf(!!tooltip, 'Card tooltips are not supported on mobile - will be ignored.');
 
         const subtitleEl = cardSubtitle(subtitle);
@@ -38,6 +38,6 @@ export const cardHeaderImpl = hoistCmp.factory<CardModel>({
             });
         }
 
-        return cardLegend(item, headerItems);
+        return cardLegend(item, headerItems, headerId);
     }
 });

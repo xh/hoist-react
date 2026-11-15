@@ -56,7 +56,7 @@ export const [TreeMap, treeMap] = hoistCmp.withFactory<TreeMapProps>({
             );
             return 'Highcharts not available';
         }
-        warnIfNoColorAxis(model);
+        warnIfNoColorAxis();
 
         const impl = useLocalModel(TreeMapLocalModel);
         ref = useComposedRefs(
@@ -106,17 +106,18 @@ export const [TreeMap, treeMap] = hoistCmp.withFactory<TreeMapProps>({
 
 /**
  * The treemap module does not hold the Highcharts color axis. Without one, Highcharts ignores the
- * `colorAxis` config and each node's `colorValue`, with no error, so say so once.
+ * `colorAxis` config and each node's `colorValue`, with no error, so say so once. This applies to
+ * every color mode: the neutral color of `none` is a stop on the color axis too.
  */
 let warnedNoColorAxis = false;
-function warnIfNoColorAxis(model: TreeMapModel) {
-    if (warnedNoColorAxis || model.colorMode === 'none' || Highcharts.ColorAxis) return;
+function warnIfNoColorAxis() {
+    if (warnedNoColorAxis || Highcharts.ColorAxis) return;
     warnedNoColorAxis = true;
     logWarn(
-        `Highcharts has no color axis, so TreeMap cannot color nodes by heat for colorMode ` +
-            `'${model.colorMode}' - every node draws in one default color. Import ` +
-            `'highcharts/modules/heatmap' (or 'highcharts/modules/coloraxis') before ` +
-            `'highcharts/modules/treemap' in Bootstrap.ts. See Toolbox for an example.`,
+        `Highcharts has no color axis, so TreeMap cannot apply its colors - every node draws ` +
+            `in one default color. Import 'highcharts/modules/heatmap' (or ` +
+            `'highcharts/modules/coloraxis') before 'highcharts/modules/treemap' in ` +
+            `Bootstrap.ts. See Toolbox for an example.`,
         TreeMap
     );
 }

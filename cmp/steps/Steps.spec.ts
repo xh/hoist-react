@@ -4,7 +4,7 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {span} from '@xh/hoist/cmp/layout';
+import {htmlButton, span} from '@xh/hoist/cmp/layout';
 import {steps} from '@xh/hoist/cmp/steps';
 import type {StepSpec} from '@xh/hoist/cmp/steps';
 import {initTestAppAsync} from '@xh/hoist/test-support';
@@ -237,20 +237,52 @@ describe('Steps', () => {
             ]);
         });
 
-        it('leaves a disabled step out: it takes no focus, click or keypress', () => {
+        it('makes a disabled step a disabled button that takes no focus, click or keypress', () => {
             const onStepClick = vi.fn(),
                 list = [{title: 'A'}, {title: 'B', disabled: true}, {title: 'C'}],
                 {container} = render(steps({steps: list, current: 1, onStepClick}));
-            const [, disabled] = Array.from(container.querySelectorAll('.xh-steps__step-inner'));
+            const [, disabled] = Array.from(container.querySelectorAll('[role="button"]'));
 
-            expect(container.querySelectorAll('[role="button"]')).toHaveLength(2);
+            expect(disabled.getAttribute('aria-disabled')).toBe('true');
             expect(disabled.hasAttribute('tabindex')).toBe(false);
+            expect(disabled.getAttribute('aria-current')).toBe('step');
 
             fireEvent.click(disabled);
             fireEvent.keyDown(disabled, {key: 'Enter'});
             expect(onStepClick).not.toHaveBeenCalled();
-            // With no button to carry it, the list item reports the current step.
-            expect(disabled.closest('li').getAttribute('aria-current')).toBe('step');
+        });
+
+        it('ignores disabled with no onStepClick', () => {
+            const {container} = render(steps({steps: [{title: 'A', disabled: true}]}));
+
+            expect(container.querySelector('[aria-disabled]')).toBeNull();
+            expect(container.querySelector('[role="button"]')).toBeNull();
+        });
+
+        it('leaves a click or keypress on a control inside a step to that control', () => {
+            const onStepClick = vi.fn(),
+                dismiss = vi.fn(),
+                list = [
+                    {
+                        title: 'A',
+                        detail: htmlButton({
+                            className: 'dismiss',
+                            onClick: dismiss,
+                            item: 'Dismiss'
+                        })
+                    }
+                ],
+                {container} = render(steps({steps: list, onStepClick}));
+            const control = container.querySelector('.dismiss');
+
+            fireEvent.click(control);
+            fireEvent.keyDown(control, {key: 'Enter'});
+            fireEvent.keyDown(control, {key: ' '});
+            expect(dismiss).toHaveBeenCalledTimes(1);
+            expect(onStepClick).not.toHaveBeenCalled();
+
+            fireEvent.click(container.querySelector('.xh-steps__title'));
+            expect(onStepClick).toHaveBeenCalledTimes(1);
         });
 
         it('calls the handler with the index in steps, counting left-out steps', () => {

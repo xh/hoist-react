@@ -52,12 +52,11 @@
 * Fixed `TreeMap` drawing nodes in an invalid color when every heat value was zero, or `maxHeat`
   was zero. Those nodes now take the neutral color.
 * Fixed `TreeMap` showing its empty placeholder for a moment on mount, and when records arrived
-  in an empty map. `TreeMapModel` now reads its store at once while it has no data to show.
-  Changes to a map that shows data are debounced as before.
-* `TreeMap` now logs a console warning when it colors nodes by heat and Highcharts has no color
-  axis. Import `highcharts/modules/heatmap` or `highcharts/modules/coloraxis` before
-  `highcharts/modules/treemap` in `Bootstrap.ts`. Without one, every node drew in one default
-  color with no sign of the cause.
+  in an empty map. `TreeMapModel` now reads the first records of its store at once. Later
+  changes are debounced as before.
+* `TreeMap` now logs a console warning when Highcharts has no color axis, which left every node
+  in one default color. Import `highcharts/modules/heatmap` or `highcharts/modules/coloraxis`
+  before `highcharts/modules/treemap` in `Bootstrap.ts`.
 * Fixed desktop `DateInput` staying narrow in a `FormField`, or with a `width` of `100%` or a
   `flex`. It now takes `width` and `flex` on its outer element and fills its field, as `TextInput`
   and `Select` do. Set a `width` on a `DateInput` to keep it narrower than its field.

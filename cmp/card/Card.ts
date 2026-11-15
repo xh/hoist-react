@@ -18,10 +18,11 @@ import {hoistCmp, uses, XH} from '@xh/hoist/core';
 import {cardHeaderImpl as desktopCardHeaderImpl} from '@xh/hoist/dynamics/desktop';
 import {cardHeaderImpl as mobileCardHeaderImpl} from '@xh/hoist/dynamics/mobile';
 import {mergeDeep, TEST_ID, warnIf} from '@xh/hoist/utils/js';
-import {splitLayoutProps} from '@xh/hoist/utils/react';
+import {isBlankNode, splitLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
-import {type ReactElement, type ReactNode, useRef} from 'react';
+import {type ReactElement, type ReactNode, useId, useRef} from 'react';
 import {CardModel} from './CardModel';
+import {cardHeaderItems} from './impl/CardHeaderParts';
 import './Card.scss';
 
 export interface CardProps<M extends CardModel = CardModel>
@@ -32,16 +33,23 @@ export interface CardProps<M extends CardModel = CardModel>
     intent?: Intent;
     /** The title to display. */
     title?: ReactNode;
-    /** Muted text after the title, for example a row count or the units of the content. */
+    /**
+     * Muted text after the title, for example a row count or the units of the content. A blank
+     * subtitle renders nothing.
+     */
     subtitle?: ReactNode;
     /**
      * Items at the far end of the inline header, for example buttons or a badge. With header
-     * items, the header spans the width of the card.
+     * items, the header spans the width of the card. Blank items are left out.
+     *
+     * The card is named by its title, icon and subtitle for screen readers, not by its header
+     * items. A card with header items and no title has no name of its own: pass an `aria-label`
+     * through `domAttrs`.
      */
     headerItems?: ReactNode[];
     /**
      * A row under the content, set apart by a rule, for example for actions or a summary. Hidden
-     * while the card is collapsed.
+     * while the card is collapsed. A blank footer renders nothing.
      */
     footer?: ReactNode;
     /** Tooltip to show when hovering over the inline header. */
@@ -87,11 +95,20 @@ export const [Card, card] = hoistCmp.withFactory<CardProps>({
         warnIf(tooltip && isMobileApp, 'Tooltips are not supported on mobile - will be ignored.');
 
         const wasDisplayed = useRef(false),
+            headerId = useId(),
+            shownHeaderItems = cardHeaderItems(headerItems),
+            hasHeader = model.collapsible || !!icon || !!title || !isBlankNode(subtitle),
             {collapsed, renderMode} = model;
 
         let [layoutProps, {testId, domAttrs, ...restProps}] = splitLayoutProps(rest);
 
-        restProps = mergeDeep({style: layoutProps}, {[TEST_ID]: testId, ...domAttrs}, restProps);
+        // A legend that holds header items would add them to the card's name.
+        restProps = mergeDeep(
+            {style: layoutProps},
+            shownHeaderItems.length && hasHeader ? {'aria-labelledby': headerId} : {},
+            {[TEST_ID]: testId, ...domAttrs},
+            restProps
+        );
 
         const classes: string[] = [];
 
@@ -130,7 +147,8 @@ export const [Card, card] = hoistCmp.withFactory<CardProps>({
                     model,
                     title,
                     subtitle,
-                    headerItems,
+                    headerItems: shownHeaderItems,
+                    headerId,
                     tooltip
                 }),
                 box({
@@ -140,7 +158,7 @@ export const [Card, card] = hoistCmp.withFactory<CardProps>({
                     display: collapsed ? 'none' : 'flex'
                 }),
                 div({
-                    omit: footer == null || collapsed,
+                    omit: isBlankNode(footer) || collapsed,
                     className: 'xh-card__footer',
                     item: footer
                 })
