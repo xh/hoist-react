@@ -989,6 +989,32 @@ body {
   }
 
   //------------------------
+  // Steps
+  //------------------------
+  --xh-steps-complete-color: var(--steps-complete-color, var(--xh-intent-primary));
+  --xh-steps-complete-icon-color: var(--steps-complete-icon-color, white);
+  --xh-steps-connector-color: var(--steps-connector-color, var(--xh-border-color));
+  // Space between a marker and each end of the line that connects it to the next.
+  --xh-steps-connector-inset: var(--steps-connector-inset, 4px);
+  --xh-steps-connector-width: var(--steps-connector-width, 2px);
+  --xh-steps-current-color: var(--steps-current-color, var(--xh-intent-primary-text-color));
+  --xh-steps-description-color: var(--steps-description-color, var(--xh-blue-gray));
+  --xh-steps-description-font-size: var(--steps-description-font-size, var(--xh-font-size-small-em));
+  --xh-steps-error-color: var(--steps-error-color, var(--xh-intent-danger-text-color));
+  --xh-steps-marker-font-size: var(--steps-marker-font-size, var(--xh-font-size-small-em));
+  --xh-steps-marker-size: var(--steps-marker-size, 24px);
+  --xh-steps-pending-color: var(--steps-pending-color, var(--xh-blue-gray));
+  // Space between the text of one step and the next in a vertical sequence.
+  --xh-steps-vertical-gap: var(--steps-vertical-gap, calc(var(--xh-pad-px) * 2));
+  --xh-steps-warning-color: var(--steps-warning-color, var(--xh-intent-warning-text-color));
+
+  // As with stat cards, the muted text color reads well on a dark background only.
+  &.xh-dark {
+    --xh-steps-description-color: var(--steps-description-color, var(--xh-text-color-muted));
+    --xh-steps-pending-color: var(--steps-pending-color, var(--xh-text-color-muted));
+  }
+
+  //------------------------
   // Tabs
   //------------------------
   --xh-tab-text-color: var(--tab-text-color, var(--xh-text-color));
