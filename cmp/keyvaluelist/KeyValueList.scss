@@ -21,6 +21,11 @@
   );
   column-gap: var(--xh-key-value-list-column-gap);
   row-gap: var(--xh-key-value-list-row-gap);
+  // Fill the width of a block, or of a flex container that does not stretch the list. Unlike
+  // `width: 100%`, this allows for a margin. The prefixed values are for browsers without `stretch`.
+  width: -webkit-fill-available;
+  width: -moz-available;
+  width: stretch;
   min-width: 0;
   margin: 0;
   padding: 0;
