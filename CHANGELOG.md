@@ -34,6 +34,11 @@
   with an optional `label` within the rule.
 * Added a `maxLength` prop to the desktop and mobile `TextInput` and `TextArea`, to limit the
   number of characters a user can enter.
+* Added `subtitle`, `headerItems` and `footer` props to `Card`, for muted text after the title,
+  items such as buttons at the far end of the header, and a row under the content. A card that
+  sets none of them renders as before.
+* `CardModel.collapsible` is now observable and settable after construction. Setting it false
+  expands a collapsed card.
 
 ## 90.1.0 - 2026-11-13
 

@@ -5,7 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
-import {box, fieldset} from '@xh/hoist/cmp/layout';
+import {box, div, fieldset} from '@xh/hoist/cmp/layout';
 import type {
     BoxProps,
     DomAttrsProps,
@@ -32,6 +32,18 @@ export interface CardProps<M extends CardModel = CardModel>
     intent?: Intent;
     /** The title to display. */
     title?: ReactNode;
+    /** Muted text after the title, for example a row count or the units of the content. */
+    subtitle?: ReactNode;
+    /**
+     * Items at the far end of the inline header, for example buttons or a badge. With header
+     * items, the header spans the width of the card.
+     */
+    headerItems?: ReactNode[];
+    /**
+     * A row under the content, set apart by a rule, for example for actions or a summary. Hidden
+     * while the card is collapsed.
+     */
+    footer?: ReactNode;
     /** Tooltip to show when hovering over the inline header. */
     tooltip?: ReactElement | string;
     /** Additional props to pass to the inner box hosting the content. */
@@ -40,8 +52,8 @@ export interface CardProps<M extends CardModel = CardModel>
 
 /**
  * A bordered container for grouping related content, rendered as an HTML fieldset/legend.
- * Supports an optional inline header (`title`, `icon`, `intent`) and user-driven
- * collapse/expand via its backing {@link CardModel}.
+ * Supports an optional inline header (`title`, `subtitle`, `icon`, `intent`, `headerItems`), an
+ * optional `footer` and user-driven collapse/expand via its backing {@link CardModel}.
  *
  * Children are arranged vertically in a flexbox container by default - pass
  * `contentBoxProps` to customize the content layout.
@@ -60,6 +72,9 @@ export const [Card, card] = hoistCmp.withFactory<CardProps>({
     render({
         icon,
         title,
+        subtitle,
+        headerItems,
+        footer,
         tooltip,
         intent,
         children,
@@ -114,6 +129,8 @@ export const [Card, card] = hoistCmp.withFactory<CardProps>({
                     intent,
                     model,
                     title,
+                    subtitle,
+                    headerItems,
                     tooltip
                 }),
                 box({
@@ -121,6 +138,11 @@ export const [Card, card] = hoistCmp.withFactory<CardProps>({
                     className: classNames('xh-card__content', contentBoxProps?.className),
                     items,
                     display: collapsed ? 'none' : 'flex'
+                }),
+                div({
+                    omit: footer == null || collapsed,
+                    className: 'xh-card__footer',
+                    item: footer
                 })
             ],
             ...restProps

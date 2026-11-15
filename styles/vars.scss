@@ -383,8 +383,15 @@ body {
   --xh-card-header-min-height-px: calc(var(--xh-card-header-min-height) * 1px);
   --xh-card-header-text-color: var(--card-header-text-color, var(--xh-text-color));
   --xh-card-primary-color: var(--card-primary-color, var(--xh-intent-primary-text-color));
+  --xh-card-subtitle-color: var(--card-subtitle-color, var(--xh-blue-gray));
+  --xh-card-subtitle-font-size: var(--card-subtitle-font-size, var(--xh-font-size-small-em));
   --xh-card-success-color: var(--card-success-color, var(--xh-intent-success-text-color));
   --xh-card-warning-color: var(--card-warning-color, var(--xh-intent-warning-text-color));
+
+  // The muted text color is too faint for a subtitle on a light background, but reads well on a dark one.
+  &.xh-dark {
+    --xh-card-subtitle-color: var(--card-subtitle-color, var(--xh-text-color-muted));
+  }
 
 
   //------------------------
