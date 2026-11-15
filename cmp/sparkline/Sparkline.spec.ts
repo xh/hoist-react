@@ -22,30 +22,66 @@ describe('Sparkline', () => {
 
         expect(root.getAttribute('role')).toBe('img');
         expect(root.getAttribute('aria-label')).toBe('Trend: 3 points, from 101 to 118');
-        expect(root.querySelector('svg').getAttribute('aria-hidden')).toBe('true');
     });
 
-    it('takes its name from a given label, and shows a tooltip only when asked', () => {
-        const plain = renderRoot({values: [1, 2], label: 'Orders, last 30 days'});
-        expect(plain.getAttribute('aria-label')).toBe('Orders, last 30 days');
-        expect(plain.hasAttribute('title')).toBe(false);
+    it('takes its name from an aria-label in domAttrs', () => {
+        const root = renderRoot({values: [1, 2], domAttrs: {'aria-label': 'Orders, last 30 days'}});
 
-        const withLabel = renderRoot({values: [1, 2], label: 'Orders', tooltip: true});
-        expect(withLabel.getAttribute('title')).toBe('Orders');
-
-        const withText = renderRoot({values: [1, 2], label: 'Orders', tooltip: 'Up 4%'});
-        expect(withText.getAttribute('title')).toBe('Up 4%');
+        expect(root.getAttribute('aria-label')).toBe('Orders, last 30 days');
     });
 
-    it('draws a line by default, with a stroke that does not scale with the box', () => {
-        const root = renderRoot({values: [0, 5, 10]}),
-            line = part(root, 'line');
+    it('shows a tooltip only when asked: its name, or a given string', () => {
+        const named = {'aria-label': 'Orders'};
 
-        expect(line.getAttribute('d')).toBe('M0 100L50 50L100 0');
-        expect(line.getAttribute('vector-effect')).toBe('non-scaling-stroke');
-        expect(root.querySelector('svg').getAttribute('preserveAspectRatio')).toBe('none');
+        expect(renderRoot({values: [1, 2]}).hasAttribute('title')).toBe(false);
+        expect(renderRoot({values: [1, 2], tooltip: null}).hasAttribute('title')).toBe(false);
+        expect(renderRoot({values: [1, 2], tooltip: '  '}).hasAttribute('title')).toBe(false);
+        expect(renderRoot({values: [1, 2], tooltip: false}).hasAttribute('title')).toBe(false);
+        expect(renderRoot({values: [1, 2], tooltip: true}).getAttribute('title')).toBe(
+            'Trend: 2 points, from 1 to 2'
+        );
+        expect(
+            renderRoot({values: [1, 2], domAttrs: named, tooltip: true}).getAttribute('title')
+        ).toBe('Orders');
+        expect(
+            renderRoot({values: [1, 2], domAttrs: named, tooltip: 'Up 4%'}).getAttribute('title')
+        ).toBe('Up 4%');
+    });
+
+    it('draws a line by default, with no fill and no dots', () => {
+        const root = renderRoot({values: [0, 5, 10]});
+
+        expect(part(root, 'line').getAttribute('d')).toBe('M0 100L50 50L100 0');
         expect(part(root, 'area')).toBeNull();
         expect(part(root, 'dot')).toBeNull();
+    });
+
+    it('takes the default for a prop set to null', () => {
+        const unset = renderRoot({values: [5, 10]}),
+            nulls = renderRoot({
+                values: [5, 10],
+                type: null,
+                intent: null,
+                baseline: null,
+                min: null,
+                max: null,
+                colorByTrend: null,
+                showLast: null,
+                showMinMax: null
+            });
+
+        expect(nulls.outerHTML).toBe(unset.outerHTML);
+    });
+
+    it.each([
+        ['min', {min: null, max: 20}, 'M0 100L100 66.67'],
+        ['max', {min: 0, max: null}, 'M0 50L100 0'],
+        ['baseline', {baseline: null, type: 'bar' as const}, 'M5 50h40v50h-40ZM55 0h40v100h-40Z']
+    ])('takes the default for a null %s beside other props', (name, props, d) => {
+        const root = renderRoot({values: [5, 10], ...props});
+
+        expect(root.querySelector('path').getAttribute('d')).toBe(d);
+        expect(part(root, 'baseline')).toBeNull();
     });
 
     it('adds a fill for an area', () => {

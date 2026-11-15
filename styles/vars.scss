@@ -796,6 +796,7 @@ body {
   --xh-item-list-danger-color: var(--item-list-danger-color, var(--xh-intent-danger-text-color));
   --xh-item-list-description-color: var(--item-list-description-color, var(--xh-blue-gray));
   --xh-item-list-description-font-size: var(--item-list-description-font-size, var(--xh-font-size-small-em));
+  --xh-item-list-disabled-opacity: var(--item-list-disabled-opacity, 0.5);
   --xh-item-list-divider: var(--item-list-divider, var(--xh-border-solid));
   --xh-item-list-empty-color: var(--item-list-empty-color, var(--xh-blue-gray));
   // Space between an entry's icon, text and detail.

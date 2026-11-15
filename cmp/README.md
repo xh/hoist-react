@@ -152,8 +152,8 @@ techniques.
 | `/cubegrid/` | Cube View as a tree grid, with pivot paths as nested column groups when pivoted. [See README](./cubegrid/README.md) |
 | `/statcard/` | Tiles that call out key figures (StatCard), laid out in equal-width rows (StatCardStrip) |
 | `/keyvaluelist/` | Display-only list of labeled values (KeyValueList), such as the fields of a record in a detail panel |
-| `/sparkline/` | Small inline trend chart in plain SVG, for a stat card or a grid cell. [See README](./sparkline/README.md) |
-| `/itemlist/` | Short, static list of entries with a title, description, icon and trailing detail (ItemList). [See README](./itemlist/README.md) |
+| `/sparkline/` | Small inline trend chart in plain SVG (Sparkline), for a stat card or a grid cell |
+| `/itemlist/` | Short, static list of entries with a title, description, icon and trailing detail (ItemList) |
 
 ### Layout and Containers
 
@@ -262,6 +262,88 @@ const chartModel = new ChartModel({
 chartModel.setSeries([{name: 'Series 1', data: [...]}]);
 ```
 
+### Sparkline (`/sparkline/`)
+
+A small inline chart of a trend, with no axes, labels or legend: the line beside a key figure, or
+a trend cell in each row of a grid. It draws plain SVG with no charting library, and takes no
+model. Use a `Chart` when a reader must take exact values from the chart.
+
+```typescript
+import {sparkline} from '@xh/hoist/cmp/sparkline';
+
+// A line in a neutral color, inline, at the default size of 80 by 24 pixels
+sparkline({values: [101, 103, 102, 106, 109, 107, 113, 118]})
+
+// Green if the series ends above its start, red if below, with a dot on the last value
+sparkline({values, colorByTrend: true, showLast: true})
+
+// Daily P&L as bars, with losses below a zero line in the negative value color
+sparkline({values: dailyPnl, type: 'bar', colorNegative: true, baseline: 0})
+
+// Under the figure of a StatCard, at the width of the card
+statCard({
+    title: 'Orders',
+    value: fmtNumber(orders, {precision: 0}),
+    detail: sparkline({values: ordersByDay, type: 'area', width: '100%'})
+})
+```
+
+| Prop | Type | Description |
+|------|------|-------------|
+| `values` | `number[]` | The series to draw, in order. A null, undefined or NaN entry is a gap |
+| `type` | `'line' \| 'area' \| 'bar'` | Shape of the series. Default `line` |
+| `intent` | `Intent` | Semantic color for the series. Default is a neutral color |
+| `colorByTrend` | `boolean` | Colors the series by its last value against its first. Ignored when `intent` is set |
+| `colorNegative` | `boolean` | Draws bars below zero, or below `baseline`, in the negative value color. `bar` only |
+| `showLast` | `boolean` | Marks the last value with a dot. `line` and `area` only |
+| `showMinMax` | `boolean` | Marks the lowest and highest values with a dot each. `line` and `area` only |
+| `baseline` | `number` | Value to draw a dashed reference line at. Bars grow from it |
+| `min` / `max` | `number` | Fixed bounds of the scale. Default is the range of the series |
+| `tooltip` | `boolean \| string` | Shows the accessible name, or the given string, as a native tooltip |
+
+The component renders inline, like a `Badge`, with no outer margin. Pass layout props to size it.
+With `width: '100%'` or `flex: 1` it stretches to its container, and the line keeps its thickness.
+
+To show a sparkline in a grid cell, return it from the `renderer` of a column. In this example the
+`history` field of each record holds an array of numbers:
+
+```typescript
+{
+    field: 'history',
+    headerName: 'Trend',
+    width: 110,
+    autosizable: false,
+    sortable: false,
+    excludeFromExport: true,
+    renderer: values => sparkline({values, width: '100%', colorByTrend: true})
+}
+```
+
+- A sparkline is a React element, so the column needs a `renderer`, not a `textRenderer`. Set
+  `rendererIsComplex` only when the renderer reads other fields of the record.
+- Give the column a `width` and set `autosizable: false`. A sparkline at `width: '100%'` has no
+  width of its own to autosize to.
+- The default height of 24 pixels fits a row in the `standard` and `large` sizing modes. Pass a
+  smaller `height`, such as 14, for a `compact` or `tiny` grid.
+- An array has no useful sort order or export value. Turn both off, or set the `sortValue` and
+  `exportValue` of the column to a number, such as the last value.
+
+Each sparkline scales to its own lowest and highest value by default. Set `min` and `max` to draw
+several on one scale, such as those in a grid column. A value outside a fixed scale draws at the
+nearer edge. Bars grow from zero, and their scale always takes zero in, so a series far from zero
+draws bars of almost equal height. Set `min` or `baseline` to change that.
+
+The component never fails on partial data. One usable value draws a dot, a series of equal values
+draws a line across the middle, and an empty or missing array draws an empty box of the same size.
+
+The root element has `role="img"` and a generated accessible name, such as "Trend: 12 points,
+from 101 to 118". The name does not format numbers. Pass an `aria-label` through `domAttrs` to
+name the metric and round its values.
+
+Set the `--xh-sparkline-*` CSS variables to change the default size, line width and colors. Every
+shape draws in the CSS `color` of the component, so a class that sets `color` gives one sparkline
+a color of its own.
+
 ### DataView (`/dataview/`)
 
 Custom item rendering using Grid infrastructure. Useful when each record needs a custom visual
@@ -282,6 +364,94 @@ const dataViewModel = new DataViewModel({
     })
 });
 ```
+
+### ItemList (`/itemlist/`)
+
+A short, static list of entries, each with a title and an optional description, leading icon and
+trailing detail: a handful of alerts, recent activity, the results of a search. The list is
+presentation-only. It takes a plain array, with no model and no Store.
+
+```typescript
+import {itemList} from '@xh/hoist/cmp/itemlist';
+
+// Alerts with an icon, an intent color and a trailing detail each
+itemList({
+    dividers: true,
+    emptyText: 'No open alerts',
+    entries: [
+        {
+            title: 'Margin call on ACME Fund',
+            description: 'Collateral fell below the required level. Post 1.2m by end of day.',
+            icon: Icon.warning(),
+            intent: 'danger',
+            detail: relativeTimestamp({timestamp: alert.time})
+        },
+        {title: 'Trade 48211 awaits approval', icon: Icon.clock(), detail: badge('Pending')}
+    ]
+})
+
+// A numbered ranking in the compact size
+itemList({
+    ordered: true,
+    size: 'compact',
+    entries: topClients.map(it => ({title: it.name, detail: fmtMillions(it.revenue)}))
+})
+
+// Clickable entries - the index is the position in the array as given
+itemList({
+    entries: results.map(it => ({title: it.name, description: it.summary, disabled: it.locked})),
+    onEntryClick: (entry, index) => model.openResult(results[index])
+})
+```
+
+| Prop | Type | Description |
+|------|------|-------------|
+| `entries` | `ItemListEntry[]` | Entries to show, in order. Null entries are skipped |
+| `ordered` | `boolean` | Numbers the entries shown and renders an `ol`. Default false |
+| `dividers` | `boolean` | Draws a rule between entries. Default false |
+| `size` | `'compact' \| 'standard'` | `compact` for smaller text and tighter rows. Default `standard` |
+| `emptyText` | `ReactNode` | Shown in place of a list with no entries to show. Default is to render nothing |
+| `onEntryClick` | `(entry, index) => void` | Handler for a click or Enter/Space keypress. Makes each entry a focusable button |
+
+| `ItemListEntry` key | Type | Description |
+|---------------------|------|-------------|
+| `title` | `ReactNode` | Main text of the entry |
+| `description` | `ReactNode` | Longer text beneath the title |
+| `detail` | `ReactNode` | Short content at the far end of the title's line: a figure, a `Badge`, a timestamp |
+| `icon` | `ReactElement` | Icon before the text. Not shown in an `ordered` list |
+| `intent` | `Intent` | Semantic color for the icon or number, or for a thin bar in a list with neither |
+| `disabled` | `boolean` | Dims the entry and leaves it out of `onEntryClick` |
+| `omit` | `boolean` | True to leave the entry out |
+
+The data prop is `entries`, not `items`, because Hoist element factories reserve `items` for
+child elements. `onEntryClick` gets the index of the entry in `entries` as given, which counts
+null and omitted entries. That index can differ from the number an `ordered` list shows.
+
+Choose between `ItemList` and `DataView` by the size of the data and by what the user does with
+it:
+
+| | `ItemList` | `DataView` |
+|---|---|---|
+| Data | A plain array, passed as a prop | A `Store`, held by a `DataViewModel` |
+| Size | A handful of entries, all rendered | Any number of records. Renders only the rows in view |
+| Row height | Set by the content of each entry | Fixed, or computed per record by `itemHeight` |
+| Selection, sorting, grouping | None | Yes, as in a `Grid` |
+| Content of a row | Title, description, icon and detail | Any element, from a `renderer` |
+
+The list fills the width of its container and has no outer margin. Text wraps and is never
+truncated. A long title wraps beside its detail, and the detail drops to a line of its own only
+in a very narrow list. An entry with no icon keeps the space of one when another entry has an
+icon, so that every title lines up.
+
+A `title`, `description` or `detail` that is null, a boolean or a blank string renders nothing,
+so `cond && 'Text'` is safe. The list skips an entry with all three blank. A string renders as
+text, never as HTML.
+
+`intent` colors the icon or number of an entry, not its text. Say what the color means in the
+text as well. The component renders an HTML list, so a screen reader announces the count and the
+position of each entry.
+
+Set the `--xh-item-list-*` CSS variables to change the spacing and colors.
 
 ### TabContainer (`/tab/`)
 

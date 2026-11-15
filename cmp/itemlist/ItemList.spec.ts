@@ -70,10 +70,75 @@ describe('ItemList', () => {
     it('shows emptyText in place of an empty list, with layout props and class name', () => {
         const root = renderRoot({entries: [], emptyText: 'No alerts', width: 200});
 
-        expect(root.tagName).toBe('DIV');
         expect(root.classList).toContain('xh-item-list--empty');
         expect(root.textContent).toBe('No alerts');
         expect(root.style.width).toBe('200px');
+    });
+
+    it.each([
+        ['null', null],
+        ['false', false],
+        ['an empty string', ''],
+        ['a blank string', '   ']
+    ])('renders no element for a title, description or detail that is %s', (name, blank) => {
+        const [first, second] = entriesOf(
+            renderRoot({
+                entries: [
+                    {title: 'Kept', description: blank, detail: blank},
+                    {title: blank, description: 'Kept'}
+                ]
+            })
+        );
+
+        expect(part(first, 'title').textContent).toBe('Kept');
+        expect(part(first, 'description')).toBeNull();
+        expect(part(first, 'detail')).toBeNull();
+        expect(part(second, 'header')).toBeNull();
+        expect(part(second, 'description').textContent).toBe('Kept');
+    });
+
+    it('keeps a title or detail of 0, as a number is content', () => {
+        const root = renderRoot({entries: [{title: 0, detail: 0}]});
+
+        expect(part(root, 'title').textContent).toBe('0');
+        expect(part(root, 'detail').textContent).toBe('0');
+    });
+
+    it('skips an entry with no title, description or detail to show', () => {
+        const root = renderRoot({
+            ordered: true,
+            entries: [
+                {title: 'A'},
+                {title: '', description: false, icon: Icon.warning()},
+                {title: 'C'}
+            ]
+        });
+
+        expect(texts(root, 'title')).toEqual(['A', 'C']);
+        expect(texts(root, 'marker--number')).toEqual(['1', '2']);
+    });
+
+    it.each([
+        ['null', null],
+        ['false', false],
+        ['a blank string', '  ']
+    ])('renders nothing for an empty list with an emptyText that is %s', (name, emptyText) => {
+        expect(render(itemList({entries: [], emptyText})).container.innerHTML).toBe('');
+    });
+
+    it('takes the default for a prop set to null', () => {
+        const entries = [{title: 'A', description: 'B'}],
+            unset = renderRoot({entries}),
+            nulls = renderRoot({
+                entries,
+                ordered: null,
+                dividers: null,
+                size: null,
+                emptyText: null,
+                onEntryClick: null
+            });
+
+        expect(nulls.outerHTML).toBe(unset.outerHTML);
     });
 
     describe('markers', () => {
@@ -96,6 +161,7 @@ describe('ItemList', () => {
                 ordered: true,
                 entries: [
                     {title: 'A', icon: Icon.warning()},
+                    null,
                     {title: 'B', omit: true},
                     {title: 'C'}
                 ]
@@ -170,6 +236,41 @@ describe('ItemList', () => {
 
             expect(onEntryClick).toHaveBeenCalledTimes(3);
             expect(onEntryClick).toHaveBeenLastCalledWith(entries[2], 2);
+        });
+
+        it('reports the index in the array as given, not the number an ordered list shows', () => {
+            const onEntryClick = vi.fn(),
+                root = renderRoot({entries, ordered: true, onEntryClick}),
+                last = entriesOf(root)[1];
+
+            expect(part(last, 'marker--number').textContent).toBe('2');
+            fireEvent.click(part(last, 'entry-inner'));
+            expect(onEntryClick).toHaveBeenCalledWith(entries[2], 2);
+        });
+
+        it('keeps a disabled entry out of the tab order and does not call the handler', () => {
+            const onEntryClick = vi.fn(),
+                root = renderRoot({
+                    entries: [{title: 'A', disabled: true}, {title: 'B'}],
+                    onEntryClick
+                }),
+                [disabled, enabled] = entriesOf(root).map(it => part(it, 'entry-inner'));
+
+            expect(disabled.getAttribute('aria-disabled')).toBe('true');
+            expect(disabled.hasAttribute('tabindex')).toBe(false);
+            expect(enabled.getAttribute('tabindex')).toBe('0');
+
+            fireEvent.click(disabled);
+            fireEvent.keyDown(disabled, {key: 'Enter'});
+            expect(onEntryClick).not.toHaveBeenCalled();
+        });
+
+        it('ignores disabled in a list with no handler', () => {
+            const entries = [{title: 'A'}];
+
+            expect(renderRoot({entries: [{title: 'A', disabled: true}]}).outerHTML).toBe(
+                renderRoot({entries}).outerHTML
+            );
         });
 
         it('ignores a keypress on a control inside an entry', () => {
