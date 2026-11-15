@@ -133,7 +133,10 @@ export class ThemeModel extends HoistModel {
 
     init() {
         this.setTheme(XH.getPref('xhTheme'));
-        if (XH.isDevelopmentMode) this.warnOnUnitlessLengthVars();
+        if (XH.isDevelopmentMode) {
+            this.warnOnUnitlessLengthVars();
+            this.warnOnDocumentRootVars();
+        }
         window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', event => {
             if (XH.getPref('xhTheme') === 'system') {
                 this.setDarkTheme(event.matches);
@@ -191,5 +194,55 @@ export class ThemeModel extends HoistModel {
                     `See docs/upgrade-notes/v91-upgrade-notes.md.`
             );
         }
+    }
+
+    /**
+     * Warn about any `--xh-*` variable set on `<html>`, by a stylesheet rule or an inline style.
+     * Hoist declares its defaults on `body`, which take precedence over values inherited from
+     * `<html>`, so these overrides have no effect. Checks the stylesheets loaded at startup.
+     */
+    private warnOnDocumentRootVars() {
+        const root = document.documentElement,
+            names = new Set<string>();
+
+        const collect = (style: CSSStyleDeclaration) => {
+            for (let i = 0; i < style.length; i++) {
+                if (style[i].startsWith('--xh-')) names.add(style[i]);
+            }
+        };
+        const scan = (rules: CSSRuleList) => {
+            for (const rule of Array.from(rules)) {
+                if (rule instanceof CSSStyleRule) {
+                    if (selectorMatches(root, rule.selectorText)) collect(rule.style);
+                } else if ('cssRules' in rule) {
+                    scan((rule as CSSGroupingRule).cssRules);
+                }
+            }
+        };
+
+        for (const sheet of Array.from(document.styleSheets)) {
+            try {
+                scan(sheet.cssRules);
+            } catch {
+                // Cross-origin sheets do not expose their rules - skip them.
+            }
+        }
+        collect(root.style);
+
+        if (names.size) {
+            this.logWarn(
+                `CSS variables set on :root or html have no effect - Hoist's defaults on body take ` +
+                    `precedence. Move these overrides to body.xh-app: ${[...names].join(', ')}. ` +
+                    `See docs/upgrade-notes/v91-upgrade-notes.md.`
+            );
+        }
+    }
+}
+
+function selectorMatches(el: Element, selector: string): boolean {
+    try {
+        return el.matches(selector);
+    } catch {
+        return false;
     }
 }

@@ -1,8 +1,5 @@
 # Styles
 
-> **Status: DRAFT** - This document needs review by an XH developer.
-> See [docs-roadmap.md](../docs/planning/docs-roadmap.md) for the review workflow.
-
 ## Overview
 
 The `/styles/` package defines the visual foundation of Hoist. It is a system of CSS custom

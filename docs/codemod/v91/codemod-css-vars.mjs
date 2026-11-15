@@ -31,6 +31,8 @@
  * The script also warns about patterns it cannot safely rewrite: `calc()` expressions that add a
  * bare number to a size variable or divide by one, size variables assigned numbers from code, and
  * code referencing a size variable by name (which may read a value that now includes its unit).
+ * It also warns about `--xh-*` declarations on `:root` or `html`. Hoist's defaults on `body` take
+ * precedence there, so those overrides do nothing until moved to `body.xh-app`.
  *
  * Usage, from an app's `client-app` directory:
  *   node node_modules/@xh/hoist/docs/codemod/v91/codemod-css-vars.mjs [--dry] [--no-hooks] [path ...]
@@ -847,6 +849,13 @@ function warn(src, rel, ext) {
             }
         }
     });
+    if (STYLE_EXTS.has(ext)) {
+        for (const d of scanDeclarations(src)) {
+            if (d.onDocumentRoot && d.name.startsWith('--xh-')) {
+                report.warnings.push(`${rel}:${lineOf(src, d.index)}  sets ${d.name} on :root or html, where it has no effect - move it to body.xh-app`);
+            }
+        }
+    }
 }
 
 // Markdown is report-only - list each line naming a renamed or removed variable.
@@ -863,7 +872,8 @@ function reportDoc(src, rel) {
 // Helpers
 //------------------------
 // Minimal CSS/SCSS scanner - yields each custom-property declaration with whether its enclosing
-// selector chain is root-level. Handles nesting and `&` suffixes; ignores comments and strings.
+// selector chain is root-level, and whether that root is `html` / `:root` rather than `body`.
+// Handles nesting and `&` suffixes; ignores comments and strings.
 function scanDeclarations(src) {
     const out = [];
     const clean = src
@@ -886,7 +896,7 @@ function scanDeclarations(src) {
             if (/^\s*--[a-zA-Z0-9_-]+\s*:$/.test(buf)) {
                 const name = buf.trim().replace(/\s*:$/, '');
                 const index = clean.lastIndexOf(name, i);
-                out.push({name, index, rootLevel: isRootChain(stack)});
+                out.push({name, index, rootLevel: isRootChain(stack), onDocumentRoot: isDocumentRootChain(stack)});
             }
         }
     }
@@ -896,6 +906,13 @@ function scanDeclarations(src) {
 function isRootChain(stack) {
     if (!stack.length) return false;
     return stack.every(sel => sel.split(',').some(s => /^(&?(body|html|:root)?)([.:&][\w-]+|\(|\))*$/.test(s.trim()) && /(body|html|:root|\.xh-app|\.xh-dark|\.xh-mobile|:where\(\.xh-(dark|mobile)\))/.test(s)));
+}
+
+// A root-level chain whose innermost element selector is `html` or `:root`, not `body`.
+function isDocumentRootChain(stack) {
+    if (!isRootChain(stack)) return false;
+    const el = stack.findLast(sel => /(^|[^\w-])(body|html)(?![\w-])|:root/.test(sel));
+    return !!el && !/(^|[^\w-])body(?![\w-])/.test(el);
 }
 
 function lineOf(src, index) {

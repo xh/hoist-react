@@ -33,7 +33,8 @@ The most significant impacts are:
 - **Old names and unitless values fail silently.** An app still setting `--grid-bg`, `--xh-pad`, or
   `--xh-font-size: 14` loses that customization without an error. Run the codemod, and watch for
   Hoist's development-mode console warning about unitless size variables.
-- **Overrides set on `:root` or `html` no longer apply** - move them to `body.xh-app`.
+- **Overrides set on `:root` or `html` no longer apply** - move them to `body.xh-app`. The codemod
+  and a development-mode console warning both name any it finds.
 
 ## Prerequisites
 
@@ -121,7 +122,8 @@ The codemod ends with a report. Work through each section of it:
   number) or divide by one, TypeScript assigning a size variable a bare number, and code that
   references a size variable by name. For the last, check whether the code reads the variable's
   value - e.g. via `getComputedStyle(...).getPropertyValue()` - and appends a unit, which now
-  doubles up (`41pxpx`).
+  doubles up (`41pxpx`). Also any `--xh-*` variable set on `:root` or `html` - move it to
+  `body.xh-app` (Step 3).
 - **Markdown naming old or removed variables** - the codemod never edits `.md` files. Update
   living docs such as a README or `CLAUDE.md` by hand. Leave changelogs and release notes as
   written.
@@ -189,8 +191,8 @@ body.xh-app {
 }
 ```
 
-The codemod migrates the name and unit here but leaves the selector - change `:root` / `html` to
-`body.xh-app` by hand. Where you want per-theme values, nest an `&.xh-dark` block as in Step 1.
+The codemod migrates the name and unit here but leaves the selector, and lists the declaration in
+its warnings. Change `:root` / `html` to `body.xh-app` by hand. Where you want per-theme values, nest an `&.xh-dark` block as in Step 1.
 
 **Scoped overrides** - setting a variable on a container rather than `body.xh-app` - only reach CSS
 that reads that exact variable. Variables derived from it were resolved once on `body`, so
@@ -208,8 +210,17 @@ TypeScript or built with interpolation:
 Unitless values found for: --xh-spacing, ...
 ```
 
-The check covers the active theme at startup; switch themes and reload to check the other. Then
-review the app in both light and dark themes, and on mobile if applicable.
+The check covers the active theme at startup. Switch themes and reload to check the other.
+
+Hoist also warns if any `--xh-*` variable is set on `:root` or `html`, by a stylesheet or an inline
+style. Move each one it names to `body.xh-app` (Step 3):
+
+```
+[ThemeModel] | CSS variables set on :root or html have no effect - Hoist's defaults on body take
+precedence. Move these overrides to body.xh-app: --xh-spacing, ...
+```
+
+Then review the app in both light and dark themes, and on mobile if applicable.
 
 ## Verification Checklist
 
@@ -221,7 +232,8 @@ After completing all steps:
 - [ ] The application builds and loads without console errors.
 - [ ] The CSS codemod report has been reviewed - hook migrations, removed variables, and warnings.
 - [ ] No CSS variable overrides remain on `:root`, `html`, or bare `body`.
-- [ ] The application loads in development mode without the unitless size variable warning.
+- [ ] The application loads in development mode without the unitless size variable warning or
+  the warning about variables set on `:root` or `html`.
 - [ ] Custom colors, spacing, and typography render correctly in both light and dark themes (and on
   mobile, if applicable).
 - [ ] Form validation styling looks as intended if you override any `-border-color` (Step 2 note).

@@ -23,7 +23,8 @@ detailed, step-by-step upgrade instructions with before/after code examples.
   `docs/codemod/v91/codemod-css-vars.mjs` to migrate app stylesheets and code.
     * Removed the unprefixed override hooks (e.g. `--grid-bg`, `--pad`). Apps now set the `--xh-*`
       variables directly on `body.xh-app`, which now wins over Hoist's defaults in every theme and
-      platform combination. Overrides set on `:root` or `html` no longer have any effect.
+      platform combination. Overrides set on `:root` or `html` no longer have any effect, and
+      Hoist logs a development-mode warning naming any it finds.
     * Size variables now hold lengths with units (`--xh-spacing: 10px`), and every `-px` companion
       (`--xh-pad-px`, `--xh-font-size-px`, etc.) was removed - read the base variable instead.
       Hoist logs a development-mode warning if a size variable resolves to a bare number.
