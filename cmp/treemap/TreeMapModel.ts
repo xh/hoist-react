@@ -13,7 +13,7 @@ import {numberRenderer} from '@xh/hoist/format';
 import {action, bindable, computed, observableRef, bindableRef} from '@xh/hoist/mobx';
 import {throwIf, withDefault} from '@xh/hoist/utils/js';
 import type {ReactNode} from 'react';
-import {cloneDeep, get, isEmpty, isFinite, max, set, sortBy, sumBy, unset} from 'lodash';
+import {cloneDeep, debounce, get, isEmpty, isFinite, max, set, sortBy, sumBy, unset} from 'lodash';
 
 export interface TreeMapConfig {
     /** A store containing records to be displayed. */
@@ -65,7 +65,10 @@ export interface TreeMapConfig {
     /** Layout algorithm to use. */
     algorithm?: TreeMapAlgorithm;
 
-    /** Heat color distribution mode. */
+    /**
+     * Heat color distribution mode. The `linear` and `wash` modes need the Highcharts color axis,
+     * from `highcharts/modules/heatmap` or `highcharts/modules/coloraxis`.
+     */
     colorMode?: TreeMapColorMode;
 
     /** Theme to use. Leave undefined to use the global theme. */
@@ -115,6 +118,11 @@ export interface TreeMapModelDefaults {
  * - 'linear' - distributes values across the colorAxis according to the heatField.
  * - 'wash' - ignores heat intensity, applying a single positive/negative color.
  * - 'none' - ignores the colorAxis entirely, using the neutral color.
+ *
+ * The colorAxis is not part of the Highcharts `treemap` module. The 'linear' and 'wash' modes
+ * need the app to import `highcharts/modules/heatmap` or `highcharts/modules/coloraxis` in its
+ * `Bootstrap.ts`, before `highcharts/modules/treemap`. Without one, Highcharts draws every node
+ * in one default color, and TreeMap logs a warning to the console.
  *
  * Color customization can be managed by setting colorAxis stops via `highchartsConfig`.
  * See {@link https://www.highcharts.com/docs/chart-and-series-types/treemap} for Highcharts
@@ -237,12 +245,14 @@ export class TreeMapModel extends HoistModel {
                 this.maxDepth,
                 this.maxHeat
             ],
-            run: ([rawData]) => {
-                this.processAndSetData(rawData);
-            },
-            debounce: 100,
+            run: () => this.onSourceChange(),
             fireImmediately: true
         });
+    }
+
+    override destroy() {
+        this.debouncedProcessData.cancel();
+        super.destroy();
     }
 
     @computed
@@ -291,6 +301,25 @@ export class TreeMapModel extends HoistModel {
     //-------------------------
     // Data
     //-------------------------
+    private debouncedProcessData = debounce(
+        () => this.processAndSetData(this.store.rootRecords),
+        100
+    );
+
+    /**
+     * Rebuild `data` after a change to the store or to a setting that shapes it. A map that shows
+     * data debounces the work, as changes often come in bursts. A map with no data to show does it
+     * at once, so that its empty placeholder never shows over records that are ready.
+     */
+    private onSourceChange() {
+        if (this.empty) {
+            this.debouncedProcessData.cancel();
+            this.processAndSetData(this.store.rootRecords);
+        } else {
+            this.debouncedProcessData();
+        }
+    }
+
     @action
     processAndSetData(sourceRecords) {
         let data = this.processRecordsRecursive(sourceRecords);
@@ -372,7 +401,8 @@ export class TreeMapModel extends HoistModel {
      * the colorAxis provided to Highcharts.
      *
      * Takes the colorMode into account:
-     * a) 'linear' distributes normalized color values across the colorAxis.
+     * a) 'linear' distributes normalized color values across the colorAxis. Heats that are all
+     *      zero, or a `maxHeat` of zero, color all nodes with the neutral color.
      * b) 'wash' ignores the intensity of the heat value, applying a flat positive or negative color.
      * c) 'none' ignores the heat value altogether, coloring all nodes with the neutral color
      */
@@ -418,11 +448,13 @@ export class TreeMapModel extends HoistModel {
         });
 
         // 2) Transform heatValue into a normalized colorValue, according to the colorMode.
-        const maxHeat = isFinite(this.maxHeat) ? this.maxHeat : max(heatValues);
+        // A largest heat of zero gives no scale to place a heat on, so every node is neutral.
+        const maxHeat = isFinite(this.maxHeat) ? this.maxHeat : max(heatValues),
+            hasScale = maxHeat > 0;
         data.forEach(it => {
             const {heatValue, record} = it;
 
-            if (!this.valueIsValid(heatValue)) {
+            if (!hasScale || !this.valueIsValid(heatValue)) {
                 it.colorValue = 0.5;
                 return;
             }
