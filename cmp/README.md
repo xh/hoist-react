@@ -563,15 +563,15 @@ keyValueList({
 })
 
 // Labels above their values, in at most three columns, with a rule between rows
-keyValueList({entries, labelPosition: 'top', columns: 3, minColumnWidth: 160, dividers: true})
+keyValueList({entries, labelPosition: 'top', columns: 3, dividers: true})
 ```
 
 | Prop | Type | Description |
 |------|------|-------------|
 | `entries` | `KeyValueEntry[]` | Labeled values to show, in order. A null entry is skipped |
 | `labelPosition` | `'left' \| 'top'` | Where each label sits against its value. Default `left` |
-| `columns` | `number` | Number of columns, never more than the entries. Omit to fit the width |
-| `minColumnWidth` | `number` | Narrowest a column gets, in pixels. Default 300, or 180 with `top` |
+| `columns` | `number` | Most columns, never more than the entries. Omit to fit the width |
+| `minColumnWidth` | `number` | Narrowest a column gets, in pixels. Defaults below |
 | `emptyText` | `ReactNode` | Shown for a null, undefined or blank string value. Default `-` |
 | `size` | `'compact' \| 'standard'` | `compact` for smaller text and tighter rows |
 | `dividers` | `boolean` | True to draw a rule between rows |
@@ -581,8 +581,9 @@ formats. A boolean value shows as the text `true` or `false`. Set `intent` to co
 `omit` to leave an entry out.
 
 With no `columns`, the list fits as many columns of at least `minColumnWidth` as its width allows,
-and stacks in one column in a narrow container. A `columns` count holds at any width. Set
-`minColumnWidth` with it to make it a maximum.
+and stacks in one column in a narrow container. The default `minColumnWidth` is 300px, or 180px
+with `top`. A `columns` count is a maximum: the list drops columns while one would be narrower
+than `minColumnWidth`. With `columns`, the default `minColumnWidth` is 180px, or 120px with `top`.
 
 Long labels and values wrap, within a word if needed, so the list never forces horizontal
 overflow. Set the `--xh-key-value-list-*` CSS variables to change the gaps, label width and

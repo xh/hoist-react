@@ -151,14 +151,32 @@ describe('KeyValueList', () => {
     });
 
     describe('columns', () => {
-        it('uses the given number of columns, whatever the width', () => {
-            setListWidth(200);
+        it('uses the given number of columns when the width allows', () => {
+            setListWidth(400);
             const {container} = render(keyValueList({entries: fiveEntries(), columns: 2}));
 
             expect(columnCount(container)).toBe('2');
         });
 
+        it.each([undefined, null])(
+            'drops given columns narrower than the default floor when minColumnWidth is %s',
+            minColumnWidth => {
+                setListWidth(343);
+                const props = {entries: fiveEntries(), minColumnWidth};
+
+                expect(columnCount(render(keyValueList({...props, columns: 2})).container)).toBe(
+                    '1'
+                );
+                expect(
+                    columnCount(
+                        render(keyValueList({...props, columns: 3, labelPosition: 'top'})).container
+                    )
+                ).toBe('2');
+            }
+        );
+
         it('uses no more of the given columns than it has entries', () => {
+            setListWidth(2000);
             const {container} = render(keyValueList({entries: fiveEntries(), columns: 10}));
 
             expect(columnCount(container)).toBe('5');
@@ -236,6 +254,7 @@ describe('KeyValueList', () => {
         });
 
         it('marks the entries of the last row, so a divider is not drawn under them', () => {
+            setListWidth(1000);
             const {container} = render(keyValueList({entries: fiveEntries(), columns: 2})),
                 lastRow = entries(container).map(it =>
                     it.classList.contains('xh-key-value-list__entry--last-row')
@@ -245,6 +264,7 @@ describe('KeyValueList', () => {
         });
 
         it('marks a full last row', () => {
+            setListWidth(1000);
             const {container} = render(
                     keyValueList({entries: fiveEntries().slice(0, 4), columns: 2})
                 ),

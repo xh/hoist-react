@@ -58,18 +58,15 @@ export interface KeyValueListProps
     labelPosition?: 'left' | 'top';
 
     /**
-     * Number of columns to lay the entries out in, filled row by row. The list never uses more
-     * columns than it has entries. Omit to fit as many columns of at least `minColumnWidth` as
-     * the width of the list allows.
-     *
-     * Set `minColumnWidth` as well to make this the most columns to use: the list then uses fewer
-     * in a container too narrow to hold them at that width.
+     * Most columns to lay the entries out in, filled row by row. The list uses fewer in a
+     * container too narrow to hold them at `minColumnWidth`, and never more than it has entries.
+     * Omit to fit as many columns of at least `minColumnWidth` as the width of the list allows.
      */
     columns?: number;
 
     /**
-     * Narrowest a column gets, in pixels. Default 300, or 180 when `labelPosition` is `top`. The
-     * default applies only when `columns` is not set.
+     * Narrowest a column gets, in pixels. Default 300, or 180 when `labelPosition` is `top`. When
+     * `columns` is set, the default is 180, or 120 when `labelPosition` is `top`.
      */
     minColumnWidth?: number;
 
@@ -117,8 +114,11 @@ export const [KeyValueList, keyValueList] = hoistCmp.withFactory<KeyValueListPro
                 }
             ] = splitLayoutProps(props),
             labelOnTop = labelPosition === 'top',
-            hasMinWidth = minColumnWidth > 0,
-            minWidth = hasMinWidth ? minColumnWidth : labelOnTop ? 180 : 300,
+            hasColumns = columns >= 1,
+            minWidth =
+                minColumnWidth > 0
+                    ? minColumnWidth
+                    : (hasColumns ? COLUMNS_MIN_WIDTH : FIT_MIN_WIDTH)[labelOnTop ? 'top' : 'left'],
             visibleEntries = (entries ?? []).filter(it => it && !it.omit),
             count = visibleEntries.length,
             [fitColumns, setFitColumns] = useState<number>(1),
@@ -133,11 +133,8 @@ export const [KeyValueList, keyValueList] = hoistCmp.withFactory<KeyValueListPro
 
         if (isEmpty(visibleEntries)) return null;
 
-        // A given count holds whatever the width, unless the caller also set a minimum width.
-        const hasColumns = columns >= 1,
-            maxColumns = Math.min(hasColumns ? Math.floor(columns) : count, count),
-            columnCount =
-                hasColumns && !hasMinWidth ? maxColumns : Math.min(maxColumns, fitColumns),
+        const maxColumns = Math.min(hasColumns ? Math.floor(columns) : count, count),
+            columnCount = Math.min(maxColumns, fitColumns),
             lastRowStart = count - (count % columnCount || columnCount);
 
         return dl({
@@ -182,6 +179,11 @@ export const [KeyValueList, keyValueList] = hoistCmp.withFactory<KeyValueListPro
 //------------------
 // Implementation
 //------------------
+// Default narrowest column, in pixels. A given `columns` takes a lower floor, as the caller asked
+// for that many: it gives up a column only when one would be too narrow to read.
+const FIT_MIN_WIDTH = {left: 300, top: 180},
+    COLUMNS_MIN_WIDTH = {left: 180, top: 120};
+
 const dl = elementFactory('dl'),
     dt = elementFactory('dt'),
     dd = elementFactory('dd');
