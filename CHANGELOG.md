@@ -63,8 +63,8 @@
   in one default color. Import `highcharts/modules/heatmap` or `highcharts/modules/coloraxis`
   before `highcharts/modules/treemap` in `Bootstrap.ts`.
 * Fixed desktop `DateInput` staying narrow in a `FormField`, or with a `width` of `100%` or a
-  `flex`. It now takes `width` and `flex` on its outer element and fills its field, as `TextInput`
-  and `Select` do. Set a `width` on a `DateInput` to keep it narrower than its field.
+  `flex`. It now fills its field, as `TextInput` does, and opens its calendar under the start of
+  a wide input. Set a `width` on a `DateInput` to keep it narrower than its field.
 * Fixed desktop `SegmentedControl` rendering layout props as DOM attributes, such as a stray
   `flex="1"` in a `FormField`. It now applies them as styles, so `width`, `flex` and other layout
   props take effect. `SegmentedControlProps` now includes `LayoutProps` on desktop and mobile.
