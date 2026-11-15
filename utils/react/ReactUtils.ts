@@ -5,9 +5,9 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import type {Content} from '@xh/hoist/core';
-import type {ReactElement} from 'react';
+import type {ReactElement, ReactNode} from 'react';
 import {cloneElement, createElement, isValidElement} from 'react';
-import {isFunction, isNil} from 'lodash';
+import {isBoolean, isFunction, isNil, isString} from 'lodash';
 import {renderToStaticMarkup as reactRenderToStaticMarkup} from 'react-dom/server';
 import {throwIf} from '../js';
 
@@ -57,4 +57,19 @@ export function elementFromContent(content: Content, addProps?: object): ReactEl
  */
 export function renderToStaticMarkup(element: ReactElement): string {
     return reactRenderToStaticMarkup(element as any);
+}
+
+/**
+ * True if a node has no content to show: null, undefined, a boolean, or a string that is empty or
+ * holds only whitespace. React renders nothing for these, apart from the whitespace.
+ *
+ * Use it to leave out the element that wraps optional content, such as a label or a title, so
+ * that blank content leaves no empty element or gap. It treats `false` as blank, so a caller can
+ * pass `condition && 'Text'`.
+ *
+ * A number is never blank - `0` is content. An element is never blank either, as there is no way
+ * to know what it renders.
+ */
+export function isBlankNode(node: ReactNode): boolean {
+    return isNil(node) || isBoolean(node) || (isString(node) && node.trim() === '');
 }
