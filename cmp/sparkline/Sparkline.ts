@@ -98,15 +98,8 @@ export interface SparklineProps extends HoistProps, LayoutProps, TestSupportProp
     max?: number;
 
     /**
-     * Accessible name, read by a screen reader in place of the chart. Default is a summary of the
-     * series, such as "Trend: 12 points, from 101 to 118". The default does not format numbers,
-     * so pass a label to round them or to name the metric.
-     */
-    label?: string;
-
-    /**
-     * True to show the label as a native browser tooltip on hover, or a string to show in its
-     * place. Default false.
+     * True to show the accessible name as a native browser tooltip on hover, or a string to show
+     * in its place. Default false.
      */
     tooltip?: boolean | string;
 }
@@ -121,6 +114,10 @@ export interface SparklineProps extends HoistProps, LayoutProps, TestSupportProp
  * Renders inline at a small fixed size by default, set by the `--xh-sparkline-width` and
  * `--xh-sparkline-height` CSS variables. Pass layout props to size it - `width: '100%'` or
  * `flex: 1` stretches it to its container, and the line keeps its thickness.
+ *
+ * The component has the `img` role, with a summary of the series as its accessible name, such as
+ * "Trend: 12 points, from 101 to 118". The summary does not format numbers. To name the metric
+ * or round its values, pass a name of your own as `domAttrs: {'aria-label': ...}`.
  */
 export const [Sparkline, sparkline] = hoistCmp.withFactory<SparklineProps>({
     displayName: 'Sparkline',
@@ -133,7 +130,7 @@ export const [Sparkline, sparkline] = hoistCmp.withFactory<SparklineProps>({
                 {
                     className,
                     values,
-                    type = 'line',
+                    type,
                     intent,
                     colorByTrend,
                     colorNegative,
@@ -142,7 +139,6 @@ export const [Sparkline, sparkline] = hoistCmp.withFactory<SparklineProps>({
                     baseline,
                     min,
                     max,
-                    label,
                     tooltip,
                     testId,
                     domAttrs
@@ -156,7 +152,7 @@ export const [Sparkline, sparkline] = hoistCmp.withFactory<SparklineProps>({
                 include: isBar ? [origin] : [baseline]
             }),
             points = sparklinePoints(values, domain),
-            ariaLabel = label ?? sparklineLabel(values),
+            ariaLabel = String(domAttrs?.['aria-label'] ?? sparklineLabel(values)),
             title = isString(tooltip) ? tooltip : tooltip ? ariaLabel : null,
             divProps = mergeDeep(
                 {
@@ -175,9 +171,9 @@ export const [Sparkline, sparkline] = hoistCmp.withFactory<SparklineProps>({
         return div({
             ref,
             role: 'img',
-            'aria-label': ariaLabel,
             title,
             ...divProps,
+            'aria-label': ariaLabel,
             item: div({
                 className: 'xh-sparkline__plot',
                 items: [
