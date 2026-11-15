@@ -1026,6 +1026,8 @@ body {
   // Gap between a label and the rule on each side of it.
   --xh-separator-label-gap: var(--separator-label-gap, var(--xh-pad-px));
   --xh-separator-margin: var(--separator-margin, 0);
+  // Narrowest a segment of a horizontal rule gets, beside a long label.
+  --xh-separator-rule-min-width: var(--separator-rule-min-width, 1em);
   // Thickness of the rule.
   --xh-separator-width: var(--separator-width, var(--xh-border-width-px));
 

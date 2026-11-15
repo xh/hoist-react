@@ -39,8 +39,10 @@
     width: -moz-available;
     width: stretch;
 
+    // A long label wraps, and leaves each segment of the rule its minimum width.
     &::before,
     &::after {
+      min-width: var(--xh-separator-rule-min-width);
       border-top-width: var(--xh-separator-width);
     }
   }
