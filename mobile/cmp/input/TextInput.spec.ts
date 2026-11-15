@@ -70,9 +70,12 @@ describe('TextInput (mobile)', () => {
         expect(input.getAttribute('aria-label')).toBe('Name');
     });
 
-    it('sets maxLength as the native attribute, and none by default', () => {
+    it('sets maxLength as the native attribute, and none by default or for null', () => {
         expect(renderInput('abc', {maxLength: 10}).input.getAttribute('maxlength')).toBe('10');
         expect(renderInput('abc', {testId: 'other'}).input.hasAttribute('maxlength')).toBe(false);
+        expect(
+            renderInput('abc', {testId: 'third', maxLength: null}).input.hasAttribute('maxlength')
+        ).toBe(false);
     });
 
     it('shows a bound value longer than maxLength in full', () => {

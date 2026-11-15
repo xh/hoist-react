@@ -5,7 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import classNames from 'classnames';
-import {isEmpty, isString} from 'lodash';
+import {isBoolean, isEmpty} from 'lodash';
 import {useLayoutEffect, useRef, useState} from 'react';
 import type {ReactNode} from 'react';
 
@@ -19,8 +19,8 @@ import type {
     LayoutProps,
     TestSupportProps
 } from '@xh/hoist/core';
-import {mergeDeep, TEST_ID, withDefault} from '@xh/hoist/utils/js';
-import {composeRefs, splitLayoutProps, useOnResize} from '@xh/hoist/utils/react';
+import {mergeDeep, TEST_ID} from '@xh/hoist/utils/js';
+import {composeRefs, isBlankNode, splitLayoutProps, useOnResize} from '@xh/hoist/utils/react';
 
 import './KeyValueList.scss';
 
@@ -31,7 +31,8 @@ export interface KeyValueEntry {
 
     /**
      * Content, pre-formatted by the caller. The list never formats a value. A null, undefined or
-     * blank value shows the list's `emptyText`.
+     * blank string value shows the list's `emptyText`. A boolean is data, not blank content: it
+     * shows as the text `true` or `false`. Pass a string to show it another way.
      */
     value?: ReactNode;
 
@@ -48,24 +49,31 @@ export interface KeyValueListProps
     entries: KeyValueEntry[];
 
     /**
-     * Where each label sits relative to its value. Default `left`, with the labels of a column
+     * Where each label sits against its value. Default `left`, with the labels of a column
      * aligned and as wide as the widest of them. Use `top` to stack each label above its value.
+     *
+     * `Separator.labelPosition` takes other values (`start`, `center`, `end`), because it places
+     * a label along a rule.
      */
     labelPosition?: 'left' | 'top';
 
     /**
-     * Number of columns to lay the entries out in, filled row by row. Omit to fit as many columns
-     * of at least `minColumnWidth` as the width of the list allows, up to one per entry.
+     * Number of columns to lay the entries out in, filled row by row. The list never uses more
+     * columns than it has entries. Omit to fit as many columns of at least `minColumnWidth` as
+     * the width of the list allows.
+     *
+     * Set `minColumnWidth` as well to make this the most columns to use: the list then uses fewer
+     * in a container too narrow to hold them at that width.
      */
     columns?: number;
 
     /**
-     * Narrowest a column gets, in pixels, when `columns` is not set. Default 300, or 180 when
-     * `labelPosition` is `top`.
+     * Narrowest a column gets, in pixels. Default 300, or 180 when `labelPosition` is `top`. The
+     * default applies only when `columns` is not set.
      */
     minColumnWidth?: number;
 
-    /** Shown in place of a null, undefined or blank value. Default `-`. */
+    /** Shown in place of a null, undefined or blank string value. Default `-`. */
     emptyText?: ReactNode;
 
     /** Size of the list - `compact` for smaller text and tighter rows. Default `standard`. */
@@ -101,7 +109,7 @@ export const [KeyValueList, keyValueList] = hoistCmp.withFactory<KeyValueListPro
                     labelPosition,
                     columns,
                     minColumnWidth,
-                    emptyText = '-',
+                    emptyText,
                     size,
                     dividers,
                     testId,
@@ -109,7 +117,8 @@ export const [KeyValueList, keyValueList] = hoistCmp.withFactory<KeyValueListPro
                 }
             ] = splitLayoutProps(props),
             labelOnTop = labelPosition === 'top',
-            minWidth = withDefault(minColumnWidth, labelOnTop ? 180 : 300),
+            hasMinWidth = minColumnWidth > 0,
+            minWidth = hasMinWidth ? minColumnWidth : labelOnTop ? 180 : 300,
             visibleEntries = (entries ?? []).filter(it => it && !it.omit),
             count = visibleEntries.length,
             [fitColumns, setFitColumns] = useState<number>(1),
@@ -118,14 +127,17 @@ export const [KeyValueList, keyValueList] = hoistCmp.withFactory<KeyValueListPro
             measure = () => setFitColumns(columnsThatFit(listRef.current, minWidthRef.current)),
             resizeRef = useOnResize(measure);
 
-        // The resize observer keeps the first `measure` it is given, so it reads the width from a ref.
+        // The resize observer keeps the first `measure` it is given, so it reads from a ref.
         minWidthRef.current = minWidth;
         useLayoutEffect(measure, [minWidth, count]);
 
         if (isEmpty(visibleEntries)) return null;
 
-        const columnCount =
-                columns >= 1 ? Math.floor(columns) : Math.max(Math.min(fitColumns, count), 1),
+        // A given count holds whatever the width, unless the caller also set a minimum width.
+        const hasColumns = columns >= 1,
+            maxColumns = Math.min(hasColumns ? Math.floor(columns) : count, count),
+            columnCount =
+                hasColumns && !hasMinWidth ? maxColumns : Math.min(maxColumns, fitColumns),
             lastRowStart = count - (count % columnCount || columnCount);
 
         return dl({
@@ -143,7 +155,7 @@ export const [KeyValueList, keyValueList] = hoistCmp.withFactory<KeyValueListPro
                 {[TEST_ID]: testId, ...domAttrs}
             ),
             items: visibleEntries.map(({label, value, intent}, idx) => {
-                const empty = isBlank(value);
+                const empty = !isBoolean(value) && isBlankNode(value);
                 return div({
                     key: idx,
                     className: classNames(
@@ -158,7 +170,7 @@ export const [KeyValueList, keyValueList] = hoistCmp.withFactory<KeyValueListPro
                                 'xh-key-value-list__value',
                                 empty && 'xh-key-value-list__value--empty'
                             ),
-                            item: empty ? emptyText : value
+                            item: empty ? (emptyText ?? '-') : isBoolean(value) ? `${value}` : value
                         })
                     ]
                 });
@@ -173,10 +185,6 @@ export const [KeyValueList, keyValueList] = hoistCmp.withFactory<KeyValueListPro
 const dl = elementFactory('dl'),
     dt = elementFactory('dt'),
     dd = elementFactory('dd');
-
-function isBlank(value: ReactNode): boolean {
-    return value == null || (isString(value) && value.trim() === '');
-}
 
 /** Columns of at least `minWidth` that fit across a list, allowing for the gap between them. */
 function columnsThatFit(list: HTMLElement, minWidth: number): number {

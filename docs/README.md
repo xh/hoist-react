@@ -40,6 +40,7 @@ See [`docs-roadmap.md`](./planning/docs-roadmap.md) for documentation coverage t
 | Display a PDF document (page nav, zoom, find, download) | [`/cmp/pdfviewer/`](../cmp/pdfviewer/README.md) |
 | Show a small inline trend chart beside a figure or in a grid cell | [Sparkline](../cmp/README.md#sparkline-sparkline) |
 | Show a short list of alerts, activity or search results | [ItemList](../cmp/README.md#itemlist-itemlist) |
+| Show the fields of a record as labeled values | [KeyValueList](../cmp/README.md#keyvaluelist-keyvaluelist) |
 | Use layout containers (Box, HBox, VBox, Frame) | [`/cmp/layout/`](../cmp/layout/README.md)                                                                           |
 | Work with Stores, Records, Fields, or Filters | [`/data/`](../data/README.md)                                                                                       |
 | Set up Cube aggregation with Views and Queries | [`/data/cube/`](../data/cube/README.md)                                                                             |

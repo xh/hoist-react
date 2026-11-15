@@ -47,6 +47,8 @@
 
 ### 🐞 Bug Fixes
 
+* Fixed the empty part of a desktop `Slider` track not showing in dark theme. Its color now comes
+  from the new `--xh-slider-track-bg` CSS variable.
 * Fixed `TreeMap` drawing nodes in an invalid color when every heat value was zero, or `maxHeat`
   was zero. Those nodes now take the neutral color.
 * Fixed `TreeMap` showing its empty placeholder for a moment on mount, and when records arrived

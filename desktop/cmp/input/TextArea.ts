@@ -30,8 +30,9 @@ export interface TextAreaProps
 
     /**
      * Most characters the user can enter, set as the native `maxlength` attribute of the
-     * underlying <textarea> element. Limits typing and pasting only. A longer value set through a bound
-     * model shows in full and is not cut. To validate length, add a `lengthIs` rule to the field.
+     * underlying <textarea> element. Limits typing and pasting only. A longer value set through
+     * a bound model shows in full and is not cut. To validate length, add a `lengthIs` rule to
+     * the field.
      */
     maxLength?: number;
 

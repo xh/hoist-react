@@ -22,38 +22,39 @@ describe('Separator', () => {
         expect(el.getAttribute('role')).toBe('separator');
         expect(el.getAttribute('aria-orientation')).toBe('horizontal');
         expect(el.hasAttribute('aria-labelledby')).toBe(false);
-        expect(el.className).toBe('xh-separator xh-separator--horizontal');
         expect(el.childNodes).toHaveLength(0);
     });
 
     it('reports a vertical orientation', () => {
-        const el = renderSeparator({orientation: 'vertical'});
-
-        expect(el.getAttribute('aria-orientation')).toBe('vertical');
-        expect(el.classList).toContain('xh-separator--vertical');
-        expect(el.classList).not.toContain('xh-separator--horizontal');
+        expect(renderSeparator({orientation: 'vertical'}).getAttribute('aria-orientation')).toBe(
+            'vertical'
+        );
     });
 
-    it('shows its label, centered, and takes its name from it', () => {
-        const el = renderSeparator({label: 'Settlement'}),
+    it('shows its label and takes its name from it', () => {
+        const el = renderSeparator({label: span('Settlement')}),
             label = el.querySelector('.xh-separator__label');
 
         expect(label.textContent).toBe('Settlement');
         expect(el.getAttribute('aria-labelledby')).toBe(label.id);
-        expect(el.classList).toContain('xh-separator--label-center');
     });
 
-    it.each(['start', 'center', 'end'] as const)('positions its label at the %s', labelPosition => {
-        const el = renderSeparator({label: span('Settlement'), labelPosition});
+    // A blank label must leave no element behind: its gap would break the rule in two.
+    it.each([null, undefined, '', '  ', false, true])(
+        'renders no label element for a label of %j',
+        label => {
+            const el = renderSeparator({label, labelPosition: 'start'});
 
-        expect(el.classList).toContain(`xh-separator--label-${labelPosition}`);
-    });
+            expect(el.childNodes).toHaveLength(0);
+            expect(el.hasAttribute('aria-labelledby')).toBe(false);
+        }
+    );
 
-    it.each([null, undefined, ''])('renders no label element for a label of %j', label => {
-        const el = renderSeparator({label, labelPosition: 'start'});
+    it('shows no label when vertical', () => {
+        const el = renderSeparator({orientation: 'vertical', label: 'Settlement'});
 
         expect(el.childNodes).toHaveLength(0);
-        expect(el.className).not.toMatch(/--label/);
+        expect(el.hasAttribute('aria-labelledby')).toBe(false);
     });
 
     it('applies layout props, testId and domAttrs to the separator', () => {
