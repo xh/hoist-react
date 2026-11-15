@@ -91,13 +91,13 @@
     grid-column: auto;
   }
 
-  // The rule replaces the row gap, with half of the gap as padding on each side of it.
+  // The rule replaces the row gap, with the gap as padding on each side of it.
   &--dividers {
     row-gap: 0;
   }
 
   &--dividers &__entry {
-    padding: calc(var(--xh-key-value-list-row-gap) / 2) 0;
+    padding: var(--xh-key-value-list-row-gap) 0;
     border-bottom: var(--xh-key-value-list-divider);
 
     &--last-row {
