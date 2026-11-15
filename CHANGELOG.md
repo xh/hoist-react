@@ -20,9 +20,8 @@
   against a maximum, with an optional label, figure, `intent` and `target` marker. A bar with no
   `value` is indeterminate. Style through the `--xh-progress-bar-*` CSS variables.
 * Added `Steps` to `@xh/hoist/cmp/steps`, a cross-platform sequence of steps with a status each,
-  for an order lifecycle, a wizard header or a checklist. Set `current` to derive each status, or
-  set a `status` per step. Lays out as a `horizontal` row or a `vertical` list, and takes an
-  optional `onStepClick`. Style through the `--xh-steps-*` CSS variables.
+  as a `horizontal` row or a `vertical` list. Set `current` to derive each status, or a `status`
+  per step. Takes an optional `onStepClick`. Style through the `--xh-steps-*` CSS variables.
 * Added `Sparkline` to `@xh/hoist/cmp/sparkline`, a small inline trend chart with no axes, for a
   `StatCard` or a grid cell. It draws a `line`, `area` or `bar` series in plain SVG, and can color
   the series by `intent` or by trend. Style through the `--xh-sparkline-*` CSS variables. See the

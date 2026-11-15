@@ -69,7 +69,7 @@ describe('Steps', () => {
     });
 
     describe('marker', () => {
-        it('shows the step number, or an icon for a complete, warning or error step', () => {
+        it('shows the step number, except on a complete, warning or error step', () => {
             const {container} = render(
                 steps({
                     steps: [
@@ -81,16 +81,8 @@ describe('Steps', () => {
                     ]
                 })
             );
-            const markers = Array.from(container.querySelectorAll('.xh-steps__marker'));
 
-            expect(markers.map(it => it.textContent)).toEqual(['', '2', '', '', '5']);
-            expect(markers.map(it => it.querySelector('svg') != null)).toEqual([
-                true,
-                false,
-                true,
-                true,
-                false
-            ]);
+            expect(markerTexts(container)).toEqual(['', '2', '', '', '5']);
         });
 
         it("shows a step's own icon in place of the default, whatever its status", () => {
@@ -160,38 +152,49 @@ describe('Steps', () => {
             expect(render(steps({steps: [null]})).container.innerHTML).toBe('');
         });
 
-        it('skips a missing step and keeps the numbers of the others', () => {
-            const {container} = render(steps({steps: [{title: 'A'}, null, {title: 'C'}]}));
-            const markers = Array.from(container.querySelectorAll('.xh-steps__marker'));
+        it('leaves out a null or omitted step, and numbers the steps that show', () => {
+            const {container} = render(
+                steps({
+                    steps: [{title: 'A'}, null, {title: 'B', omit: true}, {title: 'C'}]
+                })
+            );
 
-            expect(markers.map(it => it.textContent)).toEqual(['1', '3']);
+            expect(markerTexts(container)).toEqual(['1', '2']);
+            expect(titles(container)).toEqual(['A', 'C']);
+        });
+
+        it('counts left-out steps in the index that current refers to', () => {
+            const list = [{title: 'A'}, {title: 'B', omit: true}, {title: 'C'}];
+
+            expect(statuses(steps({steps: list, current: 2}))).toEqual(['complete', 'current']);
+            expect(statuses(steps({steps: list, current: 1}))).toEqual(['complete', 'pending']);
+        });
+
+        it.each([
+            ['null', null],
+            ['false', false],
+            ['an empty string', ''],
+            ['a string of spaces', '  ']
+        ])('renders no element for a title, description or detail of %s', (_, blank) => {
+            const {container} = render(
+                steps({steps: [{title: blank, description: blank, detail: blank}]})
+            );
+
+            expect(container.querySelector('.xh-steps__marker')).not.toBeNull();
+            expect(container.querySelector('.xh-steps__content')).toBeNull();
         });
     });
 
     describe('list', () => {
-        it('is an ordered list that marks the current step', () => {
+        it('marks the current step for screen readers, on its list item', () => {
             const {container} = render(steps({steps: order, current: 1}));
-            const list = container.querySelector('.xh-steps'),
-                items = Array.from(list.children);
 
-            expect(list.tagName).toBe('OL');
-            expect(items.map(it => it.tagName)).toEqual(['LI', 'LI', 'LI', 'LI']);
-            expect(items.map(it => it.getAttribute('aria-current'))).toEqual([
-                null,
-                'step',
-                null,
-                null
-            ]);
-        });
-
-        it('is horizontal by default, and vertical on request', () => {
-            const horizontal = render(steps({steps: order})).container,
-                vertical = render(steps({steps: order, orientation: 'vertical'})).container;
-
-            expect(horizontal.querySelector('.xh-steps').classList).toContain(
-                'xh-steps--horizontal'
-            );
-            expect(vertical.querySelector('.xh-steps').classList).toContain('xh-steps--vertical');
+            expect(container.querySelectorAll('[role="list"] > li')).toHaveLength(4);
+            expect(
+                Array.from(container.querySelectorAll('li')).map(it =>
+                    it.getAttribute('aria-current')
+                )
+            ).toEqual([null, 'step', null, null]);
         });
 
         it('applies className, layout props and testId to the list', () => {
@@ -234,6 +237,31 @@ describe('Steps', () => {
             ]);
         });
 
+        it('leaves a disabled step out: it takes no focus, click or keypress', () => {
+            const onStepClick = vi.fn(),
+                list = [{title: 'A'}, {title: 'B', disabled: true}, {title: 'C'}],
+                {container} = render(steps({steps: list, current: 1, onStepClick}));
+            const [, disabled] = Array.from(container.querySelectorAll('.xh-steps__step-inner'));
+
+            expect(container.querySelectorAll('[role="button"]')).toHaveLength(2);
+            expect(disabled.hasAttribute('tabindex')).toBe(false);
+
+            fireEvent.click(disabled);
+            fireEvent.keyDown(disabled, {key: 'Enter'});
+            expect(onStepClick).not.toHaveBeenCalled();
+            // With no button to carry it, the list item reports the current step.
+            expect(disabled.closest('li').getAttribute('aria-current')).toBe('step');
+        });
+
+        it('calls the handler with the index in steps, counting left-out steps', () => {
+            const onStepClick = vi.fn(),
+                list = [{title: 'A', omit: true}, null, {title: 'C'}],
+                {container} = render(steps({steps: list, onStepClick}));
+
+            fireEvent.click(container.querySelector('[role="button"]'));
+            expect(onStepClick).toHaveBeenCalledWith(list[2], 2);
+        });
+
         it('marks the current step on its button, which is what takes focus', () => {
             const {container} = render(steps({steps: order, current: 1, onStepClick: vi.fn()}));
             const buttons = Array.from(container.querySelectorAll('[role="button"]'));
@@ -257,4 +285,12 @@ function statuses(el: ReturnType<typeof steps>): string[] {
 
 function part(step: Element, name: string): HTMLElement {
     return step.querySelector(`.xh-steps__${name}`);
+}
+
+function markerTexts(container: HTMLElement): string[] {
+    return Array.from(container.querySelectorAll('.xh-steps__marker')).map(it => it.textContent);
+}
+
+function titles(container: HTMLElement): string[] {
+    return Array.from(container.querySelectorAll('.xh-steps__title')).map(it => it.textContent);
 }

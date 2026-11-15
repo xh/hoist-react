@@ -368,7 +368,8 @@ displaying their aggregate validation state as intent-colored borders and toolti
 ### ProgressBar (`/progressbar/`)
 
 A horizontal bar that shows a value against a maximum: the progress of a task, or usage against a
-limit. The bar is presentation-only and takes no model. It fills the width of its container.
+limit. The bar is presentation-only and takes no model. It is a block, so it fills the width of a
+block or a column. In a row such as an `hbox`, give it a `flex` or a `width`.
 
 ```typescript
 import {progressBar} from '@xh/hoist/cmp/progressbar';
@@ -394,11 +395,14 @@ progressBar({label: 'Loading positions'})
 |------|------|-------------|
 | `value` | `number` | Value to show, clamped to the range. Omit it for an indeterminate bar |
 | `min` / `max` | `number` | Values of an empty and a full bar. Default 0 and 100 |
-| `label` | `ReactNode` | Caption above the bar. Also the accessible name of the bar |
+| `label` | `ReactNode` | Caption above the bar, which wraps if long. Also the accessible name of the bar |
 | `valueLabel` | `ReactNode` | Figure above the bar, pre-formatted by the caller. Defaults to a whole percent |
 | `showValueLabel` | `boolean` | False to hide the figure. Default true |
 | `intent` | `Intent` | Semantic color for the fill. Default is the primary color |
-| `target` | `number` | Value to mark on the track, for a threshold or a goal |
+| `target` | `number` | Value to mark on the track, for a threshold or a goal. No marker shows for a target outside the range |
+
+A null prop takes its default, and a blank `label` renders nothing. The default figure reads
+`100%` only for a full bar and `0%` only for an empty one, so `99.6` reads `99%`.
 
 The bar never fails on odd data. A value outside the range draws an empty or a full bar. A NaN
 value, or a `max` that is not above `min`, draws an empty bar with no figure.
@@ -445,10 +449,10 @@ steps({
 
 | Prop | Type | Description |
 |------|------|-------------|
-| `steps` | `StepSpec[]` | Steps to show, in order |
-| `current` | `number` | Index of the current step, from 0. An index past the last step completes them all |
+| `steps` | `StepSpec[]` | Steps to show, in order. A null entry is left out |
+| `current` | `number` | Index in `steps` of the current step, from 0. An index past the last step completes them all |
 | `orientation` | `'horizontal' \| 'vertical'` | Direction of the sequence. Default `horizontal` |
-| `onStepClick` | `(step, index) => void` | Handler for a click or Enter/Space keypress. Makes every step a focusable button |
+| `onStepClick` | `(step, index) => void` | Handler for a click or Enter/Space keypress. Makes each step a focusable button, except a `disabled` one |
 
 | `StepSpec` key | Type | Description |
 |----------------|------|-------------|
@@ -457,10 +461,18 @@ steps({
 | `detail` | `ReactNode` | Short secondary text, for example a timestamp |
 | `status` | `StepStatus` | `pending`, `current`, `complete`, `warning` or `error`. Takes priority over `current` |
 | `icon` | `ReactElement` | Icon for the marker, in place of the number or the status icon |
+| `disabled` | `boolean` | True to make the step ignore `onStepClick`. It takes no focus and no click |
+| `omit` | `boolean` | True to leave the step out |
+
+Markers number the steps that show, from 1. `current` and the index passed to `onStepClick` count
+every entry of `steps`, including a step that is left out. A blank `title`, `description` or
+`detail` renders nothing. A status is not an `Intent`: a failed step is `error`, drawn in the
+danger color.
 
 A horizontal sequence gives each step an equal share of the width, with its text centered under
 its marker. Text wraps and is never truncated, so the row gets taller in a narrow container and
-does not overflow it. Use `vertical` for long descriptions.
+does not overflow it. Use `vertical` for long descriptions. The list is a block, so in a row such
+as an `hbox` it needs a `flex` or a `width`.
 
 The component renders an ordered list and sets `aria-current="step"` on the current step. A
 marker that shows its status by icon alone names that status for screen readers.

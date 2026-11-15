@@ -5,7 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import classNames from 'classnames';
-import {capitalize, compact, includes, isEmpty} from 'lodash';
+import {capitalize, includes, isEmpty} from 'lodash';
 import type {KeyboardEvent, ReactElement, ReactNode} from 'react';
 
 import {div, li, ol} from '@xh/hoist/cmp/layout';
@@ -13,16 +13,19 @@ import {hoistCmp} from '@xh/hoist/core';
 import type {DomAttrsProps, HoistProps, LayoutProps, TestSupportProps} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {mergeDeep, TEST_ID} from '@xh/hoist/utils/js';
-import {splitLayoutProps} from '@xh/hoist/utils/react';
+import {isBlankNode, splitLayoutProps} from '@xh/hoist/utils/react';
 
 import './Steps.scss';
 
-/** Where a step stands in its sequence. */
+/**
+ * Where a step stands in its sequence. A status says what happened to the step. It is not an
+ * `Intent`, so a failed step is `error`, which the marker draws in the danger color.
+ */
 export type StepStatus = 'pending' | 'current' | 'complete' | 'warning' | 'error';
 
 /** One step in a {@link Steps} sequence. */
 export interface StepSpec {
-    /** Name of the step. */
+    /** Name of the step. Blank content renders nothing, as for `description` and `detail`. */
     title: ReactNode;
 
     /** Longer text beneath the title, for example what the step does or what went wrong. */
@@ -42,16 +45,28 @@ export interface StepSpec {
      * `complete` step, and an icon for a `warning` or `error` step.
      */
     icon?: ReactElement;
+
+    /**
+     * True to make the step ignore `onStepClick`. A disabled step is not a button: it takes no
+     * focus and no click. Use it for a step the user cannot go to yet.
+     */
+    disabled?: boolean;
+
+    /** True to leave the step out. The steps after it take the next numbers. */
+    omit?: boolean;
 }
 
 export interface StepsProps extends HoistProps, LayoutProps, TestSupportProps, DomAttrsProps {
-    /** Steps to show, in order. */
+    /**
+     * Steps to show, in order. A null entry, or one with `omit` set, is left out. Markers number
+     * the steps that show, from 1.
+     */
     steps: StepSpec[];
 
     /**
-     * Index of the current step, from 0. Steps before it are `complete` and steps after it are
-     * `pending`. An index past the last step completes them all. A step's own `status` takes
-     * priority. Omit it to set each status on its step.
+     * Index in `steps` of the current step, from 0, with left-out steps counted. Steps before it
+     * are `complete` and steps after it are `pending`. An index past the last step completes
+     * them all. A step's own `status` takes priority. Omit it to set each status on its step.
      */
     current?: number;
 
@@ -68,8 +83,8 @@ export interface StepsProps extends HoistProps, LayoutProps, TestSupportProps, D
     orientation?: 'horizontal' | 'vertical';
 
     /**
-     * Handler for a click or Enter/Space keypress on a step, called with the step and its index.
-     * Makes every step a focusable button. The handler decides which steps respond.
+     * Handler for a click or Enter/Space keypress on a step, called with the step and its index
+     * in `steps`. Makes each step a focusable button, except a step with `disabled` set.
      */
     onStepClick?: (step: StepSpec, index: number) => void;
 }
@@ -81,8 +96,11 @@ export interface StepsProps extends HoistProps, LayoutProps, TestSupportProps, D
  * The component is presentation-only and holds no state. Set `current` to derive each status
  * from a position in the sequence, or set a `status` on each step.
  *
- * Renders an ordered list with no outer margin, at the full width of its container. Set the
- * `--xh-steps-*` CSS variables to change its colors and sizes. Renders nothing if given no steps.
+ * Renders an ordered list with no outer margin. It is a block, so it fills the width of a block
+ * or a column. In a row such as an `hbox`, give it a `flex` or a `width`. Set the `--xh-steps-*`
+ * CSS variables to change its colors and sizes. Renders nothing if given no steps to show.
+ *
+ * A null or omitted prop takes its default.
  */
 export const [Steps, steps] = hoistCmp.withFactory<StepsProps>({
     displayName: 'Steps',
@@ -95,14 +113,17 @@ export const [Steps, steps] = hoistCmp.withFactory<StepsProps>({
             {className, steps, current, orientation, onStepClick, testId, domAttrs}
         ] = splitLayoutProps(props);
 
-        if (isEmpty(compact(steps))) return null;
+        // Each step keeps its index in `steps`, which `current` and `onStepClick` refer to.
+        const shown = (steps ?? [])
+            .map((step, index) => ({step, index}))
+            .filter(({step}) => step && !step.omit);
+        if (isEmpty(shown)) return null;
 
         const olProps = mergeDeep(
             {
                 className: classNames(
                     className,
-                    `xh-steps--${orientation === 'vertical' ? 'vertical' : 'horizontal'}`,
-                    onStepClick && 'xh-steps--clickable'
+                    `xh-steps--${orientation === 'vertical' ? 'vertical' : 'horizontal'}`
                 )
             },
             {style: layoutProps},
@@ -114,8 +135,8 @@ export const [Steps, steps] = hoistCmp.withFactory<StepsProps>({
             ref,
             role: 'list',
             ...olProps,
-            items: steps.map((step, index) =>
-                step ? renderStep(step, index, statusOf(step, index, current), onStepClick) : null
+            items: shown.map(({step, index}, position) =>
+                renderStep(step, index, position + 1, statusOf(step, index, current), onStepClick)
             )
         });
     }
@@ -138,12 +159,17 @@ function statusOf(step: StepSpec, index: number, current: number): StepStatus {
 function renderStep(
     step: StepSpec,
     index: number,
+    number: number,
     status: StepStatus,
     onStepClick: StepsProps['onStepClick']
 ) {
-    const {title, description, detail} = step,
+    const {title, description, detail, disabled} = step,
+        clickable = !!onStepClick && !disabled,
+        hasTitle = !isBlankNode(title),
+        hasDetail = !isBlankNode(detail),
+        hasDescription = !isBlankNode(description),
         currentProps = status === 'current' ? {'aria-current': 'step' as const} : {},
-        clickProps = onStepClick
+        clickProps = clickable
             ? {
                   role: 'button',
                   tabIndex: 0,
@@ -161,30 +187,36 @@ function renderStep(
     // The focusable element reports the current step, so a screen reader says it on focus.
     return li({
         key: index,
-        className: `xh-steps__step xh-steps__step--${status}`,
-        ...(onStepClick ? {} : currentProps),
+        className: classNames(
+            'xh-steps__step',
+            `xh-steps__step--${status}`,
+            clickable && 'xh-steps__step--clickable'
+        ),
+        ...(clickable ? {} : currentProps),
         item: div({
             className: 'xh-steps__step-inner',
             ...clickProps,
-            ...(onStepClick ? currentProps : {}),
+            ...(clickable ? currentProps : {}),
             items: [
-                marker(step, index, status),
+                marker(step, number, status),
                 div({
+                    omit: !hasTitle && !hasDetail && !hasDescription,
                     className: 'xh-steps__content',
                     items: [
                         div({
+                            omit: !hasTitle && !hasDetail,
                             className: 'xh-steps__header',
                             items: [
-                                div({className: 'xh-steps__title', item: title}),
+                                div({omit: !hasTitle, className: 'xh-steps__title', item: title}),
                                 div({
-                                    omit: detail == null,
+                                    omit: !hasDetail,
                                     className: 'xh-steps__detail',
                                     item: detail
                                 })
                             ]
                         }),
                         div({
-                            omit: description == null,
+                            omit: !hasDescription,
                             className: 'xh-steps__description',
                             item: description
                         })
@@ -195,7 +227,7 @@ function renderStep(
     });
 }
 
-function marker(step: StepSpec, index: number, status: StepStatus) {
+function marker(step: StepSpec, number: number, status: StepStatus) {
     const ariaProps = includes(ICON_STATUSES, status)
         ? {role: 'img', 'aria-label': capitalize(status)}
         : {'aria-hidden': true};
@@ -203,11 +235,11 @@ function marker(step: StepSpec, index: number, status: StepStatus) {
     return div({
         className: 'xh-steps__marker',
         ...ariaProps,
-        item: step.icon ?? defaultMarker(index, status)
+        item: step.icon ?? defaultMarker(number, status)
     });
 }
 
-function defaultMarker(index: number, status: StepStatus): ReactNode {
+function defaultMarker(number: number, status: StepStatus): ReactNode {
     switch (status) {
         case 'complete':
             return Icon.check();
@@ -216,6 +248,6 @@ function defaultMarker(index: number, status: StepStatus): ReactNode {
         case 'error':
             return Icon.x();
         default:
-            return index + 1;
+            return number;
     }
 }

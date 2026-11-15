@@ -95,6 +95,8 @@ See [`docs-roadmap.md`](./planning/docs-roadmap.md) for documentation coverage t
 | [`/cmp/form/`](../cmp/form/README.md) | Form infrastructure for data entry with validation | FormModel, FieldModel, SubformsFieldModel, validation rules, data binding |
 | [`/cmp/input/`](../cmp/input/README.md) | Base classes and interfaces for input components | HoistInputModel, change/commit lifecycle, value binding, focus management |
 | [`/cmp/layout/`](../cmp/layout/README.md) | Flexbox-based layout containers | Box, VBox, HBox, Frame, Viewport, Separator, LayoutProps, pixel conversion |
+| [`/cmp/progressbar/`](../cmp/README.md#progressbar-progressbar) | Bar that shows a value against a maximum, or indeterminate progress | ProgressBar, value, min, max, label, valueLabel, intent, target, indeterminate |
+| [`/cmp/steps/`](../cmp/README.md#steps-steps) | Ordered sequence of steps with a status each, as a row or a list | Steps, StepSpec, StepStatus, current, orientation, onStepClick, wizard, timeline |
 | [`/cmp/tab/`](../cmp/tab/README.md) | Tabbed interface system | TabContainerModel, routing integration, render modes, refresh strategies |
 | [`/cmp/viewmanager/`](../cmp/viewmanager/README.md) | Save/load named bundles of component state | ViewManagerModel, views, sharing, pinning, auto-save, JsonBlob persistence |
 | [`/cmp/daterange/`](../cmp/daterange/README.md) | Period selection as presets, relative lookbacks, months/years, or custom ranges, resolved to dates and filters | DateRangePickerModel, DateRangePicker, DateRangeSelection, presets, anchorDate, LocalDateRange, currentRangeFilter, priorRange |
