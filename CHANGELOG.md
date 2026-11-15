@@ -34,6 +34,19 @@
   with an optional `label` within the rule.
 * Added a `maxLength` prop to the desktop and mobile `TextInput` and `TextArea`, to limit the
   number of characters a user can enter.
+* Added `Slider.ariaLabel`, to name the handle of a slider, or each handle of a range, for
+  assistive technology. A `Slider` in a `FormField` now takes the label of the field as that name.
+* Added `SegmentedControl.wrap` to the desktop control, to let options flow onto further rows when
+  the control is too narrow to hold them on one row.
+
+### 🐞 Bug Fixes
+
+* Fixed desktop `DateInput` staying narrow in a `FormField`, or with a `width` of `100%` or a
+  `flex`. It now takes `width` and `flex` on its outer element and fills its field, as `TextInput`
+  and `Select` do. Set a `width` on a `DateInput` to keep it narrower than its field.
+* Fixed desktop `SegmentedControl` rendering layout props as DOM attributes, such as a stray
+  `flex="1"` in a `FormField`. It now applies them as styles, so `width`, `flex` and other layout
+  props take effect. `SegmentedControlProps` now includes `LayoutProps` on desktop and mobile.
 
 ## 90.1.0 - 2026-11-13
 
