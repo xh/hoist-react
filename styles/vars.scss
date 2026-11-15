@@ -802,6 +802,7 @@ body {
   --xh-item-list-danger-color: var(--item-list-danger-color, var(--xh-intent-danger-text-color));
   --xh-item-list-description-color: var(--item-list-description-color, var(--xh-blue-gray));
   --xh-item-list-description-font-size: var(--item-list-description-font-size, var(--xh-font-size-small-em));
+  --xh-item-list-disabled-opacity: var(--item-list-disabled-opacity, 0.5);
   --xh-item-list-divider: var(--item-list-divider, var(--xh-border-solid));
   --xh-item-list-empty-color: var(--item-list-empty-color, var(--xh-blue-gray));
   // Space between an entry's icon, text and detail.
@@ -936,15 +937,20 @@ body {
   // Progress Bars
   //------------------------
   --xh-progress-bar-border-radius: var(--progress-bar-border-radius, calc(var(--xh-progress-bar-height) / 2));
-  --xh-progress-bar-fill-bg: var(--progress-bar-fill-bg, var(--xh-intent-primary));
+  --xh-progress-bar-danger-color: var(--progress-bar-danger-color, var(--xh-intent-danger));
+  // Fill of a bar with no intent.
+  --xh-progress-bar-fill-bg: var(--progress-bar-fill-bg, var(--xh-progress-bar-primary-color));
   --xh-progress-bar-font-size: var(--progress-bar-font-size, inherit);
   --xh-progress-bar-gap: var(--progress-bar-gap, var(--xh-pad-half-px));
   --xh-progress-bar-height: var(--progress-bar-height, 8px);
   --xh-progress-bar-label-color: var(--progress-bar-label-color, var(--xh-text-color));
+  --xh-progress-bar-primary-color: var(--progress-bar-primary-color, var(--xh-intent-primary));
+  --xh-progress-bar-success-color: var(--progress-bar-success-color, var(--xh-intent-success));
   --xh-progress-bar-target-color: var(--progress-bar-target-color, var(--xh-text-color));
   --xh-progress-bar-target-width: var(--progress-bar-target-width, 2px);
   --xh-progress-bar-track-bg: var(--progress-bar-track-bg, var(--xh-border-color));
   --xh-progress-bar-value-label-color: var(--progress-bar-value-label-color, var(--xh-text-color));
+  --xh-progress-bar-warning-color: var(--progress-bar-warning-color, var(--xh-intent-warning));
 
   //------------------------
   // Resizable splitters

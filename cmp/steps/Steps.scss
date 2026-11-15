@@ -7,9 +7,6 @@
 
 .xh-steps {
   display: flex;
-  box-sizing: border-box;
-  // Fills its container in a block, a column or a row. A `width` or `flex` layout prop overrides.
-  width: 100%;
   min-width: 0;
   margin: 0;
   padding: 0;
@@ -26,7 +23,8 @@
       background-color: var(--xh-steps-connector-color);
     }
 
-    &--complete::after {
+    // Matches the specificity of the rule above, which would otherwise outrank it.
+    &--complete:not(:last-child)::after {
       background-color: var(--xh-steps-complete-color);
     }
   }
@@ -193,7 +191,7 @@
   //------------------
   // Clickable
   //------------------
-  &--clickable &__step-inner {
+  &__step--clickable > &__step-inner {
     cursor: pointer;
     border-radius: var(--xh-border-radius-px);
 

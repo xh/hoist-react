@@ -19,11 +19,16 @@ import type {
     TestSupportProps
 } from '@xh/hoist/core';
 import {mergeDeep, TEST_ID} from '@xh/hoist/utils/js';
-import {splitLayoutProps} from '@xh/hoist/utils/react';
+import {isBlankNode, splitLayoutProps} from '@xh/hoist/utils/react';
 
 import './ItemList.scss';
 
-/** One entry in an {@link ItemList}. */
+/**
+ * One entry in an {@link ItemList}.
+ *
+ * A `title`, `description` or `detail` that is null, a boolean or a blank string renders
+ * nothing and leaves no gap. The list skips an entry with all three blank.
+ */
 export interface ItemListEntry {
     /** Main text of the entry. Wraps when it does not fit on one line. */
     title: ReactNode;
@@ -48,6 +53,12 @@ export interface ItemListEntry {
      */
     intent?: Intent;
 
+    /**
+     * True to show the entry dimmed and leave it out of `onEntryClick`: it is not focusable and
+     * does not call the handler. No effect in a list with no `onEntryClick`.
+     */
+    disabled?: boolean;
+
     /** True to leave the entry out. */
     omit?: boolean;
 }
@@ -58,6 +69,7 @@ export interface ItemListProps extends HoistProps, LayoutProps, TestSupportProps
 
     /**
      * True to number the entries, for a ranking or a sequence. Renders an HTML ordered list.
+     * The numbers count the entries shown, so a skipped entry leaves no gap in them.
      * Default false.
      */
     ordered?: boolean;
@@ -68,12 +80,19 @@ export interface ItemListProps extends HoistProps, LayoutProps, TestSupportProps
     /** Size of the list - `compact` for smaller text and tighter rows. Default `standard`. */
     size?: Extract<ComponentSize, 'compact' | 'standard'>;
 
-    /** Shown in place of the list when it has no entries. Default is to render nothing. */
+    /**
+     * Shown in place of the list when it has no entries to show. Default is to render nothing,
+     * as does a blank `emptyText`.
+     */
     emptyText?: ReactNode;
 
     /**
-     * Handler for a click or Enter/Space keypress on an entry, called with the entry and its
-     * index in `entries`. Makes every entry a focusable button with a hover style.
+     * Handler for a click or Enter/Space keypress on an entry. Makes every entry that is not
+     * `disabled` a focusable button with a hover style.
+     *
+     * Called with the entry and its index in the `entries` array as given. That index counts
+     * null and omitted entries, so it also finds the source of an entry in an array that
+     * `entries` was mapped from. It can differ from the number an `ordered` list shows.
      */
     onEntryClick?: (entry: ItemListEntry, index: number) => void;
 }
@@ -113,7 +132,7 @@ export const [ItemList, itemList] = hoistCmp.withFactory<ItemListProps>({
             // Each entry keeps its index in `entries`, as the handler reports that index.
             visible = (entries ?? [])
                 .map((entry, index) => ({entry, index}))
-                .filter(({entry}) => entry && !entry.omit),
+                .filter(({entry}) => entry && !entry.omit && !isBlankEntry(entry)),
             rootProps = (...classes: string[]) =>
                 mergeDeep(
                     {className: classNames(className, classes)},
@@ -122,7 +141,7 @@ export const [ItemList, itemList] = hoistCmp.withFactory<ItemListProps>({
                 );
 
         if (isEmpty(visible)) {
-            return emptyText == null
+            return isBlankNode(emptyText)
                 ? null
                 : div({ref, ...rootProps('xh-item-list--empty'), item: emptyText});
         }
@@ -166,6 +185,10 @@ function markerType(entries: ItemListEntry[], ordered: boolean): MarkerType {
     return null;
 }
 
+function isBlankEntry({title, description, detail}: ItemListEntry): boolean {
+    return isBlankNode(title) && isBlankNode(description) && isBlankNode(detail);
+}
+
 function renderEntry(
     entry: ItemListEntry,
     index: number,
@@ -173,27 +196,31 @@ function renderEntry(
     marker: MarkerType,
     onEntryClick: ItemListProps['onEntryClick']
 ) {
-    const {title, description, detail, icon, intent} = entry,
-        clickProps = onEntryClick
-            ? {
-                  role: 'button',
-                  tabIndex: 0,
-                  onClick: () => onEntryClick(entry, index),
-                  onKeyDown: (e: KeyboardEvent<HTMLDivElement>) => {
-                      if (e.target !== e.currentTarget) return;
-                      if (e.key === 'Enter' || e.key === ' ') {
-                          e.preventDefault();
-                          onEntryClick(entry, index);
-                      }
-                  }
-              }
-            : {};
+    const {title, description, detail, icon, intent, disabled} = entry,
+        isDisabled = !!onEntryClick && !!disabled,
+        clickProps = isDisabled
+            ? {role: 'button', 'aria-disabled': true}
+            : onEntryClick
+              ? {
+                    role: 'button',
+                    tabIndex: 0,
+                    onClick: () => onEntryClick(entry, index),
+                    onKeyDown: (e: KeyboardEvent<HTMLDivElement>) => {
+                        if (e.target !== e.currentTarget) return;
+                        if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault();
+                            onEntryClick(entry, index);
+                        }
+                    }
+                }
+              : {};
 
     return li({
         key: index,
         className: classNames(
             'xh-item-list__entry',
-            intent && `xh-item-list__entry--intent-${intent}`
+            intent && `xh-item-list__entry--intent-${intent}`,
+            isDisabled && 'xh-item-list__entry--disabled'
         ),
         item: div({
             className: 'xh-item-list__entry-inner',
@@ -210,18 +237,23 @@ function renderEntry(
                     className: 'xh-item-list__content',
                     items: [
                         div({
+                            omit: isBlankNode(title) && isBlankNode(detail),
                             className: 'xh-item-list__header',
                             items: [
-                                div({className: 'xh-item-list__title', item: title}),
                                 div({
-                                    omit: detail == null,
+                                    omit: isBlankNode(title),
+                                    className: 'xh-item-list__title',
+                                    item: title
+                                }),
+                                div({
+                                    omit: isBlankNode(detail),
                                     className: 'xh-item-list__detail',
                                     item: detail
                                 })
                             ]
                         }),
                         div({
-                            omit: description == null,
+                            omit: isBlankNode(description),
                             className: 'xh-item-list__description',
                             item: description
                         })

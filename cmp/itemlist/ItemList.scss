@@ -9,8 +9,8 @@
   display: flex;
   flex-direction: column;
   box-sizing: border-box;
-  // Fills its container in a block, a column or a row. A `width` or `flex` layout prop overrides.
-  width: 100%;
+  // A block-level box, so it fills the width of a block or a column with no `width` set, and a
+  // `margin` layout prop does not make it overflow.
   min-width: 0;
   margin: 0;
   padding: 0;
@@ -142,6 +142,15 @@
     &:focus-visible {
       outline: 2px solid var(--xh-focus-outline-color);
       outline-offset: -2px;
+    }
+  }
+
+  &--clickable &__entry--disabled &__entry-inner {
+    cursor: default;
+    opacity: var(--xh-item-list-disabled-opacity);
+
+    &:hover {
+      background-color: transparent;
     }
   }
 }
