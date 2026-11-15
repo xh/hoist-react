@@ -52,6 +52,13 @@ export interface TextInputProps
     /** Icon to display inline on the left side of the input. */
     leftIcon?: ReactElement;
 
+    /**
+     * Most characters the user can enter, set as the native `maxlength` attribute of the
+     * underlying <input> element. Limits typing and pasting only. A longer value set through a bound
+     * model shows in full and is not cut. To validate length, add a `lengthIs` rule to the field.
+     */
+    maxLength?: number;
+
     /** Text to display when control is empty */
     placeholder?: string;
 
@@ -155,6 +162,7 @@ const cmp = hoistCmp.factory<TextInputModel>(({model, className, ...props}, ref)
                     props.type === 'password' ? 'new-password' : 'off'
                 ),
                 disabled: props.disabled,
+                maxLength: props.maxLength,
                 placeholder: props.placeholder,
                 spellCheck: withDefault(props.spellCheck, false),
                 tabIndex: props.tabIndex,

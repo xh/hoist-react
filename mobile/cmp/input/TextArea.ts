@@ -24,6 +24,13 @@ export interface TextAreaProps
     /** Height of the control in pixels. */
     height?: number;
 
+    /**
+     * Most characters the user can enter, set as the native `maxlength` attribute of the
+     * underlying <textarea> element. Limits typing and pasting only. A longer value set through a bound
+     * model shows in full and is not cut. To validate length, add a `lengthIs` rule to the field.
+     */
+    maxLength?: number;
+
     /** Text to display when control is empty */
     placeholder?: string;
 
@@ -84,6 +91,7 @@ const cmp = hoistCmp.factory<TextAreaInputModel>(({model, className, ...props}, 
             value: model.renderValue || '',
 
             disabled: props.disabled,
+            maxLength: props.maxLength,
             placeholder: props.placeholder,
             spellCheck: withDefault(props.spellCheck, false),
             tabIndex: props.tabIndex,

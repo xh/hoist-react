@@ -132,6 +132,19 @@ Multi-line and free-text controls - `TextArea`, `CodeInput`, `JsonInput` - never
 accept the prop, since whitespace can be meaningful there. Custom inputs can opt in by overriding
 the `HoistInputModel.trimWhitespace` getter.
 
+### Maximum Length
+
+`TextInput` and `TextArea` (desktop + mobile) take a `maxLength` prop, set as the native
+`maxlength` attribute. The browser then stops the user from typing or pasting past the limit.
+
+```typescript
+textInput({bind: 'ticker', maxLength: 8})
+```
+
+The limit applies to user input only. A longer value set through the bound model shows in full,
+and the input does not cut it. To report a value that is too long, add a `lengthIs` rule to the
+bound field.
+
 ### Focus Management
 
 ```typescript
