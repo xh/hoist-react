@@ -21,7 +21,10 @@ describe('isBlankNode', () => {
         ['true', true],
         ['an empty string', ''],
         ['a string of spaces', '   '],
-        ['a string of tabs and line breaks', '\t\n ']
+        ['a string of tabs and line breaks', '\t\r\n '],
+        ['an empty array', []],
+        ['an array of blank nodes', [null, false, '', ' ']],
+        ['nested arrays of blank nodes', [[null], [[false, []]]]]
     ])('is true for %s', (_, node) => {
         expect(isBlankNode(node)).toBe(true);
     });
@@ -33,8 +36,12 @@ describe('isBlankNode', () => {
         ['a number', 42],
         ['NaN', NaN],
         ['an element', span()],
-        ['an empty array', []],
-        ['an array of nodes', ['Orders', null]]
+        ['an array with one node of content', [null, 'Orders']],
+        ['a nested array with one node of content', [false, [null, [0]]]],
+        ['an array that holds an element', [false, span()]],
+        // A deliberate placeholder, which `trim()` would strip.
+        ['a non-breaking space', '\u00a0'],
+        ['a non-breaking space among spaces', ' \u00a0 ']
     ])('is false for %s', (_, node) => {
         expect(isBlankNode(node)).toBe(false);
     });

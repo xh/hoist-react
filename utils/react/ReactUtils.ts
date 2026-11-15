@@ -7,7 +7,7 @@
 import type {Content} from '@xh/hoist/core';
 import type {ReactElement, ReactNode} from 'react';
 import {cloneElement, createElement, isValidElement} from 'react';
-import {isBoolean, isFunction, isNil, isString} from 'lodash';
+import {isArray, isBoolean, isFunction, isNil, isString} from 'lodash';
 import {renderToStaticMarkup as reactRenderToStaticMarkup} from 'react-dom/server';
 import {throwIf} from '../js';
 
@@ -60,16 +60,27 @@ export function renderToStaticMarkup(element: ReactElement): string {
 }
 
 /**
- * True if a node has no content to show: null, undefined, a boolean, or a string that is empty or
- * holds only whitespace. React renders nothing for these, apart from the whitespace.
+ * True if a node has no content to show: null, undefined, a boolean, a string that is empty or
+ * holds only ordinary whitespace, or an array whose members are all blank, at any depth. React
+ * renders nothing for these, apart from the whitespace.
  *
  * Use it to leave out the element that wraps optional content, such as a label or a title, so
  * that blank content leaves no empty element or gap. It treats `false` as blank, so a caller can
- * pass `condition && 'Text'`.
+ * pass `condition && 'Text'`, or `[condition && badge()]`.
+ *
+ * Ordinary whitespace is a space, tab or line break. A non-breaking space is content, so a caller
+ * can pass one to hold the place of text that is not there yet.
  *
  * A number is never blank - `0` is content. An element is never blank either, as there is no way
  * to know what it renders.
  */
 export function isBlankNode(node: ReactNode): boolean {
-    return isNil(node) || isBoolean(node) || (isString(node) && node.trim() === '');
+    if (isArray(node)) return node.every(isBlankNode);
+    return isNil(node) || isBoolean(node) || (isString(node) && BLANK_STRING.test(node));
 }
+
+//------------------
+// Implementation
+//------------------
+/** Empty, or ordinary whitespace only. Leaves out the Unicode spaces that `\s` and `trim()` match. */
+const BLANK_STRING = /^[ \t\n\r\f\v]*$/;
