@@ -951,6 +951,24 @@ body {
 
 
   //------------------------
+  // Separators
+  //------------------------
+  --xh-separator-color: var(--separator-color, var(--xh-border-color));
+  --xh-separator-label-color: var(--separator-label-color, var(--xh-blue-gray));
+  --xh-separator-label-font-size: var(--separator-label-font-size, var(--xh-font-size-small-em));
+  // Gap between a label and the rule on each side of it.
+  --xh-separator-label-gap: var(--separator-label-gap, var(--xh-pad-px));
+  --xh-separator-margin: var(--separator-margin, 0);
+  // Thickness of the rule.
+  --xh-separator-width: var(--separator-width, var(--xh-border-width-px));
+
+  // The muted text color is too faint for labels on a light background, but reads well on a dark one.
+  &.xh-dark {
+    --xh-separator-label-color: var(--separator-label-color, var(--xh-text-color-muted));
+  }
+
+
+  //------------------------
   // Spinner
   //------------------------
   --xh-spinner-color: var(--spinner-color, #{mc('blue-grey', '400')});
