@@ -372,7 +372,8 @@ export class TreeMapModel extends HoistModel {
      * the colorAxis provided to Highcharts.
      *
      * Takes the colorMode into account:
-     * a) 'linear' distributes normalized color values across the colorAxis.
+     * a) 'linear' distributes normalized color values across the colorAxis. Heats that are all
+     *      zero, or a `maxHeat` of zero, color all nodes with the neutral color.
      * b) 'wash' ignores the intensity of the heat value, applying a flat positive or negative color.
      * c) 'none' ignores the heat value altogether, coloring all nodes with the neutral color
      */
@@ -418,11 +419,13 @@ export class TreeMapModel extends HoistModel {
         });
 
         // 2) Transform heatValue into a normalized colorValue, according to the colorMode.
-        const maxHeat = isFinite(this.maxHeat) ? this.maxHeat : max(heatValues);
+        // A largest heat of zero gives no scale to place a heat on, so every node is neutral.
+        const maxHeat = isFinite(this.maxHeat) ? this.maxHeat : max(heatValues),
+            hasScale = maxHeat > 0;
         data.forEach(it => {
             const {heatValue, record} = it;
 
-            if (!this.valueIsValid(heatValue)) {
+            if (!hasScale || !this.valueIsValid(heatValue)) {
                 it.colorValue = 0.5;
                 return;
             }

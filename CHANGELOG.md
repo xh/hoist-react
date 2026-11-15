@@ -40,6 +40,11 @@
 * `CardModel.collapsible` is now observable and settable after construction. Setting it false
   expands a collapsed card.
 
+### 🐞 Bug Fixes
+
+* Fixed `TreeMap` drawing nodes in an invalid color when every heat value was zero, or `maxHeat`
+  was zero. Those nodes now take the neutral color.
+
 ## 90.1.0 - 2026-11-13
 
 ### 🎁 New Features
