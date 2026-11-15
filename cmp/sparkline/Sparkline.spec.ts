@@ -35,6 +35,8 @@ describe('Sparkline', () => {
 
         expect(renderRoot({values: [1, 2]}).hasAttribute('title')).toBe(false);
         expect(renderRoot({values: [1, 2], tooltip: null}).hasAttribute('title')).toBe(false);
+        expect(renderRoot({values: [1, 2], tooltip: '  '}).hasAttribute('title')).toBe(false);
+        expect(renderRoot({values: [1, 2], tooltip: false}).hasAttribute('title')).toBe(false);
         expect(renderRoot({values: [1, 2], tooltip: true}).getAttribute('title')).toBe(
             'Trend: 2 points, from 1 to 2'
         );

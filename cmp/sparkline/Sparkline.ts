@@ -19,7 +19,7 @@ import type {
     TestSupportProps
 } from '@xh/hoist/core';
 import {mergeDeep, TEST_ID} from '@xh/hoist/utils/js';
-import {splitLayoutProps} from '@xh/hoist/utils/react';
+import {isBlankNode, splitLayoutProps} from '@xh/hoist/utils/react';
 
 import {
     scaleY,
@@ -99,7 +99,7 @@ export interface SparklineProps extends HoistProps, LayoutProps, TestSupportProp
 
     /**
      * True to show the accessible name as a native browser tooltip on hover, or a string to show
-     * in its place. Default false.
+     * in its place. Default false. A blank string shows no tooltip.
      */
     tooltip?: boolean | string;
 }
@@ -153,7 +153,7 @@ export const [Sparkline, sparkline] = hoistCmp.withFactory<SparklineProps>({
             }),
             points = sparklinePoints(values, domain),
             ariaLabel = String(domAttrs?.['aria-label'] ?? sparklineLabel(values)),
-            title = isString(tooltip) ? tooltip : tooltip ? ariaLabel : null,
+            title = isBlankNode(tooltip) ? null : isString(tooltip) ? tooltip : ariaLabel,
             divProps = mergeDeep(
                 {
                     className: classNames(
