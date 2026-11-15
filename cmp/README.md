@@ -152,6 +152,7 @@ techniques.
 | `/cubegrid/` | Cube View as a tree grid, with pivot paths as nested column groups when pivoted. [See README](./cubegrid/README.md) |
 | `/statcard/` | Tiles that call out key figures (StatCard), laid out in equal-width rows (StatCardStrip) |
 | `/sparkline/` | Small inline trend chart in plain SVG, for a stat card or a grid cell. [See README](./sparkline/README.md) |
+| `/itemlist/` | Short, static list of entries with a title, description, icon and trailing detail (ItemList). [See README](./itemlist/README.md) |
 
 ### Layout and Containers
 

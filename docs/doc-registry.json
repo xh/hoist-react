@@ -104,6 +104,14 @@
             "keywords": ["Sparkline", "sparkline", "trend", "inline chart", "line", "area", "bar", "colorByTrend", "colorNegative", "showLast", "showMinMax", "baseline", "shared scale", "StatCard detail", "grid column renderer"]
         },
         {
+            "id": "cmp/itemlist/README.md",
+            "title": "ItemList",
+            "mcpCategory": "package",
+            "viewerCategory": "components",
+            "description": "Short, static list of entries with a title, description, icon and trailing detail. No Store, model or fixed row height.",
+            "keywords": ["ItemList", "ItemListEntry", "itemList", "list", "entries", "alerts", "activity", "search results", "ranking", "ordered", "dividers", "intent", "onEntryClick", "emptyText", "DataView alternative"]
+        },
+        {
             "id": "cmp/form/README.md",
             "title": "Form Infrastructure",
             "mcpCategory": "package",

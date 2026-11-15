@@ -20,6 +20,10 @@
   `StatCard` or a grid cell. It draws a `line`, `area` or `bar` series in plain SVG, and can color
   the series by `intent` or by trend. Style through the `--xh-sparkline-*` CSS variables. See the
   [Sparkline README](cmp/sparkline/README.md).
+* Added `ItemList` to `@xh/hoist/cmp/itemlist`, a short, static list of `entries` with a title,
+  description, icon and trailing detail each, for a handful of alerts or search results. It needs
+  no Store or model and sizes each entry to its content. Use `DataView` for long lists. See the
+  [ItemList README](cmp/itemlist/README.md).
 
 ## 90.1.0 - 2026-11-13
 

@@ -39,6 +39,7 @@ See [`docs-roadmap.md`](./planning/docs-roadmap.md) for documentation coverage t
 | Select a period or date range (presets, lookbacks, months, custom) | [`/cmp/daterange/`](../cmp/daterange/README.md)                                                                   |
 | Display a PDF document (page nav, zoom, find, download) | [`/cmp/pdfviewer/`](../cmp/pdfviewer/README.md) |
 | [`/cmp/sparkline/`](../cmp/sparkline/README.md) | Small inline trend chart in plain SVG, for a stat card or a grid cell | Sparkline, line, area, bar, colorByTrend, baseline, shared scale, StatCard detail, grid column renderer |
+| [`/cmp/itemlist/`](../cmp/itemlist/README.md) | Short, static list of entries with a title, description, icon and trailing detail | ItemList, ItemListEntry, entries, intent, ordered, dividers, onEntryClick, emptyText, ItemList or DataView |
 | Use layout containers (Box, HBox, VBox, Frame) | [`/cmp/layout/`](../cmp/layout/README.md)                                                                           |
 | Work with Stores, Records, Fields, or Filters | [`/data/`](../data/README.md)                                                                                       |
 | Set up Cube aggregation with Views and Queries | [`/data/cube/`](../data/cube/README.md)                                                                             |
