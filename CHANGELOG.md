@@ -44,6 +44,9 @@
 
 * Fixed `TreeMap` drawing nodes in an invalid color when every heat value was zero, or `maxHeat`
   was zero. Those nodes now take the neutral color.
+* Fixed `TreeMap` showing its empty placeholder for a moment on mount, and when records arrived
+  in an empty map. `TreeMapModel` now reads its store at once while it has no data to show.
+  Changes to a map that shows data are debounced as before.
 
 ## 90.1.0 - 2026-11-13
 

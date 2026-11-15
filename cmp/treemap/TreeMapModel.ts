@@ -13,7 +13,7 @@ import {numberRenderer} from '@xh/hoist/format';
 import {action, bindable, computed, observableRef, bindableRef} from '@xh/hoist/mobx';
 import {throwIf, withDefault} from '@xh/hoist/utils/js';
 import type {ReactNode} from 'react';
-import {cloneDeep, get, isEmpty, isFinite, max, set, sortBy, sumBy, unset} from 'lodash';
+import {cloneDeep, debounce, get, isEmpty, isFinite, max, set, sortBy, sumBy, unset} from 'lodash';
 
 export interface TreeMapConfig {
     /** A store containing records to be displayed. */
@@ -237,12 +237,14 @@ export class TreeMapModel extends HoistModel {
                 this.maxDepth,
                 this.maxHeat
             ],
-            run: ([rawData]) => {
-                this.processAndSetData(rawData);
-            },
-            debounce: 100,
+            run: () => this.onSourceChange(),
             fireImmediately: true
         });
+    }
+
+    override destroy() {
+        this.debouncedProcessData.cancel();
+        super.destroy();
     }
 
     @computed
@@ -291,6 +293,25 @@ export class TreeMapModel extends HoistModel {
     //-------------------------
     // Data
     //-------------------------
+    private debouncedProcessData = debounce(
+        () => this.processAndSetData(this.store.rootRecords),
+        100
+    );
+
+    /**
+     * Rebuild `data` after a change to the store or to a setting that shapes it. A map that shows
+     * data debounces the work, as changes often come in bursts. A map with no data to show does it
+     * at once, so that its empty placeholder never shows over records that are ready.
+     */
+    private onSourceChange() {
+        if (this.empty) {
+            this.debouncedProcessData.cancel();
+            this.processAndSetData(this.store.rootRecords);
+        } else {
+            this.debouncedProcessData();
+        }
+    }
+
     @action
     processAndSetData(sourceRecords) {
         let data = this.processRecordsRecursive(sourceRecords);
