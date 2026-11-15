@@ -14,6 +14,12 @@
 
 ## 91.0.0-SNAPSHOT - unreleased
 
+### 🎁 New Features
+
+* Added `ProgressBar` to `@xh/hoist/cmp/progressbar`, a cross-platform bar that shows a value
+  against a maximum, with an optional label, figure, `intent` and `target` marker. A bar with no
+  `value` is indeterminate. Style through the `--xh-progress-bar-*` CSS variables.
+
 ## 90.1.0 - 2026-11-13
 
 ### 🎁 New Features

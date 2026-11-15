@@ -857,6 +857,20 @@ body {
   }
 
   //------------------------
+  // Progress Bars
+  //------------------------
+  --xh-progress-bar-border-radius: var(--progress-bar-border-radius, calc(var(--xh-progress-bar-height) / 2));
+  --xh-progress-bar-fill-bg: var(--progress-bar-fill-bg, var(--xh-intent-primary));
+  --xh-progress-bar-font-size: var(--progress-bar-font-size, inherit);
+  --xh-progress-bar-gap: var(--progress-bar-gap, var(--xh-pad-half-px));
+  --xh-progress-bar-height: var(--progress-bar-height, 8px);
+  --xh-progress-bar-label-color: var(--progress-bar-label-color, var(--xh-text-color));
+  --xh-progress-bar-target-color: var(--progress-bar-target-color, var(--xh-text-color));
+  --xh-progress-bar-target-width: var(--progress-bar-target-width, 2px);
+  --xh-progress-bar-track-bg: var(--progress-bar-track-bg, var(--xh-border-color));
+  --xh-progress-bar-value-label-color: var(--progress-bar-value-label-color, var(--xh-text-color));
+
+  //------------------------
   // Resizable splitters
   //------------------------
   --xh-resizable-bg: var(--resizable-bg, #{mc('blue-grey', '50')});

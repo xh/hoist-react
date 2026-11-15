@@ -194,6 +194,7 @@ techniques.
 | `/badge/` | Badge component for counts and status indicators         |
 | `/loadingindicator/` | Loading state display in a compact and non-blocking form |
 | `/mask/` | Overlay mask for blocking interactions                   |
+| `/progressbar/` | Bar that shows a value against a maximum, or indeterminate progress (ProgressBar) |
 | `/spinner/` | Loading spinner animations                               |
 
 ### Utilities
@@ -335,6 +336,50 @@ CardModel supports `collapsible` state with configurable `renderMode` (`'always'
 **FormFieldSet** (`/cmp/form/formfieldset/`) extends Card to group related `FormField` components,
 displaying their aggregate validation state as intent-colored borders and tooltips. See the
 [Form README](./form/README.md#formfieldset) for details.
+
+### ProgressBar (`/progressbar/`)
+
+A horizontal bar that shows a value against a maximum: the progress of a task, or usage against a
+limit. The bar is presentation-only and takes no model. It fills the width of its container.
+
+```typescript
+import {progressBar} from '@xh/hoist/cmp/progressbar';
+
+// A value on the default scale of 0 to 100, shown as a whole percent
+progressBar({label: 'Upload', value: 72})
+
+// A custom scale, a pre-formatted figure, an intent and a marker at a threshold
+progressBar({
+    label: 'Desk A risk',
+    value: 8.1,
+    max: 10,
+    valueLabel: '$8.1m of $10m',
+    target: 7.5,
+    intent: 'warning'
+})
+
+// No value - an indeterminate bar for work of unknown length
+progressBar({label: 'Loading positions'})
+```
+
+| Prop | Type | Description |
+|------|------|-------------|
+| `value` | `number` | Value to show, clamped to the range. Omit it for an indeterminate bar |
+| `min` / `max` | `number` | Values of an empty and a full bar. Default 0 and 100 |
+| `label` | `ReactNode` | Caption above the bar. Also the accessible name of the bar |
+| `valueLabel` | `ReactNode` | Figure above the bar, pre-formatted by the caller. Defaults to a whole percent |
+| `showValueLabel` | `boolean` | False to hide the figure. Default true |
+| `intent` | `Intent` | Semantic color for the fill. Default is the primary color |
+| `target` | `number` | Value to mark on the track, for a threshold or a goal |
+
+The bar never fails on odd data. A value outside the range draws an empty or a full bar. A NaN
+value, or a `max` that is not above `min`, draws an empty bar with no figure.
+
+The root element has `role="progressbar"` and reports its range and value to screen readers. Pass
+an `aria-label` through `domAttrs` for a bar with no `label`. The indeterminate animation stops
+for users who ask their system for reduced motion.
+
+Set the `--xh-progress-bar-*` CSS variables to change the height, radius and colors.
 
 ### Layout (`/layout/`)
 
