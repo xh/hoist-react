@@ -27,6 +27,12 @@ describe('ProgressBar', () => {
             expect(fillWidth(progressBar({value: 15, min: 10, max: 30}))).toBe('25%');
         });
 
+        it('takes the default for a null min or max', () => {
+            expect(fillWidth(progressBar({value: 50, max: null}))).toBe('50%');
+            expect(fillWidth(progressBar({value: 50, min: null}))).toBe('50%');
+            expect(figure(progressBar({value: 50, min: null, max: null}))).toBe('50%');
+        });
+
         it.each([
             ['above max', {value: 250}, '100%'],
             ['below min', {value: -40}, '0%'],
@@ -47,6 +53,18 @@ describe('ProgressBar', () => {
             expect(figure(progressBar({value: 500}))).toBe('100%');
         });
 
+        it.each([
+            [99.6, '99%'],
+            [99.99, '99%'],
+            [100, '100%'],
+            [0.4, '1%'],
+            [0.001, '1%'],
+            [0, '0%'],
+            [49.5, '50%']
+        ])('reads 100%% only for a full bar and 0%% only for an empty one: %s', (value, text) => {
+            expect(figure(progressBar({value}))).toBe(text);
+        });
+
         it('shows the valueLabel in place of the percent, including element content', () => {
             expect(figure(progressBar({value: 72, valueLabel: '72 of 100 GB'}))).toBe(
                 '72 of 100 GB'
@@ -56,16 +74,41 @@ describe('ProgressBar', () => {
             );
         });
 
-        it('is left out when showValueLabel is false, with no header on a bar with no label', () => {
-            const {container} = render(progressBar({value: 72, showValueLabel: false}));
+        it.each([
+            ['null', null],
+            ['false', false],
+            ['an empty string', ''],
+            ['a string of spaces', '  ']
+        ])('takes the default percent for a valueLabel of %s', (_, valueLabel) => {
+            expect(figure(progressBar({value: 72, valueLabel}))).toBe('72%');
+        });
 
+        it('is left out when showValueLabel is false, and shown when it is null', () => {
+            const {container} = render(progressBar({value: 72, showValueLabel: false}));
             expect(part(container, 'value-label')).toBeNull();
             expect(part(container, 'header')).toBeNull();
+
+            expect(figure(progressBar({value: 72, showValueLabel: null}))).toBe('72%');
         });
 
         it('is left out when the value cannot be placed, in place of a NaN figure', () => {
             expect(figure(progressBar({value: NaN}))).toBeNull();
             expect(figure(progressBar({value: 5, min: 5, max: 5}))).toBeNull();
+        });
+    });
+
+    describe('label', () => {
+        it.each([
+            ['null', null],
+            ['false', false],
+            ['an empty string', ''],
+            ['a string of spaces', '  ']
+        ])('renders nothing for a label of %s, and no header with no figure', (_, label) => {
+            const {container} = render(progressBar({value: 1, label, showValueLabel: false}));
+
+            expect(part(container, 'label')).toBeNull();
+            expect(part(container, 'header')).toBeNull();
+            expect(root(container).hasAttribute('aria-labelledby')).toBe(false);
         });
     });
 
@@ -90,16 +133,25 @@ describe('ProgressBar', () => {
     });
 
     describe('target', () => {
-        it('marks a value on the track, clamped to the range', () => {
-            expect(targetLeft(progressBar({value: 40, target: 80}))).toBe('80%');
-            expect(targetLeft(progressBar({value: 40, target: 15, min: 10, max: 30}))).toBe('25%');
-            expect(targetLeft(progressBar({value: 40, target: 400}))).toBe('100%');
+        it('marks a value on the track, at its place in the range', () => {
+            expect(targetAt(progressBar({value: 40, target: 80}))).toBe('0.8');
+            expect(targetAt(progressBar({value: 40, target: 15, min: 10, max: 30}))).toBe('0.25');
         });
 
-        it('draws no marker unless given a target it can place', () => {
-            expect(targetLeft(progressBar({value: 40}))).toBeNull();
-            expect(targetLeft(progressBar({value: 40, target: NaN}))).toBeNull();
-            expect(targetLeft(progressBar({value: 40, target: 5, max: 0}))).toBeNull();
+        it('marks a target at either bound', () => {
+            expect(targetAt(progressBar({value: 40, target: 0}))).toBe('0');
+            expect(targetAt(progressBar({value: 40, target: 100}))).toBe('1');
+        });
+
+        it.each([
+            ['no target', {}],
+            ['a null target', {target: null}],
+            ['a target above max', {target: 400}],
+            ['a target below min', {target: -1}],
+            ['a NaN target', {target: NaN}],
+            ['a range it cannot place a target in', {target: 5, max: 0}]
+        ])('draws no marker for %s', (_, props) => {
+            expect(targetAt(progressBar({value: 40, ...props}))).toBeNull();
         });
     });
 
@@ -171,6 +223,8 @@ function figure(bar: ReturnType<typeof progressBar>): string {
     return part(render(bar).container, 'value-label')?.textContent ?? null;
 }
 
-function targetLeft(bar: ReturnType<typeof progressBar>): string {
-    return part(render(bar).container, 'target')?.style.left ?? null;
+/** Where the target marker sits along the track, from 0 to 1. Null with no marker. */
+function targetAt(bar: ReturnType<typeof progressBar>): string {
+    const marker = part(render(bar).container, 'target');
+    return marker ? marker.style.getPropertyValue('--xh-progress-bar-target-fraction') : null;
 }
