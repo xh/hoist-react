@@ -166,6 +166,9 @@ export interface DateInputProps extends HoistProps, LayoutProps, HoistInputProps
  * can be customized via the timePrecision prop to support editing of a date and time together.
  *
  * The calendar popover can be opened via the built-in button or up/down arrow keyboard shortcuts.
+ *
+ * The control is 200px wide by default. It takes `width` and `flex` as a `TextInput` does, and
+ * fills a `FormField` that sets neither on it.
  */
 export const [DateInput, dateInput] = hoistCmp.withFactory<DateInputProps>({
     displayName: 'DateInput',
@@ -414,10 +417,17 @@ const cmp = hoistCmp.factory<DateInputProps & {model: DateInputModel}>(
         const enablePicker = props.enablePicker ?? true,
             enableTextInput = props.enableTextInput ?? true,
             disabled = props.disabled ?? false,
-            isOpen = enablePicker && model.popoverOpen && !disabled;
+            isOpen = enablePicker && model.popoverOpen && !disabled,
+            {width, flex, ...layoutProps} = getLayoutProps(props);
 
         return div({
             className: 'xh-date-input__wrapper',
+            // The wrapper takes the width and flex of the input, as the root of a TextInput does.
+            // The text input within fills it.
+            style: {
+                width: withDefault(width, 200),
+                flex: withDefault(flex, null)
+            },
             item: popover({
                 isOpen,
                 minimal: true,
@@ -467,7 +477,8 @@ const cmp = hoistCmp.factory<DateInputProps & {model: DateInputModel}>(
                         ref: model.textInputRef,
                         testId: getTestId(props),
                         domAttrs: props.domAttrs,
-                        ...getLayoutProps(props)
+                        ...layoutProps,
+                        width: null
                     }),
                     className: 'xh-date-input__click-target',
                     onClick: !enableTextInput && !disabled ? model.onOpenPopoverClick : null
