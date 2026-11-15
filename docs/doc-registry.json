@@ -76,7 +76,7 @@
             "mcpCategory": "package",
             "viewerCategory": "components",
             "description": "Cross-platform component overview and catalog.",
-            "keywords": ["component categories", "factory pattern", "DataView", "DataViewModel", "Treemap", "ZoneGrid", "Badge", "Spinner", "LoadingIndicator", "RelativeTimestamp", "Markdown", "StatCard", "StatCardStrip", "ProgressBar", "progress", "utilization", "Steps", "StepSpec", "stepper", "wizard", "timeline", "KeyValueList"],
+            "keywords": ["component categories", "factory pattern", "DataView", "DataViewModel", "Treemap", "ZoneGrid", "Badge", "Spinner", "LoadingIndicator", "RelativeTimestamp", "Markdown", "StatCard", "StatCardStrip", "ProgressBar", "progress", "utilization", "Steps", "StepSpec", "stepper", "wizard", "timeline", "KeyValueList", "Sparkline", "sparkline", "trend", "inline chart", "ItemList", "ItemListEntry", "list of items", "alerts", "activity"],
             "aliases": ["components"]
         },
         {
@@ -94,22 +94,6 @@
             "viewerCategory": "components",
             "description": "Cube View rendered as a tree grid with the app's columns, plus pivot paths as nested column groups, docked summaries, and per-measure column config when the query pivots.",
             "keywords": ["CubeGridModel", "CubeGrid", "CubeGridConfig", "CubeGridPivotModel", "CubeGridPivotConfig", "pivotConfig", "cube grid", "pivot", "PivotSpec", "measures", "cellFields", "PivotPath", "PivotDimensionSpec", "PivotMeasureSpec", "measuresOutermost", "summaryLabel", "valueRenderer", "emptyLabel", "valueClass", "summaryClass", "showSummary"]
-        },
-        {
-            "id": "cmp/sparkline/README.md",
-            "title": "Sparkline",
-            "mcpCategory": "package",
-            "viewerCategory": "components",
-            "description": "Small inline trend chart in plain SVG, for a stat card or a grid cell.",
-            "keywords": ["Sparkline", "sparkline", "trend", "inline chart", "line", "area", "bar", "colorByTrend", "colorNegative", "showLast", "showMinMax", "baseline", "shared scale", "StatCard detail", "grid column renderer"]
-        },
-        {
-            "id": "cmp/itemlist/README.md",
-            "title": "ItemList",
-            "mcpCategory": "package",
-            "viewerCategory": "components",
-            "description": "Short, static list of entries with a title, description, icon and trailing detail. No Store, model or fixed row height.",
-            "keywords": ["ItemList", "ItemListEntry", "itemList", "list", "entries", "alerts", "activity", "search results", "ranking", "ordered", "dividers", "intent", "onEntryClick", "emptyText", "DataView alternative"]
         },
         {
             "id": "cmp/form/README.md",

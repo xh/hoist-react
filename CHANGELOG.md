@@ -25,8 +25,7 @@
   optional `onStepClick`. Style through the `--xh-steps-*` CSS variables.
 * Added `Sparkline` to `@xh/hoist/cmp/sparkline`, a small inline trend chart with no axes, for a
   `StatCard` or a grid cell. It draws a `line`, `area` or `bar` series in plain SVG, and can color
-  the series by `intent` or by trend. Style through the `--xh-sparkline-*` CSS variables. See the
-  [Sparkline README](cmp/sparkline/README.md).
+  the series by `intent` or by trend. Style through the `--xh-sparkline-*` CSS variables.
 * Added `KeyValueList` to `@xh/hoist/cmp/keyvaluelist`, a display-only list of labeled values such
   as the fields of a record in a detail panel. It lays its `entries` out in aligned columns that
   fit the available width, with the label beside or above each value.
@@ -41,8 +40,7 @@
   expands a collapsed card.
 * Added `ItemList` to `@xh/hoist/cmp/itemlist`, a short, static list of `entries` with a title,
   description, icon and trailing detail each, for a handful of alerts or search results. It needs
-  no Store or model and sizes each entry to its content. Use `DataView` for long lists. See the
-  [ItemList README](cmp/itemlist/README.md).
+  no Store or model and sizes each entry to its content. Use `DataView` for long lists.
 * Added `Slider.ariaLabel`, to name the handle of a slider, or each handle of a range, for
   assistive technology. A `Slider` in a `FormField` now takes the label of the field as that name.
 * Added `SegmentedControl.wrap` to the desktop control, to let options flow onto further rows when

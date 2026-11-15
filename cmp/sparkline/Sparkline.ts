@@ -5,7 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import classNames from 'classnames';
-import {first, isFinite, isString, last, maxBy, minBy, partition} from 'lodash';
+import {first, isFinite, last, maxBy, minBy, partition} from 'lodash';
 import {createElement} from 'react';
 import type {ReactElement} from 'react';
 
@@ -153,7 +153,7 @@ export const [Sparkline, sparkline] = hoistCmp.withFactory<SparklineProps>({
             }),
             points = sparklinePoints(values, domain),
             ariaLabel = String(domAttrs?.['aria-label'] ?? sparklineLabel(values)),
-            title = isBlankNode(tooltip) ? null : isString(tooltip) ? tooltip : ariaLabel,
+            title = tooltip === true ? ariaLabel : isBlankNode(tooltip) ? null : `${tooltip}`,
             divProps = mergeDeep(
                 {
                     className: classNames(
