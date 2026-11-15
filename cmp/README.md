@@ -411,7 +411,7 @@ itemList({
 | `dividers` | `boolean` | Draws a rule between entries. Default false |
 | `size` | `'compact' \| 'standard'` | `compact` for smaller text and tighter rows. Default `standard` |
 | `emptyText` | `ReactNode` | Shown in place of a list with no entries to show. Default is to render nothing |
-| `onEntryClick` | `(entry, index) => void` | Handler for a click or Enter/Space keypress. Makes each entry a focusable button |
+| `onEntryClick` | `(entry, index) => void` | Handler for a click or Enter/Space keypress. Makes each entry a focusable button. A control inside an entry keeps its own clicks |
 
 | `ItemListEntry` key | Type | Description |
 |---------------------|------|-------------|
@@ -447,8 +447,9 @@ A `title`, `description` or `detail` that is null, a boolean or a blank string r
 so `cond && 'Text'` is safe. The list skips an entry with all three blank. A string renders as
 text, never as HTML.
 
-`intent` colors the icon or number of an entry, not its text. Say what the color means in the
-text as well. The component renders an HTML list, so a screen reader announces the count and the
+`intent` colors the icon or number of an entry, not its text. An entry with an `intent` and no
+icon, in a list where another entry has an icon, shows a small dot in that color. Say what the
+color means in the text as well. The component renders an HTML list, so a screen reader announces the count and the
 position of each entry.
 
 Set the `--xh-item-list-*` CSS variables to change the spacing and colors.

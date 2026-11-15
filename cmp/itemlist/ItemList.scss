@@ -70,6 +70,14 @@
     }
   }
 
+  // Stands in for the icon of an entry that has an intent and no icon.
+  &__dot {
+    width: var(--xh-item-list-dot-size);
+    height: var(--xh-item-list-dot-size);
+    border-radius: 50%;
+    background-color: currentColor;
+  }
+
   &__entry--intent-primary &__marker {
     color: var(--xh-item-list-primary-color);
   }
