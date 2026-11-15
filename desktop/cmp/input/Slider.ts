@@ -17,12 +17,19 @@ import '@xh/hoist/desktop/register';
 import {rangeSlider as bpRangeSlider, slider as bpSlider} from '@xh/hoist/kit/blueprint';
 import {throwIf, withDefault} from '@xh/hoist/utils/js';
 import {getLayoutProps} from '@xh/hoist/utils/react';
-import {isArray} from 'lodash';
+import {castArray, isArray} from 'lodash';
 import type {ReactNode} from 'react';
 import './Slider.scss';
 
 export interface SliderProps extends HoistProps, HoistInputProps, LayoutProps {
     value?: Some<number>;
+
+    /**
+     * Accessible name for the handle, set as its `aria-label`. For a range slider, pass a pair to
+     * name the start and end handles, or one name for both. A slider in a `FormField` with no
+     * `ariaLabel` takes the label of the field as the name of its handles.
+     */
+    ariaLabel?: Some<string>;
 
     /** Maximum value */
     max?: number;
@@ -93,6 +100,13 @@ const cmp = hoistCmp.factory<SliderInputModel>(({model, className, ...props}, re
     if (!layoutProps.padding && !layoutProps.paddingLeft) layoutProps.paddingLeft = 20;
     if (!layoutProps.padding && !layoutProps.paddingRight) layoutProps.paddingRight = 20;
 
+    const isRange = isArray(model.renderValue),
+        [startLabel, endLabel = startLabel] = castArray(props.ariaLabel ?? []),
+        // FormField renders its label with an id derived from the input's id - see FormField.
+        labelledBy = props.id ? `${props.id}-label` : undefined,
+        handleAttrs = (label: string) =>
+            label ? {'aria-label': label} : {'aria-labelledby': labelledBy};
+
     const sliderProps: BpRangeSliderProps | BpSliderProps = {
         value: model.renderValue,
 
@@ -109,9 +123,15 @@ const cmp = hoistCmp.factory<SliderInputModel>(({model, className, ...props}, re
     };
 
     return box({
-        item: isArray(model.renderValue)
-            ? bpRangeSlider(sliderProps as BpRangeSliderProps)
-            : bpSlider(sliderProps as BpSliderProps),
+        item: isRange
+            ? bpRangeSlider({
+                  ...(sliderProps as BpRangeSliderProps),
+                  handleHtmlProps: {start: handleAttrs(startLabel), end: handleAttrs(endLabel)}
+              })
+            : bpSlider({
+                  ...(sliderProps as BpSliderProps),
+                  handleHtmlProps: handleAttrs(startLabel)
+              }),
 
         ...layoutProps,
         width: withDefault(width, 200),
