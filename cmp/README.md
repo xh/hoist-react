@@ -683,7 +683,7 @@ steps({
 | `detail` | `ReactNode` | Short secondary text, for example a timestamp |
 | `status` | `StepStatus` | `pending`, `current`, `complete`, `warning` or `error`. Takes priority over `current` |
 | `icon` | `ReactElement` | Icon for the marker, in place of the number or the status icon |
-| `disabled` | `boolean` | True to make the step ignore `onStepClick`. It takes no focus and no click |
+| `disabled` | `boolean` | True to make the step ignore `onStepClick`. It takes no focus and no click, and shows dimmed |
 | `omit` | `boolean` | True to leave the step out |
 
 Markers number the steps that show, from 1. `current` and the index passed to `onStepClick` count
