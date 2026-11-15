@@ -38,23 +38,18 @@ describe('TreeMap', () => {
             expect(colorAxisWarnings(warn)).toHaveLength(0);
         });
 
-        it('says nothing for a colorMode of none, which needs no heat colors', () => {
+        it('warns once, with the module to import, when Highcharts has no color axis', () => {
             installFakeHighcharts();
             const warn = spyOnWarn();
+            // Every mode needs the axis: the neutral color of `none` is one of its stops.
             render(treeMap({model: createModel({colorMode: 'none'})}));
-
-            expect(colorAxisWarnings(warn)).toHaveLength(0);
-        });
-
-        it('warns once, with the module to import, when it colors by heat with no color axis', () => {
-            installFakeHighcharts();
-            const warn = spyOnWarn();
-            render(treeMap({model: createModel()}));
-            render(treeMap({model: createModel({colorMode: 'wash'})}));
-
             const warnings = colorAxisWarnings(warn);
             expect(warnings).toHaveLength(1);
             expect(warnings[0]).toContain('highcharts/modules/heatmap');
+
+            render(treeMap({model: createModel()}));
+            render(treeMap({model: createModel({colorMode: 'wash'})}));
+            expect(colorAxisWarnings(warn)).toHaveLength(1);
         });
     });
 });
