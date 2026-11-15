@@ -9,7 +9,7 @@ import {steps} from '@xh/hoist/cmp/steps';
 import type {StepSpec} from '@xh/hoist/cmp/steps';
 import {initTestAppAsync} from '@xh/hoist/test-support';
 import {fireEvent, render} from '@testing-library/react';
-import {beforeAll, describe, expect, it, vi} from 'vitest';
+import {beforeAll, describe, expect, it, onTestFinished, vi} from 'vitest';
 
 /**
  * Steps derives each step's status from `current` unless the step sets its own, and apps rely on
@@ -209,6 +209,66 @@ describe('Steps', () => {
         });
     });
 
+    describe('orientation', () => {
+        it('keeps a horizontal row while each step has at least 96px', () => {
+            setListWidth(384);
+
+            expect(orientationOf(steps({steps: order}))).toBe('horizontal');
+        });
+
+        it('shows a horizontal row as vertical when a step would have less than 96px', () => {
+            setListWidth(383);
+            const {container} = render(steps({steps: order, current: 1}));
+            const list = container.querySelector('.xh-steps');
+
+            expect(list.classList).toContain('xh-steps--vertical');
+            expect(list.classList).toContain('xh-steps--fallback');
+            expect(list.classList).not.toContain('xh-steps--horizontal');
+        });
+
+        it('counts only the steps that show', () => {
+            setListWidth(300);
+            const withOmitted = [...order, null, {title: 'Settled', omit: true}];
+
+            expect(orientationOf(steps({steps: withOmitted}))).toBe('vertical');
+            expect(orientationOf(steps({steps: withOmitted.slice(0, 3)}))).toBe('horizontal');
+        });
+
+        it('takes the floor from minStepWidth', () => {
+            setListWidth(400);
+
+            expect(orientationOf(steps({steps: order, minStepWidth: 101}))).toBe('vertical');
+            expect(orientationOf(steps({steps: order, minStepWidth: 100}))).toBe('horizontal');
+        });
+
+        it.each([null, undefined, NaN])('uses the default floor when minStepWidth is %s', min => {
+            setListWidth(383);
+
+            expect(orientationOf(steps({steps: order, minStepWidth: min}))).toBe('vertical');
+        });
+
+        it('keeps the row at any width when minStepWidth is 0', () => {
+            setListWidth(40);
+
+            expect(orientationOf(steps({steps: order, minStepWidth: 0}))).toBe('horizontal');
+        });
+
+        it('keeps the row before the list has a width', () => {
+            setListWidth(0);
+
+            expect(orientationOf(steps({steps: order}))).toBe('horizontal');
+        });
+
+        it('leaves an explicit vertical list as it is at any width', () => {
+            setListWidth(2000);
+            const {container} = render(steps({steps: order, orientation: 'vertical'}));
+            const list = container.querySelector('.xh-steps');
+
+            expect(list.classList).toContain('xh-steps--vertical');
+            expect(list.classList).not.toContain('xh-steps--fallback');
+        });
+    });
+
     describe('onStepClick', () => {
         it('leaves steps as plain content when not set', () => {
             const {container} = render(steps({steps: order, current: 1}));
@@ -310,6 +370,17 @@ describe('Steps', () => {
 });
 
 /** The status of each step, read from its modifier class. */
+function orientationOf(el: ReturnType<typeof steps>): string {
+    const list = render(el).container.querySelector('.xh-steps');
+    return list.classList.contains('xh-steps--vertical') ? 'vertical' : 'horizontal';
+}
+
+/** jsdom has no layout, so stand in for the width of the list. */
+function setListWidth(width: number) {
+    const spy = vi.spyOn(Element.prototype, 'clientWidth', 'get').mockReturnValue(width);
+    onTestFinished(() => spy.mockRestore());
+}
+
 function statuses(el: ReturnType<typeof steps>): string[] {
     const items = render(el).container.querySelectorAll('.xh-steps__step');
     return Array.from(items).map(it => it.className.match(/xh-steps__step--(\w+)/)[1]);

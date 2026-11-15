@@ -676,6 +676,7 @@ steps({
 | `steps` | `StepSpec[]` | Steps to show, in order. A null entry is left out |
 | `current` | `number` | Index in `steps` of the current step, from 0. An index past the last step completes them all |
 | `orientation` | `'horizontal' \| 'vertical'` | Direction of the sequence. Default `horizontal` |
+| `minStepWidth` | `number` | Narrowest share in pixels for a step of a horizontal row, below which it shows as vertical. Default 96. Set 0 to keep the row |
 | `onStepClick` | `(step, index) => void` | Handler for a click or Enter/Space keypress. Makes each step a focusable button, except a `disabled` one |
 
 | `StepSpec` key | Type | Description |
@@ -694,8 +695,10 @@ every entry of `steps`, including a step that is left out. A blank `title`, `des
 danger color.
 
 A horizontal sequence gives each step an equal share of the width, with its text centered under
-its marker. Text wraps and is never truncated, so the row gets taller in a narrow container and
-does not overflow it. Use `vertical` for long descriptions. The list is a block, so in a row such
+its marker. Text wraps and is never truncated. When a share would be narrower than `minStepWidth`,
+the row shows as a vertical list, with the classes and ARIA of an explicit `vertical` list and an
+added `xh-steps--fallback` class. It goes back to a row when the width allows. The default of 96px
+keeps a long word such as "confirmation" whole. Use `vertical` for long descriptions. The list is a block, so in a row such
 as an `hbox` it needs a `flex` or a `width`.
 
 The component renders an ordered list and sets `aria-current="step"` on the current step. A

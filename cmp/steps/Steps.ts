@@ -5,7 +5,8 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import classNames from 'classnames';
-import {capitalize, includes, isEmpty} from 'lodash';
+import {capitalize, includes, isEmpty, isFinite} from 'lodash';
+import {useLayoutEffect, useRef, useState} from 'react';
 import type {KeyboardEvent, MouseEvent, ReactElement, ReactNode} from 'react';
 
 import {div, li, ol} from '@xh/hoist/cmp/layout';
@@ -13,7 +14,7 @@ import {hoistCmp} from '@xh/hoist/core';
 import type {DomAttrsProps, HoistProps, LayoutProps, TestSupportProps} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {mergeDeep, TEST_ID} from '@xh/hoist/utils/js';
-import {isBlankNode, splitLayoutProps} from '@xh/hoist/utils/react';
+import {composeRefs, isBlankNode, splitLayoutProps, useOnResize} from '@xh/hoist/utils/react';
 
 import './Steps.scss';
 
@@ -76,12 +77,20 @@ export interface StepsProps extends HoistProps, LayoutProps, TestSupportProps, D
      *
      * `horizontal` is a row for the top of a wizard or a detail panel. Each step takes an equal
      * share of the width, with its text centered under its marker. Text wraps and is never
-     * truncated, so the row gets taller in a narrow container and does not overflow it.
+     * truncated. When a share is narrower than `minStepWidth`, the row shows as `vertical`.
      *
      * `vertical` is a list with each step's text beside its marker. Use it for long descriptions,
      * a checklist or a simple timeline.
      */
     orientation?: 'horizontal' | 'vertical';
+
+    /**
+     * Narrowest share of the width, in pixels, that a step of a `horizontal` row may take. When
+     * the steps that show would be narrower, the row shows as `vertical`, so that words are not
+     * broken across lines. It goes back to a row when the width allows. Default 96, which keeps
+     * a long word such as "confirmation" whole. Set 0 to keep the row at any width.
+     */
+    minStepWidth?: number;
 
     /**
      * Handler for a click or Enter/Space keypress on a step, called with the step and its index
@@ -112,29 +121,45 @@ export const [Steps, steps] = hoistCmp.withFactory<StepsProps>({
     render(props, ref) {
         const [
             layoutProps,
-            {className, steps, current, orientation, onStepClick, testId, domAttrs}
+            {className, steps, current, orientation, minStepWidth, onStepClick, testId, domAttrs}
         ] = splitLayoutProps(props);
 
         // Each step keeps its index in `steps`, which `current` and `onStepClick` refer to.
         const shown = (steps ?? [])
-            .map((step, index) => ({step, index}))
-            .filter(({step}) => step && !step.omit);
+                .map((step, index) => ({step, index}))
+                .filter(({step}) => step && !step.omit),
+            count = shown.length,
+            minWidth = isFinite(minStepWidth) ? minStepWidth : MIN_STEP_WIDTH,
+            [fits, setFits] = useState(true),
+            listRef = useRef<HTMLOListElement>(null),
+            argsRef = useRef({count, minWidth}),
+            measure = () => setFits(stepsFit(listRef.current, argsRef.current)),
+            resizeRef = useOnResize(measure);
+
+        // The resize observer keeps the first `measure` it is given, so it reads from a ref.
+        // The layout effect measures before the first paint, so the row shows in its final layout.
+        argsRef.current = {count, minWidth};
+        useLayoutEffect(measure, [count, minWidth]);
+
         if (isEmpty(shown)) return null;
 
-        const olProps = mergeDeep(
-            {
-                className: classNames(
-                    className,
-                    `xh-steps--${orientation === 'vertical' ? 'vertical' : 'horizontal'}`
-                )
-            },
-            {style: layoutProps},
-            {[TEST_ID]: testId, ...domAttrs}
-        );
+        const isVertical = orientation === 'vertical',
+            fellBack = !isVertical && !fits,
+            olProps = mergeDeep(
+                {
+                    className: classNames(
+                        className,
+                        isVertical || fellBack ? 'xh-steps--vertical' : 'xh-steps--horizontal',
+                        fellBack && 'xh-steps--fallback'
+                    )
+                },
+                {style: layoutProps},
+                {[TEST_ID]: testId, ...domAttrs}
+            );
 
         // An explicit role keeps list semantics in browsers that drop them with `list-style: none`.
         return ol({
-            ref,
+            ref: composeRefs(ref, listRef, resizeRef),
             role: 'list',
             ...olProps,
             items: shown.map(({step, index}, position) =>
@@ -147,12 +172,34 @@ export const [Steps, steps] = hoistCmp.withFactory<StepsProps>({
 //------------------
 // Implementation
 //------------------
+// Default narrowest share for a step of a horizontal row, in pixels. Leaves 88px for text after
+// the step's padding, which holds a long word such as "confirmation" or "instructions".
+const MIN_STEP_WIDTH = 96;
+
 const CONTROL_SELECTOR = 'button, a, input, select, textarea, [role="button"]';
 
 const STATUSES: StepStatus[] = ['pending', 'current', 'complete', 'warning', 'error'];
 
 /** Statuses that a marker shows by icon alone, so the marker names them for screen readers. */
 const ICON_STATUSES: StepStatus[] = ['complete', 'warning', 'error'];
+
+/**
+ * True if each step gets at least `minWidth` of the list's width. The list is a block, so its width
+ * does not depend on its layout, and a switch of layout cannot trigger another. A list with no
+ * width has not been laid out, for example inside a hidden tab: it keeps the row until it has one.
+ */
+function stepsFit(list: HTMLElement, {count, minWidth}: {count: number; minWidth: number}) {
+    if (!list || !count || !(minWidth > 0)) return true;
+
+    const {paddingLeft, paddingRight} = window.getComputedStyle(list),
+        width = list.clientWidth - px(paddingLeft) - px(paddingRight);
+
+    return width <= 0 || width / count >= minWidth;
+}
+
+function px(v: string): number {
+    return parseFloat(v) || 0;
+}
 
 function statusOf(step: StepSpec, index: number, current: number): StepStatus {
     if (includes(STATUSES, step.status)) return step.status;
