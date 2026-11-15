@@ -328,11 +328,35 @@ card({
     title: 'Details',
     items: [/* ... */]
 })
+
+// Muted text after the title, items at the far end of the header, and a footer row
+card({
+    title: 'Positions',
+    subtitle: '12 rows',
+    headerItems: [badge(3), button({icon: Icon.download(), onClick: () => model.exportAsync()})],
+    footer: 'Prices as of the last close',
+    items: [/* ... */]
+})
 ```
 
 CardModel supports `collapsible` state with configurable `renderMode` (`'always'`, `'lazy'`,
 `'unmountOnHide'`) and optional persistence of collapsed state. Cards can display an `intent`
 (`'primary'`, `'success'`, `'warning'`, `'danger'`) for colored borders and headers.
+
+`CardModel.collapsible` is observable, so an app can change it after it creates the model. Set it
+false to remove the collapse control, which also expands a collapsed card. Set it true to add the
+control, and call `setCollapsed()` to collapse the card.
+
+| Prop | Type | Description |
+|------|------|-------------|
+| `subtitle` | `ReactNode` | Muted text after the title, for example a row count |
+| `headerItems` | `ReactNode[]` | Items at the far end of the header, for example buttons or a badge |
+| `footer` | `ReactNode` | Row under the content, set apart by a rule. Hidden while the card is collapsed |
+
+A card with `headerItems` stretches its header across the card, with a rule between the title and
+the items in place of the top border. A click on a header item does not collapse the card. The
+header stays inline with the border in every case. For a filled header bar above the content, use
+a desktop or mobile `Panel`.
 
 **FormFieldSet** (`/cmp/form/formfieldset/`) extends Card to group related `FormField` components,
 displaying their aggregate validation state as intent-colored borders and tooltips. See the
