@@ -142,6 +142,44 @@
     }
   }
 
+  // Wrapping - options that do not fit on one row flow onto further rows. The tray grows from its
+  // standard height, and each option keeps the height it has in a tray of one row: the tray less
+  // its padding and border. Declared after the compact rules, which set a fixed tray height.
+  &--wrap .bp6-segmented-control {
+    --xh-segmented-control-tray-height: calc(
+      var(--xh-tbar-min-size-px) - var(--xh-pad-half-px) * 2 - 1px
+    );
+    --xh-segmented-control-tray-inset: var(--xh-segmented-control-pad-px);
+  }
+
+  &--wrap#{&}--compact .bp6-segmented-control,
+  .xh-toolbar--compact &--wrap .bp6-segmented-control {
+    --xh-segmented-control-tray-height: var(--xh-tbar-compact-item-height-px);
+    --xh-segmented-control-tray-inset: 0px;
+  }
+
+  &--wrap#{&}--outlined .bp6-segmented-control {
+    --xh-segmented-control-tray-inset: calc(var(--xh-segmented-control-pad-px) + 1px);
+  }
+
+  &--wrap#{&}--outlined#{&}--compact .bp6-segmented-control,
+  .xh-toolbar--compact &--wrap#{&}--outlined .bp6-segmented-control {
+    --xh-segmented-control-tray-inset: 1px;
+  }
+
+  &--wrap .bp6-segmented-control,
+  .xh-toolbar--compact &--wrap .bp6-segmented-control {
+    flex-wrap: wrap;
+    height: auto;
+    min-height: var(--xh-segmented-control-tray-height);
+
+    > .bp6-button {
+      height: calc(
+        var(--xh-segmented-control-tray-height) - var(--xh-segmented-control-tray-inset) * 2
+      );
+    }
+  }
+
   // Validation borders
   &.xh-input--invalid .bp6-segmented-control {
     border: var(--xh-form-field-invalid-border);

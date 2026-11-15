@@ -12,7 +12,7 @@ import type {
 } from '@xh/hoist/cmp/input';
 import {HoistInputModel, useHoistInputModel} from '@xh/hoist/cmp/input';
 import {div} from '@xh/hoist/cmp/layout';
-import type {HoistProps, Intent} from '@xh/hoist/core';
+import type {HoistProps, Intent, LayoutProps} from '@xh/hoist/core';
 import {hoistCmp} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {bpSegmentedControl} from '@xh/hoist/kit/blueprint';
@@ -23,7 +23,7 @@ import classNames from 'classnames';
 import {filter, isObject} from 'lodash';
 import './SegmentedControl.scss';
 
-export interface SegmentedControlProps extends HoistProps, HoistInputProps {
+export interface SegmentedControlProps extends HoistProps, HoistInputProps, LayoutProps {
     /** True to render in a compact mode with reduced sizing for space-constrained contexts. */
     compact?: boolean;
 
@@ -76,6 +76,13 @@ export interface SegmentedControlProps extends HoistProps, HoistInputProps {
      * the tray offers no other cue that its options are separate and selectable.
      */
     showOptionDividers?: boolean | 'auto';
+
+    /**
+     * True to let options wrap onto further rows when the control is too narrow to hold them on
+     * one row. Default false - the options stay on one row, and a control wider than its container
+     * overflows it. A control that fits looks the same either way.
+     */
+    wrap?: boolean;
 }
 
 /**
@@ -191,6 +198,7 @@ const cmp = hoistCmp.factory<SegmentedControlModel>(({model, className, ...props
         outlined = true,
         showTrayBackground = true,
         showOptionDividers = 'auto',
+        wrap,
         testId,
         domAttrs,
         // Remainder passed to BP SegmentedControl
@@ -225,12 +233,13 @@ const cmp = hoistCmp.factory<SegmentedControlModel>(({model, className, ...props
             defaultIntent && `xh-segmented-control--${defaultIntent}`,
             outlined && 'xh-segmented-control--outlined',
             !showTrayBackground && 'xh-segmented-control--no-tray-bg',
-            dividers && 'xh-segmented-control--dividers'
+            dividers && 'xh-segmented-control--dividers',
+            wrap && 'xh-segmented-control--wrap'
         ),
         ref,
         onFocus: model.onFocus,
         onBlur: model.onBlur,
-        ...getLayoutProps(props),
+        style: getLayoutProps(props),
         [TEST_ID]: props.testId,
         ...domAttrs,
         item: bpSegmentedControl({
