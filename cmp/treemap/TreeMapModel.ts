@@ -65,7 +65,10 @@ export interface TreeMapConfig {
     /** Layout algorithm to use. */
     algorithm?: TreeMapAlgorithm;
 
-    /** Heat color distribution mode. */
+    /**
+     * Heat color distribution mode. The `linear` and `wash` modes need the Highcharts color axis,
+     * from `highcharts/modules/heatmap` or `highcharts/modules/coloraxis`.
+     */
     colorMode?: TreeMapColorMode;
 
     /** Theme to use. Leave undefined to use the global theme. */
@@ -115,6 +118,11 @@ export interface TreeMapModelDefaults {
  * - 'linear' - distributes values across the colorAxis according to the heatField.
  * - 'wash' - ignores heat intensity, applying a single positive/negative color.
  * - 'none' - ignores the colorAxis entirely, using the neutral color.
+ *
+ * The colorAxis is not part of the Highcharts `treemap` module. The 'linear' and 'wash' modes
+ * need the app to import `highcharts/modules/heatmap` or `highcharts/modules/coloraxis` in its
+ * `Bootstrap.ts`, before `highcharts/modules/treemap`. Without one, Highcharts draws every node
+ * in one default color, and TreeMap logs a warning to the console.
  *
  * Color customization can be managed by setting colorAxis stops via `highchartsConfig`.
  * See {@link https://www.highcharts.com/docs/chart-and-series-types/treemap} for Highcharts

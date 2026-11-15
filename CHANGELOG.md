@@ -47,6 +47,10 @@
 * Fixed `TreeMap` showing its empty placeholder for a moment on mount, and when records arrived
   in an empty map. `TreeMapModel` now reads its store at once while it has no data to show.
   Changes to a map that shows data are debounced as before.
+* `TreeMap` now logs a console warning when it colors nodes by heat and Highcharts has no color
+  axis. Import `highcharts/modules/heatmap` or `highcharts/modules/coloraxis` before
+  `highcharts/modules/treemap` in `Bootstrap.ts`. Without one, every node drew in one default
+  color with no sign of the cause.
 
 ## 90.1.0 - 2026-11-13
 
