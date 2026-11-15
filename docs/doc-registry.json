@@ -76,7 +76,7 @@
             "mcpCategory": "package",
             "viewerCategory": "components",
             "description": "Cross-platform component overview and catalog.",
-            "keywords": ["component categories", "factory pattern", "DataView", "DataViewModel", "Treemap", "ZoneGrid", "Badge", "Spinner", "LoadingIndicator", "RelativeTimestamp", "Markdown", "StatCard", "StatCardStrip", "ProgressBar", "progress", "utilization", "Steps", "StepSpec", "stepper", "wizard", "timeline"],
+            "keywords": ["component categories", "factory pattern", "DataView", "DataViewModel", "Treemap", "ZoneGrid", "Badge", "Spinner", "LoadingIndicator", "RelativeTimestamp", "Markdown", "StatCard", "StatCardStrip", "ProgressBar", "progress", "utilization", "Steps", "StepSpec", "stepper", "wizard", "timeline", "KeyValueList"],
             "aliases": ["components"]
         },
         {
@@ -125,7 +125,7 @@
             "mcpCategory": "package",
             "viewerCategory": "components",
             "description": "Flexbox-based layout containers.",
-            "keywords": ["Box", "VBox", "HBox", "Frame", "Viewport", "LayoutProps", "pixel conversion"]
+            "keywords": ["Box", "VBox", "HBox", "Frame", "Viewport", "LayoutProps", "pixel conversion", "Separator", "divider"]
         },
         {
             "id": "cmp/tab/README.md",

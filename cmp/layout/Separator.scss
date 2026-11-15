@@ -1,0 +1,58 @@
+/*
+ * This file belongs to Hoist, an application development toolkit
+ * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
+ *
+ * Copyright © 2026 Extremely Heavy Industries Inc.
+ */
+
+.xh-separator {
+  display: flex;
+  flex: none;
+  align-items: center;
+  // Stretch across the cross axis of a flex container - the width of a column for a horizontal
+  // rule, the height of a row for a vertical one.
+  align-self: stretch;
+  gap: var(--xh-separator-label-gap);
+  min-width: 0;
+  margin: var(--xh-separator-margin);
+
+  // The rule - one segment on each side of the label, or one segment only without a label.
+  &::before,
+  &::after {
+    content: '';
+    flex: 1 1 0;
+    border: 0 solid var(--xh-separator-color);
+  }
+
+  &:empty::after,
+  &--label-start::before,
+  &--label-end::after {
+    display: none;
+  }
+
+  &--horizontal {
+    &::before,
+    &::after {
+      border-top-width: var(--xh-separator-width);
+    }
+  }
+
+  &--vertical {
+    flex-direction: column;
+    // A row with no height of its own still shows the rule, at the height of a line of text.
+    min-height: 1em;
+
+    &::before,
+    &::after {
+      border-left-width: var(--xh-separator-width);
+    }
+  }
+
+  &__label {
+    flex: 0 1 auto;
+    min-width: 0;
+    overflow-wrap: anywhere;
+    font-size: var(--xh-separator-label-font-size);
+    color: var(--xh-separator-label-color);
+  }
+}
