@@ -97,6 +97,22 @@ describe('ItemList', () => {
         expect(part(second, 'description').textContent).toBe('Kept');
     });
 
+    it('renders no element for an array with nothing to show, such as [cond && badge()]', () => {
+        const isNew = [].length > 0;
+        const [blank, mixed] = entriesOf(
+            renderRoot({
+                entries: [
+                    {title: 'A', detail: [isNew && span('New')], description: [null, '']},
+                    {title: 'B', detail: [false, span({className: 'figure', item: '42'})]}
+                ]
+            })
+        );
+
+        expect(part(blank, 'detail')).toBeNull();
+        expect(part(blank, 'description')).toBeNull();
+        expect(part(mixed, 'detail').textContent).toBe('42');
+    });
+
     it('keeps a title or detail of 0, as a number is content', () => {
         const root = renderRoot({entries: [{title: 0, detail: 0}]});
 
