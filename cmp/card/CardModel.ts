@@ -60,11 +60,16 @@ export class CardModel extends HoistModel implements Persistable<CardPersistStat
     //---------------------
     /**
      * Can card be collapsed? Set false to remove the collapse control from the header, which also
-     * expands a collapsed card. Set true to add it, with the card left expanded. (observable)
+     * expands a collapsed card. Set true to add it. The card then returns to the collapsed state
+     * it last had while collapsible, or to its persisted state, and is otherwise left expanded.
+     * (observable)
      */
     @bindable accessor collapsible: boolean = false;
 
     @observable accessor collapsed: boolean = false;
+
+    /** The collapsed state to return to once the card can collapse. Null when there is none. */
+    @observable private accessor heldCollapsed: boolean = null;
 
     constructor({
         collapsible = false,
@@ -78,19 +83,17 @@ export class CardModel extends HoistModel implements Persistable<CardPersistStat
         this.collapsed = this.defaultCollapsed = collapsible && defaultCollapsed;
         this.renderMode = renderMode;
 
-        this.addReaction({
-            track: () => this.collapsible,
-            run: collapsible => {
-                if (!collapsible) this.collapsed = false;
-            }
-        });
-
         if (persistWith) {
             PersistenceProvider.create({
                 persistOptions: persistOptions({path: 'card'}, persistWith),
                 target: this
             });
         }
+
+        this.addReaction({
+            track: () => this.collapsible,
+            run: collapsible => this.onCollapsibleChange(collapsible)
+        });
     }
 
     //----------------------
@@ -106,13 +109,38 @@ export class CardModel extends HoistModel implements Persistable<CardPersistStat
     // Persistable Interface
     //---------------------
     getPersistableState(): PersistableState<CardPersistState> {
-        const ret: CardPersistState = {};
-        if (this.collapsible) ret.collapsed = this.collapsed;
+        const ret: CardPersistState = {},
+            collapsed = this.collapsible ? this.collapsed : this.heldCollapsed;
+        if (!isNil(collapsed)) ret.collapsed = collapsed;
         return new PersistableState(ret);
     }
 
     setPersistableState(state: PersistableState<CardPersistState>) {
         const {collapsed} = state.value;
-        if (this.collapsible && !isNil(collapsed)) this.collapsed = collapsed;
+        if (isNil(collapsed)) return;
+        if (this.collapsible) {
+            this.collapsed = collapsed;
+        } else {
+            this.heldCollapsed = collapsed;
+        }
+    }
+
+    //------------------
+    // Implementation
+    //------------------
+    /**
+     * A card that cannot collapse shows expanded, but holds its collapsed state rather than drop
+     * it. The persisted state therefore survives a model that becomes collapsible only after
+     * construction, or that stops being collapsible for a time.
+     */
+    @action
+    private onCollapsibleChange(collapsible: boolean) {
+        if (collapsible) {
+            if (!isNil(this.heldCollapsed)) this.collapsed = this.heldCollapsed;
+            this.heldCollapsed = null;
+        } else {
+            this.heldCollapsed = this.collapsed;
+            this.collapsed = false;
+        }
     }
 }

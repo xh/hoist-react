@@ -49,6 +49,10 @@
     width: 100%;
   }
 
+  &__legend-header {
+    min-width: 0;
+  }
+
   &__header-rule {
     border-top: var(--xh-border-width-px) solid;
     border-color: inherit;

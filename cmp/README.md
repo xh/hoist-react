@@ -518,7 +518,8 @@ CardModel supports `collapsible` state with configurable `renderMode` (`'always'
 
 `CardModel.collapsible` is observable, so an app can change it after it creates the model. Set it
 false to remove the collapse control, which also expands a collapsed card. Set it true to add the
-control, and call `setCollapsed()` to collapse the card.
+control. The card then returns to the collapsed state it last had while collapsible, or to its
+persisted state, and is otherwise left expanded.
 
 | Prop | Type | Description |
 |------|------|-------------|
@@ -526,8 +527,12 @@ control, and call `setCollapsed()` to collapse the card.
 | `headerItems` | `ReactNode[]` | Items at the far end of the header, for example buttons or a badge |
 | `footer` | `ReactNode` | Row under the content, set apart by a rule. Hidden while the card is collapsed |
 
+A blank `subtitle` or `footer` renders nothing, and blank members of `headerItems` are left out.
+
 A card with `headerItems` stretches its header across the card, with a rule between the title and
-the items in place of the top border. A click on a header item does not collapse the card. The
+the items in place of the top border. A click on a header item does not collapse the card. Screen
+readers name the card by its title, not by its header items. A card with header items and no
+title has no name of its own, so pass an `aria-label` through `domAttrs`. The
 header stays inline with the border in every case. For a filled header bar above the content, use
 a desktop or mobile `Panel`.
 

@@ -5,12 +5,12 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {card, CardModel} from '@xh/hoist/cmp/card';
-import {span} from '@xh/hoist/cmp/layout';
+import {htmlButton, span} from '@xh/hoist/cmp/layout';
 import {cardHeaderImpl} from '@xh/hoist/desktop/cmp/card/impl/CardHeaderImpl';
 import {installDesktopImpls} from '@xh/hoist/dynamics/desktop';
 import {initTestAppAsync} from '@xh/hoist/test-support';
-import {act, fireEvent, render} from '@testing-library/react';
-import {beforeAll, describe, expect, it} from 'vitest';
+import {act, fireEvent, render, screen} from '@testing-library/react';
+import {beforeAll, beforeEach, describe, expect, it, onTestFinished} from 'vitest';
 
 /**
  * Apps style and test against a Card's markup, so a card that sets none of the optional header
@@ -75,20 +75,93 @@ describe('Card', () => {
         });
     });
 
+    describe('blank content', () => {
+        const blanks: [string, any][] = [
+            ['null', null],
+            ['false', false],
+            ['an empty string', ''],
+            ['a string of spaces', '  ']
+        ];
+
+        it.each(blanks)(
+            'renders no header for a subtitle of %s on a card with no title',
+            (_, v) => {
+                const {container} = render(card({subtitle: v, item: span('Body')}));
+
+                expect(container.querySelector('legend')).toBeNull();
+            }
+        );
+
+        it.each(blanks)('renders no footer for a footer of %s', (_, v) => {
+            const {container} = render(card({title: 'Orders', footer: v}));
+
+            expect(container.querySelector('.xh-card__footer')).toBeNull();
+        });
+
+        it.each([
+            ['an array of false', [false]],
+            ['an array of blank nodes', [null, '', [false]]],
+            ['null', null]
+        ])('keeps the plain legend for headerItems of %s', (_, headerItems) => {
+            const titled = render(card({title: 'Orders', headerItems})).container,
+                untitled = render(card({headerItems})).container;
+
+            expect(titled.querySelector('legend').className).toBe('');
+            expect(titled.querySelector('.xh-card__header-items')).toBeNull();
+            expect(untitled.querySelector('legend')).toBeNull();
+        });
+
+        it('drops blank members from headerItems and keeps the others', () => {
+            const {container} = render(
+                card({title: 'Orders', headerItems: [false, span({className: 'my-item'}), null]})
+            );
+
+            expect(container.querySelector('.xh-card__header-items').children).toHaveLength(1);
+        });
+    });
+
+    describe('accessible name', () => {
+        it('is the title alone on a card with header items', () => {
+            render(
+                card({
+                    title: 'Orders',
+                    headerItems: [htmlButton('Export')],
+                    item: span('Body')
+                })
+            );
+
+            expect(screen.getByRole('group', {name: 'Orders'})).not.toBeNull();
+            expect(screen.queryByRole('group', {name: /Export/})).toBeNull();
+        });
+
+        it('comes from the legend, with no added attribute, on a card with no header items', () => {
+            const {container} = render(card({title: 'Orders', item: span('Body')}));
+
+            expect(screen.getByRole('group', {name: 'Orders'})).not.toBeNull();
+            expect(container.querySelector('.xh-card').hasAttribute('aria-labelledby')).toBe(false);
+        });
+
+        it('yields to an aria-label from domAttrs on a card with header items and no title', () => {
+            render(
+                card({headerItems: [htmlButton('Export')], domAttrs: {'aria-label': 'Order tools'}})
+            );
+
+            expect(screen.getByRole('group', {name: 'Order tools'})).not.toBeNull();
+        });
+    });
+
     describe('headerItems', () => {
         it('follow the header in the legend, after a rule that stands in for the border', () => {
             const {container} = render(
                 card({title: 'Positions', headerItems: [span({className: 'my-item'})]})
             );
-            const legend = container.querySelector('legend');
+            const legend = container.querySelector('legend'),
+                [header, rule, items] = Array.from(legend.children);
 
             expect(legend.className).toBe('xh-card__legend');
-            expect(Array.from(legend.children).map(it => it.className)).toEqual([
-                'xh-card__header xh-card__header--intent-none',
-                'xh-card__header-rule',
-                'xh-card__header-items'
-            ]);
-            expect(legend.querySelector('.xh-card__header-items .my-item')).not.toBeNull();
+            expect(header.querySelector('.xh-card__header').textContent).toBe('Positions');
+            expect(rule.className).toBe('xh-card__header-rule');
+            expect(items.querySelector('.my-item')).not.toBeNull();
         });
 
         it('show on a card with no title', () => {
@@ -173,6 +246,74 @@ describe('CardModel', () => {
             });
             expect(container.querySelector('.xh-card__collapsible-header')).not.toBeNull();
             expect(container.querySelector('.xh-card__header')).toBeNull();
+        });
+    });
+
+    // Fixed in v91 - a model made collapsible after construction ignored its stored state on
+    // load, then overwrote it.
+    describe('persisted collapsed state', () => {
+        const KEY = 'testApp.jdoe.ordersCard',
+            createModel = () => {
+                const ret = new CardModel({
+                    persistWith: {localStorageKey: 'ordersCard', debounce: 0}
+                });
+                onTestFinished(() => ret.destroy());
+                return ret;
+            };
+
+        beforeEach(() => localStorage.clear());
+
+        it('is restored when the card becomes collapsible after construction', () => {
+            const first = createModel();
+            first.collapsible = true;
+            first.setCollapsed(true);
+            expect(localStorage.getItem(KEY)).toBe('{"card":{"collapsed":true}}');
+
+            const second = createModel();
+            expect(second.collapsed).toBe(false);
+            expect(localStorage.getItem(KEY)).toBe('{"card":{"collapsed":true}}');
+
+            second.collapsible = true;
+            expect(second.collapsed).toBe(true);
+            expect(localStorage.getItem(KEY)).toBe('{"card":{"collapsed":true}}');
+        });
+
+        it('is kept while the card cannot collapse, and comes back when it can again', () => {
+            const model = createModel();
+            model.collapsible = true;
+            model.setCollapsed(true);
+
+            model.collapsible = false;
+            expect(model.collapsed).toBe(false);
+            expect(localStorage.getItem(KEY)).toBe('{"card":{"collapsed":true}}');
+
+            model.collapsible = true;
+            expect(model.collapsed).toBe(true);
+        });
+
+        it('keeps an expanded state that differs from the default', () => {
+            const create = () => {
+                const ret = new CardModel({
+                    collapsible: true,
+                    defaultCollapsed: true,
+                    persistWith: {localStorageKey: 'ordersCard', debounce: 0}
+                });
+                onTestFinished(() => ret.destroy());
+                return ret;
+            };
+            const first = create();
+            first.setCollapsed(false);
+            first.collapsible = false;
+            first.collapsible = true;
+            expect(first.collapsed).toBe(false);
+
+            expect(create().collapsed).toBe(false);
+        });
+
+        it('stores nothing for a card that is never collapsible', () => {
+            createModel();
+
+            expect(localStorage.getItem(KEY)).toBeNull();
         });
     });
 });
