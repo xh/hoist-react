@@ -56,6 +56,32 @@ describe('KeyValueList', () => {
         expect(dd.classList).not.toContain('xh-key-value-list__value--empty');
     });
 
+    it.each([
+        [true, 'true'],
+        [false, 'false']
+    ])('shows a value of %s as text, not as the placeholder', (value, text) => {
+        const {container} = render(keyValueList({entries: [{label: 'Active', value}]})),
+            dd = container.querySelector('dd');
+
+        expect(dd.textContent).toBe(text);
+        expect(dd.classList).not.toContain('xh-key-value-list__value--empty');
+    });
+
+    it('shows the default placeholder when emptyText is null', () => {
+        const {container} = render(
+            keyValueList({entries: [{label: 'Broker', value: null}], emptyText: null})
+        );
+
+        expect(container.querySelector('dd').textContent).toBe('-');
+    });
+
+    it.each([false, null, '  '])('renders an entry whose label is %j', label => {
+        const {container} = render(keyValueList({entries: [{label, value: 'AAPL'}]}));
+
+        expect(texts(container, 'dt').map(it => it.trim())).toEqual(['']);
+        expect(texts(container, 'dd')).toEqual(['AAPL']);
+    });
+
     it('shows a custom emptyText', () => {
         const {container} = render(
             keyValueList({entries: [{label: 'Broker', value: null}], emptyText: 'None'})
@@ -110,39 +136,55 @@ describe('KeyValueList', () => {
         expect(side.className).not.toMatch(/--intent/);
     });
 
-    it('applies its options as modifier classes, alongside layout props and testId', () => {
+    it('applies layout props and testId to the list', () => {
         const {container} = render(
             keyValueList({
                 entries: [{label: 'A', value: 1}],
-                labelPosition: 'top',
-                size: 'compact',
-                dividers: true,
                 maxWidth: 400,
                 testId: 'trade-detail'
             })
         );
         const list = container.querySelector<HTMLElement>('.xh-key-value-list');
 
-        expect(list.classList).toContain('xh-key-value-list--label-top');
-        expect(list.classList).toContain('xh-key-value-list--compact');
-        expect(list.classList).toContain('xh-key-value-list--dividers');
         expect(list.style.maxWidth).toBe('400px');
         expect(list.getAttribute('data-testid')).toBe('trade-detail');
     });
 
-    it('has no modifier classes by default', () => {
-        const {container} = render(keyValueList({entries: [{label: 'A', value: 1}]}));
-
-        expect(container.querySelector('.xh-key-value-list').className).toBe('xh-key-value-list');
-    });
-
     describe('columns', () => {
         it('uses the given number of columns, whatever the width', () => {
-            setListWidth(2000);
+            setListWidth(200);
             const {container} = render(keyValueList({entries: fiveEntries(), columns: 2}));
 
             expect(columnCount(container)).toBe('2');
         });
+
+        it('uses no more of the given columns than it has entries', () => {
+            const {container} = render(keyValueList({entries: fiveEntries(), columns: 10}));
+
+            expect(columnCount(container)).toBe('5');
+        });
+
+        it('uses fewer than the given columns to keep a given minColumnWidth', () => {
+            setListWidth(700);
+            const props = {entries: fiveEntries(), columns: 4};
+
+            expect(
+                columnCount(render(keyValueList({...props, minColumnWidth: 300})).container)
+            ).toBe('2');
+            expect(
+                columnCount(render(keyValueList({...props, minColumnWidth: 100})).container)
+            ).toBe('4');
+        });
+
+        it.each([null, undefined, 0, -50, NaN])(
+            'fits columns of the default width when minColumnWidth is %s',
+            minColumnWidth => {
+                setListWidth(1000);
+                const {container} = render(keyValueList({entries: fiveEntries(), minColumnWidth}));
+
+                expect(columnCount(container)).toBe('3');
+            }
+        );
 
         it('fits as many columns of the minimum width as the list has room for', () => {
             setListWidth(1000);

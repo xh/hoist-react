@@ -365,6 +365,53 @@ a desktop or mobile `Panel`.
 displaying their aggregate validation state as intent-colored borders and tooltips. See the
 [Form README](./form/README.md#formfieldset) for details.
 
+### KeyValueList (`/keyvaluelist/`)
+
+A display-only list of labeled values, such as the fields of a record in a detail panel. The list
+is presentation-only and takes no model. It renders as an HTML description list (`dl`), fills the
+width of its container and has no outer margin.
+
+```typescript
+import {keyValueList} from '@xh/hoist/cmp/keyvaluelist';
+import {fmtDate, fmtNumber} from '@xh/hoist/format';
+
+// Labels in an aligned column on the left, in as many columns as the width allows
+keyValueList({
+    entries: [
+        {label: 'Symbol', value: trade.symbol},
+        {label: 'Quantity', value: fmtNumber(trade.quantity, {precision: 0})},
+        {label: 'Settles', value: fmtDate(trade.settleDate)},
+        {label: 'Status', value: trade.status, intent: trade.isRejected ? 'danger' : null},
+        {label: 'Broker', value: trade.broker, omit: !trade.isExternal}
+    ]
+})
+
+// Labels above their values, in at most three columns, with a rule between rows
+keyValueList({entries, labelPosition: 'top', columns: 3, minColumnWidth: 160, dividers: true})
+```
+
+| Prop | Type | Description |
+|------|------|-------------|
+| `entries` | `KeyValueEntry[]` | Labeled values to show, in order. A null entry is skipped |
+| `labelPosition` | `'left' \| 'top'` | Where each label sits against its value. Default `left` |
+| `columns` | `number` | Number of columns, never more than the entries. Omit to fit the width |
+| `minColumnWidth` | `number` | Narrowest a column gets, in pixels. Default 300, or 180 with `top` |
+| `emptyText` | `ReactNode` | Shown for a null, undefined or blank string value. Default `-` |
+| `size` | `'compact' \| 'standard'` | `compact` for smaller text and tighter rows |
+| `dividers` | `boolean` | True to draw a rule between rows |
+
+An entry is `{label, value, intent, omit}`. The caller formats each `value`: the list never
+formats. A boolean value shows as the text `true` or `false`. Set `intent` to color a value, and
+`omit` to leave an entry out.
+
+With no `columns`, the list fits as many columns of at least `minColumnWidth` as its width allows,
+and stacks in one column in a narrow container. A `columns` count holds at any width. Set
+`minColumnWidth` with it to make it a maximum.
+
+Long labels and values wrap, within a word if needed, so the list never forces horizontal
+overflow. Set the `--xh-key-value-list-*` CSS variables to change the gaps, label width and
+colors.
+
 ### ProgressBar (`/progressbar/`)
 
 A horizontal bar that shows a value against a maximum: the progress of a task, or usage against a

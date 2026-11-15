@@ -23,8 +23,9 @@ describe('TextArea (mobile)', () => {
             expect(renderInput('abc', {maxLength: 10}).getAttribute('maxlength')).toBe('10');
         });
 
-        it('sets no attribute by default', () => {
+        it('sets no attribute by default, or for a null maxLength', () => {
             expect(renderInput('abc').hasAttribute('maxlength')).toBe(false);
+            expect(renderInput('abc', {maxLength: null}).hasAttribute('maxlength')).toBe(false);
         });
 
         it('shows a longer bound value in full', () => {

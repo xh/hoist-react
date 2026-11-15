@@ -58,8 +58,9 @@ export interface TextInputProps
 
     /**
      * Most characters the user can enter, set as the native `maxlength` attribute of the
-     * underlying <input> element. Limits typing and pasting only. A longer value set through a bound
-     * model shows in full and is not cut. To validate length, add a `lengthIs` rule to the field.
+     * underlying <input> element. Limits typing and pasting only. A longer value set through
+     * a bound model shows in full and is not cut. To validate length, add a `lengthIs` rule to
+     * the field.
      */
     maxLength?: number;
 

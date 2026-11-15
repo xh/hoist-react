@@ -11,7 +11,7 @@ import type {ReactNode} from 'react';
 import {hoistCmp} from '@xh/hoist/core';
 import type {DomAttrsProps, HoistProps, LayoutProps, TestSupportProps} from '@xh/hoist/core';
 import {mergeDeep, TEST_ID} from '@xh/hoist/utils/js';
-import {splitLayoutProps} from '@xh/hoist/utils/react';
+import {isBlankNode, splitLayoutProps} from '@xh/hoist/utils/react';
 
 import {div, span} from './Tags';
 import './Separator.scss';
@@ -24,12 +24,18 @@ export interface SeparatorProps extends HoistProps, LayoutProps, TestSupportProp
      */
     orientation?: 'horizontal' | 'vertical';
 
-    /** Caption shown within the rule, such as the title of the section that follows. */
+    /**
+     * Caption shown within a horizontal rule, such as the title of the section that follows. A
+     * vertical separator shows no label.
+     */
     label?: ReactNode;
 
     /**
      * Where the label sits along the rule. Default `center`, with the rule drawn on each side of
      * the label. With `start` the rule follows the label, and with `end` it leads up to it.
+     *
+     * `KeyValueList.labelPosition` takes other values (`left`, `top`), because it places a label
+     * against a value.
      */
     labelPosition?: 'start' | 'center' | 'end';
 }
@@ -49,13 +55,11 @@ export const [Separator, separator] = hoistCmp.withFactory<SeparatorProps>({
     className: 'xh-separator',
 
     render(props, ref) {
-        const [
-                layoutProps,
-                {className, orientation, label, labelPosition = 'center', testId, domAttrs}
-            ] = splitLayoutProps(props),
+        const [layoutProps, {className, orientation, label, labelPosition, testId, domAttrs}] =
+                splitLayoutProps(props),
             labelId = useId(),
             vertical = orientation === 'vertical',
-            hasLabel = label != null && label !== '';
+            hasLabel = !vertical && !isBlankNode(label);
 
         return div({
             ref,
@@ -67,7 +71,7 @@ export const [Separator, separator] = hoistCmp.withFactory<SeparatorProps>({
                     className: classNames(
                         className,
                         `xh-separator--${vertical ? 'vertical' : 'horizontal'}`,
-                        hasLabel && `xh-separator--label-${labelPosition}`
+                        hasLabel && `xh-separator--label-${labelPosition ?? 'center'}`
                     )
                 },
                 {style: layoutProps},
