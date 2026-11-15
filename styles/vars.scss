@@ -383,8 +383,15 @@ body {
   --xh-card-header-min-height-px: calc(var(--xh-card-header-min-height) * 1px);
   --xh-card-header-text-color: var(--card-header-text-color, var(--xh-text-color));
   --xh-card-primary-color: var(--card-primary-color, var(--xh-intent-primary-text-color));
+  --xh-card-subtitle-color: var(--card-subtitle-color, var(--xh-blue-gray));
+  --xh-card-subtitle-font-size: var(--card-subtitle-font-size, var(--xh-font-size-small-em));
   --xh-card-success-color: var(--card-success-color, var(--xh-intent-success-text-color));
   --xh-card-warning-color: var(--card-warning-color, var(--xh-intent-warning-text-color));
+
+  // The muted text color is too faint for a subtitle on a light background, but reads well on a dark one.
+  &.xh-dark {
+    --xh-card-subtitle-color: var(--card-subtitle-color, var(--xh-text-color-muted));
+  }
 
 
   //------------------------
@@ -778,6 +785,39 @@ body {
 
   &.xh-dark {
     --xh-date-range-picker-rail-bg: var(--date-range-picker-rail-bg, var(--xh-tbar-bg));
+  }
+
+  //------------------------
+  // Item Lists
+  //------------------------
+  --xh-item-list-accent-width: var(--item-list-accent-width, 3px);
+  --xh-item-list-compact-entry-padding: var(--item-list-compact-entry-padding, 2px 0);
+  --xh-item-list-compact-font-size: var(--item-list-compact-font-size, var(--xh-font-size-small-em));
+  --xh-item-list-danger-color: var(--item-list-danger-color, var(--xh-intent-danger-text-color));
+  --xh-item-list-description-color: var(--item-list-description-color, var(--xh-blue-gray));
+  --xh-item-list-description-font-size: var(--item-list-description-font-size, var(--xh-font-size-small-em));
+  --xh-item-list-divider: var(--item-list-divider, var(--xh-border-solid));
+  --xh-item-list-empty-color: var(--item-list-empty-color, var(--xh-blue-gray));
+  // Space between an entry's icon, text and detail.
+  --xh-item-list-entry-gap: var(--item-list-entry-gap, var(--xh-pad-px));
+  --xh-item-list-entry-padding: var(--item-list-entry-padding, var(--xh-pad-half-px) 0);
+  --xh-item-list-font-size: var(--item-list-font-size, inherit);
+  --xh-item-list-hover-bg: var(--item-list-hover-bg, var(--xh-bg-alt));
+  --xh-item-list-line-height: var(--item-list-line-height, 1.4);
+  --xh-item-list-marker-color: var(--item-list-marker-color, var(--xh-blue-gray));
+  --xh-item-list-marker-width: var(--item-list-marker-width, 1.25em);
+  --xh-item-list-primary-color: var(--item-list-primary-color, var(--xh-intent-primary-text-color));
+  --xh-item-list-success-color: var(--item-list-success-color, var(--xh-intent-success-text-color));
+  --xh-item-list-title-font-weight: var(--item-list-title-font-weight, 500);
+  // Narrowest a title gets beside its detail, before the detail drops to a line of its own.
+  --xh-item-list-title-min-width: var(--item-list-title-min-width, 6em);
+  --xh-item-list-warning-color: var(--item-list-warning-color, var(--xh-intent-warning-text-color));
+
+  // The muted text color is too faint for secondary text on a light background, but reads well on a dark one.
+  &.xh-dark {
+    --xh-item-list-description-color: var(--item-list-description-color, var(--xh-text-color-muted));
+    --xh-item-list-empty-color: var(--item-list-empty-color, var(--xh-text-color-muted));
+    --xh-item-list-marker-color: var(--item-list-marker-color, var(--xh-text-color-muted));
   }
 
   //------------------------

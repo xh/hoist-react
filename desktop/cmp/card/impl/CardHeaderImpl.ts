@@ -1,5 +1,6 @@
 import type {CardModel} from '@xh/hoist/cmp/card/CardModel';
-import {div, legend} from '@xh/hoist/cmp/layout';
+import {cardLegend, cardSubtitle} from '@xh/hoist/cmp/card/impl/CardHeaderParts';
+import {div, fragment} from '@xh/hoist/cmp/layout';
 import {hoistCmp} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {Icon} from '@xh/hoist/icon';
@@ -11,7 +12,8 @@ import type {ReactNode} from 'react';
  * @internal
  */
 export const cardHeaderImpl = hoistCmp.factory<CardModel>({
-    render({icon, intent, title, tooltip, model}, ref) {
+    render({icon, intent, title, subtitle, headerItems, tooltip, model}, ref) {
+        const subtitleEl = cardSubtitle(subtitle);
         let item: ReactNode = null;
 
         if (model.collapsible) {
@@ -19,29 +21,20 @@ export const cardHeaderImpl = hoistCmp.factory<CardModel>({
                 className: `xh-card__collapsible-header xh-card__collapsible-header--intent-${intent ?? 'none'}`,
                 icon,
                 intent,
-                text: title,
+                text: subtitleEl ? fragment(title, subtitleEl) : title,
                 onClick: () => model.setCollapsed(!model.collapsed),
                 rightIcon: model.collapsed ? Icon.angleDown() : Icon.angleUp(),
                 ref
             });
-        } else if (icon || title) {
+        } else if (icon || title || subtitleEl) {
             item = div({
                 className: `xh-card__header xh-card__header--intent-${intent ?? 'none'}`,
-                items: [icon, title]
+                items: [icon, title, subtitleEl]
             });
         }
 
-        return (
-            item &&
-            legend(
-                tooltip
-                    ? bpTooltip({
-                          item,
-                          content: tooltip,
-                          intent
-                      })
-                    : item
-            )
-        );
+        if (item && tooltip) item = bpTooltip({item, content: tooltip, intent});
+
+        return cardLegend(item, headerItems);
     }
 });

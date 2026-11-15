@@ -11,7 +11,7 @@ import {errorMessage} from '@xh/hoist/cmp/error';
 import {mask} from '@xh/hoist/cmp/mask';
 import {Highcharts} from '@xh/hoist/kit/highcharts';
 import {wait} from '@xh/hoist/promise';
-import {logError, logWithDebug} from '@xh/hoist/utils/js';
+import {logError, logWarn, logWithDebug} from '@xh/hoist/utils/js';
 import {
     useComposedRefs,
     createObservableRef,
@@ -36,6 +36,10 @@ export interface TreeMapProps<M extends TreeMapModel = TreeMapModel>
  * It is a managed wrapper around a Highcharts TreeMap visualization, which renders
  * records from a Store and optionally binds to a GridModel.
  *
+ * The app must import the Highcharts `treemap` module, and a module that holds the Highcharts
+ * color axis: `highcharts/modules/heatmap` or `highcharts/modules/coloraxis`. Without a color
+ * axis, every node draws in one default color - see {@link TreeMapModel}.
+ *
  * @see TreeMapModel
  */
 export const [TreeMap, treeMap] = hoistCmp.withFactory<TreeMapProps>({
@@ -52,6 +56,7 @@ export const [TreeMap, treeMap] = hoistCmp.withFactory<TreeMapProps>({
             );
             return 'Highcharts not available';
         }
+        warnIfNoColorAxis(model);
 
         const impl = useLocalModel(TreeMapLocalModel);
         ref = useComposedRefs(
@@ -98,6 +103,23 @@ export const [TreeMap, treeMap] = hoistCmp.withFactory<TreeMapProps>({
         });
     }
 });
+
+/**
+ * The treemap module does not hold the Highcharts color axis. Without one, Highcharts ignores the
+ * `colorAxis` config and each node's `colorValue`, with no error, so say so once.
+ */
+let warnedNoColorAxis = false;
+function warnIfNoColorAxis(model: TreeMapModel) {
+    if (warnedNoColorAxis || model.colorMode === 'none' || Highcharts.ColorAxis) return;
+    warnedNoColorAxis = true;
+    logWarn(
+        `Highcharts has no color axis, so TreeMap cannot color nodes by heat for colorMode ` +
+            `'${model.colorMode}' - every node draws in one default color. Import ` +
+            `'highcharts/modules/heatmap' (or 'highcharts/modules/coloraxis') before ` +
+            `'highcharts/modules/treemap' in Bootstrap.ts. See Toolbox for an example.`,
+        TreeMap
+    );
+}
 
 class TreeMapLocalModel extends HoistModel {
     override xhImpl = true;

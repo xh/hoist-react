@@ -9,7 +9,7 @@ import type {Persistable, PersistOptions, RenderMode} from '@xh/hoist/core';
 import {HoistModel, PersistableState, PersistenceProvider, persistOptions} from '@xh/hoist/core';
 import {throwIf} from '@xh/hoist/utils/js';
 import {isNil} from 'lodash';
-import {action, observable} from '@xh/hoist/mobx';
+import {action, bindable, observable} from '@xh/hoist/mobx';
 
 /**
  * Configuration for a {@link CardModel}. A CardModel is created automatically by {@link Card}
@@ -19,7 +19,7 @@ import {action, observable} from '@xh/hoist/mobx';
  * @see Card
  */
 export interface CardModelConfig {
-    /** Can card be collapsed? */
+    /** Can card be collapsed? Change it later with {@link CardModel.collapsible}. */
     collapsible?: boolean;
 
     /** Default collapsed state. */
@@ -52,13 +52,18 @@ export class CardModel extends HoistModel implements Persistable<CardPersistStat
     //-----------------------
     // Immutable Properties
     //-----------------------
-    readonly collapsible: boolean;
     readonly defaultCollapsed: boolean;
     readonly renderMode: RenderMode;
 
     //---------------------
     // Observable State
     //---------------------
+    /**
+     * Can card be collapsed? Set false to remove the collapse control from the header, which also
+     * expands a collapsed card. Set true to add it, with the card left expanded. (observable)
+     */
+    @bindable accessor collapsible: boolean = false;
+
     @observable accessor collapsed: boolean = false;
 
     constructor({
@@ -72,6 +77,13 @@ export class CardModel extends HoistModel implements Persistable<CardPersistStat
         this.collapsible = collapsible;
         this.collapsed = this.defaultCollapsed = collapsible && defaultCollapsed;
         this.renderMode = renderMode;
+
+        this.addReaction({
+            track: () => this.collapsible,
+            run: collapsible => {
+                if (!collapsible) this.collapsed = false;
+            }
+        });
 
         if (persistWith) {
             PersistenceProvider.create({

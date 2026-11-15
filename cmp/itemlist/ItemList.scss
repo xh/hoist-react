@@ -1,0 +1,147 @@
+/*
+ * This file belongs to Hoist, an application development toolkit
+ * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
+ *
+ * Copyright © 2026 Extremely Heavy Industries Inc.
+ */
+
+.xh-item-list {
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  // Fills its container in a block, a column or a row. A `width` or `flex` layout prop overrides.
+  width: 100%;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: var(--xh-item-list-font-size);
+
+  // Swaps in the compact variables, so the rules below draw both sizes.
+  &--compact {
+    --xh-item-list-entry-padding: var(--xh-item-list-compact-entry-padding);
+    --xh-item-list-font-size: var(--xh-item-list-compact-font-size);
+  }
+
+  &--empty {
+    color: var(--xh-item-list-empty-color);
+  }
+
+  &--dividers &__entry:not(:first-child) {
+    border-top: var(--xh-item-list-divider);
+  }
+
+  &__entry {
+    min-width: 0;
+  }
+
+  &__entry-inner {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--xh-item-list-entry-gap);
+    padding: var(--xh-item-list-entry-padding);
+  }
+
+  // As tall as one line of the title, so an icon or number centers on the title's first line.
+  &__marker {
+    display: flex;
+    flex: none;
+    align-items: center;
+    justify-content: center;
+    min-width: var(--xh-item-list-marker-width);
+    height: calc(var(--xh-item-list-line-height) * 1em);
+    color: var(--xh-item-list-marker-color);
+
+    &--number {
+      font-variant-numeric: tabular-nums;
+      font-weight: 600;
+    }
+
+    // A bar down the full height of the entry, in the entry's intent color. Clear for an entry
+    // with no intent, as the intent rules below are what give it a color.
+    &--accent {
+      align-self: stretch;
+      min-width: 0;
+      width: var(--xh-item-list-accent-width);
+      height: auto;
+      border-radius: var(--xh-item-list-accent-width);
+      background-color: currentColor;
+      color: transparent;
+    }
+  }
+
+  &__entry--intent-primary &__marker {
+    color: var(--xh-item-list-primary-color);
+  }
+
+  &__entry--intent-success &__marker {
+    color: var(--xh-item-list-success-color);
+  }
+
+  &__entry--intent-warning &__marker {
+    color: var(--xh-item-list-warning-color);
+  }
+
+  &__entry--intent-danger &__marker {
+    color: var(--xh-item-list-danger-color);
+  }
+
+  &__content {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  // The title leads its line, with the detail held at the far end. A long title wraps beside the
+  // detail. The detail drops to a line of its own only when the title would get narrower than
+  // `--xh-item-list-title-min-width`.
+  &__header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    column-gap: var(--xh-item-list-entry-gap);
+    line-height: var(--xh-item-list-line-height);
+  }
+
+  // Text wraps, at any character if it must, so a narrow list never forces overflow.
+  &__title,
+  &__detail,
+  &__description {
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+
+  &__title {
+    flex: 1 1 var(--xh-item-list-title-min-width);
+    font-weight: var(--xh-item-list-title-font-weight);
+  }
+
+  &__detail {
+    flex: 0 1 auto;
+    margin-left: auto;
+    text-align: right;
+  }
+
+  &__description {
+    color: var(--xh-item-list-description-color);
+    font-size: var(--xh-item-list-description-font-size);
+  }
+
+  //------------------
+  // Clickable
+  //------------------
+  // Padded at the sides, so the hover background does not sit tight against the text.
+  &--clickable &__entry-inner {
+    padding-inline: var(--xh-item-list-entry-gap);
+    border-radius: var(--xh-border-radius-px);
+    cursor: pointer;
+
+    &:hover {
+      background-color: var(--xh-item-list-hover-bg);
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--xh-focus-outline-color);
+      outline-offset: -2px;
+    }
+  }
+}

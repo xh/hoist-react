@@ -38,6 +38,15 @@
   assistive technology. A `Slider` in a `FormField` now takes the label of the field as that name.
 * Added `SegmentedControl.wrap` to the desktop control, to let options flow onto further rows when
   the control is too narrow to hold them on one row.
+* Added `subtitle`, `headerItems` and `footer` props to `Card`, for muted text after the title,
+  items such as buttons at the far end of the header, and a row under the content. A card that
+  sets none of them renders as before.
+* `CardModel.collapsible` is now observable and settable after construction. Setting it false
+  expands a collapsed card.
+* Added `ItemList` to `@xh/hoist/cmp/itemlist`, a short, static list of `entries` with a title,
+  description, icon and trailing detail each, for a handful of alerts or search results. It needs
+  no Store or model and sizes each entry to its content. Use `DataView` for long lists. See the
+  [ItemList README](cmp/itemlist/README.md).
 
 ### 🐞 Bug Fixes
 
@@ -47,6 +56,15 @@
 * Fixed desktop `SegmentedControl` rendering layout props as DOM attributes, such as a stray
   `flex="1"` in a `FormField`. It now applies them as styles, so `width`, `flex` and other layout
   props take effect. `SegmentedControlProps` now includes `LayoutProps` on desktop and mobile.
+* Fixed `TreeMap` drawing nodes in an invalid color when every heat value was zero, or `maxHeat`
+  was zero. Those nodes now take the neutral color.
+* Fixed `TreeMap` showing its empty placeholder for a moment on mount, and when records arrived
+  in an empty map. `TreeMapModel` now reads its store at once while it has no data to show.
+  Changes to a map that shows data are debounced as before.
+* `TreeMap` now logs a console warning when it colors nodes by heat and Highcharts has no color
+  axis. Import `highcharts/modules/heatmap` or `highcharts/modules/coloraxis` before
+  `highcharts/modules/treemap` in `Bootstrap.ts`. Without one, every node drew in one default
+  color with no sign of the cause.
 
 ## 90.1.0 - 2026-11-13
 
