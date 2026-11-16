@@ -121,9 +121,9 @@
   &__header {
     display: flex;
     align-items: center;
-    gap: var(--xh-pad-half-px);
+    gap: var(--xh-spacing-half);
     font-size: var(--xh-stat-card-title-font-size);
-    color: var(--xh-stat-card-title-color);
+    color: var(--xh-stat-card-title-text-color);
   }
 
   &__title {
@@ -162,7 +162,7 @@
     .xh-units-label {
       font-size: var(--xh-stat-card-sub-value-font-size);
       font-weight: normal;
-      color: var(--xh-stat-card-detail-color);
+      color: var(--xh-stat-card-detail-text-color);
     }
   }
 
@@ -176,6 +176,6 @@
 
   &__detail {
     font-size: var(--xh-stat-card-detail-font-size);
-    color: var(--xh-stat-card-detail-color);
+    color: var(--xh-stat-card-detail-text-color);
   }
 }

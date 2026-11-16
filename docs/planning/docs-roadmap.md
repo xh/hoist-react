@@ -57,7 +57,7 @@ Smaller packages that provide important but more specialized functionality.
 | `/kit/` | 18 | Third-party library wrappers (ag-grid, blueprint, highcharts, etc.) | 📝 [Draft](../../kit/README.md) |
 | `/kit/blueprint/` | 5 | Blueprint integration - wrappers, factories, build-time icon stubbing, upgrade checklist | [Done](../../kit/blueprint/README.md) |
 | `/inspector/` | 6 | Development tools for debugging Hoist instances | 📝 [Draft](../../inspector/README.md) |
-| `/styles/` | 3 | CSS custom properties, theming (dark/light), BEM naming, SCSS conventions, utility classes | 📝 [Draft](../../styles/README.md) |
+| `/styles/` | 3 | CSS custom properties, theming (dark/light), BEM naming, SCSS conventions, utility classes | [Done](../../styles/README.md) |
 
 ## Concepts
 
@@ -168,7 +168,7 @@ _For detailed session-by-session notes, see [docs-roadmap-log.md](./docs-roadmap
 
 ### Status Overview
 - **Priority 1–3 (Core, Components, Utilities):** All complete (Done)
-- **Priority 4 (Supporting Packages):** icon/security Done, kit/inspector in Draft
+- **Priority 4 (Supporting Packages):** icon/security/styles Done, kit/inspector in Draft
 - **Concepts:** Lifecycles (Parts 1 & 2), Authentication, Persistence, Error Handling, Test Automation complete;
   Coding Conventions complete; Authorization complete; Routing in Draft;
   Admin Console planned; Version Compatibility complete

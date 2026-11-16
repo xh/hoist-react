@@ -11,9 +11,9 @@
   &__display {
     flex: 1;
     min-width: 0;
-    height: var(--xh-mobile-input-height-px);
-    line-height: var(--xh-mobile-input-height-px);
-    padding: 0 var(--xh-pad-px);
+    height: var(--xh-input-height);
+    line-height: var(--xh-input-height);
+    padding: 0 var(--xh-spacing);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;

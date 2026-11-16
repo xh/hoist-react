@@ -153,7 +153,7 @@ export class RoleGraphModel extends HoistModel {
                             overflow: 'allow',
                             style: {
                                 fontFamily: 'var(--xh-font-family)',
-                                fontSize: 'var(--xh-font-size-small-px)',
+                                fontSize: 'var(--xh-font-size-small)',
                                 fontWeight: 'normal',
                                 textOutline: 'none'
                             },

@@ -16,11 +16,11 @@
 
   &--ew {
     flex: 1;
-    width: var(--xh-panel-collapsed-strip-size-px);
+    width: var(--xh-panel-collapsed-strip-size);
   }
 
   &--ns {
     flex: none;
-    height: var(--xh-panel-collapsed-strip-size-px);
+    height: var(--xh-panel-collapsed-strip-size);
   }
 }
