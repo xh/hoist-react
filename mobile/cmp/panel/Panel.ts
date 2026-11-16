@@ -69,7 +69,7 @@ export interface PanelProps extends HoistProps, Omit<BoxProps, 'title'> {
      */
     loadingIndicator?: Some<TaskObserver> | ReactElement | boolean | 'onLoad';
 
-    /** Additional props to pass to the inner frame hosting child `children`. */
+    /** Additional props to pass to the inner frame hosting the panel's `children`. */
     contentBoxProps?: BoxProps;
 
     /** Allow the panel content area to scroll vertically. */

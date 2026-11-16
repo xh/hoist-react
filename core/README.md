@@ -623,8 +623,10 @@ A factory passes `children` to `React.createElement` as rest arguments, not as a
 of children therefore needs no keys, and React does not warn about missing ones.
 
 > **Legacy `item` / `items`:** Earlier Hoist versions used `item` and `items` for children. Both
-> still work as aliases for `children`, and `children` wins if a spec sets more than one. New code
-> should use `children`. To convert an app, run `docs/codemod/v91/codemod-items-to-children.mjs`.
+> still work as aliases for `children`. If a spec sets `children` and a legacy key, only `children`
+> renders and Hoist logs a warning. New code should use `children`. To convert an app, run
+> `node_modules/@xh/hoist/docs/codemod/v91/codemod-items-to-children.mjs` - see its header for
+> usage.
 
 ### Authoring a Container Component
 

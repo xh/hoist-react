@@ -19,8 +19,10 @@
 * Element factories and `createElement` now take child elements via the standard React `children`
   key. The `item` and `items` keys still work as aliases, but new code should use `children`. A
   factory passes an array of `children` as rest arguments, so the array needs no keys.
-    * Run `docs/codemod/v91/codemod-items-to-children.mjs` from the app root to convert an app. It
-      uses the TypeScript checker, so `items` keys that hold menu or other data stay unchanged.
+    * If a spec sets `children` and a legacy key, only `children` renders and Hoist logs a warning.
+    * To convert an app, upgrade to v91 and run `codemod-items-to-children.mjs` from the installed
+      `@xh/hoist/docs/codemod/v91` folder - see its header for usage. It uses the TypeScript
+      checker, so `items` keys that hold menu or other data stay unchanged.
 
 ### ⚙️ Typescript API Adjustments
 
