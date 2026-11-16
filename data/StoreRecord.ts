@@ -227,12 +227,13 @@ export class StoreRecord {
      * Get a new object with enumerated values for all Fields in this StoreRecord.
      * Unlike 'data', the object returned by this method contains an 'own' property for every
      * Field in the Store. Useful for cloning/iterating over all values (including defaults).
+     * The caller owns the returned object, and can add or change its properties.
      */
     getValues(): PlainObject {
-        const ret = {id: this.id};
-        this.fields.forEach(({name}) => {
-            ret[name] = this.data[name];
-        });
+        const {data} = this,
+            ret = this.store.cloneValuesTemplate();
+        ret.id = this.id;
+        for (const {name} of this.fields) ret[name] = data[name];
         return ret;
     }
 

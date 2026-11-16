@@ -40,6 +40,11 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 * Fixed mobile `FormField` ignoring the `--xh-form-field-inline-label-*` custom properties for
   inline labels - it referenced stale names left behind by an earlier rename.
 
+### ⚙️ Technical
+
+* `StoreRecord.getValues()` is faster for records with many fields, and so is spreading or copying
+  its result. It now returns an object in V8's compact fast-properties mode.
+
 ### ✨ Styles
 
 * Added CSS variables for concerns some components lacked: `--xh-input-border-radius`,
