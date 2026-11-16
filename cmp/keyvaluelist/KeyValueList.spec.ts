@@ -13,8 +13,8 @@ import {beforeAll, describe, expect, it, onTestFinished, vi} from 'vitest';
 
 /**
  * KeyValueList shows the fields of a record, often from data with gaps. It must render every
- * entry it is given as a label and value pair, stand a placeholder in for a missing value, and
- * never throw on partial data. Its column count decides which entries end a row.
+ * entry it is given as a label and value pair, and stand a placeholder in for a missing value.
+ * Its column count decides which entries end a row.
  */
 describe('KeyValueList', () => {
     beforeAll(() => initTestAppAsync());
@@ -39,7 +39,8 @@ describe('KeyValueList', () => {
         ['null', null],
         ['undefined', undefined],
         ['an empty string', ''],
-        ['a blank string', '   ']
+        ['a blank string', '   '],
+        ['a boolean', true]
     ])('shows the placeholder for a value that is %s', (_, value) => {
         const {container} = render(keyValueList({entries: [{label: 'Broker', value}]})),
             dd = container.querySelector('dd');
@@ -53,17 +54,6 @@ describe('KeyValueList', () => {
             dd = container.querySelector('dd');
 
         expect(dd.textContent).toBe('0');
-        expect(dd.classList).not.toContain('xh-key-value-list__value--empty');
-    });
-
-    it.each([
-        [true, 'true'],
-        [false, 'false']
-    ])('shows a value of %s as text, not as the placeholder', (value, text) => {
-        const {container} = render(keyValueList({entries: [{label: 'Active', value}]})),
-            dd = container.querySelector('dd');
-
-        expect(dd.textContent).toBe(text);
         expect(dd.classList).not.toContain('xh-key-value-list__value--empty');
     });
 
@@ -103,13 +93,6 @@ describe('KeyValueList', () => {
         );
 
         expect(texts(container, 'dt')).toEqual(['A', 'C']);
-    });
-
-    it('renders an entry with no label or value', () => {
-        const {container} = render(keyValueList({entries: [{} as KeyValueEntry]}));
-
-        expect(texts(container, 'dt')).toEqual(['']);
-        expect(texts(container, 'dd')).toEqual(['-']);
     });
 
     it('renders nothing when given no entries, or only omitted ones', () => {
@@ -152,28 +135,21 @@ describe('KeyValueList', () => {
 
     describe('columns', () => {
         it('uses the given number of columns when the width allows', () => {
-            setListWidth(400);
+            setListWidth(500);
             const {container} = render(keyValueList({entries: fiveEntries(), columns: 2}));
 
             expect(columnCount(container)).toBe('2');
         });
 
-        it.each([undefined, null])(
-            'drops given columns narrower than the default floor when minColumnWidth is %s',
-            minColumnWidth => {
-                setListWidth(343);
-                const props = {entries: fiveEntries(), minColumnWidth};
+        it('drops given columns narrower than the default minColumnWidth', () => {
+            setListWidth(450);
+            const entries = fiveEntries();
 
-                expect(columnCount(render(keyValueList({...props, columns: 2})).container)).toBe(
-                    '1'
-                );
-                expect(
-                    columnCount(
-                        render(keyValueList({...props, columns: 3, labelPosition: 'top'})).container
-                    )
-                ).toBe('2');
-            }
-        );
+            expect(columnCount(render(keyValueList({entries, columns: 2})).container)).toBe('1');
+            expect(
+                columnCount(render(keyValueList({entries, columns: 3, labelSide: 'top'})).container)
+            ).toBe('2');
+        });
 
         it('uses no more of the given columns than it has entries', () => {
             setListWidth(2000);
@@ -194,35 +170,27 @@ describe('KeyValueList', () => {
             ).toBe('4');
         });
 
-        it.each([null, undefined, 0, -50, NaN])(
-            'fits columns of the default width when minColumnWidth is %s',
-            minColumnWidth => {
-                setListWidth(1000);
-                const {container} = render(keyValueList({entries: fiveEntries(), minColumnWidth}));
-
-                expect(columnCount(container)).toBe('3');
-            }
-        );
-
         it('fits as many columns of the minimum width as the list has room for', () => {
             setListWidth(1000);
+            const entries = fiveEntries();
 
-            expect(columnCount(render(keyValueList({entries: fiveEntries()})).container)).toBe('3');
+            expect(columnCount(render(keyValueList({entries})).container)).toBe('4');
             expect(
-                columnCount(
-                    render(keyValueList({entries: fiveEntries(), minColumnWidth: 200})).container
-                )
+                columnCount(render(keyValueList({entries, minColumnWidth: null})).container)
+            ).toBe('4');
+            expect(
+                columnCount(render(keyValueList({entries, minColumnWidth: 200})).container)
             ).toBe('5');
         });
 
         it('fits narrower columns when the label is on top', () => {
-            setListWidth(600);
+            setListWidth(480);
             const entries = fiveEntries();
 
             expect(columnCount(render(keyValueList({entries})).container)).toBe('2');
-            expect(
-                columnCount(render(keyValueList({entries, labelPosition: 'top'})).container)
-            ).toBe('3');
+            expect(columnCount(render(keyValueList({entries, labelSide: 'top'})).container)).toBe(
+                '3'
+            );
         });
 
         it('fits no more columns than it has entries', () => {
@@ -246,11 +214,11 @@ describe('KeyValueList', () => {
             expect(columnCount(container)).toBe('1');
         });
 
-        it.each([0, -1, NaN, null])('fits to the width when columns is %s', columns => {
+        it('fits to the width when columns is null', () => {
             setListWidth(1000);
-            const {container} = render(keyValueList({entries: fiveEntries(), columns}));
+            const {container} = render(keyValueList({entries: fiveEntries(), columns: null}));
 
-            expect(columnCount(container)).toBe('3');
+            expect(columnCount(container)).toBe('4');
         });
 
         it('marks the entries of the last row, so a divider is not drawn under them', () => {

@@ -5,7 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import classNames from 'classnames';
-import {isBoolean, isEmpty} from 'lodash';
+import {isEmpty} from 'lodash';
 import {useLayoutEffect, useRef, useState} from 'react';
 import type {ReactNode} from 'react';
 
@@ -30,9 +30,9 @@ export interface KeyValueEntry {
     label: ReactNode;
 
     /**
-     * Content, pre-formatted by the caller. The list never formats a value. A null, undefined or
-     * blank string value shows the list's `emptyText`. A boolean is data, not blank content: it
-     * shows as the text `true` or `false`. Pass a string to show it another way.
+     * Content, pre-formatted by the caller. The list never formats a value. A value React renders
+     * as nothing - null, a boolean or a blank string - shows the list's `emptyText`. Pass a string
+     * such as `Yes` or `No` to show a boolean.
      */
     value?: ReactNode;
 
@@ -51,11 +51,8 @@ export interface KeyValueListProps
     /**
      * Where each label sits against its value. Default `left`, with the labels of a column
      * aligned and as wide as the widest of them. Use `top` to stack each label above its value.
-     *
-     * `Separator.labelPosition` takes other values (`start`, `center`, `end`), because it places
-     * a label along a rule.
      */
-    labelPosition?: 'left' | 'top';
+    labelSide?: 'left' | 'top';
 
     /**
      * Most columns to lay the entries out in, filled row by row. The list uses fewer in a
@@ -65,8 +62,9 @@ export interface KeyValueListProps
     columns?: number;
 
     /**
-     * Narrowest a column gets, in pixels. Default 300, or 180 when `labelPosition` is `top`. When
-     * `columns` is set, the default is 180, or 120 when `labelPosition` is `top`.
+     * Narrowest a column gets, in pixels, with or without `columns`. Default 240, or 160 when
+     * `labelSide` is `top`. A column with its labels on the left holds a label and a value side by
+     * side, so it needs more width than one that stacks them.
      */
     minColumnWidth?: number;
 
@@ -103,7 +101,7 @@ export const [KeyValueList, keyValueList] = hoistCmp.withFactory<KeyValueListPro
                 {
                     className,
                     entries,
-                    labelPosition,
+                    labelSide,
                     columns,
                     minColumnWidth,
                     emptyText,
@@ -113,12 +111,8 @@ export const [KeyValueList, keyValueList] = hoistCmp.withFactory<KeyValueListPro
                     domAttrs
                 }
             ] = splitLayoutProps(props),
-            labelOnTop = labelPosition === 'top',
-            hasColumns = columns >= 1,
-            minWidth =
-                minColumnWidth > 0
-                    ? minColumnWidth
-                    : (hasColumns ? COLUMNS_MIN_WIDTH : FIT_MIN_WIDTH)[labelOnTop ? 'top' : 'left'],
+            labelOnTop = labelSide === 'top',
+            minWidth = minColumnWidth ?? (labelOnTop ? 160 : 240),
             visibleEntries = (entries ?? []).filter(it => it && !it.omit),
             count = visibleEntries.length,
             [fitColumns, setFitColumns] = useState<number>(1),
@@ -133,7 +127,7 @@ export const [KeyValueList, keyValueList] = hoistCmp.withFactory<KeyValueListPro
 
         if (isEmpty(visibleEntries)) return null;
 
-        const maxColumns = Math.min(hasColumns ? Math.floor(columns) : count, count),
+        const maxColumns = Math.min(columns ?? count, count),
             columnCount = Math.min(maxColumns, fitColumns),
             lastRowStart = count - (count % columnCount || columnCount);
 
@@ -152,7 +146,7 @@ export const [KeyValueList, keyValueList] = hoistCmp.withFactory<KeyValueListPro
                 {[TEST_ID]: testId, ...domAttrs}
             ),
             items: visibleEntries.map(({label, value, intent}, idx) => {
-                const empty = !isBoolean(value) && isBlankNode(value);
+                const empty = isBlankNode(value);
                 return div({
                     key: idx,
                     className: classNames(
@@ -167,7 +161,7 @@ export const [KeyValueList, keyValueList] = hoistCmp.withFactory<KeyValueListPro
                                 'xh-key-value-list__value',
                                 empty && 'xh-key-value-list__value--empty'
                             ),
-                            item: empty ? (emptyText ?? '-') : isBoolean(value) ? `${value}` : value
+                            item: empty ? (emptyText ?? '-') : value
                         })
                     ]
                 });
@@ -179,11 +173,6 @@ export const [KeyValueList, keyValueList] = hoistCmp.withFactory<KeyValueListPro
 //------------------
 // Implementation
 //------------------
-// Default narrowest column, in pixels. A given `columns` takes a lower floor, as the caller asked
-// for that many: it gives up a column only when one would be too narrow to read.
-const FIT_MIN_WIDTH = {left: 300, top: 180},
-    COLUMNS_MIN_WIDTH = {left: 180, top: 120};
-
 const dl = elementFactory('dl'),
     dt = elementFactory('dt'),
     dd = elementFactory('dd');
