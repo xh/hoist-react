@@ -44,6 +44,7 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 
 * `StoreRecord.getValues()` is faster for records with many fields, and so is spreading or copying
   its result. It now returns an object in V8's compact fast-properties mode.
+* Grid autosizing now stops when its grid unmounts or is destroyed partway through a pass.
 
 ### ✨ Styles
 
