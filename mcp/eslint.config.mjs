@@ -13,7 +13,12 @@ export default defineConfig([
         }
     },
     {
-        files: ['bin/hoist-mcp.mjs', 'bin/hoist-docs.mjs', 'bin/hoist-ts.mjs'],
+        files: [
+            'bin/hoist-mcp.mjs',
+            'bin/hoist-docs.mjs',
+            'bin/hoist-ts.mjs',
+            'bin/hoist-codemod.mjs'
+        ],
         languageOptions: {
             globals: globals.node
         }
