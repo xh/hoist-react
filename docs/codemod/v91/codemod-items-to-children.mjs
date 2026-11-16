@@ -18,8 +18,16 @@
  *   - conflict - a spec with more than one of `children`, `item`, `items`. Left unchanged.
  *   - manual   - a likely spec without type information, e.g. a spec built as an untyped object
  *                and passed to a factory later. Convert it by hand.
- *   - review   - a rename outside a plain object literal, or a later spread that could carry
- *                `children` and so override the renamed key. Correct by type, but worth a look.
+ *   - review   - a rename outside a plain object literal, a later spread that could carry
+ *                `children` and so override the renamed key, or doc prose about the old keys.
+ *
+ * Markdown docs get a second pass, because agents copy factory calls from CLAUDE.md, AGENTS.md,
+ * READMEs and similar files. Code blocks there have no imports, so the type checker cannot read
+ * them. In fenced TS/JS blocks, the codemod renames `item` / `items` only in an object literal
+ * passed straight to a known element factory: one the project exports, from Hoist or the app,
+ * or one the block defines. It reports other likely specs in code blocks, and prose that names
+ * `item` / `items` as the children keys. Data keys, such as `items` in menu configs, stay
+ * unchanged. Files named CHANGELOG.md and anything under node_modules are skipped.
  *
  * Upgrade the app to hoist-react v91 or later first. Older versions pass `children` through as a
  * plain prop, without the handling described above.
@@ -29,10 +37,11 @@
  *       [--dry] [--project tsconfig.json] [path ...]
  *
  * The tsconfig defaults to ./tsconfig.json, then ./client-app/tsconfig.json. Paths limit the
- * files edited and default to the folder holding the tsconfig. Files outside them - including
- * node_modules and a hoist-react checkout mapped in via `paths` - are type checked, never edited.
+ * files edited. Source files default to the folder holding the tsconfig, and markdown files to
+ * the current folder. Files outside them - including node_modules and a hoist-react checkout
+ * mapped in via `paths` - are type checked, never edited. Pass --no-docs to skip markdown.
  */
-import {existsSync} from 'node:fs';
+import {existsSync, readdirSync, readFileSync, statSync, writeFileSync} from 'node:fs';
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 
@@ -76,9 +85,190 @@ export function applyEdits(text, edits) {
     return ret;
 }
 
+/**
+ * Collect the names of all element factories the project exports, from Hoist and the app. Used to
+ * recognize factory calls in markdown code blocks, which cannot be type checked.
+ *
+ * @param {Project} project
+ * @returns {Set<string>}
+ */
+export function collectFactoryNames(project) {
+    const program = project.getProgram().compilerObject,
+        checker = program.getTypeChecker(),
+        ret = new Set();
+
+    for (const sf of program.getSourceFiles()) {
+        if (program.isSourceFileDefaultLibrary(sf)) continue;
+        const moduleSymbol = checker.getSymbolAtLocation(sf);
+        if (!moduleSymbol) continue;
+        for (const exported of checker.getExportsOfModule(moduleSymbol)) {
+            if (ret.has(exported.name)) continue;
+            const symbol =
+                exported.flags & ts.SymbolFlags.Alias ? checker.getAliasedSymbol(exported) : exported;
+            if (!(symbol.flags & ts.SymbolFlags.Variable)) continue;
+            if (checker.getTypeOfSymbol(symbol).aliasSymbol?.name === 'ElementFactory') {
+                ret.add(exported.name);
+            }
+        }
+    }
+    return ret;
+}
+
+/**
+ * Convert one markdown document. Renames `item` / `items` in object literals passed straight to a
+ * known factory within fenced TS/JS code blocks, and reports other likely specs and prose.
+ *
+ * @param {string} text - markdown source.
+ * @param {Set<string>} factoryNames - see {@link collectFactoryNames}.
+ * @returns {{text: string, renameCount: number, findings: {kind: string, line: number, column: number, message: string}[]}}
+ */
+export function convertMarkdown(text, factoryNames) {
+    const lines = text.split('\n'),
+        findings = [];
+    let renameCount = 0;
+
+    for (let i = 0; i < lines.length; i++) {
+        const open = lines[i].match(/^\s*(`{3,}|~{3,})\s*([\w-]*)/);
+        if (!open) {
+            if (PROSE_RE.test(lines[i])) {
+                findings.push({
+                    kind: 'review',
+                    line: i + 1,
+                    column: 1,
+                    message: 'Prose names `item` / `items` as the children keys - update it to `children`.'
+                });
+            }
+            continue;
+        }
+
+        const [, fence, lang] = open;
+        let end = i + 1;
+        while (end < lines.length && !lines[end].trim().startsWith(fence)) end++;
+
+        if (CODE_LANGS.includes(lang.toLowerCase())) {
+            const code = lines.slice(i + 1, end).join('\n'),
+                result = convertCodeBlock(code, factoryNames);
+            if (result.edits.length) {
+                lines.splice(i + 1, end - i - 1, ...applyEdits(code, result.edits).split('\n'));
+                renameCount += result.edits.length;
+            }
+            result.findings.forEach(f => findings.push({...f, line: f.line + i + 1}));
+        }
+        i = end;
+    }
+
+    return {text: lines.join('\n'), renameCount, findings};
+}
+
 //------------------------
 // Implementation
 //------------------------
+const CODE_LANGS = ['', 'ts', 'typescript', 'tsx', 'js', 'javascript', 'jsx', 'mjs', 'cjs'],
+    PROSE_RE = /`item`\s*\/\s*`items`|`item\/items`|\bitems in,? children out\b/i,
+    FACTORY_CREATOR_RE = /^(hoistCmp(\.(factory|withFactory))?|elementFactory)\b/;
+
+function convertCodeBlock(code, factoryNames) {
+    const sf = ts.createSourceFile('block.tsx', code, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX),
+        local = new Set(),
+        edits = [],
+        findings = [];
+
+    const report = (kind, node, message) => {
+        const {line, character} = sf.getLineAndCharacterOfPosition(node.getStart(sf));
+        findings.push({kind, line: line + 1, column: character + 1, message});
+    };
+
+    // Factories the block defines, e.g. `const myPanel = hoistCmp.factory(...)`.
+    const findLocal = node => {
+        if (
+            ts.isVariableDeclaration(node) &&
+            node.initializer &&
+            ts.isCallExpression(node.initializer) &&
+            FACTORY_CREATOR_RE.test(node.initializer.expression.getText(sf))
+        ) {
+            if (ts.isIdentifier(node.name)) local.add(node.name.text);
+            if (ts.isArrayBindingPattern(node.name)) {
+                node.name.elements.forEach(el => {
+                    if (ts.isBindingElement(el) && ts.isIdentifier(el.name)) local.add(el.name.text);
+                });
+            }
+        }
+        ts.forEachChild(node, findLocal);
+    };
+    findLocal(sf);
+
+    const isFactoryCall = node =>
+        ts.isCallExpression(node) &&
+        ts.isIdentifier(node.expression) &&
+        (factoryNames.has(node.expression.text) || local.has(node.expression.text));
+
+    const holdsElement = init =>
+        isFactoryCall(init) || (ts.isArrayLiteralExpression(init) && init.elements.some(isFactoryCall));
+
+    const visit = node => {
+        // Specs nested in other config, e.g. an app option's `formField: {item: switchInput()}`.
+        if (
+            ts.isObjectLiteralExpression(node) &&
+            !(ts.isCallExpression(node.parent) && ts.isIdentifier(node.parent.expression))
+        ) {
+            const prop = node.properties.find(
+                p => ts.isPropertyAssignment(p) && isLegacyKey(propName(p)) && holdsElement(p.initializer)
+            );
+            if (prop) {
+                report(
+                    'manual',
+                    prop,
+                    `Object holds an element in \`${propName(prop)}\` - convert by hand if this is an element spec.`
+                );
+            }
+        }
+        if (ts.isCallExpression(node) && ts.isIdentifier(node.expression)) {
+            const name = node.expression.text,
+                isFactory = factoryNames.has(name) || local.has(name);
+            for (const arg of node.arguments) {
+                if (!ts.isObjectLiteralExpression(arg)) continue;
+                const legacy = arg.properties.filter(
+                    p =>
+                        (ts.isPropertyAssignment(p) || ts.isShorthandPropertyAssignment(p)) &&
+                        isLegacyKey(propName(p))
+                );
+                if (!legacy.length) continue;
+                if (!isFactory) {
+                    report(
+                        'manual',
+                        legacy[0],
+                        `\`${name}\` is not a known element factory - convert \`${propName(legacy[0])}\` by hand if this is an element spec.`
+                    );
+                    continue;
+                }
+                if (legacy.length > 1 || arg.properties.some(p => propName(p) === 'children')) {
+                    report(
+                        'conflict',
+                        legacy[0],
+                        'Spec has more than one of `children`, `item`, `items` - merge them by hand.'
+                    );
+                    continue;
+                }
+                const [prop] = legacy;
+                if (ts.isShorthandPropertyAssignment(prop)) {
+                    edits.push(nodeEdit(sf, prop.name, `children: ${prop.name.text}`));
+                } else if (ts.isIdentifier(prop.initializer) && prop.initializer.text === 'children') {
+                    edits.push(nodeEdit(sf, prop, 'children'));
+                } else {
+                    edits.push(nodeEdit(sf, prop.name, 'children'));
+                }
+            }
+        }
+        ts.forEachChild(node, visit);
+    };
+    visit(sf);
+
+    return {edits, findings};
+}
+
+function nodeEdit(sf, node, text) {
+    return {start: node.getStart(sf), end: node.getEnd(), text};
+}
 function selectSourceFiles(project, paths) {
     const prefixes = paths?.map(toPosix);
     return project.getSourceFiles().filter(sf => {
@@ -367,11 +557,14 @@ function main(args) {
     const cwd = process.cwd(),
         paths = [];
     let dry = false,
+        docs = true,
         explicitTsConfig = null;
     for (let i = 0; i < args.length; i++) {
         const arg = args[i];
         if (arg === '--dry') {
             dry = true;
+        } else if (arg === '--no-docs') {
+            docs = false;
         } else if (arg === '--project') {
             explicitTsConfig = args[++i];
             if (!explicitTsConfig || explicitTsConfig.startsWith('--')) fail('--project needs a path.');
@@ -391,6 +584,9 @@ function main(args) {
         scope = paths.length ? paths.map(p => path.resolve(cwd, p)) : [path.dirname(tsConfigFilePath)],
         result = collectItemsToChildren(project, {paths: scope});
 
+    const changedFiles = result.files.map(it => it.file);
+    let {renameCount} = result;
+
     if (!dry) {
         const fs = project.getFileSystem();
         for (const {file, edits} of result.files) {
@@ -398,17 +594,30 @@ function main(args) {
         }
     }
 
+    if (docs) {
+        const factoryNames = collectFactoryNames(project),
+            docRoots = paths.length ? paths.map(p => path.resolve(cwd, p)) : [cwd];
+        for (const file of docRoots.flatMap(findMarkdownFiles)) {
+            const md = convertMarkdown(readFileSync(file, 'utf8'), factoryNames);
+            md.findings.forEach(f => result.findings.push({...f, file}));
+            if (!md.renameCount) continue;
+            renameCount += md.renameCount;
+            changedFiles.push(file);
+            if (!dry) writeFileSync(file, md.text);
+        }
+    }
+
     console.log(
-        `${dry ? 'Would rename' : 'Renamed'} ${result.renameCount} key(s) in ${result.files.length} file(s).`
+        `${dry ? 'Would rename' : 'Renamed'} ${renameCount} key(s) in ${changedFiles.length} file(s).`
     );
     if (dry) {
-        for (const {file} of result.files) console.log(`  ${path.relative(cwd, file)}`);
+        for (const file of changedFiles) console.log(`  ${path.relative(cwd, file)}`);
     }
 
     const groups = [
         ['conflict', 'Conflicts - left unchanged, merge by hand'],
         ['manual', 'Not converted - check and convert by hand'],
-        ['review', 'Renamed - worth a review']
+        ['review', 'Worth a review']
     ];
     for (const [kind, title] of groups) {
         const findings = result.findings.filter(f => f.kind === kind);
@@ -419,9 +628,33 @@ function main(args) {
         }
     }
 
-    if (result.renameCount && !dry) {
+    if (renameCount && !dry) {
         console.log('\nRun your formatter (e.g. prettier) over the changed files.');
     }
+}
+
+/** Markdown files at or under a path, skipping CHANGELOG.md, node_modules and build output. */
+function findMarkdownFiles(root) {
+    const stat = statSync(root);
+    if (stat.isFile()) return isDocFile(root) ? [root] : [];
+
+    return readdirSync(root, {withFileTypes: true}).flatMap(entry => {
+        const full = path.join(root, entry.name);
+        if (entry.isDirectory()) {
+            const skip =
+                SKIPPED_DIRS.includes(entry.name) ||
+                (entry.name.startsWith('.') && !['.claude', '.github'].includes(entry.name));
+            return skip ? [] : findMarkdownFiles(full);
+        }
+        return entry.isFile() && isDocFile(full) ? [full] : [];
+    });
+}
+
+const SKIPPED_DIRS = ['node_modules', 'build', 'dist'];
+
+function isDocFile(file) {
+    const name = path.basename(file);
+    return name.toLowerCase().endsWith('.md') && name.toUpperCase() !== 'CHANGELOG.MD';
 }
 
 function resolveTsConfig(cwd, explicit) {

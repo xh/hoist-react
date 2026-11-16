@@ -6,7 +6,7 @@
  */
 import {Project} from 'ts-morph';
 import {describe, expect, it} from 'vitest';
-import {applyEdits, collectItemsToChildren} from './codemod-items-to-children.mjs';
+import {applyEdits, collectItemsToChildren, convertMarkdown} from './codemod-items-to-children.mjs';
 
 /**
  * The v91 codemod that renames `item` / `items` element spec keys to `children`. Each case runs
@@ -179,6 +179,83 @@ describe('codemod-items-to-children', () => {
         ]);
 
         expect(text).toBe('AbcdEF!');
+    });
+});
+
+describe('codemod-items-to-children markdown', () => {
+    const factories = new Set(['panel', 'grid', 'formField', 'textInput']);
+
+    it('renames keys in calls to known factories within code blocks', () => {
+        const md = [
+            '# Users',
+            '```typescript',
+            "panel({title: 'Users', items: [grid()]});",
+            "formField({field: 'name', item: textInput()});",
+            '```'
+        ].join('\n');
+
+        const {text, renameCount, findings} = convertMarkdown(md, factories);
+
+        expect(text).toBe(
+            [
+                '# Users',
+                '```typescript',
+                "panel({title: 'Users', children: [grid()]});",
+                "formField({field: 'name', children: textInput()});",
+                '```'
+            ].join('\n')
+        );
+        expect(renameCount).toBe(2);
+        expect(findings).toEqual([]);
+    });
+
+    it('recognizes factories the block defines', () => {
+        const md = [
+            '```ts',
+            'const myPanel = hoistCmp.factory(() => null);',
+            'myPanel({items: [grid()]});',
+            '```'
+        ].join('\n');
+
+        expect(convertMarkdown(md, factories).text).toContain('myPanel({children: [grid()]});');
+    });
+
+    it('leaves data keys, other languages and text outside code blocks alone', () => {
+        const md = [
+            "Call `panel({items: [grid()]})` in prose.",
+            '```ts',
+            "contextMenu({menuItems: [{text: 'Copy', items: [{text: 'Link'}]}]});",
+            '```',
+            '```bash',
+            "panel({items: [grid()]})",
+            '```'
+        ].join('\n');
+
+        const {text, findings} = convertMarkdown(md, new Set([...factories, 'contextMenu']));
+
+        expect(text).toBe(md);
+        expect(findings).toEqual([]);
+    });
+
+    it('reports likely specs it cannot convert, and prose about the old keys', () => {
+        const md = [
+            'Pass children via `item`/`items`.',
+            '```ts',
+            'myWidget({items: [grid()]});',
+            'const opt = {formField: {item: textInput()}};',
+            'panel({children: grid(), item: grid()});',
+            '```'
+        ].join('\n');
+
+        const {text, findings} = convertMarkdown(md, factories);
+
+        expect(text).toBe(md);
+        expect(findings.map(it => [it.kind, it.line])).toEqual([
+            ['review', 1],
+            ['manual', 3],
+            ['manual', 4],
+            ['conflict', 5]
+        ]);
     });
 });
 
