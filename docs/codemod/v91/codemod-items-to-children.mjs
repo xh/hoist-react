@@ -18,11 +18,15 @@
  *   - conflict - a spec with more than one of `children`, `item`, `items`. Left unchanged.
  *   - manual   - a likely spec without type information, e.g. a spec built as an untyped object
  *                and passed to a factory later. Convert it by hand.
- *   - review   - a rename outside a plain object literal, or a later spread that could carry a
- *                legacy key. Correct by type, but worth a look.
+ *   - review   - a rename outside a plain object literal, or a later spread that could carry
+ *                `children` and so override the renamed key. Correct by type, but worth a look.
+ *
+ * Upgrade the app to hoist-react v91 or later first. Older versions pass `children` through as a
+ * plain prop, without the handling described above.
  *
  * Usage (from the app root):
- *   node docs/codemod/v91/codemod-items-to-children.mjs [--dry] [--project tsconfig.json] [path ...]
+ *   node client-app/node_modules/@xh/hoist/docs/codemod/v91/codemod-items-to-children.mjs \
+ *       [--dry] [--project tsconfig.json] [path ...]
  *
  * The tsconfig defaults to ./tsconfig.json, then ./client-app/tsconfig.json. Paths limit the
  * files edited and default to the folder holding the tsconfig. Files outside them - including
@@ -157,11 +161,11 @@ function processFile(sf, checker, result) {
         const [prop] = specProps,
             idx = obj.properties.indexOf(prop),
             laterSpreads = obj.properties.filter((p, i) => i > idx && ts.isSpreadAssignment(p));
-        if (laterSpreads.some(p => mayHaveLegacyKey(checker.getTypeAtLocation(p.expression)))) {
+        if (laterSpreads.some(p => mayCarryChildren(checker.getTypeAtLocation(p.expression)))) {
             report(
                 'review',
                 prop,
-                `Spread follows \`${propName(prop)}\` - a legacy \`item\` or \`items\` in the spread no longer overrides it, as \`children\` takes precedence.`
+                `A spread after \`${propName(prop)}\` can carry \`children\`, which now overrides it. Move \`children\` after the spread if it should win.`
             );
         }
 
@@ -180,6 +184,16 @@ function processFile(sf, checker, result) {
         if (!isElementSpecMember(checker.getSymbolAtLocation(node.name))) return;
         edits.push(replace(node.name, 'children'));
         report('review', node.name, `Renamed \`.${node.name.text}\` to \`.children\`.`);
+    };
+
+    // Typed reads and writes by string key, e.g. `spec['items']`.
+    const processElementAccess = node => {
+        const arg = node.argumentExpression;
+        if (!isElementSpecMember(propertyOf(checker.getTypeAtLocation(node.expression), arg.text))) {
+            return;
+        }
+        edits.push({start: arg.getStart(file) + 1, end: arg.getEnd() - 1, text: 'children'});
+        report('review', arg, `Renamed \`['${arg.text}']\` to \`['children']\`.`);
     };
 
     // Destructured specs, e.g. `const {items, ...rest} = spec`.
@@ -255,6 +269,12 @@ function processFile(sf, checker, result) {
             processObjectLiteral(node);
         } else if (ts.isPropertyAccessExpression(node) && isLegacyKey(node.name.text)) {
             processPropertyAccess(node);
+        } else if (
+            ts.isElementAccessExpression(node) &&
+            ts.isStringLiteral(node.argumentExpression) &&
+            isLegacyKey(node.argumentExpression.text)
+        ) {
+            processElementAccess(node);
         } else if (ts.isObjectBindingPattern(node)) {
             processBindingPattern(node);
         } else if (ts.isCallExpression(node)) {
@@ -276,10 +296,14 @@ function isElementLike(type) {
     });
 }
 
-/** True if a spread of this type could carry a legacy `item` or `items` key. */
-function mayHaveLegacyKey(type) {
+/**
+ * True if a spread of this type could carry `children`, `item` or `items`. Before the rename, the
+ * key's value went to `React.createElement` as rest arguments and beat any `children` prop. After
+ * it, a later spread that sets `children` wins.
+ */
+function mayCarryChildren(type) {
     if (type.flags & (ts.TypeFlags.Any | ts.TypeFlags.Unknown)) return true;
-    return LEGACY_KEYS.some(key => !!propertyOf(type, key));
+    return ['children', ...LEGACY_KEYS].some(key => !!propertyOf(type, key));
 }
 
 /** Look up a property on a type, checking each member of a union. */
@@ -345,12 +369,18 @@ function main(args) {
     let dry = false,
         explicitTsConfig = null;
     for (let i = 0; i < args.length; i++) {
-        if (args[i] === '--dry') {
+        const arg = args[i];
+        if (arg === '--dry') {
             dry = true;
-        } else if (args[i] === '--project') {
+        } else if (arg === '--project') {
             explicitTsConfig = args[++i];
+            if (!explicitTsConfig || explicitTsConfig.startsWith('--')) fail('--project needs a path.');
+        } else if (arg.startsWith('--')) {
+            fail(`Unknown option: ${arg}`);
+        } else if (!existsSync(path.resolve(cwd, arg))) {
+            fail(`Path not found: ${arg}`);
         } else {
-            paths.push(args[i]);
+            paths.push(arg);
         }
     }
 
@@ -400,11 +430,15 @@ function resolveTsConfig(cwd, explicit) {
         const p = path.resolve(cwd, candidate);
         if (existsSync(p)) return p;
     }
-    console.error(
+    fail(
         explicit
             ? `tsconfig not found: ${explicit}`
             : 'No tsconfig.json found in . or ./client-app - pass one with --project.'
     );
+}
+
+function fail(msg) {
+    console.error(msg);
     process.exit(1);
 }
 

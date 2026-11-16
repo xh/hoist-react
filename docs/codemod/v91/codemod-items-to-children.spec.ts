@@ -117,6 +117,42 @@ describe('codemod-items-to-children', () => {
         expect(kinds(findings)).toEqual(['manual']);
     });
 
+    it('renames string-literal keys and typed element access', () => {
+        const {text, findings} = convert(
+            `declare const spec: ElementSpec<{title: string}>;\n` +
+                `panel({'items': [1]});\nspec['item'] = 1;`
+        );
+
+        expect(text).toBe(
+            `declare const spec: ElementSpec<{title: string}>;\n` +
+                `panel({children: [1]});\nspec['children'] = 1;`
+        );
+        expect(kinds(findings)).toEqual(['review']);
+    });
+
+    it('keeps the default when renaming a destructured key', () => {
+        const {text} = convert(
+            `declare const spec: ElementSpec<{title: string}>;\nconst {items = []} = spec;`
+        );
+
+        expect(text).toBe(
+            `declare const spec: ElementSpec<{title: string}>;\nconst {children: items = []} = spec;`
+        );
+    });
+
+    it('flags a later spread that could carry children', () => {
+        const {text, findings} = convert(
+            `declare const props: {title?: string; children?: ReactNode};\n` +
+                `panel({items: [1], ...props});`
+        );
+
+        expect(text).toBe(
+            `declare const props: {title?: string; children?: ReactNode};\n` +
+                `panel({children: [1], ...props});`
+        );
+        expect(kinds(findings)).toEqual(['review']);
+    });
+
     it('flags a later spread that could carry a legacy key', () => {
         const {text, findings} = convert(
             `declare const extra: any;\n` +
@@ -169,7 +205,7 @@ export interface MenuItem {text: string; items?: MenuItem[]}
 export declare function showMenu(items: MenuItem[]): void;
 `;
 
-const IMPORTS = `import {createElement, el, panel, tagList, showMenu, type ElementSpec} from '../hoist/elem';\n`;
+const IMPORTS = `import {createElement, el, panel, tagList, showMenu, type ElementSpec, type ReactNode} from '../hoist/elem';\n`;
 
 interface Finding {
     kind: string;
