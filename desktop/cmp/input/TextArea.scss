@@ -7,7 +7,7 @@
 
 .xh-text-area {
   font-family: var(--xh-font-family);
-  font-size: var(--xh-font-size-px);
+  font-size: var(--xh-font-size);
 
   // Suppress resize handles added by browser - we want to manage the size more closely.
   resize: none;

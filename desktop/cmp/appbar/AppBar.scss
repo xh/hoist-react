@@ -7,19 +7,19 @@
 
 .xh-appbar {
   .xh-appbar-icon {
-    margin-right: var(--xh-pad-px);
+    margin-right: var(--xh-spacing);
   }
 
   .xh-appbar-title {
-    color: var(--xh-appbar-title-color);
-    font-size: var(--xh-appbar-title-font-size-px);
-    margin-right: var(--xh-pad-px);
+    color: var(--xh-appbar-title-text-color);
+    font-size: var(--xh-appbar-title-font-size);
+    margin-right: var(--xh-spacing);
   }
 
   .xh-app-menu-button {
     // Menu button might be on left or right of appBar - add right margin when on left only.
     &:first-child {
-      margin-right: var(--xh-pad-px);
+      margin-right: var(--xh-spacing);
     }
 
     &__user-profile {
@@ -49,18 +49,18 @@
   display: flex;
   align-items: center;
   flex-wrap: nowrap;
-  color: var(--xh-appbar-color);
+  color: var(--xh-appbar-text-color);
   background-color: var(--xh-appbar-bg);
-  height: var(--xh-appbar-height-px);
+  height: var(--xh-appbar-height);
   border-bottom: 1px solid var(--xh-appbar-border-color);
-  padding: 0 var(--xh-pad-px);
+  padding: 0 var(--xh-spacing);
   box-shadow: var(--xh-appbar-box-shadow); // Remove thick inner shadow
 
   // Curiously, Admin Log Viewer would cause appbar to shrink without min-height
-  min-height: var(--xh-appbar-height-px);
+  min-height: var(--xh-appbar-height);
 
   .bp6-navbar-divider {
-    border-left-color: var(--xh-tbar-separator-color);
+    border-left-color: var(--xh-toolbar-separator-color);
   }
 
   > * {
@@ -69,17 +69,17 @@
   }
 
   .bp6-navbar-heading {
-    color: var(--xh-appbar-title-color);
-    font-size: var(--xh-appbar-title-font-size-px);
-    margin-left: var(--xh-pad-px);
+    color: var(--xh-appbar-title-text-color);
+    font-size: var(--xh-appbar-title-font-size);
+    margin-left: var(--xh-spacing);
   }
 
   .bp6-navbar-group {
     overflow: hidden;
-    height: var(--xh-appbar-height-px);
+    height: var(--xh-appbar-height);
 
     .bp6-navbar-divider {
-      margin: 0 var(--xh-pad-px);
+      margin: 0 var(--xh-spacing);
     }
 
     // Replace default float behaviour in favour of flexbox
@@ -95,14 +95,14 @@
 
       // Primary app icon
       > svg:first-child {
-        color: var(--xh-appbar-title-color);
+        color: var(--xh-appbar-title-text-color);
       }
     }
 
     &.bp6-align-right {
       // Apply standardized spacing to extra appBar items, excepting dividers and xh-no-pad elements.
       > *:not(.bp6-navbar-divider):not(.xh-no-pad) {
-        margin-left: var(--xh-pad-px);
+        margin-left: var(--xh-spacing);
       }
 
       .bp6-navbar-divider {

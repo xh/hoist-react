@@ -7,7 +7,9 @@
 
 // Theme react-day-picker to match the app, light and dark, via its published CSS custom props.
 // Platform DateInputs set sizes - see desktop/cmp/input/DateInput.scss and its mobile sibling.
-.rdp-root {
+// Scoped under `.xh-app` to outrank react-day-picker's own `.rdp-root` defaults, since the bundler
+// does not keep the two stylesheets in import order.
+.xh-app .rdp-root {
   // Mobile defines --xh-accent-color. Desktop falls back to its primary intent color.
   --rdp-accent-color: var(--xh-accent-color, var(--xh-intent-primary));
   --rdp-accent-background-color: var(--xh-bg-alt);
@@ -19,12 +21,12 @@
   font-family: var(--xh-font-family);
 
   .rdp-month_caption {
-    font-size: var(--xh-font-size-px);
+    font-size: var(--xh-font-size);
   }
 
   .rdp-dropdown_root {
-    padding: 0 var(--xh-pad-half-px);
-    border-radius: var(--xh-border-radius-px);
+    padding: 0 var(--xh-spacing-half);
+    border-radius: var(--xh-border-radius);
 
     &:hover {
       background-color: var(--xh-bg-alt);

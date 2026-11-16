@@ -75,15 +75,15 @@
   &--ew > &__hit {
     top: 0;
     bottom: 0;
-    left: calc(50% - var(--xh-panel-splitter-hit-size-px) / 2);
-    width: var(--xh-panel-splitter-hit-size-px);
+    left: calc(50% - var(--xh-panel-splitter-hit-size) / 2);
+    width: var(--xh-panel-splitter-hit-size);
   }
 
   &--ns > &__hit {
     left: 0;
     right: 0;
-    top: calc(50% - var(--xh-panel-splitter-hit-size-px) / 2);
-    height: var(--xh-panel-splitter-hit-size-px);
+    top: calc(50% - var(--xh-panel-splitter-hit-size) / 2);
+    height: var(--xh-panel-splitter-hit-size);
   }
 
   &--resizable.xh-panel-splitter--ew > &__hit {

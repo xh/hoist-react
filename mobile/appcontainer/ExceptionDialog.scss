@@ -5,8 +5,8 @@
 
   .xh-exception-dialog__trace-id {
     width: 100%;
-    padding-top: var(--xh-pad-px);
-    font-size: var(--xh-font-size-small-px);
+    padding-top: var(--xh-spacing);
+    font-size: var(--xh-font-size-small);
     background-color: var(--xh-bg);
     color: var(--xh-text-color-muted);
   }
@@ -37,18 +37,18 @@
         font-size: 10px;
         flex: 2;
         border: var(--xh-border-solid);
-        border-radius: var(--xh-border-radius-px);
+        border-radius: var(--xh-border-radius);
         box-shadow: none;
       }
 
       textarea {
         flex: 1;
         margin: 0;
-        padding: var(--xh-pad-px);
+        padding: var(--xh-spacing);
         line-height: 1.5;
         resize: none;
         border: var(--xh-border-solid);
-        border-radius: var(--xh-border-radius-px);
+        border-radius: var(--xh-border-radius);
       }
     }
   }

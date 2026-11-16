@@ -13,7 +13,7 @@
 
   &__label {
     // Common label attrs
-    color: var(--xh-form-field-label-color);
+    color: var(--xh-form-field-label-text-color);
     font-size: var(--xh-form-field-label-font-size);
     font-style: var(--xh-form-field-label-font-style);
     font-weight: var(--xh-form-field-label-font-weight);
@@ -73,23 +73,23 @@
 
     &__info-msg,
     &__validation-msg {
-      font-size: var(--xh-form-field-msg-font-size);
-      line-height: var(--xh-form-field-msg-line-height);
-      margin: var(--xh-form-field-msg-margin);
-      text-transform: var(--xh-form-field-msg-text-transform);
+      font-size: var(--xh-form-field-message-font-size);
+      line-height: var(--xh-form-field-message-line-height);
+      margin: var(--xh-form-field-message-margin);
+      text-transform: var(--xh-form-field-message-text-transform);
     }
 
     &__validation-msg {
       &--error {
-        color: var(--xh-form-field-invalid-color);
+        color: var(--xh-form-field-invalid-text-color);
       }
 
       &--info {
-        color: var(--xh-form-field-info-color);
+        color: var(--xh-form-field-info-text-color);
       }
 
       &--warning {
-        color: var(--xh-form-field-warning-color);
+        color: var(--xh-form-field-warning-text-color);
       }
     }
   }
@@ -103,7 +103,7 @@
     }
 
     .xh-form-field__label {
-      padding: 0 var(--xh-pad-half-px) 0 0;
+      padding: 0 var(--xh-spacing-half) 0 0;
     }
   }
 
@@ -126,14 +126,14 @@
         background-color: var(--xh-input-disabled-bg);
         border: var(--xh-border-solid);
         font-family: var(--xh-font-family-mono);
-        padding: var(--xh-pad-half-px);
+        padding: var(--xh-spacing-half);
       }
     }
   }
 
   &.xh-form-field--invalid:not(.xh-form-field--readonly) {
     .xh-form-field__label {
-      color: var(--xh-form-field-invalid-color);
+      color: var(--xh-form-field-invalid-text-color);
     }
 
     .xh-check-box span {
@@ -153,7 +153,7 @@
     }
 
     .xh-text-input > svg {
-      color: var(--xh-form-field-invalid-color);
+      color: var(--xh-form-field-invalid-text-color);
     }
 
     .xh-text-area.textarea {
@@ -163,7 +163,7 @@
 
   &.xh-form-field--warning:not(.xh-form-field--readonly) {
     .xh-form-field__label {
-      color: var(--xh-form-field-warning-color);
+      color: var(--xh-form-field-warning-text-color);
     }
 
     .xh-check-box span {
@@ -183,7 +183,7 @@
     }
 
     .xh-text-input > svg {
-      color: var(--xh-form-field-warning-color);
+      color: var(--xh-form-field-warning-text-color);
     }
 
     .xh-text-area.textarea {
@@ -193,7 +193,7 @@
 
   &.xh-form-field--info:not(.xh-form-field--readonly) {
     .xh-form-field__label {
-      color: var(--xh-form-field-info-color);
+      color: var(--xh-form-field-info-text-color);
     }
 
     .xh-check-box span {
@@ -213,7 +213,7 @@
     }
 
     .xh-text-input > svg {
-      color: var(--xh-form-field-info-color);
+      color: var(--xh-form-field-info-text-color);
     }
 
     .xh-text-area.textarea {
@@ -230,7 +230,7 @@ ul.xh-form-field__validation-tooltip {
 // Toolbar specific style
 .xh-toolbar .xh-form-field {
   padding: 0;
-  margin: 0 var(--xh-pad-half-px);
+  margin: 0 var(--xh-spacing-half);
   flex-direction: row;
   align-items: baseline;
   overflow: visible !important;
@@ -241,6 +241,6 @@ ul.xh-form-field__validation-tooltip {
   }
 
   .xh-form-field__validation-msg {
-    margin: 0 var(--xh-pad-px);
+    margin: 0 var(--xh-spacing);
   }
 }

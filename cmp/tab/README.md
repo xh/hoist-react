@@ -276,7 +276,7 @@ background and drop the rule:
   --xh-tab-switcher-vertical-group-header-bg: var(--xh-orange);
   --xh-tab-switcher-vertical-group-header-text-color: white;
   --xh-tab-switcher-vertical-group-border: none;
-  --xh-tab-switcher-vertical-group-gap: var(--xh-pad-half-px);
+  --xh-tab-switcher-vertical-group-gap: var(--xh-spacing-half);
 }
 ```
 

@@ -260,8 +260,8 @@
             "title": "Styles & Theming",
             "mcpCategory": "package",
             "viewerCategory": "supporting",
-            "description": "CSS custom properties, BEM naming, dark/light theming, SCSS conventions, and utility classes.",
-            "keywords": ["CSS, SCSS, styles, theme, dark mode, CSS variables, custom properties, BEM, xh- prefix, vars.scss, intent colors, utility classes, ThemeModel"]
+            "description": "CSS custom properties - naming conventions, units, overrides - plus BEM naming, dark/light theming, SCSS conventions, and utility classes.",
+            "keywords": ["CSS, SCSS, styles, theme, dark mode, CSS variables, custom properties, naming conventions, spacing, units, BEM, xh- prefix, vars.scss, intent colors, utility classes, ThemeModel"]
         },
         {
             "id": "kit/README.md",
@@ -574,6 +574,14 @@
             "viewerCategory": "upgrade",
             "description": "Upgrade guide from v89.x to v90.0.0. Low difficulty. Covers the removal of numbro and formatConfig, DateInput on react-day-picker 10, the removal of Onsen UI from mobile, textRenderer on the built-in column specs, the panel splitter redesign, the move of the renderer factories out of FormatNumber and FormatDate, and the libraries Hoist no longer installs.",
             "keywords": ["upgrade", "migration", "breaking changes", "v90", "v89", "numbro", "formatConfig", "timePickerProps", "onsen", "modifier", "WindowedSelect", "react-windowed-select", "xh-resizable-splitter", "store2", "semver", "ua-parser-js", "short-unique-id", "lodash-inflection", "http-status-codes", "date-fns", "@blueprintjs/datetime", "datePicker"]
+        },
+        {
+            "id": "docs/upgrade-notes/v91-upgrade-notes.md",
+            "title": "v91 Upgrade Notes",
+            "mcpCategory": "devops",
+            "viewerCategory": "upgrade",
+            "description": "Upgrade guide from v90.x to v91.0.0. Medium difficulty. Covers the CSS custom property overhaul - codemod, removed override hooks, renamed variables, and units in size values.",
+            "keywords": ["upgrade", "migration", "breaking changes", "v91", "v90", "css variables", "custom properties", "override hooks", "codemod", "renamed variables", "units", "--xh-"]
         }
     ]
 }

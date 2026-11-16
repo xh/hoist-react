@@ -23,7 +23,7 @@
 // Stale-resolved-value prompt - framed as an input surface, standing in for the readonly editor.
 .xh-placeholder.xh-config-value__stale {
   border: var(--xh-border-solid);
-  border-radius: var(--xh-border-radius-px);
+  border-radius: var(--xh-border-radius);
   background-color: var(--xh-input-bg);
 
   // Dial back Placeholder's own 4em icon. Doubled class above to out-rank it.
