@@ -14,6 +14,20 @@
 
 ## 91.0.0-SNAPSHOT - unreleased
 
+### 🎁 New Features
+
+* Element factories and `createElement` now take child elements via the standard React `children`
+  key. The `item` and `items` keys still work as aliases, but new code should use `children`. A
+  factory passes an array of `children` as rest arguments, so the array needs no keys.
+    * Run `docs/codemod/v91/codemod-items-to-children.mjs` from the app root to convert an app. It
+      uses the TypeScript checker, so `items` keys that hold menu or other data stay unchanged.
+
+### ⚙️ Typescript API Adjustments
+
+* `ElementSpec.children` takes the type of the component's own `children` prop when it declares
+  one, such as a render function.
+* `AppOptionSpec.formField` is now typed as a loose element spec instead of `any`.
+
 ## 90.1.0 - 2026-11-13
 
 ### 🎁 New Features
