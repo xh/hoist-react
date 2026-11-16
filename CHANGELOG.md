@@ -14,6 +14,10 @@
 
 ## 91.0.0-SNAPSHOT - unreleased
 
+### 📚 Libraries
+
+* jsdom `30 → 30 || 31` (optional peer)
+
 ## 90.1.0 - 2026-11-13
 
 ### 🎁 New Features
