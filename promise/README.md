@@ -178,7 +178,7 @@ The most common pattern is passing the `TaskObserver` to a Panel's `mask` prop:
 ```typescript
 panel({
     mask: this.loadTask,
-    items: [/* ... */]
+    children: [/* ... */]
 })
 ```
 

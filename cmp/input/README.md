@@ -50,7 +50,7 @@ focus state.
 
 ```typescript
 // Bound mode - connects to FieldModel via FormField
-formField({field: 'email', item: textInput()})
+formField({field: 'email', children: textInput()})
 
 // Also bound mode - direct binding to any HoistModel
 textInput({model: myModel, bind: 'searchQuery'})
@@ -222,10 +222,10 @@ HoistInputModel integrates with the form system:
 
 form({
     model: formModel,
-    items: [
+    children: [
         formField({
             field: 'email',          // Connects to formModel.fields.email
-            item: textInput()        // textInput gets model/bind props automatically
+            children: textInput()        // textInput gets model/bind props automatically
         })
     ]
 })
@@ -290,7 +290,7 @@ const cmp = hoistCmp.factory<MyInputModel>(({model, className, ...props}, ref) =
         ref,                                      // Outer ref on wrapper
         onFocus: model.onFocus,
         onBlur: model.onBlur,
-        item: input({
+        children: input({
             ref: model.inputRef,                  // inputRef on actual <input>
             value: model.renderValue ?? '',
             onChange: e => model.noteValueChange(e.target.value),

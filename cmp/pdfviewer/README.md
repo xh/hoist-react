@@ -51,7 +51,7 @@ class DocDetailModel extends HoistModel {
 }
 
 const docDetail = hoistCmp.factory<DocDetailModel>(({model}) =>
-    panel({title: 'Document', item: pdfViewer({model: model.pdfViewerModel})})
+    panel({title: 'Document', children: pdfViewer({model: model.pdfViewerModel})})
 );
 ```
 

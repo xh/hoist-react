@@ -20,12 +20,12 @@ import {vbox, hbox} from '@xh/hoist/cmp/layout';
 // Vertical layout (column direction)
 vbox({
     padding: 10,
-    items: [header(), content(), footer()]
+    children: [header(), content(), footer()]
 })
 
 // Horizontal layout (row direction)
 hbox({
-    items: [sidebar(), mainContent()]
+    children: [sidebar(), mainContent()]
 })
 ```
 
@@ -46,12 +46,12 @@ import {vframe, hframe} from '@xh/hoist/cmp/layout';
 
 // Vertical frame (stretches and arranges children vertically)
 vframe({
-    items: [toolbar(), grid()]
+    children: [toolbar(), grid()]
 })
 
 // Horizontal frame (stretches and arranges children horizontally)
 hframe({
-    items: [leftPanel(), rightPanel()]
+    children: [leftPanel(), rightPanel()]
 })
 ```
 
@@ -70,8 +70,8 @@ Full-screen container for the application root.
 import {viewport} from '@xh/hoist/cmp/layout';
 
 viewport({
-    item: vframe({
-        items: [appHeader(), appContent(), appFooter()]
+    children: vframe({
+        children: [appHeader(), appContent(), appFooter()]
     })
 })
 ```
@@ -89,7 +89,7 @@ import {spacer, filler, hspacer, vspacer} from '@xh/hoist/cmp/layout';
 
 // Fixed spacer (flex: none)
 hbox({
-    items: [
+    children: [
         leftButton(),
         hspacer(20),    // 20px horizontal space
         rightButton()
@@ -98,7 +98,7 @@ hbox({
 
 // Flexible filler (flex: auto) - pushes items apart
 toolbar({
-    items: [
+    children: [
         saveButton(),
         filler(),       // Stretches to push cancelButton to the right
         cancelButton()
@@ -107,7 +107,7 @@ toolbar({
 
 // Vertical spacer
 vbox({
-    items: [
+    children: [
         header(),
         vspacer(10),    // 10px vertical space
         content()
@@ -155,7 +155,7 @@ tileFrame({
     minTileHeight: 150,       // Minimum tile height
     maxTileHeight: 300,       // Maximum tile height
     onLayoutChange: (layout) => console.log(layout),
-    items: [
+    children: [
         chartTile(),
         gridTile(),
         summaryTile(),
@@ -180,16 +180,16 @@ import {div, span, img, a, p, h1, h2, h3, h4} from '@xh/hoist/cmp/layout';
 
 div({
     className: 'my-container',
-    items: [
+    children: [
         h1('Title'),
         p('Description text...'),
-        a({href: '/details', item: 'View details'})
+        a({href: '/details', children: 'View details'})
     ]
 })
 ```
 
 These factories provide Hoist-style element creation for standard HTML elements, accepting
-config objects with `item`/`items` for children.
+config objects with `children`.
 
 ## Layout Props (BoxProps)
 
@@ -205,7 +205,7 @@ vbox({
     width: 300,
     padding: 10,
     gap: 8,
-    items: [...]
+    children: [...]
 })
 
 // Equivalent React style object - more verbose
@@ -267,13 +267,13 @@ import {viewport, vframe, hframe, frame} from '@xh/hoist/cmp/layout';
 import {appBar} from '@xh/hoist/desktop/cmp/appbar';
 
 viewport({
-    item: vframe({
-        items: [
+    children: vframe({
+        children: [
             appBar(),                         // Desktop navigation bar
             hframe({
-                items: [
+                children: [
                     navPanel({width: 250}),   // Fixed-width sidebar
-                    frame({item: mainContent()})  // Flexible main area
+                    frame({children: mainContent()})  // Flexible main area
                 ]
             })
         ]

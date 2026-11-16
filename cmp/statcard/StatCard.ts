@@ -209,7 +209,7 @@ export interface StatCardStripProps
     extends HoistProps, LayoutProps, TestSupportProps, DomAttrsProps {}
 
 /**
- * A row of {@link StatCard}s, passed as `items`, each given an equal share of the strip's width.
+ * A row of {@link StatCard}s, passed as `children`, each given an equal share of the strip's width.
  * Pass `flex` or `width` to a card to weight or fix its share.
  *
  * When the cards no longer fit on one row, the strip becomes an even grid with as many columns as

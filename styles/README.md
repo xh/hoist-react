@@ -275,7 +275,7 @@ export const [Card, card] = hoistCmp.withFactory<CardProps>({
                 'xh-card--collapsed': collapsed,
                 'xh-card--intent-primary': intent === 'primary'
             }),
-            items: [...]
+            children: [...]
         });
     }
 });

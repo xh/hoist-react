@@ -244,7 +244,7 @@ zone, so date logic gives the same result on every machine.
 ### Components
 
 Most of Hoist's value is in models, so most tests should be model tests. Component tests are for
-the contracts of the component layer itself, such as how `hoistCmp` factories pass `items` and
+the contracts of the component layer itself, such as how `hoistCmp` factories pass `children` and
 resolve models. Use [React Testing Library](https://testing-library.com/react). The setup unmounts
 rendered components after each test.
 

@@ -396,7 +396,7 @@ switch between compact and full layouts:
 const myWidget = hoistCmp.factory<MyWidgetModel>({
     render({model}) {
         return panel({
-            item: model.compactMode ? compactView() : fullView(),
+            children: model.compactMode ? compactView() : fullView(),
             ref: useOnResize(({width}) => model.onResize(width))
         });
     }
@@ -415,7 +415,7 @@ const priceFeed = hoistCmp.factory<PriceFeedModel>({
     render({model}) {
         return panel({
             ref: useOnVisibleChange(visible => model.visible = visible),
-            item: grid()
+            children: grid()
         });
     }
 });
@@ -449,7 +449,7 @@ const ref = composeRefs(
     useOnVisibleChange(v => model.visible = v),
     useOnResize(({width}) => model.width = width)
 );
-return panel({ref, item: body()});
+return panel({ref, children: body()});
 ```
 
 ### Layout Prop Utilities

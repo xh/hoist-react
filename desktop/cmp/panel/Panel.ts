@@ -105,7 +105,7 @@ export interface PanelProps<M extends PanelModel = PanelModel>
     /** Title to be used when the panel is collapsed. Defaults to `title`. */
     collapsedTitle?: ReactNode;
 
-    /** Additional props to pass to the inner frame hosting child `items`. */
+    /** Additional props to pass to the inner frame hosting child `children`. */
     contentBoxProps?: BoxProps;
 
     /** Allow the panel content area to scroll vertically. */
