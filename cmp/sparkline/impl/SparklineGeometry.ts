@@ -4,17 +4,7 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {
-    clamp,
-    first,
-    isArray,
-    isEmpty,
-    isFinite,
-    last,
-    max as maxOf,
-    min as minOf,
-    round
-} from 'lodash';
+import {clamp, first, isEmpty, isFinite, last, max as maxOf, min as minOf, round} from 'lodash';
 
 /**
  * Side of the square coordinate space that the geometry is drawn in. The SVG stretches this space
@@ -25,9 +15,9 @@ export const VIEW_SIZE = 100;
 /** Share of a bar's slot left empty, as the space between bars. */
 const BAR_GAP = 0.2;
 
-/** A usable value, placed in the view. A gap in the source values has no point. */
+/** A usable value, placed in the view. A gap in the data has no point. */
 export interface SparklinePoint {
-    /** Index of the value in the source array. */
+    /** Index of the value in the data. */
     index: number;
     value: number;
     x: number;
@@ -55,10 +45,9 @@ export interface SparklineDomainOptions {
     include?: number[];
 }
 
-/** The usable entries of `values`. A null, undefined, NaN or infinite entry is a gap. */
-export function usableValues(values: number[]): Array<{index: number; value: number}> {
-    if (!isArray(values)) return [];
-    return values.flatMap((value, index) => (isFinite(value) ? [{index, value}] : []));
+/** The usable entries of `data`. A null, undefined, NaN or infinite entry is a gap. */
+export function usableValues(data: number[]): Array<{index: number; value: number}> {
+    return (data ?? []).flatMap((value, index) => (isFinite(value) ? [{index, value}] : []));
 }
 
 /**
@@ -66,12 +55,12 @@ export function usableValues(values: number[]): Array<{index: number; value: num
  * when there is nothing to span.
  */
 export function sparklineDomain(
-    values: number[],
+    data: number[],
     {min, max, include = []}: SparklineDomainOptions = {}
 ): [number, number] {
-    const data = [...usableValues(values).map(it => it.value), ...include.filter(isFinite)],
-        lo = isFinite(min) ? min : isEmpty(data) ? max : minOf(data),
-        hi = isFinite(max) ? max : isEmpty(data) ? min : maxOf(data);
+    const vals = [...usableValues(data).map(it => it.value), ...include.filter(isFinite)],
+        lo = isFinite(min) ? min : isEmpty(vals) ? max : minOf(vals),
+        hi = isFinite(max) ? max : isEmpty(vals) ? min : maxOf(vals);
 
     if (!isFinite(lo) || !isFinite(hi)) return null;
     return [Math.min(lo, hi), Math.max(lo, hi)];
@@ -91,9 +80,9 @@ export function scaleY(value: number, domain: [number, number]): number {
  * The points of a line. Each value keeps the x of its own index, so a gap leaves its space empty.
  * A single value sits at the center.
  */
-export function sparklinePoints(values: number[], domain: [number, number]): SparklinePoint[] {
-    const count = isArray(values) ? values.length : 0;
-    return usableValues(values).map(({index, value}) => ({
+export function sparklinePoints(data: number[], domain: [number, number]): SparklinePoint[] {
+    const count = data?.length ?? 0;
+    return usableValues(data).map(({index, value}) => ({
         index,
         value,
         x: count > 1 ? round((index / (count - 1)) * VIEW_SIZE, 2) : VIEW_SIZE / 2,
@@ -132,16 +121,16 @@ export function sparklineAreaPath(points: SparklinePoint[]): string {
  * up for a greater value and down for a lesser one.
  */
 export function sparklineBars(
-    values: number[],
+    data: number[],
     domain: [number, number],
     origin: number = 0
 ): SparklineBar[] {
-    const count = isArray(values) ? values.length : 0,
+    const count = data?.length ?? 0,
         slot = VIEW_SIZE / Math.max(count, 1),
         width = round(slot * (1 - BAR_GAP), 2),
         originY = scaleY(origin, domain);
 
-    return usableValues(values).map(({index, value}) => {
+    return usableValues(data).map(({index, value}) => {
         const y = scaleY(value, domain);
         return {
             index,
@@ -164,8 +153,8 @@ export function sparklineBarsPath(bars: SparklineBar[]): string {
 }
 
 /** A plain-text summary of a series, for use as its accessible name. */
-export function sparklineLabel(values: number[]): string {
-    const usable = usableValues(values).map(it => fmt(it.value)),
+export function sparklineLabel(data: number[]): string {
+    const usable = usableValues(data).map(it => fmt(it.value)),
         count = usable.length;
 
     if (count === 0) return 'Trend: no data';

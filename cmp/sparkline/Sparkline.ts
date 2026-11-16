@@ -5,7 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import classNames from 'classnames';
-import {first, isFinite, last, maxBy, minBy, partition} from 'lodash';
+import {first, includes, isFinite, isFunction, last, maxBy, minBy, partition} from 'lodash';
 import {createElement} from 'react';
 import type {ReactElement} from 'react';
 
@@ -19,7 +19,7 @@ import type {
     TestSupportProps
 } from '@xh/hoist/core';
 import {mergeDeep, TEST_ID} from '@xh/hoist/utils/js';
-import {isBlankNode, splitLayoutProps} from '@xh/hoist/utils/react';
+import {splitLayoutProps} from '@xh/hoist/utils/react';
 
 import {
     scaleY,
@@ -37,12 +37,23 @@ import './Sparkline.scss';
 
 export type SparklineType = 'line' | 'area' | 'bar';
 
+/** A value to mark with a dot: the first, the last, the lowest or the highest. */
+export type SparklineMarker = 'first' | 'last' | 'min' | 'max';
+
+/**
+ * Function to build a Sparkline's tooltip.
+ * @param data - the series, as passed to the component.
+ * @returns the text to show on hover, or null for no tooltip.
+ */
+export type SparklineTooltipFn = (data: number[]) => string;
+
 export interface SparklineProps extends HoistProps, LayoutProps, TestSupportProps, DomAttrsProps {
     /**
      * The series to draw, in order. A null, undefined or NaN entry is a gap: a line breaks there
      * and a bar leaves its space empty. An empty series draws an empty box of the same size.
+     * The array is not observed - pass a new one to redraw.
      */
-    values: number[];
+    data: number[];
 
     /**
      * Shape of the series. Default `line`.
@@ -72,14 +83,12 @@ export interface SparklineProps extends HoistProps, LayoutProps, TestSupportProp
      */
     colorNegative?: boolean;
 
-    /** True to mark the last value with a dot. Applies to the `line` and `area` types. */
-    showLast?: boolean;
-
     /**
-     * True to mark the lowest and highest values with a dot each, in the negative and positive
-     * value colors. Applies to the `line` and `area` types.
+     * Values to mark with a dot. The `min` and `max` dots use the negative and positive value
+     * colors, and show only when the series is not flat. Applies to the `line` and `area` types.
+     * A lone value always shows as a dot.
      */
-    showMinMax?: boolean;
+    markers?: SparklineMarker[];
 
     /**
      * Value to draw a reference line at, such as zero or a prior close. The scale extends to
@@ -98,10 +107,10 @@ export interface SparklineProps extends HoistProps, LayoutProps, TestSupportProp
     max?: number;
 
     /**
-     * True to show the accessible name as a native browser tooltip on hover, or a string to show
-     * in its place. Default false. A blank string shows no tooltip.
+     * Native browser tooltip to show on hover, or a function to build it from the data. Default
+     * none.
      */
-    tooltip?: boolean | string;
+    tooltip?: string | SparklineTooltipFn;
 }
 
 /**
@@ -122,6 +131,7 @@ export interface SparklineProps extends HoistProps, LayoutProps, TestSupportProp
 export const [Sparkline, sparkline] = hoistCmp.withFactory<SparklineProps>({
     displayName: 'Sparkline',
     model: false,
+    observer: false,
     className: 'xh-sparkline',
 
     render(props, ref) {
@@ -129,13 +139,12 @@ export const [Sparkline, sparkline] = hoistCmp.withFactory<SparklineProps>({
                 layoutProps,
                 {
                     className,
-                    values,
+                    data,
                     type,
                     intent,
                     colorByTrend,
                     colorNegative,
-                    showLast,
-                    showMinMax,
+                    markers,
                     baseline,
                     min,
                     max,
@@ -144,21 +153,20 @@ export const [Sparkline, sparkline] = hoistCmp.withFactory<SparklineProps>({
                     domAttrs
                 }
             ] = splitLayoutProps(props),
-            isBar = type === 'bar',
+            shape = type ?? 'line',
+            isBar = shape === 'bar',
             origin = isFinite(baseline) ? baseline : 0,
-            domain = sparklineDomain(values, {
+            domain = sparklineDomain(data, {
                 min,
                 max,
                 include: isBar ? [origin] : [baseline]
             }),
-            points = sparklinePoints(values, domain),
-            ariaLabel = String(domAttrs?.['aria-label'] ?? sparklineLabel(values)),
-            title = tooltip === true ? ariaLabel : isBlankNode(tooltip) ? null : `${tooltip}`,
+            points = sparklinePoints(data, domain),
             divProps = mergeDeep(
                 {
                     className: classNames(
                         className,
-                        `xh-sparkline--${isBar ? 'bar' : type === 'area' ? 'area' : 'line'}`,
+                        `xh-sparkline--${shape}`,
                         intent
                             ? `xh-sparkline--intent-${intent}`
                             : colorByTrend && trendClass(points)
@@ -171,9 +179,9 @@ export const [Sparkline, sparkline] = hoistCmp.withFactory<SparklineProps>({
         return div({
             ref,
             role: 'img',
-            title,
+            title: isFunction(tooltip) ? tooltip(data) : tooltip,
             ...divProps,
-            'aria-label': ariaLabel,
+            'aria-label': String(domAttrs?.['aria-label'] ?? sparklineLabel(data)),
             item: div({
                 className: 'xh-sparkline__plot',
                 items: [
@@ -185,12 +193,12 @@ export const [Sparkline, sparkline] = hoistCmp.withFactory<SparklineProps>({
                         'aria-hidden': true,
                         items: [
                             ...(isBar
-                                ? barShapes(values, domain, origin, colorNegative)
-                                : lineShapes(points, type === 'area')),
+                                ? barShapes(data, domain, origin, colorNegative)
+                                : lineShapes(points, shape === 'area')),
                             baselineShape(baseline, domain)
                         ]
                     }),
-                    ...(isBar ? [] : dots(points, showLast, showMinMax))
+                    ...(isBar ? [] : dots(points, markers))
                 ]
             })
         });
@@ -210,12 +218,12 @@ function lineShapes(points: SparklinePoint[], withArea: boolean): ReactElement[]
 }
 
 function barShapes(
-    values: number[],
+    data: number[],
     domain: [number, number],
     origin: number,
     colorNegative: boolean
 ): ReactElement[] {
-    const bars = sparklineBars(values, domain, origin),
+    const bars = sparklineBars(data, domain, origin),
         [negative, positive] = partition(bars, bar => colorNegative && bar.negative);
     return [
         path('bars', sparklineBarsPath(positive)),
@@ -246,16 +254,19 @@ function path(name: string, d: string): ReactElement {
  * Dots are HTML elements placed over the SVG by percentage, not SVG circles. A circle would
  * stretch to an ellipse with the box.
  */
-function dots(points: SparklinePoint[], showLast: boolean, showMinMax: boolean): ReactElement[] {
+function dots(points: SparklinePoint[], markers: SparklineMarker[]): ReactElement[] {
     if (points.length === 1) return [dot('last', points[0])];
+    if (points.length === 0) return [];
 
     const lowest = minBy(points, 'value'),
         highest = maxBy(points, 'value'),
-        hasRange = lowest && lowest.value !== highest.value;
+        hasRange = lowest.value !== highest.value,
+        has = (marker: SparklineMarker) => includes(markers, marker);
     return [
-        showMinMax && hasRange ? dot('min', lowest) : null,
-        showMinMax && hasRange ? dot('max', highest) : null,
-        showLast && points.length ? dot('last', last(points)) : null
+        has('first') ? dot('first', first(points)) : null,
+        has('min') && hasRange ? dot('min', lowest) : null,
+        has('max') && hasRange ? dot('max', highest) : null,
+        has('last') ? dot('last', last(points)) : null
     ];
 }
 
