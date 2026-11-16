@@ -2,8 +2,14 @@
   &__content-wrapper {
     position: fixed;
     z-index: 21;
-    background-color: var(--xh-bg);
-    box-shadow: var(--xh-popover-box-shadow);
+    background-color: var(--xh-popover-bg);
+    border-radius: var(--xh-popover-border-radius);
+    // Clip content to the rounded corners, so a menu title or other square-cornered child does
+    // not cover the inner curve of the border ring.
+    overflow: hidden;
+    box-shadow:
+      0 0 0 var(--xh-popover-border-width) var(--xh-popover-border-color),
+      var(--xh-popover-box-shadow);
   }
 
   &__content-overlay {

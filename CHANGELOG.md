@@ -46,6 +46,17 @@ detailed, step-by-step upgrade instructions with before/after code examples.
   `--xh-tab-active-indicator-color`.
 * Mobile tabs now read the `--xh-tab-*` variables, and mobile dialogs read `--xh-popup-bg` and
   `--xh-popup-title-font-family`, as on desktop.
+* Added `--xh-popover-arrow-color`, `-bg`, `-border-color`, `-border-radius` and `-border-width`,
+  and extended `--xh-popover-box-shadow` to desktop. Desktop and mobile popovers read them. They
+  default to the matching `--xh-popup-*` variables, so the popup border width and radius now reach
+  popovers too.
+* Gave popovers a stronger border and shadow than dialogs, so they stand out over busy content such
+  as a grid. In dark theme the border is lighter and has a dark halo. The popover arrow now takes
+  the border color. The `Select` dropdown and the grid context menu use the same frame.
+* Desktop popovers now fill with `--xh-popover-bg` in dark theme, not Blueprint's own gray. A menu
+  that fills a popover no longer draws a second border inside it.
+* Desktop popovers now stay 8px clear of the viewport edge, so their border shows on every side.
+  Set `modifiers.preventOverflow` or `modifiers.flip` padding on a popover to change it.
 * Added `.xh-border-rounded` for a solid border with rounded corners, and `.xh-rounded` for rounded
   corners with no border. Both use `--xh-border-radius`.
 * Removed `!important` from the `.xh-border-top`, `-right`, `-bottom` and `-left`, `.xh-pad-none`

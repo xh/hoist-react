@@ -179,13 +179,6 @@ $drp-transition-dur: 120ms;
 
     .bp6-popover-content {
       padding: 0;
-      background: var(--xh-popup-bg);
-      border-radius: var(--xh-border-radius);
-    }
-
-    &.bp6-popover {
-      border: 1px solid var(--xh-popup-border-color);
-      border-radius: var(--xh-border-radius);
     }
 
     &__content {

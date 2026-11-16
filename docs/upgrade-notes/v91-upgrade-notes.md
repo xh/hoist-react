@@ -222,6 +222,12 @@ precedence. Move these overrides to body.xh-app: --xh-spacing, ...
 
 Then review the app in both light and dark themes, and on mobile if applicable.
 
+Popovers have a stronger border and shadow in v91, so they stand out from the content beneath them.
+If your app styles `.bp6-popover` or `.bp6-popover-content` directly to change a border, shadow, or
+background, set the new `--xh-popover-*` variables instead. To change one popover, set them on its
+`popoverClassName`. See "Dialogs and Popovers" in
+[`styles/README.md`](../../styles/README.md#dialogs-and-popovers).
+
 ## Verification Checklist
 
 After completing all steps:

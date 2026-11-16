@@ -756,21 +756,6 @@ body {
   }
 
 
-  //---------------------------------------
-  // Popovers - e.g. mobile app menu.
-  // Applicable to mobile only at this time
-  //---------------------------------------
-  &:where(.xh-mobile) {
-    --xh-popover-backdrop-bg: rgb(128, 128, 128, 0.2);
-    --xh-popover-box-shadow: #{0 0 20px rgba(0, 0, 0, 0.4)};
-
-    &:where(.xh-dark) {
-      --xh-popover-backdrop-bg: rgb(0, 0, 0, 0.2);
-      --xh-popover-box-shadow: #{0 0 20px rgba(0, 0, 0, 0.7)};
-    }
-  }
-
-
   //------------------------
   // Spacing
   //------------------------
@@ -810,8 +795,10 @@ body {
   }
 
   //------------------------
-  // Popups / dialogs
+  // Popups - dialogs and popovers
   //------------------------
+  // Shared by dialogs and popovers. Dialogs read these directly. Popovers read the
+  // `--xh-popover-*` variables below, which default to these.
   --xh-popup-bg: var(--xh-bg);
   --xh-popup-border-color: var(--xh-border-color);
   --xh-popup-border-radius: var(--xh-border-radius);
@@ -826,6 +813,37 @@ body {
   &:where(.xh-mobile) {
     --xh-popup-border-width: 2px;
     --xh-popup-title-font-weight: normal;
+  }
+
+  //------------------------
+  // Popovers
+  //------------------------
+  // A dialog sits on a mask that dims the app behind it. A popover has no mask and often opens
+  // over busy content such as a grid, so it takes a stronger border and shadow to stand apart.
+  // The border color mixes the popup border toward the text color - darker in light theme,
+  // lighter in dark theme, where a drop shadow alone does not read.
+  --xh-popover-arrow-color: var(--xh-popover-border-color);
+  --xh-popover-bg: var(--xh-popup-bg);
+  --xh-popover-border-color: color-mix(in srgb, var(--xh-popup-border-color), var(--xh-text-color) 45%);
+  --xh-popover-border-radius: var(--xh-popup-border-radius);
+  --xh-popover-border-width: var(--xh-popup-border-width);
+  // A box-shadow list, drawn outside the border. Set `0 0 transparent` to remove it.
+  --xh-popover-box-shadow: #{0 4px 8px rgba(0, 0, 0, 0.12), 0 12px 32px rgba(0, 0, 0, 0.24)};
+
+  &:where(.xh-dark) {
+    // A dark halo around the lighter border keeps it legible over light content beneath.
+    --xh-popover-box-shadow: #{0 0 0 3px rgba(0, 0, 0, 0.5), 0 12px 32px rgba(0, 0, 0, 0.8)};
+  }
+
+  &:where(.xh-mobile) {
+    // Mobile popovers can show a backdrop - see the mobile `Popover` `backdrop` prop.
+    --xh-popover-backdrop-bg: rgb(128, 128, 128, 0.2);
+    --xh-popover-box-shadow: #{0 0 20px rgba(0, 0, 0, 0.4)};
+
+    &:where(.xh-dark) {
+      --xh-popover-backdrop-bg: rgb(0, 0, 0, 0.2);
+      --xh-popover-box-shadow: #{0 0 0 3px rgba(0, 0, 0, 0.5), 0 0 20px rgba(0, 0, 0, 0.7)};
+    }
   }
 
   //------------------------

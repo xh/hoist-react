@@ -161,9 +161,14 @@
 // The menu is rendered under the xh-app body, not within the control DOM.
 .xh-app {
   .xh-select {
+    // The menu floats over other content, so it takes the popover frame.
     &__menu {
-      background-color: var(--xh-bg);
-      box-shadow: 0 0 0 1px var(--xh-form-field-box-shadow-color-top);
+      background-color: var(--xh-popover-bg);
+      border-radius: var(--xh-popover-border-radius);
+      overflow: hidden;
+      box-shadow:
+        0 0 0 var(--xh-popover-border-width) var(--xh-popover-border-color),
+        var(--xh-popover-box-shadow);
     }
 
     &__option {
