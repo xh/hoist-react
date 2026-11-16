@@ -35,14 +35,14 @@ export const timePicker = hoistCmp.factory<TimePickerProps>({
 
     render({className, value, precision, onChange}) {
         const units = precision === 'second' ? UNITS : UNITS.slice(0, 2),
-            items = [];
+            children = [];
 
         units.forEach((unit, idx) => {
-            if (idx) items.push(span({className: 'xh-time-picker__separator', children: ':'}));
-            items.push(timeField({unit, value, onChange}));
+            if (idx) children.push(span({className: 'xh-time-picker__separator', children: ':'}));
+            children.push(timeField({unit, value, onChange}));
         });
 
-        return hbox({className, children: items});
+        return hbox({className, children});
     }
 });
 

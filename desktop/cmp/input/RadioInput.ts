@@ -90,7 +90,7 @@ const cmp = hoistCmp.factory<RadioInputModel>(({model, className, ...props}, ref
     const {normalizedOptions} = model,
         labelSide = withDefault(props.labelSide, 'right');
 
-    const items = normalizedOptions.map(opt => {
+    const radios = normalizedOptions.map(opt => {
         return radio({
             alignIndicator: labelSide === 'left' ? 'right' : 'left',
             disabled: opt.disabled,
@@ -111,6 +111,6 @@ const cmp = hoistCmp.factory<RadioInputModel>(({model, className, ...props}, ref
         onChange: model.onChange,
         [TEST_ID]: props.testId,
         ...props.domAttrs,
-        children: items
+        children: radios
     });
 });

@@ -50,7 +50,7 @@ export const [Button, button] = hoistCmp.withFactory<ButtonProps>({
     render(props, ref) {
         const [layoutProps, nonLayoutProps] = splitLayoutProps(props),
             classes = [],
-            items = [];
+            children = [];
 
         const {
             active,
@@ -86,11 +86,11 @@ export const [Button, button] = hoistCmp.withFactory<ButtonProps>({
         if (active) classes.push('xh-button--active');
 
         if (icon && text) {
-            items.push(icon, hspacer(8), text);
+            children.push(icon, hspacer(8), text);
         } else if (icon) {
-            items.push(icon);
+            children.push(icon);
         } else if (text) {
-            items.push(text);
+            children.push(text);
         }
 
         return div({
@@ -106,7 +106,7 @@ export const [Button, button] = hoistCmp.withFactory<ButtonProps>({
             [TEST_ID]: testId,
             ...domAttrs,
             ...rest,
-            children: items
+            children
         });
     }
 });

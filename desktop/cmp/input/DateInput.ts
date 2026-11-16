@@ -541,11 +541,11 @@ const rightIcons = hoistCmp.factory<DateInputModel>({
         const buttonLayoutProps = {padding: 0, margin: 0, height: '100%'},
             enableClear = props.enableClear ?? false,
             isClearable = model.internalValue !== null,
-            items = [];
+            icons = [];
 
         // 1) First potential icon is clear button
         if (enableClear && isClearable && !disabled) {
-            items.push(
+            icons.push(
                 button({
                     className: 'xh-date-input__clear-icon',
                     icon: Icon.cross(),
@@ -571,8 +571,8 @@ const rightIcons = hoistCmp.factory<DateInputModel>({
                 ...buttonLayoutProps
             })
         );
-        if (rightElement) items.push(rightElement);
+        if (rightElement) icons.push(rightElement);
 
-        return hbox({height: '100%', paddingRight: 3, children: items, omit: isEmpty(items)});
+        return hbox({height: '100%', paddingRight: 3, children: icons, omit: isEmpty(icons)});
     }
 });

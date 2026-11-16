@@ -430,30 +430,30 @@ function fmtNumberElement(v: number, str: string, sign: '+' | '-', opts?: Number
     if (colorSpec) cls.push(calcClassFromColorSpec(v, colorSpec));
     if (tooltip) cls.push('xh-title-tip');
 
-    // Compile child items
-    const items = [];
+    // Compile children
+    const children = [];
     if (withSignGlyph) {
-        items.push(signGlyph(v));
+        children.push(signGlyph(v));
     } else if (sign) {
-        items.push(sign);
+        children.push(sign);
     }
 
     if (isString(prefix)) {
-        items.push(prefix);
+        children.push(prefix);
     }
 
-    items.push(str);
+    children.push(str);
 
     if (isString(label)) {
-        items.push(labelCls ? fmtSpan(label, {className: labelCls}) : label);
+        children.push(labelCls ? fmtSpan(label, {className: labelCls}) : label);
     }
 
     if (ledger) {
         if (v < 0) {
-            items.unshift('(');
-            items.push(')');
+            children.unshift('(');
+            children.push(')');
         } else if (forceLedgerAlign) {
-            items.push(LEDGER_ALIGN_PLACEHOLDER_EL);
+            children.push(LEDGER_ALIGN_PLACEHOLDER_EL);
         }
     }
 
@@ -461,7 +461,7 @@ function fmtNumberElement(v: number, str: string, sign: '+' | '-', opts?: Number
         className: cls.join(' '),
         style: calcStyleFromColorSpec(v, colorSpec),
         title: processToolTip(tooltip, opts),
-        children: items
+        children
     });
 }
 

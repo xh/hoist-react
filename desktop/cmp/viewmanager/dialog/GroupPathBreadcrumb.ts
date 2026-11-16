@@ -47,10 +47,10 @@ export const groupPathBreadcrumb = hoistCmp.factory<GroupPathBreadcrumbProps>({
             collapse = segments.length > 2 && fullText.length > maxChars,
             shown = collapse ? [segments[0], ELLIPSIS, last(segments)] : segments;
 
-        const items = [];
+        const children = [];
         shown.forEach((segment, idx) => {
             if (idx) {
-                items.push(
+                children.push(
                     span({
                         key: `sep-${idx}`,
                         className: 'xh-view-manager__group-path__separator',
@@ -58,7 +58,7 @@ export const groupPathBreadcrumb = hoistCmp.factory<GroupPathBreadcrumbProps>({
                     })
                 );
             }
-            items.push(
+            children.push(
                 span({
                     key: idx,
                     className: classNames(
@@ -76,7 +76,7 @@ export const groupPathBreadcrumb = hoistCmp.factory<GroupPathBreadcrumbProps>({
                 inheritColor && 'xh-view-manager__group-path--inherit'
             ),
             title: collapse ? fullText : null,
-            children: items
+            children
         });
     }
 });

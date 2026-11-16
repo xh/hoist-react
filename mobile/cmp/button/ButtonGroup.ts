@@ -30,7 +30,7 @@ export const [ButtonGroup, buttonGroup] = hoistCmp.withFactory<ButtonGroupProps>
     render(props, ref) {
         const {children, className, intent, minimal, outlined, ...rest} = props;
 
-        const items = Children.map(children, button => {
+        const buttons = Children.map(children, button => {
             if (!button) return null;
             if (!isValidElement(button) || button.type !== Button) {
                 throw XH.exception('ButtonGroup child must be a Button.');
@@ -48,7 +48,7 @@ export const [ButtonGroup, buttonGroup] = hoistCmp.withFactory<ButtonGroupProps>
         });
 
         return hbox({
-            children: items,
+            children: buttons,
             className,
             ...rest,
             ref

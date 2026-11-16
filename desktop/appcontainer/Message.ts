@@ -46,9 +46,9 @@ const inputsCmp = hoistCmp.factory<MessageModel>(({model}) => {
     const {formModel, input, extraConfirmLabel} = model;
     if (!formModel) return null;
 
-    const items = [];
+    const children = [];
     if (formModel.getField('value')) {
-        items.push(
+        children.push(
             formField({
                 field: 'value',
                 label: null,
@@ -67,7 +67,7 @@ const inputsCmp = hoistCmp.factory<MessageModel>(({model}) => {
         );
     }
     if (formModel.getField('extraConfirm')) {
-        items.push(
+        children.push(
             formField({
                 label: extraConfirmLabel,
                 field: 'extraConfirm',
@@ -83,7 +83,7 @@ const inputsCmp = hoistCmp.factory<MessageModel>(({model}) => {
         );
     }
     if (formModel.getField('suppress')) {
-        items.push(
+        children.push(
             formField({
                 field: 'suppress',
                 label: null,
@@ -97,7 +97,7 @@ const inputsCmp = hoistCmp.factory<MessageModel>(({model}) => {
         fieldDefaults: {commitOnChange: true, minimal: true},
         children: div({
             className: 'xh-pad',
-            children: items
+            children
         })
     });
 });
