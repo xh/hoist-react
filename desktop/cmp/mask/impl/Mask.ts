@@ -5,7 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {hoistCmp} from '@xh/hoist/core';
-import {box, vbox, vspacer} from '@xh/hoist/cmp/layout';
+import {box, div, vbox, vspacer} from '@xh/hoist/cmp/layout';
 import type {MaskProps} from '@xh/hoist/cmp/mask';
 import {spinner as spinnerCmp} from '@xh/hoist/cmp/spinner';
 import {Classes, overlay} from '@xh/hoist/kit/blueprint';
@@ -19,22 +19,31 @@ import './Mask.scss';
  */
 export const maskImpl = hoistCmp.factory<MaskProps>({
     render({message, onClick, inline = true, spinner = false, className}) {
+        const body = vbox({
+            onClick,
+            className: 'xh-mask-body',
+            items: [
+                spinner ? spinnerCmp() : null,
+                spinner ? vspacer(10) : null,
+                message ? box({className: 'xh-mask-text', item: message}) : null
+            ]
+        });
+
+        // Blueprint's overlay forces a reflow on every show, via its CSSTransition.
+        if (inline) {
+            return div({
+                className: classNames(className, 'xh-mask--inline'),
+                'aria-live': 'polite',
+                item: body
+            });
+        }
+
         return overlay({
             className: classNames(className, Classes.OVERLAY_SCROLL_CONTAINER),
             autoFocus: false,
             isOpen: true,
             canEscapeKeyClose: false,
-            usePortal: !inline,
-            enforceFocus: !inline,
-            item: vbox({
-                onClick,
-                className: 'xh-mask-body',
-                items: [
-                    spinner ? spinnerCmp() : null,
-                    spinner ? vspacer(10) : null,
-                    message ? box({className: 'xh-mask-text', item: message}) : null
-                ]
-            })
+            item: body
         });
     }
 });
