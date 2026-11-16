@@ -14,6 +14,28 @@
 
 ## 91.0.0-SNAPSHOT - unreleased
 
+### 💥 Breaking Changes (upgrade difficulty: 🎉 TRIVIAL)
+
+* Hoist now requires AG Grid `36.3` or later, to avoid a performance issue in `36.2`. Apps must bump
+  their `ag-grid-community`, `ag-grid-react`, and (if used) `ag-grid-enterprise` dependencies.
+
+### ⚙️ Technical
+
+* `StoreRecord.getValues()` is faster for records with many fields, and so is spreading or copying
+  its result. It now returns an object in V8's compact fast-properties mode.
+
+### ✨ Styles
+
+* Desktop inline `Mask` renders a plain `div` with the class `xh-mask--inline`, not a Blueprint
+  overlay, so showing a mask no longer forces a browser layout. Restyle any app CSS that targets
+  `.bp6-overlay` classes within an inline mask, or use `--xh-mask-bg`.
+
+### 📚 Libraries
+
+* jsdom `30 → 30 || 31` (optional peer)
+
+## 90.1.0 - 2026-11-13
+
 ### 🎁 New Features
 
 * Added `CubeGrid` and `CubeGridModel` (`@xh/hoist/cmp/cubegrid`), a grid bound to a Cube View.
@@ -95,9 +117,6 @@
 * Grid column group headers show their expand/collapse control right after the label rather
   than at the header's far edge, as a chevron pointing down when expanded and right when
   collapsed, matching tree rows.
-* Desktop inline `Mask` renders a plain `div` with the class `xh-mask--inline`, not a Blueprint
-  overlay, so showing a mask no longer forces a browser layout. Restyle any app CSS that targets
-  `.bp6-overlay` classes within an inline mask, or use `--xh-mask-bg`.
 
 ### ⚙️ Typescript API Adjustments
 

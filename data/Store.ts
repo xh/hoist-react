@@ -412,6 +412,7 @@ export class Store
     private _fieldDefaults: Omit<FieldSpec, 'name'>;
     private _dataTemplate: PlainObject = null;
     private _dataDefaults: PlainObject = null;
+    private _valuesTemplate: PlainObject = null;
     private _denseRecordThreshold: number;
     private _digestSpec: StoreRecordDigestSpec;
     private _digestFn: (raw: PlainObject) => StoreRecordDigest;
@@ -483,8 +484,7 @@ export class Store
         this.resetRecords();
 
         this.validator = new StoreValidator({store: this});
-        this._dataDefaults = this.createDataDefaults();
-        this._dataTemplate = {...this._dataDefaults}; // Clone for fast-props mode.
+        this.initDataTemplates();
         this._denseRecordThreshold =
             this.experimental.denseRecordThreshold ?? DENSE_RECORD_THRESHOLD;
         if (data) this.loadData(data);
@@ -1003,8 +1003,7 @@ export class Store
     setFields(fields: Array<string | FieldSpec | Field>) {
         this.fields = this.parseFields(fields, this._fieldDefaults);
         this._fieldMap = this.createFieldMap();
-        this._dataDefaults = this.createDataDefaults();
-        this._dataTemplate = {...this._dataDefaults}; // Clone for fast-props mode.
+        this.initDataTemplates();
 
         this.resetRecords();
     }
@@ -1624,11 +1623,29 @@ export class Store
     }
 
     /**
-     * Shared template for record `data` objects - an own property for every Field, holding its
-     * defaultValue. `parseOrRescue()` clones it per record, so all records in a Store share one
-     * identical, fixed shape. That keeps them in V8's compact fast-properties mode: objects built
-     * instead by per-field property adds are demoted to a per-object hashtable ("dictionary mode")
-     * past ~20 adds, costing several times more memory per record.
+     * @internal - a new object with `id` and every Field, in a fixed fast-properties shape - see
+     * `createDataDefaults()`. Backs `StoreRecord.getValues()`.
+     */
+    cloneValuesTemplate(): PlainObject {
+        return {...this._valuesTemplate};
+    }
+
+    private initDataTemplates() {
+        this._dataDefaults = this.createDataDefaults();
+        // Clone for fast-props mode - see createDataDefaults().
+        this._dataTemplate = {...this._dataDefaults};
+        this._valuesTemplate = {id: null, ...this._dataDefaults};
+    }
+
+    /**
+     * Defaults for record `data` objects - an own property for every Field, holding its
+     * defaultValue. Sparse records use it as their prototype.
+     *
+     * Built by per-field adds, it is demoted past ~20 Fields to V8's per-object hashtable
+     * ("dictionary mode"), which costs several times more memory and slows reads and copies.
+     * `initDataTemplates()` clones it into templates in compact fast-properties mode, and
+     * `buildData()` and `cloneValuesTemplate()` clone those per object, so their results share
+     * one fixed shape.
      */
     private createDataDefaults() {
         const ret = {};
