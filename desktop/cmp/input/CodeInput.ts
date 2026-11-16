@@ -680,9 +680,9 @@ const cmp = hoistCmp.factory<CodeInputModel>(({model, className, ...props}, ref)
         width: 300,
         height: 100,
         ...getLayoutProps(props),
-        item: modalSupport({
+        children: modalSupport({
             model: model.modalSupportModel,
-            item: inputCmp({
+            children: inputCmp({
                 testId: props.testId,
                 domAttrs: props.domAttrs,
                 width: '100%',
@@ -697,7 +697,7 @@ const cmp = hoistCmp.factory<CodeInputModel>(({model, className, ...props}, ref)
 
 const inputCmp = hoistCmp.factory<CodeInputModel>(({model, ...props}, ref) =>
     vbox({
-        items: [
+        children: [
             div({
                 className: 'xh-code-input__inner-wrapper',
                 ref: model.createCodeEditor
@@ -716,7 +716,7 @@ const toolbarCmp = hoistCmp.factory<CodeInputModel>(({model}) => {
     return toolbar({
         className: 'xh-code-input__toolbar',
         compact: !fullScreen,
-        items: [searchInputCmp({omit: !showSearchInput}), filler(), ...actionButtons]
+        children: [searchInputCmp({omit: !showSearchInput}), filler(), ...actionButtons]
     });
 });
 
@@ -729,7 +729,7 @@ const searchInputCmp = hoistCmp.factory<CodeInputModel>(({model}) => {
         frame({
             flex: 1,
             maxWidth: !fullScreen ? 225 : 400,
-            item: textInput({
+            children: textInput({
                 width: null,
                 flex: 1,
                 model,
@@ -751,9 +751,9 @@ const searchInputCmp = hoistCmp.factory<CodeInputModel>(({model}) => {
         }),
         label({
             className: classNames('xh-code-input__label', !fullScreen ? 'xh-no-pad' : null),
-            item: matchCount
+            children: matchCount
                 ? `${currentMatchIdx + 1} / ${matchCount}`
-                : span({item: '0 results', className: 'xh-text-color-muted'}),
+                : span({children: '0 results', className: 'xh-text-color-muted'}),
             omit: !query
         }),
         button({
@@ -780,7 +780,7 @@ const actionButtonsCmp = hoistCmp.factory<CodeInputModel>(({model}) => {
     return hasFocus && actionButtons.length
         ? hbox({
               className: 'xh-code-input__action-buttons',
-              items: actionButtons
+              children: actionButtons
           })
         : null;
 });

@@ -35,7 +35,7 @@ export const message = hoistCmp.factory({
             title: model.title,
             icon: model.icon,
             className: classNames(className, model.className),
-            items: [dialogBody(model.message, inputsCmp()), bbar()],
+            children: [dialogBody(model.message, inputsCmp()), bbar()],
             onClose: () => model.doEscape(),
             ...props
         });
@@ -53,7 +53,7 @@ const inputsCmp = hoistCmp.factory<MessageModel>(({model}) => {
                 field: 'value',
                 label: null,
                 testId: 'xh-message-value',
-                item: withDefault(
+                children: withDefault(
                     input.item,
                     textInput({
                         autoFocus: true,
@@ -72,7 +72,7 @@ const inputsCmp = hoistCmp.factory<MessageModel>(({model}) => {
                 label: extraConfirmLabel,
                 field: 'extraConfirm',
                 testId: 'xh-message-extra-confirm',
-                item: textInput({
+                children: textInput({
                     autoFocus: true,
                     selectOnFocus: true,
                     onKeyDown: evt => {
@@ -88,16 +88,16 @@ const inputsCmp = hoistCmp.factory<MessageModel>(({model}) => {
                 field: 'suppress',
                 label: null,
                 testId: 'xh-message-suppress',
-                item: checkbox({label: model.suppressLabel})
+                children: checkbox({label: model.suppressLabel})
             })
         );
     }
     return form({
         model: formModel,
         fieldDefaults: {commitOnChange: true, minimal: true},
-        item: div({
+        children: div({
             className: 'xh-pad',
-            items
+            children: items
         })
     });
 });

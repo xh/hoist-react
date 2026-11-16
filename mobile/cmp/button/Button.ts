@@ -97,7 +97,7 @@ export const [Button, button] = hoistCmp.withFactory<ButtonProps>({
             ref,
             role: 'button',
             'aria-disabled': disabled || null,
-            items,
+            children: items,
             onClick: disabled ? null : onClick,
             className: classNames(className, classes),
             style: {

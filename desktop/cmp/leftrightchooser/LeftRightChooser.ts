@@ -30,10 +30,10 @@ export const [LeftRightChooser, leftRightChooser] = hoistCmp.withFactory<LeftRig
     render({model, ...props}, ref) {
         return vbox({
             ref,
-            items: [
+            children: [
                 hframe({
                     className: 'xh-lr-chooser__grid-frame',
-                    items: [
+                    children: [
                         grid({model: model.leftModel}),
                         chooserToolbar(),
                         grid({model: model.rightModel})

@@ -37,17 +37,17 @@ export const viewPanel = hoistCmp.factory({
             visInfo = getVisibilityInfo(viewManagerModel, visibility);
 
         return panel({
-            item: form({
+            children: form({
                 fieldDefaults: {
                     commitOnChange: true,
                     minimal: true
                 },
-                item: vframe({
+                children: vframe({
                     className: 'xh-view-manager__manage-dialog__form',
-                    items: [
+                    children: [
                         formField({
                             field: 'name',
-                            item: textInput({enableClear: true})
+                            children: textInput({enableClear: true})
                         }),
                         formField({
                             field: 'owner',
@@ -56,17 +56,18 @@ export const viewPanel = hoistCmp.factory({
                         groupField({model: model.groupFieldModel}),
                         formField({
                             field: 'description',
-                            item: textArea({
+                            children: textArea({
                                 selectOnFocus: true,
                                 height: 70
                             }),
                             readonlyRenderer: v =>
-                                v || span({item: 'None provided', className: 'xh-text-color-muted'})
+                                v ||
+                                span({children: 'None provided', className: 'xh-text-color-muted'})
                         }),
                         formField({
                             field: 'visibility',
                             omit: !isEditable || visOptions.length === 1,
-                            item: select({options: visOptions, enableFilter: false}),
+                            children: select({options: visOptions, enableFilter: false}),
                             info: visInfo
                         }),
                         vspacer(),
@@ -74,7 +75,7 @@ export const viewPanel = hoistCmp.factory({
                         filler(),
                         div({
                             className: 'xh-view-manager__manage-dialog__metadata',
-                            item: `Last Updated: ${fmtDateTime(lastUpdated)} by ${lastUpdatedBy === XH.getUsername() ? 'you' : lastUpdatedBy}`
+                            children: `Last Updated: ${fmtDateTime(lastUpdated)} by ${lastUpdatedBy === XH.getUsername() ? 'you' : lastUpdatedBy}`
                         })
                     ]
                 })

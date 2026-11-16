@@ -54,7 +54,7 @@ export const groupPathBreadcrumb = hoistCmp.factory<GroupPathBreadcrumbProps>({
                     span({
                         key: `sep-${idx}`,
                         className: 'xh-view-manager__group-path__separator',
-                        item: SEPARATOR
+                        children: SEPARATOR
                     })
                 );
             }
@@ -65,7 +65,7 @@ export const groupPathBreadcrumb = hoistCmp.factory<GroupPathBreadcrumbProps>({
                         'xh-view-manager__group-path__segment',
                         collapse && idx === 1 && 'xh-view-manager__group-path__segment--collapsed'
                     ),
-                    item: segment
+                    children: segment
                 })
             );
         });
@@ -76,7 +76,7 @@ export const groupPathBreadcrumb = hoistCmp.factory<GroupPathBreadcrumbProps>({
                 inheritColor && 'xh-view-manager__group-path--inherit'
             ),
             title: collapse ? fullText : null,
-            items
+            children: items
         });
     }
 });

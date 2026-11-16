@@ -37,19 +37,19 @@ export const [Dialog, dialog] = hoistCmp.withFactory<DialogProps>({
             className,
             isCancelable,
             onCancel,
-            items: [
+            children: [
                 div({
                     className: 'xh-dialog__title',
-                    items: [icon, title]
+                    children: [icon, title]
                 }),
                 div({
                     className: 'xh-dialog__inner',
-                    item: content
+                    children: content
                 }),
                 div({
                     className: 'xh-dialog__toolbar',
                     omit: !buttons.length,
-                    items: buttons
+                    children: buttons
                 })
             ]
         });

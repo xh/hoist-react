@@ -144,7 +144,7 @@ class ConfigValueModel extends HoistModel {
         tabs.push({
             id: 'db',
             title: hasOverride
-                ? span({className: 'xh-config-value__overridden', item: 'Database'})
+                ? span({className: 'xh-config-value__overridden', children: 'Database'})
                 : 'Database',
             icon: Icon.edit(),
             content: () => valueFormField(valueType, height)
@@ -197,7 +197,7 @@ const resolvedTab = hoistCmp.factory<ConfigValueModel>(({model, text, lineStyles
         ? placeholder({
               ...rest,
               className: 'xh-config-value__stale',
-              items: [Icon.bolt(), 'Update pending. Save or revert to recompute.']
+              children: [Icon.bolt(), 'Update pending. Save or revert to recompute.']
           })
         : jsonInput({
               value: text,
@@ -221,7 +221,7 @@ function valueFormField(
         label: null,
         className: classNames('xh-config-value__field', className),
         readonlyRenderer: v => readonlyValue(valueType, v, height),
-        item: valueInput(valueType, height)
+        children: valueInput(valueType, height)
     });
 }
 

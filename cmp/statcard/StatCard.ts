@@ -165,32 +165,32 @@ export const [StatCard, statCard] = hoistCmp.withFactory<StatCardProps>({
             ref,
             ...clickProps,
             ...divProps,
-            items: [
+            children: [
                 div({
                     className: 'xh-stat-card__header',
-                    items: [
+                    children: [
                         span({
                             id: titleId,
                             className: 'xh-stat-card__title',
                             onMouseEnter: titleIfTruncated,
-                            item: title
+                            children: title
                         }),
                         infoTooltip ? info(infoIcon, infoTooltip) : null
                     ]
                 }),
                 div({
                     className: 'xh-stat-card__value',
-                    items: [
+                    children: [
                         span({
                             className: 'xh-stat-card__value-primary',
                             onMouseEnter: titleIfTruncated,
-                            item: value
+                            children: value
                         }),
                         span({
                             omit: subValue == null,
                             className: 'xh-stat-card__sub-value',
                             onMouseEnter: titleIfTruncated,
-                            item: subValue
+                            children: subValue
                         })
                     ]
                 }),
@@ -198,7 +198,7 @@ export const [StatCard, statCard] = hoistCmp.withFactory<StatCardProps>({
                     omit: detail == null,
                     className: 'xh-stat-card__detail',
                     onMouseEnter: titleIfTruncated,
-                    item: detail
+                    children: detail
                 })
             ]
         });
@@ -243,7 +243,7 @@ export const [StatCardStrip, statCardStrip] = hoistCmp.withFactory<StatCardStrip
                 {style: {...layoutProps, '--xh-stat-card-strip-columns': columns}},
                 {[TEST_ID]: testId, ...domAttrs}
             ),
-            items: children
+            children
         });
     }
 });
@@ -255,7 +255,7 @@ export const [StatCardStrip, statCardStrip] = hoistCmp.withFactory<StatCardStrip
 function info(icon: ReactElement, content: ReactElement | string) {
     return statCardInfoImpl
         ? statCardInfoImpl({icon, content})
-        : span({className: 'xh-stat-card__info', item: icon});
+        : span({className: 'xh-stat-card__info', children: icon});
 }
 
 /**

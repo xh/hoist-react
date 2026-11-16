@@ -48,7 +48,7 @@ export const [ButtonGroup, buttonGroup] = hoistCmp.withFactory<ButtonGroupProps>
         });
 
         return hbox({
-            items,
+            children: items,
             className,
             ...rest,
             ref

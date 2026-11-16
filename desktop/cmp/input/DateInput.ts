@@ -418,7 +418,7 @@ const cmp = hoistCmp.factory<DateInputProps & {model: DateInputModel}>(
 
         return div({
             className: 'xh-date-input__wrapper',
-            item: popover({
+            children: popover({
                 isOpen,
                 minimal: true,
                 usePortal: true,
@@ -440,8 +440,8 @@ const cmp = hoistCmp.factory<DateInputProps & {model: DateInputModel}>(
 
                 content: pickerPopover({model, ...props}),
 
-                item: div({
-                    item: textInput({
+                children: div({
+                    children: textInput({
                         value: model.formatDate(model.renderValue) as string,
                         className: classNames(
                             className,
@@ -494,7 +494,7 @@ const pickerPopover = hoistCmp.factory<DateInputProps & {model: DateInputModel}>
 
         return vbox({
             className: 'xh-date-input__popover',
-            items: [
+            children: [
                 dayPicker(
                     getDayPickerProps({
                         value: renderValue,
@@ -514,7 +514,7 @@ const pickerPopover = hoistCmp.factory<DateInputProps & {model: DateInputModel}>
                 hbox({
                     omit: !props.showActionsBar,
                     className: 'xh-date-input__actions',
-                    items: [
+                    children: [
                         button({
                             text: 'Today',
                             minimal: true,
@@ -573,6 +573,6 @@ const rightIcons = hoistCmp.factory<DateInputModel>({
         );
         if (rightElement) items.push(rightElement);
 
-        return hbox({height: '100%', paddingRight: 3, items, omit: isEmpty(items)});
+        return hbox({height: '100%', paddingRight: 3, children: items, omit: isEmpty(items)});
     }
 });

@@ -117,7 +117,7 @@ export const [DashCanvas, dashCanvas] = hoistCmp.withFactory<DashCanvasProps>({
                 children: model.viewModels.map(vm =>
                     div({
                         key: vm.id,
-                        item: dashCanvasView({model: vm})
+                        children: dashCanvasView({model: vm})
                     })
                 ),
                 width
@@ -130,7 +130,7 @@ export const [DashCanvas, dashCanvas] = hoistCmp.withFactory<DashCanvasProps>({
 
         return refreshContextView({
             model: model.refreshContextModel,
-            item: div({
+            children: div({
                 className: classNames(
                     className,
                     isDraggable ? `${className}--draggable` : null,
@@ -138,7 +138,7 @@ export const [DashCanvas, dashCanvas] = hoistCmp.withFactory<DashCanvasProps>({
                 ),
                 ref: useComposedRefs(ref, model.ref, widthRef),
                 onContextMenu: e => onContextMenu(e, model),
-                items: [
+                children: [
                     // Until width is measured, reserve the grid's expected height so that any
                     // vertical scrollbar is already present when we measure - otherwise its later
                     // appearance narrows the canvas and triggers a second relayout of all widgets.
@@ -198,9 +198,9 @@ const emptyContainerOverlay = hoistCmp.factory<DashCanvasModel>(({model}) => {
         canEscapeKeyClose: false,
         usePortal: false,
         enforceFocus: false,
-        item: vbox({
+        children: vbox({
             alignItems: 'center',
-            items: [div(emptyText), vspacer(10), dashCanvasAddViewButton()]
+            children: [div(emptyText), vspacer(10), dashCanvasAddViewButton()]
         })
     });
 });

@@ -134,7 +134,7 @@ export const [Panel, panel] = hoistCmp.withFactory<PanelProps>({
         return vbox({
             className,
             // Keyed via toArray so a banner appearing or hiding does not remount the content frame.
-            items: Children.toArray([
+            children: Children.toArray([
                 panelHeader({title, icon, className: headerClassName, headerItems}),
                 parseToolbar(tbar),
                 banners.top,
@@ -144,7 +144,7 @@ export const [Panel, panel] = hoistCmp.withFactory<PanelProps>({
                     className: classNames('xh-panel__content', contentBoxProps?.className),
                     flexDirection: contentBoxProps?.flexDirection ?? 'column',
                     overflowY: scrollable ? 'auto' : contentBoxProps?.overflowY,
-                    items: children
+                    children
                 }),
                 banners.bottom,
                 parseToolbar(bbar),

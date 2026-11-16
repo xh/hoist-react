@@ -62,7 +62,7 @@ export const message = hoistCmp.factory({
             buttons,
             className: 'xh-message',
             content: div(
-                div({omit: !message, className: 'xh-message-content', item: message}),
+                div({omit: !message, className: 'xh-message-content', children: message}),
                 inputCmp()
             ),
             isCancelable: model.dismissable,
@@ -81,7 +81,7 @@ const inputCmp = hoistCmp.factory<MessageModel>(({model}) => {
             formField({
                 field: 'value',
                 testId: 'xh-message-value',
-                item: withDefault(input.item, textInput())
+                children: withDefault(input.item, textInput())
             })
         );
     }
@@ -91,7 +91,7 @@ const inputCmp = hoistCmp.factory<MessageModel>(({model}) => {
                 label: extraConfirmLabel,
                 field: 'extraConfirm',
                 testId: 'xh-message-extra-confirm',
-                item: textInput()
+                children: textInput()
             })
         );
     }
@@ -101,12 +101,12 @@ const inputCmp = hoistCmp.factory<MessageModel>(({model}) => {
                 label: model.suppressLabel,
                 field: 'suppress',
                 testId: 'xh-message-suppress',
-                item: checkbox()
+                children: checkbox()
             })
         );
     }
     return form({
         fieldDefaults: {commitOnChange: true, minimal: true, label: null},
-        items
+        children: items
     });
 });

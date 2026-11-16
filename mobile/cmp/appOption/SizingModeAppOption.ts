@@ -34,7 +34,7 @@ export const sizingModeAppOption = ({
         name: 'sizingMode',
         formField: {
             label: 'Grid sizing',
-            item: segmentedControl({
+            children: segmentedControl({
                 options: modes.map(mode => ({value: mode, label: startCase(mode)})),
                 ...inputProps
             }),

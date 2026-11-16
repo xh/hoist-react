@@ -26,12 +26,12 @@ export const panelHeader = hoistCmp.factory<PanelProps>({
 
         return hbox({
             className,
-            items: [
+            children: [
                 icon || null,
                 title
                     ? div({
                           className: 'xh-panel-header__title',
-                          item: title
+                          children: title
                       })
                     : filler(),
                 ...headerItems

@@ -92,7 +92,7 @@ export const [MenuButton, menuButton] = hoistCmp.withFactory<MenuButtonProps>({
             isOpen: impl.isOpen,
             position: menuPosition,
             disabled: disabled,
-            item: button({icon, disabled, testId, ...props}),
+            children: button({icon, disabled, testId, ...props}),
             content: menu({
                 menuItems: isFunction(menuItems) ? impl.menuItems : menuItems,
                 context: isFunction(context) ? impl.context : context,

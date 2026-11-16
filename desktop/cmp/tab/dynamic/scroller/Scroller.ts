@@ -32,7 +32,7 @@ export const [Scroller, scroller] = hoistCmp.withFactory<ScrollerProps>({
         return container({
             ...layoutProps,
             className,
-            items: [
+            children: [
                 scrollButton({direction: 'backward', model}),
                 content({
                     ...contentProps,

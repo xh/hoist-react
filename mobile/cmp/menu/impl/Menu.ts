@@ -52,15 +52,15 @@ export const menu = hoistCmp.factory({
 
         return vbox({
             ref,
-            items: [
+            children: [
                 div({
                     omit: !title,
                     className: 'xh-menu__title',
-                    item: title
+                    children: title
                 }),
                 vbox({
                     className: 'xh-menu__list',
-                    items
+                    children: items
                 })
             ],
             ...props
@@ -100,7 +100,7 @@ class MenuLocalModel extends HoistModel {
                     return div({
                         key: idx,
                         className: classNames('xh-menu__list__heading', item.className),
-                        item: item.heading
+                        children: item.heading
                     });
                 }
                 if (!isMenuItem(item)) return item;
@@ -118,7 +118,10 @@ class MenuLocalModel extends HoistModel {
                         active ? 'xh-menu__list__item--active' : null,
                         className
                     ),
-                    item: div({className: 'xh-menu__list__item__content', items: labelItems}),
+                    children: div({
+                        className: 'xh-menu__list__item__content',
+                        children: labelItems
+                    }),
                     omit: hidden,
                     [TEST_ID]: testId,
                     onTouchStart: () => (this.pressedIdx = idx),

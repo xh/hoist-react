@@ -38,7 +38,7 @@ const UP_TICK = '▴',
     LEDGER_ALIGN_PLACEHOLDER_EL = span({
         className: 'xh-ledger-align',
         style: {visibility: 'hidden'},
-        item: ')'
+        children: ')'
     });
 
 export type NumericPrecision = IntRange<0, 13>;
@@ -461,7 +461,7 @@ function fmtNumberElement(v: number, str: string, sign: '+' | '-', opts?: Number
         className: cls.join(' '),
         style: calcStyleFromColorSpec(v, colorSpec),
         title: processToolTip(tooltip, opts),
-        items: items
+        children: items
     });
 }
 

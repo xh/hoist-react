@@ -25,7 +25,7 @@ export const directoryMembers = hoistCmp.factory({
     render({className}) {
         return panel({
             className,
-            item: grid(),
+            children: grid(),
             tbar: toolbar(
                 span('Members of groups below have this role.'),
                 filler(),
@@ -61,9 +61,9 @@ class DirectoryMembersModel extends BaseMembersModel {
         const {displayName, error} = record.data;
         return hbox({
             alignItems: 'center',
-            items: [
+            children: [
                 box({
-                    item: displayName,
+                    children: displayName,
                     paddingRight: 'var(--xh-pad-half-px)'
                 }),
                 Icon.warning({omit: !error, intent: 'warning'})

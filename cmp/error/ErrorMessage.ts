@@ -96,7 +96,7 @@ export const [ErrorMessage, errorMessage] = hoistCmp.withFactory<ErrorMessagePro
             ref,
             className,
             ...rest,
-            item: XH.isMobileApp
+            children: XH.isMobileApp
                 ? mobileErrorMessageImpl({
                       message,
                       title,

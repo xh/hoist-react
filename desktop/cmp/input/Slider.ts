@@ -109,7 +109,7 @@ const cmp = hoistCmp.factory<SliderInputModel>(({model, className, ...props}, re
     };
 
     return box({
-        item: isArray(model.renderValue)
+        children: isArray(model.renderValue)
             ? bpRangeSlider(sliderProps as BpRangeSliderProps)
             : bpSlider(sliderProps as BpSliderProps),
 

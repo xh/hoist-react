@@ -79,14 +79,14 @@ export const themeAppOption = ({
 function themePreview(theme: ThemeValue): ReactElement {
     return div({
         className: `xh-theme-preview xh-theme-preview--${theme}`,
-        items: [
+        children: [
             div({
                 className: 'xh-theme-preview__chrome',
-                items: [0, 1, 2].map(i => div({key: i, className: 'xh-theme-preview__dot'}))
+                children: [0, 1, 2].map(i => div({key: i, className: 'xh-theme-preview__dot'}))
             }),
             div({
                 className: 'xh-theme-preview__content',
-                items: [
+                children: [
                     div({className: 'xh-theme-preview__accent'}),
                     div({className: 'xh-theme-preview__line'}),
                     div({className: 'xh-theme-preview__line xh-theme-preview__line--short'})

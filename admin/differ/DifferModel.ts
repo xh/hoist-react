@@ -309,7 +309,7 @@ export class DifferModel extends HoistModel {
             prodWarning = hbox({
                 omit: !XH.environmentService.isProduction(),
                 alignItems: 'center',
-                items: [
+                children: [
                     Icon.warning({intent: 'warning', size: '2x'}),
                     hspacer(8),
                     'NOTE - you are currently in Production - any change will be applied to this environment.'
@@ -320,9 +320,10 @@ export class DifferModel extends HoistModel {
             p(prodWarning),
             p({
                 omit: !hadProtectedRecords,
-                item: 'Warning: No changes will be applied to password and/or overridden records. These must be changed manually.'
+                children:
+                    'Warning: No changes will be applied to password and/or overridden records. These must be changed manually.'
             }),
-            p({omit: !willDelete, item: 'Warning: Operation includes deletions.'})
+            p({omit: !willDelete, children: 'Warning: Operation includes deletions.'})
         );
 
         XH.confirm({

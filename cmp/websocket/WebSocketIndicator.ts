@@ -42,10 +42,10 @@ export const [WebSocketIndicator, webSocketIndicator] =
             }
 
             return hbox({
-                items: [
+                children: [
                     icon,
                     span({
-                        item: txt,
+                        children: txt,
                         omit: iconOnly,
                         style: {margin: 8, cursor: 'help'}
                     })

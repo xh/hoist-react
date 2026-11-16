@@ -40,7 +40,7 @@ const cmp = hoistCmp.factory(
             [TEST_ID]: testId,
             ...domAttrs,
             style: {...style, whiteSpace: 'nowrap', width},
-            items: children,
+            children,
             ref
         });
     }

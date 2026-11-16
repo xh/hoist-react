@@ -32,7 +32,7 @@ export const autoRefreshAppOption = ({
         formField: {
             label: 'Auto-refresh',
             info: `Enable to auto-refresh app data every ${XH.autoRefreshService.interval} seconds`,
-            item: switchInput({...inputProps}),
+            children: switchInput({...inputProps}),
             ...formFieldProps
         }
     };

@@ -22,7 +22,7 @@ export const AppComponent = hoistCmp({
         return panel({
             tbar: tbar(),
             className: 'xh-admin-app',
-            item: tabContainer({
+            children: tabContainer({
                 switcher: false,
                 childContainerProps: ({tabId}) => ({
                     switcher: {

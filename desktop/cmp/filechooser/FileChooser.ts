@@ -115,7 +115,7 @@ export const [FileChooser, fileChooser] = hoistCmp.withFactory<FileChooserProps>
                         className,
                         testId: props.testId,
                         domAttrs: props.domAttrs,
-                        items: [
+                        children: [
                             // `box` (flex: none) so the rail keeps a fixed size beside the grid;
                             // `frame` would grow and crowd it out.
                             box({
@@ -130,10 +130,14 @@ export const [FileChooser, fileChooser] = hoistCmp.withFactory<FileChooserProps>
                                     atLimit ? 'xh-file-chooser__target--disabled' : null
                                 ),
                                 width: isTop ? null : 200,
-                                items: [multiDropTarget(), targetMask, input({...getInputProps()})],
+                                children: [
+                                    multiDropTarget(),
+                                    targetMask,
+                                    input({...getInputProps()})
+                                ],
                                 ...getRootProps()
                             }),
-                            frame({flex: 1, item: elementFromContent(resolvedFileDisplay)})
+                            frame({flex: 1, children: elementFromContent(resolvedFileDisplay)})
                         ],
                         ...getLayoutProps(props)
                     });
@@ -154,7 +158,7 @@ export const [FileChooser, fileChooser] = hoistCmp.withFactory<FileChooserProps>
                     ),
                     testId: props.testId,
                     domAttrs: props.domAttrs,
-                    items: [dropzoneItem, targetMask, input({...getInputProps()})],
+                    children: [dropzoneItem, targetMask, input({...getInputProps()})],
                     ...getRootProps(),
                     ...getLayoutProps(props)
                 });

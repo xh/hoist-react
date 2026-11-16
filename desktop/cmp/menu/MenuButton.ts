@@ -81,7 +81,7 @@ export const [MenuButton, menuButton] = hoistCmp.withFactory<MenuButtonProps>({
             disabled,
             position: menuPosition,
             minimal: true,
-            item: button({
+            children: button({
                 className,
                 icon,
                 disabled,

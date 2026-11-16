@@ -76,7 +76,7 @@ export const [RecordActionBar, recordActionBar] = hoistCmp.withFactory<RecordAct
 
         return buttonGroup({
             vertical,
-            items: actions.filter(Boolean).map(action => {
+            children: actions.filter(Boolean).map(action => {
                 const recordAction =
                     action instanceof RecordAction ? action : new RecordAction(action);
                 const scopedTestId =

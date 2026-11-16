@@ -27,7 +27,7 @@ export const regroupDialog = hoistCmp.factory({
             style: {width: 300},
             isOpen: true,
             isCloseButtonShown: false,
-            items: [
+            children: [
                 dialogBody(
                     select({
                         bind: 'groupName',

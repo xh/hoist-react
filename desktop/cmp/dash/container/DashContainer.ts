@@ -34,7 +34,7 @@ export const [DashContainer, dashContainer] = hoistCmp.withFactory<DashContainer
         );
         return refreshContextView({
             model: model.refreshContextModel,
-            item: frame(
+            children: frame(
                 frame({className, ref, testId}),
                 mask({spinner: true, bind: model.loadingStateTask}),
                 emptyContainerOverlay(),
@@ -59,9 +59,9 @@ const emptyContainerOverlay = hoistCmp.factory<DashContainerModel>(({model}) => 
         canEscapeKeyClose: false,
         usePortal: false,
         enforceFocus: false,
-        item: vbox({
+        children: vbox({
             alignItems: 'center',
-            items: [div(emptyText), vspacer(10), dashContainerAddViewButton()]
+            children: [div(emptyText), vspacer(10), dashContainerAddViewButton()]
         })
     });
 });

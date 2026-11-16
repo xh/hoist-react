@@ -25,7 +25,7 @@ export const dashContainerMenuButton = hoistCmp.factory({
 
         return popover({
             position: Position.BOTTOM,
-            item: button({
+            children: button({
                 icon: Icon.ellipsisVertical(),
                 className
             }),

@@ -55,15 +55,15 @@ export const [ColChooser, colChooser] = hoistCmp.withFactory<ColChooserProps>({
             title: 'Choose Columns',
             icon: Icon.gridPanel(),
             className,
-            item: div({
+            children: div({
                 className: 'xh-col-chooser__internal',
-                item: dragDropContext({
+                children: dragDropContext({
                     onDragEnd: impl.onDragEnd,
-                    items: [
+                    children: [
                         panel({
                             className: 'xh-col-chooser__section',
                             scrollable: true,
-                            items: [
+                            children: [
                                 row({col: pinnedColumn, model: impl}),
                                 droppable({
                                     droppableId: 'visible-columns',
@@ -88,7 +88,7 @@ export const [ColChooser, colChooser] = hoistCmp.withFactory<ColChooserProps>({
                             title: 'Available Columns',
                             className: 'xh-col-chooser__section',
                             scrollable: true,
-                            item: droppable({
+                            children: droppable({
                                 droppableId: 'hidden-columns',
                                 isDropDisabled: true,
                                 children: dndProps =>
@@ -140,7 +140,7 @@ const columnList = hoistCmp.factory({
     render({cols, placeholder, className, ...props}, ref) {
         return div({
             className: classNames('xh-col-chooser__list', className),
-            items: isEmpty(cols)
+            children: isEmpty(cols)
                 ? placeholderCmp('All columns have been added to the grid.')
                 : [...cols.map((col, idx) => draggableRow({col, idx})), placeholder],
             ...props,
@@ -194,14 +194,14 @@ const row = hoistCmp.factory<ColChooserLocalModel>({
                 pinned ? 'xh-col-chooser__row--pinned' : null,
                 isDragging ? 'xh-col-chooser__row--dragging' : null
             ),
-            items: [
+            children: [
                 div({
                     className: 'xh-col-chooser__row__grabber',
-                    item: getDragIcon(pinned)
+                    children: getDragIcon(pinned)
                 }),
                 div({
                     className: 'xh-col-chooser__row__text',
-                    item: text
+                    children: text
                 }),
                 button({
                     icon: getButtonIcon(locked, hidden),

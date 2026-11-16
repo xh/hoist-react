@@ -27,9 +27,9 @@ export const recategorizeDialog = hoistCmp.factory({
             style: {width: 400},
             isOpen: true,
             isCloseButtonShown: false,
-            item: panel({
+            children: panel({
                 mask: savingTask,
-                item: dialogBody(
+                children: dialogBody(
                     select({
                         autoFocus: true,
                         bind: 'categoryName',

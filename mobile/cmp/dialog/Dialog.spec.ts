@@ -71,7 +71,7 @@ describe('Dialog (mobile)', () => {
     it('makes a model in context available to its content', () => {
         const model = new ContextModel();
         onTestFinished(() => model.destroy());
-        render(host({model, item: dialog({isOpen: true, content: contextReader()})}));
+        render(host({model, children: dialog({isOpen: true, content: contextReader()})}));
         expect(screen.getByText('from context')).not.toBeNull();
     });
 });

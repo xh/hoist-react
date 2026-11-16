@@ -194,7 +194,7 @@ const cmp = hoistCmp.factory<SegmentedControlModel>(({model, className, ...props
         // rather than hard-clipping mid-character. Pass null for icon-only options so the Button
         // renders the icon alone (an empty span would suppress that).
         const label = opt.label
-            ? span({className: 'xh-segmented-control-option__label', item: opt.label})
+            ? span({className: 'xh-segmented-control-option__label', children: opt.label})
             : null;
 
         return button({
@@ -229,7 +229,7 @@ const cmp = hoistCmp.factory<SegmentedControlModel>(({model, className, ...props
         ...getLayoutProps(props),
         testId,
         domAttrs,
-        items: buttons,
+        children: buttons,
         ...rest
     });
 });

@@ -84,7 +84,7 @@ export const [TreeMap, treeMap] = hoistCmp.withFactory<TreeMapProps>({
                 div({
                     omit: !isMasking,
                     className: 'xh-treemap__mask-holder',
-                    item: mask({isDisplayed: true, spinner: true})
+                    children: mask({isDisplayed: true, spinner: true})
                 })
             ];
         }
@@ -94,7 +94,7 @@ export const [TreeMap, treeMap] = hoistCmp.withFactory<TreeMapProps>({
             className: classNames(className, `xh-treemap--${impl.theme}`),
             ref,
             testId,
-            items
+            children: items
         });
     }
 });

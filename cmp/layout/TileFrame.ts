@@ -113,13 +113,13 @@ export const [TileFrame, tileFrame] = hoistCmp.withFactory({
                   box({
                       style: localModel.getTileStyle(idx),
                       className: 'xh-tile-frame__tile',
-                      item,
+                      children: item,
                       key: item['key'] // trampoline any child key to prevent remounts
                   })
               )
             : null;
 
-        return frame({ref, ...props, items});
+        return frame({ref, ...props, children: items});
     }
 });
 

@@ -23,7 +23,7 @@ export function dockContainerImpl(
     return hbox({
         ref,
         className: classNames(className, `xh-dock-container--${model.direction}`),
-        items: model.views.map(viewModel => {
+        children: model.views.map(viewModel => {
             return dockView({
                 key: viewModel.xhId,
                 model: viewModel,

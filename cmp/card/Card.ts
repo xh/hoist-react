@@ -108,7 +108,7 @@ export const [Card, card] = hoistCmp.withFactory<CardProps>({
 
         return fieldset({
             className: classNames(className, classes),
-            items: [
+            children: [
                 cardHeader({
                     icon,
                     intent,
@@ -119,7 +119,7 @@ export const [Card, card] = hoistCmp.withFactory<CardProps>({
                 box({
                     ...contentBoxProps,
                     className: classNames('xh-card__content', contentBoxProps?.className),
-                    items,
+                    children: items,
                     display: collapsed ? 'none' : 'flex'
                 })
             ],
