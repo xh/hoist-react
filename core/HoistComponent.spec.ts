@@ -54,10 +54,14 @@ describe('hoistCmp', () => {
             expect(screen.getByTitle('Orders').textContent).toBe('Pending');
         });
 
-        it('prefers children over the legacy item and items keys', () => {
+        it('prefers children over the legacy item and items keys, with a warning', () => {
+            const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+            onTestFinished(() => warn.mockRestore());
+
             render(card({children: span('Children'), item: span('Item'), items: span('Items')}));
 
             expect(texts('.test-card')).toEqual(['Children']);
+            expect(warn).toHaveBeenCalledOnce();
         });
 
         it('does not require keys on an array of children', () => {

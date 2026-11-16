@@ -5,7 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import type {TEST_ID} from '@xh/hoist/utils/js';
-import {castArray, isFunction, isNil, isPlainObject} from 'lodash';
+import {castArray, isFunction, isNil, isPlainObject, isString} from 'lodash';
 import type {ComponentType, JSX, Key, ReactElement, ReactNode} from 'react';
 import {createElement as reactCreateElement, isValidElement} from 'react';
 import type {PlainObject, Thunkable} from './types/Types';
@@ -108,6 +108,9 @@ export function createElement<C extends ReactComponent>(
     if (isFunction(omit) ? omit() : omit) return null;
 
     // 2) Read children, accepting the legacy item[s] aliases.
+    if (!isNil(children) && (!isNil(item) || !isNil(items))) {
+        warnMixedChildren(component);
+    }
     const childSpec = (children ?? item ?? items) as ReactNode,
         childArgs = isNil(childSpec) ? [] : castArray(childSpec);
 
@@ -121,7 +124,6 @@ export function createElement<C extends ReactComponent>(
 
     return reactCreateElement(component, props, ...childArgs) as ReactElement<PropType<C>, C>;
 }
-
 
 /**
  *  Create a factory function that can create a ReactElement from an ElementSpec or list of children.
@@ -139,6 +141,23 @@ export function elementFactory(component: ReactComponent): ElementFactory {
 //------------------------
 // Implementation
 //------------------------
+const warnedMixedChildren = new Set<ReactComponent>();
+
+/**
+ * Warn once per component when a spec sets `children` and a legacy `item` / `items` key. Only
+ * `children` is rendered - typically a spread brought in a key the code did not expect.
+ */
+function warnMixedChildren(component: ReactComponent) {
+    if (warnedMixedChildren.has(component)) return;
+    warnedMixedChildren.add(component);
+    const name = isString(component)
+        ? component
+        : ((component as any).displayName ?? (component as any).name);
+    console.warn(
+        `Element spec for "${name}" sets both \`children\` and a legacy \`item\` / \`items\` key. ` +
+            'Only `children` is rendered - use `children` alone.'
+    );
+}
 function normalizeArgs(args: any[]) {
     const len = args.length;
     if (len === 0) return {};
