@@ -1,0 +1,211 @@
+/*
+ * This file belongs to Hoist, an application development toolkit
+ * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
+ *
+ * Copyright © 2026 Extremely Heavy Industries Inc.
+ */
+
+.xh-steps {
+  display: flex;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  &__step {
+    position: relative;
+    min-width: 0;
+
+    // The line from this step's marker to the next one.
+    &:not(:last-child)::after {
+      content: '';
+      position: absolute;
+      background-color: var(--xh-steps-connector-bg);
+    }
+
+    // Matches the specificity of the rule above, which would otherwise outrank it.
+    &--complete:not(:last-child)::after {
+      background-color: var(--xh-steps-complete-color);
+    }
+  }
+
+  &__step-inner {
+    display: flex;
+  }
+
+  &__marker {
+    display: flex;
+    flex: none;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    width: var(--xh-steps-marker-size);
+    height: var(--xh-steps-marker-size);
+    border: var(--xh-steps-connector-width) solid currentColor;
+    border-radius: 50%;
+    color: var(--xh-steps-pending-color);
+    font-size: var(--xh-steps-marker-font-size);
+    font-weight: 600;
+    line-height: 1;
+  }
+
+  &__content {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  &__header {
+    display: flex;
+  }
+
+  // Text wraps, at any character if it must, so a narrow step never forces overflow.
+  &__title,
+  &__detail,
+  &__description {
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+
+  &__title {
+    line-height: var(--xh-steps-marker-size);
+  }
+
+  &__detail,
+  &__description {
+    color: var(--xh-steps-description-text-color);
+    font-size: var(--xh-steps-description-font-size);
+  }
+
+  //------------------
+  // Statuses
+  //------------------
+  &__step--pending &__title {
+    color: var(--xh-steps-pending-color);
+  }
+
+  &__step--current {
+    .xh-steps__marker {
+      color: var(--xh-steps-current-color);
+    }
+
+    .xh-steps__title {
+      font-weight: 600;
+    }
+  }
+
+  &__step--complete &__marker {
+    background-color: var(--xh-steps-complete-color);
+    border-color: var(--xh-steps-complete-color);
+    color: var(--xh-steps-complete-icon-color);
+  }
+
+  &__step--warning {
+    .xh-steps__marker,
+    .xh-steps__title {
+      color: var(--xh-steps-warning-color);
+    }
+  }
+
+  &__step--error {
+    .xh-steps__marker,
+    .xh-steps__title {
+      color: var(--xh-steps-error-color);
+    }
+  }
+
+  //------------------
+  // Horizontal
+  //------------------
+  &--horizontal {
+    flex-direction: row;
+
+    // Equal shares, so each connector runs from the center of one share to the center of the next.
+    .xh-steps__step {
+      flex: 1 1 0;
+
+      &::after {
+        top: calc((var(--xh-steps-marker-size) - var(--xh-steps-connector-width)) / 2);
+        left: calc(50% + var(--xh-steps-marker-size) / 2 + var(--xh-steps-connector-inset));
+        width: calc(100% - var(--xh-steps-marker-size) - var(--xh-steps-connector-inset) * 2);
+        height: var(--xh-steps-connector-width);
+      }
+    }
+
+    .xh-steps__step-inner {
+      flex-direction: column;
+      align-items: center;
+      gap: var(--xh-spacing-half);
+      padding: 0 var(--xh-spacing-half);
+      text-align: center;
+    }
+
+    .xh-steps__content {
+      flex: none;
+      max-width: 100%;
+    }
+
+    .xh-steps__header {
+      flex-direction: column;
+    }
+
+    .xh-steps__title {
+      line-height: inherit;
+    }
+  }
+
+  //------------------
+  // Vertical
+  //------------------
+  &--vertical {
+    flex-direction: column;
+
+    .xh-steps__step {
+      &:not(:last-child) {
+        padding-bottom: var(--xh-steps-vertical-gap);
+      }
+
+      &::after {
+        top: calc(var(--xh-steps-marker-size) + var(--xh-steps-connector-inset));
+        bottom: var(--xh-steps-connector-inset);
+        left: calc((var(--xh-steps-marker-size) - var(--xh-steps-connector-width)) / 2);
+        width: var(--xh-steps-connector-width);
+      }
+    }
+
+    .xh-steps__step-inner {
+      flex-direction: row;
+      align-items: flex-start;
+      gap: var(--xh-spacing);
+    }
+
+    // The title leads its row, with the detail at the far end. The detail drops to a line of its
+    // own when the two do not fit.
+    .xh-steps__header {
+      flex-wrap: wrap;
+      align-items: baseline;
+      justify-content: space-between;
+      column-gap: var(--xh-spacing);
+    }
+  }
+
+  //------------------
+  // Clickable
+  //------------------
+  &__step--disabled > &__step-inner {
+    opacity: var(--xh-steps-disabled-opacity);
+  }
+
+  &__step--clickable > &__step-inner {
+    cursor: pointer;
+    border-radius: var(--xh-border-radius);
+
+    &:hover .xh-steps__title {
+      text-decoration: underline;
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--xh-focus-outline-color);
+      outline-offset: 2px;
+    }
+  }
+}

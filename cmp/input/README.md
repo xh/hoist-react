@@ -132,6 +132,19 @@ Multi-line and free-text controls - `TextArea`, `CodeInput`, `JsonInput` - never
 accept the prop, since whitespace can be meaningful there. Custom inputs can opt in by overriding
 the `HoistInputModel.trimWhitespace` getter.
 
+### Maximum Length
+
+`TextInput` and `TextArea` (desktop + mobile) take a `maxLength` prop, set as the native
+`maxlength` attribute. The browser then stops the user from typing or pasting past the limit.
+
+```typescript
+textInput({bind: 'ticker', maxLength: 8})
+```
+
+The limit applies to user input only. A longer value set through the bound model shows in full,
+and the input does not cut it. To report a value that is too long, add a `lengthIs` rule to the
+bound field.
+
 ### Focus Management
 
 ```typescript
@@ -191,6 +204,22 @@ reach attributes the component manages itself.
 
 Mobile inputs render native `<input>` and `<textarea>` elements, so `domAttrs` reach the element
 the user types into, as on desktop.
+
+### Accessible Names
+
+Use `domAttrs` to set `aria-label` or `aria-labelledby` on the primary element of an input.
+
+A desktop `Slider` needs its own prop, because its handle holds the `slider` role and not its
+primary element. Name the handle with `ariaLabel`. A range slider takes a pair of names, one for
+each handle.
+
+```typescript
+slider({bind: 'risk', min: 0, max: 10, ariaLabel: 'Risk level'})
+slider({bind: 'priceRange', min: 0, max: 500, ariaLabel: ['Lowest price', 'Highest price']})
+```
+
+In a `FormField`, a `Slider` with no `ariaLabel` takes the label of the field as the name of each
+handle.
 
 ### Password Managers
 

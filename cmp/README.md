@@ -147,10 +147,13 @@ techniques.
 | `/grid/` | Primary data grid built on ag-Grid (sorting, grouping, filtering, editing, export). [See README](./grid/README.md) |
 | `/dataview/` | Custom item rendering using Grid infrastructure |
 | `/chart/` | Highcharts integration for data visualization |
-| `/treemap/` | Hierarchical treemap and split treemap visualizations |
+| `/treemap/` | Hierarchical treemap and split treemap visualizations. Needs the Highcharts `treemap` module, and `heatmap` or `coloraxis` for its colors |
 | `/zoneGrid/` | Multi-zone grid layout for complex record displays |
 | `/cubegrid/` | Cube View as a tree grid, with pivot paths as nested column groups when pivoted. [See README](./cubegrid/README.md) |
 | `/statcard/` | Tiles that call out key figures (StatCard), laid out in equal-width rows (StatCardStrip) |
+| `/keyvaluelist/` | Display-only list of labeled values (KeyValueList), such as the fields of a record in a detail panel |
+| `/sparkline/` | Small inline trend chart in plain SVG (Sparkline), for a stat card or a grid cell |
+| `/itemlist/` | Short, static list of entries with a title, description, icon and trailing detail (ItemList) |
 
 ### Layout and Containers
 
@@ -194,7 +197,9 @@ techniques.
 | `/badge/` | Badge component for counts and status indicators         |
 | `/loadingindicator/` | Loading state display in a compact and non-blocking form |
 | `/mask/` | Overlay mask for blocking interactions                   |
+| `/progressbar/` | Bar that shows a value against a maximum, or indeterminate progress (ProgressBar) |
 | `/spinner/` | Loading spinner animations                               |
+| `/steps/` | Ordered sequence of steps with a status each, as a row or a list (Steps) |
 
 ### Utilities
 
@@ -257,6 +262,88 @@ const chartModel = new ChartModel({
 chartModel.setSeries([{name: 'Series 1', data: [...]}]);
 ```
 
+### Sparkline (`/sparkline/`)
+
+A small inline chart of a trend, with no axes, labels or legend: the line beside a key figure, or
+a trend cell in each row of a grid. It draws plain SVG with no charting library, and takes no
+model. Use a `Chart` when a reader must take exact values from the chart.
+
+```typescript
+import {sparkline} from '@xh/hoist/cmp/sparkline';
+
+// A line in a neutral color, inline, at the default size of 80 by 24 pixels
+sparkline({values: [101, 103, 102, 106, 109, 107, 113, 118]})
+
+// Green if the series ends above its start, red if below, with a dot on the last value
+sparkline({values, colorByTrend: true, showLast: true})
+
+// Daily P&L as bars, with losses below a zero line in the negative value color
+sparkline({values: dailyPnl, type: 'bar', colorNegative: true, baseline: 0})
+
+// Under the figure of a StatCard, at the width of the card
+statCard({
+    title: 'Orders',
+    value: fmtNumber(orders, {precision: 0}),
+    detail: sparkline({values: ordersByDay, type: 'area', width: '100%'})
+})
+```
+
+| Prop | Type | Description |
+|------|------|-------------|
+| `values` | `number[]` | The series to draw, in order. A null, undefined or NaN entry is a gap |
+| `type` | `'line' \| 'area' \| 'bar'` | Shape of the series. Default `line` |
+| `intent` | `Intent` | Semantic color for the series. Default is a neutral color |
+| `colorByTrend` | `boolean` | Colors the series by its last value against its first. Ignored when `intent` is set |
+| `colorNegative` | `boolean` | Draws bars below zero, or below `baseline`, in the negative value color. `bar` only |
+| `showLast` | `boolean` | Marks the last value with a dot. `line` and `area` only |
+| `showMinMax` | `boolean` | Marks the lowest and highest values with a dot each. `line` and `area` only |
+| `baseline` | `number` | Value to draw a dashed reference line at. Bars grow from it |
+| `min` / `max` | `number` | Fixed bounds of the scale. Default is the range of the series |
+| `tooltip` | `boolean \| string` | Shows the accessible name, or the given string, as a native tooltip |
+
+The component renders inline, like a `Badge`, with no outer margin. Pass layout props to size it.
+With `width: '100%'` or `flex: 1` it stretches to its container, and the line keeps its thickness.
+
+To show a sparkline in a grid cell, return it from the `renderer` of a column. In this example the
+`history` field of each record holds an array of numbers:
+
+```typescript
+{
+    field: 'history',
+    headerName: 'Trend',
+    width: 110,
+    autosizable: false,
+    sortable: false,
+    excludeFromExport: true,
+    renderer: values => sparkline({values, width: '100%', colorByTrend: true})
+}
+```
+
+- A sparkline is a React element, so the column needs a `renderer`, not a `textRenderer`. Set
+  `rendererIsComplex` only when the renderer reads other fields of the record.
+- Give the column a `width` and set `autosizable: false`. A sparkline at `width: '100%'` has no
+  width of its own to autosize to.
+- The default height of 24 pixels fits a row in the `standard` and `large` sizing modes. Pass a
+  smaller `height`, such as 14, for a `compact` or `tiny` grid.
+- An array has no useful sort order or export value. Turn both off, or set the `sortValue` and
+  `exportValue` of the column to a number, such as the last value.
+
+Each sparkline scales to its own lowest and highest value by default. Set `min` and `max` to draw
+several on one scale, such as those in a grid column. A value outside a fixed scale draws at the
+nearer edge. Bars grow from zero, and their scale always takes zero in, so a series far from zero
+draws bars of almost equal height. Set `min` or `baseline` to change that.
+
+The component never fails on partial data. One usable value draws a dot, a series of equal values
+draws a line across the middle, and an empty or missing array draws an empty box of the same size.
+
+The root element has `role="img"` and a generated accessible name, such as "Trend: 12 points,
+from 101 to 118". The name does not format numbers. Pass an `aria-label` through `domAttrs` to
+name the metric and round its values.
+
+Set the `--xh-sparkline-*` CSS variables to change the default size, line width and colors. Every
+shape draws in the CSS `color` of the component, so a class that sets `color` gives one sparkline
+a color of its own.
+
 ### DataView (`/dataview/`)
 
 Custom item rendering using Grid infrastructure. Useful when each record needs a custom visual
@@ -277,6 +364,95 @@ const dataViewModel = new DataViewModel({
     })
 });
 ```
+
+### ItemList (`/itemlist/`)
+
+A short, static list of entries, each with a title and an optional description, leading icon and
+trailing detail: a handful of alerts, recent activity, the results of a search. The list is
+presentation-only. It takes a plain array, with no model and no Store.
+
+```typescript
+import {itemList} from '@xh/hoist/cmp/itemlist';
+
+// Alerts with an icon, an intent color and a trailing detail each
+itemList({
+    dividers: true,
+    emptyText: 'No open alerts',
+    entries: [
+        {
+            title: 'Margin call on ACME Fund',
+            description: 'Collateral fell below the required level. Post 1.2m by end of day.',
+            icon: Icon.warning(),
+            intent: 'danger',
+            detail: relativeTimestamp({timestamp: alert.time})
+        },
+        {title: 'Trade 48211 awaits approval', icon: Icon.clock(), detail: badge('Pending')}
+    ]
+})
+
+// A numbered ranking in the compact size
+itemList({
+    ordered: true,
+    size: 'compact',
+    entries: topClients.map(it => ({title: it.name, detail: fmtMillions(it.revenue)}))
+})
+
+// Clickable entries - the index is the position in the array as given
+itemList({
+    entries: results.map(it => ({title: it.name, description: it.summary, disabled: it.locked})),
+    onEntryClick: (entry, index) => model.openResult(results[index])
+})
+```
+
+| Prop | Type | Description |
+|------|------|-------------|
+| `entries` | `ItemListEntry[]` | Entries to show, in order. Null entries are skipped |
+| `ordered` | `boolean` | Numbers the entries shown and renders an `ol`. Default false |
+| `dividers` | `boolean` | Draws a rule between entries. Default false |
+| `size` | `'compact' \| 'standard'` | `compact` for smaller text and tighter rows. Default `standard` |
+| `emptyText` | `ReactNode` | Shown in place of a list with no entries to show. Default is to render nothing |
+| `onEntryClick` | `(entry, index) => void` | Handler for a click or Enter/Space keypress. Makes each entry a focusable button. A control inside an entry keeps its own clicks |
+
+| `ItemListEntry` key | Type | Description |
+|---------------------|------|-------------|
+| `title` | `ReactNode` | Main text of the entry |
+| `description` | `ReactNode` | Longer text beneath the title |
+| `detail` | `ReactNode` | Short content at the far end of the title's line: a figure, a `Badge`, a timestamp |
+| `icon` | `ReactElement` | Icon before the text. Not shown in an `ordered` list |
+| `intent` | `Intent` | Semantic color for the icon or number, or for a thin bar in a list with neither |
+| `disabled` | `boolean` | Dims the entry and leaves it out of `onEntryClick` |
+| `omit` | `boolean` | True to leave the entry out |
+
+The data prop is `entries`, not `items`, because Hoist element factories reserve `items` for
+child elements. `onEntryClick` gets the index of the entry in `entries` as given, which counts
+null and omitted entries. That index can differ from the number an `ordered` list shows.
+
+Choose between `ItemList` and `DataView` by the size of the data and by what the user does with
+it:
+
+| | `ItemList` | `DataView` |
+|---|---|---|
+| Data | A plain array, passed as a prop | A `Store`, held by a `DataViewModel` |
+| Size | A handful of entries, all rendered | Any number of records. Renders only the rows in view |
+| Row height | Set by the content of each entry | Fixed, or computed per record by `itemHeight` |
+| Selection, sorting, grouping | None | Yes, as in a `Grid` |
+| Content of a row | Title, description, icon and detail | Any element, from a `renderer` |
+
+The list fills the width of its container and has no outer margin. Text wraps and is never
+truncated. A long title wraps beside its detail, and the detail drops to a line of its own only
+in a very narrow list. An entry with no icon keeps the space of one when another entry has an
+icon, so that every title lines up.
+
+A `title`, `description` or `detail` that is null, a boolean or a blank string renders nothing,
+so `cond && 'Text'` is safe. The list skips an entry with all three blank. A string renders as
+text, never as HTML.
+
+`intent` colors the icon or number of an entry, not its text. An entry with an `intent` and no
+icon, in a list where another entry has an icon, shows a small dot in that color. Say what the
+color means in the text as well. The component renders an HTML list, so a screen reader announces the count and the
+position of each entry.
+
+Set the `--xh-item-list-*` CSS variables to change the spacing and colors.
 
 ### TabContainer (`/tab/`)
 
@@ -326,15 +502,209 @@ card({
     title: 'Details',
     items: [/* ... */]
 })
+
+// Muted text after the title, items at the far end of the header, and a footer row
+card({
+    title: 'Positions',
+    subtitle: '12 rows',
+    headerItems: [badge(3), button({icon: Icon.download(), onClick: () => model.exportAsync()})],
+    footer: 'Prices as of the last close',
+    items: [/* ... */]
+})
 ```
 
 CardModel supports `collapsible` state with configurable `renderMode` (`'always'`, `'lazy'`,
 `'unmountOnHide'`) and optional persistence of collapsed state. Cards can display an `intent`
 (`'primary'`, `'success'`, `'warning'`, `'danger'`) for colored borders and headers.
 
+`CardModel.collapsible` is observable, so an app can change it after it creates the model. Set it
+false to remove the collapse control, which also expands a collapsed card. Set it true to add the
+control. The card then returns to the collapsed state it last had while collapsible, or to its
+persisted state, and is otherwise left expanded.
+
+| Prop | Type | Description |
+|------|------|-------------|
+| `subtitle` | `ReactNode` | Muted text after the title, for example a row count |
+| `headerItems` | `ReactNode[]` | Items at the far end of the header, for example buttons or a badge |
+| `footer` | `ReactNode` | Row under the content, set apart by a rule. Hidden while the card is collapsed |
+
+A blank `subtitle` or `footer` renders nothing, and blank members of `headerItems` are left out.
+
+A card with `headerItems` stretches its header across the card, with a rule between the title and
+the items in place of the top border. A click on a header item does not collapse the card. Screen
+readers name the card by its title, not by its header items. A card with header items and no
+title has no name of its own, so pass an `aria-label` through `domAttrs`. The
+header stays inline with the border in every case. For a filled header bar above the content, use
+a desktop or mobile `Panel`.
+
 **FormFieldSet** (`/cmp/form/formfieldset/`) extends Card to group related `FormField` components,
 displaying their aggregate validation state as intent-colored borders and tooltips. See the
 [Form README](./form/README.md#formfieldset) for details.
+
+### KeyValueList (`/keyvaluelist/`)
+
+A display-only list of labeled values, such as the fields of a record in a detail panel. The list
+is presentation-only and takes no model. It renders as an HTML description list (`dl`), fills the
+width of its container and has no outer margin.
+
+```typescript
+import {keyValueList} from '@xh/hoist/cmp/keyvaluelist';
+import {fmtDate, fmtNumber} from '@xh/hoist/format';
+
+// Labels in an aligned column on the left, in as many columns as the width allows
+keyValueList({
+    entries: [
+        {label: 'Symbol', value: trade.symbol},
+        {label: 'Quantity', value: fmtNumber(trade.quantity, {precision: 0})},
+        {label: 'Settles', value: fmtDate(trade.settleDate)},
+        {label: 'Status', value: trade.status, intent: trade.isRejected ? 'danger' : null},
+        {label: 'Broker', value: trade.broker, omit: !trade.isExternal}
+    ]
+})
+
+// Labels above their values, in at most three columns, with a rule between rows
+keyValueList({entries, labelPosition: 'top', columns: 3, dividers: true})
+```
+
+| Prop | Type | Description |
+|------|------|-------------|
+| `entries` | `KeyValueEntry[]` | Labeled values to show, in order. A null entry is skipped |
+| `labelPosition` | `'left' \| 'top'` | Where each label sits against its value. Default `left` |
+| `columns` | `number` | Most columns, never more than the entries. Omit to fit the width |
+| `minColumnWidth` | `number` | Narrowest a column gets, in pixels. Defaults below |
+| `emptyText` | `ReactNode` | Shown for a null, undefined or blank string value. Default `-` |
+| `size` | `'compact' \| 'standard'` | `compact` for smaller text and tighter rows |
+| `dividers` | `boolean` | True to draw a rule between rows |
+
+An entry is `{label, value, intent, omit}`. The caller formats each `value`: the list never
+formats. A boolean value shows as the text `true` or `false`. Set `intent` to color a value, and
+`omit` to leave an entry out.
+
+With no `columns`, the list fits as many columns of at least `minColumnWidth` as its width allows,
+and stacks in one column in a narrow container. The default `minColumnWidth` is 300px, or 180px
+with `top`. A `columns` count is a maximum: the list drops columns while one would be narrower
+than `minColumnWidth`. With `columns`, the default `minColumnWidth` is 180px, or 120px with `top`.
+
+Long labels and values wrap, within a word if needed, so the list never forces horizontal
+overflow. Set the `--xh-key-value-list-*` CSS variables to change the gaps, label width and
+colors.
+
+### ProgressBar (`/progressbar/`)
+
+A horizontal bar that shows a value against a maximum: the progress of a task, or usage against a
+limit. The bar is presentation-only and takes no model. It is a block, so it fills the width of a
+block or a column. In a row such as an `hbox`, give it a `flex` or a `width`.
+
+```typescript
+import {progressBar} from '@xh/hoist/cmp/progressbar';
+
+// A value on the default scale of 0 to 100, shown as a whole percent
+progressBar({label: 'Upload', value: 72})
+
+// A custom scale, a pre-formatted figure, an intent and a marker at a threshold
+progressBar({
+    label: 'Desk A risk',
+    value: 8.1,
+    max: 10,
+    valueLabel: '$8.1m of $10m',
+    target: 7.5,
+    intent: 'warning'
+})
+
+// No value - an indeterminate bar for work of unknown length
+progressBar({label: 'Loading positions'})
+```
+
+| Prop | Type | Description |
+|------|------|-------------|
+| `value` | `number` | Value to show, clamped to the range. Omit it for an indeterminate bar |
+| `min` / `max` | `number` | Values of an empty and a full bar. Default 0 and 100 |
+| `label` | `ReactNode` | Caption above the bar, which wraps if long. Also the accessible name of the bar |
+| `valueLabel` | `ReactNode` | Figure above the bar, pre-formatted by the caller. Defaults to a whole percent |
+| `showValueLabel` | `boolean` | False to hide the figure. Default true |
+| `intent` | `Intent` | Semantic color for the fill. Default is the primary color |
+| `target` | `number` | Value to mark on the track, for a threshold or a goal. No marker shows for a target outside the range |
+
+A null prop takes its default, and a blank `label` renders nothing. The default figure reads
+`100%` only for a full bar and `0%` only for an empty one, so `99.6` reads `99%`.
+
+The bar never fails on odd data. A value outside the range draws an empty or a full bar. A NaN
+value, or a `max` that is not above `min`, draws an empty bar with no figure.
+
+The root element has `role="progressbar"` and reports its range and value to screen readers. Pass
+an `aria-label` through `domAttrs` for a bar with no `label`. The indeterminate animation stops
+for users who ask their system for reduced motion.
+
+Set the `--xh-progress-bar-*` CSS variables to change the height, radius and colors.
+
+### Steps (`/steps/`)
+
+An ordered sequence of steps, each with a status: the lifecycle of an order, the stages of a
+wizard, a workflow or a checklist. A line connects each step to the next. The component is
+presentation-only and takes no model.
+
+```typescript
+import {steps} from '@xh/hoist/cmp/steps';
+
+// `current` derives each status: steps before it are complete, steps after it are pending
+steps({
+    current: 2,
+    steps: [{title: 'Submitted'}, {title: 'Approved'}, {title: 'Routed'}, {title: 'Filled'}]
+})
+
+// A vertical list with a status on each step - doubles as a simple timeline
+steps({
+    orientation: 'vertical',
+    steps: [
+        {title: 'Submitted', status: 'complete', detail: '09:30'},
+        {title: 'Approved', status: 'complete', detail: '09:42', description: 'By the risk desk'},
+        {title: 'Routed', status: 'error', description: 'The venue rejected the order'},
+        {title: 'Filled'}
+    ]
+})
+
+// Clickable steps for a wizard
+steps({
+    current: model.stepIndex,
+    steps: wizardSteps,
+    onStepClick: (step, index) => model.goToStep(index)
+})
+```
+
+| Prop | Type | Description |
+|------|------|-------------|
+| `steps` | `StepSpec[]` | Steps to show, in order. A null entry is left out |
+| `current` | `number` | Index in `steps` of the current step, from 0. An index past the last step completes them all |
+| `orientation` | `'horizontal' \| 'vertical'` | Direction of the sequence. Default `horizontal` |
+| `minStepWidth` | `number` | Narrowest share in pixels for a step of a horizontal row, below which it shows as vertical. Default 96. Set 0 to keep the row |
+| `onStepClick` | `(step, index) => void` | Handler for a click or Enter/Space keypress. Makes each step a focusable button, except a `disabled` one |
+
+| `StepSpec` key | Type | Description |
+|----------------|------|-------------|
+| `title` | `ReactNode` | Name of the step |
+| `description` | `ReactNode` | Longer text beneath the title |
+| `detail` | `ReactNode` | Short secondary text, for example a timestamp |
+| `status` | `StepStatus` | `pending`, `current`, `complete`, `warning` or `error`. Takes priority over `current` |
+| `icon` | `ReactElement` | Icon for the marker, in place of the number or the status icon |
+| `disabled` | `boolean` | True to make the step ignore `onStepClick`. It takes no focus and no click, and shows dimmed |
+| `omit` | `boolean` | True to leave the step out |
+
+Markers number the steps that show, from 1. `current` and the index passed to `onStepClick` count
+every entry of `steps`, including a step that is left out. A blank `title`, `description` or
+`detail` renders nothing. A status is not an `Intent`: a failed step is `error`, drawn in the
+danger color.
+
+A horizontal sequence gives each step an equal share of the width, with its text centered under
+its marker. Text wraps and is never truncated. When a share would be narrower than `minStepWidth`,
+the row shows as a vertical list, with the classes and ARIA of an explicit `vertical` list and an
+added `xh-steps--fallback` class. It goes back to a row when the width allows. The default of 96px
+keeps a long word such as "confirmation" whole. Use `vertical` for long descriptions. The list is a block, so in a row such
+as an `hbox` it needs a `flex` or a `width`.
+
+The component renders an ordered list and sets `aria-current="step"` on the current step. A
+marker that shows its status by icon alone names that status for screen readers.
+
+Set the `--xh-steps-*` CSS variables to change the colors and sizes.
 
 ### Layout (`/layout/`)
 

@@ -1,0 +1,124 @@
+/*
+ * This file belongs to Hoist, an application development toolkit
+ * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
+ *
+ * Copyright © 2026 Extremely Heavy Industries Inc.
+ */
+
+@keyframes xh-progress-bar-slide {
+  from {
+    transform: translateX(-100%);
+  }
+
+  to {
+    transform: translateX(250%);
+  }
+}
+
+.xh-progress-bar {
+  display: flex;
+  flex-direction: column;
+  // Keeps the track at the bottom when a row stretches the bar, so bars in a row line up.
+  justify-content: flex-end;
+  gap: var(--xh-progress-bar-gap);
+  min-width: 0;
+  font-size: var(--xh-progress-bar-font-size);
+
+  &--intent-primary {
+    --xh-progress-bar-fill-bg: var(--xh-progress-bar-primary-color);
+  }
+
+  &--intent-success {
+    --xh-progress-bar-fill-bg: var(--xh-progress-bar-success-color);
+  }
+
+  &--intent-warning {
+    --xh-progress-bar-fill-bg: var(--xh-progress-bar-warning-color);
+  }
+
+  &--intent-danger {
+    --xh-progress-bar-fill-bg: var(--xh-progress-bar-danger-color);
+  }
+
+  // The figure drops below the label when the two do not fit on one line.
+  &__header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    column-gap: var(--xh-spacing);
+  }
+
+  // Text breaks between words. Only a word wider than the bar breaks inside.
+  &__label,
+  &__value-label {
+    max-width: 100%;
+    overflow-wrap: break-word;
+  }
+
+  &__label {
+    flex: 0 1 auto;
+    color: var(--xh-progress-bar-label-text-color);
+  }
+
+  &__value-label {
+    flex: none;
+    // Holds the right edge when there is no label, and when it drops below the label.
+    margin-left: auto;
+    color: var(--xh-progress-bar-value-text-color);
+    font-variant-numeric: tabular-nums;
+    text-align: right;
+  }
+
+  &__track {
+    position: relative;
+    flex: none;
+    height: var(--xh-progress-bar-height);
+    overflow: hidden;
+    background-color: var(--xh-progress-bar-track-bg);
+    border-radius: var(--xh-progress-bar-border-radius);
+  }
+
+  &__fill {
+    height: 100%;
+    background-color: var(--xh-progress-bar-fill-bg);
+    border-radius: inherit;
+    transition: width 200ms ease-out;
+  }
+
+  // The marker's left edge runs from the start of the track to one marker width short of its end,
+  // so a target at either bound shows in full. The outline sets it apart from a fill of any color.
+  &__target {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: calc(
+      var(--xh-progress-bar-target-fraction) * (100% - var(--xh-progress-bar-target-width))
+    );
+    width: var(--xh-progress-bar-target-width);
+    background-color: var(--xh-progress-bar-target-bg);
+    box-shadow: 0 0 0 1px var(--xh-bg);
+  }
+
+  &--indeterminate &__fill {
+    width: 40%;
+    animation: xh-progress-bar-slide 1.5s ease-in-out infinite;
+  }
+
+  // Without motion, stripes across the whole track show that there is no value to read.
+  @media (prefers-reduced-motion: reduce) {
+    &__fill {
+      transition: none;
+    }
+
+    &--indeterminate &__fill {
+      width: 100%;
+      animation: none;
+      background-image: repeating-linear-gradient(
+        -45deg,
+        transparent 0 6px,
+        var(--xh-progress-bar-track-bg) 6px 12px
+      );
+    }
+  }
+}

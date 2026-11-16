@@ -4,7 +4,9 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
+import {form, FormModel as HoistFormModel} from '@xh/hoist/cmp/form';
 import {HoistModel} from '@xh/hoist/core';
+import {formField} from '@xh/hoist/desktop/cmp/form';
 import type {DateInputProps} from '@xh/hoist/desktop/cmp/input';
 import {dateInput} from '@xh/hoist/desktop/cmp/input';
 import {bindable} from '@xh/hoist/mobx';
@@ -240,11 +242,53 @@ describe('DateInput', () => {
             expect(calendar()).not.toBeNull();
         });
     });
+
+    // The text input sits in a popover target, so the wrapper around it must take the width.
+    // Fixed in v91 - the width and flex went to the text input, which could not fill its field.
+    describe('width', () => {
+        it('is 200px by default, with the text input filling it', () => {
+            const {wrapper, textInput} = renderInput();
+
+            expect(wrapper.style.width).toBe('200px');
+            expect(textInput.style.width).toBe('');
+        });
+
+        it('takes its width and flex on its outer element', () => {
+            const {wrapper, textInput} = renderInput({width: '100%', flex: 2});
+
+            expect(wrapper.style.width).toBe('100%');
+            expect(wrapper.style.flex).toMatch(/^2/);
+            expect(textInput.style.width).toBe('');
+            expect(textInput.style.flex).toBe('');
+        });
+
+        it('fills a FormField, as a TextInput does', () => {
+            const model = new HoistFormModel({fields: [{name: 'tradeDate'}]});
+            onTestFinished(() => model.destroy());
+            const {container} = render(
+                form({model, item: formField({field: 'tradeDate', item: dateInput()})})
+            );
+            const wrapper = container.querySelector<HTMLElement>('.xh-date-input__wrapper');
+
+            expect(wrapper.style.width).toBe('');
+            expect(wrapper.style.flex).toMatch(/^1/);
+        });
+    });
 });
 
 //------------------
 // Helpers
 //------------------
+function renderInput(props: Partial<DateInputProps> = {}) {
+    const model = new FormModel();
+    onTestFinished(() => model.destroy());
+    const {container} = render(dateInput({model, bind: 'value', ...props}));
+    return {
+        wrapper: container.querySelector<HTMLElement>('.xh-date-input__wrapper'),
+        textInput: container.querySelector<HTMLElement>('.xh-date-input')
+    };
+}
+
 class FormModel extends HoistModel {
     @bindable accessor value: Date | LocalDate = null;
 }

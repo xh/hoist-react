@@ -12,7 +12,7 @@ import type {
 } from '@xh/hoist/cmp/input';
 import {HoistInputModel, useHoistInputModel} from '@xh/hoist/cmp/input';
 import {hbox, span} from '@xh/hoist/cmp/layout';
-import type {HoistProps, Intent} from '@xh/hoist/core';
+import type {HoistProps, Intent, LayoutProps} from '@xh/hoist/core';
 import {hoistCmp} from '@xh/hoist/core';
 import {button} from '@xh/hoist/mobile/cmp/button';
 import '@xh/hoist/mobile/register';
@@ -22,7 +22,7 @@ import classNames from 'classnames';
 import {filter, isObject} from 'lodash';
 import './SegmentedControl.scss';
 
-export interface SegmentedControlProps extends HoistProps, HoistInputProps {
+export interface SegmentedControlProps extends HoistProps, HoistInputProps, LayoutProps {
     /**
      * True (default) to render all segments at an equal width when {@link fill} is enabled,
      * dividing the available width into equal parts regardless of label length - the conventional

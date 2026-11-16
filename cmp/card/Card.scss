@@ -38,6 +38,56 @@
     flex-direction: column;
   }
 
+  // A legend with header items. It spans the card and so replaces its top border, and draws the
+  // stretch between the header and the items itself.
+  &__legend {
+    align-items: center;
+    border-color: inherit;
+    box-sizing: border-box;
+    display: flex;
+    padding: 0;
+    width: 100%;
+  }
+
+  &__legend-header {
+    min-width: 0;
+  }
+
+  &__header-rule {
+    border-top: var(--xh-border-width) solid;
+    border-color: inherit;
+    flex: 1 1 auto;
+    min-width: var(--xh-spacing);
+  }
+
+  &__header-items {
+    align-items: center;
+    display: flex;
+    flex: none;
+    gap: var(--xh-spacing-half);
+    padding: 0 var(--xh-spacing-half);
+  }
+
+  &__subtitle {
+    color: var(--xh-card-subtitle-text-color);
+    font-size: var(--xh-card-subtitle-font-size);
+  }
+
+  // The header button of a collapsible card sets no gap between the parts of its text.
+  &__collapsible-header &__subtitle {
+    margin-left: var(--xh-card-header-gap);
+  }
+
+  &__footer {
+    align-items: center;
+    border-top: var(--xh-border-width) solid;
+    border-color: inherit;
+    display: flex;
+    gap: var(--xh-spacing-half);
+    margin-top: var(--xh-spacing-half);
+    padding-top: var(--xh-spacing-half);
+  }
+
   &__header {
     align-items: center;
     color: var(--xh-card-header-text-color);

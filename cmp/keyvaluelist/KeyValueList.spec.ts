@@ -1,0 +1,305 @@
+/*
+ * This file belongs to Hoist, an application development toolkit
+ * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
+ *
+ * Copyright © 2026 Extremely Heavy Industries Inc.
+ */
+import {keyValueList} from '@xh/hoist/cmp/keyvaluelist';
+import type {KeyValueEntry} from '@xh/hoist/cmp/keyvaluelist';
+import {span} from '@xh/hoist/cmp/layout';
+import {initTestAppAsync} from '@xh/hoist/test-support';
+import {render} from '@testing-library/react';
+import {beforeAll, describe, expect, it, onTestFinished, vi} from 'vitest';
+
+/**
+ * KeyValueList shows the fields of a record, often from data with gaps. It must render every
+ * entry it is given as a label and value pair, stand a placeholder in for a missing value, and
+ * never throw on partial data. Its column count decides which entries end a row.
+ */
+describe('KeyValueList', () => {
+    beforeAll(() => initTestAppAsync());
+
+    it('renders each entry as a term and description, in order', () => {
+        const {container} = render(
+            keyValueList({
+                entries: [
+                    {label: 'Symbol', value: 'AAPL'},
+                    {label: span('Side'), value: span({className: 'buy', item: 'Buy'})}
+                ]
+            })
+        );
+        const list = container.querySelector('dl.xh-key-value-list');
+
+        expect(texts(list, 'dt')).toEqual(['Symbol', 'Side']);
+        expect(texts(list, 'dd')).toEqual(['AAPL', 'Buy']);
+        expect(list.querySelector('dd .buy')).not.toBeNull();
+    });
+
+    it.each([
+        ['null', null],
+        ['undefined', undefined],
+        ['an empty string', ''],
+        ['a blank string', '   ']
+    ])('shows the placeholder for a value that is %s', (_, value) => {
+        const {container} = render(keyValueList({entries: [{label: 'Broker', value}]})),
+            dd = container.querySelector('dd');
+
+        expect(dd.textContent).toBe('-');
+        expect(dd.classList).toContain('xh-key-value-list__value--empty');
+    });
+
+    it('shows zero as a value, not as the placeholder', () => {
+        const {container} = render(keyValueList({entries: [{label: 'Fills', value: 0}]})),
+            dd = container.querySelector('dd');
+
+        expect(dd.textContent).toBe('0');
+        expect(dd.classList).not.toContain('xh-key-value-list__value--empty');
+    });
+
+    it.each([
+        [true, 'true'],
+        [false, 'false']
+    ])('shows a value of %s as text, not as the placeholder', (value, text) => {
+        const {container} = render(keyValueList({entries: [{label: 'Active', value}]})),
+            dd = container.querySelector('dd');
+
+        expect(dd.textContent).toBe(text);
+        expect(dd.classList).not.toContain('xh-key-value-list__value--empty');
+    });
+
+    it('shows the default placeholder when emptyText is null', () => {
+        const {container} = render(
+            keyValueList({entries: [{label: 'Broker', value: null}], emptyText: null})
+        );
+
+        expect(container.querySelector('dd').textContent).toBe('-');
+    });
+
+    it.each([false, null, '  '])('renders an entry whose label is %j', label => {
+        const {container} = render(keyValueList({entries: [{label, value: 'AAPL'}]}));
+
+        expect(texts(container, 'dt').map(it => it.trim())).toEqual(['']);
+        expect(texts(container, 'dd')).toEqual(['AAPL']);
+    });
+
+    it('shows a custom emptyText', () => {
+        const {container} = render(
+            keyValueList({entries: [{label: 'Broker', value: null}], emptyText: 'None'})
+        );
+
+        expect(container.querySelector('dd').textContent).toBe('None');
+    });
+
+    it('skips omitted and null entries', () => {
+        const {container} = render(
+            keyValueList({
+                entries: [
+                    {label: 'A', value: 1},
+                    {label: 'B', value: 2, omit: true},
+                    null,
+                    {label: 'C', value: 3}
+                ]
+            })
+        );
+
+        expect(texts(container, 'dt')).toEqual(['A', 'C']);
+    });
+
+    it('renders an entry with no label or value', () => {
+        const {container} = render(keyValueList({entries: [{} as KeyValueEntry]}));
+
+        expect(texts(container, 'dt')).toEqual(['']);
+        expect(texts(container, 'dd')).toEqual(['-']);
+    });
+
+    it('renders nothing when given no entries, or only omitted ones', () => {
+        expect(render(keyValueList({entries: []})).container.innerHTML).toBe('');
+        expect(render(keyValueList({entries: null})).container.innerHTML).toBe('');
+        expect(
+            render(keyValueList({entries: [{label: 'A', value: 1, omit: true}]})).container
+                .innerHTML
+        ).toBe('');
+    });
+
+    it("marks an entry with its intent, and leaves the others' classes alone", () => {
+        const {container} = render(
+            keyValueList({
+                entries: [
+                    {label: 'Status', value: 'Rejected', intent: 'danger'},
+                    {label: 'Side', value: 'Buy'}
+                ]
+            })
+        );
+        const [status, side] = entries(container);
+
+        expect(status.classList).toContain('xh-key-value-list__entry--intent-danger');
+        expect(side.className).not.toMatch(/--intent/);
+    });
+
+    it('applies layout props and testId to the list', () => {
+        const {container} = render(
+            keyValueList({
+                entries: [{label: 'A', value: 1}],
+                maxWidth: 400,
+                testId: 'trade-detail'
+            })
+        );
+        const list = container.querySelector<HTMLElement>('.xh-key-value-list');
+
+        expect(list.style.maxWidth).toBe('400px');
+        expect(list.getAttribute('data-testid')).toBe('trade-detail');
+    });
+
+    describe('columns', () => {
+        it('uses the given number of columns when the width allows', () => {
+            setListWidth(400);
+            const {container} = render(keyValueList({entries: fiveEntries(), columns: 2}));
+
+            expect(columnCount(container)).toBe('2');
+        });
+
+        it.each([undefined, null])(
+            'drops given columns narrower than the default floor when minColumnWidth is %s',
+            minColumnWidth => {
+                setListWidth(343);
+                const props = {entries: fiveEntries(), minColumnWidth};
+
+                expect(columnCount(render(keyValueList({...props, columns: 2})).container)).toBe(
+                    '1'
+                );
+                expect(
+                    columnCount(
+                        render(keyValueList({...props, columns: 3, labelPosition: 'top'})).container
+                    )
+                ).toBe('2');
+            }
+        );
+
+        it('uses no more of the given columns than it has entries', () => {
+            setListWidth(2000);
+            const {container} = render(keyValueList({entries: fiveEntries(), columns: 10}));
+
+            expect(columnCount(container)).toBe('5');
+        });
+
+        it('uses fewer than the given columns to keep a given minColumnWidth', () => {
+            setListWidth(700);
+            const props = {entries: fiveEntries(), columns: 4};
+
+            expect(
+                columnCount(render(keyValueList({...props, minColumnWidth: 300})).container)
+            ).toBe('2');
+            expect(
+                columnCount(render(keyValueList({...props, minColumnWidth: 100})).container)
+            ).toBe('4');
+        });
+
+        it.each([null, undefined, 0, -50, NaN])(
+            'fits columns of the default width when minColumnWidth is %s',
+            minColumnWidth => {
+                setListWidth(1000);
+                const {container} = render(keyValueList({entries: fiveEntries(), minColumnWidth}));
+
+                expect(columnCount(container)).toBe('3');
+            }
+        );
+
+        it('fits as many columns of the minimum width as the list has room for', () => {
+            setListWidth(1000);
+
+            expect(columnCount(render(keyValueList({entries: fiveEntries()})).container)).toBe('3');
+            expect(
+                columnCount(
+                    render(keyValueList({entries: fiveEntries(), minColumnWidth: 200})).container
+                )
+            ).toBe('5');
+        });
+
+        it('fits narrower columns when the label is on top', () => {
+            setListWidth(600);
+            const entries = fiveEntries();
+
+            expect(columnCount(render(keyValueList({entries})).container)).toBe('2');
+            expect(
+                columnCount(render(keyValueList({entries, labelPosition: 'top'})).container)
+            ).toBe('3');
+        });
+
+        it('fits no more columns than it has entries', () => {
+            setListWidth(2000);
+            const {container} = render(
+                keyValueList({
+                    entries: [
+                        {label: 'A', value: 1},
+                        {label: 'B', value: 2}
+                    ]
+                })
+            );
+
+            expect(columnCount(container)).toBe('2');
+        });
+
+        it('stacks in one column when the list is narrower than a column', () => {
+            setListWidth(120);
+            const {container} = render(keyValueList({entries: fiveEntries()}));
+
+            expect(columnCount(container)).toBe('1');
+        });
+
+        it.each([0, -1, NaN, null])('fits to the width when columns is %s', columns => {
+            setListWidth(1000);
+            const {container} = render(keyValueList({entries: fiveEntries(), columns}));
+
+            expect(columnCount(container)).toBe('3');
+        });
+
+        it('marks the entries of the last row, so a divider is not drawn under them', () => {
+            setListWidth(1000);
+            const {container} = render(keyValueList({entries: fiveEntries(), columns: 2})),
+                lastRow = entries(container).map(it =>
+                    it.classList.contains('xh-key-value-list__entry--last-row')
+                );
+
+            expect(lastRow).toEqual([false, false, false, false, true]);
+        });
+
+        it('marks a full last row', () => {
+            setListWidth(1000);
+            const {container} = render(
+                    keyValueList({entries: fiveEntries().slice(0, 4), columns: 2})
+                ),
+                lastRow = entries(container).map(it =>
+                    it.classList.contains('xh-key-value-list__entry--last-row')
+                );
+
+            expect(lastRow).toEqual([false, false, true, true]);
+        });
+    });
+});
+
+//------------------
+// Helpers
+//------------------
+function fiveEntries(): KeyValueEntry[] {
+    return ['A', 'B', 'C', 'D', 'E'].map(label => ({label, value: label}));
+}
+
+function texts(container: Element, selector: string): string[] {
+    return Array.from(container.querySelectorAll(selector)).map(it => it.textContent);
+}
+
+function entries(container: Element): Element[] {
+    return Array.from(container.querySelectorAll('.xh-key-value-list__entry'));
+}
+
+function columnCount(container: Element): string {
+    return container
+        .querySelector<HTMLElement>('.xh-key-value-list')
+        .style.getPropertyValue('--xh-key-value-list-columns');
+}
+
+/** jsdom has no layout, so stand in for the width of the list. */
+function setListWidth(width: number) {
+    const spy = vi.spyOn(Element.prototype, 'clientWidth', 'get').mockReturnValue(width);
+    onTestFinished(() => spy.mockRestore());
+}

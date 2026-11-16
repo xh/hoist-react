@@ -6,6 +6,19 @@
  */
 
 .xh-date-input__wrapper {
+  // The popover target is inline by default, and keeps the width of its content. Make it and the
+  // click target within fill the wrapper, which takes the width and flex set on the input.
+  > .bp6-popover-target {
+    display: flex;
+    flex: 1;
+    min-width: 0;
+
+    > .xh-date-input__click-target {
+      flex: 1;
+      min-width: 0;
+    }
+  }
+
   .bp6-input-action {
     height: 100%;
   }

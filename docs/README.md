@@ -38,6 +38,9 @@ See [`docs-roadmap.md`](./planning/docs-roadmap.md) for documentation coverage t
 | Save and restore named view configurations | [`/cmp/viewmanager/`](../cmp/viewmanager/README.md)                                                                 |
 | Select a period or date range (presets, lookbacks, months, custom) | [`/cmp/daterange/`](../cmp/daterange/README.md)                                                                   |
 | Display a PDF document (page nav, zoom, find, download) | [`/cmp/pdfviewer/`](../cmp/pdfviewer/README.md) |
+| Show a small inline trend chart beside a figure or in a grid cell | [Sparkline](../cmp/README.md#sparkline-sparkline) |
+| Show a short list of alerts, activity or search results | [ItemList](../cmp/README.md#itemlist-itemlist) |
+| Show the fields of a record as labeled values | [KeyValueList](../cmp/README.md#keyvaluelist-keyvaluelist) |
 | Use layout containers (Box, HBox, VBox, Frame) | [`/cmp/layout/`](../cmp/layout/README.md)                                                                           |
 | Work with Stores, Records, Fields, or Filters | [`/data/`](../data/README.md)                                                                                       |
 | Set up Cube aggregation with Views and Queries | [`/data/cube/`](../data/cube/README.md)                                                                             |
@@ -92,11 +95,15 @@ See [`docs-roadmap.md`](./planning/docs-roadmap.md) for documentation coverage t
 | [`/cmp/cubegrid/`](../cmp/cubegrid/README.md) | Cube View rendered as a tree grid with the app's columns, plus pivot paths as nested column groups and docked summaries | CubeGridModel, CubeGrid, CubeGridPivotModel, cube, pivot, PivotSpec, measures, cellFields, pivotConfig, PivotDimensionSpec, PivotMeasureSpec, measuresOutermost |
 | [`/cmp/form/`](../cmp/form/README.md) | Form infrastructure for data entry with validation | FormModel, FieldModel, SubformsFieldModel, validation rules, data binding |
 | [`/cmp/input/`](../cmp/input/README.md) | Base classes and interfaces for input components | HoistInputModel, change/commit lifecycle, value binding, focus management |
-| [`/cmp/layout/`](../cmp/layout/README.md) | Flexbox-based layout containers | Box, VBox, HBox, Frame, Viewport, LayoutProps, pixel conversion |
+| [`/cmp/layout/`](../cmp/layout/README.md) | Flexbox-based layout containers | Box, VBox, HBox, Frame, Viewport, Separator, LayoutProps, pixel conversion |
+| [`/cmp/progressbar/`](../cmp/README.md#progressbar-progressbar) | Bar that shows a value against a maximum, or indeterminate progress | ProgressBar, value, min, max, label, valueLabel, intent, target, indeterminate |
+| [`/cmp/steps/`](../cmp/README.md#steps-steps) | Ordered sequence of steps with a status each, as a row or a list | Steps, StepSpec, StepStatus, current, orientation, onStepClick, wizard, timeline |
 | [`/cmp/tab/`](../cmp/tab/README.md) | Tabbed interface system | TabContainerModel, routing integration, render modes, refresh strategies |
 | [`/cmp/viewmanager/`](../cmp/viewmanager/README.md) | Save/load named bundles of component state | ViewManagerModel, views, sharing, pinning, auto-save, JsonBlob persistence |
 | [`/cmp/daterange/`](../cmp/daterange/README.md) | Period selection as presets, relative lookbacks, months/years, or custom ranges, resolved to dates and filters | DateRangePickerModel, DateRangePicker, DateRangeSelection, presets, anchorDate, LocalDateRange, currentRangeFilter, priorRange |
 | [`/cmp/pdfviewer/`](../cmp/pdfviewer/README.md) | PDF document viewer built on pdf.js, with a configurable toolbar and observable model API | PdfViewerModel, PdfViewer, PdfSource, toolbar tokens, find, zoom presets, pdfjs-dist |
+| [`/cmp/sparkline/`](../cmp/README.md#sparkline-sparkline) | Small inline trend chart in plain SVG, for a stat card or a grid cell | Sparkline, line, area, bar, colorByTrend, baseline, shared scale, grid column renderer |
+| [`/cmp/itemlist/`](../cmp/README.md#itemlist-itemlist) | Short, static list of entries with a title, description, icon and trailing detail | ItemList, ItemListEntry, entries, intent, ordered, onEntryClick, ItemList or DataView |
 | [`/desktop/`](../desktop/README.md) | Desktop-specific components and app container | Desktop components, Blueprint wrappers, desktop navigation |
 | [`/desktop/cmp/dash/`](../desktop/cmp/dash/README.md) | Configurable dashboard system with draggable, resizable widgets | DashContainerModel, DashCanvasModel, DashViewSpec, DashViewModel, widget persistence, ViewManager integration |
 | [`/desktop/cmp/panel/`](../desktop/cmp/panel/README.md) | Desktop panel container with toolbars, banners, masks, and collapsible behavior | Panel, PanelModel, Toolbar, Banner, mask, collapse/resize, persistence, modal support |

@@ -28,6 +28,14 @@ export interface TextAreaProps
     /** Ref handler that receives HTML <input> element backing this component. */
     inputRef?: Ref<HTMLInputElement>;
 
+    /**
+     * Most characters the user can enter, set as the native `maxlength` attribute of the
+     * underlying <textarea> element. Limits typing and pasting only. A longer value set through
+     * a bound model shows in full and is not cut. To validate length, add a `lengthIs` rule to
+     * the field.
+     */
+    maxLength?: number;
+
     /** Callback for normalized keydown event. */
     onKeyDown?: (e: KeyboardEvent) => void;
 
@@ -90,6 +98,7 @@ const cmp = hoistCmp.factory<TextAreaInputModel>(({model, className, ...props}, 
         autoFocus: props.autoFocus,
         disabled: props.disabled,
         inputRef: useComposedRefs(model.inputRef as Ref<HTMLTextAreaElement>, props.inputRef),
+        maxLength: props.maxLength,
         placeholder: props.placeholder,
         spellCheck: withDefault(props.spellCheck, false),
         tabIndex: props.tabIndex,

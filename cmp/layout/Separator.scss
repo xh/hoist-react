@@ -1,0 +1,67 @@
+/*
+ * This file belongs to Hoist, an application development toolkit
+ * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
+ *
+ * Copyright © 2026 Extremely Heavy Industries Inc.
+ */
+
+.xh-separator {
+  display: flex;
+  flex: none;
+  align-items: center;
+  // Stretch across the cross axis of a flex container - the width of a column for a horizontal
+  // rule, the height of a row for a vertical one.
+  align-self: stretch;
+  gap: var(--xh-separator-label-gap);
+  min-width: 0;
+  margin: var(--xh-separator-margin);
+
+  // The rule - one segment on each side of the label, or one segment only without a label.
+  &::before,
+  &::after {
+    content: '';
+    flex: 1 1 0;
+    border: 0 solid var(--xh-separator-border-color);
+  }
+
+  &:empty::after,
+  &--label-start::before,
+  &--label-end::after {
+    display: none;
+  }
+
+  // In a flex row a rule has no width of its own. Take the width left over by the other items of
+  // the row: ask for all of it, and shrink to what is free. Unlike `width: 100%`, this allows for
+  // a margin on the separator. The prefixed values are for browsers without `stretch`.
+  &--horizontal {
+    flex: 0 1 auto;
+    width: -webkit-fill-available;
+    width: -moz-available;
+    width: stretch;
+
+    // A long label wraps, and leaves each segment of the rule its minimum width.
+    &::before,
+    &::after {
+      min-width: var(--xh-separator-rule-min-width);
+      border-top-width: var(--xh-separator-border-width);
+    }
+  }
+
+  &--vertical {
+    flex-direction: column;
+    // A row with no height of its own still shows the rule, at the height of a line of text.
+    min-height: 1em;
+
+    &::before {
+      border-left-width: var(--xh-separator-border-width);
+    }
+  }
+
+  &__label {
+    flex: 0 1 auto;
+    min-width: 0;
+    overflow-wrap: anywhere;
+    font-size: var(--xh-separator-label-font-size);
+    color: var(--xh-separator-label-text-color);
+  }
+}

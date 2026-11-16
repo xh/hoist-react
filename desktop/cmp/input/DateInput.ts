@@ -25,13 +25,13 @@ import {bindable} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 import {isLocalDate, LocalDate} from '@xh/hoist/utils/datetime';
 import {consumeEvent, getTestId, withDefault} from '@xh/hoist/utils/js';
-import {getLayoutProps} from '@xh/hoist/utils/react';
+import {composeRefs, getLayoutProps, useOnResize} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import type {Property} from 'csstype';
 import {castArray, clone, isEmpty, trim} from 'lodash';
 import moment from 'moment';
 import type {ReactElement, ReactNode} from 'react';
-import {createRef} from 'react';
+import {createRef, useState} from 'react';
 import {timePicker} from './impl/TimePicker';
 import './DateInput.scss';
 
@@ -111,7 +111,10 @@ export interface DateInputProps extends HoistProps, LayoutProps, HoistInputProps
     placeholder?: string;
 
     /**
-     * Position for calendar popover, as per Blueprint docs.
+     * Position for calendar popover, as per Blueprint docs. Default `auto` for an input of the
+     * default 200px width or narrower. A wider input, such as one that fills a `FormField`,
+     * defaults to `bottom-left`, so the calendar opens under the start of the input. It moves
+     * above the input when there is no room below.
      * @see https://blueprintjs.com/docs/#core/components/popover
      */
     popoverPosition?: Position;
@@ -166,6 +169,9 @@ export interface DateInputProps extends HoistProps, LayoutProps, HoistInputProps
  * can be customized via the timePrecision prop to support editing of a date and time together.
  *
  * The calendar popover can be opened via the built-in button or up/down arrow keyboard shortcuts.
+ *
+ * The control is 200px wide by default. It takes `width` and `flex` as a `TextInput` does, and
+ * fills a `FormField` that sets neither on it.
  */
 export const [DateInput, dateInput] = hoistCmp.withFactory<DateInputProps>({
     displayName: 'DateInput',
@@ -409,15 +415,28 @@ class DateInputModel extends HoistInputModel {
     }
 }
 
+const DEFAULT_WIDTH = 200;
+
 const cmp = hoistCmp.factory<DateInputProps & {model: DateInputModel}>(
     ({model, className, ...props}, ref) => {
         const enablePicker = props.enablePicker ?? true,
             enableTextInput = props.enableTextInput ?? true,
             disabled = props.disabled ?? false,
-            isOpen = enablePicker && model.popoverOpen && !disabled;
+            isOpen = enablePicker && model.popoverOpen && !disabled,
+            {width, flex, ...layoutProps} = getLayoutProps(props),
+            // The popover targets the whole wrapper. `auto` centers the calendar on it, which puts
+            // it far from the start of a wide input, so a wide input aligns it to the start.
+            [isWide, setIsWide] = useState(false),
+            resizeRef = useOnResize(rect => setIsWide(rect.width > DEFAULT_WIDTH));
 
         return div({
             className: 'xh-date-input__wrapper',
+            // The wrapper takes the width and flex of the input, as the root of a TextInput does.
+            // The text input within fills it.
+            style: {
+                width: withDefault(width, DEFAULT_WIDTH),
+                flex: withDefault(flex, null)
+            },
             item: popover({
                 isOpen,
                 minimal: true,
@@ -425,7 +444,7 @@ const cmp = hoistCmp.factory<DateInputProps & {model: DateInputModel}>(
                 autoFocus: false,
                 enforceFocus: false,
                 modifiers: props.popoverModifiers,
-                position: props.popoverPosition ?? 'auto',
+                position: props.popoverPosition ?? (isWide ? 'bottom-left' : 'auto'),
                 boundary: props.popoverBoundary ?? 'clippingParents',
                 portalContainer: props.portalContainer ?? document.body,
                 popoverRef: model.popoverRef,
@@ -467,7 +486,8 @@ const cmp = hoistCmp.factory<DateInputProps & {model: DateInputModel}>(
                         ref: model.textInputRef,
                         testId: getTestId(props),
                         domAttrs: props.domAttrs,
-                        ...getLayoutProps(props)
+                        ...layoutProps,
+                        width: null
                     }),
                     className: 'xh-date-input__click-target',
                     onClick: !enableTextInput && !disabled ? model.onOpenPopoverClick : null
@@ -476,7 +496,7 @@ const cmp = hoistCmp.factory<DateInputProps & {model: DateInputModel}>(
             onBlur: model.onBlur,
             onFocus: model.onFocus,
             onKeyDown: model.onKeyDown,
-            ref
+            ref: composeRefs(ref, resizeRef)
         });
     }
 );

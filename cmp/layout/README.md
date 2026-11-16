@@ -140,6 +140,46 @@ model.selectedRecord
 - Conditional content areas before data loads
 - Empty states with muted, standard styling
 
+### Separator
+
+A rule that divides content, with an optional label.
+
+```typescript
+import {separator, hbox, vbox} from '@xh/hoist/cmp/layout';
+
+// A rule between the sections of a column
+vbox({
+    gap: 10,
+    items: [summary(), separator(), details()]
+})
+
+// A labeled rule that introduces the section after it
+separator({label: 'Settlement', labelPosition: 'start'})
+
+// A vertical rule between the items of a row. It takes no label
+hbox({
+    gap: 10,
+    items: [positionCount(), separator({orientation: 'vertical'}), orderCount()]
+})
+```
+
+| Prop | Type | Description |
+|------|------|-------------|
+| `orientation` | `'horizontal' \| 'vertical'` | Direction of the rule. Default `horizontal` |
+| `label` | `ReactNode` | Caption shown within a horizontal rule. A blank label shows nothing |
+| `labelPosition` | `'start' \| 'center' \| 'end'` | Where the label sits along the rule. Default `center`, with the rule on each side of the label |
+
+**Separator provides:**
+- `role="separator"` with `aria-orientation`, named by its label when it has one
+- No outer margin. Space it with a `gap` on its container, a `margin` layout prop, or the
+  `--xh-separator-margin` CSS variable
+- Color, thickness and label styling through the `--xh-separator-*` CSS variables
+
+A horizontal separator takes the width of its container. In a flex row, it takes the width that
+the other items leave free. A vertical separator takes the height of its row, so use it in an
+`hbox` or another flex row. It shows no label. For a divider between toolbar items, use
+`toolbarSep` from `@xh/hoist/desktop/cmp/toolbar`.
+
 ### TileFrame
 
 Auto-arranging tile container that positions children as equally-sized tiles.
