@@ -5,6 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {div} from '@xh/hoist/cmp/layout';
+import type {AppOptionSpec} from '@xh/hoist/core';
 import {XH} from '@xh/hoist/core';
 import type {RadioCardInputProps, SegmentedControlProps} from '@xh/hoist/desktop/cmp/input';
 import {radioCardInput, segmentedControl} from '@xh/hoist/desktop/cmp/input';
@@ -41,12 +42,12 @@ export const themeAppOption = ({
     formFieldProps,
     inputProps,
     previewCards = true
-}: ThemeAppOptionSpec = {}) => {
+}: ThemeAppOptionSpec = {}): AppOptionSpec => {
     return {
         name: 'theme',
         formField: {
             label: 'Theme',
-            item: previewCards
+            children: previewCards
                 ? radioCardInput({
                       options: THEMES.map(({value, label}) => ({
                           value,

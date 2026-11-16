@@ -152,11 +152,19 @@ function processFile(sf: SourceFile, checker: ts.TypeChecker, result: CodemodRes
 
         const contextualType = checker.getContextualType(obj);
         if (!contextualType || contextualType.flags & ts.TypeFlags.Any) {
+            const [first] = legacyProps,
+                key = propName(first);
             if (isBareCallArgument(obj)) {
                 report(
                     'manual',
-                    legacyProps[0],
-                    `Untyped call - convert \`${propName(legacyProps[0])}\` by hand if this is an element spec.`
+                    first,
+                    `Untyped call - convert \`${key}\` by hand if this is an element spec.`
+                );
+            } else if (legacyProps.some(p => isElementLike(checker.getTypeAtLocation(p.name)))) {
+                report(
+                    'manual',
+                    first,
+                    `Untyped object with an element in \`${key}\` - convert by hand if this is an element spec.`
                 );
             }
             return;
@@ -288,6 +296,15 @@ function processFile(sf: SourceFile, checker: ts.TypeChecker, result: CodemodRes
 
     visit(file);
     return dedupe(edits);
+}
+
+/** True if the type is a React element, or an array of them. */
+function isElementLike(type: ts.Type): boolean {
+    const types = type.isUnion() ? type.types : [type];
+    return types.some(t => {
+        const elementType = t.getNumberIndexType() ?? t;
+        return ['type', 'props', 'key'].every(name => !!elementType.getProperty(name));
+    });
 }
 
 /** True if a spread of this type could carry a legacy `item` or `items` key. */

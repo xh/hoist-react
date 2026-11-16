@@ -4,6 +4,7 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
+import type {AppOptionSpec} from '@xh/hoist/core';
 import {XH} from '@xh/hoist/core';
 import type {SwitchInputProps} from '@xh/hoist/desktop/cmp/input';
 import {switchInput} from '@xh/hoist/desktop/cmp/input';
@@ -23,7 +24,7 @@ interface AutoRefreshAppOptionSpec {
 export const autoRefreshAppOption = ({
     formFieldProps,
     inputProps
-}: AutoRefreshAppOptionSpec = {}) => {
+}: AutoRefreshAppOptionSpec = {}): AppOptionSpec => {
     return {
         omit: XH.autoRefreshService.interval <= 0,
         name: 'autoRefresh',
@@ -31,7 +32,7 @@ export const autoRefreshAppOption = ({
         formField: {
             label: 'Auto-refresh',
             info: `Enable to auto-refresh app data every ${XH.autoRefreshService.interval} seconds`,
-            item: switchInput({...inputProps}),
+            children: switchInput({...inputProps}),
             ...formFieldProps
         }
     };

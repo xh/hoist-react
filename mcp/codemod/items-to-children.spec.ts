@@ -120,11 +120,15 @@ describe('items-to-children', () => {
         assert.deepEqual(kinds(findings), ['conflict', 'conflict']);
     });
 
-    it('reports specs built as untyped objects and passed to a factory', () => {
+    it('reports specs built as untyped objects, where built and where passed to a factory', () => {
         const code = `const spec = {title: 'A', item: el};\npanel(spec);\npanel({...spec});\n`;
         const {text, findings} = convert(code);
         assert.equal(text, code);
-        assert.deepEqual(kinds(findings), ['manual', 'manual']);
+        assert.deepEqual(kinds(findings), ['manual', 'manual', 'manual']);
+        assert.deepEqual(
+            findings.map(f => f.line),
+            [2, 3, 4]
+        );
     });
 
     it('reports item keys in untyped bare calls, but not in untyped method calls', () => {
@@ -133,6 +137,13 @@ describe('items-to-children', () => {
         assert.equal(text, code);
         assert.deepEqual(kinds(findings), ['manual']);
         assert.equal(findings[0].line, 3);
+    });
+
+    it('reports untyped objects that hold an element in item or items', () => {
+        const code = `export const opts = [{formField: {item: el}}, {text: 'A', items: [{text: 'B'}]}];\n`;
+        const {text, findings} = convert(code);
+        assert.equal(text, code);
+        assert.deepEqual(kinds(findings), ['manual']);
     });
 
     it('flags a later spread that could carry a legacy key', () => {
