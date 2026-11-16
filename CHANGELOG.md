@@ -19,6 +19,11 @@
 * Hoist now requires AG Grid `36.3` or later, to avoid a performance issue in `36.2`. Apps must bump
   their `ag-grid-community`, `ag-grid-react`, and (if used) `ag-grid-enterprise` dependencies.
 
+### ⚙️ Technical
+
+* `StoreRecord.getValues()` is faster for records with many fields, and so is spreading or copying
+  its result. It now returns an object in V8's compact fast-properties mode.
+
 ### 📚 Libraries
 
 * jsdom `30 → 30 || 31` (optional peer)
@@ -90,11 +95,6 @@
 * Fixed grids scrolling diagonally on trackpad gestures under AG Grid 36. `AgGrid` now locks each
   two-axis wheel event to its dominant axis.
 * Fixed `DashCanvas` widgets lagging behind the pointer while dragged or resized. Hoist pins react-grid-layout to 2.2 until a fixed 2.3 release ships.
-
-### ⚙️ Technical
-
-* `StoreRecord.getValues()` is faster for records with many fields, and so is spreading or copying
-  its result. It now returns an object in V8's compact fast-properties mode.
 
 ### 🤖 AI Docs + Tooling
 
