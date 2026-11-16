@@ -51,7 +51,7 @@
 
   // Text breaks between words. Only a word wider than the bar breaks inside.
   &__label,
-  &__value-label {
+  &__value {
     max-width: 100%;
     overflow-wrap: break-word;
   }
@@ -61,7 +61,7 @@
     color: var(--xh-progress-bar-label-text-color);
   }
 
-  &__value-label {
+  &__value {
     flex: none;
     // Holds the right edge when there is no label, and when it drops below the label.
     margin-left: auto;

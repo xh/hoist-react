@@ -26,8 +26,7 @@ import './ProgressBar.scss';
 export interface ProgressBarProps extends HoistProps, LayoutProps, TestSupportProps, DomAttrsProps {
     /**
      * Value to show, from `min` to `max`. A value outside that range draws an empty or a full bar.
-     * Omit it, or pass null, for an indeterminate bar: an animated fill for work of unknown
-     * length. The animation stops for users who ask their system for reduced motion.
+     * A null value draws an empty bar with no figure. Ignored when `indeterminate` is true.
      */
     value?: number;
 
@@ -36,6 +35,12 @@ export interface ProgressBarProps extends HoistProps, LayoutProps, TestSupportPr
 
     /** Value of a full bar. Default 100. */
     max?: number;
+
+    /**
+     * True to draw an animated fill for work of unknown length, in place of a value. The
+     * animation stops for users who ask their system for reduced motion. Default false.
+     */
+    indeterminate?: boolean;
 
     /**
      * Caption shown above the bar, naming what it measures. Also the bar's accessible name. A
@@ -48,11 +53,13 @@ export interface ProgressBarProps extends HoistProps, LayoutProps, TestSupportPr
      * `72 of 100 GB`, or a `fmtNumber` result. A blank figure takes the default: the value as a
      * whole percent of the range. Only a full bar reads `100%` and only an empty one reads `0%`.
      * An indeterminate bar has no default figure.
+     *
+     * A string or number figure is also the bar's `aria-valuetext`, shown or not.
      */
-    valueLabel?: ReactNode;
+    valueText?: ReactNode;
 
     /** False to hide the figure and draw the bar only. Default true. */
-    showValueLabel?: boolean;
+    showValue?: boolean;
 
     /**
      * Semantic color for the fill, for example `danger` for a limit that is close. The fill takes
@@ -71,16 +78,14 @@ export interface ProgressBarProps extends HoistProps, LayoutProps, TestSupportPr
 
 /**
  * A horizontal bar that shows a value against a maximum: the progress of a task, or usage against
- * a limit. A bar with no value is indeterminate, for work of unknown length.
+ * a limit. Set `indeterminate` for work of unknown length.
  *
  * The bar is presentation-only. It is a block with no outer margin, so it fills the width of a
  * block or a column. In a row such as an `hbox`, give it a `flex` or a `width`. Set the
  * `--xh-progress-bar-*` CSS variables to change its height, radius and colors.
  *
- * A null or omitted prop takes its default.
- *
- * A bar never fails on odd data. It draws an empty bar with no figure when it cannot place the
- * value, as with a NaN value or a `max` that is not above `min`.
+ * A null or omitted prop takes its default. A bar with no value it can place draws empty with no
+ * default figure: a null or NaN value, or a `max` that is not above `min`.
  *
  * The root element takes `role="progressbar"`, named by its `label`. Pass an `aria-label` through
  * `domAttrs` for a bar with no label.
@@ -93,17 +98,18 @@ export const [ProgressBar, progressBar] = hoistCmp.withFactory<ProgressBarProps>
     render(props, ref) {
         const [
                 layoutProps,
-                {className, value, label, valueLabel, intent, target, testId, domAttrs}
+                {className, value, label, valueText, intent, target, testId, domAttrs}
             ] = splitLayoutProps(props),
             min = props.min ?? 0,
             max = props.max ?? 100,
-            showValueLabel = props.showValueLabel ?? true,
+            indeterminate = props.indeterminate ?? false,
+            showValue = props.showValue ?? true,
             labelId = useId(),
-            indeterminate = value == null,
             fraction = indeterminate ? null : fractionOf(value, min, max),
-            targetFraction = indeterminate ? null : fractionOf(target, min, max, false),
-            defaultFigure = isBlankNode(valueLabel) ? percentOf(fraction) : valueLabel,
-            figure = showValueLabel ? defaultFigure : null,
+            targetFraction =
+                indeterminate || target < min || target > max ? null : fractionOf(target, min, max),
+            figure = isBlankNode(valueText) ? percentOf(fraction) : valueText,
+            shownFigure = showValue ? figure : null,
             hasLabel = !isBlankNode(label),
             ariaProps = {
                 role: 'progressbar',
@@ -131,7 +137,7 @@ export const [ProgressBar, progressBar] = hoistCmp.withFactory<ProgressBarProps>
             ...divProps,
             items: [
                 div({
-                    omit: !hasLabel && figure == null,
+                    omit: !hasLabel && shownFigure == null,
                     className: 'xh-progress-bar__header',
                     items: [
                         span({
@@ -141,9 +147,9 @@ export const [ProgressBar, progressBar] = hoistCmp.withFactory<ProgressBarProps>
                             item: label
                         }),
                         span({
-                            omit: figure == null,
-                            className: 'xh-progress-bar__value-label',
-                            item: figure
+                            omit: shownFigure == null,
+                            className: 'xh-progress-bar__value',
+                            item: shownFigure
                         })
                     ]
                 }),
@@ -172,13 +178,11 @@ export const [ProgressBar, progressBar] = hoistCmp.withFactory<ProgressBarProps>
 // Implementation
 //------------------
 /**
- * Where a value sits in its range, from 0 to 1. Null when there is no place to put it: a value or
- * bound that is not a number, or a range that is not above zero. A value outside the range clamps
- * to it, or gives null if `clampToRange` is false.
+ * Where a value sits in its range, from 0 to 1, clamped to the range. Null when there is no place
+ * to put it: a null or NaN value, or a `max` that is not above `min`.
  */
-function fractionOf(value: number, min: number, max: number, clampToRange = true): number {
-    if (!isNumber(value) || !isFinite(min) || !isFinite(max) || !(max > min)) return null;
-    if (!clampToRange && (value < min || value > max)) return null;
+function fractionOf(value: number, min: number, max: number): number {
+    if (value == null || !(max > min)) return null;
     const ret = (clamp(value, min, max) - min) / (max - min);
     return isFinite(ret) ? ret : null;
 }
