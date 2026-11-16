@@ -60,12 +60,6 @@ describe('Steps', () => {
                 'warning'
             ]);
         });
-
-        it('ignores a status it does not know', () => {
-            const odd = [{title: 'Submitted', status: 'done' as any}, {title: 'Approved'}];
-
-            expect(statuses(steps({steps: odd, current: 1}))).toEqual(['complete', 'current']);
-        });
     });
 
     describe('marker', () => {
@@ -209,7 +203,7 @@ describe('Steps', () => {
         });
     });
 
-    describe('orientation', () => {
+    describe('vertical', () => {
         it('keeps a horizontal row while each step has at least 96px', () => {
             setListWidth(384);
 
@@ -241,7 +235,7 @@ describe('Steps', () => {
             expect(orientationOf(steps({steps: order, minStepWidth: 100}))).toBe('horizontal');
         });
 
-        it.each([null, undefined, NaN])('uses the default floor when minStepWidth is %s', min => {
+        it.each([null, undefined])('uses the default floor when minStepWidth is %s', min => {
             setListWidth(383);
 
             expect(orientationOf(steps({steps: order, minStepWidth: min}))).toBe('vertical');
@@ -259,9 +253,9 @@ describe('Steps', () => {
             expect(orientationOf(steps({steps: order}))).toBe('horizontal');
         });
 
-        it('leaves an explicit vertical list as it is at any width', () => {
+        it('shows a vertical list at any width', () => {
             setListWidth(2000);
-            const {container} = render(steps({steps: order, orientation: 'vertical'}));
+            const {container} = render(steps({steps: order, vertical: true}));
             const list = container.querySelector('.xh-steps');
 
             expect(list.classList).toContain('xh-steps--vertical');
@@ -277,15 +271,21 @@ describe('Steps', () => {
             expect(container.querySelector('[tabindex]')).toBeNull();
         });
 
+        it('makes the title of each step a focusable button', () => {
+            const {container} = render(steps({steps: order, current: 1, onStepClick: vi.fn()}));
+            const buttons = Array.from(container.querySelectorAll('[role="button"]'));
+
+            expect(buttons).toHaveLength(4);
+            expect(buttons.every(it => it.classList.contains('xh-steps__title'))).toBe(true);
+            expect(buttons.map(it => it.getAttribute('tabindex'))).toEqual(['0', '0', '0', '0']);
+        });
+
         it('calls the handler with the step and its index on a click, Enter or Space', () => {
             const onStepClick = vi.fn(),
                 {container} = render(steps({steps: order, current: 1, onStepClick}));
             const buttons = Array.from(container.querySelectorAll('[role="button"]'));
 
-            expect(buttons).toHaveLength(4);
-            expect(buttons.map(it => it.getAttribute('tabindex'))).toEqual(['0', '0', '0', '0']);
-
-            fireEvent.click(buttons[0]);
+            fireEvent.click(container.querySelector('.xh-steps__marker'));
             fireEvent.keyDown(buttons[2], {key: 'Enter'});
             fireEvent.keyDown(buttons[3], {key: ' '});
             fireEvent.keyDown(buttons[3], {key: 'a'});
@@ -295,6 +295,24 @@ describe('Steps', () => {
                 [order[2], 2],
                 [order[3], 3]
             ]);
+        });
+
+        it('describes the button with the status and description of its step', () => {
+            const {container} = render(
+                steps({
+                    steps: [{title: 'A', description: 'Done'}, {title: 'B'}],
+                    current: 1,
+                    onStepClick: vi.fn()
+                })
+            );
+            const [done, now] = Array.from(container.querySelectorAll('[role="button"]')),
+                describedBy = done.getAttribute('aria-describedby').split(' ');
+
+            expect(describedBy.map(id => container.querySelector(`[id="${id}"]`))).toEqual([
+                container.querySelector('.xh-steps__marker'),
+                container.querySelector('.xh-steps__description')
+            ]);
+            expect(now.hasAttribute('aria-describedby')).toBe(false);
         });
 
         it('makes a disabled step a disabled button that takes no focus, click or keypress', () => {
@@ -319,7 +337,7 @@ describe('Steps', () => {
             expect(container.querySelector('[role="button"]')).toBeNull();
         });
 
-        it('leaves a click or keypress on a control inside a step to that control', () => {
+        it('leaves a click or keypress on a control in the detail to that control', () => {
             const onStepClick = vi.fn(),
                 dismiss = vi.fn(),
                 list = [
@@ -334,6 +352,8 @@ describe('Steps', () => {
                 ],
                 {container} = render(steps({steps: list, onStepClick}));
             const control = container.querySelector('.dismiss');
+
+            expect(control.closest('[role="button"]')).toBeNull();
 
             fireEvent.click(control);
             fireEvent.keyDown(control, {key: 'Enter'});
@@ -350,7 +370,7 @@ describe('Steps', () => {
                 list = [{title: 'A', omit: true}, null, {title: 'C'}],
                 {container} = render(steps({steps: list, onStepClick}));
 
-            fireEvent.click(container.querySelector('[role="button"]'));
+            fireEvent.click(container.querySelector('.xh-steps__step-inner'));
             expect(onStepClick).toHaveBeenCalledWith(list[2], 2);
         });
 

@@ -6,6 +6,7 @@
  */
 import classNames from 'classnames';
 import {isEmpty} from 'lodash';
+import {useId} from 'react';
 import type {KeyboardEvent, MouseEvent, ReactElement, ReactNode} from 'react';
 
 import {div, li, ol, span, ul} from '@xh/hoist/cmp/layout';
@@ -18,6 +19,7 @@ import type {
     LayoutProps,
     TestSupportProps
 } from '@xh/hoist/core';
+import {clickableRowProps} from '@xh/hoist/utils/impl';
 import {mergeDeep, TEST_ID} from '@xh/hoist/utils/js';
 import {isBlankNode, splitLayoutProps} from '@xh/hoist/utils/react';
 
@@ -27,7 +29,7 @@ import './ItemList.scss';
  * One entry in an {@link ItemList}.
  *
  * A `title`, `description` or `detail` that is null, a boolean or a blank string renders
- * nothing and leaves no gap. The list skips an entry with all three blank.
+ * nothing and leaves no gap.
  */
 export interface ItemListEntry {
     /** Main text of the entry. Wraps when it does not fit on one line. */
@@ -43,7 +45,7 @@ export interface ItemListEntry {
      */
     detail?: ReactNode;
 
-    /** Icon shown before the text. Not shown in an `ordered` list, which shows numbers. */
+    /** Icon shown before the text. Not shown in a `numbered` list, which shows numbers. */
     icon?: ReactElement;
 
     /**
@@ -55,8 +57,18 @@ export interface ItemListEntry {
     intent?: Intent;
 
     /**
-     * True to show the entry dimmed and leave it out of `onEntryClick`: it is not focusable and
-     * does not call the handler. No effect in a list with no `onEntryClick`.
+     * Handler for a click or Enter/Space keypress on the entry, e.g. to open the record it
+     * shows. Makes the entry clickable, with a hover style.
+     *
+     * A click anywhere in the entry calls it. The title is the button that takes keyboard focus
+     * and that screen readers announce, so a control in the `detail`, such as a button, is not
+     * nested inside it. A click or keypress on such a control goes to that control only.
+     */
+    onClick?: (e: MouseEvent<HTMLElement> | KeyboardEvent<HTMLElement>) => void;
+
+    /**
+     * True to show an entry that has an `onClick` dimmed and inert: it takes no focus and does
+     * not call the handler. No effect on an entry with no `onClick`.
      */
     disabled?: boolean;
 
@@ -73,7 +85,7 @@ export interface ItemListProps extends HoistProps, LayoutProps, TestSupportProps
      * The numbers count the entries shown, so a skipped entry leaves no gap in them.
      * Default false.
      */
-    ordered?: boolean;
+    numbered?: boolean;
 
     /** True to draw a rule between entries. Default false. */
     dividers?: boolean;
@@ -86,17 +98,6 @@ export interface ItemListProps extends HoistProps, LayoutProps, TestSupportProps
      * as does a blank `emptyText`.
      */
     emptyText?: ReactNode;
-
-    /**
-     * Handler for a click or Enter/Space keypress on an entry. Makes every entry that is not
-     * `disabled` a focusable button with a hover style. A click or keypress on a control inside
-     * an entry, such as a button in its `detail`, goes to that control only.
-     *
-     * Called with the entry and its index in the `entries` array as given. That index counts
-     * null and omitted entries, so it also finds the source of an entry in an array that
-     * `entries` was mapped from. It can differ from the number an `ordered` list shows.
-     */
-    onEntryClick?: (entry: ItemListEntry, index: number) => void;
 }
 
 /**
@@ -119,22 +120,13 @@ export const [ItemList, itemList] = hoistCmp.withFactory<ItemListProps>({
     render(props, ref) {
         const [
                 layoutProps,
-                {
-                    className,
-                    entries,
-                    ordered,
-                    dividers,
-                    size,
-                    emptyText,
-                    onEntryClick,
-                    testId,
-                    domAttrs
-                }
+                {className, entries, numbered, dividers, size, emptyText, testId, domAttrs}
             ] = splitLayoutProps(props),
-            // Each entry keeps its index in `entries`, as the handler reports that index.
+            idPrefix = useId(),
+            // Each entry keeps its index in `entries`, as a stable key.
             visible = (entries ?? [])
                 .map((entry, index) => ({entry, index}))
-                .filter(({entry}) => entry && !entry.omit && !isBlankEntry(entry)),
+                .filter(({entry}) => entry && !entry.omit),
             rootProps = (...classes: string[]) =>
                 mergeDeep(
                     {className: classNames(className, classes)},
@@ -148,11 +140,9 @@ export const [ItemList, itemList] = hoistCmp.withFactory<ItemListProps>({
                 : div({ref, ...rootProps('xh-item-list--empty'), item: emptyText});
         }
 
-        const marker = markerType(
-                visible.map(it => it.entry),
-                ordered
-            ),
-            list = ordered ? ol : ul;
+        const shown = visible.map(it => it.entry),
+            marker = markerType(shown, numbered),
+            list = numbered ? ol : ul;
 
         // An explicit role keeps list semantics in browsers that drop them with `list-style: none`.
         return list({
@@ -161,10 +151,10 @@ export const [ItemList, itemList] = hoistCmp.withFactory<ItemListProps>({
             ...rootProps(
                 size === 'compact' && 'xh-item-list--compact',
                 dividers && 'xh-item-list--dividers',
-                onEntryClick && 'xh-item-list--clickable'
+                shown.some(it => it.onClick) && 'xh-item-list--clickable'
             ),
             items: visible.map(({entry, index}, position) =>
-                renderEntry(entry, index, position, marker, onEntryClick)
+                renderEntry(entry, `${idPrefix}-${index}`, position, marker)
             )
         });
     }
@@ -173,9 +163,6 @@ export const [ItemList, itemList] = hoistCmp.withFactory<ItemListProps>({
 //------------------
 // Implementation
 //------------------
-/** Elements that handle their own clicks and keys. `Steps` tests for the same set. */
-const INTERACTIVE_SELECTOR = 'button, a, input, select, textarea, [role="button"]';
-
 /** What leads each entry of a list: its number, its icon, a bar in its intent color, or nothing. */
 type MarkerType = 'number' | 'icon' | 'accent';
 
@@ -183,8 +170,8 @@ type MarkerType = 'number' | 'icon' | 'accent';
  * One type for the whole list, so the text of every entry starts at the same place. An entry
  * with nothing to show in the marker keeps its space.
  */
-function markerType(entries: ItemListEntry[], ordered: boolean): MarkerType {
-    if (ordered) return 'number';
+function markerType(entries: ItemListEntry[], numbered: boolean): MarkerType {
+    if (numbered) return 'number';
     if (entries.some(it => it.icon)) return 'icon';
     if (entries.some(it => it.intent)) return 'accent';
     return null;
@@ -197,57 +184,25 @@ function markerContent(entry: ItemListEntry, position: number, marker: MarkerTyp
     return entry.icon ?? (entry.intent ? span({className: 'xh-item-list__dot'}) : null);
 }
 
-/**
- * True if an event comes from an interactive element inside the entry, which handles the event
- * itself. The entry is a `role="button"` too, so the nearest match must be another element.
- */
-function isFromNestedControl(e: MouseEvent<HTMLElement> | KeyboardEvent<HTMLElement>): boolean {
-    const control = (e.target as Element).closest?.(INTERACTIVE_SELECTOR);
-    return control != null && control !== e.currentTarget;
-}
-
-function isBlankEntry({title, description, detail}: ItemListEntry): boolean {
-    return isBlankNode(title) && isBlankNode(description) && isBlankNode(detail);
-}
-
-function renderEntry(
-    entry: ItemListEntry,
-    index: number,
-    position: number,
-    marker: MarkerType,
-    onEntryClick: ItemListProps['onEntryClick']
-) {
-    const {title, description, detail, intent, disabled} = entry,
-        isDisabled = !!onEntryClick && !!disabled,
-        clickProps = isDisabled
-            ? {role: 'button', 'aria-disabled': true}
-            : onEntryClick
-              ? {
-                    role: 'button',
-                    tabIndex: 0,
-                    onClick: (e: MouseEvent<HTMLDivElement>) => {
-                        if (!isFromNestedControl(e)) onEntryClick(entry, index);
-                    },
-                    onKeyDown: (e: KeyboardEvent<HTMLDivElement>) => {
-                        if (isFromNestedControl(e)) return;
-                        if (e.key === 'Enter' || e.key === ' ') {
-                            e.preventDefault();
-                            onEntryClick(entry, index);
-                        }
-                    }
-                }
-              : {};
+function renderEntry(entry: ItemListEntry, id: string, position: number, marker: MarkerType) {
+    const {title, description, detail, intent, onClick, disabled} = entry,
+        isButton = !!onClick,
+        isDisabled = isButton && !!disabled,
+        hasDescription = !isBlankNode(description),
+        descriptionId = `${id}-description`,
+        {rowProps, buttonProps} = clickableRowProps(onClick, disabled);
 
     return li({
-        key: index,
+        key: id,
         className: classNames(
             'xh-item-list__entry',
             intent && `xh-item-list__entry--intent-${intent}`,
+            isButton && !isDisabled && 'xh-item-list__entry--clickable',
             isDisabled && 'xh-item-list__entry--disabled'
         ),
         item: div({
             className: 'xh-item-list__entry-inner',
-            ...clickProps,
+            ...rowProps,
             items: [
                 // Decorative: the list itself gives each entry's position to a screen reader.
                 div({
@@ -260,12 +215,16 @@ function renderEntry(
                     className: 'xh-item-list__content',
                     items: [
                         div({
-                            omit: isBlankNode(title) && isBlankNode(detail),
+                            omit: !isButton && isBlankNode(title) && isBlankNode(detail),
                             className: 'xh-item-list__header',
                             items: [
+                                // Kept when blank on a clickable entry, as it is the button.
                                 div({
-                                    omit: isBlankNode(title),
+                                    omit: !isButton && isBlankNode(title),
                                     className: 'xh-item-list__title',
+                                    ...buttonProps,
+                                    'aria-describedby':
+                                        isButton && hasDescription ? descriptionId : null,
                                     item: title
                                 }),
                                 div({
@@ -276,7 +235,8 @@ function renderEntry(
                             ]
                         }),
                         div({
-                            omit: isBlankNode(description),
+                            omit: !hasDescription,
+                            id: isButton ? descriptionId : null,
                             className: 'xh-item-list__description',
                             item: description
                         })

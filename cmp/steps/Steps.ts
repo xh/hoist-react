@@ -5,14 +5,15 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import classNames from 'classnames';
-import {capitalize, includes, isEmpty, isFinite} from 'lodash';
-import {useLayoutEffect, useRef, useState} from 'react';
-import type {KeyboardEvent, MouseEvent, ReactElement, ReactNode} from 'react';
+import {capitalize, compact, includes, isEmpty} from 'lodash';
+import {useId, useLayoutEffect, useRef, useState} from 'react';
+import type {ReactElement, ReactNode} from 'react';
 
 import {div, li, ol} from '@xh/hoist/cmp/layout';
 import {hoistCmp} from '@xh/hoist/core';
 import type {DomAttrsProps, HoistProps, LayoutProps, TestSupportProps} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
+import {clickableRowProps} from '@xh/hoist/utils/impl';
 import {mergeDeep, TEST_ID} from '@xh/hoist/utils/js';
 import {composeRefs, isBlankNode, splitLayoutProps, useOnResize} from '@xh/hoist/utils/react';
 
@@ -73,29 +74,30 @@ export interface StepsProps extends HoistProps, LayoutProps, TestSupportProps, D
     current?: number;
 
     /**
-     * Direction of the sequence. Default `horizontal`.
+     * True to show the steps as a vertical list, with each step's text beside its marker. Use it
+     * for long descriptions, a checklist or a simple timeline. Default false.
      *
-     * `horizontal` is a row for the top of a wizard or a detail panel. Each step takes an equal
-     * share of the width, with its text centered under its marker. Text wraps and is never
-     * truncated. When a share is narrower than `minStepWidth`, the row shows as `vertical`.
-     *
-     * `vertical` is a list with each step's text beside its marker. Use it for long descriptions,
-     * a checklist or a simple timeline.
+     * By default the steps show as a row for the top of a wizard or a detail panel. Each step
+     * takes an equal share of the width, with its text centered under its marker. Text wraps and
+     * is never truncated. When a share is narrower than `minStepWidth`, the row shows as vertical.
      */
-    orientation?: 'horizontal' | 'vertical';
+    vertical?: boolean;
 
     /**
-     * Narrowest share of the width, in pixels, that a step of a `horizontal` row may take. When
-     * the steps that show would be narrower, the row shows as `vertical`, so that words are not
-     * broken across lines. It goes back to a row when the width allows. Default 96, which keeps
+     * Narrowest share of the width, in pixels, that a step of a row may take. When the steps
+     * that show would be narrower, the row shows as vertical, so that words are not broken
+     * across lines. It goes back to a row when the width allows. Default 96, which keeps
      * a long word such as "confirmation" whole. Set 0 to keep the row at any width.
      */
     minStepWidth?: number;
 
     /**
      * Handler for a click or Enter/Space keypress on a step, called with the step and its index
-     * in `steps`. Makes each step a focusable button, except a step with `disabled` set. A click
-     * or keypress on a control inside a step, such as a button in its `detail`, does not call it.
+     * in `steps`. Makes each step clickable, except a step with `disabled` set.
+     *
+     * A click anywhere in a step calls it. The step's title is the button that takes keyboard
+     * focus and that screen readers announce, so a control in the `detail`, such as a button, is
+     * not nested inside it. A click or keypress on such a control does not call the handler.
      */
     onStepClick?: (step: StepSpec, index: number) => void;
 }
@@ -121,7 +123,7 @@ export const [Steps, steps] = hoistCmp.withFactory<StepsProps>({
     render(props, ref) {
         const [
             layoutProps,
-            {className, steps, current, orientation, minStepWidth, onStepClick, testId, domAttrs}
+            {className, steps, current, vertical, minStepWidth, onStepClick, testId, domAttrs}
         ] = splitLayoutProps(props);
 
         // Each step keeps its index in `steps`, which `current` and `onStepClick` refer to.
@@ -129,7 +131,8 @@ export const [Steps, steps] = hoistCmp.withFactory<StepsProps>({
                 .map((step, index) => ({step, index}))
                 .filter(({step}) => step && !step.omit),
             count = shown.length,
-            minWidth = isFinite(minStepWidth) ? minStepWidth : MIN_STEP_WIDTH,
+            minWidth = minStepWidth ?? MIN_STEP_WIDTH,
+            idPrefix = useId(),
             [fits, setFits] = useState(true),
             listRef = useRef<HTMLOListElement>(null),
             argsRef = useRef({count, minWidth}),
@@ -143,13 +146,12 @@ export const [Steps, steps] = hoistCmp.withFactory<StepsProps>({
 
         if (isEmpty(shown)) return null;
 
-        const isVertical = orientation === 'vertical',
-            fellBack = !isVertical && !fits,
+        const fellBack = !vertical && !fits,
             olProps = mergeDeep(
                 {
                     className: classNames(
                         className,
-                        isVertical || fellBack ? 'xh-steps--vertical' : 'xh-steps--horizontal',
+                        vertical || fellBack ? 'xh-steps--vertical' : 'xh-steps--horizontal',
                         fellBack && 'xh-steps--fallback'
                     )
                 },
@@ -163,7 +165,14 @@ export const [Steps, steps] = hoistCmp.withFactory<StepsProps>({
             role: 'list',
             ...olProps,
             items: shown.map(({step, index}, position) =>
-                renderStep(step, index, position + 1, statusOf(step, index, current), onStepClick)
+                renderStep({
+                    step,
+                    index,
+                    number: position + 1,
+                    status: statusOf(step, index, current),
+                    id: `${idPrefix}-${index}`,
+                    onStepClick
+                })
             )
         });
     }
@@ -175,10 +184,6 @@ export const [Steps, steps] = hoistCmp.withFactory<StepsProps>({
 // Default narrowest share for a step of a horizontal row, in pixels. Leaves 88px for text after
 // the step's padding, which holds a long word such as "confirmation" or "instructions".
 const MIN_STEP_WIDTH = 96;
-
-const CONTROL_SELECTOR = 'button, a, input, select, textarea, [role="button"]';
-
-const STATUSES: StepStatus[] = ['pending', 'current', 'complete', 'warning', 'error'];
 
 /** Statuses that a marker shows by icon alone, so the marker names them for screen readers. */
 const ICON_STATUSES: StepStatus[] = ['complete', 'warning', 'error'];
@@ -202,18 +207,26 @@ function px(v: string): number {
 }
 
 function statusOf(step: StepSpec, index: number, current: number): StepStatus {
-    if (includes(STATUSES, step.status)) return step.status;
+    if (step.status) return step.status;
     if (current == null) return 'pending';
     return index < current ? 'complete' : index === current ? 'current' : 'pending';
 }
 
-function renderStep(
-    step: StepSpec,
-    index: number,
-    number: number,
-    status: StepStatus,
-    onStepClick: StepsProps['onStepClick']
-) {
+function renderStep({
+    step,
+    index,
+    number,
+    status,
+    id,
+    onStepClick
+}: {
+    step: StepSpec;
+    index: number;
+    number: number;
+    status: StepStatus;
+    id: string;
+    onStepClick: StepsProps['onStepClick'];
+}) {
     const {title, description, detail, disabled} = step,
         isButton = !!onStepClick,
         isDisabled = isButton && !!disabled,
@@ -221,24 +234,14 @@ function renderStep(
         hasDetail = !isBlankNode(detail),
         hasDescription = !isBlankNode(description),
         currentProps = status === 'current' ? {'aria-current': 'step' as const} : {},
-        clickProps = isDisabled
-            ? {role: 'button', 'aria-disabled': true}
-            : isButton
-              ? {
-                    role: 'button',
-                    tabIndex: 0,
-                    onClick: (e: MouseEvent<HTMLDivElement>) => {
-                        if (!isFromNestedControl(e)) onStepClick(step, index);
-                    },
-                    onKeyDown: (e: KeyboardEvent<HTMLDivElement>) => {
-                        if (isFromNestedControl(e)) return;
-                        if (e.key === 'Enter' || e.key === ' ') {
-                            e.preventDefault();
-                            onStepClick(step, index);
-                        }
-                    }
-                }
-              : {};
+        {rowProps, buttonProps} = clickableRowProps(
+            isButton ? () => onStepClick(step, index) : null,
+            disabled
+        ),
+        // The button names the step. Its status and description describe it.
+        markerId = isButton && isIconStatus(status) ? `${id}-marker` : null,
+        descriptionId = isButton && hasDescription ? `${id}-description` : null,
+        describedBy = compact([markerId, descriptionId]).join(' ') || null;
 
     // The button reports the current step, so a screen reader says it on focus.
     return li({
@@ -252,19 +255,26 @@ function renderStep(
         ...(isButton ? {} : currentProps),
         item: div({
             className: 'xh-steps__step-inner',
-            ...clickProps,
-            ...(isButton ? currentProps : {}),
+            ...rowProps,
             items: [
-                marker(step, number, status),
+                marker(step, number, status, markerId),
                 div({
-                    omit: !hasTitle && !hasDetail && !hasDescription,
+                    omit: !isButton && !hasTitle && !hasDetail && !hasDescription,
                     className: 'xh-steps__content',
                     items: [
                         div({
-                            omit: !hasTitle && !hasDetail,
+                            omit: !isButton && !hasTitle && !hasDetail,
                             className: 'xh-steps__header',
                             items: [
-                                div({omit: !hasTitle, className: 'xh-steps__title', item: title}),
+                                // Kept when blank on a clickable step, as it is the button.
+                                div({
+                                    omit: !isButton && !hasTitle,
+                                    className: 'xh-steps__title',
+                                    ...buttonProps,
+                                    ...(isButton ? currentProps : {}),
+                                    'aria-describedby': describedBy,
+                                    item: title
+                                }),
                                 div({
                                     omit: !hasDetail,
                                     className: 'xh-steps__detail',
@@ -274,6 +284,7 @@ function renderStep(
                         }),
                         div({
                             omit: !hasDescription,
+                            id: descriptionId,
                             className: 'xh-steps__description',
                             item: description
                         })
@@ -284,21 +295,17 @@ function renderStep(
     });
 }
 
-/**
- * True if an event came from a control inside the step, such as a button in its detail. That
- * control handles the event, so the step must not act on it too.
- */
-function isFromNestedControl(e: MouseEvent<HTMLElement> | KeyboardEvent<HTMLElement>): boolean {
-    const control = (e.target as Element).closest?.(CONTROL_SELECTOR);
-    return control != null && control !== e.currentTarget;
+function isIconStatus(status: StepStatus): boolean {
+    return includes(ICON_STATUSES, status);
 }
 
-function marker(step: StepSpec, number: number, status: StepStatus) {
-    const ariaProps = includes(ICON_STATUSES, status)
+function marker(step: StepSpec, number: number, status: StepStatus, id: string) {
+    const ariaProps = isIconStatus(status)
         ? {role: 'img', 'aria-label': capitalize(status)}
         : {'aria-hidden': true};
 
     return div({
+        id,
         className: 'xh-steps__marker',
         ...ariaProps,
         item: step.icon ?? defaultMarker(number, status)

@@ -137,28 +137,32 @@
   //------------------
   // Clickable
   //------------------
-  // Padded at the sides, so the hover background does not sit tight against the text.
+  // Every entry of a list with a clickable entry is padded at the sides, so the text of all its
+  // entries lines up and the hover background does not sit tight against the text.
   &--clickable &__entry-inner {
     padding-inline: var(--xh-item-list-entry-gap);
     border-radius: var(--xh-border-radius);
+  }
+
+  &__entry--clickable &__entry-inner {
     cursor: pointer;
 
     &:hover {
       background-color: var(--xh-item-list-hover-bg);
     }
 
-    &:focus-visible {
+    // The title is the button that takes focus. The focus ring goes around the whole entry.
+    &:has(.xh-item-list__title:focus-visible) {
       outline: 2px solid var(--xh-focus-outline-color);
       outline-offset: -2px;
     }
   }
 
-  &--clickable &__entry--disabled &__entry-inner {
-    cursor: default;
-    opacity: var(--xh-item-list-disabled-opacity);
+  &__entry--clickable &__title:focus-visible {
+    outline: none;
+  }
 
-    &:hover {
-      background-color: transparent;
-    }
+  &__entry--disabled &__entry-inner {
+    opacity: var(--xh-item-list-disabled-opacity);
   }
 }

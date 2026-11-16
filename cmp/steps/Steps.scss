@@ -203,9 +203,14 @@
       text-decoration: underline;
     }
 
-    &:focus-visible {
+    // The title is the button that takes focus. The focus ring goes around the whole step.
+    &:has(.xh-steps__title:focus-visible) {
       outline: 2px solid var(--xh-focus-outline-color);
       outline-offset: 2px;
     }
+  }
+
+  &__step--clickable &__title:focus-visible {
+    outline: none;
   }
 }

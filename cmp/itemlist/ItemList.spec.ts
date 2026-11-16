@@ -5,7 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {itemList} from '@xh/hoist/cmp/itemlist';
-import type {ItemListEntry, ItemListProps} from '@xh/hoist/cmp/itemlist';
+import type {ItemListProps} from '@xh/hoist/cmp/itemlist';
 import {a, htmlButton, span} from '@xh/hoist/cmp/layout';
 import {Icon} from '@xh/hoist/icon';
 import {initTestAppAsync} from '@xh/hoist/test-support';
@@ -120,20 +120,6 @@ describe('ItemList', () => {
         expect(part(root, 'detail').textContent).toBe('0');
     });
 
-    it('skips an entry with no title, description or detail to show', () => {
-        const root = renderRoot({
-            ordered: true,
-            entries: [
-                {title: 'A'},
-                {title: '', description: false, icon: Icon.warning()},
-                {title: 'C'}
-            ]
-        });
-
-        expect(texts(root, 'title')).toEqual(['A', 'C']);
-        expect(texts(root, 'marker--number')).toEqual(['1', '2']);
-    });
-
     it.each([
         ['null', null],
         ['false', false],
@@ -147,11 +133,10 @@ describe('ItemList', () => {
             unset = renderRoot({entries}),
             nulls = renderRoot({
                 entries,
-                ordered: null,
+                numbered: null,
                 dividers: null,
                 size: null,
-                emptyText: null,
-                onEntryClick: null
+                emptyText: null
             });
 
         expect(nulls.outerHTML).toBe(unset.outerHTML);
@@ -190,9 +175,9 @@ describe('ItemList', () => {
             expect(part(plain, 'dot')).toBeNull();
         });
 
-        it('numbers the entries shown in an ordered list, in place of icons', () => {
+        it('numbers the entries shown in a numbered list, in place of icons', () => {
             const root = renderRoot({
-                ordered: true,
+                numbered: true,
                 entries: [
                     {title: 'A', icon: Icon.warning()},
                     null,
@@ -217,7 +202,7 @@ describe('ItemList', () => {
         });
 
         it('hides markers from screen readers', () => {
-            const root = renderRoot({ordered: true, entries: [{title: 'A'}]});
+            const root = renderRoot({numbered: true, entries: [{title: 'A'}]});
 
             expect(part(root, 'marker').getAttribute('aria-hidden')).toBe('true');
         });
@@ -238,72 +223,74 @@ describe('ItemList', () => {
         expect(root.getAttribute('data-testid')).toBe('alerts');
     });
 
-    describe('onEntryClick', () => {
-        const entries: ItemListEntry[] = [{title: 'A'}, {title: 'B', omit: true}, {title: 'C'}];
-
+    describe('onClick', () => {
         it('leaves entries plain and out of the tab order without a handler', () => {
-            const root = renderRoot({entries}),
-                inner = part(root, 'entry-inner');
+            const root = renderRoot({entries: [{title: 'A', description: 'B'}]});
 
-            expect(inner.hasAttribute('role')).toBe(false);
-            expect(inner.hasAttribute('tabindex')).toBe(false);
+            expect(root.querySelector('[role="button"]')).toBeNull();
+            expect(root.querySelector('[tabindex]')).toBeNull();
             expect(root.classList).not.toContain('xh-item-list--clickable');
         });
 
-        it('makes each entry a focusable button', () => {
-            const root = renderRoot({entries, onEntryClick: vi.fn()}),
-                inner = part(root, 'entry-inner');
+        it('makes the title of each entry with a handler a focusable button', () => {
+            const root = renderRoot({entries: [{title: 'A', onClick: vi.fn()}, {title: 'B'}]}),
+                [clickable, plain] = entriesOf(root).map(it => part(it, 'title'));
 
-            expect(inner.getAttribute('role')).toBe('button');
-            expect(inner.getAttribute('tabindex')).toBe('0');
+            expect(root.classList).toContain('xh-item-list--clickable');
+            expect(clickable.getAttribute('role')).toBe('button');
+            expect(clickable.getAttribute('tabindex')).toBe('0');
+            expect(plain.hasAttribute('role')).toBe(false);
+            expect(plain.hasAttribute('tabindex')).toBe(false);
         });
 
-        it('calls the handler on a click, Enter or Space, with the entry and its index', () => {
-            const onEntryClick = vi.fn(),
-                root = renderRoot({entries, onEntryClick}),
-                last = entriesOf(root)[1].querySelector('.xh-item-list__entry-inner');
+        it('calls the handler on a click anywhere in the entry, or Enter or Space', () => {
+            const onClick = vi.fn(),
+                root = renderRoot({entries: [{title: 'A', description: 'More', onClick}]}),
+                title = part(root, 'title');
 
-            fireEvent.click(last);
-            fireEvent.keyDown(last, {key: 'Enter'});
-            fireEvent.keyDown(last, {key: ' '});
-            fireEvent.keyDown(last, {key: 'a'});
+            fireEvent.click(part(root, 'entry-inner'));
+            fireEvent.click(part(root, 'description'));
+            fireEvent.keyDown(title, {key: 'Enter'});
+            fireEvent.keyDown(title, {key: ' '});
+            fireEvent.keyDown(title, {key: 'a'});
 
-            expect(onEntryClick).toHaveBeenCalledTimes(3);
-            expect(onEntryClick).toHaveBeenLastCalledWith(entries[2], 2);
+            expect(onClick).toHaveBeenCalledTimes(4);
         });
 
-        it('reports the index in the array as given, not the number an ordered list shows', () => {
-            const onEntryClick = vi.fn(),
-                root = renderRoot({entries, ordered: true, onEntryClick}),
-                last = entriesOf(root)[1];
+        it('describes the button with the entry description', () => {
+            const root = renderRoot({
+                    entries: [{title: 'A', description: 'More', onClick: vi.fn()}]
+                }),
+                describedBy = part(root, 'title').getAttribute('aria-describedby');
 
-            expect(part(last, 'marker--number').textContent).toBe('2');
-            fireEvent.click(part(last, 'entry-inner'));
-            expect(onEntryClick).toHaveBeenCalledWith(entries[2], 2);
+            expect(root.querySelector(`[id="${describedBy}"]`)).toBe(part(root, 'description'));
+        });
+
+        it('keeps a button for an entry with a blank title', () => {
+            const onClick = vi.fn(),
+                root = renderRoot({entries: [{title: null, description: 'More', onClick}]});
+
+            fireEvent.keyDown(part(root, 'title'), {key: 'Enter'});
+            expect(onClick).toHaveBeenCalledTimes(1);
         });
 
         it('keeps a disabled entry out of the tab order and does not call the handler', () => {
-            const onEntryClick = vi.fn(),
-                root = renderRoot({
-                    entries: [{title: 'A', disabled: true}, {title: 'B'}],
-                    onEntryClick
-                }),
-                [disabled, enabled] = entriesOf(root).map(it => part(it, 'entry-inner'));
+            const onClick = vi.fn(),
+                root = renderRoot({entries: [{title: 'A', disabled: true, onClick}]}),
+                title = part(root, 'title');
 
-            expect(disabled.getAttribute('aria-disabled')).toBe('true');
-            expect(disabled.hasAttribute('tabindex')).toBe(false);
-            expect(enabled.getAttribute('tabindex')).toBe('0');
+            expect(title.getAttribute('aria-disabled')).toBe('true');
+            expect(title.hasAttribute('tabindex')).toBe(false);
 
-            fireEvent.click(disabled);
-            fireEvent.keyDown(disabled, {key: 'Enter'});
-            expect(onEntryClick).not.toHaveBeenCalled();
+            fireEvent.click(part(root, 'entry-inner'));
+            fireEvent.click(title);
+            fireEvent.keyDown(title, {key: 'Enter'});
+            expect(onClick).not.toHaveBeenCalled();
         });
 
-        it('ignores disabled in a list with no handler', () => {
-            const entries = [{title: 'A'}];
-
+        it('ignores disabled on an entry with no handler', () => {
             expect(renderRoot({entries: [{title: 'A', disabled: true}]}).outerHTML).toBe(
-                renderRoot({entries}).outerHTML
+                renderRoot({entries: [{title: 'A'}]}).outerHTML
             );
         });
 
@@ -312,26 +299,33 @@ describe('ItemList', () => {
             ['a link', () => a({className: 'inner', href: '#', item: 'Open'})],
             ['an element inside a button', () => htmlButton(span({className: 'inner', item: 'X'}))],
             ['a role="button" element', () => span({className: 'inner', role: 'button'})]
-        ])('leaves a click or keypress on %s inside an entry to that control', (name, control) => {
-            const onEntryClick = vi.fn(),
-                root = renderRoot({entries: [{title: 'A', detail: control()}], onEntryClick}),
+        ])('leaves a click or keypress on %s in the detail to that control', (name, control) => {
+            const onClick = vi.fn(),
+                root = renderRoot({entries: [{title: 'A', detail: control(), onClick}]}),
                 inner = root.querySelector('.inner');
 
             fireEvent.click(inner);
             fireEvent.keyDown(inner, {key: 'Enter'});
             fireEvent.keyDown(inner, {key: ' '});
-            expect(onEntryClick).not.toHaveBeenCalled();
+            expect(onClick).not.toHaveBeenCalled();
         });
 
-        it('still responds to a click on plain content inside an entry', () => {
-            const onEntryClick = vi.fn(),
+        it('does not nest a control in the detail inside the button', () => {
+            const root = renderRoot({
+                entries: [{title: 'A', detail: htmlButton('Dismiss'), onClick: vi.fn()}]
+            });
+
+            expect(root.querySelector('[role="button"] button')).toBeNull();
+        });
+
+        it('still responds to a click on plain content inside the title', () => {
+            const onClick = vi.fn(),
                 root = renderRoot({
-                    entries: [{title: span({className: 'inner', item: 'A'})}],
-                    onEntryClick
+                    entries: [{title: span({className: 'inner', item: 'A'}), onClick}]
                 });
 
             fireEvent.click(root.querySelector('.inner'));
-            expect(onEntryClick).toHaveBeenCalledTimes(1);
+            expect(onClick).toHaveBeenCalledTimes(1);
         });
     });
 });
