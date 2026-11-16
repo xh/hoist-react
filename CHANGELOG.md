@@ -19,6 +19,11 @@
 * Hoist now requires AG Grid `36.3` or later, to avoid a performance issue in `36.2`. Apps must bump
   their `ag-grid-community`, `ag-grid-react`, and (if used) `ag-grid-enterprise` dependencies.
 
+### 🐞 Bug Fixes
+
+* Fixed `GridAutosizeService` continuing to measure columns after its grid unmounted or its
+  `GridModel` was destroyed.
+
 ### 📚 Libraries
 
 * jsdom `30 → 30 || 31` (optional peer)
@@ -90,10 +95,6 @@
 * Fixed grids scrolling diagonally on trackpad gestures under AG Grid 36. `AgGrid` now locks each
   two-axis wheel event to its dominant axis.
 * Fixed `DashCanvas` widgets lagging behind the pointer while dragged or resized. Hoist pins react-grid-layout to 2.2 until a fixed 2.3 release ships.
-
-### ⚙️ Technical
-
-* Grid autosizing now stops when its grid unmounts or is destroyed partway through a pass.
 
 ### 🤖 AI Docs + Tooling
 
