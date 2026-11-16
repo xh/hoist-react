@@ -34,6 +34,9 @@ detailed, step-by-step upgrade instructions with before/after code examples.
       `--xh-resizable-button-bg` and `-icon-color`, none of which had any effect.
 * Hoist now requires AG Grid `36.3` or later, to avoid a performance issue in `36.2`. Apps must bump
   their `ag-grid-community`, `ag-grid-react`, and (if used) `ag-grid-enterprise` dependencies.
+* `Mask` now renders inline desktop masks as a plain `div` with the class `xh-mask--inline`, not a
+  Blueprint overlay. Showing a mask no longer forces a browser layout. Restyle any app CSS that
+  targets `.bp6-overlay` classes within an inline mask, or use `--xh-mask-bg`.
 
 ### 🐞 Bug Fixes
 
@@ -44,6 +47,7 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 
 * `StoreRecord.getValues()` is faster for records with many fields, and so is spreading or copying
   its result. It now returns an object in V8's compact fast-properties mode.
+* Grid autosizing now stops when its grid unmounts or is destroyed partway through a pass.
 * The desktop column chooser now builds its grids on first open and syncs them to the grid's
   column state only while open. Apps with many grids that set `colChooserModel` now hold far fewer
   `GridModel` and `Store` instances.
