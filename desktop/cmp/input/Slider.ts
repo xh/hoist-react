@@ -17,7 +17,7 @@ import '@xh/hoist/desktop/register';
 import {rangeSlider as bpRangeSlider, slider as bpSlider} from '@xh/hoist/kit/blueprint';
 import {logWarn, withDefault} from '@xh/hoist/utils/js';
 import {composeRefs, getLayoutProps, useOnResize} from '@xh/hoist/utils/react';
-import {castArray, isArray, isEmpty, isFinite} from 'lodash';
+import {castArray, isArray, isEmpty} from 'lodash';
 import type {ReactNode} from 'react';
 import {useLayoutEffect, useRef} from 'react';
 import './Slider.scss';
@@ -64,11 +64,10 @@ export interface SliderProps extends HoistProps, HoistInputProps, LayoutProps {
 /**
  * A slider input to edit either a single number or an array of two (for a range).
  *
- * The slider never fails on a scale it cannot draw. It replaces a `stepSize` or `labelStepSize`
- * that is not a positive number with 1, raises a `stepSize` too small for the range, and shows a
- * label at each end only when `labelStepSize` gives more than 1,000 labels. With a `min` or `max`
- * that is not a number, or a `max` not above `min`, it renders disabled. It logs a warning for
- * each of these in development mode.
+ * Blueprint hangs or throws on some scales, so the slider adjusts them. It uses 1 for a `stepSize`
+ * of zero or less, and raises a `stepSize` too small for the range. It shows a label at each end
+ * only for a `labelStepSize` of zero or less, or one that gives over 1,000 labels. With a `max` not
+ * above `min`, it renders disabled. It logs a warning for each change in development mode.
  */
 export const [Slider, slider] = hoistCmp.withFactory<SliderProps>({
     displayName: 'Slider',
@@ -126,7 +125,7 @@ const cmp = hoistCmp.factory<SliderInputModel>(({model, className, ...props}, re
     const isRange = isArray(model.renderValue),
         [startLabel, endLabel = startLabel] = castArray(props.ariaLabel ?? []),
         // FormField renders its label with an id derived from the input's id - see FormField.
-        labelledBy = props.id ? `${props.id}-label` : undefined,
+        labelledBy = props.id ? `${props.id}-label` : null,
         handleAttrs = (label: string) =>
             label ? {'aria-label': label} : {'aria-labelledby': labelledBy};
 
@@ -180,7 +179,7 @@ const cmp = hoistCmp.factory<SliderInputModel>(({model, className, ...props}, re
  * centered place.
  */
 function fitLabels(el: HTMLElement) {
-    if (!el || el.querySelector('.bp6-slider.bp6-vertical')) return;
+    if (!el) return;
 
     const labels = [
         el.querySelector<HTMLElement>('.bp6-slider-axis > .bp6-slider-label:first-child'),
@@ -190,6 +189,7 @@ function fitLabels(el: HTMLElement) {
 
     // Reset every label before measuring, so that no shift is measured as part of a label.
     labels.forEach(label => label?.style.removeProperty('translate'));
+    if (el.querySelector('.bp6-slider.bp6-vertical')) return;
 
     const {left, right} = el.getBoundingClientRect();
     labels.forEach(label => {
@@ -231,32 +231,31 @@ interface SliderScale {
 }
 
 /**
- * The scale to hand to Blueprint, which does not guard against one it cannot draw. It reads the
- * decimal places of `stepSize` in a loop that never ends for a number too small. It draws a label
- * for each `labelStepSize` in the range, however many. It divides by the range. Returns the props
- * as given for any scale that Blueprint draws.
+ * The scale to hand to Blueprint. Blueprint throws on a step of zero or less, and reads the decimal
+ * places of `stepSize` in a loop that never ends for a number too small. It draws a label for each
+ * `labelStepSize` in the range, however many, and divides by the range. Returns the props as given
+ * for any scale that Blueprint draws.
  */
 function getSafeScale(props: SliderProps): SliderScale {
-    const changes: string[] = [];
-    let min = props.min ?? 0,
-        max = props.max ?? 10,
+    const changes: string[] = [],
+        min = props.min ?? 0;
+    let max = props.max ?? 10,
         stepSize = props.stepSize ?? 1,
         labelStepSize = props.labelStepSize,
         labelValues: number[],
         disabled = false;
 
-    // 1) A range that is a positive, finite number, with a finite inverse.
-    if (!(max > min) || !isFinite(max - min) || !isFinite(1 / (max - min))) {
-        changes.push(`min ${props.min} and max ${props.max} give no range - rendered disabled.`);
-        if (!isFinite(min)) min = 0;
-        max = min + Math.max(1, Math.abs(min) * 1e-6);
+    // 1) A range above zero.
+    if (max <= min) {
+        changes.push(`min ${min} and max ${max} give no range - rendered disabled.`);
+        max = min + 1;
         disabled = true;
     }
     const range = max - min;
 
-    // 2) A step that is a positive number, and large enough to tell values in the range apart.
-    if (!isFinite(stepSize) || stepSize <= 0) {
-        changes.push(`stepSize ${props.stepSize} is not a positive number - used 1.`);
+    // 2) A step above zero, and large enough to tell values in the range apart.
+    if (stepSize <= 0) {
+        changes.push(`stepSize ${stepSize} is not above zero - used 1.`);
         stepSize = 1;
     }
     if (stepSize < range * MIN_STEP_RATIO) {
@@ -264,17 +263,14 @@ function getSafeScale(props: SliderProps): SliderScale {
         changes.push(`stepSize ${props.stepSize} is too small for the range - used ${stepSize}.`);
     }
 
-    // 3) A label step that is a positive number, and gives a number of labels a page can hold.
-    if (labelStepSize != null && (!isFinite(labelStepSize) || labelStepSize <= 0)) {
-        changes.push(`labelStepSize ${props.labelStepSize} is not a positive number - used 1.`);
-        labelStepSize = undefined;
-    }
+    // 3) A label step above zero, that gives a number of labels a page can hold.
+    const labelCount = (range + LABEL_TOLERANCE) / (labelStepSize ?? 1);
     if (
-        props.labelRenderer !== false &&
-        (range + LABEL_TOLERANCE) / (labelStepSize ?? 1) >= MAX_LABELS
+        (labelStepSize != null && labelStepSize <= 0) ||
+        (props.labelRenderer !== false && labelCount >= MAX_LABELS)
     ) {
         changes.push(
-            `labelStepSize ${props.labelStepSize ?? 1} gives over ${MAX_LABELS} labels - ` +
+            `labelStepSize ${labelStepSize ?? 1} gives no labels or over ${MAX_LABELS} - ` +
                 'showed a label at each end only.'
         );
         labelStepSize = undefined;
