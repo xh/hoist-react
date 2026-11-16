@@ -158,6 +158,53 @@ describe('CubeGridModel', () => {
             ]);
         });
 
+        it('drops the root group when showRootGroup is false, the paths heading the region', () => {
+            const model = createModel({query: NESTED_QUERY, pivotConfig: {showRootGroup: false}}),
+                {gridModel, pivotModel} = model;
+
+            expect(gridModel.getColumnGroup(PIVOT_GROUP_ID)).toBeFalsy();
+            expect(gridModel.columns.slice(1).map(it => [groupIdOf(it), it.groupShowMode])).toEqual(
+                [
+                    ['Energy', undefined],
+                    ['Tech', undefined]
+                ]
+            );
+
+            const withSummary = createModel({
+                query: NESTED_QUERY,
+                pivotConfig: {showRootGroup: false, dimensionDefaults: {showSummary: 'right'}}
+            });
+            expect(map(withSummary.gridModel.columns.slice(1), groupIdOf)).toEqual([
+                'Energy',
+                'Tech',
+                'pivot:summary'
+            ]);
+            expect(withSummary.gridModel.getColumnGroup('pivot:summary').groupShowMode).toBeNull();
+
+            // Bindable - turning it back on restores the root.
+            pivotModel.showRootGroup = true;
+            expect(gridModel.getColumnGroup(PIVOT_GROUP_ID).headerName).toBe('By Sector');
+        });
+
+        it('drops a lone measure root, but keeps the roots naming multiple outermost measures', () => {
+            const single = createModel({
+                query: PIVOT_QUERY,
+                pivotConfig: {showRootGroup: false}
+            });
+            expect(colIds(single.gridModel.columns)).toEqual([
+                'cubeLabel',
+                'Energy>>sum',
+                'Tech>>sum'
+            ]);
+
+            const outermost = createModel({
+                query: NESTED_QUERY,
+                pivotConfig: {showRootGroup: false, measuresOutermost: true}
+            });
+            expect(outermost.gridModel.getColumnGroup('sum::pivot')).toBeTruthy();
+            expect(outermost.gridModel.getColumnGroup('avg::pivot')).toBeTruthy();
+        });
+
         it('keeps the summary label beside expanded groups when the collapsed one is dropped', () => {
             const model = createModel({
                     query: NESTED_QUERY,

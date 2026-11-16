@@ -9,15 +9,17 @@ import {
     type AggregationContext,
     Aggregator,
     type AggregatorToken,
+    BucketSpec,
     Cube,
     type CubeFieldSpec,
     type QueryConfig,
+    SumIfSameAggregator,
     type View,
     type ViewRow,
     type ViewRowData
 } from '@xh/hoist/data';
 import {initTestAppAsync} from '@xh/hoist/test-support';
-import {isArray, sumBy} from 'lodash';
+import {isArray, pick, sortBy, sumBy} from 'lodash';
 import {beforeAll, describe, expect, it, onTestFinished} from 'vitest';
 
 /**
@@ -79,6 +81,18 @@ describe('Aggregator', () => {
             expect(aggregateValues('MAX')).toMatchObject({US: 10, EU: null, Asia: 6, Total: 10});
         });
 
+        it('MEDIAN takes the median of non-null values over all leaves, not of child medians', () => {
+            // Medians of child medians would give Asia 3.75 and Total 5.375.
+            expect(aggregateValues('MEDIAN')).toMatchObject({
+                'US/Tech': 10,
+                US: 7,
+                EU: null,
+                'Asia/Tech': 1.5,
+                Asia: 2,
+                Total: 4
+            });
+        });
+
         it('LEAF_COUNT counts the leaves beneath a row, CHILD_COUNT its direct children', () => {
             expect(aggregateValues('LEAF_COUNT')).toMatchObject({US: 3, EU: 2, Total: 8});
             expect(aggregateValues('CHILD_COUNT')).toMatchObject({US: 2, EU: 1, Total: 3});
@@ -109,6 +123,155 @@ describe('Aggregator', () => {
 
             // Fixed in 59.5.0 (#3548) - equal dates held in separate objects compared unequal.
             expect(root.tradeDate).toEqual(new Date(2026, 0, 5));
+        });
+    });
+
+    describe('SumIfSameAggregator', () => {
+        it('sums only where all leaves with a value share the match field, at any depth', () => {
+            const view = autoDestroy(createAmountsCube().createView({query: QUERY}));
+
+            // Both US groups are mixed, so publish a null currency. Comparing those published
+            // values would wrongly find the US children in agreement.
+            expect(valuesByPath(view, 'amount')).toMatchObject({
+                'US/Tech': null,
+                'US/Energy': null,
+                US: null,
+                'EU/Tech': 7,
+                EU: 7,
+                Asia: 5,
+                LatAm: null,
+                Total: null
+            });
+        });
+
+        it('recomputes when only the match field changes', async () => {
+            const cube = createAmountsCube(),
+                view = autoDestroy(cube.createView({query: QUERY, connect: true}));
+
+            await cube.updateDataAsync([{...AMOUNTS[1], currency: 'USD'}]);
+            expectReplaced(view, 'amount');
+            expect(valuesByPath(view, 'amount')).toMatchObject({'US/Tech': 15, US: null});
+
+            await cube.updateDataAsync([{...AMOUNTS[3], currency: 'USD'}]);
+            expectReplaced(view, 'amount');
+            expect(valuesByPath(view, 'amount')).toMatchObject({'US/Energy': 5, US: 20});
+        });
+
+        it('recomputes when an amount change resolves a mix', async () => {
+            const cube = createAmountsCube(),
+                view = autoDestroy(cube.createView({query: QUERY, connect: true}));
+
+            // Nulling the only EUR amount in each US group leaves them all USD.
+            await cube.updateDataAsync([{...AMOUNTS[1], amount: null}]);
+            expectReplaced(view, 'amount');
+            expect(valuesByPath(view, 'amount')).toMatchObject({'US/Tech': 10, US: null});
+
+            await cube.updateDataAsync([{...AMOUNTS[3], amount: null}]);
+            expectReplaced(view, 'amount');
+            expect(valuesByPath(view, 'amount')).toMatchObject({'US/Energy': 4, US: 14});
+        });
+
+        it('treats a null in the match field as a value of its own', () => {
+            const view = autoDestroy(
+                createAmountsCube([
+                    {id: 1, region: 'US', sector: 'Tech', currency: 'USD', amount: 10},
+                    {id: 2, region: 'US', sector: 'Tech', currency: null, amount: 5},
+                    {id: 3, region: 'EU', sector: 'Tech', currency: null, amount: 2},
+                    {id: 4, region: 'EU', sector: 'Energy', currency: null, amount: 3}
+                ]).createView({query: QUERY})
+            );
+            expect(valuesByPath(view, 'amount')).toMatchObject({US: null, EU: 5, Total: null});
+        });
+
+        it('reads the match field from source records, so it need not be queried', () => {
+            const view = autoDestroy(
+                createAmountsCube().createView({
+                    query: {...QUERY, fields: ['region', 'sector', 'amount'], includeLeaves: true}
+                })
+            );
+            expect(valuesByPath(view, 'amount')).toMatchObject({US: null, EU: 7, Asia: 5});
+        });
+        it('chooses a new value to track when the last leaf holding it changes', async () => {
+            const cube = createAmountsCube([
+                    {id: 1, region: 'US', sector: 'Tech', currency: 'USD', amount: 10},
+                    {id: 2, region: 'US', sector: 'Tech', currency: 'USD', amount: 5},
+                    {id: 3, region: 'US', sector: 'Tech', currency: 'EUR', amount: 2}
+                ]),
+                view = autoDestroy(cube.createView({query: QUERY, connect: true}));
+
+            // US/Tech tracks USD, held by two leaves - moving both leaves it with only EUR.
+            await cube.updateDataAsync([
+                {id: 1, region: 'US', sector: 'Tech', currency: 'EUR', amount: 10}
+            ]);
+            expect(valuesByPath(view, 'amount')).toMatchObject({'US/Tech': null, US: null});
+
+            await cube.updateDataAsync([
+                {id: 2, region: 'US', sector: 'Tech', currency: 'EUR', amount: 5}
+            ]);
+            expectReplaced(view, 'amount');
+            expect(valuesByPath(view, 'amount')).toMatchObject({'US/Tech': 17, US: 17, Total: 17});
+
+            // A null amount drops a leaf, rather than leaving its currency behind.
+            await cube.updateDataAsync([
+                {id: 3, region: 'US', sector: 'Tech', currency: 'USD', amount: null}
+            ]);
+            expect(valuesByPath(view, 'amount')).toMatchObject({'US/Tech': 15, Total: 15});
+        });
+
+        it('tracks random batches of amount and currency changes, plain and pivoted', async () => {
+            const rand = seededRandom(7),
+                currencies = ['USD', 'EUR', 'JPY', null],
+                randAmount = () => (rand(5) ? rand(10) : null),
+                // Mostly USD, so groups often share a currency and the tracked one often moves.
+                randCurrency = () => (rand(3) ? 'USD' : currencies[rand(4)]),
+                current = Array.from({length: 60}, (_, id) => ({
+                    id,
+                    region: ['US', 'EU', 'Asia'][id % 3],
+                    sector: ['Tech', 'Energy'][id % 2],
+                    book: ['A', 'B', 'C'][(id % 5) % 3],
+                    currency: randCurrency(),
+                    amount: randAmount()
+                })),
+                cube = autoDestroy(
+                    new Cube({
+                        fields: [
+                            {name: 'region', isDimension: true},
+                            {name: 'sector', isDimension: true},
+                            {name: 'book', isDimension: true},
+                            {name: 'currency'},
+                            {
+                                name: 'amount',
+                                type: 'number',
+                                aggregator: new SumIfSameAggregator('currency')
+                            }
+                        ],
+                        data: current
+                    })
+                ),
+                queries: QueryConfig[] = [
+                    QUERY,
+                    {...QUERY, pivot: {dimensions: ['book'], measures: ['amount']}}
+                ],
+                views = queries.map(query => autoDestroy(cube.createView({query, connect: true})));
+
+            for (let batch = 0; batch < 100; batch++) {
+                const ids = new Set(Array.from({length: 1 + rand(15)}, () => rand(60)));
+                ids.forEach(id => {
+                    const change = rand(3);
+                    current[id] = {
+                        ...current[id],
+                        ...(change !== 1 ? {amount: randAmount()} : {}),
+                        ...(change !== 0 ? {currency: randCurrency()} : {})
+                    };
+                });
+                await cube.updateDataAsync([...ids].map(id => current[id]));
+                views.forEach((view, idx) => {
+                    const names = ['amount', ...view.result.cellFields.map(cf => cf.name)];
+                    expect(normalizeRows(view.result.rows, names)).toEqual(
+                        normalizeRows(cube.executeQuery(queries[idx]), names)
+                    );
+                });
+            }
         });
     });
 
@@ -271,6 +434,146 @@ describe('Aggregator', () => {
             expect(valuesByPath(view, 'value')).toMatchObject({'US/Tech': 10, US: 10, Total: 5.8});
         });
 
+        it('MEDIAN re-takes the median over all leaves beneath', async () => {
+            const {cube, view} = createValuesView('MEDIAN');
+
+            await cube.updateDataAsync([valueUpdate(3, 10)]);
+            expectReplaced(view);
+            expect(valuesByPath(view, 'value')).toMatchObject({US: 10, Total: 6});
+
+            // Asia/Tech holds its median of 1.5, but the values behind it move - Asia must follow.
+            await cube.updateDataAsync([valueUpdate(6, 0), valueUpdate(7, 3)]);
+            expectReplaced(view);
+            expect(valuesByPath(view, 'value')).toMatchObject({'Asia/Tech': 1.5, Asia: 3});
+        });
+
+        it('MEDIAN re-aggregates a parent when a child holds its median over new leaves', async () => {
+            const {cube, view} = createValuesView('MEDIAN');
+
+            // US/Tech holds its median of 10, but US now takes the median of 10, 10 and 4.
+            await cube.updateDataAsync({add: [{id: 9, region: 'US', sector: 'Tech', value: 10}]});
+            expect(valuesByPath(view, 'value')).toMatchObject({'US/Tech': 10, US: 10, Total: 5});
+            expect(valuesByPath(view, 'value')).toEqual(
+                valuesByPath(cube.executeQuery(QUERY), 'value')
+            );
+        });
+
+        it('MEDIAN leaves out the leaves of a row whose canAggregateFn returns false', async () => {
+            // As AVG and the other built-ins do - the row publishes null, and its parent skips it.
+            const cube = autoDestroy(
+                    new Cube({
+                        fields: [
+                            {name: 'region', isDimension: true},
+                            {name: 'sector', isDimension: true},
+                            {
+                                name: 'value',
+                                type: 'number',
+                                aggregator: 'MEDIAN',
+                                canAggregateFn: (dim, val, applied) =>
+                                    !(dim === 'sector' && val === 'Tech' && applied.region === 'US')
+                            }
+                        ],
+                        data: VALUES
+                    })
+                ),
+                view = autoDestroy(cube.createView({query: QUERY, connect: true}));
+
+            expect(valuesByPath(view, 'value')).toMatchObject({'US/Tech': null, US: 4, Total: 3});
+
+            await cube.updateDataAsync([valueUpdate(1, 100)]);
+            expectReplaced(view);
+            expect(valuesByPath(view, 'value')).toMatchObject({US: 4, Total: 3});
+
+            await cube.updateDataAsync([valueUpdate(3, 8)]);
+            expectReplaced(view);
+            expect(valuesByPath(view, 'value')).toMatchObject({US: 8, Total: 4});
+        });
+
+        it('MEDIAN leaves rows unchanged when the values beneath them are unchanged', async () => {
+            // Bucket rows re-aggregate on every rebuild, so would publish new state each time.
+            const cube = autoDestroy(
+                    new Cube({
+                        fields: [
+                            {name: 'region', isDimension: true},
+                            {name: 'sector', isDimension: true},
+                            {name: 'value', type: 'number', aggregator: 'MEDIAN'}
+                        ],
+                        data: VALUES
+                    })
+                ),
+                view = autoDestroy(
+                    cube.createView({
+                        query: {
+                            ...QUERY,
+                            includeLeaves: true,
+                            bucketSpecFn: rows =>
+                                rows[0]?.isLeaf
+                                    ? new BucketSpec({
+                                          name: 'size',
+                                          bucketFn: row => (row.data.value > 5 ? 'big' : 'small')
+                                      })
+                                    : null
+                        },
+                        connect: true
+                    })
+                ),
+                usDigests = () => {
+                    const us = view.result.rows[0].children.find(it => it.cubeLabel === 'US'),
+                        ret = {};
+                    const walk = (row: ViewRowData) => {
+                        if (row.cubeRowType === 'leaf') return;
+                        ret[row.id] = row.cubeRowDigest;
+                        row.children?.forEach(walk);
+                    };
+                    walk(us);
+                    return ret;
+                };
+
+            const before = usDigests();
+            await cube.updateDataAsync({add: [{id: 9, region: 'EU', sector: 'Tech', value: 1}]});
+            expect(usDigests()).toEqual(before);
+        });
+
+        it('MEDIAN tracks random batches of ticks, plain and pivoted', async () => {
+            // Small integers with nulls, so ties and moves to and from null are common.
+            const rand = seededRandom(1),
+                randValue = () => (rand(6) ? rand(10) : null),
+                data = Array.from({length: 60}, (_, id) => ({
+                    id,
+                    region: ['US', 'EU', 'Asia'][id % 3],
+                    sector: ['Tech', 'Energy'][id % 2],
+                    book: ['A', 'B', 'C'][(id % 5) % 3],
+                    value: randValue()
+                })),
+                cube = autoDestroy(
+                    new Cube({
+                        fields: [
+                            {name: 'region', isDimension: true},
+                            {name: 'sector', isDimension: true},
+                            {name: 'book', isDimension: true},
+                            {name: 'value', type: 'number', aggregator: 'MEDIAN'}
+                        ],
+                        data
+                    })
+                ),
+                queries: QueryConfig[] = [
+                    QUERY,
+                    {...QUERY, pivot: {dimensions: ['book'], measures: ['value']}}
+                ],
+                views = queries.map(query => autoDestroy(cube.createView({query, connect: true})));
+
+            for (let batch = 0; batch < 50; batch++) {
+                const ids = new Set(Array.from({length: 1 + rand(15)}, () => rand(60)));
+                await cube.updateDataAsync([...ids].map(id => ({...data[id], value: randValue()})));
+                views.forEach((view, idx) => {
+                    const names = ['value', ...view.result.cellFields.map(cf => cf.name)];
+                    expect(normalizeRows(view.result.rows, names)).toEqual(
+                        normalizeRows(cube.executeQuery(queries[idx]), names)
+                    );
+                });
+            }
+        });
+
         it('LEAF_COUNT and CHILD_COUNT are unchanged by a value tick', async () => {
             const {cube, view} = createValuesView('LEAF_COUNT');
 
@@ -330,6 +633,19 @@ const POSITIONS = [
     {id: 2, region: 'US', sector: 'Tech', qty: 300, price: 30},
     {id: 3, region: 'US', sector: 'Energy', qty: 100, price: 5},
     {id: 4, region: 'EU', sector: 'Tech', qty: 100, price: 45}
+];
+
+// Amounts in mixed currencies - both US groups mix them, and EU has an unpriced leaf.
+const AMOUNTS = [
+    {id: 1, region: 'US', sector: 'Tech', currency: 'USD', amount: 10},
+    {id: 2, region: 'US', sector: 'Tech', currency: 'EUR', amount: 5},
+    {id: 3, region: 'US', sector: 'Energy', currency: 'USD', amount: 4},
+    {id: 4, region: 'US', sector: 'Energy', currency: 'EUR', amount: 1},
+    {id: 5, region: 'EU', sector: 'Tech', currency: 'EUR', amount: 7},
+    {id: 6, region: 'EU', sector: 'Tech', currency: 'USD', amount: null},
+    {id: 7, region: 'Asia', sector: 'Tech', currency: 'JPY', amount: 2},
+    {id: 8, region: 'Asia', sector: 'Energy', currency: 'JPY', amount: 3},
+    {id: 9, region: 'LatAm', sector: 'Tech', currency: 'BRL', amount: null}
 ];
 
 /** The aggregator from the Cube README - a weighted average, composed from aggregator state. */
@@ -446,6 +762,21 @@ function createPositionsCube(priceAggregator: Aggregator): Cube {
     return autoDestroy(new Cube({fields, data: POSITIONS}));
 }
 
+function createAmountsCube(data: PlainObject[] = AMOUNTS): Cube {
+    return autoDestroy(
+        new Cube({
+            fields: [
+                {name: 'region', isDimension: true},
+                {name: 'sector', isDimension: true},
+                // Apps typically label groups with a UNIQUE currency - null where mixed.
+                {name: 'currency', aggregator: 'UNIQUE'},
+                {name: 'amount', type: 'number', aggregator: new SumIfSameAggregator('currency')}
+            ],
+            data
+        })
+    );
+}
+
 /** A field's value at each row of a grand-total result, keyed by path - e.g. 'US/Tech'. */
 function valuesByPath(source: View | ViewRowData[], field: string): PlainObject {
     const rows = isArray(source) ? source : source.result.rows,
@@ -463,4 +794,21 @@ function valuesByPath(source: View | ViewRowData[], field: string): PlainObject 
 function autoDestroy<T extends {destroy(): void}>(obj: T): T {
     onTestFinished(() => obj.destroy());
     return obj;
+}
+
+/** Rows as nested plain objects of the named fields, ordered by id - for comparing results. */
+function normalizeRows(rows: ViewRowData[], fieldNames: string[]): PlainObject[] {
+    if (!rows) return null;
+    return sortBy(rows, 'id').map(row => ({
+        ...pick(row, ['id', ...fieldNames]),
+        children: normalizeRows(row.children, fieldNames)
+    }));
+}
+
+/** A seeded generator of integers in [0, n) - repeatable, unlike `Math.random`. */
+function seededRandom(seed: number): (n: number) => number {
+    return n => {
+        seed = (seed * 16807) % 2147483647;
+        return seed % n;
+    };
 }

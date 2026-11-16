@@ -14,6 +14,13 @@ import type {Route} from 'router5';
 /** Values available for intents. */
 export type Intent = 'primary' | 'success' | 'warning' | 'danger';
 
+/**
+ * Sizes a component can be drawn at, chosen by the developer for emphasis or space. Distinct from
+ * `SizingMode`, the density preference that a user can change for the whole app. A component
+ * that takes this type may support only some of the sizes.
+ */
+export type ComponentSize = 'compact' | 'standard' | 'large';
+
 /** Values available for App Theme. */
 export type Theme = 'system' | 'dark' | 'light';
 

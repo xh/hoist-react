@@ -87,6 +87,15 @@ export interface CubeGridPivotConfig {
     measuresOutermost?: boolean;
 
     /**
+     * True (default) to head the pivot region with a root group, titled by the measure and first
+     * pivot dimension, that collapses to the row summary. False to drop it, saving a header row -
+     * the top-level path groups head the region directly, with the row summary beside them only
+     * if the first dimension's `showSummary` asks for it. Ignored with multiple measures
+     * outermost, as their root groups are what name the measures.
+     */
+    showRootGroup?: boolean;
+
+    /**
      * True (default) to link every pivot column of a measure to one width, or options to tune it.
      * The width is the measure's widest data, plus an even share of any room a displayed pivot
      * label needs beyond the data of the columns it spans, up to `headerFitMaxWidth`. It follows
@@ -121,6 +130,7 @@ export class CubeGridPivotModel extends HoistModel {
     @bindableRef accessor measures: PivotMeasureSpec[];
     @bindableRef accessor measureDefaults: Omit<PivotMeasureSpec, 'field'>;
     @bindable accessor measuresOutermost: boolean;
+    @bindable accessor showRootGroup: boolean;
     @bindableRef accessor linkedSizing: boolean | PivotLinkedSizingOptions;
 
     private readonly cubeGridModel: CubeGridModel;
@@ -133,6 +143,7 @@ export class CubeGridPivotModel extends HoistModel {
             measures = [],
             measureDefaults = null,
             measuresOutermost = false,
+            showRootGroup = true,
             linkedSizing = true,
             expandLevel = -1
         }: CubeGridPivotConfig,
@@ -145,6 +156,7 @@ export class CubeGridPivotModel extends HoistModel {
         this.measures = measures;
         this.measureDefaults = measureDefaults;
         this.measuresOutermost = measuresOutermost;
+        this.showRootGroup = showRootGroup;
         this.linkedSizing = linkedSizing;
         this.expandLevel = expandLevel;
     }
@@ -228,6 +240,7 @@ export class CubeGridPivotModel extends HoistModel {
             this.measures,
             this.measureDefaults,
             this.measuresOutermost,
+            this.showRootGroup,
             this.linkedSizing
         ];
     }
@@ -247,8 +260,8 @@ export class CubeGridPivotModel extends HoistModel {
         this.addReaction(this.widthsReaction(), this.sizingReaction());
     }
 
-    /** @internal - builds the pivot region's root groups, or none when the query has no paths. */
-    buildRegion(): ColumnGroupSpec[] {
+    /** @internal - builds the pivot region: its root groups, or their children when hidden. */
+    buildRegion(): Array<ColumnSpec | ColumnGroupSpec> {
         const {paths, cellFields} = this.view.result;
 
         this.indexCellFields(cellFields);
@@ -290,9 +303,27 @@ export class CubeGridPivotModel extends HoistModel {
                     tooltip = `${measures.join(', ')} by ${dims.join(' › ')}`,
                     pathCols = this.sortPaths(paths, 0).map(path =>
                         this.buildPathColumn(path, labels, [], fields)
-                    );
+                    ),
+                    groupId = this.groupIdFor(PIVOT_GROUP_ID, fields);
+
+                // Hidden, the root is kept only to walk for label widths - no header, no level.
+                if (!this.isRootGroupShown) {
+                    return {
+                        groupId,
+                        headerName: null,
+                        children: this.buildGroupChildren(
+                            pathCols,
+                            rootPath,
+                            labels,
+                            [],
+                            fields,
+                            false
+                        )
+                    };
+                }
+
                 return this.buildColGroup(
-                    this.groupIdFor(PIVOT_GROUP_ID, fields),
+                    groupId,
                     header,
                     this.buildGroupChildren(pathCols, rootPath, labels, [], fields),
                     {level: 0, headerTooltip: tooltip !== header ? tooltip : null}
@@ -303,7 +334,9 @@ export class CubeGridPivotModel extends HoistModel {
             ? pivotMeasures.map(field => buildRoot([field]))
             : [buildRoot(pivotMeasures)];
         this._colIds = new Set(leafColIds(this._rootGroups));
-        return this._rootGroups;
+        return this.isRootGroupShown
+            ? this._rootGroups
+            : this._rootGroups.flatMap(it => it.children);
     }
 
     //------------------------
@@ -365,6 +398,11 @@ export class CubeGridPivotModel extends HoistModel {
     // With one measure there is nothing to nest, and outermost saves the redundant header row.
     private get isMeasuresOutermost(): boolean {
         return this.measuresOutermost || this.pivotMeasures.length === 1;
+    }
+
+    // Multiple measures outermost keep their roots, as only those name the measures.
+    private get isRootGroupShown(): boolean {
+        return this.showRootGroup || (this.measuresOutermost && this.pivotMeasures.length > 1);
     }
 
     // Measures in `measures` order, then any the app left unconfigured in query order.
@@ -465,9 +503,10 @@ export class CubeGridPivotModel extends HoistModel {
         summaryPath: PivotPath,
         labels: string[],
         classes: string[],
-        fields: CubeField[]
+        fields: CubeField[],
+        collapsible = this.dimensionSpec(summaryPath.depth).collapsible
     ): Array<ColumnSpec | ColumnGroupSpec> {
-        const {collapsible, summaryLabel, showCollapsedLabel, summaryClass} = this.dimensionSpec(
+        const {summaryLabel, showCollapsedLabel, summaryClass} = this.dimensionSpec(
                 summaryPath.depth
             ),
             summarySide = this.summarySide(summaryPath.depth);

@@ -150,6 +150,7 @@ techniques.
 | `/treemap/` | Hierarchical treemap and split treemap visualizations |
 | `/zoneGrid/` | Multi-zone grid layout for complex record displays |
 | `/cubegrid/` | Cube View as a tree grid, with pivot paths as nested column groups when pivoted. [See README](./cubegrid/README.md) |
+| `/statcard/` | Tiles that call out key figures (StatCard), laid out in equal-width rows (StatCardStrip) |
 
 ### Layout and Containers
 
