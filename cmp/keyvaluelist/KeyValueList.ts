@@ -19,6 +19,7 @@ import type {
     LayoutProps,
     TestSupportProps
 } from '@xh/hoist/core';
+import {throwIfRowsPassedAsItems} from '@xh/hoist/utils/impl';
 import {mergeDeep, TEST_ID} from '@xh/hoist/utils/js';
 import {composeRefs, isBlankNode, splitLayoutProps, useOnResize} from '@xh/hoist/utils/react';
 
@@ -96,6 +97,7 @@ export const [KeyValueList, keyValueList] = hoistCmp.withFactory<KeyValueListPro
     className: 'xh-key-value-list',
 
     render(props, ref) {
+        throwIfRowsPassedAsItems(props.children, 'entries', 'KeyValueList');
         const [
                 layoutProps,
                 {

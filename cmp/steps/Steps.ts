@@ -13,7 +13,7 @@ import {div, li, ol} from '@xh/hoist/cmp/layout';
 import {hoistCmp} from '@xh/hoist/core';
 import type {DomAttrsProps, HoistProps, LayoutProps, TestSupportProps} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
-import {clickableRowProps} from '@xh/hoist/utils/impl';
+import {clickableRowProps, throwIfRowsPassedAsItems} from '@xh/hoist/utils/impl';
 import {mergeDeep, TEST_ID} from '@xh/hoist/utils/js';
 import {composeRefs, isBlankNode, splitLayoutProps, useOnResize} from '@xh/hoist/utils/react';
 
@@ -121,6 +121,7 @@ export const [Steps, steps] = hoistCmp.withFactory<StepsProps>({
     className: 'xh-steps',
 
     render(props, ref) {
+        throwIfRowsPassedAsItems(props.children, 'steps', 'Steps');
         const [
             layoutProps,
             {className, steps, current, vertical, minStepWidth, onStepClick, testId, domAttrs}

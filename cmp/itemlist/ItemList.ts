@@ -19,7 +19,7 @@ import type {
     LayoutProps,
     TestSupportProps
 } from '@xh/hoist/core';
-import {clickableRowProps} from '@xh/hoist/utils/impl';
+import {clickableRowProps, throwIfRowsPassedAsItems} from '@xh/hoist/utils/impl';
 import {mergeDeep, TEST_ID} from '@xh/hoist/utils/js';
 import {isBlankNode, splitLayoutProps} from '@xh/hoist/utils/react';
 
@@ -118,6 +118,7 @@ export const [ItemList, itemList] = hoistCmp.withFactory<ItemListProps>({
     className: 'xh-item-list',
 
     render(props, ref) {
+        throwIfRowsPassedAsItems(props.children, 'entries', 'ItemList');
         const [
                 layoutProps,
                 {className, entries, numbered, dividers, size, emptyText, testId, domAttrs}
