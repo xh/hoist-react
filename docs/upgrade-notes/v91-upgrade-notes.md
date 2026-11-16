@@ -35,6 +35,8 @@ The most significant impacts are:
   Hoist's development-mode console warning about unitless size variables.
 - **Overrides set on `:root` or `html` no longer apply** - move them to `body.xh-app`. The codemod
   and a development-mode console warning both name any it finds.
+- **Desktop `DateInput` and `SegmentedControl` now fill a `FormField`.** Set a `width` to keep one
+  narrower. See Step 5, which also covers the deprecated `FormField.inline`.
 
 ## Prerequisites
 
@@ -222,6 +224,33 @@ precedence. Move these overrides to body.xh-app: --xh-spacing, ...
 
 Then review the app in both light and dark themes, and on mobile if applicable.
 
+### 5. Check Desktop Forms
+
+Desktop `DateInput` and `SegmentedControl` now fill a `FormField`, as `TextInput` does. Before,
+both kept their natural width. Review forms that hold either input. To keep one narrower than its
+field, set a `width` on the input:
+
+```typescript
+// Before: the date input kept its natural width in the field.
+formField({field: 'tradeDate', item: dateInput()});
+
+// After: set a width to keep it narrow.
+formField({field: 'tradeDate', item: dateInput({width: 130})});
+```
+
+A `SegmentedControl` also takes `fill: false` to size itself to its options.
+
+Desktop `FormField.inline` is deprecated in favor of `labelSide`. It still works, and logs a
+warning. Replace it in fields and in `fieldDefaults`:
+
+```typescript
+// Before
+form({fieldDefaults: {inline: true, labelWidth: 120}, items: [...]});
+
+// After
+form({fieldDefaults: {labelSide: 'left', labelWidth: 120}, items: [...]});
+```
+
 ## Verification Checklist
 
 After completing all steps:
@@ -237,6 +266,8 @@ After completing all steps:
 - [ ] Custom colors, spacing, and typography render correctly in both light and dark themes (and on
   mobile, if applicable).
 - [ ] Form validation styling looks as intended if you override any `-border-color` (Step 2 note).
+- [ ] Desktop forms with a `DateInput` or `SegmentedControl` look as intended (Step 5).
+- [ ] No desktop `FormField` or `fieldDefaults` uses the deprecated `inline` prop (Step 5).
 - [ ] No references to retired CSS variable names remain:
   ```bash
   # Should return nothing

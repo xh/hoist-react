@@ -35,46 +35,53 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 
 ### 🎁 New Features
 
+* Added `KeyValueList` to `@xh/hoist/cmp/keyvaluelist`, a display-only list of labeled values,
+  such as the fields of a record in a detail panel. It lays out its `entries` in aligned columns
+  that fit the available width, with each label to the left of or above its value.
+* Added `ItemList` to `@xh/hoist/cmp/itemlist`, a short, static list of `entries`, such as a few
+  alerts or search results. Each entry has a title, description, icon and trailing detail, and
+  can take an `onClick`. It needs no Store or model. Use `DataView` for long lists.
 * Added `ProgressBar` to `@xh/hoist/cmp/progressbar`, a cross-platform bar that shows a value
-  against a maximum, with an optional label, figure, `intent` and `target` marker. A bar with no
-  `value` is indeterminate. Style through the `--xh-progress-bar-*` CSS variables.
+  against a maximum, with an optional label, figure, `intent` and `target` marker. Set
+  `indeterminate` for work of unknown length.
 * Added `Steps` to `@xh/hoist/cmp/steps`, a cross-platform sequence of steps with a status each,
-  as a `horizontal` row that falls back to a `vertical` list below `minStepWidth` per step. Set
-  `current` or a `status` per step. Takes an optional `onStepClick`. Style via `--xh-steps-*`.
-* Added `Sparkline` to `@xh/hoist/cmp/sparkline`, a small inline trend chart with no axes, for a
-  `StatCard` or a grid cell. It draws a `line`, `area` or `bar` series in plain SVG, and can color
-  the series by `intent` or by trend. Style through the `--xh-sparkline-*` CSS variables.
-* Added `KeyValueList` to `@xh/hoist/cmp/keyvaluelist`, a display-only list of labeled values such
-  as the fields of a record in a detail panel. It lays its `entries` out in aligned columns that
-  fit the available width, with the label beside or above each value.
-* Added `Separator` to `@xh/hoist/cmp/layout`, a horizontal or vertical rule that divides content,
-  with an optional `label` within the rule.
+  as a row or a `vertical` list. A row shows as a list when a step would be narrower than
+  `minStepWidth`. Takes an optional `onStepClick`.
+* Added `Sparkline` to `@xh/hoist/cmp/sparkline`, a small inline trend chart in plain SVG for a
+  `StatCard` or a grid cell. It draws a `line`, `area` or `bar` series, colored by `intent` or by
+  trend, with optional `markers` on the first, last, lowest and highest values.
+* Added `Separator` to `@xh/hoist/cmp/layout`, a horizontal or `vertical` rule that divides
+  content, with an optional `label` within the rule.
+* Added `subtitle`, `headerItems` and `footer` props to `Card`, for muted text after the title,
+  items such as buttons at the far end of the header, and a row under the content.
+* Made `CardModel.collapsible` observable and settable after construction. Setting it false
+  expands a collapsed card.
+* Added `FormField.labelSide` to the desktop field, `left` or `top`, to set where its label sits.
+  It replaces `inline`, and can be set for a whole form through `fieldDefaults`.
 * Added a `maxLength` prop to the desktop and mobile `TextInput` and `TextArea`, to limit the
   number of characters a user can enter.
-* Added `subtitle`, `headerItems` and `footer` props to `Card`, for muted text after the title,
-  items such as buttons at the far end of the header, and a row under the content. A card that
-  sets none of them renders as before.
-* `CardModel.collapsible` is now observable and settable after construction. Setting it false
-  expands a collapsed card.
-* Added `ItemList` to `@xh/hoist/cmp/itemlist`, a short, static list of `entries` with a title,
-  description, icon and trailing detail each, for a handful of alerts or search results. It needs
-  no Store or model and sizes each entry to its content. Use `DataView` for long lists.
-* Added `Slider.ariaLabel`, to name the handle of a slider, or each handle of a range, for
-  assistive technology. A `Slider` in a `FormField` now takes the label of the field as that name.
-* Added `SegmentedControl.wrap` to the desktop control, to let options flow onto further rows when
+* Added `Slider.ariaLabel`, to name each handle of a slider for assistive technology. A `Slider`
+  in a `FormField` now takes the label of the field as that name.
+* Added `SegmentedControl.wrap` to the desktop control, to let options flow onto more rows when
   the control is too narrow to hold them on one row.
 
 ### 🐞 Bug Fixes
 
 * Fixed mobile `FormField` ignoring the `--xh-form-field-inline-label-*` custom properties for
   inline labels - it referenced stale names left behind by an earlier rename.
+* Fixed desktop `DateInput` staying narrow in a `FormField`, or with a `width` of `100%` or a
+  `flex`. It now fills its field, as `TextInput` does, and opens its calendar under the start of a
+  wide input. Set a `width` on a `DateInput` to keep it narrower than its field.
+* Fixed desktop `SegmentedControl` rendering layout props as DOM attributes. It now applies them
+  as styles, so it fills a `FormField` as other inputs do. Set a `width`, or `fill: false`, to
+  keep its natural size. `SegmentedControlProps` now includes `LayoutProps`.
 * Fixed `StatCard` titles and values not lining up across a `StatCardStrip` whose cards differ in
   height. A card now starts its content at the top. Set `--xh-stat-card-justify-content` to change.
 * Fixed desktop `Slider` cutting off a long label at either end of its track. An end label, or a
-  handle label at an end, now shifts inward to stay inside the slider. Short labels stay centered.
-* Fixed desktop `Slider` hanging, flooding the page with labels or throwing on a scale it cannot
-  draw, such as a `stepSize` near zero or a `max` not above `min`. It now falls back to a safe
-  scale, renders disabled when it has no range, and logs a warning in development mode.
+  handle label at an end, now shifts inward to stay inside the slider.
+* Fixed desktop `Slider` hanging or flooding the page with labels on a scale it cannot draw, such
+  as a `stepSize` near zero, a `max` not above `min`, or a very wide range. It now falls back to a
+  safe scale, renders disabled when it has no range, and logs a warning in development mode.
 * Fixed the empty part of a desktop `Slider` track not showing in dark theme. Its color now comes
   from the new `--xh-slider-track-bg` CSS variable.
 * Fixed `TreeMap` drawing nodes in an invalid color when every heat value was zero, or `maxHeat`
@@ -82,15 +89,14 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 * Fixed `TreeMap` showing its empty placeholder for a moment on mount, and when records arrived
   in an empty map. `TreeMapModel` now reads the first records of its store at once. Later
   changes are debounced as before.
-* `TreeMap` now logs a console warning when Highcharts has no color axis, which left every node
+
+### ⚙️ Technical
+
+* Deprecated desktop `FormField.inline` in favor of `labelSide: 'left'`. It still works, and logs
+  a deprecation warning. Scheduled for removal in v93.
+* `TreeMap` now logs a console warning when Highcharts has no color axis, which leaves every node
   in one default color. Import `highcharts/modules/heatmap` or `highcharts/modules/coloraxis`
   before `highcharts/modules/treemap` in `Bootstrap.ts`.
-* Fixed desktop `DateInput` staying narrow in a `FormField`, or with a `width` of `100%` or a
-  `flex`. It now fills its field, as `TextInput` does, and opens its calendar under the start of
-  a wide input. Set a `width` on a `DateInput` to keep it narrower than its field.
-* Fixed desktop `SegmentedControl` rendering layout props as DOM attributes, such as a stray
-  `flex="1"` in a `FormField`. It now applies them as styles, so `width`, `flex` and other layout
-  props take effect. `SegmentedControlProps` now includes `LayoutProps` on desktop and mobile.
 
 ### ✨ Styles
 
