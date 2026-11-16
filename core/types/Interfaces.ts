@@ -69,8 +69,11 @@ export interface AppOptionSpec {
     name: string;
     prefName?: string;
 
-    /** Config for FormField for this option. */
-    formField: ElementSpec<PlainObject>;
+    /**
+     * Config for FormField for this option. Typed loosely, as FormField props differ by platform,
+     * but with the element spec keys declared so tools can identify its children.
+     */
+    formField: PlainObject & Pick<ElementSpec<PlainObject>, 'children' | 'item' | 'items' | 'omit'>;
 
     /** Config for FieldModel for the option. */
     fieldModel?: Omit<BaseFieldConfig, 'name'>;
