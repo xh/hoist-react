@@ -32,6 +32,8 @@ detailed, step-by-step upgrade instructions with before/after code examples.
       `--xh-tbar-*` -> `--xh-toolbar-*`, `--xh-grid-bg-hover` -> `--xh-grid-row-hover-bg`.
     * Removed `--xh-chart-bg`, `--xh-tab-border-width`, `--xh-toolbar-button-bg`, and
       `--xh-resizable-button-bg` and `-icon-color`, none of which had any effect.
+* Hoist now requires AG Grid `36.3` or later, to avoid a performance issue in `36.2`. Apps must bump
+  their `ag-grid-community`, `ag-grid-react`, and (if used) `ag-grid-enterprise` dependencies.
 
 ### 🐞 Bug Fixes
 
@@ -66,6 +68,10 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 * Desktop `Select` now rounds its corners to match other inputs (4px, up from 3px). A desktop
   `TabSwitcher` placed at the bottom now marks its active tab in the active tab color, as one at
   the top does, rather than in the resting text color.
+
+### 📚 Libraries
+
+* jsdom `30 → 30 || 31` (optional peer)
 
 ## 90.1.0 - 2026-11-13
 
