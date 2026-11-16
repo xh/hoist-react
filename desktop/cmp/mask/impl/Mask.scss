@@ -5,11 +5,19 @@
   justify-content: center;
 
   &--inline {
-    animation: xh-mask-fade-in 200ms cubic-bezier(0.4, 1, 0.75, 0.9);
-    background-color: var(--xh-mask-bg);
     inset: 0;
     position: absolute;
+    user-select: none;
     z-index: 20; // Blueprint's overlay z-index, which other components stack against.
+
+    // Backdrop as a pseudo-element, so the fade leaves the spinner and text opaque.
+    &::before {
+      animation: xh-mask-fade-in 200ms cubic-bezier(0.4, 1, 0.75, 0.9);
+      background-color: var(--xh-mask-bg);
+      content: '';
+      inset: 0;
+      position: absolute;
+    }
   }
 
   .bp6-overlay-backdrop {
@@ -32,9 +40,8 @@
   }
 }
 
-// Fades only the backdrop, as Blueprint's overlay did. Keyframes avoid a forced reflow.
 @keyframes xh-mask-fade-in {
   from {
-    background-color: transparent;
+    opacity: 0;
   }
 }
