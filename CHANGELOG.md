@@ -19,6 +19,11 @@
 * Hoist now requires AG Grid `36.3` or later, to avoid a performance issue in `36.2`. Apps must bump
   their `ag-grid-community`, `ag-grid-react`, and (if used) `ag-grid-enterprise` dependencies.
 
+### ⚙️ Technical
+
+* `StoreRecord.getValues()` is faster for records with many fields, and so is spreading or copying
+  its result. It now returns an object in V8's compact fast-properties mode.
+
 ### 📚 Libraries
 
 * jsdom `30 → 30 || 31` (optional peer)
