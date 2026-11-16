@@ -18,17 +18,14 @@
 
 * Hoist now requires AG Grid `36.3` or later, to avoid a performance issue in `36.2`. Apps must bump
   their `ag-grid-community`, `ag-grid-react`, and (if used) `ag-grid-enterprise` dependencies.
+* Desktop inline `Mask` renders a plain `div` with the class `xh-mask--inline`, not a Blueprint
+  overlay, so showing a mask no longer forces a browser layout. Restyle any app CSS that targets
+  `.bp6-overlay` classes within an inline mask, or use `--xh-mask-bg`.
 
 ### ⚙️ Technical
 
 * `StoreRecord.getValues()` is faster for records with many fields, and so is spreading or copying
   its result. It now returns an object in V8's compact fast-properties mode.
-
-### ✨ Styles
-
-* Desktop inline `Mask` renders a plain `div` with the class `xh-mask--inline`, not a Blueprint
-  overlay, so showing a mask no longer forces a browser layout. Restyle any app CSS that targets
-  `.bp6-overlay` classes within an inline mask, or use `--xh-mask-bg`.
 
 ### 📚 Libraries
 
