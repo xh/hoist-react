@@ -49,6 +49,16 @@ describe('GridAutosizeService', () => {
         expect(calcWidth).toHaveBeenCalledTimes(1);
         expect(gridModel.columnState.map(it => it.width)).toEqual(widths);
     });
+
+    it('measures nothing when its grid is destroyed before the pass starts', async () => {
+        const {gridModel, calcWidth} = await renderGridAsync(),
+            widths = gridModel.columnState.map(it => it.width);
+        gridModel.destroy();
+
+        await XH.gridAutosizeService.autosizeAsync(gridModel, ['a', 'b', 'c'], {});
+        expect(calcWidth).not.toHaveBeenCalled();
+        expect(gridModel.columnState.map(it => it.width)).toEqual(widths);
+    });
 });
 
 async function renderGridAsync() {
