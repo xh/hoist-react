@@ -13,9 +13,9 @@ import {act, fireEvent, render, screen} from '@testing-library/react';
 import {beforeAll, beforeEach, describe, expect, it, onTestFinished} from 'vitest';
 
 /**
- * Apps style and test against a Card's markup, so a card that sets none of the optional header
- * and footer props must keep the markup it always had. The collapsed state lives on CardModel,
- * and must stay consistent when an app changes whether the card can collapse.
+ * A Card shows its header, content and footer, and takes its accessible name from its header. The
+ * collapsed state lives on CardModel, and must stay consistent when an app changes whether the
+ * card can collapse.
  */
 describe('Card', () => {
     beforeAll(async () => {
@@ -24,54 +24,39 @@ describe('Card', () => {
         installDesktopImpls({cardHeaderImpl});
     });
 
-    describe('markup with no optional props', () => {
-        it('is a fieldset with a plain legend that holds only the header', () => {
+    describe('header', () => {
+        it('shows the title in the legend, with the content below', () => {
             const {container} = render(card({title: 'Details', item: span('Body')}));
-            const fieldset = container.querySelector('fieldset.xh-card'),
-                legend = fieldset.querySelector('legend');
 
-            expect(Array.from(fieldset.children).map(it => it.tagName)).toEqual(['LEGEND', 'DIV']);
-            expect(legend.className).toBe('');
-            expect(legend.children).toHaveLength(1);
-            expect(legend.firstElementChild.className).toBe(
-                'xh-card__header xh-card__header--intent-none'
-            );
-            expect(legend.firstElementChild.innerHTML).toBe('Details');
-            expect(fieldset.lastElementChild.classList).toContain('xh-card__content');
+            expect(container.querySelector('legend').textContent).toBe('Details');
+            expect(container.querySelector('.xh-card__content').textContent).toBe('Body');
         });
 
-        it('has no legend when it has no title or icon', () => {
+        it('is left out when the card has no title or icon', () => {
             const {container} = render(card({item: span('Body')}));
 
             expect(container.querySelector('legend')).toBeNull();
-            expect(container.querySelector('.xh-card').children).toHaveLength(1);
         });
     });
 
     describe('subtitle', () => {
         it('follows the title in the header', () => {
             const {container} = render(card({title: 'Positions', subtitle: '12 rows'}));
-            const header = container.querySelector('.xh-card__header');
-
-            expect(header.textContent).toBe('Positions12 rows');
-            expect(header.lastElementChild.className).toBe('xh-card__subtitle');
+            expect(container.querySelector('legend').textContent).toBe('Positions12 rows');
         });
 
         it('gives a card with no title a header of its own', () => {
             const {container} = render(card({subtitle: '12 rows'}));
 
-            expect(container.querySelector('legend .xh-card__subtitle').textContent).toBe(
-                '12 rows'
-            );
+            expect(container.querySelector('legend').textContent).toBe('12 rows');
         });
 
         it('sits inside the header button of a collapsible card', () => {
-            const {container} = render(
+            render(
                 card({title: 'Positions', subtitle: '12 rows', modelConfig: {collapsible: true}})
             );
-            const button = container.querySelector('.xh-card__collapsible-header');
 
-            expect(button.querySelector('.xh-card__subtitle').textContent).toBe('12 rows');
+            expect(screen.getByRole('button').textContent).toBe('Positions12 rows');
         });
     });
 
@@ -102,21 +87,20 @@ describe('Card', () => {
             ['an array of false', [false]],
             ['an array of blank nodes', [null, '', [false]]],
             ['null', null]
-        ])('keeps the plain legend for headerItems of %s', (_, headerItems) => {
+        ])('renders no header items for headerItems of %s', (_, headerItems) => {
             const titled = render(card({title: 'Orders', headerItems})).container,
                 untitled = render(card({headerItems})).container;
 
-            expect(titled.querySelector('legend').className).toBe('');
             expect(titled.querySelector('.xh-card__header-items')).toBeNull();
             expect(untitled.querySelector('legend')).toBeNull();
         });
 
         it('drops blank members from headerItems and keeps the others', () => {
             const {container} = render(
-                card({title: 'Orders', headerItems: [false, span({className: 'my-item'}), null]})
+                card({title: 'Orders', headerItems: [false, span('Export'), null]})
             );
 
-            expect(container.querySelector('.xh-card__header-items').children).toHaveLength(1);
+            expect(container.querySelector('.xh-card__header-items').textContent).toBe('Export');
         });
     });
 
@@ -134,11 +118,10 @@ describe('Card', () => {
             expect(screen.queryByRole('group', {name: /Export/})).toBeNull();
         });
 
-        it('comes from the legend, with no added attribute, on a card with no header items', () => {
-            const {container} = render(card({title: 'Orders', item: span('Body')}));
+        it('is the title on a card with no header items', () => {
+            render(card({title: 'Orders', item: span('Body')}));
 
             expect(screen.getByRole('group', {name: 'Orders'})).not.toBeNull();
-            expect(container.querySelector('.xh-card').hasAttribute('aria-labelledby')).toBe(false);
         });
 
         it('yields to an aria-label from domAttrs on a card with header items and no title', () => {
@@ -148,27 +131,31 @@ describe('Card', () => {
 
             expect(screen.getByRole('group', {name: 'Order tools'})).not.toBeNull();
         });
+
+        it('yields to a name from domAttrs on a card with a title and header items', () => {
+            render(
+                card({
+                    title: 'Orders',
+                    headerItems: [htmlButton('Export')],
+                    domAttrs: {'aria-label': 'Open orders'}
+                })
+            );
+
+            expect(screen.getByRole('group', {name: 'Open orders'})).not.toBeNull();
+        });
     });
 
     describe('headerItems', () => {
-        it('follow the header in the legend, after a rule that stands in for the border', () => {
-            const {container} = render(
-                card({title: 'Positions', headerItems: [span({className: 'my-item'})]})
-            );
-            const legend = container.querySelector('legend'),
-                [header, rule, items] = Array.from(legend.children);
+        it('show in the header with the title', () => {
+            const {container} = render(card({title: 'Positions', headerItems: [span('Export')]}));
 
-            expect(legend.className).toBe('xh-card__legend');
-            expect(header.querySelector('.xh-card__header').textContent).toBe('Positions');
-            expect(rule.className).toBe('xh-card__header-rule');
-            expect(items.querySelector('.my-item')).not.toBeNull();
+            expect(container.querySelector('legend').textContent).toBe('PositionsExport');
         });
 
         it('show on a card with no title', () => {
-            const {container} = render(card({headerItems: [span({className: 'my-item'})]}));
+            const {container} = render(card({headerItems: [span('Export')]}));
 
-            expect(container.querySelector('legend .my-item')).not.toBeNull();
-            expect(container.querySelector('.xh-card__header')).toBeNull();
+            expect(container.querySelector('legend').textContent).toBe('Export');
         });
 
         it('stay in the header of a collapsed card, and do not toggle it when clicked', () => {
@@ -181,12 +168,6 @@ describe('Card', () => {
             expect(model.collapsed).toBe(true);
             expect(container.querySelector('.my-item')).not.toBeNull();
         });
-
-        it('leave the legend plain when empty', () => {
-            const {container} = render(card({title: 'Positions', headerItems: []}));
-
-            expect(container.querySelector('legend').className).toBe('');
-        });
     });
 
     describe('footer', () => {
@@ -194,18 +175,40 @@ describe('Card', () => {
             const {container} = render(
                 card({title: 'Positions', footer: span('3 of 12'), item: span('Body')})
             );
-            const fieldset = container.querySelector('.xh-card');
 
-            expect(fieldset.lastElementChild.className).toBe('xh-card__footer');
-            expect(fieldset.lastElementChild.textContent).toBe('3 of 12');
+            expect(container.querySelector('.xh-card').textContent).toBe('PositionsBody3 of 12');
         });
 
-        it('hides while the card is collapsed', () => {
+        it('unmounts while the card is collapsed, by default', () => {
             const model = new CardModel({collapsible: true, defaultCollapsed: true}),
                 {container} = render(card({model, title: 'Positions', footer: span('3 of 12')}));
             expect(container.querySelector('.xh-card__footer')).toBeNull();
 
             act(() => model.setCollapsed(false));
+            expect(container.querySelector('.xh-card__footer')).not.toBeNull();
+        });
+
+        it('stays mounted, hidden, while collapsed with a renderMode of always', () => {
+            const model = new CardModel({collapsible: true, renderMode: 'always'}),
+                {container} = render(card({model, title: 'Positions', footer: span('3 of 12')}));
+
+            act(() => model.setCollapsed(true));
+            const footer = container.querySelector<HTMLElement>('.xh-card__footer');
+            expect(footer).not.toBeNull();
+            expect(footer.style.display).toBe('none');
+        });
+
+        it('mounts once shown, with a renderMode of lazy', () => {
+            const model = new CardModel({
+                    collapsible: true,
+                    defaultCollapsed: true,
+                    renderMode: 'lazy'
+                }),
+                {container} = render(card({model, title: 'Positions', footer: span('3 of 12')}));
+            expect(container.querySelector('.xh-card__footer')).toBeNull();
+
+            act(() => model.setCollapsed(false));
+            act(() => model.setCollapsed(true));
             expect(container.querySelector('.xh-card__footer')).not.toBeNull();
         });
     });
@@ -235,17 +238,16 @@ describe('CardModel', () => {
             expect(model.collapsed).toBe(true);
         });
 
-        it('swaps the header between a button and plain text as it changes', () => {
+        it('adds a collapse button to the header once set true', () => {
             installDesktopImpls({cardHeaderImpl});
-            const model = new CardModel(),
-                {container} = render(card({model, title: 'Positions'}));
-            expect(container.querySelector('.xh-card__collapsible-header')).toBeNull();
+            const model = new CardModel();
+            render(card({model, title: 'Positions'}));
+            expect(screen.queryByRole('button')).toBeNull();
 
             act(() => {
                 model.collapsible = true;
             });
-            expect(container.querySelector('.xh-card__collapsible-header')).not.toBeNull();
-            expect(container.querySelector('.xh-card__header')).toBeNull();
+            expect(screen.getByRole('button').textContent).toBe('Positions');
         });
     });
 

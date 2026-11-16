@@ -44,12 +44,13 @@ export interface CardProps<M extends CardModel = CardModel>
      *
      * The card is named by its title, icon and subtitle for screen readers, not by its header
      * items. A card with header items and no title has no name of its own: pass an `aria-label`
-     * through `domAttrs`.
+     * through `domAttrs`. An `aria-label` or `aria-labelledby` in `domAttrs` always wins.
      */
     headerItems?: ReactNode[];
     /**
      * A row under the content, set apart by a rule, for example for actions or a summary. Hidden
-     * while the card is collapsed. A blank footer renders nothing.
+     * while the card is collapsed, and kept mounted or not per the model's `renderMode`, as the
+     * content is. A blank footer renders nothing.
      */
     footer?: ReactNode;
     /** Tooltip to show when hovering over the inline header. */
@@ -102,10 +103,15 @@ export const [Card, card] = hoistCmp.withFactory<CardProps>({
 
         let [layoutProps, {testId, domAttrs, ...restProps}] = splitLayoutProps(rest);
 
-        // A legend that holds header items would add them to the card's name.
+        // A legend that holds header items would add them to the card's name. A name from the app
+        // takes precedence.
+        const namedByApp =
+            domAttrs?.['aria-label'] != null || domAttrs?.['aria-labelledby'] != null;
         restProps = mergeDeep(
             {style: layoutProps},
-            shownHeaderItems.length && hasHeader ? {'aria-labelledby': headerId} : {},
+            shownHeaderItems.length && hasHeader && !namedByApp
+                ? {'aria-labelledby': headerId}
+                : {},
             {[TEST_ID]: testId, ...domAttrs},
             restProps
         );
@@ -127,16 +133,11 @@ export const [Card, card] = hoistCmp.withFactory<CardProps>({
 
         const cardHeader = XH.isMobileApp ? mobileCardHeaderImpl : desktopCardHeaderImpl;
 
-        const items: ReactNode = (() => {
-            switch (renderMode) {
-                case 'always':
-                    return children;
-                case 'lazy':
-                    return collapsed && !wasDisplayed.current ? [] : children;
-                case 'unmountOnHide':
-                    return collapsed ? [] : children;
-            }
-        })();
+        // Content and footer stay mounted while collapsed per the render mode.
+        const isMounted =
+            !collapsed ||
+            renderMode === 'always' ||
+            (renderMode === 'lazy' && wasDisplayed.current);
 
         return fieldset({
             className: classNames(className, classes),
@@ -154,12 +155,13 @@ export const [Card, card] = hoistCmp.withFactory<CardProps>({
                 box({
                     ...contentBoxProps,
                     className: classNames('xh-card__content', contentBoxProps?.className),
-                    items,
+                    items: isMounted ? children : [],
                     display: collapsed ? 'none' : 'flex'
                 }),
                 div({
-                    omit: isBlankNode(footer) || collapsed,
+                    omit: isBlankNode(footer) || !isMounted,
                     className: 'xh-card__footer',
+                    style: collapsed ? {display: 'none'} : null,
                     item: footer
                 })
             ],
