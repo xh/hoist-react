@@ -37,8 +37,6 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 
 ### 🐞 Bug Fixes
 
-* Fixed `GridAutosizeService` continuing to measure columns after its grid unmounted or its
-  `GridModel` was destroyed.
 * Fixed mobile `FormField` ignoring the `--xh-form-field-inline-label-*` custom properties for
   inline labels - it referenced stale names left behind by an earlier rename.
 
