@@ -42,6 +42,7 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 
 * Fixed mobile `FormField` ignoring the `--xh-form-field-inline-label-*` custom properties for
   inline labels - it referenced stale names left behind by an earlier rename.
+* Fixed a crash in a desktop `Toolbar` with `enableOverflowMenu: true` and only one item.
 
 ### ⚙️ Technical
 
