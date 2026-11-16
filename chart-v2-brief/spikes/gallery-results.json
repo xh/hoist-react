@@ -1,0 +1,566 @@
+[
+  {
+    "chart": "navRebase",
+    "theme": "dark",
+    "results": {
+      "highcharts": {
+        "lib": "highcharts",
+        "version": "13.1.1",
+        "renderMs": 58,
+        "notes": [
+          "Native: ordinal axis (trading calendar), compare:percent + compareStart (re-bases on zoom/range), navigator, rangeSelector.",
+          "Data fed as one chart-level DataTable (v13) with per-series dataMapping; formatter callbacks for Hoist formats."
+        ]
+      },
+      "agcharts": {
+        "lib": "agcharts",
+        "version": "14.3.0",
+        "renderMs": 126,
+        "notes": [
+          "Native: ordinal-time axis (no weekend/holiday gaps), navigator, range buttons, wheel/drag zoom, crosshair, shared tooltip.",
+          "Rebasing is custom: zoom event -> recompute % change from first visible point -> chart.updateDelta({data}).",
+          "Range buttons show no selected state; the initial range is set via initialState.zoom.rangeX.",
+          "Axis dates: custom UTC formatter - AG formats dates in local time only, and ordinal-time ticks are not period-aligned."
+        ]
+      },
+      "echarts": {
+        "lib": "echarts",
+        "version": "6.1.0",
+        "renderMs": 60,
+        "notes": [
+          "Trading calendar: category (ordinal) x axis; custom label/tick interval fn picks month/quarter/year rollovers.",
+          "Navigator: native dataZoom slider + inside zoom (wheel/drag).",
+          "Range selector: custom HTML buttons -> dispatchAction dataZoom (no native one).",
+          "Compare %: no native mode; custom rebase on every datazoom event via setOption."
+        ]
+      }
+    },
+    "errors": [
+      "error: ****************************************************************************************************************************",
+      "error: *********************************************** AG Charts Enterprise License ***********************************************",
+      "error: ************************************************** License Key Not Found ***************************************************",
+      "error: * All AG Charts Enterprise features are unlocked for trial.                                                                *",
+      "error: * If you want to hide the watermark please email info@ag-grid.com for a trial license key.                                 *",
+      "error: ****************************************************************************************************************************",
+      "error: ****************************************************************************************************************************"
+    ],
+    "screenshot": "shots/final/navRebase-dark.png"
+  },
+  {
+    "chart": "candles",
+    "theme": "dark",
+    "results": {
+      "highcharts": {
+        "lib": "highcharts",
+        "version": "13.1.1",
+        "renderMs": 58,
+        "notes": [
+          "Native: ordinal axis (trading calendar), stacked yAxis panes with drag-to-resize, navigator, rangeSelector, SMA indicators.",
+          "Volume up/down colors: precomputed color column (no native colorBy-direction for a separate volume series).",
+          "Data fed as one chart-level DataTable (v13) with per-series dataMapping; formatter callbacks for Hoist formats."
+        ]
+      },
+      "agcharts": {
+        "lib": "agcharts",
+        "version": "14.3.0",
+        "renderMs": 172,
+        "notes": [
+          "Native: ordinal-time axis (no weekend/holiday gaps), navigator, range buttons, wheel/drag zoom, crosshair, shared tooltip.",
+          "Range buttons show no selected state; the initial range is set via initialState.zoom.rangeX.",
+          "Panes: one chart, y axes stacked with UNDOCUMENTED layoutConstraints + ignoreZoom (as AG's own Financial Chart does). Max 3 panes.",
+          "Volume up/down colors: itemStyler callback reading a precomputed direction flag. createFinancialChart() rejects extra series (no SMA), so not used.",
+          "Axis dates: custom UTC formatter - AG formats dates in local time only, and ordinal-time ticks are not period-aligned."
+        ]
+      },
+      "echarts": {
+        "lib": "echarts",
+        "version": "6.1.0",
+        "renderMs": 77,
+        "notes": [
+          "Trading calendar: category (ordinal) x axis; custom label/tick interval fn picks month/quarter/year rollovers.",
+          "2 grids, one dataZoom over all x axes, axisPointer.link spans panes (native).",
+          "Navigator: native dataZoom slider + inside zoom (wheel/drag).",
+          "Range selector: custom HTML buttons -> dispatchAction dataZoom (no native one).",
+          "Up/down volume colors: piecewise visualMap on a direction dimension."
+        ]
+      }
+    },
+    "errors": [
+      "error: ****************************************************************************************************************************",
+      "error: *********************************************** AG Charts Enterprise License ***********************************************",
+      "error: ************************************************** License Key Not Found ***************************************************",
+      "error: * All AG Charts Enterprise features are unlocked for trial.                                                                *",
+      "error: * If you want to hide the watermark please email info@ag-grid.com for a trial license key.                                 *",
+      "error: ****************************************************************************************************************************",
+      "error: ****************************************************************************************************************************"
+    ],
+    "screenshot": "shots/final/candles-dark.png"
+  },
+  {
+    "chart": "perfDrawdown",
+    "theme": "dark",
+    "results": {
+      "highcharts": {
+        "lib": "highcharts",
+        "version": "13.1.1",
+        "renderMs": 69,
+        "notes": [
+          "Native: ordinal axis (trading calendar), stacked yAxis panes with drag-to-resize, rangeSelector, flags, plotBands.",
+          "crosshair.syncGroup 'perf' not wired: no native cross-chart sync. Panes in one chart already share the crosshair.",
+          "Data fed as one chart-level DataTable (v13) with per-series dataMapping; formatter callbacks for Hoist formats."
+        ]
+      },
+      "agcharts": {
+        "lib": "agcharts",
+        "version": "14.3.0",
+        "renderMs": 124,
+        "notes": [
+          "Native: ordinal-time axis (no weekend/holiday gaps), range buttons, wheel/drag zoom, crosshair, shared tooltip.",
+          "Range buttons show no selected state; the initial range is set via initialState.zoom.rangeX.",
+          "Panes: one chart, y axes stacked with UNDOCUMENTED layoutConstraints + ignoreZoom (as AG's own Financial Chart does). Max 3 panes. syncGroup not needed (native sync.groupId exists for multi-chart).",
+          "Events and bands: native x-axis crossLines (line + range), spanning all panes.",
+          "Axis dates: custom UTC formatter - AG formats dates in local time only, and ordinal-time ticks are not period-aligned."
+        ]
+      },
+      "echarts": {
+        "lib": "echarts",
+        "version": "6.1.0",
+        "renderMs": 72,
+        "notes": [
+          "Trading calendar: category (ordinal) x axis; custom label/tick interval fn picks month/quarter/year rollovers.",
+          "2 grids, one dataZoom over all x axes, axisPointer.link spans panes (native).",
+          "Range selector: custom HTML buttons -> dispatchAction dataZoom (no native one).",
+          "Events/bands: markLine/markArea on an empty carrier series per pane.",
+          "echarts.connect('perf') wired for cross-chart sync (single chart here)."
+        ]
+      }
+    },
+    "errors": [
+      "error: ****************************************************************************************************************************",
+      "error: *********************************************** AG Charts Enterprise License ***********************************************",
+      "error: ************************************************** License Key Not Found ***************************************************",
+      "error: * All AG Charts Enterprise features are unlocked for trial.                                                                *",
+      "error: * If you want to hide the watermark please email info@ag-grid.com for a trial license key.                                 *",
+      "error: ****************************************************************************************************************************",
+      "error: ****************************************************************************************************************************"
+    ],
+    "screenshot": "shots/final/perfDrawdown-dark.png"
+  },
+  {
+    "chart": "corrHeatmap",
+    "theme": "dark",
+    "results": {
+      "highcharts": {
+        "lib": "highcharts",
+        "version": "13.1.1",
+        "renderMs": 45,
+        "notes": [
+          "Native heatmap + colorAxis; diverging stops placed from colorScale min/mid/max.",
+          "Cell labels: native dataLabels with color \"contrast\"; formatter callback for Hoist number format.",
+          "Category order from source.categories; y axis reversed for matrix reading order."
+        ]
+      },
+      "agcharts": {
+        "lib": "agcharts",
+        "version": "14.3.0",
+        "renderMs": 101,
+        "notes": [
+          "Native heatmap series + gradient legend. Category order = data order, so rows are sorted to source.categories.",
+          "Custom: AG blends colorScale stops through green (warm-grey mid to blue), so 21 sRGB-mixed stops are passed.",
+          "Custom: cell label contrast via label.itemStyler (no auto-contrast for heatmap labels)."
+        ]
+      },
+      "echarts": {
+        "lib": "echarts",
+        "version": "6.1.0",
+        "renderMs": 49,
+        "notes": [
+          "Native heatmap series + continuous visualMap with theme.diverging stops.",
+          "Cell label colors computed per cell with echarts.color.lerp/parse (no auto-contrast option)."
+        ]
+      }
+    },
+    "errors": [
+      "error: ****************************************************************************************************************************",
+      "error: *********************************************** AG Charts Enterprise License ***********************************************",
+      "error: ************************************************** License Key Not Found ***************************************************",
+      "error: * All AG Charts Enterprise features are unlocked for trial.                                                                *",
+      "error: * If you want to hide the watermark please email info@ag-grid.com for a trial license key.                                 *",
+      "error: ****************************************************************************************************************************",
+      "error: ****************************************************************************************************************************"
+    ],
+    "screenshot": "shots/final/corrHeatmap-dark.png"
+  },
+  {
+    "chart": "returnsHist",
+    "theme": "dark",
+    "results": {
+      "highcharts": {
+        "lib": "highcharts",
+        "version": "13.1.1",
+        "renderMs": 42,
+        "notes": [
+          "Native histogram (binsNumber) and bellcurve series, both computed from a hidden base series.",
+          "bellcurve is a density on a second axis; a load-event hook rescales it to count units (custom).",
+          "VaR line: native xAxis plotLine; the quantile itself comes from CS.transforms (no native quantile)."
+        ]
+      },
+      "agcharts": {
+        "lib": "agcharts",
+        "version": "14.3.0",
+        "renderMs": 105,
+        "notes": [
+          "Native histogram series with explicit bins (60) from CS.transforms.histogram; native binCount is documented as approximate.",
+          "Normal fit: plain line series with its own data on the same number axes.",
+          "VaR marker: native x-axis crossLine at the 5% quantile (quantile computed in CS.transforms)."
+        ]
+      },
+      "echarts": {
+        "lib": "echarts",
+        "version": "6.1.0",
+        "renderMs": 46,
+        "notes": [
+          "Histogram: custom series drawing x0..x1 rects; bins from shared transform (ECharts dropped native histogram with ecStat).",
+          "Normal fit: line from shared normalCurve transform.",
+          "VaR: markLine at the shared quantile transform value."
+        ]
+      }
+    },
+    "errors": [
+      "error: ****************************************************************************************************************************",
+      "error: *********************************************** AG Charts Enterprise License ***********************************************",
+      "error: ************************************************** License Key Not Found ***************************************************",
+      "error: * All AG Charts Enterprise features are unlocked for trial.                                                                *",
+      "error: * If you want to hide the watermark please email info@ag-grid.com for a trial license key.                                 *",
+      "error: ****************************************************************************************************************************",
+      "error: ****************************************************************************************************************************"
+    ],
+    "screenshot": "shots/final/returnsHist-dark.png"
+  },
+  {
+    "chart": "flowsSankey",
+    "theme": "dark",
+    "results": {
+      "highcharts": {
+        "lib": "highcharts",
+        "version": "13.1.1",
+        "renderMs": 25,
+        "notes": [
+          "Native sankey (modules/sankey); nodes inferred from links, colored from the Hoist palette.",
+          "Links fed as a series-level DataTable (v13) with from/to/weight columns.",
+          "Formatter callbacks used for Hoist number format in labels and tooltip."
+        ]
+      },
+      "agcharts": {
+        "lib": "agcharts",
+        "version": "14.3.0",
+        "renderMs": 67,
+        "notes": [
+          "Native sankey series (fromKey/toKey/sizeKey) - no custom code.",
+          "Nodes in each column render in reverse data order (AG layout); no node sort option used."
+        ]
+      },
+      "echarts": {
+        "lib": "echarts",
+        "version": "6.1.0",
+        "renderMs": 30,
+        "notes": [
+          "Native sankey series; nodes derived from unique from/to values.",
+          "Gradient link colors and adjacency focus are native."
+        ]
+      }
+    },
+    "errors": [
+      "error: ****************************************************************************************************************************",
+      "error: *********************************************** AG Charts Enterprise License ***********************************************",
+      "error: ************************************************** License Key Not Found ***************************************************",
+      "error: * All AG Charts Enterprise features are unlocked for trial.                                                                *",
+      "error: * If you want to hide the watermark please email info@ag-grid.com for a trial license key.                                 *",
+      "error: ****************************************************************************************************************************",
+      "error: ****************************************************************************************************************************"
+    ],
+    "screenshot": "shots/final/flowsSankey-dark.png"
+  },
+  {
+    "chart": "navRebase",
+    "theme": "light",
+    "results": {
+      "highcharts": {
+        "lib": "highcharts",
+        "version": "13.1.1",
+        "renderMs": 62,
+        "notes": [
+          "Native: ordinal axis (trading calendar), compare:percent + compareStart (re-bases on zoom/range), navigator, rangeSelector.",
+          "Data fed as one chart-level DataTable (v13) with per-series dataMapping; formatter callbacks for Hoist formats."
+        ]
+      },
+      "agcharts": {
+        "lib": "agcharts",
+        "version": "14.3.0",
+        "renderMs": 132,
+        "notes": [
+          "Native: ordinal-time axis (no weekend/holiday gaps), navigator, range buttons, wheel/drag zoom, crosshair, shared tooltip.",
+          "Rebasing is custom: zoom event -> recompute % change from first visible point -> chart.updateDelta({data}).",
+          "Range buttons show no selected state; the initial range is set via initialState.zoom.rangeX.",
+          "Axis dates: custom UTC formatter - AG formats dates in local time only, and ordinal-time ticks are not period-aligned."
+        ]
+      },
+      "echarts": {
+        "lib": "echarts",
+        "version": "6.1.0",
+        "renderMs": 60,
+        "notes": [
+          "Trading calendar: category (ordinal) x axis; custom label/tick interval fn picks month/quarter/year rollovers.",
+          "Navigator: native dataZoom slider + inside zoom (wheel/drag).",
+          "Range selector: custom HTML buttons -> dispatchAction dataZoom (no native one).",
+          "Compare %: no native mode; custom rebase on every datazoom event via setOption."
+        ]
+      }
+    },
+    "errors": [
+      "error: ****************************************************************************************************************************",
+      "error: *********************************************** AG Charts Enterprise License ***********************************************",
+      "error: ************************************************** License Key Not Found ***************************************************",
+      "error: * All AG Charts Enterprise features are unlocked for trial.                                                                *",
+      "error: * If you want to hide the watermark please email info@ag-grid.com for a trial license key.                                 *",
+      "error: ****************************************************************************************************************************",
+      "error: ****************************************************************************************************************************"
+    ],
+    "screenshot": "shots/final/navRebase-light.png"
+  },
+  {
+    "chart": "candles",
+    "theme": "light",
+    "results": {
+      "highcharts": {
+        "lib": "highcharts",
+        "version": "13.1.1",
+        "renderMs": 58,
+        "notes": [
+          "Native: ordinal axis (trading calendar), stacked yAxis panes with drag-to-resize, navigator, rangeSelector, SMA indicators.",
+          "Volume up/down colors: precomputed color column (no native colorBy-direction for a separate volume series).",
+          "Data fed as one chart-level DataTable (v13) with per-series dataMapping; formatter callbacks for Hoist formats."
+        ]
+      },
+      "agcharts": {
+        "lib": "agcharts",
+        "version": "14.3.0",
+        "renderMs": 167,
+        "notes": [
+          "Native: ordinal-time axis (no weekend/holiday gaps), navigator, range buttons, wheel/drag zoom, crosshair, shared tooltip.",
+          "Range buttons show no selected state; the initial range is set via initialState.zoom.rangeX.",
+          "Panes: one chart, y axes stacked with UNDOCUMENTED layoutConstraints + ignoreZoom (as AG's own Financial Chart does). Max 3 panes.",
+          "Volume up/down colors: itemStyler callback reading a precomputed direction flag. createFinancialChart() rejects extra series (no SMA), so not used.",
+          "Axis dates: custom UTC formatter - AG formats dates in local time only, and ordinal-time ticks are not period-aligned."
+        ]
+      },
+      "echarts": {
+        "lib": "echarts",
+        "version": "6.1.0",
+        "renderMs": 76,
+        "notes": [
+          "Trading calendar: category (ordinal) x axis; custom label/tick interval fn picks month/quarter/year rollovers.",
+          "2 grids, one dataZoom over all x axes, axisPointer.link spans panes (native).",
+          "Navigator: native dataZoom slider + inside zoom (wheel/drag).",
+          "Range selector: custom HTML buttons -> dispatchAction dataZoom (no native one).",
+          "Up/down volume colors: piecewise visualMap on a direction dimension."
+        ]
+      }
+    },
+    "errors": [
+      "error: ****************************************************************************************************************************",
+      "error: *********************************************** AG Charts Enterprise License ***********************************************",
+      "error: ************************************************** License Key Not Found ***************************************************",
+      "error: * All AG Charts Enterprise features are unlocked for trial.                                                                *",
+      "error: * If you want to hide the watermark please email info@ag-grid.com for a trial license key.                                 *",
+      "error: ****************************************************************************************************************************",
+      "error: ****************************************************************************************************************************"
+    ],
+    "screenshot": "shots/final/candles-light.png"
+  },
+  {
+    "chart": "perfDrawdown",
+    "theme": "light",
+    "results": {
+      "highcharts": {
+        "lib": "highcharts",
+        "version": "13.1.1",
+        "renderMs": 69,
+        "notes": [
+          "Native: ordinal axis (trading calendar), stacked yAxis panes with drag-to-resize, rangeSelector, flags, plotBands.",
+          "crosshair.syncGroup 'perf' not wired: no native cross-chart sync. Panes in one chart already share the crosshair.",
+          "Data fed as one chart-level DataTable (v13) with per-series dataMapping; formatter callbacks for Hoist formats."
+        ]
+      },
+      "agcharts": {
+        "lib": "agcharts",
+        "version": "14.3.0",
+        "renderMs": 125,
+        "notes": [
+          "Native: ordinal-time axis (no weekend/holiday gaps), range buttons, wheel/drag zoom, crosshair, shared tooltip.",
+          "Range buttons show no selected state; the initial range is set via initialState.zoom.rangeX.",
+          "Panes: one chart, y axes stacked with UNDOCUMENTED layoutConstraints + ignoreZoom (as AG's own Financial Chart does). Max 3 panes. syncGroup not needed (native sync.groupId exists for multi-chart).",
+          "Events and bands: native x-axis crossLines (line + range), spanning all panes.",
+          "Axis dates: custom UTC formatter - AG formats dates in local time only, and ordinal-time ticks are not period-aligned."
+        ]
+      },
+      "echarts": {
+        "lib": "echarts",
+        "version": "6.1.0",
+        "renderMs": 81,
+        "notes": [
+          "Trading calendar: category (ordinal) x axis; custom label/tick interval fn picks month/quarter/year rollovers.",
+          "2 grids, one dataZoom over all x axes, axisPointer.link spans panes (native).",
+          "Range selector: custom HTML buttons -> dispatchAction dataZoom (no native one).",
+          "Events/bands: markLine/markArea on an empty carrier series per pane.",
+          "echarts.connect('perf') wired for cross-chart sync (single chart here)."
+        ]
+      }
+    },
+    "errors": [
+      "error: ****************************************************************************************************************************",
+      "error: *********************************************** AG Charts Enterprise License ***********************************************",
+      "error: ************************************************** License Key Not Found ***************************************************",
+      "error: * All AG Charts Enterprise features are unlocked for trial.                                                                *",
+      "error: * If you want to hide the watermark please email info@ag-grid.com for a trial license key.                                 *",
+      "error: ****************************************************************************************************************************",
+      "error: ****************************************************************************************************************************"
+    ],
+    "screenshot": "shots/final/perfDrawdown-light.png"
+  },
+  {
+    "chart": "corrHeatmap",
+    "theme": "light",
+    "results": {
+      "highcharts": {
+        "lib": "highcharts",
+        "version": "13.1.1",
+        "renderMs": 44,
+        "notes": [
+          "Native heatmap + colorAxis; diverging stops placed from colorScale min/mid/max.",
+          "Cell labels: native dataLabels with color \"contrast\"; formatter callback for Hoist number format.",
+          "Category order from source.categories; y axis reversed for matrix reading order."
+        ]
+      },
+      "agcharts": {
+        "lib": "agcharts",
+        "version": "14.3.0",
+        "renderMs": 99,
+        "notes": [
+          "Native heatmap series + gradient legend. Category order = data order, so rows are sorted to source.categories.",
+          "Custom: AG blends colorScale stops through green (warm-grey mid to blue), so 21 sRGB-mixed stops are passed.",
+          "Custom: cell label contrast via label.itemStyler (no auto-contrast for heatmap labels)."
+        ]
+      },
+      "echarts": {
+        "lib": "echarts",
+        "version": "6.1.0",
+        "renderMs": 52,
+        "notes": [
+          "Native heatmap series + continuous visualMap with theme.diverging stops.",
+          "Cell label colors computed per cell with echarts.color.lerp/parse (no auto-contrast option)."
+        ]
+      }
+    },
+    "errors": [
+      "error: ****************************************************************************************************************************",
+      "error: *********************************************** AG Charts Enterprise License ***********************************************",
+      "error: ************************************************** License Key Not Found ***************************************************",
+      "error: * All AG Charts Enterprise features are unlocked for trial.                                                                *",
+      "error: * If you want to hide the watermark please email info@ag-grid.com for a trial license key.                                 *",
+      "error: ****************************************************************************************************************************",
+      "error: ****************************************************************************************************************************"
+    ],
+    "screenshot": "shots/final/corrHeatmap-light.png"
+  },
+  {
+    "chart": "returnsHist",
+    "theme": "light",
+    "results": {
+      "highcharts": {
+        "lib": "highcharts",
+        "version": "13.1.1",
+        "renderMs": 42,
+        "notes": [
+          "Native histogram (binsNumber) and bellcurve series, both computed from a hidden base series.",
+          "bellcurve is a density on a second axis; a load-event hook rescales it to count units (custom).",
+          "VaR line: native xAxis plotLine; the quantile itself comes from CS.transforms (no native quantile)."
+        ]
+      },
+      "agcharts": {
+        "lib": "agcharts",
+        "version": "14.3.0",
+        "renderMs": 102,
+        "notes": [
+          "Native histogram series with explicit bins (60) from CS.transforms.histogram; native binCount is documented as approximate.",
+          "Normal fit: plain line series with its own data on the same number axes.",
+          "VaR marker: native x-axis crossLine at the 5% quantile (quantile computed in CS.transforms)."
+        ]
+      },
+      "echarts": {
+        "lib": "echarts",
+        "version": "6.1.0",
+        "renderMs": 44,
+        "notes": [
+          "Histogram: custom series drawing x0..x1 rects; bins from shared transform (ECharts dropped native histogram with ecStat).",
+          "Normal fit: line from shared normalCurve transform.",
+          "VaR: markLine at the shared quantile transform value."
+        ]
+      }
+    },
+    "errors": [
+      "error: ****************************************************************************************************************************",
+      "error: *********************************************** AG Charts Enterprise License ***********************************************",
+      "error: ************************************************** License Key Not Found ***************************************************",
+      "error: * All AG Charts Enterprise features are unlocked for trial.                                                                *",
+      "error: * If you want to hide the watermark please email info@ag-grid.com for a trial license key.                                 *",
+      "error: ****************************************************************************************************************************",
+      "error: ****************************************************************************************************************************"
+    ],
+    "screenshot": "shots/final/returnsHist-light.png"
+  },
+  {
+    "chart": "flowsSankey",
+    "theme": "light",
+    "results": {
+      "highcharts": {
+        "lib": "highcharts",
+        "version": "13.1.1",
+        "renderMs": 25,
+        "notes": [
+          "Native sankey (modules/sankey); nodes inferred from links, colored from the Hoist palette.",
+          "Links fed as a series-level DataTable (v13) with from/to/weight columns.",
+          "Formatter callbacks used for Hoist number format in labels and tooltip."
+        ]
+      },
+      "agcharts": {
+        "lib": "agcharts",
+        "version": "14.3.0",
+        "renderMs": 66,
+        "notes": [
+          "Native sankey series (fromKey/toKey/sizeKey) - no custom code.",
+          "Nodes in each column render in reverse data order (AG layout); no node sort option used."
+        ]
+      },
+      "echarts": {
+        "lib": "echarts",
+        "version": "6.1.0",
+        "renderMs": 30,
+        "notes": [
+          "Native sankey series; nodes derived from unique from/to values.",
+          "Gradient link colors and adjacency focus are native."
+        ]
+      }
+    },
+    "errors": [
+      "error: ****************************************************************************************************************************",
+      "error: *********************************************** AG Charts Enterprise License ***********************************************",
+      "error: ************************************************** License Key Not Found ***************************************************",
+      "error: * All AG Charts Enterprise features are unlocked for trial.                                                                *",
+      "error: * If you want to hide the watermark please email info@ag-grid.com for a trial license key.                                 *",
+      "error: ****************************************************************************************************************************",
+      "error: ****************************************************************************************************************************"
+    ],
+    "screenshot": "shots/final/flowsSankey-light.png"
+  }
+]

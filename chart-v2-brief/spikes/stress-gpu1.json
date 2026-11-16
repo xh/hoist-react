@@ -1,0 +1,23 @@
+[
+  {
+    "chart": "stress",
+    "theme": "dark",
+    "results": {
+      "highcharts": {
+        "lib": "highcharts",
+        "version": "13.1.1",
+        "renderMs": 251,
+        "notes": [
+          "Native: navigator, boost (WebGL, all raw points).",
+          "Data fed as plain y arrays (boost); formatter callbacks for Hoist formats."
+        ],
+        "zoomInMs": 111,
+        "zoomOutMs": 140,
+        "hoverMedianMs": 54,
+        "hoverP90Ms": 58
+      }
+    },
+    "errors": [],
+    "screenshot": "shots/stress-gpu/stress-dark-highcharts.png"
+  }
+]

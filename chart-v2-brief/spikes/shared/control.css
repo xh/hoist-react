@@ -1,0 +1,214 @@
+.muted {
+    color: var(--muted);
+    font-size: 12px;
+}
+.ctl-layout {
+    flex: 1;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 340px;
+    grid-template-rows: minmax(420px, 1fr) auto;
+    grid-template-areas: 'chart ctl' 'side ctl';
+    gap: 10px;
+    padding: 10px;
+    min-height: 0;
+}
+.ctl-chart {
+    grid-area: chart;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    overflow: hidden;
+    min-height: 420px;
+    display: flex;
+}
+.ctl-chart .host {
+    flex: 1;
+    height: auto;
+}
+.ctl {
+    grid-area: ctl;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 4px 12px 12px;
+    overflow: auto;
+    background: var(--bg-alt);
+}
+.ctl h3 {
+    font-size: 12px;
+    font-weight: 600;
+    margin: 14px 0 6px;
+    color: var(--muted);
+}
+.ctl .row {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    margin: 6px 0;
+    flex-wrap: wrap;
+}
+.ctl .row > span {
+    width: 70px;
+    color: var(--muted);
+}
+.ctl select,
+.ctl button,
+.ctl textarea,
+.bar select {
+    font: inherit;
+    font-size: 12px;
+    color: var(--text);
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 3px 6px;
+}
+.ctl button {
+    cursor: pointer;
+}
+.ctl button:hover,
+.ctl select:hover {
+    border-color: var(--accent);
+}
+.ctl :focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 1px;
+}
+.ctl .grow {
+    flex: 1;
+}
+.ctl .ck {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+    width: auto !important;
+    color: var(--text) !important;
+}
+.ctl table.series {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+}
+.ctl table.series th {
+    text-align: left;
+    font-weight: 500;
+    color: var(--muted);
+    padding: 2px;
+}
+.ctl table.series td {
+    padding: 2px;
+}
+.ctl table.series select {
+    padding: 2px;
+    max-width: 92px;
+}
+.ctl table.series tr.off .nm {
+    color: var(--muted);
+    text-decoration: line-through;
+}
+.ctl .nm {
+    max-width: 90px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.ctl button.x {
+    border: none;
+    background: none;
+    color: var(--muted);
+    font-size: 15px;
+    padding: 0 4px;
+}
+.ctl button.agent {
+    display: block;
+    width: 100%;
+    text-align: left;
+    margin: 4px 0;
+    border-left: 3px solid #9085e9;
+}
+.ctl textarea {
+    width: 100%;
+    font-family: Monaco, Consolas, monospace;
+    font-size: 11px;
+    margin-top: 6px;
+}
+.ctl .hint {
+    color: var(--muted);
+    font-size: 11px;
+    margin: 0 0 6px;
+}
+.json {
+    grid-area: side;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 8px 10px;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 16px;
+    height: 280px;
+    font-size: 11px;
+}
+.json .jcol {
+    min-height: 0;
+    overflow: auto;
+}
+.json .jhead {
+    margin-bottom: 4px;
+}
+.json pre {
+    margin: 0;
+    font-size: 11px;
+}
+.json pre.spec {
+    color: var(--text);
+}
+.json .results pre {
+    white-space: pre-wrap;
+    padding: 4px 6px;
+    border-radius: 4px;
+    margin: 4px 0;
+}
+.json pre.ok {
+    background: rgba(12, 163, 12, 0.12);
+}
+.json pre.bad,
+.log li.bad {
+    background: rgba(230, 103, 103, 0.14);
+    white-space: pre-wrap;
+}
+.log {
+    margin: 0;
+    padding-left: 18px;
+}
+.log li {
+    margin: 2px 0;
+}
+.drv {
+    display: inline-block;
+    font-size: 10px;
+    padding: 0 5px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+}
+.drv-agent {
+    border-color: #9085e9;
+    color: #9085e9;
+}
+.drv-user {
+    border-color: var(--accent);
+    color: var(--accent);
+}
+.embed .ctl-layout {
+    padding: 6px;
+    gap: 6px;
+}
+.embed .bar {
+    display: none;
+}
+@media (max-width: 900px) {
+    .ctl-layout {
+        grid-template-columns: 1fr;
+        grid-template-areas: 'chart' 'ctl' 'side';
+    }
+    .json {
+        grid-template-columns: 1fr;
+    }
+}

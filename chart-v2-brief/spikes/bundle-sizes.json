@@ -1,0 +1,47 @@
+[
+  {
+    "profile": "highcharts / time series",
+    "minKB": 508,
+    "gzipKB": 180
+  },
+  {
+    "profile": "highcharts / full spike",
+    "minKB": 550,
+    "gzipKB": 194
+  },
+  {
+    "profile": "echarts / time series",
+    "minKB": 654,
+    "gzipKB": 220
+  },
+  {
+    "profile": "echarts / full spike",
+    "minKB": 685,
+    "gzipKB": 230
+  },
+  {
+    "profile": "echarts / everything",
+    "minKB": 1115,
+    "gzipKB": 375
+  },
+  {
+    "profile": "agcharts / time series",
+    "minKB": 1931,
+    "gzipKB": 565
+  },
+  {
+    "profile": "agcharts / full spike",
+    "minKB": 1967,
+    "gzipKB": 576
+  },
+  {
+    "profile": "agcharts / time series, no financial/annotations",
+    "minKB": 1648,
+    "gzipKB": 490
+  },
+  {
+    "profile": "agcharts / everything",
+    "minKB": 2492,
+    "gzipKB": 724
+  }
+]

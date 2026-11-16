@@ -1,0 +1,885 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Hoist Chart V2</title>
+<meta name="description" content="Decision brief: charting library, Hoist chart model design and roadmap for Chart V2." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,100..900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+<style>
+:root {
+    --bg: #f5f6f6;
+    --panel: #ffffff;
+    --line: #d6dcdf;
+    --ink: #1a2328;
+    --ink2: #47575f;
+    --muted: #66767e;
+    --accent: #0277bd;
+    --signal: #a35f00;
+    --signal-bg: #fff3df;
+    --good: #2e7d32;
+    --bad: #c62828;
+    --s1: #86b6ef; --s2: #5598e7; --s3: #2a78d6; --s4: #1c5cab; --s5: #104281;
+    --s1-ink: #10202e; --s2-ink: #0b1622; --s3-ink: #ffffff; --s4-ink: #ffffff; --s5-ink: #ffffff;
+    --none: #eceeef; --none-ink: #66767e;
+    --code-bg: #f0f2f3;
+    color-scheme: light;
+}
+:root[data-theme='dark'] {
+    --bg: #101518;
+    --panel: #161e23;
+    --line: #2b373e;
+    --ink: #e9eef0;
+    --ink2: #aebbc1;
+    --muted: #82929a;
+    --accent: #29a9ea;
+    --signal: #f0b23c;
+    --signal-bg: #2b2213;
+    --good: #3ccf4e;
+    --bad: #ff6b6f;
+    --s1: #184f95; --s2: #256abf; --s3: #3987e5; --s4: #6da7ec; --s5: #9ec5f4;
+    --s1-ink: #e9eef0; --s2-ink: #ffffff; --s3-ink: #ffffff; --s4-ink: #0b1622; --s5-ink: #0b1622;
+    --none: #20292e; --none-ink: #82929a;
+    --code-bg: #1b252b;
+    color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; background: var(--bg); color: var(--ink); }
+body {
+    font-family: 'Archivo', 'Helvetica Neue', system-ui, sans-serif;
+    font-size: 15px;
+    line-height: 1.45;
+    font-variation-settings: 'wdth' 100;
+}
+a { color: var(--accent); }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+code, pre, .mono { font-family: 'JetBrains Mono', Menlo, Consolas, monospace; }
+
+/* ---------- frame ---------- */
+.deck { display: grid; grid-template-columns: 64px minmax(0, 1fr); height: 100vh; }
+.rail {
+    border-right: 1px solid var(--line);
+    display: flex; flex-direction: column; align-items: center;
+    padding: 14px 0; gap: 2px; overflow-y: auto;
+}
+.rail .mark { font-weight: 800; font-stretch: 75%; font-size: 15px; margin-bottom: 12px; letter-spacing: 0.02em; }
+.rail button {
+    width: 40px; height: 30px; border: 0; background: none; color: var(--muted);
+    font: inherit; font-size: 13px; font-variant-numeric: tabular-nums; cursor: pointer; border-radius: 4px;
+    position: relative;
+}
+.rail button:hover { color: var(--ink); background: var(--panel); }
+.rail button[aria-current='true'] { color: var(--accent); font-weight: 700; }
+.rail button[aria-current='true']::before {
+    content: ''; position: absolute; left: -12px; top: 6px; bottom: 6px; width: 3px; background: var(--accent); border-radius: 2px;
+}
+.rail .spacer { flex: 1; }
+.rail .tool { font-size: 12px; width: 48px; }
+.stage { position: relative; overflow: hidden; }
+.slide {
+    position: absolute; inset: 0;
+    display: none; flex-direction: column;
+    padding: 26px 40px 16px;
+    overflow-y: auto;
+}
+.slide.active { display: flex; }
+.topic { color: var(--muted); font-size: 13px; margin: 0 0 4px; }
+h1, h2 {
+    font-weight: 800; font-stretch: 72%; font-variation-settings: 'wdth' 72;
+    line-height: 1.02; letter-spacing: -0.01em; margin: 0 0 10px;
+    max-width: 34ch;
+}
+h1 { font-size: clamp(38px, 5.4vw, 74px); }
+h2 { font-size: clamp(28px, 3.4vw, 46px); }
+.lede { color: var(--ink2); font-size: 17px; max-width: 78ch; margin: 0 0 18px; }
+.body { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: 14px; }
+.foot {
+    display: flex; align-items: center; gap: 16px; margin-top: 12px; padding-top: 10px;
+    border-top: 1px solid var(--line); color: var(--muted); font-size: 13px;
+}
+.foot .src a { color: var(--ink2); }
+.foot .nav { margin-left: auto; display: flex; gap: 6px; align-items: center; }
+.foot .nav button {
+    border: 1px solid var(--line); background: var(--panel); color: var(--ink); border-radius: 4px;
+    padding: 3px 10px; font: inherit; cursor: pointer;
+}
+.foot .count { font-variant-numeric: tabular-nums; min-width: 52px; text-align: center; }
+
+/* ---------- building blocks ---------- */
+.row { display: grid; gap: 18px; grid-template-columns: repeat(var(--cols, 2), minmax(0, 1fr)); min-height: 0; }
+.panel { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 14px 16px; min-width: 0; }
+.panel h3 { margin: 0 0 8px; font-size: 15px; font-weight: 700; }
+.frame { flex: 1; min-height: 360px; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; background: var(--panel); }
+.frame iframe { width: 100%; height: 100%; border: 0; display: block; }
+.tabs { display: flex; gap: 6px; flex-wrap: wrap; }
+.tabs button {
+    border: 1px solid var(--line); background: var(--panel); color: var(--ink2);
+    padding: 5px 12px; border-radius: 4px; font: inherit; font-size: 13px; cursor: pointer;
+}
+.tabs button[aria-pressed='true'] { border-color: var(--accent); color: var(--accent); }
+.note { color: var(--muted); font-size: 13px; }
+.answers { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 16px; }
+.answers li { border-left: 3px solid var(--accent); padding: 2px 0 2px 14px; }
+.answers b { display: block; font-size: 18px; font-stretch: 85%; font-variation-settings: 'wdth' 85; }
+.answers span { color: var(--ink2); }
+.callout { border: 1px solid var(--signal); background: var(--signal-bg); border-radius: 6px; padding: 10px 14px; }
+.callout b { color: var(--signal); }
+.kv { display: grid; grid-template-columns: auto 1fr; gap: 4px 14px; font-size: 14px; }
+.kv dt { color: var(--muted); }
+.kv dd { margin: 0; }
+pre.code {
+    background: var(--code-bg); border: 1px solid var(--line); border-radius: 6px;
+    padding: 10px 12px; margin: 0; font-size: 12px; line-height: 1.5; overflow: auto; color: var(--ink);
+}
+.k { color: var(--accent); }
+.c { color: var(--muted); }
+
+/* ---------- tables and heatmaps ---------- */
+table { border-collapse: collapse; width: 100%; font-size: 13px; }
+th, td { text-align: left; padding: 5px 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { color: var(--muted); font-weight: 500; }
+td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+.heat td, .heat th { padding: 2px 6px; }
+.heat td.cell, .heat th.lib { text-align: center; padding: 2px 3px; }
+.heat td.cell span {
+    display: block; border-radius: 3px; padding: 2px 0; font-weight: 600; font-size: 12px; min-width: 34px;
+}
+.heat .l5 { background: var(--s5); color: var(--s5-ink); }
+.heat .l4 { background: var(--s4); color: var(--s4-ink); }
+.heat .l3 { background: var(--s3); color: var(--s3-ink); }
+.heat .l2 { background: var(--s2); color: var(--s2-ink); }
+.heat .l1 { background: var(--s1); color: var(--s1-ink); }
+.heat .l0 { background: var(--none); color: var(--none-ink); font-weight: 400; }
+.heat .unk { background: none; color: var(--none-ink); border: 1px dashed var(--line); font-weight: 400; }
+.heat tr.spiked th.lib { color: var(--ink); }
+.heat td.feat { white-space: nowrap; }
+.heat .need { color: var(--muted); font-size: 12px; white-space: nowrap; }
+.heat th.lib.hl, .heat td.hl { background: color-mix(in srgb, var(--accent) 7%, transparent); }
+.legend { display: flex; gap: 14px; flex-wrap: wrap; font-size: 12px; color: var(--muted); align-items: center; }
+.legend i { display: inline-block; width: 16px; height: 12px; border-radius: 2px; vertical-align: -1px; margin-right: 5px; }
+.scroll { overflow: auto; min-height: 0; }
+
+/* ---------- bars ---------- */
+.bars { display: flex; flex-direction: column; gap: 6px; font-size: 13px; }
+.bar { display: grid; grid-template-columns: 170px minmax(0, 1fr) 64px; gap: 8px; align-items: center; }
+.bar .track { height: 14px; background: var(--none); border-radius: 3px; overflow: hidden; }
+.bar .fill { height: 100%; background: var(--s3); border-radius: 3px; }
+.bar .fill.hc { background: var(--accent); }
+.bar .v { text-align: right; font-variant-numeric: tabular-nums; color: var(--ink2); }
+.group-label { font-size: 12px; color: var(--muted); margin-top: 6px; }
+
+/* ---------- diagram ---------- */
+svg.diagram { width: 100%; height: auto; max-height: 100%; }
+svg .box { fill: var(--panel); stroke: var(--line); stroke-width: 1.2; }
+svg .box.hot { stroke: var(--accent); stroke-width: 2; }
+svg .box.soft { fill: var(--bg); stroke-dasharray: 4 3; }
+svg text { fill: var(--ink); font-family: 'Archivo', system-ui, sans-serif; font-size: 13px; }
+svg text.t { font-weight: 700; font-size: 14px; }
+svg text.s { fill: var(--muted); font-size: 11.5px; }
+svg .wire { stroke: var(--muted); stroke-width: 1.4; fill: none; }
+svg .wire.hot { stroke: var(--accent); }
+svg .wire.bad { stroke: var(--bad); stroke-dasharray: 5 3; }
+
+/* ---------- roadmap ---------- */
+.road { display: grid; grid-template-columns: 300px minmax(0, 1fr); gap: 8px 14px; align-items: center; font-size: 14px; }
+.road .ph b { display: block; }
+.road .ph span { color: var(--muted); font-size: 12px; }
+.road .lane { position: relative; height: 34px; background: var(--none); border-radius: 4px; }
+.road .seg {
+    position: absolute; top: 0; bottom: 0; border-radius: 4px; background: var(--s3); color: var(--s3-ink);
+    font-size: 12px; padding: 0 8px; display: flex; align-items: center; white-space: nowrap; overflow: hidden;
+}
+.road .seg.ts { background: var(--accent); color: #fff; }
+.road .seg.dec { background: var(--signal); color: #1a1a1a; }
+.road .axis { grid-column: 2; display: flex; justify-content: space-between; color: var(--muted); font-size: 12px; }
+
+/* ---------- decisions ---------- */
+.decisions { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; }
+.decisions li { display: grid; grid-template-columns: 34px 1fr; gap: 10px; align-items: start; }
+.decisions li::before {
+    content: 'D' attr(data-d); font-weight: 800; color: var(--signal); font-stretch: 75%;
+    font-variation-settings: 'wdth' 75; font-size: 17px;
+}
+.against { border-left: 3px solid var(--bad); padding-left: 12px; color: var(--ink2); font-size: 14px; }
+.conf { font-size: 12px; color: var(--muted); }
+
+@media (max-width: 860px) {
+    .deck { grid-template-columns: 1fr; }
+    .rail { display: none; }
+    .slide { padding: 18px 16px 12px; }
+    .row { grid-template-columns: 1fr !important; }
+    .bar { grid-template-columns: 110px minmax(0, 1fr) 54px; }
+    .road { grid-template-columns: 1fr; }
+    .road .axis { grid-column: 1; }
+}
+@media (prefers-reduced-motion: no-preference) {
+    .slide.active { animation: in 0.18s ease-out; }
+    @keyframes in { from { opacity: 0.4; } to { opacity: 1; } }
+}
+</style>
+</head>
+<body>
+<div class="deck">
+    <nav class="rail" aria-label="Slides">
+        <div class="mark" title="Extremely Heavy">XH</div>
+        <div id="railItems" style="display:contents"></div>
+        <div class="spacer"></div>
+        <button class="tool" id="themeBtn" title="Toggle light or dark theme (T)">Theme</button>
+    </nav>
+    <main class="stage" id="stage">
+
+<!-- 1 ------------------------------------------------------------------ -->
+<section class="slide" data-title="The answer" data-src="README.md">
+    <p class="topic">Hoist Chart V2 - decision brief, 15 Nov 2026</p>
+    <h1>Stay on Highcharts. Build a Hoist chart spec on top of it.</h1>
+    <p class="lede">Most Hoist charts are time series. Highcharts Stock was the deepest library we tested, our clients already license it, and a Hoist-owned JSON spec makes every chart persistable, user-editable and writable by an agent.</p>
+    <div class="body">
+        <div class="row" style="--cols: 2; grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); flex: 1;">
+            <div class="frame"><iframe data-src="spikes/gallery.html?chart=navRebase&libs=highcharts&embed=1" title="Live Highcharts NAV chart built from the shared spec"></iframe></div>
+            <div style="display:flex; flex-direction:column; gap:18px;">
+                <ol class="answers">
+                    <li><b>Time series: develop, do not switch.</b><span>A <code>TimeSeriesChartModel</code> on Highcharts Stock, GridModel-grade: typed spec, series and axis objects, store binding, persistence.</span></li>
+                    <li><b>Everything else: same library.</b><span>Five purpose-built family models, in order. Today's raw <code>ChartModel</code> stays as the escape hatch. No second chart library in Hoist.</span></li>
+                    <li><b>One JSON contract for people and agents.</b><span>Spec plus state, validated by Hoist, drives the chart, the settings panel, dashboards, saved reports and agent tools.</span></li>
+                </ol>
+                <p class="note">The chart on the left is live: the spike's shared NAV spec rendered by Highcharts 13.1.1. Use the range buttons and navigator; the series re-base to 0% at the window start.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- 2 ------------------------------------------------------------------ -->
+<section class="slide" data-title="Today" data-src="findings/01-current-state.md">
+    <p class="topic">Where we start</p>
+    <h2>Today's ChartModel holds two untyped blobs. GridModel shows what it should be.</h2>
+    <p class="lede">ChartModel passes <code>highchartsConfig</code> and <code>series: any[]</code> to Highcharts. Nothing persists, nothing is typed, and every app rebuilds the same plumbing.</p>
+    <div class="body">
+        <div class="row" style="grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);">
+            <div class="panel scroll">
+                <table>
+                    <thead><tr><th>Concern</th><th>GridModel</th><th>ChartModel</th></tr></thead>
+                    <tbody>
+                        <tr><td>Config</td><td>Exported, ~60 typed keys</td><td>Unexported, 5 keys, <code>PlainObject</code></td></tr>
+                        <tr><td>Children</td><td><code>ColumnSpec</code> to immutable <code>Column</code></td><td>Raw <code>any[]</code> series</td></tr>
+                        <tr><td>User state</td><td>Columns, sort, group, kept apart from definitions</td><td>None. Zoom is lost on every rebuild</td></tr>
+                        <tr><td>Persistence</td><td><code>persistWith</code>, one provider per key, diffs only</td><td>None</td></tr>
+                        <tr><td>Data</td><td>Store binding, field-derived defaults</td><td>Apps map records to <code>[x, y]</code> by hand</td></tr>
+                        <tr><td>Formatting</td><td><code>@xh/hoist/format</code> renderers</td><td>Hand-written Highcharts formatter functions</td></tr>
+                        <tr><td>Theme</td><td>CSS variables</td><td>Static hex objects; light theme has no palette</td></tr>
+                        <tr><td>Chooser UI</td><td>Column chooser</td><td>None</td></tr>
+                        <tr><td>Escape hatch</td><td><code>agOptions</code> per column and grid</td><td>The whole config is the escape hatch</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="panel">
+                <h3>What apps do because of it (Toolbox)</h3>
+                <dl class="kv">
+                    <dt>12</dt><dd><code>new ChartModel</code> calls, each with 15 to 60 lines of raw config</dd>
+                    <dt>15x</dt><dd><code>title: {text: null}</code>, a default Hoist already sets</dd>
+                    <dt>3x</dt><dd>The same OHLC tooltip formatter, copied</dd>
+                    <dt>5</dt><dd>Weather widgets with hardcoded Highcharts hex colors that ignore dark mode</dd>
+                    <dt>0</dt><dd>Chart widgets that persist chart state into their dashboard</dd>
+                </dl>
+                <p class="note" style="margin-top:14px">Hoist cannot import Highcharts types (licensing, issue #3726). Any typed API has to be Hoist-owned.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- 3 ------------------------------------------------------------------ -->
+<section class="slide" data-title="Landscape" data-src="findings/02-library-landscape.md">
+    <p class="topic">Library landscape</p>
+    <h2>Sixteen libraries surveyed. Five scored. Three spiked.</h2>
+    <p class="lede">Most of the field fails on the first time-series test: no navigator, no zoom, no candlestick, or no JSON config. The close calls were cut for specific, checkable reasons.</p>
+    <div class="body">
+        <div class="row" style="--cols: 3;">
+            <div class="panel scroll"><h3>Cut at survey</h3><table id="cutTable"></table></div>
+            <div class="panel scroll"><h3>Scored, not spiked</h3><table id="scoredTable"></table></div>
+            <div class="panel scroll"><h3>Spiked from one shared spec</h3><table id="spikedTable"></table></div>
+        </div>
+    </div>
+</section>
+
+<!-- 4 ------------------------------------------------------------------ -->
+<section class="slide" data-title="Time series depth" data-src="findings/03-time-series-depth.md">
+    <p class="topic">Time series depth</p>
+    <h2>Highcharts Stock does natively what the others make us build.</h2>
+    <p class="lede">Rebasing on zoom, the trading calendar and indicators separate the field. Cross-chart crosshair sync is Highcharts' one real gap; Hoist writes it once.</p>
+    <div class="body">
+        <div class="legend"><span><i style="background:var(--s5)"></i>B built in</span><span><i style="background:var(--s2)"></i>C custom code</span><span><i style="background:var(--none)"></i>X not practical</span><span><i style="border:1px dashed var(--line)"></i>? not found</span><span>Spiked libraries in bold. (E) AG Charts Enterprise only.</span></div>
+        <div class="scroll"><table class="heat" id="tsTable"></table></div>
+    </div>
+</section>
+
+<!-- 5 ------------------------------------------------------------------ -->
+<section class="slide" data-title="Breadth" data-src="findings/04-breadth-coverage.md">
+    <p class="topic">Breadth</p>
+    <h2>One library covers the rest. Highcharts is first-class on every family we need often.</h2>
+    <p class="lede">The tension between deep time-series tools and broad toolkits is real (Lightweight Charts versus Plotly), but Highcharts escapes it: Core and Stock are one engine. A second library would add only 3D surfaces and violins, both rare.</p>
+    <div class="body">
+        <div class="legend"><span><i style="background:var(--s5)"></i>F first-class</span><span><i style="background:var(--s3)"></i>A adequate</span><span><i style="background:var(--s1)"></i>W awkward</span><span><i style="background:var(--none)"></i>- absent</span><span>Need is XH's judgment, not measured.</span></div>
+        <div class="scroll"><table class="heat" id="brTable"></table></div>
+    </div>
+</section>
+
+<!-- 6 ------------------------------------------------------------------ -->
+<section class="slide" data-title="Scoring" data-src="findings/05-shortlist-and-scoring.md">
+    <p class="topic">Weighted scoring</p>
+    <h2>Highcharts wins on any reasonable weighting. Only a veto would change that.</h2>
+    <p class="lede">Time-series depth carries the most weight (30). Breadth is scored separately. Highcharts is at or near the top on every criterion except raw speed, so no weight set moves it off first. ECharts is a clear second.</p>
+    <div class="body">
+        <div class="row" style="grid-template-columns: minmax(0, 1.7fr) minmax(0, 1fr);">
+            <div class="scroll"><table class="heat" id="scoreTable"></table></div>
+            <div class="panel">
+                <h3>Sensitivity - totals out of 100</h3>
+                <table id="sensTable"></table>
+                <p class="note" style="margin-top:10px">Edit the weights in <code>findings/05</code> and argue with them. The ranking held under every set we tried.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- 7 ------------------------------------------------------------------ -->
+<section class="slide" data-title="Spike: time series" data-src="findings/07-spike-results.md">
+    <p class="topic">Spike - time series, live</p>
+    <h2>One JSON spec, three libraries. Highcharts needed the least custom code.</h2>
+    <div class="body">
+        <div class="tabs" data-frame="tsFrame">
+            <button data-chart="navRebase" aria-pressed="true">1 NAV, navigator, rebasing</button>
+            <button data-chart="candles">2 Candlestick, volume, SMA</button>
+            <button data-chart="perfDrawdown">3 Return over drawdown</button>
+        </div>
+        <div class="frame" style="min-height:440px"><iframe id="tsFrame" data-src="spikes/gallery.html?chart=navRebase&embed=1" title="Time-series spike charts, three libraries side by side"></iframe></div>
+        <p class="note">Each column is a different library rendering the identical spec. Notes under each chart list what was native and what was custom. AG Charts shows a trial watermark (no licence key).</p>
+    </div>
+</section>
+
+<!-- 8 ------------------------------------------------------------------ -->
+<section class="slide" data-title="Stress and cost" data-src="findings/07-spike-results.md">
+    <p class="topic">Spike - 1M points, code and bundle</p>
+    <h2>All three handle a million points. Highcharts is fastest by default, but it averages.</h2>
+    <p class="lede">4 series x 250,000 points, median of 3 runs. Highcharts' default groups into bucket averages; its Boost mode draws every point at about AG Charts' speed. Hoist picks the path by policy.</p>
+    <div class="body">
+        <div class="row" style="--cols: 2;">
+            <div class="panel"><h3>Render and zoom (ms, lower is better)</h3><div class="bars" id="perfBars"></div></div>
+            <div class="panel"><h3>Adapter lines for all 7 charts</h3><div class="bars" id="locBars"></div><h3 style="margin-top:16px">Bundle, tree-shaken, gzip (KB)</h3><div class="bars" id="bundleBars"></div></div>
+        </div>
+        <div class="tabs" style="align-items:center"><button id="runStress">Run the live stress test</button><span class="note">Loads 1M points into each library in turn, then zooms. Takes a few seconds.</span></div>
+        <div class="frame" id="stressWrap" style="display:none; min-height:420px"><iframe id="stressFrame" title="Live stress test"></iframe></div>
+    </div>
+</section>
+
+<!-- 9 ------------------------------------------------------------------ -->
+<section class="slide" data-title="Spike: breadth" data-src="findings/07-spike-results.md">
+    <p class="topic">Spike - breadth, live</p>
+    <h2>All three draw heatmaps, histograms and sankeys. Quality per type differs.</h2>
+    <p class="lede">Highcharts' heatmap labels were legible with no code; AG Charts truncated negative labels and blended its scale through green. ECharts has no histogram series. Lesson: Hoist bins and fits; the library only draws.</p>
+    <div class="body">
+        <div class="tabs" data-frame="brFrame">
+            <button data-chart="corrHeatmap" aria-pressed="true">5 Correlation heatmap</button>
+            <button data-chart="returnsHist">6 Returns histogram</button>
+            <button data-chart="flowsSankey">7 Sankey</button>
+        </div>
+        <div class="frame" style="min-height:440px"><iframe id="brFrame" data-src="spikes/gallery.html?chart=corrHeatmap&embed=1" title="Breadth spike charts, three libraries side by side"></iframe></div>
+    </div>
+</section>
+
+<!-- 11 ----------------------------------------------------------------- -->
+<section class="slide" data-title="Architecture" data-src="findings/08-architecture-options.md">
+    <p class="topic">Architecture</p>
+    <h2>Own the spec, not the renderer.</h2>
+    <p class="lede">A family of purpose-built chart models sharing one JSON contract, rendered by Highcharts behind an internal seam. One library means pluggable backends would be needless generality; the seam keeps a future swap affordable.</p>
+    <div class="body">
+        <div class="row" style="grid-template-columns: minmax(0, 1fr) minmax(0, 1.5fr);">
+            <div class="panel scroll"><table id="optTable"></table></div>
+            <div class="panel" style="display:flex; align-items:center;">
+                <svg class="diagram" viewBox="0 0 760 430" role="img" aria-labelledby="archTitle">
+                    <title id="archTitle">Proposed design: four drivers write one JSON contract; family models render through an internal seam to Highcharts.</title>
+                    <defs><marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="currentColor" style="color: var(--muted)"></path></marker></defs>
+                    <!-- drivers -->
+                    <rect class="box" x="10" y="10" width="170" height="44" rx="5"></rect><text class="t" x="22" y="30">Developer code</text><text class="s" x="22" y="46">prepackaged charts</text>
+                    <rect class="box" x="200" y="10" width="170" height="44" rx="5"></rect><text class="t" x="212" y="30">Settings panel</text><text class="s" x="212" y="46">user edits</text>
+                    <rect class="box" x="390" y="10" width="170" height="44" rx="5"></rect><text class="t" x="402" y="30">Agent tools</text><text class="s" x="402" y="46">chat-kit, report agents</text>
+                    <rect class="box" x="580" y="10" width="170" height="44" rx="5"></rect><text class="t" x="592" y="30">Saved report JSON</text><text class="s" x="592" y="46">dash, ViewManager</text>
+                    <path class="wire" d="M95 54 V86" marker-end="url(#arr)"></path><path class="wire" d="M285 54 V86" marker-end="url(#arr)"></path><path class="wire" d="M475 54 V86" marker-end="url(#arr)"></path><path class="wire" d="M665 54 V86" marker-end="url(#arr)"></path>
+                    <!-- contract -->
+                    <rect class="box hot" x="10" y="90" width="740" height="62" rx="6"></rect>
+                    <text class="t" x="24" y="114">Portable spec + state overlay - one contract for code and JSON</text>
+                    <text class="s" x="24" y="136">Config extends Spec. Functions or named refs in code, refs only in JSON. State keyed by id.</text>
+                    <path class="wire hot" d="M380 152 V182" marker-end="url(#arr)"></path>
+                    <!-- models -->
+                    <rect class="box" x="10" y="186" width="740" height="112" rx="6"></rect>
+                    <text class="t" x="24" y="208">Family models - definition + state methods, persistence, settings, validation</text>
+                    <rect class="box hot" x="24" y="222" width="190" height="62" rx="5"></rect><text class="t" x="36" y="246">TimeSeriesChartModel</text><text class="s" x="36" y="266">flagship, deep</text>
+                    <rect class="box" x="226" y="222" width="100" height="62" rx="5"></rect><text x="238" y="250">Category</text>
+                    <rect class="box" x="336" y="222" width="100" height="62" rx="5"></rect><text x="348" y="250">Heatmap</text>
+                    <rect class="box" x="446" y="222" width="100" height="62" rx="5"></rect><text x="458" y="250">Distribution</text>
+                    <rect class="box" x="556" y="222" width="86" height="62" rx="5"></rect><text x="568" y="250">Scatter</text>
+                    <rect class="box" x="652" y="222" width="86" height="62" rx="5"></rect><text x="664" y="250">Flow</text>
+                    <text class="s" x="238" y="270">Phase 4</text><text class="s" x="348" y="270">Phase 4</text><text class="s" x="458" y="270">Phase 4</text><text class="s" x="568" y="270">Phase 4</text><text class="s" x="664" y="270">Phase 4</text>
+                    <path class="wire hot" d="M380 298 V328" marker-end="url(#arr)"></path>
+                    <!-- renderer -->
+                    <rect class="box" x="200" y="332" width="360" height="40" rx="5"></rect><text class="t" x="214" y="357">Renderer seam (internal)</text><text class="s" x="400" y="357">one folder, no plug-in API</text>
+                    <path class="wire hot" d="M380 372 V392" marker-end="url(#arr)"></path>
+                    <rect class="box hot" x="250" y="394" width="260" height="32" rx="5"></rect><text class="t" x="268" y="415">Highcharts Core + Stock 13</text>
+                    <!-- data + escape -->
+                    <rect class="box soft" x="10" y="332" width="170" height="94" rx="5"></rect><text class="t" x="22" y="354">Data</text><text class="s" x="22" y="374">Store or Cube View.</text><text class="s" x="22" y="390">Widgets resolve named</text><text class="s" x="22" y="406">sources to a Store</text>
+                    <path class="wire" d="M95 332 V300" marker-end="url(#arr)"></path>
+                    <rect class="box soft" x="580" y="332" width="170" height="94" rx="5"></rect><text class="t" x="592" y="354">Escape hatches</text><text class="s" x="592" y="374">highchartsConfig per chart</text><text class="s" x="592" y="390">and series; raw ChartModel</text><text class="s" x="592" y="406">for anything else</text>
+                </svg>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- 12 ----------------------------------------------------------------- -->
+<section class="slide" data-title="Proposed API" data-src="findings/09-proposed-api.md">
+    <p class="topic">Proposed API</p>
+    <h2>Config extends Spec, the GridModel way. Every change is a method.</h2>
+    <p class="lede">Developers pass one flat config. Its spec keys are the definition: what agents edit and widgets save. User tweaks go to a state overlay keyed by id. Code may pass functions or named refs. JSON uses refs only.</p>
+    <div class="body">
+        <div class="row" style="--cols: 3;">
+            <pre class="code"><span class="c">// In code: flat config, like GridModel</span>
+new TimeSeriesChartModel({
+  store, persistWith,        <span class="c">// infra keys</span>
+  onPointClick: e =&gt; ...,    <span class="c">// functions OK</span>
+  <span class="c">// spec keys - the definition</span>
+  timeField: <span class="k">'date'</span>,
+  rebase: <span class="k">'percent'</span>,
+  range: <span class="k">'ytd'</span>,
+  showNavigator: true,
+  panes: [{id: <span class="k">'main'</span>}, {id: <span class="k">'dd'</span>, size: 0.35}],
+  axes: [{id: <span class="k">'perf'</span>,
+          format: {id: <span class="k">'percent'</span>, args: {precision: 1}}}],
+  series: [
+    {id: <span class="k">'fund'</span>, field: <span class="k">'FUND'</span>},
+    {id: <span class="k">'peers'</span>, field: <span class="k">'nav'</span>, splitBy: <span class="k">'symbol'</span>},
+    {id: <span class="k">'dd'</span>, of: <span class="k">'fund'</span>, transform: <span class="k">'drawdown'</span>,
+     pane: <span class="k">'dd'</span>, type: <span class="k">'area'</span>}
+  ]
+});</pre>
+            <pre class="code"><span class="c">// Definition methods - author edits</span>
+model.addSeries(spec)
+model.updateSeries(<span class="k">'dd'</span>, {pane: <span class="k">'main'</span>})
+model.removeSeries(<span class="k">'peers'</span>)
+model.setSpec(spec)       <span class="c">// replace</span>
+model.updateSpec(patch)   <span class="c">// merge patch</span>
+model.getSpec()           <span class="c">// as authored</span>
+
+<span class="c">// State methods - user tweaks</span>
+model.hideSeries(<span class="k">'spx'</span>)
+model.updateSeriesState([{id: <span class="k">'fund'</span>,
+                          type: <span class="k">'area'</span>}])
+model.setRange(<span class="k">'mtd'</span>)
+model.restoreDefaultsAsync() <span class="c">// clears state</span>
+
+<span class="c">// UI, code and agent tools share</span>
+<span class="c">// this one list. Each writes one layer.</span></pre>
+            <pre class="code"><span class="c">// Saved in a DashCanvas widget,</span>
+<span class="c">// through the existing Dash persistence</span>
+{
+  viewSpecId: <span class="k">'timeSeriesChart'</span>,
+  layout: {x: 0, y: 0, w: 8, h: 6},
+  state: {
+    v: 1,
+    source: {id: <span class="k">'navs'</span>},
+    chart: {
+      spec: {timeField: <span class="k">'date'</span>, ...},
+      series: [{id: <span class="k">'spx'</span>, hidden: true}],
+      range: <span class="k">'ytd'</span>
+    }
+  }
+}
+
+<span class="c">// Type and source live on the widget,</span>
+<span class="c">// not in the spec. Other families follow</span>
+<span class="c">// the same rules later.</span></pre>
+        </div>
+    </div>
+</section>
+
+<!-- 13 ----------------------------------------------------------------- -->
+<section class="slide" data-title="Control surface" data-src="findings/10-control-surface-and-widget.md">
+    <p class="topic">Control surface - live</p>
+    <h2>One config model, two drivers.</h2>
+    <p class="lede">Form controls and agent tool calls change the same spec through the same actions and the same validator. Try the agent buttons, including the bad call. Switch the renderer to see the spec is library-neutral.</p>
+    <div class="body">
+        <div class="tabs" data-frame="ctlFrame" data-page="control">
+            <button data-lib="highcharts" aria-pressed="true">Highcharts</button>
+            <button data-lib="agcharts">AG Charts</button>
+            <button data-lib="echarts">ECharts</button>
+        </div>
+        <div class="frame" style="min-height:560px"><iframe id="ctlFrame" data-src="spikes/control.html?embed=1&lib=highcharts" title="Control surface demo"></iframe></div>
+    </div>
+</section>
+
+<!-- 14 ----------------------------------------------------------------- -->
+<section class="slide" data-title="Agents and GenUI" data-src="findings/11-genui-and-agent-integration.md">
+    <p class="topic">Agents and generative UI</p>
+    <h2>Agents name the data. Hoist checks it.</h2>
+    <p class="lede">A chart references a source and its fields; it never carries made-up numbers. Hoist validates against the source's typed fields and answers with the valid choices, so one retry is usually enough. The same schema serves chat, dashboards and saved reports.</p>
+    <div class="body">
+        <div class="row" style="grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);">
+            <div class="panel" style="display:flex; align-items:center;">
+                <svg class="diagram" viewBox="0 0 720 330" role="img" aria-labelledby="genTitle">
+                    <title id="genTitle">Agent loop: discover sources, propose a spec, Hoist validates, on error the agent retries with listed choices, on success the chart renders and its description returns to the agent each step.</title>
+                    <defs><marker id="arr2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="currentColor" style="color: var(--muted)"></path></marker></defs>
+                    <rect class="box" x="10" y="20" width="200" height="56" rx="5"></rect><text class="t" x="22" y="44">1 Discover</text><text class="s" x="22" y="64">list / describe_data_source</text>
+                    <rect class="box" x="260" y="20" width="200" height="56" rx="5"></rect><text class="t" x="272" y="44">2 Propose</text><text class="s" x="272" y="64">add_chart_widget(spec)</text>
+                    <rect class="box hot" x="510" y="20" width="200" height="56" rx="5"></rect><text class="t" x="522" y="44">3 Validate</text><text class="s" x="522" y="64">schema + source-aware checks</text>
+                    <path class="wire" d="M210 48 H256" marker-end="url(#arr2)"></path><path class="wire" d="M460 48 H506" marker-end="url(#arr2)"></path>
+                    <path class="wire bad" d="M610 76 C610 140 360 140 360 80" marker-end="url(#arr2)"></path>
+                    <text class="s" x="300" y="154">invalid: path-prefixed errors that list the valid fields; agent retries</text>
+                    <path class="wire hot" d="M610 76 V178" marker-end="url(#arr2)"></path>
+                    <rect class="box hot" x="510" y="182" width="200" height="56" rx="5"></rect><text class="t" x="522" y="206">4 Render</text><text class="s" x="522" y="226">model actions, persisted</text>
+                    <rect class="box" x="260" y="182" width="200" height="56" rx="5"></rect><text class="t" x="272" y="206">5 User edits</text><text class="s" x="272" y="226">settings panel, legend, zoom</text>
+                    <rect class="box" x="10" y="182" width="200" height="56" rx="5"></rect><text class="t" x="22" y="206">6 Agent sees it</text><text class="s" x="22" y="226">describe_chart, context provider</text>
+                    <path class="wire" d="M510 210 H464" marker-end="url(#arr2)"></path><path class="wire" d="M260 210 H214" marker-end="url(#arr2)"></path>
+                    <path class="wire" d="M110 182 V80" marker-end="url(#arr2)"></path>
+                    <text class="s" x="22" y="282">Example error from the spike:</text>
+                    <text class="s mono" x="22" y="302" style="font-family:'JetBrains Mono',monospace">series[4].field: 'NASDAQ' is not a numeric field of source 'navs'.</text>
+                    <text class="s mono" x="22" y="320" style="font-family:'JetBrains Mono',monospace">Available: FUND, SPX, MSCIW, B6040</text>
+                </svg>
+            </div>
+            <div class="panel scroll">
+                <h3>Plugs into hoist-chat-kit as it is</h3>
+                <ul style="margin:0; padding-left:18px; font-size:14px;">
+                    <li>Registers as a <code>ChatUiComponentSpec</code> (<code>show_time_series_chart</code>) over the real model, so the expanded view gets the settings panel free.</li>
+                    <li>Schema in chat-kit's subset: no <code>$ref</code>, bounded arrays, props in priority order. One object argument for OpenUI, not 13 positional ones.</li>
+                    <li>Closes gaps the handoff notes list: no dashboard placement, edits never reach the agent, made-up trends, no panes or bands.</li>
+                    <li>No formatter functions and no raw Highcharts options in the agent schema. Model text is escaped.</li>
+                </ul>
+                <p class="note" style="margin-top:10px">Read: chat-kit branch <code>genui-building-blocks</code> (most current) and five related branches.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- 15 ----------------------------------------------------------------- -->
+<section class="slide" data-title="Roadmap" data-src="findings/12-migration-and-roadmap.md">
+    <p class="topic">Roadmap</p>
+    <h2>Time series ships first and ships deep. Breadth follows, one family at a time.</h2>
+    <p class="lede">Nothing breaks: today's ChartModel stays as the escape hatch. The Highcharts 13 upgrade goes in a Hoist major before V2 code depends on it. Durations are guesses for one or two developers working with agents.</p>
+    <div class="body">
+        <div class="road" id="road"></div>
+        <div class="row" style="--cols: 3; margin-top: 10px;">
+            <div class="panel"><h3>Phase 1 exit test</h3><p class="note" style="margin:0">The spike's NAV and drawdown charts built with the real model in Toolbox, persisted to local storage, restored after reload.</p></div>
+            <div class="panel"><h3>Phase 2 exit test</h3><p class="note" style="margin:0">A Toolbox dashboard of chart and grid widgets, edited from the settings panel, saved and restored through ViewManager.</p></div>
+            <div class="panel"><h3>Phase 3 exit test</h3><p class="note" style="margin:0">An agent builds a two-chart, one-grid report from a prompt. The user edits and shares it. The agent then describes the edited state correctly.</p></div>
+        </div>
+    </div>
+</section>
+
+<!-- 16 ----------------------------------------------------------------- -->
+<section class="slide" data-title="Recommendation" data-src="findings/13-assumptions-and-open-questions.md">
+    <p class="topic">Recommendation and decisions</p>
+    <h2>Develop on Highcharts. Same library for breadth. Decide four things now.</h2>
+    <div class="body">
+        <div class="row" style="--cols: 3;">
+            <div class="panel">
+                <h3>1. Time series: develop the pair on Highcharts Stock</h3>
+                <p style="margin:0 0 10px">Build <code>TimeSeriesChartModel</code> on a Hoist-owned spec. Do not switch, do not add a complement.</p>
+                <p class="against"><b>Strongest argument against:</b> we deepen dependence on one commercial vendor whose types we cannot ship and whose 13.x broke options. ECharts was a clear second.</p>
+                <p class="conf">Confidence high. The spec keeps a later move to ECharts affordable: about 150 more lines of Hoist time-series code.</p>
+            </div>
+            <div class="panel">
+                <h3>2. Everything else: Highcharts, in this order</h3>
+                <p style="margin:0 0 10px">First-class: Category, Heatmap, Distribution, Scatter, Flow. Treemap aligned. Thin path: raw ChartModel for network, org, gauge, radar. Extension point, not a Hoist family: 3D surface, process flow.</p>
+                <p class="against"><b>Strongest argument against:</b> breadth of catalogue is not quality, and one vendor for everything concentrates risk. Answer: the spike found Highcharts' breadth quality at least equal to ECharts', and the spec keeps a move affordable.</p>
+                <p class="conf">Confidence high on one library, medium on the order (depends on real report widget mix).</p>
+            </div>
+            <div class="panel">
+                <h3>Decide now</h3>
+                <ol class="decisions">
+                    <li data-d="1"><span>Adopt the spec-first chart family on Highcharts (option e).</span></li>
+                    <li data-d="2"><span>Upgrade Hoist to Highcharts 13 in the next major, with the validated palette.</span></li>
+                    <li data-d="7"><span>Agree the data source contract with the first app that builds reports.</span></li>
+                    <li data-d="9"><span>Build the portable groundwork (named refs, registries) in core with Chart V2, so Grid can follow (<code>findings/14</code>).</span></li>
+                </ol>
+                <p class="note" style="margin-top:12px">Five more, with recommended answers, in <code>findings/13</code>.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+    </main>
+</div>
+
+<script>
+(function () {
+    // ------------------------------------------------------------ data
+    const LIBS = [
+        {k: 'hc', name: 'Highcharts', spiked: true},
+        {k: 'ag', name: 'AG Charts', spiked: true},
+        {k: 'ec', name: 'ECharts', spiked: true},
+        {k: 'am', name: 'amCharts 5'},
+        {k: 'sc', name: 'SciChart'},
+        {k: 'lw', name: 'Lightweight'},
+        {k: 'pl', name: 'Plotly'}
+    ];
+    // Ratings: B built in, C custom, X not practical, ? not found. "(E)" = AG Enterprise only. Source: findings/03.
+    const TS = [
+        ['Multi-series, multiple y-axes', 'B', 'B', 'B', 'B', 'B', 'B', 'B'],
+        ['Stacked panes, one time axis', 'B', 'C', 'B', 'B', 'B', 'B', 'B'],
+        ['Navigator', 'B', 'B(E)', 'B', 'B', 'B', 'C', 'B'],
+        ['Range buttons (1M ... YTD ... All)', 'B', 'B(E)', 'C', 'B', 'C', 'C', 'B'],
+        ['Zoom and pan', 'B', 'B(E)', 'B', 'B', 'B', 'B', 'B'],
+        ['Crosshair sync across charts', 'C', 'B(E)', 'B', 'B', 'B', 'C', 'C'],
+        ['OHLC, candlestick, volume', 'B', 'B(E)', 'B', 'B', 'B', 'B', 'B'],
+        ['Rebase to % change on zoom', 'B', 'C', 'C', 'B', 'C', 'B', 'C'],
+        ['Returns, drawdown, rolling', 'C', 'C', 'C', 'C', 'C', 'C', 'C'],
+        ['Technical indicators', 'B', 'X', 'C', 'B', 'C', 'C', 'C'],
+        ['Annotations, user-drawn', 'B', 'B(E)', 'C', 'B', 'B', 'C', 'B'],
+        ['Event flags, bands, lines', 'B', 'B', 'B', 'B', 'B', 'B', 'B'],
+        ['Trading calendar (no gaps)', 'B', 'B', 'C', 'B', 'B', 'B', 'B'],
+        ['IANA time zones', 'B', 'C', 'C', 'B', '?', 'C', '?'],
+        ['Data grouping on zoom', 'B', 'B', 'B', 'B', 'B', 'B', 'X'],
+        ['Large series (1M points)', 'B', 'B', 'B', 'C', 'B', '?', 'B'],
+        ['Live / ticking updates', 'B', 'B', 'B', 'B', 'B', 'B', 'B']
+    ];
+    // F first-class, A adequate, W awkward, - absent. Source: findings/04.
+    const BR = [
+        ['Bar / column, stacked', 'often', 'F', 'F', 'F', 'F', 'F', 'W', 'F'],
+        ['Heatmap', 'often', 'F', 'F(E)', 'F', 'A', 'F', 'W', 'F'],
+        ['Histogram / distribution', 'often', 'F', 'F(E)', 'A', 'W', 'A', 'W', 'F'],
+        ['Scatter', 'often', 'F', 'F', 'F', 'F', 'F', 'W', 'F'],
+        ['Bubble', 'often', 'F', 'F', 'F', 'A', 'F', '-', 'F'],
+        ['Treemap', 'often', 'F', 'F(E)', 'F', 'F', 'W', '-', 'F'],
+        ['Waterfall', 'often', 'F', 'F(E)', 'A', 'A', 'W', '-', 'F'],
+        ['Box plot', 'occasionally', 'F', 'F(E)', 'F', 'W', 'A', 'W', 'F'],
+        ['Pie / donut', 'occasionally', 'F', 'F', 'F', 'F', 'A', '-', 'F'],
+        ['Sunburst', 'occasionally', 'F', 'F(E)', 'F', 'F', 'A', '-', 'F'],
+        ['Gauge', 'occasionally', 'F', 'F(E)', 'F', 'F', 'A', '-', 'F'],
+        ['Radar / polar', 'rarely', 'F', 'F(E)', 'F', 'F', 'F', '-', 'F'],
+        ['Sankey', 'rarely', 'F', 'F(E)', 'F', 'F', '-', '-', 'F'],
+        ['Network graph', 'rarely', 'F', '-', 'F', 'F', 'W', '-', '-'],
+        ['Process flow / org chart', 'rarely', 'F', 'A', 'W', 'A', 'W', '-', '-'],
+        ['3D surface', 'rarely', 'W', '-', 'A', '-', 'F', '-', 'F'],
+        ['Violin', 'rarely', 'W', '-', 'A', '-', '-', '-', 'F'],
+        ['Geo maps', 'rarely', 'F', 'F(E)', 'F', 'F', 'W', '-', 'F'],
+        ['Funnel', 'rarely', 'F', 'F', 'F', 'F', '-', '-', 'F']
+    ];
+    // Source: findings/05.
+    const CRIT = [
+        ['Time-series depth', 30], ['Breadth', 12], ['Performance', 10], ['Agent / JSON fit', 10], ['Hoist fit', 10],
+        ['Licence fit', 10], ['Vendor health', 8], ['Theming', 5], ['Bundle', 5]
+    ];
+    const SCORES = {
+        Highcharts: [5, 5, 4, 4, 5, 5, 4, 4, 5],
+        'AG Charts': [3, 4, 3, 4, 4, 2, 4, 4, 2],
+        ECharts: [3, 4, 4, 3, 3, 5, 4, 4, 4],
+        amCharts: [4, 3, 2, 2, 2, 3, 3, 3, 3],
+        SciChart: [4, 3, 5, 4, 2, 1, 3, 3, 2]
+    };
+    const SENS = [
+        ['Proposed weights', null],
+        ['All criteria equal', CRIT.map(() => 1)],
+        ['Time series 0', CRIT.map(([n, w]) => (n === 'Time-series depth' ? 0 : w))]
+    ];
+    const CUT = [
+        ['Plotly', 'WebGL off with trading-calendar breaks; 4-8 WebGL charts per page'],
+        ['Lightweight Charts', 'Price charts only; no navigator; attribution link required'],
+        ['LightningChart', 'Imperative API; OHLC behind a Trading licence'],
+        ['Vega-Lite', 'No candlestick, breaks or WebGL. Kept as a spec reference'],
+        ['Recharts', 'No zoom or candlestick; JSX not JSON'],
+        ['Observable Plot', 'No zoom, pan or brush'],
+        ['Nivo', 'No time-series interaction; no release since May 2025'],
+        ['uPlot', 'Fast engine, no finance features or breadth'],
+        ['Perspective', 'Streaming pivot widget, not a chart component'],
+        ['visx, D3', 'Primitives: we would write Highstock ourselves']
+    ];
+    const SCORED = [
+        ['amCharts 5', 'Deep stock UI, but verbose JSON with silent failures and no WebGL'],
+        ['SciChart', 'Fastest, best JSON round trip; hostname-capped licences']
+    ];
+    const SPIKED = [
+        ['Highcharts 13.1.1', 'Mandated baseline. Incumbent; clients already license it'],
+        ['AG Charts 14.3', 'Same vendor as AG Grid; TS-first'],
+        ['ECharts 6.1', 'Strongest open-source all-rounder']
+    ];
+    const PERF = [
+        ['Highcharts (grouping)', 74, 19, true],
+        ['Highcharts (Boost)', 245, 111, true],
+        ['AG Charts (M4)', 232, 179],
+        ['ECharts (LTTB)', 173, 36]
+    ];
+    const LOC = [['Highcharts', 461, true], ['AG Charts', 424], ['ECharts', 594]];
+    const BUNDLE = [['Highcharts', 180, true], ['ECharts', 220], ['AG Charts', 565]];
+    const OPTS = [
+        ['(a) Enrich today\'s ChartModel', 'Not enough', 'Raw Highcharts options can not be validated or persisted cleanly'],
+        ['(b) Hoist spec, one backend', 'Close', 'Right contract; one mega-spec drifts toward the options tree'],
+        ['(c) Spec, pluggable backends', 'No', 'Needless with one library; doubles adapter code; lowest common denominator'],
+        ['(d) Curated family + escape hatch', 'Close', 'Right shape; needs one shared JSON contract'],
+        ['(e) Spec-first family', 'Recommended', '(d) plus (b)\'s contract, one backend behind an internal seam']
+    ];
+    const ROAD = [
+        ['Phase 0', 'Decisions, Highcharts 13, groundwork', 0, 2, 'dec'],
+        ['Phase 1', 'Foundation + time-series core', 2, 7, 'ts'],
+        ['Phase 2', 'Candles, sync, large data, settings, widget', 7, 12, 'ts'],
+        ['Phase 3', 'Agents and reports', 12, 16, ''],
+        ['Phase 4', 'Category, Heatmap, Distribution, Scatter, Flow', 16, 26, ''],
+        ['Phase 5', 'Migrate Toolbox and admin charts', 26, 29, '']
+    ];
+
+    // ------------------------------------------------------------ builders
+    const esc = s => String(s).replace(/[&<>]/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;'})[c]);
+    const lvl = v => {
+        const base = v.replace('(E)', '');
+        return {B: 'l5', F: 'l5', A: 'l3', C: 'l2', W: 'l1', X: 'l0', '-': 'l0', '?': 'unk'}[base];
+    };
+    const cell = v => `<td class="cell"><span class="${lvl(v)}" title="${esc(v)}">${esc(v)}</span></td>`;
+    const libHead = (extra = '') =>
+        `<thead><tr><th>${extra}</th>${extra === 'Need' ? '' : ''}${LIBS.map(l => `<th class="lib">${l.spiked ? '<b>' + l.name + '</b>' : l.name}</th>`).join('')}</tr></thead>`;
+
+    document.getElementById('tsTable').innerHTML =
+        `<thead><tr><th>Capability</th>${LIBS.map(l => `<th class="lib">${l.spiked ? '<b>' + l.name + '</b>' : l.name}</th>`).join('')}</tr></thead><tbody>` +
+        TS.map(r => `<tr><td class="feat">${esc(r[0])}</td>${r.slice(1).map(cell).join('')}</tr>`).join('') +
+        `<tr><td class="feat"><b>Built in (of 17)</b></td>${LIBS.map((_, i) => `<td class="cell"><b>${TS.filter(r => r[i + 1].startsWith('B')).length}</b></td>`).join('')}</tr></tbody>`;
+
+    document.getElementById('brTable').innerHTML =
+        `<thead><tr><th>Family</th><th>Need</th>${LIBS.map(l => `<th class="lib">${l.spiked ? '<b>' + l.name + '</b>' : l.name}</th>`).join('')}</tr></thead><tbody>` +
+        BR.map(r => `<tr><td class="feat">${esc(r[0])}</td><td class="need">${r[1]}</td>${r.slice(2).map(cell).join('')}</tr>`).join('') +
+        `<tr><td class="feat"><b>First-class on "often"</b></td><td></td>${LIBS.map((_, i) => `<td class="cell"><b>${BR.filter(r => r[1] === 'often' && r[i + 2].startsWith('F')).length} / 7</b></td>`).join('')}</tr></tbody>`;
+
+    const total = (scores, weights) => {
+        const ws = weights || CRIT.map(c => c[1]),
+            sum = ws.reduce((a, b) => a + b, 0);
+        return Math.round((scores.reduce((a, s, i) => a + s * ws[i], 0) / sum) * 20);
+    };
+    const names = Object.keys(SCORES);
+    const scoreLvl = s => 'l' + s;
+    document.getElementById('scoreTable').innerHTML =
+        `<thead><tr><th>Criterion</th><th class="num">Weight</th>${names.map(n => `<th class="lib">${n}</th>`).join('')}</tr></thead><tbody>` +
+        CRIT.map(([c, w], i) => `<tr><td class="feat">${c}</td><td class="num">${w}</td>${names.map(n => `<td class="cell"><span class="${scoreLvl(SCORES[n][i])}">${SCORES[n][i]}</span></td>`).join('')}</tr>`).join('') +
+        `<tr><td class="feat"><b>Total, 0-100</b></td><td></td>${names.map(n => `<td class="cell"><b style="font-size:16px">${total(SCORES[n])}</b></td>`).join('')}</tr></tbody>`;
+    document.getElementById('sensTable').innerHTML =
+        `<thead><tr><th>Weights</th>${names.map(n => `<th class="num">${n.split(' ')[0]}</th>`).join('')}</tr></thead><tbody>` +
+        SENS.map(([label, w]) => `<tr><td>${label}</td>${names.map(n => `<td class="num">${total(SCORES[n], w)}</td>`).join('')}</tr>`).join('') +
+        '</tbody>';
+
+    const simple = (id, rows) =>
+        (document.getElementById(id).innerHTML = '<tbody>' + rows.map(r => `<tr><td><b>${esc(r[0])}</b><br><span class="note">${esc(r[1])}</span></td></tr>`).join('') + '</tbody>');
+    simple('cutTable', CUT);
+    simple('scoredTable', SCORED);
+    simple('spikedTable', SPIKED);
+
+    document.getElementById('optTable').innerHTML =
+        '<thead><tr><th>Option</th><th>Verdict</th></tr></thead><tbody>' +
+        OPTS.map(r => `<tr><td><b>${esc(r[0])}</b><br><span class="note">${esc(r[2])}</span></td><td style="white-space:nowrap; ${r[1] === 'Recommended' ? 'color:var(--accent); font-weight:700' : ''}">${r[1]}</td></tr>`).join('') +
+        '</tbody>';
+
+    const bars = (id, rows, max, unit = '') =>
+        (document.getElementById(id).innerHTML = rows
+            .map(([label, v, hc]) => `<div class="bar"><span>${esc(label)}</span><div class="track"><div class="fill ${hc ? 'hc' : ''}" style="width:${(v / max) * 100}%"></div></div><span class="v">${v}${unit}</span></div>`)
+            .join(''));
+    document.getElementById('perfBars').innerHTML =
+        '<div class="group-label">Render, 4 x 250k points</div><div class="bars" id="pb1"></div><div class="group-label">Zoom to a 5% window</div><div class="bars" id="pb2"></div>';
+    bars('pb1', PERF.map(p => [p[0], p[1], p[3]]), 260);
+    bars('pb2', PERF.map(p => [p[0], p[2], p[3]]), 260);
+    bars('locBars', LOC, 620);
+    bars('bundleBars', BUNDLE, 600);
+
+    const weeks = 29;
+    document.getElementById('road').innerHTML =
+        ROAD.map(([ph, label, a, b, cls]) => `<div class="ph"><b>${ph} - ${esc(label)}</b><span>${b - a} weeks (guess)</span></div><div class="lane"><div class="seg ${cls}" style="left:${(a / weeks) * 100}%; width:${((b - a) / weeks) * 100}%" title="${esc(label)}">${b - a} wk</div></div>`).join('') +
+        `<div class="axis"><span>Week 0</span><span>8</span><span>16</span><span>24</span><span>${weeks}</span></div>`;
+
+    // ------------------------------------------------------------ navigation
+    const slides = [...document.querySelectorAll('.slide')],
+        rail = document.getElementById('railItems');
+    let current = 0,
+        theme = 'dark';
+    try {
+        theme = localStorage.getItem('xh-chart-v2-theme') || (matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
+    } catch (e) {}
+
+    slides.forEach((s, i) => {
+        const b = document.createElement('button');
+        b.textContent = String(i + 1).padStart(2, '0');
+        b.title = s.dataset.title;
+        b.setAttribute('aria-label', `Slide ${i + 1}: ${s.dataset.title}`);
+        b.onclick = () => go(i);
+        rail.append(b);
+        const foot = document.createElement('div');
+        foot.className = 'foot';
+        foot.innerHTML = `<span class="src">Backed by <a href="${s.dataset.src}">${s.dataset.src}</a></span><span class="nav"><button aria-label="Previous slide" data-step="-1">Prev</button><span class="count">${i + 1} / ${slides.length}</span><button aria-label="Next slide" data-step="1">Next</button></span>`;
+        foot.querySelectorAll('button').forEach(btn => (btn.onclick = () => go(current + +btn.dataset.step)));
+        s.append(foot);
+    });
+
+    function withTheme(url) {
+        const u = url.split('?'),
+            p = new URLSearchParams(u[1] || '');
+        p.set('theme', theme);
+        return u[0] + '?' + p.toString();
+    }
+    function loadFrames(slide) {
+        slide.querySelectorAll('iframe[data-src]').forEach(f => {
+            const want = withTheme(f.dataset.cur || f.dataset.src);
+            if (f.getAttribute('src') !== want) f.setAttribute('src', want);
+        });
+    }
+    function unloadFrames(slide) {
+        slide.querySelectorAll('iframe').forEach(f => f.getAttribute('src') && f.setAttribute('src', 'about:blank'));
+    }
+    function go(i) {
+        i = Math.max(0, Math.min(slides.length - 1, i));
+        if (slides[current] && current !== i) unloadFrames(slides[current]);
+        slides.forEach((s, j) => s.classList.toggle('active', j === i));
+        [...rail.children].forEach((b, j) => b.setAttribute('aria-current', j === i ? 'true' : 'false'));
+        current = i;
+        loadFrames(slides[i]);
+        if (location.hash !== '#' + (i + 1)) history.replaceState(null, '', '#' + (i + 1));
+    }
+    function applyTheme(t) {
+        theme = t;
+        document.documentElement.dataset.theme = t;
+        try {
+            localStorage.setItem('xh-chart-v2-theme', t);
+        } catch (e) {}
+        if (slides[current]) loadFrames(slides[current]);
+    }
+
+    // In-slide tabs swap the iframe's chart or renderer.
+    document.querySelectorAll('.tabs[data-frame]').forEach(group => {
+        const frame = document.getElementById(group.dataset.frame);
+        group.querySelectorAll('button').forEach(btn => {
+            btn.onclick = () => {
+                group.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', b === btn ? 'true' : 'false'));
+                frame.dataset.cur = btn.dataset.lib
+                    ? `spikes/control.html?embed=1&lib=${btn.dataset.lib}`
+                    : `spikes/gallery.html?chart=${btn.dataset.chart}&embed=1`;
+                loadFrames(frame.closest('.slide'));
+            };
+        });
+    });
+    document.getElementById('runStress').onclick = () => {
+        const f = document.getElementById('stressFrame');
+        f.dataset.src = 'spikes/gallery.html?chart=stress&embed=1';
+        document.getElementById('stressWrap').style.display = '';
+        loadFrames(f.closest('.slide'));
+    };
+
+    document.getElementById('themeBtn').onclick = () => applyTheme(theme === 'dark' ? 'light' : 'dark');
+    document.addEventListener('keydown', e => {
+        if (e.target.closest('input, textarea, select')) return;
+        if (['ArrowRight', 'PageDown', ' '].includes(e.key)) {
+            e.preventDefault();
+            go(current + 1);
+        } else if (['ArrowLeft', 'PageUp'].includes(e.key)) {
+            e.preventDefault();
+            go(current - 1);
+        } else if (e.key === 'Home') go(0);
+        else if (e.key === 'End') go(slides.length - 1);
+        else if (e.key === 't' || e.key === 'T') applyTheme(theme === 'dark' ? 'light' : 'dark');
+    });
+    window.addEventListener('hashchange', () => go((parseInt(location.hash.slice(1), 10) || 1) - 1));
+
+    document.documentElement.dataset.theme = theme;
+    go((parseInt(location.hash.slice(1), 10) || 1) - 1);
+})();
+</script>
+</body>
+</html>

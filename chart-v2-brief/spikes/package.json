@@ -1,0 +1,18 @@
+{
+  "name": "hoist-chart-v2-spikes",
+  "private": true,
+  "version": "0.0.1",
+  "description": "Chart V2 spikes: one shared JSON spec rendered by Highcharts, AG Charts and ECharts.",
+  "scripts": {
+    "vendor": "node scripts/vendor.mjs",
+    "start": "pnpm install && node scripts/vendor.mjs && npx --yes http-server@14.1.1 . -p 4173 -c-1 -o /index.html"
+  },
+  "dependencies": {
+    "ag-charts-enterprise": "14.3.0",
+    "echarts": "6.1.0",
+    "highcharts": "13.1.1"
+  },
+  "devDependencies": {
+    "puppeteer-core": "25.17.0"
+  }
+}

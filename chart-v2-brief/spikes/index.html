@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Chart V2 Spikes</title>
+    <link rel="stylesheet" href="shared/gallery.css" />
+    <style>
+        main {
+            max-width: 760px;
+            padding: 24px 16px;
+            margin: 0 auto;
+            line-height: 1.5;
+        }
+        a {
+            color: var(--accent);
+        }
+        li {
+            margin: 6px 0;
+        }
+    </style>
+</head>
+<body>
+    <main>
+        <h1>Hoist Chart V2 spikes</h1>
+        <p>One shared JSON spec, rendered by Highcharts Stock 13.1.1, AG Charts Enterprise 14.3.0 and Apache ECharts 6.1.0.</p>
+        <ul>
+            <li><a href="gallery.html?chart=navRebase">Gallery</a> - seven charts side by side, light and dark, with render timings.</li>
+            <li><a href="gallery.html?chart=stress">Stress test</a> - 4 series x 250,000 points, render and zoom timings. Add <code>&amp;perf=gpu</code> for Highcharts Boost, <code>&amp;points=1000000</code> for 4M points.</li>
+            <li><a href="control.html">Control surface</a> - one config model driven by form controls and by agent tool calls, with live JSON.</li>
+        </ul>
+        <p>Results and method: <code>../findings/07-spike-results.md</code>.</p>
+    </main>
+</body>
+</html>

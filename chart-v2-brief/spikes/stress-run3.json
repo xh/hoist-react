@@ -1,0 +1,59 @@
+[
+  {
+    "chart": "stress",
+    "theme": "dark",
+    "results": {
+      "highcharts": {
+        "lib": "highcharts",
+        "version": "13.1.1",
+        "renderMs": 74,
+        "notes": [
+          "Native: navigator, dataGrouping (library downsampling, average per group; performance.mode \"gpu\" switches to boost).",
+          "Data fed as one chart-level DataTable (v13) with per-series dataMapping; formatter callbacks for Hoist formats."
+        ],
+        "zoomInMs": 19,
+        "zoomOutMs": 33,
+        "hoverMedianMs": 23,
+        "hoverP90Ms": 28
+      },
+      "agcharts": {
+        "lib": "agcharts",
+        "version": "14.3.0",
+        "renderMs": 239,
+        "notes": [
+          "Native: navigator, wheel/drag zoom, crosshair, shared tooltip.",
+          "Large data: no option needed - AG applies M4 aggregation itself. Columnar source copied to row objects (~20 ms for 250k).",
+          "Axis dates: custom UTC formatter - AG formats dates in local time only."
+        ],
+        "zoomInMs": 186,
+        "zoomOutMs": 191,
+        "hoverMedianMs": 49,
+        "hoverP90Ms": 55
+      },
+      "echarts": {
+        "lib": "echarts",
+        "version": "6.1.0",
+        "renderMs": 176,
+        "notes": [
+          "Continuous time axis (native time ticks).",
+          "Navigator: native dataZoom slider + inside zoom (wheel/drag).",
+          "Large data: zero-copy typed-array dataset, sampling: 'lttb' (line series has no large/progressive mode)."
+        ],
+        "zoomInMs": 36,
+        "zoomOutMs": 39,
+        "hoverMedianMs": 2,
+        "hoverP90Ms": 26
+      }
+    },
+    "errors": [
+      "error: ****************************************************************************************************************************",
+      "error: *********************************************** AG Charts Enterprise License ***********************************************",
+      "error: ************************************************** License Key Not Found ***************************************************",
+      "error: * All AG Charts Enterprise features are unlocked for trial.                                                                *",
+      "error: * If you want to hide the watermark please email info@ag-grid.com for a trial license key.                                 *",
+      "error: ****************************************************************************************************************************",
+      "error: ****************************************************************************************************************************"
+    ],
+    "screenshot": "shots/stress-run3/stress-dark.png"
+  }
+]
