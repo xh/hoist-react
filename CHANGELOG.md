@@ -48,6 +48,9 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 * `StoreRecord.getValues()` is faster for records with many fields, and so is spreading or copying
   its result. It now returns an object in V8's compact fast-properties mode.
 * Grid autosizing now stops when its grid unmounts or is destroyed partway through a pass.
+* The desktop column chooser now builds its grids on first open and syncs them to the grid's
+  column state only while open. Apps with many grids that set `colChooserModel` now hold far fewer
+  `GridModel` and `Store` instances.
 
 ### ✨ Styles
 

@@ -67,6 +67,7 @@ export class DockedColChooserModel extends ColChooserModel {
 
     @action
     override open() {
+        this.prepareToShow();
         this.isOpen = true;
     }
 
