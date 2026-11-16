@@ -62,10 +62,7 @@ export interface CodemodOptions {
  * Collect all edits for the project's source files. Does not modify the project or the disk -
  * see {@link applyEdits} and {@link writeEdits}.
  */
-export function collectItemsToChildren(
-    project: Project,
-    opts: CodemodOptions = {}
-): CodemodResult {
+export function collectItemsToChildren(project: Project, opts: CodemodOptions = {}): CodemodResult {
     const checker = project.getTypeChecker().compilerObject,
         result: CodemodResult = {files: [], renameCount: 0, findings: []};
 
@@ -118,7 +115,13 @@ function processFile(sf: SourceFile, checker: ts.TypeChecker, result: CodemodRes
 
     const report = (kind: Finding['kind'], node: ts.Node, message: string) => {
         const {line, character} = file.getLineAndCharacterOfPosition(node.getStart(file));
-        result.findings.push({kind, file: filePath, line: line + 1, column: character + 1, message});
+        result.findings.push({
+            kind,
+            file: filePath,
+            line: line + 1,
+            column: character + 1,
+            message
+        });
     };
 
     const visit = (node: ts.Node) => {
@@ -156,7 +159,7 @@ function processFile(sf: SourceFile, checker: ts.TypeChecker, result: CodemodRes
         }
 
         const specProps = legacyProps.filter(p =>
-            isElementSpecMember(contextualProperty(contextualType, propName(p)))
+            isElementSpecMember(contextualProperty(contextualType, propName(p)!))
         );
         if (!specProps.length) return;
 
@@ -170,9 +173,23 @@ function processFile(sf: SourceFile, checker: ts.TypeChecker, result: CodemodRes
             return;
         }
 
-        const [prop] = specProps;
+        const [prop] = specProps,
+            idx = obj.properties.indexOf(prop);
+        const laterSpreads = obj.properties.filter(
+            (p, i): p is ts.SpreadAssignment => i > idx && ts.isSpreadAssignment(p)
+        );
+        if (laterSpreads.some(p => mayHaveLegacyKey(checker.getTypeAtLocation(p.expression)))) {
+            report(
+                'review',
+                prop,
+                `Spread follows \`${propName(prop)}\` - a legacy \`item\` or \`items\` in the spread no longer overrides it, as \`children\` takes precedence.`
+            );
+        }
         if (ts.isShorthandPropertyAssignment(prop)) {
             edits.push(replace(prop.name, `children: ${prop.name.text}`));
+        } else if (ts.isIdentifier(prop.initializer) && prop.initializer.text === 'children') {
+            // `items: children` becomes the shorthand `children`.
+            edits.push(replace(prop, 'children'));
         } else {
             edits.push(replace(prop.name, 'children'));
         }
@@ -214,7 +231,7 @@ function processFile(sf: SourceFile, checker: ts.TypeChecker, result: CodemodRes
         }
 
         for (const el of specElements) {
-            const keyNode = keyOf(el);
+            const keyNode = keyOf(el)!;
             edits.push(
                 el.propertyName
                     ? replace(el.propertyName, 'children')
@@ -267,6 +284,12 @@ function processFile(sf: SourceFile, checker: ts.TypeChecker, result: CodemodRes
 
     visit(file);
     return dedupe(edits);
+}
+
+/** True if a spread of this type could carry a legacy `item` or `items` key. */
+function mayHaveLegacyKey(type: ts.Type): boolean {
+    if (type.flags & (ts.TypeFlags.Any | ts.TypeFlags.Unknown)) return true;
+    return LEGACY_KEYS.some(key => !!contextualProperty(type, key));
 }
 
 /** Look up a property on a type, checking each member of a union. */

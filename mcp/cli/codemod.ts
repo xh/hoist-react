@@ -81,7 +81,7 @@ function printSummary(result: CodemodResult, cwd: string, dryRun: boolean) {
     const groups: Array<[Finding['kind'], string]> = [
         ['conflict', 'Conflicts - left unchanged, merge by hand'],
         ['manual', 'Not converted - check and convert by hand'],
-        ['review', 'Renamed outside an object literal - worth a review']
+        ['review', 'Renamed - worth a review']
     ];
     for (const [kind, title] of groups) {
         const items = findings.filter(f => f.kind === kind);
