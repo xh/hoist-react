@@ -315,9 +315,12 @@ export abstract class ColChooserModel extends HoistModel implements IColChooserM
     }
 
     /** Hide the chooser - discarding any uncommitted edits, matching an explicit Cancel. */
+    @action
     close() {
+        if (!this.isShown) return;
         this.hide();
-        this.discardPending();
+        // The buckets resync from the grid on the next show.
+        this.workingState = this.baseline;
         this.clearFilter();
     }
 
@@ -337,7 +340,7 @@ export abstract class ColChooserModel extends HoistModel implements IColChooserM
 
     /** Show the chooser if hidden, hide it if shown. */
     toggle() {
-        this.isOpen ? this.close() : this.open();
+        this.isShown ? this.close() : this.open();
     }
 
     //-----------------------
@@ -413,13 +416,6 @@ export abstract class ColChooserModel extends HoistModel implements IColChooserM
         this.setBaseline(workingState);
         gridModel.updateColumnState(workingState);
         await this.autosizeIfNeeded();
-    }
-
-    /** Discard pending edits, reverting the working copy to the last committed baseline. */
-    @action
-    discardPending() {
-        this.workingState = this.baseline;
-        this.syncBuckets();
     }
 
     async restoreDefaultsAsync() {
@@ -570,7 +566,7 @@ export abstract class ColChooserModel extends HoistModel implements IColChooserM
 
     @action
     private syncBuckets(columnState: ColumnState[] = this.currentState) {
-        if (!columnState || !this.unpinnedBucketModel) return;
+        if (!columnState) return;
         this.bucketModels.forEach(it =>
             it.syncFromState(columnState, this.showGroups, this.showHidden)
         );

@@ -76,6 +76,28 @@ describe('ColChooserModel', () => {
             gridModel.setColumnVisible('region', false);
             expect(isVisibleInBucket(chooser, 'region')).toBe(false);
         });
+
+        it('does not reload its bucket stores when closed', () => {
+            const chooser = chooserOf(createGridModel({colChooserModel}));
+            show(chooser);
+            chooser.updateColumns([{colId: 'region', hidden: true}]);
+
+            const loadSpies = chooser.bucketModels.map(b =>
+                vi.spyOn(b.chooserGridModel.store, 'loadData')
+            );
+            chooser.close();
+
+            loadSpies.forEach(spy => expect(spy).not.toHaveBeenCalled());
+            expect(chooser.isShown).toBe(false);
+        });
+
+        it('closes on toggle while shown', () => {
+            const chooser = chooserOf(createGridModel({colChooserModel}));
+            show(chooser);
+
+            chooser.toggle();
+            expect(chooser.isShown).toBe(false);
+        });
     });
 
     it('builds its Column Library GridModel only when shown', async () => {
