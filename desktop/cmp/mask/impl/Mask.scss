@@ -4,6 +4,14 @@
   flex-direction: column;
   justify-content: center;
 
+  &--inline {
+    animation: xh-mask-fade-in 200ms cubic-bezier(0.4, 1, 0.75, 0.9);
+    background-color: var(--xh-mask-bg);
+    inset: 0;
+    position: absolute;
+    z-index: 20; // Blueprint's overlay z-index, which other components stack against.
+  }
+
   .bp6-overlay-backdrop {
     background-color: var(--xh-mask-bg);
   }
@@ -21,5 +29,12 @@
       padding: var(--xh-pad-half-px);
       text-align: center;
     }
+  }
+}
+
+// Fades only the backdrop, as Blueprint's overlay did. Keyframes avoid a forced reflow.
+@keyframes xh-mask-fade-in {
+  from {
+    background-color: transparent;
   }
 }

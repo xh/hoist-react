@@ -95,6 +95,9 @@
 * Grid column group headers show their expand/collapse control right after the label rather
   than at the header's far edge, as a chevron pointing down when expanded and right when
   collapsed, matching tree rows.
+* Desktop inline `Mask` renders a plain `div` with the class `xh-mask--inline`, not a Blueprint
+  overlay, so showing a mask no longer forces a browser layout. Restyle any app CSS that targets
+  `.bp6-overlay` classes within an inline mask, or use `--xh-mask-bg`.
 
 ### ⚙️ Typescript API Adjustments
 
