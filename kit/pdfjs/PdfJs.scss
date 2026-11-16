@@ -8,10 +8,10 @@
 // Hoist overrides for the scoped pdf.js styles in pdf_viewer.css. Loaded after that file, so
 // these win at equal or higher specificity.
 .xh-pdf-viewer .pdfViewer {
-  padding: var(--xh-pdf-viewer-page-gap-px) 0;
+  padding: var(--xh-pdf-viewer-page-gap) 0;
 
   &.removePageBorders .page {
-    margin: 0 auto var(--xh-pdf-viewer-page-gap-px);
+    margin: 0 auto var(--xh-pdf-viewer-page-gap);
     box-shadow: var(--xh-pdf-viewer-page-shadow);
   }
 

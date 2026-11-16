@@ -14,5 +14,5 @@
 // On mobile, this works in concert with modification to the viewport meta tag within AppContainerModel
 // to ensure that we don't allow app content to be obscured by the notch, bottom task switcher, etc.
 .xh-mobile .xh-viewport {
-  padding: var(--xh-pad-safe-all);
+  padding: var(--xh-safe-area-inset);
 }
