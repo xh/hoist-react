@@ -22,8 +22,8 @@
     * If a spec sets `children` and a legacy key, only `children` renders and Hoist logs a warning.
     * To convert an app, upgrade to v91 and run `codemod-items-to-children.mjs` from the installed
       `@xh/hoist/docs/codemod/v91` folder - see its header for usage. It uses the TypeScript
-      checker, so `items` keys that hold menu or other data stay unchanged. It also converts
-      factory examples in markdown docs such as CLAUDE.md, so agents stop copying the old keys.
+      checker, so `items` keys that hold menu or other data stay unchanged. It also reports
+      factory examples in markdown docs such as CLAUDE.md, and edits them only with `--fix-docs`.
 
 ### ⚙️ Typescript API Adjustments
 

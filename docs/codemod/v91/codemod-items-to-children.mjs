@@ -23,23 +23,32 @@
  *
  * Markdown docs get a second pass, because agents copy factory calls from CLAUDE.md, AGENTS.md,
  * READMEs and similar files. Code blocks there have no imports, so the type checker cannot read
- * them. In fenced TS/JS blocks, the codemod renames `item` / `items` only in an object literal
- * passed straight to a known element factory: one the project exports, from Hoist or the app,
- * or one the block defines. It reports other likely specs in code blocks, and prose that names
- * `item` / `items` as the children keys. Data keys, such as `items` in menu configs, stay
- * unchanged. Files named CHANGELOG.md and anything under node_modules are skipped.
+ * them, and they belong to the people who wrote them. So the docs pass changes nothing by default.
+ * It reports a suggested rename for each `item` / `items` key in an object literal passed straight
+ * to a known element factory within a fenced TS/JS block. A known factory is one the project
+ * exports, from Hoist or the app, or one the block defines. It also reports other likely specs in
+ * code blocks, and prose that names `item` / `items` as the children keys. Data keys, such as
+ * `items` in menu configs, are not reported. With --fix-docs, it applies the suggested renames in
+ * code blocks that are closed and parse cleanly, and still reports the rest. Files named
+ * CHANGELOG.md and anything under node_modules are skipped.
  *
  * Upgrade the app to hoist-react v91 or later first. Older versions pass `children` through as a
  * plain prop, without the handling described above.
  *
  * Usage (from the app root):
  *   node client-app/node_modules/@xh/hoist/docs/codemod/v91/codemod-items-to-children.mjs \
- *       [--dry] [--project tsconfig.json] [path ...]
+ *       [--dry] [--fix-docs] [--no-docs] [--project tsconfig.json] [path ...]
  *
  * The tsconfig defaults to ./tsconfig.json, then ./client-app/tsconfig.json. Paths limit the
  * files edited. Source files default to the folder holding the tsconfig, and markdown files to
  * the current folder. Files outside them - including node_modules and a hoist-react checkout
- * mapped in via `paths` - are type checked, never edited. Pass --no-docs to skip markdown.
+ * mapped in via `paths` - are type checked, never edited.
+ *
+ * Options:
+ *   --dry        Report source and doc changes, write nothing.
+ *   --fix-docs   Apply the safe doc renames too. Without it, docs are only reported.
+ *   --no-docs    Skip markdown entirely.
+ *   --project    Path to the tsconfig.json to load.
  */
 import {existsSync, readdirSync, readFileSync, statSync, writeFileSync} from 'node:fs';
 import path from 'node:path';
@@ -115,14 +124,19 @@ export function collectFactoryNames(project) {
 }
 
 /**
- * Convert one markdown document. Renames `item` / `items` in object literals passed straight to a
- * known factory within fenced TS/JS code blocks, and reports other likely specs and prose.
+ * Check one markdown document for `item` / `items` in element factory examples.
+ *
+ * Docs are written by people, so by default this changes nothing. It returns a `suggest` finding
+ * for each key it would rename, plus `manual`, `conflict` and `review` findings for what it cannot
+ * judge. With `fix: true`, it applies the suggested renames, but only in fenced code blocks that
+ * are closed and parse without errors. Suggestions in other blocks stay findings.
  *
  * @param {string} text - markdown source.
  * @param {Set<string>} factoryNames - see {@link collectFactoryNames}.
+ * @param {{fix?: boolean}} [opts]
  * @returns {{text: string, renameCount: number, findings: {kind: string, line: number, column: number, message: string}[]}}
  */
-export function convertMarkdown(text, factoryNames) {
+export function convertMarkdown(text, factoryNames, opts = {}) {
     const lines = text.split('\n'),
         findings = [];
     let renameCount = 0;
@@ -146,13 +160,31 @@ export function convertMarkdown(text, factoryNames) {
         while (end < lines.length && !lines[end].trim().startsWith(fence)) end++;
 
         if (CODE_LANGS.includes(lang.toLowerCase())) {
-            const code = lines.slice(i + 1, end).join('\n'),
-                result = convertCodeBlock(code, factoryNames);
-            if (result.edits.length) {
-                lines.splice(i + 1, end - i - 1, ...applyEdits(code, result.edits).split('\n'));
+            const firstLine = i + 1,
+                isClosed = end < lines.length,
+                code = lines.slice(firstLine, end).join('\n'),
+                result = convertCodeBlock(code, factoryNames),
+                canFix = opts.fix && isClosed && result.parsedCleanly;
+
+            result.findings.forEach(f => findings.push({...f, line: f.line + firstLine}));
+            if (canFix && result.edits.length) {
+                lines.splice(firstLine, end - firstLine, ...applyEdits(code, result.edits).split('\n'));
                 renameCount += result.edits.length;
+            } else {
+                const why = !opts.fix
+                    ? ''
+                    : !isClosed
+                      ? ' Not applied: the code block has no closing fence.'
+                      : ' Not applied: the code block does not parse cleanly.';
+                result.edits.forEach(e =>
+                    findings.push({
+                        kind: 'suggest',
+                        line: e.line + firstLine,
+                        column: e.column,
+                        message: `In \`${e.callee}(...)\`, rename \`${e.from}\` to \`${e.text}\`.${why}`
+                    })
+                );
             }
-            result.findings.forEach(f => findings.push({...f, line: f.line + i + 1}));
         }
         i = end;
     }
@@ -251,11 +283,11 @@ function convertCodeBlock(code, factoryNames) {
                 }
                 const [prop] = legacy;
                 if (ts.isShorthandPropertyAssignment(prop)) {
-                    edits.push(nodeEdit(sf, prop.name, `children: ${prop.name.text}`));
+                    edits.push(nodeEdit(sf, prop.name, `children: ${prop.name.text}`, name));
                 } else if (ts.isIdentifier(prop.initializer) && prop.initializer.text === 'children') {
-                    edits.push(nodeEdit(sf, prop, 'children'));
+                    edits.push(nodeEdit(sf, prop, 'children', name));
                 } else {
-                    edits.push(nodeEdit(sf, prop.name, 'children'));
+                    edits.push(nodeEdit(sf, prop.name, 'children', name));
                 }
             }
         }
@@ -263,11 +295,14 @@ function convertCodeBlock(code, factoryNames) {
     };
     visit(sf);
 
-    return {edits, findings};
+    return {edits, findings, parsedCleanly: !sf.parseDiagnostics?.length};
 }
 
-function nodeEdit(sf, node, text) {
-    return {start: node.getStart(sf), end: node.getEnd(), text};
+/** An edit that also records where it is and what it replaces, for suggestions. */
+function nodeEdit(sf, node, text, callee) {
+    const start = node.getStart(sf),
+        {line, character} = sf.getLineAndCharacterOfPosition(start);
+    return {start, end: node.getEnd(), text, from: node.getText(sf), callee, line: line + 1, column: character + 1};
 }
 function selectSourceFiles(project, paths) {
     const prefixes = paths?.map(toPosix);
@@ -558,6 +593,7 @@ function main(args) {
         paths = [];
     let dry = false,
         docs = true,
+        fixDocs = false,
         explicitTsConfig = null;
     for (let i = 0; i < args.length; i++) {
         const arg = args[i];
@@ -565,6 +601,8 @@ function main(args) {
             dry = true;
         } else if (arg === '--no-docs') {
             docs = false;
+        } else if (arg === '--fix-docs') {
+            fixDocs = true;
         } else if (arg === '--project') {
             explicitTsConfig = args[++i];
             if (!explicitTsConfig || explicitTsConfig.startsWith('--')) fail('--project needs a path.');
@@ -598,7 +636,9 @@ function main(args) {
         const factoryNames = collectFactoryNames(project),
             docRoots = paths.length ? paths.map(p => path.resolve(cwd, p)) : [cwd];
         for (const file of docRoots.flatMap(findMarkdownFiles)) {
-            const md = convertMarkdown(readFileSync(file, 'utf8'), factoryNames);
+            const md = convertMarkdown(readFileSync(file, 'utf8'), factoryNames, {
+                fix: fixDocs && !dry
+            });
             md.findings.forEach(f => result.findings.push({...f, file}));
             if (!md.renameCount) continue;
             renameCount += md.renameCount;
@@ -615,6 +655,12 @@ function main(args) {
     }
 
     const groups = [
+        [
+            'suggest',
+            fixDocs
+                ? 'Docs - suggested renames the codemod did not apply, check by hand'
+                : 'Docs - suggested renames, not applied. Edit by hand, or rerun with --fix-docs'
+        ],
         ['conflict', 'Conflicts - left unchanged, merge by hand'],
         ['manual', 'Not converted - check and convert by hand'],
         ['review', 'Worth a review']

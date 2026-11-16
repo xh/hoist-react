@@ -185,7 +185,24 @@ describe('codemod-items-to-children', () => {
 describe('codemod-items-to-children markdown', () => {
     const factories = new Set(['panel', 'grid', 'formField', 'textInput']);
 
-    it('renames keys in calls to known factories within code blocks', () => {
+    it('changes nothing by default, and suggests each rename', () => {
+        const md = ['```ts', "panel({title: 'Users', items: [grid()]});", '```'].join('\n');
+
+        const {text, renameCount, findings} = convertMarkdown(md, factories);
+
+        expect(text).toBe(md);
+        expect(renameCount).toBe(0);
+        expect(findings).toEqual([
+            {
+                kind: 'suggest',
+                line: 2,
+                column: 24,
+                message: 'In `panel(...)`, rename `items` to `children`.'
+            }
+        ]);
+    });
+
+    it('renames keys in calls to known factories with fix', () => {
         const md = [
             '# Users',
             '```typescript',
@@ -194,7 +211,7 @@ describe('codemod-items-to-children markdown', () => {
             '```'
         ].join('\n');
 
-        const {text, renameCount, findings} = convertMarkdown(md, factories);
+        const {text, renameCount, findings} = convertMarkdown(md, factories, {fix: true});
 
         expect(text).toBe(
             [
@@ -217,7 +234,21 @@ describe('codemod-items-to-children markdown', () => {
             '```'
         ].join('\n');
 
-        expect(convertMarkdown(md, factories).text).toContain('myPanel({children: [grid()]});');
+        expect(convertMarkdown(md, factories, {fix: true}).text).toContain(
+            'myPanel({children: [grid()]});'
+        );
+    });
+
+    it('only suggests renames in blocks that do not parse or are not closed', () => {
+        const broken = ['```ts', 'panel({items: [grid()], ...});', '```'].join('\n'),
+            unclosed = ['```ts', 'panel({items: [grid()]});'].join('\n');
+
+        for (const md of [broken, unclosed]) {
+            const {text, findings} = convertMarkdown(md, factories, {fix: true});
+            expect(text).toBe(md);
+            expect(findings.map(it => it.kind)).toEqual(['suggest']);
+            expect(findings[0].message).toMatch(/Not applied/);
+        }
     });
 
     it('leaves data keys, other languages and text outside code blocks alone', () => {
@@ -231,7 +262,9 @@ describe('codemod-items-to-children markdown', () => {
             '```'
         ].join('\n');
 
-        const {text, findings} = convertMarkdown(md, new Set([...factories, 'contextMenu']));
+        const {text, findings} = convertMarkdown(md, new Set([...factories, 'contextMenu']), {
+            fix: true
+        });
 
         expect(text).toBe(md);
         expect(findings).toEqual([]);
@@ -247,7 +280,7 @@ describe('codemod-items-to-children markdown', () => {
             '```'
         ].join('\n');
 
-        const {text, findings} = convertMarkdown(md, factories);
+        const {text, findings} = convertMarkdown(md, factories, {fix: true});
 
         expect(text).toBe(md);
         expect(findings.map(it => [it.kind, it.line])).toEqual([
