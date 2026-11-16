@@ -44,7 +44,7 @@ export const optionsDialog = hoistCmp.factory({
                     item: dialogBody(
                         form({
                             model: formModel,
-                            fieldDefaults: {minimal: true, inline: true},
+                            fieldDefaults: {minimal: true, labelSide: 'left'},
                             items: model.options.map(option => {
                                 return formField({field: option.name, ...option.formField});
                             })

@@ -54,7 +54,7 @@ const formDisplay = hoistCmp.factory<RestFormModel>(({model, testId}) => {
         fieldDefaults: {
             commitOnChange: true,
             minimal: true,
-            inline: true,
+            labelSide: 'left',
             labelWidth: 120,
             labelTextAlign: 'right'
         },

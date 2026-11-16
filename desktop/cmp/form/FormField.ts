@@ -18,7 +18,15 @@ import {fmtDate, fmtDateTime, fmtJson, fmtNumber} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
 import {tooltip} from '@xh/hoist/kit/blueprint';
 import {isLocalDate} from '@xh/hoist/utils/datetime';
-import {errorIf, getTestId, logWarn, TEST_ID, throwIf, withDefault} from '@xh/hoist/utils/js';
+import {
+    apiDeprecated,
+    errorIf,
+    getTestId,
+    logWarn,
+    TEST_ID,
+    throwIf,
+    withDefault
+} from '@xh/hoist/utils/js';
 import {
     getLayoutProps,
     getReactElementName,
@@ -42,6 +50,8 @@ import type {ReactElement, ReactNode} from 'react';
 import {Children, cloneElement, useContext, useEffect, useState} from 'react';
 import './FormField.scss';
 
+export type FormFieldLabelSide = 'left' | 'top';
+
 export interface FormFieldProps extends BaseFormFieldProps {
     /**
      * Focus or toggle input when label is clicked.
@@ -51,9 +61,15 @@ export interface FormFieldProps extends BaseFormFieldProps {
 
     /**
      * Layout field inline with label to the left.
-     * Defaulted from containing Form, or false.
+     * @deprecated Use `labelSide` instead - `true` maps to 'left', `false` to 'top'.
      */
     inline?: boolean;
+
+    /**
+     * Side of the input on which to place its label - 'top' for above, 'left' for inline.
+     * Defaulted from containing Form, or 'top'.
+     */
+    labelSide?: FormFieldLabelSide;
 
     /** Alignment of label text, default 'left'. */
     labelTextAlign?: HSide;
@@ -168,7 +184,7 @@ export const [FormField, formField] = hoistCmp.withFactory<FormFieldProps>({
             childElementName = child ? getReactElementName(child) : null;
 
         // Display related props
-        const inline = defaultProp('inline', props, formContext, false),
+        const labelSide = getLabelSide(props, formContext),
             minimal = defaultProp('minimal', props, formContext, false),
             leftErrorIcon = defaultProp('leftErrorIcon', props, formContext, false),
             clickableLabel = defaultProp('clickableLabel', props, formContext, true),
@@ -189,7 +205,7 @@ export const [FormField, formField] = hoistCmp.withFactory<FormFieldProps>({
         const classes = [];
         if (childElementName) classes.push(`xh-form-field--${kebabCase(childElementName)}`);
         if (isRequired) classes.push('xh-form-field--required');
-        if (inline) classes.push('xh-form-field--inline');
+        if (labelSide === 'left') classes.push('xh-form-field--inline');
         if (minimal) classes.push('xh-form-field--minimal');
         if (readonly) classes.push('xh-form-field--readonly');
         if (disabled) classes.push('xh-form-field--disabled');
@@ -450,6 +466,31 @@ function defaultProp<N extends keyof Partial<FormFieldProps>>(
     const fieldDefault = formContext.fieldDefaults ? formContext.fieldDefaults[name] : null;
     return withDefault(props[name], fieldDefault, defaultVal);
 }
+
+/**
+ * Resolve labelSide, honoring the deprecated `inline` prop. A prop on the field beats a Form
+ * default, and `labelSide` beats `inline` at the same level.
+ */
+function getLabelSide(
+    props: Partial<FormFieldProps>,
+    formContext: FormContextType
+): FormFieldLabelSide {
+    const defaults: Partial<FormFieldProps> = formContext.fieldDefaults ?? {},
+        fieldInline = inlineToLabelSide(props.inline),
+        defaultInline = inlineToLabelSide(defaults.inline);
+    return props.labelSide ?? fieldInline ?? defaults.labelSide ?? defaultInline ?? 'top';
+}
+
+function inlineToLabelSide(inline: boolean): FormFieldLabelSide {
+    if (inline == null) return null;
+    apiDeprecated('FormFieldProps.inline', {
+        v: 'v93',
+        msg: "Use 'labelSide' instead.",
+        source: FormField
+    });
+    return inline ? 'left' : 'top';
+}
+
 function getFormFieldTestId(
     props: Partial<FormFieldProps>,
     formContext: FormContextType,

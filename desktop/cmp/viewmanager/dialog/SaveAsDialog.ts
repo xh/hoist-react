@@ -58,7 +58,7 @@ const formPanel = hoistCmp.factory<SaveAsDialogModel>({
                 testId,
                 fieldDefaults: {
                     commitOnChange: true,
-                    inline: true,
+                    labelSide: 'left',
                     minimal: true
                 },
                 item: vframe({

@@ -73,7 +73,7 @@ const detailRecForm = hoistCmp.factory<ActivityDetailModel>(({model}) => {
     const {hasSelection, formModel} = model;
     return hasSelection
         ? form({
-              fieldDefaults: {inline: true, readonlyRenderer: valOrNa},
+              fieldDefaults: {labelSide: 'left', readonlyRenderer: valOrNa},
               item: hframe(
                   div({
                       className: 'xh-admin-activity-detail__form',

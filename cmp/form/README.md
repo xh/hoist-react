@@ -374,7 +374,7 @@ import {textInput, numberInput} from '@xh/hoist/desktop/cmp/input';
 form({
     model: formModel,
     fieldDefaults: {
-        inline: true,
+        labelSide: 'left',
         labelWidth: 120
     },
     items: [
@@ -384,6 +384,11 @@ form({
     ]
 })
 ```
+
+Desktop `FormField` places its label above the input by default. Set `labelSide: 'left'` to
+place it to the left, as above, and use `labelWidth` and `labelTextAlign` to line labels up.
+`labelSide` replaces the deprecated `inline` prop, where `inline: true` meant `'left'`. Mobile
+`FormField` always places its label above the input.
 
 ### Form Props
 
@@ -595,7 +600,7 @@ panel({
     scrollable: true,
     contentBoxProps: {padding: true},
     item: form({
-        fieldDefaults: {inline: true},
+        fieldDefaults: {labelSide: 'left'},
         items: [
             formField({field: 'firstName', item: textInput()}),
             formField({field: 'lastName', item: textInput()}),

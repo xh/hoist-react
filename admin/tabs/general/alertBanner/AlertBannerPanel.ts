@@ -68,7 +68,7 @@ const formPanel = hoistCmp.factory<AlertBannerModel>(({model}) => {
         className: `${baseClassName}__form-panel`,
         item: form({
             fieldDefaults: {
-                inline: true,
+                labelSide: 'left',
                 commitOnChange: true,
                 labelWidth: 100
             },
