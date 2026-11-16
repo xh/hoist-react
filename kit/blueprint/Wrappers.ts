@@ -28,6 +28,7 @@ import {
     Menu,
     MenuDivider,
     MenuItem,
+    type MiddlewareConfig,
     Navbar,
     NavbarDivider,
     NavbarGroup,
@@ -56,7 +57,7 @@ import {
 } from '@blueprintjs/core';
 import {elementFactory} from '@xh/hoist/core';
 import type React from 'react';
-import {createElement as reactCreateElement} from 'react';
+import {createElement as reactCreateElement, useMemo} from 'react';
 
 // Wrap Dialog and Popover to disable fade/scale-in transitions by default.
 // See also popover & overlay related CSS overrides in ./styles.scss.
@@ -66,8 +67,35 @@ const Dialog: React.FC<DialogProps> = props =>
 // `Popover` renders Blueprint's `PopoverNext` (Floating UI based, React 19 compatible) while
 // preserving our legacy `PopoverProps` API: `popoverPropsToNextProps` maps `position`/`modifiers`/
 // `minimal`/`boundary` and retains the legacy `shouldReturnFocusOnClose` default of `false`.
-const Popover: React.FC<PopoverProps> = props =>
-    reactCreateElement(BpPopover, {transitionDuration: 0, ...popoverPropsToNextProps(props)});
+const Popover: React.FC<PopoverProps> = props => {
+    const nextProps = popoverPropsToNextProps(props),
+        {boundary, rootBoundary, placement} = nextProps,
+        middleware = useMemo(
+            () => withViewportPadding(nextProps.middleware, boundary, rootBoundary, placement),
+            [nextProps.middleware, boundary, rootBoundary, placement]
+        );
+    return reactCreateElement(BpPopover, {transitionDuration: 0, ...nextProps, middleware});
+};
+
+// Keep popovers a few pixels clear of the viewport edge. Their border ring and shadow draw outside
+// the popover box, so a popover flush with the edge loses its border on that side.
+const POPOVER_VIEWPORT_PADDING = 8;
+
+// Blueprint merges `middleware` over its defaults one key at a time, so restate the default
+// boundaries alongside the padding. Padding set by the caller, via `modifiers`, wins.
+function withViewportPadding(
+    middleware: MiddlewareConfig,
+    boundary: unknown,
+    rootBoundary: unknown,
+    placement: unknown
+): MiddlewareConfig {
+    const ret = {...middleware},
+        placer = ret.flip || placement !== undefined ? 'flip' : 'autoPlacement';
+    for (const key of [placer, 'shift']) {
+        ret[key] = {boundary, rootBoundary, padding: POPOVER_VIEWPORT_PADDING, ...ret[key]};
+    }
+    return ret;
+}
 
 //---------------------
 // Re-exports

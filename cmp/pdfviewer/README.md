@@ -182,7 +182,7 @@ The viewer follows the Hoist theme. Override these CSS variables to adjust it:
 |----------|---------|
 | `--xh-pdf-viewer-bg` | `--xh-bg-alt` |
 | `--xh-pdf-viewer-page-shadow` | A soft drop shadow, darker in the dark theme |
-| `--xh-pdf-viewer-page-gap-px` | `10px` |
+| `--xh-pdf-viewer-page-gap` | `10px` |
 | `--xh-pdf-viewer-highlight-bg` | Translucent amber |
 | `--xh-pdf-viewer-highlight-selected-bg` | Translucent orange |
 
