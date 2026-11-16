@@ -64,7 +64,8 @@ export const suspendPanel = hoistCmp.factory<AppContainerModel>({
                     className: 'xh-suspend-panel__inner',
                     items: [
                         p({item: message, omit: !message}),
-                        p(`${XH.clientAppName} must be reloaded to continue.`)
+                        p(`${XH.clientAppName} must be reloaded to continue.`),
+                        p('Please click anywhere to reload.')
                     ]
                 }),
                 bbar: [
@@ -74,7 +75,11 @@ export const suspendPanel = hoistCmp.factory<AppContainerModel>({
                         minimal: true,
                         testId: 'xh-suspend-details-btn',
                         omit: !exception,
-                        onClick: () => XH.exceptionHandler.showExceptionDetails(exception)
+                        onClick: e => {
+                            // Don't let this bubble to the viewport's click-anywhere-to-reload.
+                            e.stopPropagation();
+                            XH.exceptionHandler.showExceptionDetails(exception);
+                        }
                     }),
                     filler(),
                     button({
@@ -87,7 +92,8 @@ export const suspendPanel = hoistCmp.factory<AppContainerModel>({
                         onClick: () => XH.reloadApp()
                     })
                 ]
-            })
+            }),
+            onClick: () => XH.reloadApp()
         });
     }
 });
