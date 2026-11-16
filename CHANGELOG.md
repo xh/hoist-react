@@ -19,6 +19,12 @@
 * Hoist now requires AG Grid `36.3` or later, to avoid a performance issue in `36.2`. Apps must bump
   their `ag-grid-community`, `ag-grid-react`, and (if used) `ag-grid-enterprise` dependencies.
 
+### ⚙️ Technical
+
+* The desktop column chooser now builds its grids on first open and syncs them to the grid's
+  column state only while open. Apps with many grids that set `colChooserModel` now hold far fewer
+  `GridModel` and `Store` instances.
+
 ### 📚 Libraries
 
 * jsdom `30 → 30 || 31` (optional peer)
@@ -90,12 +96,6 @@
 * Fixed grids scrolling diagonally on trackpad gestures under AG Grid 36. `AgGrid` now locks each
   two-axis wheel event to its dominant axis.
 * Fixed `DashCanvas` widgets lagging behind the pointer while dragged or resized. Hoist pins react-grid-layout to 2.2 until a fixed 2.3 release ships.
-
-### ⚙️ Technical
-
-* The desktop column chooser now builds its grids on first open and syncs them to the grid's
-  column state only while open. Apps with many grids that set `colChooserModel` now hold far fewer
-  `GridModel` and `Store` instances.
 
 ### 🤖 AI Docs + Tooling
 
