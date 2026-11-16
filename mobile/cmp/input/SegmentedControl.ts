@@ -229,7 +229,7 @@ const cmp = hoistCmp.factory<SegmentedControlModel>(({model, className, ...props
         ...getLayoutProps(props),
         testId,
         domAttrs,
-        children: buttons,
-        ...rest
+        ...rest,
+        children: buttons
     });
 });

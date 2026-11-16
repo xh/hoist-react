@@ -52,6 +52,7 @@ export const menu = hoistCmp.factory({
 
         return vbox({
             ref,
+            ...props,
             children: [
                 div({
                     omit: !title,
@@ -62,8 +63,7 @@ export const menu = hoistCmp.factory({
                     className: 'xh-menu__list',
                     children: items
                 })
-            ],
-            ...props
+            ]
         });
     }
 });

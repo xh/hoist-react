@@ -697,6 +697,9 @@ const cmp = hoistCmp.factory<CodeInputModel>(({model, className, ...props}, ref)
 
 const inputCmp = hoistCmp.factory<CodeInputModel>(({model, ...props}, ref) =>
     vbox({
+        onBlur: model.onBlur,
+        onFocus: model.onFocus,
+        ...props,
         children: [
             div({
                 className: 'xh-code-input__inner-wrapper',
@@ -704,9 +707,6 @@ const inputCmp = hoistCmp.factory<CodeInputModel>(({model, ...props}, ref) =>
             }),
             model.showToolbar ? toolbarCmp() : actionButtonsCmp()
         ],
-        onBlur: model.onBlur,
-        onFocus: model.onFocus,
-        ...props,
         ref
     })
 );

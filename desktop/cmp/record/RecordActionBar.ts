@@ -76,6 +76,7 @@ export const [RecordActionBar, recordActionBar] = hoistCmp.withFactory<RecordAct
 
         return buttonGroup({
             vertical,
+            ...rest,
             children: actions.filter(Boolean).map(action => {
                 const recordAction =
                     action instanceof RecordAction ? action : new RecordAction(action);
@@ -92,8 +93,7 @@ export const [RecordActionBar, recordActionBar] = hoistCmp.withFactory<RecordAct
                     ...buttonProps,
                     testId: scopedTestId
                 });
-            }),
-            ...rest
+            })
         });
     }
 });

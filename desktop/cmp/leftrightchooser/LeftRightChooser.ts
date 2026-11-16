@@ -30,6 +30,7 @@ export const [LeftRightChooser, leftRightChooser] = hoistCmp.withFactory<LeftRig
     render({model, ...props}, ref) {
         return vbox({
             ref,
+            ...props,
             children: [
                 hframe({
                     className: 'xh-lr-chooser__grid-frame',
@@ -40,8 +41,7 @@ export const [LeftRightChooser, leftRightChooser] = hoistCmp.withFactory<LeftRig
                     ]
                 }),
                 description()
-            ],
-            ...props
+            ]
         });
     }
 });

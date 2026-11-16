@@ -105,12 +105,12 @@ const cmp = hoistCmp.factory<RadioInputModel>(({model, className, ...props}, ref
 
     return radioGroup({
         className,
-        children: items,
         disabled: props.disabled,
         inline: props.inline,
         selectedValue: model.renderValue,
         onChange: model.onChange,
         [TEST_ID]: props.testId,
-        ...props.domAttrs
+        ...props.domAttrs,
+        children: items
     });
 });

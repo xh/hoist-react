@@ -35,9 +35,9 @@ export const message = hoistCmp.factory({
             title: model.title,
             icon: model.icon,
             className: classNames(className, model.className),
-            children: [dialogBody(model.message, inputsCmp()), bbar()],
             onClose: () => model.doEscape(),
-            ...props
+            ...props,
+            children: [dialogBody(model.message, inputsCmp()), bbar()]
         });
     }
 });

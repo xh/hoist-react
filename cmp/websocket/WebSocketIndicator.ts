@@ -42,6 +42,9 @@ export const [WebSocketIndicator, webSocketIndicator] =
             }
 
             return hbox({
+                title: tooltip,
+                alignItems: 'center',
+                ...props,
                 children: [
                     icon,
                     span({
@@ -49,10 +52,7 @@ export const [WebSocketIndicator, webSocketIndicator] =
                         omit: iconOnly,
                         style: {margin: 8, cursor: 'help'}
                     })
-                ],
-                title: tooltip,
-                alignItems: 'center',
-                ...props
+                ]
             });
         }
     });

@@ -23,13 +23,13 @@ export function dockContainerImpl(
     return hbox({
         ref,
         className: classNames(className, `xh-dock-container--${model.direction}`),
+        ...props,
         children: model.views.map(viewModel => {
             return dockView({
                 key: viewModel.xhId,
                 model: viewModel,
                 compactHeaders
             });
-        }),
-        ...props
+        })
     });
 }

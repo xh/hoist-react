@@ -130,12 +130,12 @@ export const [FileChooser, fileChooser] = hoistCmp.withFactory<FileChooserProps>
                                     atLimit ? 'xh-file-chooser__target--disabled' : null
                                 ),
                                 width: isTop ? null : 200,
+                                ...getRootProps(),
                                 children: [
                                     multiDropTarget(),
                                     targetMask,
                                     input({...getInputProps()})
-                                ],
-                                ...getRootProps()
+                                ]
                             }),
                             frame({flex: 1, children: elementFromContent(resolvedFileDisplay)})
                         ],
@@ -158,8 +158,8 @@ export const [FileChooser, fileChooser] = hoistCmp.withFactory<FileChooserProps>
                     ),
                     testId: props.testId,
                     domAttrs: props.domAttrs,
-                    children: [dropzoneItem, targetMask, input({...getInputProps()})],
                     ...getRootProps(),
+                    children: [dropzoneItem, targetMask, input({...getInputProps()})],
                     ...getLayoutProps(props)
                 });
             },

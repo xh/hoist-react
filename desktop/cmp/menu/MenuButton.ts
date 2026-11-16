@@ -81,6 +81,13 @@ export const [MenuButton, menuButton] = hoistCmp.withFactory<MenuButtonProps>({
             disabled,
             position: menuPosition,
             minimal: true,
+            content: menu({
+                menuItems: isFunction(menuItems) ? impl.menuItems : menuItems,
+                context: isFunction(context) ? impl.context : context,
+                className: menuClassName,
+                testId: getTestId(testId, 'menu')
+            }),
+            ...popoverProps,
             children: button({
                 className,
                 icon,
@@ -88,14 +95,7 @@ export const [MenuButton, menuButton] = hoistCmp.withFactory<MenuButtonProps>({
                 testId,
                 onContextMenu: swallowContextMenu,
                 ...rest
-            }),
-            content: menu({
-                menuItems: isFunction(menuItems) ? impl.menuItems : menuItems,
-                context: isFunction(context) ? impl.context : context,
-                className: menuClassName,
-                testId: getTestId(testId, 'menu')
-            }),
-            ...popoverProps
+            })
         });
     }
 });

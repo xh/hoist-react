@@ -30,8 +30,8 @@ export const activityDetailView = hoistCmp.factory({
         return panel({
             className: 'xh-admin-activity-detail',
             tbar: tbar(),
-            children: [grid({flex: 1}), detailRecPanel()],
-            ...props
+            ...props,
+            children: [grid({flex: 1}), detailRecPanel()]
         });
     }
 });

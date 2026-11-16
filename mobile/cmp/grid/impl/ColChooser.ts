@@ -140,10 +140,10 @@ const columnList = hoistCmp.factory({
     render({cols, placeholder, className, ...props}, ref) {
         return div({
             className: classNames('xh-col-chooser__list', className),
+            ...props,
             children: isEmpty(cols)
                 ? placeholderCmp('All columns have been added to the grid.')
                 : [...cols.map((col, idx) => draggableRow({col, idx})), placeholder],
-            ...props,
             ref
         });
     }
@@ -194,6 +194,7 @@ const row = hoistCmp.factory<ColChooserLocalModel>({
                 pinned ? 'xh-col-chooser__row--pinned' : null,
                 isDragging ? 'xh-col-chooser__row--dragging' : null
             ),
+            ...props,
             children: [
                 div({
                     className: 'xh-col-chooser__row__grabber',
@@ -210,7 +211,6 @@ const row = hoistCmp.factory<ColChooserLocalModel>({
                     onClick: () => model.onHiddenToggleClick(colId, !hidden)
                 })
             ],
-            ...props,
             ref
         });
     }

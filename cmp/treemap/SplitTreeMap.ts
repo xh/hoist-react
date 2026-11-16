@@ -36,8 +36,8 @@ export const [SplitTreeMap, splitTreeMap] = hoistCmp.withFactory<SplitTreeMapPro
             testId,
             ref,
             className,
-            children: errors.length ? errorPanel({errors}) : childMaps(),
-            ...props
+            ...props,
+            children: errors.length ? errorPanel({errors}) : childMaps()
         });
     }
 });

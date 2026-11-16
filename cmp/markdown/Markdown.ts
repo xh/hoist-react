@@ -41,8 +41,8 @@ export const [Markdown, markdown] = hoistCmp.withFactory<MarkdownProps>({
         remarkPlugins.push(remarkGfm);
 
         return reactMarkdown({
-            children: content,
             ...reactMarkdownOptions,
+            children: content,
             remarkPlugins
         });
     }
