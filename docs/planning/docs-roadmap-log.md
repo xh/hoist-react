@@ -587,3 +587,14 @@
 - `data/cube/README.md` no longer documents `View.createStore()`, now `@internal`.
 - Updated the index entries in `docs/README.md`, the roadmap, `cmp/README.md` and
   `docs/doc-registry.json` to the new path and names.
+
+### 2026-11-16
+- Added package READMEs for `KeyValueList`, `ItemList`, `ProgressBar`, `Steps` and `Sparkline`.
+  Each covers when to use the component over its neighbors, examples, CSS variables and pitfalls.
+  TSDoc holds the props and their defaults, so the READMEs have no prop tables.
+- Cut the long sections for these components from `cmp/README.md` to short catalog entries that
+  link to the new READMEs. Updated the `Card` section and the `Separator` section of
+  `cmp/layout/README.md` to the current props.
+- Indexed in `docs/README.md` (Quick Reference and Components), the roadmap Priority 2 table
+  (Done), and `docs/doc-registry.json`. Moved the component keywords off the `cmp/README.md`
+  registry entry.

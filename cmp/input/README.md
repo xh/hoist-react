@@ -211,7 +211,7 @@ Use `domAttrs` to set `aria-label` or `aria-labelledby` on the primary element o
 
 A desktop `Slider` needs its own prop, because its handle holds the `slider` role and not its
 primary element. Name the handle with `ariaLabel`. A range slider takes a pair of names, one for
-each handle.
+each handle, or one name for both.
 
 ```typescript
 slider({bind: 'risk', min: 0, max: 10, ariaLabel: 'Risk level'})
