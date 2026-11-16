@@ -54,7 +54,11 @@ export interface CodemodResult {
 }
 
 export interface CodemodOptions {
-    /** Limit edits to source files whose absolute path starts with one of these. */
+    /**
+     * Limit edits to source files under these absolute paths - typically the project folder.
+     * Files outside them, e.g. a hoist-react checkout mapped in via `paths`, are still type
+     * checked but never edited.
+     */
     paths?: string[];
 }
 

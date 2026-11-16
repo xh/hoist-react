@@ -5,7 +5,7 @@
  * and writes them (or prints them with `--dry-run`).
  */
 import {existsSync} from 'node:fs';
-import {relative, resolve} from 'node:path';
+import {dirname, relative, resolve} from 'node:path';
 
 import {Command} from 'commander';
 import {Project} from 'ts-morph';
@@ -27,7 +27,10 @@ program
         'Rename the legacy `item` / `items` element spec keys to `children`. Uses the type ' +
             'checker, so data keys named `items` (menus, column groups) are left alone.'
     )
-    .argument('[paths...]', 'Limit edits to these files or directories (default: whole project)')
+    .argument(
+        '[paths...]',
+        'Limit edits to these files or directories (default: the folder holding the tsconfig)'
+    )
     .option(
         '-p, --project <tsconfig>',
         'Path to tsconfig.json (default: ./tsconfig.json, then ./client-app/tsconfig.json)'
@@ -40,7 +43,8 @@ program
 
         log(`Loading ${relative(cwd, tsConfigFilePath) || tsConfigFilePath}...`, opts.json);
         const project = new Project({tsConfigFilePath}),
-            result = collectItemsToChildren(project, {paths: paths.map(p => resolve(cwd, p))});
+            scope = paths.length ? paths.map(p => resolve(cwd, p)) : [dirname(tsConfigFilePath)],
+            result = collectItemsToChildren(project, {paths: scope});
 
         if (!opts.dryRun) writeEdits(project, result);
 
