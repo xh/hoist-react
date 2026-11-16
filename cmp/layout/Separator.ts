@@ -18,11 +18,11 @@ import './Separator.scss';
 
 export interface SeparatorProps extends HoistProps, LayoutProps, TestSupportProps, DomAttrsProps {
     /**
-     * Direction of the rule. Default `horizontal`, a rule across the width of its container that
-     * divides content above from content below. Use `vertical` to divide the items of a row, such
-     * as an `hbox` - the rule takes the height of the row.
+     * True for a vertical rule, to divide the items of a row such as an `hbox`. The rule takes the
+     * height of the row. Default false, for a rule across the width of its container that divides
+     * content above from content below.
      */
-    orientation?: 'horizontal' | 'vertical';
+    vertical?: boolean;
 
     /**
      * Caption shown within a horizontal rule, such as the title of the section that follows. A
@@ -33,9 +33,6 @@ export interface SeparatorProps extends HoistProps, LayoutProps, TestSupportProp
     /**
      * Where the label sits along the rule. Default `center`, with the rule drawn on each side of
      * the label. With `start` the rule follows the label, and with `end` it leads up to it.
-     *
-     * `KeyValueList.labelPosition` takes other values (`left`, `top`), because it places a label
-     * against a value.
      */
     labelPosition?: 'start' | 'center' | 'end';
 }
@@ -55,17 +52,16 @@ export const [Separator, separator] = hoistCmp.withFactory<SeparatorProps>({
     className: 'xh-separator',
 
     render(props, ref) {
-        const [layoutProps, {className, orientation, label, labelPosition, testId, domAttrs}] =
+        const [layoutProps, {className, vertical, label, labelPosition, testId, domAttrs}] =
                 splitLayoutProps(props),
             labelId = useId(),
-            vertical = orientation === 'vertical',
             hasLabel = !vertical && !isBlankNode(label);
 
         return div({
             ref,
             role: 'separator',
             'aria-orientation': vertical ? 'vertical' : 'horizontal',
-            'aria-labelledby': hasLabel ? labelId : undefined,
+            'aria-labelledby': hasLabel ? labelId : null,
             ...mergeDeep(
                 {
                     className: classNames(

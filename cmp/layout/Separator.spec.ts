@@ -26,9 +26,7 @@ describe('Separator', () => {
     });
 
     it('reports a vertical orientation', () => {
-        expect(renderSeparator({orientation: 'vertical'}).getAttribute('aria-orientation')).toBe(
-            'vertical'
-        );
+        expect(renderSeparator({vertical: true}).getAttribute('aria-orientation')).toBe('vertical');
     });
 
     it('shows its label and takes its name from it', () => {
@@ -51,7 +49,7 @@ describe('Separator', () => {
     );
 
     it('shows no label when vertical', () => {
-        const el = renderSeparator({orientation: 'vertical', label: 'Settlement'});
+        const el = renderSeparator({vertical: true, label: 'Settlement'});
 
         expect(el.childNodes).toHaveLength(0);
         expect(el.hasAttribute('aria-labelledby')).toBe(false);
