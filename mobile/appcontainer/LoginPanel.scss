@@ -19,7 +19,7 @@
     justify-content: center;
     width: 64px;
     height: 64px;
-    margin-bottom: var(--xh-pad-double-px);
+    margin-bottom: var(--xh-spacing-double);
     font-size: 26px;
     color: var(--xh-intent-primary);
     background-color: var(--xh-intent-primary-trans1);
@@ -28,40 +28,40 @@
 
   &__title {
     color: var(--xh-text-color);
-    font-size: var(--xh-font-size-large-px);
+    font-size: var(--xh-font-size-large);
     font-weight: 500;
     text-align: center;
   }
 
   &__subtitle {
     color: var(--xh-text-color-muted);
-    font-size: var(--xh-font-size-small-px);
-    margin: 3px 0 var(--xh-pad-double-px);
+    font-size: var(--xh-font-size-small);
+    margin: 3px 0 var(--xh-spacing-double);
     text-align: center;
   }
 
   &__field {
-    margin-bottom: var(--xh-pad-px);
+    margin-bottom: var(--xh-spacing);
   }
 
   &__field-label {
-    margin-bottom: var(--xh-pad-half-px);
-    font-size: var(--xh-font-size-small-px);
+    margin-bottom: var(--xh-spacing-half);
+    font-size: var(--xh-font-size-small);
     color: var(--xh-text-color-muted);
   }
 
   .xh-text-input {
     width: 100%;
     border: var(--xh-border-solid);
-    border-radius: var(--xh-border-radius-px);
+    border-radius: var(--xh-border-radius);
   }
 
   &__warning,
   &__message {
     text-align: center;
-    margin-bottom: var(--xh-pad-px);
-    padding: var(--xh-pad-px);
-    border-radius: var(--xh-border-radius-px);
+    margin-bottom: var(--xh-spacing);
+    padding: var(--xh-spacing);
+    border-radius: var(--xh-border-radius);
   }
 
   &__warning {
@@ -74,7 +74,7 @@
   }
 
   &__submit {
-    margin-top: var(--xh-pad-px);
-    padding: var(--xh-pad-double-px) 0;
+    margin-top: var(--xh-spacing);
+    padding: var(--xh-spacing-double) 0;
   }
 }

@@ -75,9 +75,9 @@ export interface StatCardProps extends HoistProps, LayoutProps, TestSupportProps
      * CSS color for an accent bar, e.g. `var(--xh-blue)`, to mark a category or series identity.
      * Use `intent` to flag a status.
      *
-     * The bar runs along the top edge by default. Set the `--stat-card-accent-top`, `-right`,
+     * The bar runs along the top edge by default. Set the `--xh-stat-card-accent-top`, `-right`,
      * `-bottom` and `-left` CSS variables to choose its edge and thickness - e.g. a left bar with
-     * `--stat-card-accent-top: 0; --stat-card-accent-left: 4px`.
+     * `--xh-stat-card-accent-top: 0; --xh-stat-card-accent-left: 4px`.
      */
     accent?: string;
 
