@@ -348,14 +348,13 @@ describe('FetchService', () => {
 
     describe('fetchNdjson', () => {
         it('cancels the response body when the consumer stops reading early', async () => {
-            // MSW does not relay a cancel to the handler's stream, so check it on the client.
-            const cancel = vi.spyOn(ReadableStreamDefaultReader.prototype, 'cancel');
-            serve(xhUrl('test/stream'), () => openStream());
+            const cancel = vi.fn();
+            serve(xhUrl('test/stream'), () => openStream(cancel));
             const {lines} = XH.fetchNdjson({url: 'test/stream'});
             await lines.next();
 
             await lines.return(undefined);
-            expect(cancel).toHaveBeenCalledOnce();
+            await vi.waitFor(() => expect(cancel).toHaveBeenCalledOnce());
         });
     });
 });
@@ -413,9 +412,10 @@ function hang(): Promise<Response> {
 }
 
 /** An NDJSON response that sends one record, then stays open. */
-function openStream(): Response {
+function openStream(cancel?: () => void): Response {
     const body = new ReadableStream({
-        start: c => c.enqueue(new TextEncoder().encode('{"id":1}\n'))
+        start: c => c.enqueue(new TextEncoder().encode('{"id":1}\n')),
+        cancel
     });
     return new HttpResponse(body, {headers: {'Content-Type': 'application/x-ndjson'}});
 }
