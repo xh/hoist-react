@@ -53,7 +53,7 @@ import {version} from 'ag-grid-community/package.json';
 installAgGrid(AgGridReact, version);
 ```
 
-**Version constraints:** Hoist requires ag-Grid **34.2.0 – 34.\*.\***. Attempting to install an
+**Version constraints:** Hoist requires ag-Grid **36.3.0 – 36.\*.\***. Attempting to install an
 out-of-range version will log an error and leave ag-Grid unavailable.
 
 Kit also re-exports key ag-Grid types (e.g. `GridOptions`, `GridApi`, `ColDef`) and select hooks
@@ -153,7 +153,7 @@ import {installHighcharts} from '@xh/hoist/kit/highcharts';
 import {AgGridReact} from 'ag-grid-react';
 import Highcharts from 'highcharts/highstock';
 
-installAgGrid(AgGridReact, '34.2.1');
+installAgGrid(AgGridReact, '36.3.0');
 installHighcharts(Highcharts);
 ```
 

@@ -14,6 +14,17 @@
 
 ## 91.0.0-SNAPSHOT - unreleased
 
+### 💥 Breaking Changes (upgrade difficulty: 🎉 TRIVIAL)
+
+* Hoist now requires AG Grid `36.3` or later, to avoid a performance issue in `36.2`. Apps must bump
+  their `ag-grid-community`, `ag-grid-react`, and (if used) `ag-grid-enterprise` dependencies.
+
+### 📚 Libraries
+
+* jsdom `30 → 30 || 31` (optional peer)
+
+## 90.1.0 - 2026-11-13
+
 ### 🎁 New Features
 
 * Added `CubeGrid` and `CubeGridModel` (`@xh/hoist/cmp/cubegrid`), a grid bound to a Cube View.
@@ -49,6 +60,9 @@
   find, rotation, and download. The model exposes the same actions and state for app-built
   controls. Apps opt in by adding `pdfjs-dist` to their dependencies - Hoist declares it as an
   optional peer and loads it on first use, with no bootstrap or build config required.
+* Added two Cube aggregators. `MedianAggregator`, aliased as the `'MEDIAN'` token, takes the
+  median of a measure over every leaf beneath a row. `SumIfSameAggregator` sums a measure only
+  where every leaf with a value shares a second field, such as a currency, and is otherwise null.
 * Added `Icon.magnifyingGlassPlus()` and `Icon.magnifyingGlassMinus()` (aliased as
   `Icon.zoomIn()` and `Icon.zoomOut()`), plus `Icon.rotateRight()`.
 * Added `ColumnGroupSpec.chooserName` to set a group's name in the desktop column chooser. Use it
@@ -56,6 +70,14 @@
 * Added `Field.shortDisplayName`, a shorter name for headers. A grid column takes it as its default
   `headerName` unless it sets its own `displayName`, and pivot headers in `CubeGrid` use it. The
   column chooser, menus and exports keep `displayName`, which it defaults to.
+* Added `StatCard` and `StatCardStrip` to `@xh/hoist/cmp/statcard`, for calling out key figures
+  above a grid or in a detail panel. Callers pass pre-formatted values. A strip lays cards out in
+  equal shares and wraps them before a value is cut short. Set `size: 'large'` for a headline
+  figure. Style through the `--xh-stat-card-*` CSS variables.
+* Added the `ComponentSize` type to `@xh/hoist/core` for a component's `size` prop, with `compact`,
+  `standard` and `large` values. It is a size the developer picks, unlike the user's `SizingMode`.
+* Added the `xh-ledger-align` class to the hidden placeholder that `fmtNumber` adds after positive
+  ledger values, so a component can drop the space where values do not sit in a column.
 
 ### 🐞 Bug Fixes
 

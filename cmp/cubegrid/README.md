@@ -46,6 +46,7 @@ CubeGridModel
 │   ├── measures, measureDefaults      # Per measure: column config applied across every path
 │   ├── availableDimensions, availableMeasures  # What a pivot picker offers
 │   ├── measuresOutermost              # Measures outermost, paths beneath (default false; 2+ measures)
+│   ├── showRootGroup                  # Root group over the region (default true)
 │   ├── linkedSizing                   # One width per measure: true|false|{headerFitMaxWidth}
 │   ├── expandLevel                    # Pivot header level, as expandLevel for rows
 │   └── expandToLevel(), expandAll(), collapseAll()
@@ -137,6 +138,10 @@ The grid has two regions, always in this order:
    column per `pivot.measures` entry, configured through `pivotConfig.measures`. One group spans the
    region, titled by the first pivot dimension (`By Region`), with every dimension and measure in its
    tooltip (`Mkt Val, Pnl by Region › Sector`). Both name fields by their `shortDisplayName`.
+   `showRootGroup: false` drops that group to save a header row, so the top-level path groups head
+   the region and it no longer collapses to the row summary - which then shows only if the first
+   dimension's `showSummary` asks for it. Multiple measures outermost keep their roots, as those
+   name the measures.
 
 Column groups in the pivot region expand and collapse from their headers. Each pivot dimension has a
 summary that aggregates its values: the first dimension's is the row summary, which the region
