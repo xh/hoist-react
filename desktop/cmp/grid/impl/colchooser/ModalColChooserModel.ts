@@ -19,14 +19,20 @@ export class ModalColChooserModel extends ColChooserModel {
     @observable override accessor isOpen = false; // dialog
     @observable accessor isPopoverOpen = false;
 
+    override get isShown(): boolean {
+        return this.isOpen || this.isPopoverOpen;
+    }
+
     @action
     override open() {
+        this.prepareToShow();
         this.isPopoverOpen = false;
         this.isOpen = true;
     }
 
     @action
     openPopover() {
+        this.prepareToShow();
         this.isOpen = false;
         this.isPopoverOpen = true;
     }

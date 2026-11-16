@@ -80,6 +80,12 @@
   two-axis wheel event to its dominant axis.
 * Fixed `DashCanvas` widgets lagging behind the pointer while dragged or resized. Hoist pins react-grid-layout to 2.2 until a fixed 2.3 release ships.
 
+### ⚙️ Technical
+
+* The desktop column chooser now builds its grids on first open and syncs them to the grid's
+  column state only while open. Apps with many grids that set `colChooserModel` now hold far fewer
+  `GridModel` and `Store` instances.
+
 ### 🤖 AI Docs + Tooling
 
 * Fixed the `hoist-ts` CLI and MCP symbol tools giving a file import path for every symbol when run
