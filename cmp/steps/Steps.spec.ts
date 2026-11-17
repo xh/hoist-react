@@ -397,8 +397,15 @@ function orientationOf(el: ReturnType<typeof steps>): string {
 
 /** jsdom has no layout, so stand in for the width of the list. */
 function setListWidth(width: number) {
-    const spy = vi.spyOn(Element.prototype, 'clientWidth', 'get').mockReturnValue(width);
-    onTestFinished(() => spy.mockRestore());
+    const spy = vi.spyOn(Element.prototype, 'clientWidth', 'get').mockReturnValue(width),
+        // jsdom gives an `ol` the browser's default padding. Steps.scss removes it.
+        style = document.createElement('style');
+    style.textContent = '.xh-steps {padding: 0}';
+    document.head.append(style);
+    onTestFinished(() => {
+        spy.mockRestore();
+        style.remove();
+    });
 }
 
 function statuses(el: ReturnType<typeof steps>): string[] {
