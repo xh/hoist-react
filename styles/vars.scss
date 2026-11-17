@@ -855,6 +855,25 @@ body {
   }
 
   //------------------------
+  // Progress Bars
+  //------------------------
+  --xh-progress-bar-border-radius: calc(var(--xh-progress-bar-height) / 2);
+  --xh-progress-bar-danger-color: var(--xh-intent-danger);
+  // Fill of a bar with no intent.
+  --xh-progress-bar-fill-bg: var(--xh-progress-bar-primary-color);
+  --xh-progress-bar-font-size: inherit;
+  --xh-progress-bar-gap: var(--xh-spacing-half);
+  --xh-progress-bar-height: 8px;
+  --xh-progress-bar-label-text-color: var(--xh-text-color);
+  --xh-progress-bar-primary-color: var(--xh-intent-primary);
+  --xh-progress-bar-success-color: var(--xh-intent-success);
+  --xh-progress-bar-target-bg: var(--xh-text-color);
+  --xh-progress-bar-target-width: 2px;
+  --xh-progress-bar-track-bg: var(--xh-border-color);
+  --xh-progress-bar-value-text-color: var(--xh-text-color);
+  --xh-progress-bar-warning-color: var(--xh-intent-warning);
+
+  //------------------------
   // Resizable splitters
   //------------------------
   --xh-resizable-bg: #{mc('blue-grey', '50')};
@@ -907,6 +926,26 @@ body {
   &:where(.xh-dark) {
     --xh-scrollbar-bg: var(--xh-black);
     --xh-scrollbar-thumb-color: #{mc('blue-grey', '900')};
+  }
+
+
+  //------------------------
+  // Separators
+  //------------------------
+  --xh-separator-border-color: var(--xh-border-color);
+  --xh-separator-label-text-color: var(--xh-blue-gray);
+  --xh-separator-label-font-size: var(--xh-font-size-small-relative);
+  // Gap between a label and the rule on each side of it.
+  --xh-separator-label-gap: var(--xh-spacing);
+  --xh-separator-margin: 0;
+  // Shortest a segment of the rule gets beside a label, along the rule.
+  --xh-separator-rule-min-size: 1em;
+  // Thickness of the rule.
+  --xh-separator-border-width: var(--xh-border-width);
+
+  // The muted text color is too faint for labels on a light background, but reads well on a dark one.
+  &:where(.xh-dark) {
+    --xh-separator-label-text-color: var(--xh-text-color-muted);
   }
 
 

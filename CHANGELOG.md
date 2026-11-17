@@ -40,14 +40,17 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 
 ### 🎁 New Features
 
+* Added `ProgressBar` to `@xh/hoist/cmp/progressbar`, a cross-platform bar that shows a value
+  against a maximum, with an optional label, figure, `intent` and `target` marker. Set
+  `indeterminate` for work of unknown length.
+* Added `Separator` to `@xh/hoist/cmp/layout`, a horizontal or `vertical` rule that divides
+  content, with an optional `label` within the rule.
+* Added `isBlankNode` to `@xh/hoist/utils/react`, to test whether a node renders no content, such
+  as null, false, a blank string or an array of these.
 * Added `DashCanvasConfig.preventCollision` to block a drag or resize into space taken by another
   view. Combine with `compact: false` for a free-form canvas where views stay where users put them.
 * Added `XH.hasRoute()` to check if a route exists. Call it before `XH.router.buildPath()` or
   `buildUrl()` with a name that may not be registered, as both throw for an unknown route.
-* Desktop `Slider` now names its handles for assistive technology. It takes the label of its
-  `FormField`, and puts an `aria-label` or `aria-labelledby` set through `domAttrs` on its handles.
-* Added `SliderProps.intent` to color the track fill. It defaults to `'primary'`, and the fill now
-  uses the `--xh-intent-*` colors rather than Blueprint's own blue.
 
 ### 🐞 Bug Fixes
 
