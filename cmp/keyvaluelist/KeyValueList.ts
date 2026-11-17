@@ -20,7 +20,7 @@ import type {
     LayoutProps,
     TestSupportProps
 } from '@xh/hoist/core';
-import {throwIfRowsPassedAsItems} from '@xh/hoist/utils/impl';
+import {throwIfRowsPassedAsChildren} from '@xh/hoist/utils/impl';
 import {mergeDeep, TEST_ID} from '@xh/hoist/utils/js';
 import {isBlankNode, splitLayoutProps, useComposedRefs, useOnResize} from '@xh/hoist/utils/react';
 
@@ -112,7 +112,7 @@ export const [KeyValueList, keyValueList] = hoistCmp.withFactory<KeyValueListPro
     className: 'xh-key-value-list',
 
     render(props, ref) {
-        throwIfRowsPassedAsItems(props.children, 'entries', 'KeyValueList');
+        throwIfRowsPassedAsChildren(props.children, 'entries', 'KeyValueList');
         const [
                 layoutProps,
                 {
@@ -171,7 +171,7 @@ export const [KeyValueList, keyValueList] = hoistCmp.withFactory<KeyValueListPro
                 {style: {...layoutProps, '--xh-key-value-list-columns': columnCount}},
                 {[TEST_ID]: testId, ...domAttrs}
             ),
-            items: visibleEntries.map(({label, value, intent}, idx) => {
+            children: visibleEntries.map(({label, value, intent}, idx) => {
                 const empty = isBlankNode(value);
                 return div({
                     key: idx,
@@ -180,14 +180,14 @@ export const [KeyValueList, keyValueList] = hoistCmp.withFactory<KeyValueListPro
                         intent && `xh-key-value-list__entry--intent-${intent}`,
                         idx >= lastRowStart && 'xh-key-value-list__entry--last-row'
                     ),
-                    items: [
-                        dt({className: 'xh-key-value-list__label', item: label}),
+                    children: [
+                        dt({className: 'xh-key-value-list__label', children: label}),
                         dd({
                             className: classNames(
                                 'xh-key-value-list__value',
                                 empty && 'xh-key-value-list__value--empty'
                             ),
-                            item: empty ? (emptyText ?? '-') : value
+                            children: empty ? (emptyText ?? '-') : value
                         })
                     ]
                 });

@@ -55,8 +55,8 @@ set is in the `Item Lists` block of [`styles/vars.scss`](../../styles/vars.scss)
 
 ## Common Pitfalls
 
-- **Rows go in `entries`, not `items`.** A factory renders `items` as child elements. The list
-  throws in development mode when it gets rows as `items`.
+- **Rows go in `entries`, not `children`.** A factory renders `children`, and the legacy `items`,
+  as child elements. The list throws in development mode when it gets rows that way.
 - **`intent` does not color the text.** It colors the icon or number, or a thin bar when no entry
   has either. Say what the color means in the text as well.
 - **`disabled` needs an `onClick`.** It dims and disables a clickable entry, and has no effect on

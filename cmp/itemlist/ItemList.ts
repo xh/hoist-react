@@ -19,7 +19,7 @@ import type {
     LayoutProps,
     TestSupportProps
 } from '@xh/hoist/core';
-import {clickableRowProps, throwIfRowsPassedAsItems} from '@xh/hoist/utils/impl';
+import {clickableRowProps, throwIfRowsPassedAsChildren} from '@xh/hoist/utils/impl';
 import {mergeDeep, TEST_ID} from '@xh/hoist/utils/js';
 import {isBlankNode, splitLayoutProps} from '@xh/hoist/utils/react';
 
@@ -118,7 +118,7 @@ export const [ItemList, itemList] = hoistCmp.withFactory<ItemListProps>({
     className: 'xh-item-list',
 
     render(props, ref) {
-        throwIfRowsPassedAsItems(props.children, 'entries', 'ItemList');
+        throwIfRowsPassedAsChildren(props.children, 'entries', 'ItemList');
         const [
                 layoutProps,
                 {className, entries, numbered, dividers, size, emptyText, testId, domAttrs}
@@ -138,7 +138,7 @@ export const [ItemList, itemList] = hoistCmp.withFactory<ItemListProps>({
         if (isEmpty(visible)) {
             return isBlankNode(emptyText)
                 ? null
-                : div({ref, ...rootProps('xh-item-list--empty'), item: emptyText});
+                : div({ref, ...rootProps('xh-item-list--empty'), children: emptyText});
         }
 
         const shown = visible.map(it => it.entry),
@@ -154,7 +154,7 @@ export const [ItemList, itemList] = hoistCmp.withFactory<ItemListProps>({
                 dividers && 'xh-item-list--dividers',
                 shown.some(it => it.onClick) && 'xh-item-list--clickable'
             ),
-            items: visible.map(({entry, index}, position) =>
+            children: visible.map(({entry, index}, position) =>
                 renderEntry(entry, `${idPrefix}-${index}`, position, marker)
             )
         });
@@ -201,24 +201,24 @@ function renderEntry(entry: ItemListEntry, id: string, position: number, marker:
             isButton && !isDisabled && 'xh-item-list__entry--clickable',
             isDisabled && 'xh-item-list__entry--disabled'
         ),
-        item: div({
+        children: div({
             className: 'xh-item-list__entry-inner',
             ...rowProps,
-            items: [
+            children: [
                 // Decorative: the list itself gives each entry's position to a screen reader.
                 div({
                     omit: !marker,
                     className: `xh-item-list__marker xh-item-list__marker--${marker}`,
                     'aria-hidden': true,
-                    item: markerContent(entry, position, marker)
+                    children: markerContent(entry, position, marker)
                 }),
                 div({
                     className: 'xh-item-list__content',
-                    items: [
+                    children: [
                         div({
                             omit: !isButton && isBlankNode(title) && isBlankNode(detail),
                             className: 'xh-item-list__header',
-                            items: [
+                            children: [
                                 // Kept when blank on a clickable entry, as it is the button.
                                 div({
                                     omit: !isButton && isBlankNode(title),
@@ -226,12 +226,12 @@ function renderEntry(entry: ItemListEntry, id: string, position: number, marker:
                                     ...buttonProps,
                                     'aria-describedby':
                                         isButton && hasDescription ? descriptionId : null,
-                                    item: title
+                                    children: title
                                 }),
                                 div({
                                     omit: isBlankNode(detail),
                                     className: 'xh-item-list__detail',
-                                    item: detail
+                                    children: detail
                                 })
                             ]
                         }),
@@ -239,7 +239,7 @@ function renderEntry(entry: ItemListEntry, id: string, position: number, marker:
                             omit: !hasDescription,
                             id: isButton ? descriptionId : null,
                             className: 'xh-item-list__description',
-                            item: description
+                            children: description
                         })
                     ]
                 })

@@ -58,8 +58,8 @@ body.xh-app {
 
 ## Common Pitfalls
 
-- **Rows go in `entries`, not `items`.** A factory renders `items` as child elements. The list
-  throws in development mode when it gets rows as `items`.
+- **Rows go in `entries`, not `children`.** A factory renders `children`, and the legacy `items`,
+  as child elements. The list throws in development mode when it gets rows that way.
 - **A boolean value shows as blank.** React renders `true` and `false` as nothing, so the list
   shows its `emptyText`. Pass text such as `'Yes'` or `'No'`.
 - **The list never formats.** Format numbers and dates with `@xh/hoist/format` before you pass

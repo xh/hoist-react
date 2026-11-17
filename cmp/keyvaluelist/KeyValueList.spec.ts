@@ -24,7 +24,7 @@ describe('KeyValueList', () => {
             keyValueList({
                 entries: [
                     {label: 'Symbol', value: 'AAPL'},
-                    {label: span('Side'), value: span({className: 'buy', item: 'Buy'})}
+                    {label: span('Side'), value: span({className: 'buy', children: 'Buy'})}
                 ]
             })
         );

@@ -9,19 +9,19 @@ import {keyValueList} from '@xh/hoist/cmp/keyvaluelist';
 import {span} from '@xh/hoist/cmp/layout';
 import {XH} from '@xh/hoist/core';
 import {initTestAppAsync} from '@xh/hoist/test-support';
-import {throwIfRowsPassedAsItems} from '@xh/hoist/utils/impl';
+import {throwIfRowsPassedAsChildren} from '@xh/hoist/utils/impl';
 import {render} from '@testing-library/react';
 import {beforeAll, describe, expect, it, onTestFinished, vi} from 'vitest';
 
 /**
  * A component that takes its rows in an array prop gets them as plain-object children when a
- * caller passes `items` instead. In development mode it must fail with a message that names the
+ * caller passes `children` or the legacy `items` instead. In development mode it must fail with a message that names the
  * right prop, rather than render nothing.
  */
-describe('throwIfRowsPassedAsItems', () => {
+describe('throwIfRowsPassedAsChildren', () => {
     beforeAll(() => initTestAppAsync());
 
-    const check = (children: any) => () => throwIfRowsPassedAsItems(children, 'entries', 'Cmp'),
+    const check = (children: any) => () => throwIfRowsPassedAsChildren(children, 'entries', 'Cmp'),
         rows = [{label: 'Symbol', value: 'AAPL'}];
 
     // Tests run in production mode. Switch development mode on for one test.
@@ -35,7 +35,9 @@ describe('throwIfRowsPassedAsItems', () => {
 
     it('names the right prop when children hold plain objects', () => {
         setDevMode(true);
-        expect(check(rows)).toThrow(/Cmp takes its rows in 'entries', not 'items'/);
+        expect(check(rows)).toThrow(
+            /Cmp takes its rows in 'entries', not as 'children' or 'items'/
+        );
     });
 
     it('checks nothing outside development mode', () => {
@@ -51,9 +53,11 @@ describe('throwIfRowsPassedAsItems', () => {
     });
 
     it.each([
-        ['KeyValueList', () => keyValueList({items: [{label: 'Symbol', value: 'AAPL'}]} as any)],
-        ['ItemList', () => itemList({items: [{title: 'Alert'}]} as any)]
-    ])('%s checks for rows passed as items', (name, factory) => {
+        ['KeyValueList', 'children', () => keyValueList({children: [{label: 'Symbol'}]} as any)],
+        ['KeyValueList', 'items', () => keyValueList({items: [{label: 'Symbol'}]} as any)],
+        ['ItemList', 'children', () => itemList({children: [{title: 'Alert'}]} as any)],
+        ['ItemList', 'items', () => itemList({items: [{title: 'Alert'}]} as any)]
+    ])('%s checks for rows passed as %s', (name, _, factory) => {
         setDevMode(true);
         // React logs the error thrown during render - keep the test output clean.
         const spy = vi.spyOn(console, 'error').mockImplementation(() => {});

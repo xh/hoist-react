@@ -43,7 +43,7 @@ describe('ItemList', () => {
 
     it('renders element content in each slot, and a string as text', () => {
         const root = renderRoot({
-            entries: [{title: '<b>Bold</b>', detail: span({className: 'figure', item: '42'})}]
+            entries: [{title: '<b>Bold</b>', detail: span({className: 'figure', children: '42'})}]
         });
 
         expect(part(root, 'title').textContent).toBe('<b>Bold</b>');
@@ -103,7 +103,7 @@ describe('ItemList', () => {
             renderRoot({
                 entries: [
                     {title: 'A', detail: [isNew && span('New')], description: [null, '']},
-                    {title: 'B', detail: [false, span({className: 'figure', item: '42'})]}
+                    {title: 'B', detail: [false, span({className: 'figure', children: '42'})]}
                 ]
             })
         );
@@ -295,9 +295,12 @@ describe('ItemList', () => {
         });
 
         it.each([
-            ['a button', () => htmlButton({className: 'inner', item: 'Dismiss'})],
-            ['a link', () => a({className: 'inner', href: '#', item: 'Open'})],
-            ['an element inside a button', () => htmlButton(span({className: 'inner', item: 'X'}))],
+            ['a button', () => htmlButton({className: 'inner', children: 'Dismiss'})],
+            ['a link', () => a({className: 'inner', href: '#', children: 'Open'})],
+            [
+                'an element inside a button',
+                () => htmlButton(span({className: 'inner', children: 'X'}))
+            ],
             ['a role="button" element', () => span({className: 'inner', role: 'button'})]
         ])('leaves a click or keypress on %s in the detail to that control', (name, control) => {
             const onClick = vi.fn(),
@@ -321,7 +324,7 @@ describe('ItemList', () => {
         it('still responds to a click on plain content inside the title', () => {
             const onClick = vi.fn(),
                 root = renderRoot({
-                    entries: [{title: span({className: 'inner', item: 'A'}), onClick}]
+                    entries: [{title: span({className: 'inner', children: 'A'}), onClick}]
                 });
 
             fireEvent.click(root.querySelector('.inner'));
