@@ -53,6 +53,8 @@ detailed, step-by-step upgrade instructions with before/after code examples.
   `indeterminate` for work of unknown length.
 * Added `Separator` to `@xh/hoist/cmp/layout`, a horizontal or `vertical` rule that divides
   content, with an optional `label` within the rule.
+* Added `scrollIntoViewWithin` to `@xh/hoist/utils/js`, to scroll a container just far enough to
+  show an element inside it, without moving any scrolling panel or page around the container.
 * Added `isBlankNode` to `@xh/hoist/utils/react`, to test whether a node renders no content, such
   as null, false, a blank string or an array of these.
 * Added `DashCanvasConfig.preventCollision` to block a drag or resize into space taken by another
@@ -76,6 +78,9 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 * Fixed a crash in a desktop `Toolbar` with `enableOverflowMenu: true` and only one item.
 * Fixed a TypeScript 5.9 type check of Hoist sources failing when `lib` lacks `dom.iterable`, a
   regression in v90.
+* Fixed desktop `TabSwitcher` with `enableOverflow: true`, and `DynamicTabSwitcher` when its tabs
+  overflow, moving a scrolling panel or page around them to show the active tab. Each now scrolls
+  only its own tab strip.
 
 ### ⚙️ Technical
 

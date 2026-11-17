@@ -331,7 +331,7 @@ General-purpose helpers for objects, arrays, and strings:
 ### DOM Utilities
 
 ```typescript
-import {observeResize, consumeEvent, elemWithin} from '@xh/hoist/utils/js';
+import {observeResize, consumeEvent, elemWithin, scrollIntoViewWithin} from '@xh/hoist/utils/js';
 
 // Observe element resizing with debounce
 const observer = observeResize(
@@ -345,6 +345,9 @@ consumeEvent(event);
 
 // Check if click target is within a specific component
 if (elemWithin(event.target, 'xh-grid-cell')) { /* ... */ }
+
+// Scroll a list just far enough to show an item, without moving the page around it
+scrollIntoViewWithin(itemEl, listEl, 'smooth');
 ```
 
 ### Version Utilities
