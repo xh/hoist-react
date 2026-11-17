@@ -151,6 +151,7 @@ techniques.
 | `/zoneGrid/` | Multi-zone grid layout for complex record displays |
 | `/cubegrid/` | Cube View as a tree grid, with pivot paths as nested column groups when pivoted. [See README](./cubegrid/README.md) |
 | `/statcard/` | Tiles that call out key figures (StatCard), laid out in equal-width rows (StatCardStrip) |
+| `/sparkline/` | Small inline trend chart in plain SVG (Sparkline), for a stat card or a grid cell. [See README](./sparkline/README.md) |
 
 ### Layout and Containers
 
@@ -257,6 +258,11 @@ const chartModel = new ChartModel({
 
 chartModel.setSeries([{name: 'Series 1', data: [...]}]);
 ```
+
+### Sparkline (`/sparkline/`)
+
+A small inline trend chart in plain SVG, with no axes or labels, for a `StatCard` or a grid cell.
+Use a `Chart` when the reader needs exact values. See the [Sparkline README](./sparkline/README.md).
 
 ### DataView (`/dataview/`)
 
