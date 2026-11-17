@@ -137,7 +137,13 @@ const tabCmp = hoistCmp.factory<TabProps>(({tab, index, localModel, model}) => {
     useEffect(() => {
         if (isActive && showScrollButtons) {
             // Wait a tick for scroll buttons to render, then scroll to the active tab
-            wait().then(() => tabRef.current.scrollIntoView({behavior: 'smooth'}));
+            wait().then(() =>
+                tabRef.current.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'nearest',
+                    inline: 'nearest'
+                })
+            );
         }
     }, [isActive, showScrollButtons]);
 

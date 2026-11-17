@@ -66,6 +66,9 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 * Fixed several desktop `Slider` display issues: clipped labels and handles, hangs on extreme
   scales, a missing dark-theme track, and excess height in a standard `Toolbar`.
 * Fixed a crash in a desktop `Toolbar` with `enableOverflowMenu: true` and only one item.
+* Fixed desktop `TabSwitcher` with `enableOverflow: true`, and `DynamicTabSwitcher` when its tabs
+  overflow, scrolling any scrolling container around them on each tab change. Each now scrolls
+  only as far as needed to show the active tab.
 
 ### ⚙️ Technical
 

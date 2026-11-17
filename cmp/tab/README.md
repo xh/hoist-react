@@ -235,6 +235,27 @@ const tabModel = new TabContainerModel({
 });
 ```
 
+### Overflowing Tabs (Static Switcher) - Desktop Only
+
+Set `enableOverflow` when a static switcher may hold more tabs than fit. Its tab strip then
+scrolls, and tabs scrolled more than a quarter out of view are also listed in a menu at the end of
+the switcher. `enableOverflow` is a prop of the switcher component, so pass it through the
+`switcher` prop of `tabContainer`, not the `switcher` config of `TabContainerModel`:
+
+```typescript
+tabContainer({
+    model: tabModel,
+    switcher: {orientation: 'top', enableOverflow: true}
+})
+```
+
+Tabs overflow only when something stops the switcher from growing to fit them, such as its
+container or a `maxWidth` on the switcher (`maxHeight` for a `left` / `right` switcher).
+
+When the active tab changes, the switcher scrolls the tab into view by the smallest distance
+needed. A scrolling panel or page around the switcher stays still while the whole tab is in view,
+and otherwise scrolls only far enough to show the tab.
+
 ### Grouped Tabs (Vertical Switchers) - Desktop Only
 
 Long `left` / `right` switcher rails can be broken up with display-only group headers. Assign a

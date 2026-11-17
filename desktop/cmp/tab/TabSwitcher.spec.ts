@@ -6,17 +6,43 @@
  */
 import {tabContainer, TabContainerModel, type TabSwitcherMenuContext} from '@xh/hoist/cmp/tab';
 import type {MenuItem, MenuItemLike, MenuToken} from '@xh/hoist/core';
+import {tabSwitcher} from '@xh/hoist/desktop/cmp/tab';
 import '@xh/hoist/desktop/register';
 import {initTestAppAsync} from '@xh/hoist/test-support';
 import {fireEvent, render, screen, waitFor} from '@testing-library/react';
-import {beforeAll, describe, expect, it, onTestFinished, vi} from 'vitest';
+import {afterAll, beforeAll, describe, expect, it, onTestFinished, vi} from 'vitest';
 
 /**
  * How desktop tab switchers run `extraMenuItems` in a tab's context menu. Each item's `actionFn`
- * and `prepareFn` receive the right-clicked tab, at every level of a submenu.
+ * and `prepareFn` receive the right-clicked tab, at every level of a submenu. Also the options a
+ * switcher with `enableOverflow` passes when it scrolls a newly active tab into view.
  */
 describe('TabSwitcher', () => {
-    beforeAll(() => initTestAppAsync());
+    beforeAll(async () => {
+        await initTestAppAsync();
+        // jsdom has no layout, so lacks the `scrollIntoView()` that an overflowing switcher calls.
+        Element.prototype.scrollIntoView = () => {};
+    });
+
+    afterAll(() => {
+        delete Element.prototype.scrollIntoView;
+    });
+
+    describe('with enableOverflow', () => {
+        // Guards #4982: a scrolling panel around the switcher jumped on every tab change.
+        it('calls scrollIntoView() on the active tab with `block` and `inline` options set to `nearest`', async () => {
+            const spy = vi.spyOn(Element.prototype, 'scrollIntoView');
+            onTestFinished(() => spy.mockRestore());
+            const model = createModel('static');
+            render(tabSwitcher({model, enableOverflow: true}));
+
+            model.activateTab('beta');
+
+            await waitFor(() => expect(spy).toHaveBeenCalledOnce());
+            expect(spy.mock.contexts[0]).toHaveProperty('dataset.tabId', 'beta');
+            expect(spy).toHaveBeenCalledWith({block: 'nearest', inline: 'nearest'});
+        });
+    });
 
     describe.each(['static', 'dynamic'] as const)('%s switcher context menu', mode => {
         it('passes the tab to an item in a static submenu', async () => {
@@ -58,15 +84,22 @@ function renderTabs(
     mode: 'static' | 'dynamic',
     extraMenuItems: MenuItemLike<MenuToken, TabSwitcherMenuContext>[]
 ) {
-    const model = new TabContainerModel({
+    render(tabContainer({model: createModel(mode, extraMenuItems)}));
+}
+
+function createModel(
+    mode: 'static' | 'dynamic',
+    extraMenuItems: MenuItemLike<MenuToken, TabSwitcherMenuContext>[] = []
+): TabContainerModel {
+    const ret = new TabContainerModel({
         tabs: [
             {id: 'alpha', title: 'Alpha', content: () => null},
             {id: 'beta', title: 'Beta', content: () => null}
         ],
         switcher: {mode, extraMenuItems, initialFavorites: ['alpha', 'beta']}
     });
-    onTestFinished(() => model.destroy());
-    render(tabContainer({model}));
+    onTestFinished(() => ret.destroy());
+    return ret;
 }
 
 /** Right-click a tab, open a submenu, and click one of its items. */

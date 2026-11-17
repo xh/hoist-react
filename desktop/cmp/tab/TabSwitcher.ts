@@ -324,7 +324,7 @@ class TabSwitcherLocalModel extends HoistModel {
         const tab = this.tabEls.find(
             (tab: HTMLElement) => tab.dataset.tabId === this.model.activeTabId
         );
-        if (tab) tab.scrollIntoView();
+        if (tab) tab.scrollIntoView({block: 'nearest', inline: 'nearest'});
     }
 
     getOverflowIds() {
