@@ -152,6 +152,14 @@
             "keywords": ["PdfViewerModel", "PdfViewer", "PdfSource", "PdfScale", "PdfViewerToolbarToken", "pdfjs-dist", "pdf.js", "PDF", "document preview"]
         },
         {
+            "id": "cmp/sparkline/README.md",
+            "title": "Sparkline Package",
+            "mcpCategory": "package",
+            "viewerCategory": "components",
+            "description": "Small inline trend chart in plain SVG for a StatCard or a grid cell, with shared scales across a grid column, and when to use a Chart instead.",
+            "keywords": ["Sparkline", "sparkline", "trend", "inline chart", "mini chart", "micro chart", "colorByTrend", "markers", "baseline", "grid column renderer", "shared scale"]
+        },
+        {
             "id": "desktop/cmp/dash/README.md",
             "title": "Dashboard System",
             "mcpCategory": "package",

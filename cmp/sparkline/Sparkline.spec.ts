@@ -1,0 +1,179 @@
+/*
+ * This file belongs to Hoist, an application development toolkit
+ * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
+ *
+ * Copyright © 2026 Extremely Heavy Industries Inc.
+ */
+import {sparkline} from '@xh/hoist/cmp/sparkline';
+import type {SparklineProps} from '@xh/hoist/cmp/sparkline';
+import {initTestAppAsync} from '@xh/hoist/test-support';
+import {render} from '@testing-library/react';
+import {beforeAll, describe, expect, it} from 'vitest';
+
+/**
+ * A Sparkline has no text, so its accessible name is all a screen reader gets. Where shapes and
+ * dots land is covered by `impl/SparklineGeometry.spec.ts` - this spec checks which parts draw.
+ */
+describe('Sparkline', () => {
+    beforeAll(() => initTestAppAsync());
+
+    it('is an image named by a summary of its series', () => {
+        const root = renderRoot({data: [101, 105, 118]});
+
+        expect(root.getAttribute('role')).toBe('img');
+        expect(root.getAttribute('aria-label')).toBe('Trend: 3 points, from 101 to 118');
+    });
+
+    it('takes its name from an aria-label in domAttrs', () => {
+        const root = renderRoot({data: [1, 2], domAttrs: {'aria-label': 'Orders, last 30 days'}});
+
+        expect(root.getAttribute('aria-label')).toBe('Orders, last 30 days');
+    });
+
+    it('shows a tooltip only when given one, as a string or built from the data', () => {
+        const title = (props: Partial<SparklineProps>) =>
+            renderRoot({data: [1, 2], ...props}).getAttribute('title');
+
+        expect(title({})).toBeNull();
+        expect(title({tooltip: 'Up 4%'})).toBe('Up 4%');
+        expect(title({tooltip: data => `${data.length} days`})).toBe('2 days');
+        expect(title({tooltip: () => null})).toBeNull();
+    });
+
+    it('draws a line by default, with no fill and no dots', () => {
+        const root = renderRoot({data: [0, 5, 10]});
+
+        expect(part(root, 'line')).not.toBeNull();
+        expect(part(root, 'area')).toBeNull();
+        expect(part(root, 'dot')).toBeNull();
+    });
+
+    it('takes the default for a prop set to null', () => {
+        const unset = renderRoot({data: [5, 10]}),
+            nulls = renderRoot({
+                data: [5, 10],
+                type: null,
+                intent: null,
+                baseline: null,
+                min: null,
+                max: null,
+                colorByTrend: null,
+                markers: null,
+                tooltip: null
+            });
+
+        expect(nulls.outerHTML).toBe(unset.outerHTML);
+    });
+
+    it.each([
+        ['min', {min: null, max: 20}, {max: 20}],
+        ['max', {min: 0, max: null}, {min: 0}],
+        ['baseline', {baseline: null, type: 'bar' as const}, {type: 'bar' as const}]
+    ])('takes the default for a null %s beside other props', (name, withNull, unset) => {
+        expect(renderRoot({data: [5, 10], ...withNull}).outerHTML).toBe(
+            renderRoot({data: [5, 10], ...unset}).outerHTML
+        );
+    });
+
+    it('adds a fill for an area', () => {
+        const root = renderRoot({data: [0, 10], type: 'area'});
+
+        expect(part(root, 'area')).not.toBeNull();
+        expect(part(root, 'line')).not.toBeNull();
+    });
+
+    it('draws bars, and colors those below zero only when asked', () => {
+        const plain = renderRoot({data: [10, -10], type: 'bar'});
+        expect(part(plain, 'bars')).not.toBeNull();
+        expect(part(plain, 'bars--negative')).toBeNull();
+        expect(part(plain, 'line')).toBeNull();
+
+        const colored = renderRoot({data: [10, -10], type: 'bar', colorNegative: true});
+        expect(part(colored, 'bars--negative')).not.toBeNull();
+    });
+
+    it.each([
+        ['an empty series', []],
+        ['a missing series', null],
+        ['a series of gaps', [null, NaN, undefined]]
+    ])('renders an empty box for %s', (name, data) => {
+        const root = renderRoot({data});
+
+        expect(root.getAttribute('aria-label')).toBe('Trend: no data');
+        expect(root.querySelectorAll('path')).toHaveLength(0);
+        expect(part(root, 'dot')).toBeNull();
+    });
+
+    it('shows a lone value as a dot', () => {
+        const root = renderRoot({data: [null, 42, null]});
+
+        expect(part(root, 'line')).toBeNull();
+        expect(root.querySelectorAll('.xh-sparkline__dot')).toHaveLength(1);
+    });
+
+    it('marks only the values named in markers', () => {
+        const marked = (markers: SparklineProps['markers']) =>
+            Array.from(renderRoot({data: [5, 0, 10, 5], markers}).querySelectorAll('span')).map(
+                it => it.className.replace('xh-sparkline__dot xh-sparkline__dot--', '')
+            );
+
+        expect(marked([])).toEqual([]);
+        expect(marked(['last'])).toEqual(['last']);
+        expect(marked(['first', 'last', 'min', 'max'])).toEqual(['first', 'min', 'max', 'last']);
+    });
+
+    it('marks no lowest or highest value on a flat series', () => {
+        const root = renderRoot({data: [4, 4, 4], markers: ['min', 'max']});
+
+        expect(part(root, 'dot')).toBeNull();
+    });
+
+    it('marks no values on bars', () => {
+        const root = renderRoot({data: [5, 0, 10], type: 'bar', markers: ['last', 'max']});
+
+        expect(part(root, 'dot')).toBeNull();
+    });
+
+    it('draws a baseline, unless it is off a fixed scale', () => {
+        expect(part(renderRoot({data: [5, 10], baseline: 0}), 'baseline')).not.toBeNull();
+        expect(
+            part(renderRoot({data: [5, 10], baseline: 0, min: 5, max: 10}), 'baseline')
+        ).toBeNull();
+    });
+
+    it('colors by intent, or by trend when asked', () => {
+        const classes = (props: Partial<SparklineProps>, data = [1, 2]) =>
+            renderRoot({data, ...props}).className;
+
+        expect(classes({})).not.toMatch(/--intent|--trend/);
+        expect(classes({intent: 'warning'})).toContain('xh-sparkline--intent-warning');
+        expect(classes({colorByTrend: true})).toContain('xh-sparkline--trend-up');
+        expect(classes({colorByTrend: true}, [2, null, 1])).toContain('xh-sparkline--trend-down');
+        expect(classes({colorByTrend: true}, [2, 9, 2])).not.toMatch(/--trend/);
+        expect(classes({colorByTrend: true, intent: 'primary'})).not.toMatch(/--trend/);
+    });
+
+    it('applies layout props, a class name and a test id to its root', () => {
+        const root = renderRoot({
+            data: [1, 2],
+            width: '100%',
+            height: 40,
+            className: 'my-trend',
+            testId: 'trend'
+        });
+
+        expect(root.style.width).toBe('100%');
+        expect(root.style.height).toBe('40px');
+        expect(root.classList).toContain('my-trend');
+        expect(root.getAttribute('data-testid')).toBe('trend');
+    });
+});
+
+function renderRoot(props: SparklineProps): HTMLElement {
+    return render(sparkline(props)).container.querySelector('.xh-sparkline');
+}
+
+/** The first element of a part, by the suffix of its class name. */
+function part(root: HTMLElement, name: string): HTMLElement {
+    return root.querySelector(`.xh-sparkline__${name}`);
+}

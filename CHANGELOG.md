@@ -40,6 +40,9 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 
 ### 🎁 New Features
 
+* Added `Sparkline` to `@xh/hoist/cmp/sparkline`, a small inline trend chart in plain SVG for a
+  `StatCard` or a grid cell. It draws a `line`, `area` or `bar` series, colored by `intent` or by
+  trend, with optional `markers` on the first, last, lowest and highest values.
 * Added `XH.hasRoute()` to check if a route exists. Call it before `XH.router.buildPath()` or
   `buildUrl()` with a name that may not be registered, as both throw for an unknown route.
 * Desktop `Slider` now names its handles for assistive technology. It takes the label of its
