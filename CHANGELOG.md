@@ -53,6 +53,8 @@ detailed, step-by-step upgrade instructions with before/after code examples.
   `FormField`, and puts an `aria-label` or `aria-labelledby` set through `domAttrs` on its handles.
 * Added `SliderProps.intent` to color the track fill. It defaults to `'primary'`, and the fill now
   uses the `--xh-intent-*` colors rather than Blueprint's own blue.
+* `ToolbarSeparator` now has `role="separator"` on desktop and mobile, so assistive technology
+  reads it as a divider.
 
 ### 🐞 Bug Fixes
 

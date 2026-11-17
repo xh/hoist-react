@@ -157,18 +157,25 @@ vbox({
 // A labeled rule that introduces the section after it
 separator({label: 'Settlement', labelPosition: 'start'})
 
-// A vertical rule between the items of a row. It takes no label
+// A vertical rule between the items of a row
 hbox({
     gap: 10,
     items: [positionCount(), separator({vertical: true}), orderCount()]
+})
+
+// A vertical rule with a short label between two choices
+hbox({
+    gap: 10,
+    items: [loginForm(), separator({vertical: true, label: 'or'}), ssoButton()]
 })
 ```
 
 A horizontal separator takes the width of its container, or in a flex row the width the other
 items leave free. A vertical one takes the height of its row, so use it in an `hbox` or another
-flex row. It has `role="separator"`, named by its label when it has one. The separator has no outer margin. Space it with
-a `gap` on its container, a `margin` layout prop, or the `--xh-separator-margin` CSS variable. The
-other `--xh-separator-*` variables set its color, thickness and label style.
+flex row. It has `role="separator"`, named by its label when it has one. The separator has no outer
+margin. Space it with a `gap` on its container, a `margin` layout prop, or the
+`--xh-separator-margin` CSS variable. The other `--xh-separator-*` variables set its color,
+thickness and label style.
 
 For a divider between toolbar items, use `toolbarSep` from `@xh/hoist/desktop/cmp/toolbar`.
 

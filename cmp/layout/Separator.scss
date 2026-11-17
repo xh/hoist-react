@@ -42,7 +42,7 @@
     // A long label wraps, and leaves each segment of the rule its minimum width.
     &::before,
     &::after {
-      min-width: var(--xh-separator-rule-min-width);
+      min-width: var(--xh-separator-rule-min-size);
       border-top-width: var(--xh-separator-border-width);
     }
   }
@@ -52,8 +52,15 @@
     // A row with no height of its own still shows the rule, at the height of a line of text.
     min-height: 1em;
 
-    &::before {
+    // A label keeps each segment of the rule its minimum height.
+    &::before,
+    &::after {
+      min-height: var(--xh-separator-rule-min-size);
       border-left-width: var(--xh-separator-border-width);
+    }
+
+    .xh-separator__label {
+      text-align: center;
     }
   }
 
