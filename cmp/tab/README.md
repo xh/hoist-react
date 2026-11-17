@@ -252,9 +252,8 @@ tabContainer({
 Tabs overflow only when something stops the switcher from growing to fit them, such as its
 container or a `maxWidth` on the switcher (`maxHeight` for a `left` / `right` switcher).
 
-When the active tab changes, the switcher scrolls the tab into view by the smallest distance
-needed. A scrolling panel or page around the switcher stays still while the whole tab is in view,
-and otherwise scrolls only far enough to show the tab.
+When the active tab changes, the switcher scrolls its tab strip by the smallest distance that shows
+the tab. A scrolling panel or page around the switcher never moves.
 
 ### Grouped Tabs (Vertical Switchers) - Desktop Only
 
