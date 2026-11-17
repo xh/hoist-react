@@ -156,7 +156,7 @@ for planned coverage:
 | [App Build & Deploy](./build-and-deploy-app.md) | Building and deploying full-stack Hoist applications (Gradle, Rsbuild, Docker) |
 | [Development Environment](./development-environment.md) | Local development environment setup for Hoist and app developers |
 | [Unit Testing](./unit-testing.md) | Unit tests for apps and hoist-react: the `@xh/hoist/test-support` kit, the fake hoist-core server, writing tests, and CI reports |
-| [Compilation Notes](./compilation-notes.md) | Notes on TypeScript/SWC compilation and build tooling internals |
+| [Compilation Notes](./compilation-notes.md) | Notes on TypeScript/SWC compilation, build tooling internals, and running an app against a local hoist-react checkout |
 
 ## Developer Tools
 
@@ -178,6 +178,7 @@ breaking changes, before/after code examples, and verification checklists.
 
 | Version | Released | Difficulty | Key Changes |
 |---------|----------|------------|-------------|
+| [v91](./upgrade-notes/v91-upgrade-notes.md) | TBD | 🟠 MEDIUM | CSS custom property overhaul (override hooks removed, units in values, renamed vars - with codemod) |
 | [v90](./upgrade-notes/v90-upgrade-notes.md) | 2026-11-02 | 🟢 LOW | numbro removed (`formatConfig`), desktop `DateInput` on react-day-picker 10, Onsen UI removed from mobile, `Column.textRenderer` on built-in column specs, panel splitter redesign, renderer import paths, removed libraries |
 | [v89](./upgrade-notes/v89-upgrade-notes.md) | 2026-10-13 | 🟢 LOW | TypeScript 7 (strongly recommended), `GridFilterModelConfig.fieldSpecs` no longer an allow-list |
 | [v88](./upgrade-notes/v88-upgrade-notes.md) | 2026-09-28 | 🔴 HIGH | TC39 decorators (`accessor`, no `makeObservable`) + dev-utils 16 / Rsbuild, MobX 7 named exports, AG Grid 36 + Theming API, React 19.3, v86 scheduled removals |

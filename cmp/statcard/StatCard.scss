@@ -41,9 +41,9 @@
 .xh-stat-card {
   display: flex;
   flex-direction: column;
-  // Main (vertical) axis - when a strip stretches a card to its tallest neighbor, split the slack
-  // above and below so the text of adjacent cards reads as one row.
-  justify-content: center;
+  // Content starts at the top, so a card stretched to its tallest neighbor in a strip keeps its
+  // title and value on the same lines as theirs, with its free space at the bottom.
+  justify-content: var(--xh-stat-card-justify-content);
   position: relative;
   // Clip, not hidden - a flex item that is a scroll container loses its content-based minimum
   // width, which is what keeps a card from getting narrower than its value.
@@ -121,9 +121,9 @@
   &__header {
     display: flex;
     align-items: center;
-    gap: var(--xh-pad-half-px);
+    gap: var(--xh-spacing-half);
     font-size: var(--xh-stat-card-title-font-size);
-    color: var(--xh-stat-card-title-color);
+    color: var(--xh-stat-card-title-text-color);
   }
 
   &__title {
@@ -162,7 +162,7 @@
     .xh-units-label {
       font-size: var(--xh-stat-card-sub-value-font-size);
       font-weight: normal;
-      color: var(--xh-stat-card-detail-color);
+      color: var(--xh-stat-card-detail-text-color);
     }
   }
 
@@ -176,6 +176,6 @@
 
   &__detail {
     font-size: var(--xh-stat-card-detail-font-size);
-    color: var(--xh-stat-card-detail-color);
+    color: var(--xh-stat-card-detail-text-color);
   }
 }

@@ -50,8 +50,7 @@
 }
 
 .xh-date-input__popover {
-  padding: var(--xh-pad-px);
-  background-color: var(--xh-popup-bg);
+  padding: var(--xh-spacing);
 
   .rdp-root {
     --rdp-day-height: 30px;
@@ -63,10 +62,10 @@
     --rdp-nav_button-width: 30px;
     --rdp-weekday-padding: 4px 0;
 
-    font-size: var(--xh-font-size-px);
+    font-size: var(--xh-font-size);
   }
 }
 
 .xh-date-input__actions {
-  padding-top: var(--xh-pad-px);
+  padding-top: var(--xh-spacing);
 }
