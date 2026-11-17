@@ -506,7 +506,8 @@ screen. A typical case is a menu item whose route the app adds only after its da
 
 Check each call where the route name is computed or can be undefined. Also check code that tests
 the result for `null` to find out if a route exists. That test now throws. Call
-`XH.routerModel.hasRoute(name)` first, as shown below.
+`XH.routerModel.hasRoute(name)` first, as shown below. Hoist v91 adds `XH.hasRoute(name)` as a
+shortcut.
 
 Before:
 

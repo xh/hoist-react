@@ -38,6 +38,11 @@ detailed, step-by-step upgrade instructions with before/after code examples.
   Blueprint overlay. Showing a mask no longer forces a browser layout. Restyle any app CSS that
   targets `.bp6-overlay` classes within an inline mask, or use `--xh-mask-bg`.
 
+### 🎁 New Features
+
+* Added `XH.hasRoute()` to check if a route exists. Call it before `XH.router.buildPath()` or
+  `buildUrl()` with a name that may not be registered, as both throw for an unknown route.
+
 ### 🐞 Bug Fixes
 
 * Fixed mobile `FormField` ignoring the `--xh-form-field-inline-label-*` custom properties for
