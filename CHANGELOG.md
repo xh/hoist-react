@@ -42,6 +42,13 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 
 * Fixed mobile `FormField` ignoring the `--xh-form-field-inline-label-*` custom properties for
   inline labels - it referenced stale names left behind by an earlier rename.
+* Fixed `StatCard` titles and values not lining up across a `StatCardStrip` whose cards differ in
+  height. A card now starts its content at the top. Set `--xh-stat-card-justify-content` to change.
+* Fixed `TreeMap` drawing nodes in an invalid color when every heat value was zero, or `maxHeat`
+  was zero. Those nodes now take the neutral color.
+* Fixed `TreeMap` showing its empty placeholder for a moment on mount, and when records arrived
+  in an empty map. `TreeMapModel` now reads the first records of its store at once. Later
+  changes are debounced as before.
 * Fixed a crash in a desktop `Toolbar` with `enableOverflowMenu: true` and only one item.
 
 ### ⚙️ Technical
@@ -52,6 +59,9 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 * The desktop column chooser now builds its grids on first open and syncs them to the grid's
   column state only while open. Apps with many grids that set `colChooserModel` now hold far fewer
   `GridModel` and `Store` instances.
+* `TreeMap` now logs a console warning when Highcharts has no color axis, which leaves every node
+  in one default color. Import `highcharts/modules/heatmap` or `highcharts/modules/coloraxis`
+  before `highcharts/modules/treemap` in `Bootstrap.ts`.
 
 ### ✨ Styles
 
