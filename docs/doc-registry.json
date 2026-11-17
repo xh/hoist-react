@@ -156,8 +156,8 @@
             "title": "Sparkline Package",
             "mcpCategory": "package",
             "viewerCategory": "components",
-            "description": "Small inline trend chart in plain SVG for a StatCard or a grid cell, with shared scales across a grid column, and when to use a Chart instead.",
-            "keywords": ["Sparkline", "sparkline", "trend", "inline chart", "mini chart", "micro chart", "colorByTrend", "markers", "baseline", "grid column renderer", "shared scale"]
+            "description": "Small inline trend chart in plain SVG for a StatCard or a grid cell, with shared scales across a grid column, its fixed scope, and when to use a Chart or the AG Grid sparkline instead.",
+            "keywords": ["Sparkline", "sparkline", "trend", "inline chart", "mini chart", "micro chart", "colorByTrend", "markers", "baseline", "grid column renderer", "shared scale", "scope", "AG Grid sparkline", "agSparklineCellRenderer"]
         },
         {
             "id": "desktop/cmp/dash/README.md",
