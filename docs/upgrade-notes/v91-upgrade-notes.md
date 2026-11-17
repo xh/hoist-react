@@ -173,6 +173,8 @@ The codemod ends with a report. Work through each section of it:
   as a stylesheet's own variables would be, such as `--white` and `--black` in a vendored template.
   To keep one as is, run the codemod again on the unmodified files with `--skip-hook <name>`, or
   `--exclude` the file or folder that holds it.
+- **Comments naming unprefixed hooks** - the codemod never edits comments. Update each one it lists
+  to name the new `--xh-*` variable.
 - **Removed variables still referenced** - delete these usages; the variables never had any effect.
 - **Warnings** - `calc()` expressions that add a bare number to a size variable (add a unit to the
   number) or divide by one, TypeScript assigning a size variable a bare number, and code that
@@ -196,7 +198,7 @@ remain:
 ```bash
 # Unprefixed custom properties. Add your own app prefix (e.g. --myapp-) to the exclusion list.
 grep -rnE '^\s*--[a-z][a-z0-9-]*\s*:' --include='*.scss' --include='*.css' src \
-  | grep -vE -- '--(xh|ag|bp[0-9]?|fa|myapp)-'
+  | grep -vE -- ':[0-9]+:\s*--(xh|ag|bp[0-9]?|fa|myapp)-'
 ```
 
 For any hit that names a Hoist hook, decide whether you want it at all: renamed to its `--xh-*`
@@ -301,8 +303,9 @@ box({flex: 1, children: 'Hello'});
 
 A text search cannot tell element specs from data, because `items` is also the key for menu items,
 column groups and similar configs. The codemod loads your TypeScript project and renames a key only
-where the type checker resolves it to Hoist's `ElementSpec`. Run it from the app root, after
-installing v91, so that it also scans root-level docs such as `CLAUDE.md`:
+where the type checker resolves it to Hoist's `ElementSpec`. Keys outside an element spec keep their
+names, such as the `input.item` of an `XH.prompt()` call. Run it from the app root, after installing
+v91, so that it also scans root-level docs such as `CLAUDE.md`:
 
 ```bash
 # Preview first - lists each file it would change, and the report, without writing.

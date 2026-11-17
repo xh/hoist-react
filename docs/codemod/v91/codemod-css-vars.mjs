@@ -716,7 +716,7 @@ const roots = (paths.length ? paths : [defaultRoot]).map(p => path.resolve(p));
 
 const NAME = '--[a-zA-Z0-9_-]*[a-zA-Z0-9_]';
 const tokenRe = name => new RegExp(`${escapeRe(name)}(?![a-zA-Z0-9_-])`, 'g');
-const report = {files: 0, changed: 0, hooks: [], localHooks: [], renames: 0, units: 0, calcs: 0, dropped: 0, removed: [], warnings: [], docs: []};
+const report = {files: 0, changed: 0, hooks: [], localHooks: [], hookComments: [], renames: 0, units: 0, calcs: 0, dropped: 0, removed: [], warnings: [], docs: []};
 
 const files = [];
 for (const root of roots) await collect(root);
@@ -773,6 +773,7 @@ for (const f of files) {
     src = cleanCalcs(src);
     if (STYLE_EXTS.has(ext)) src = restoreSelfReferences(dropSelfReferences(src), kept, rel);
     warn(src, rel, ext);
+    if (STYLE_EXTS.has(ext)) reportHookComments(src, rel);
 
     if (src !== before) {
         report.changed++;
@@ -815,9 +816,10 @@ function restoreSelfReferences(src, kept, rel) {
     });
 }
 
-// The name a declared or read variable takes after the hook migration and renames.
-function migratedName(name, rootLevel = true) {
-    const hooked = rootLevel && migratedHooks.has(name) ? HOOKS[name] : name;
+// The name a declared or read variable takes after the hook migration and renames. Pass `anyHook`
+// to map every hook name, migrated in this run or not.
+function migratedName(name, rootLevel = true, anyHook = false) {
+    const hooked = rootLevel && (anyHook ? HOOKS[name] : migratedHooks.has(name)) ? HOOKS[name] : name;
     return RENAMES[hooked] ?? hooked;
 }
 
@@ -949,6 +951,17 @@ function warn(src, rel, ext) {
     }
 }
 
+// Comments are never rewritten - list each one that still names an unprefixed hook.
+function reportHookComments(src, rel) {
+    for (const c of src.matchAll(/\/\*[\s\S]*?\*\/|(?<=^|[\s;{}])\/\/[^\n]*/g)) {
+        for (const t of c[0].matchAll(new RegExp(NAME, 'g'))) {
+            const name = t[0];
+            if (!HOOKS[name] || skippedHooks.has(name)) continue;
+            report.hookComments.push(`${rel}:${lineOf(src, c.index + t.index)}  ${name} → ${migratedName(name, true, true)}`);
+        }
+    }
+}
+
 // Markdown is report-only - list each line naming a renamed or removed variable.
 function reportDoc(src, rel) {
     src.split('\n').forEach((line, i) => {
@@ -1044,7 +1057,7 @@ async function collect(p) {
 }
 
 function printReport() {
-    const {files, changed, hooks, localHooks, renames, units, calcs, dropped, removed, warnings, docs} = report;
+    const {files, changed, hooks, localHooks, hookComments, renames, units, calcs, dropped, removed, warnings, docs} = report;
     console.log(
         `\n${DRY ? '[dry] ' : ''}Done - scanned ${files} files, modified ${changed}. ` +
             `${hooks.length} hook migrations, ${renames} renames, ${units} unit additions, ` +
@@ -1061,6 +1074,10 @@ function printReport() {
                 `files with --skip-hook <name>, or --exclude the file or folder that holds it:`
         );
         localHooks.forEach(h => console.log(`  ${h}`));
+    }
+    if (hookComments.length) {
+        console.log(`\nComments naming unprefixed hooks - not rewritten. Update them by hand:`);
+        hookComments.forEach(c => console.log(`  ${c}`));
     }
     if (removed.length) {
         console.log(`\nRemoved variables still referenced - delete these usages:`);

@@ -74,6 +74,19 @@ describe('codemod-css-vars', () => {
         expect(local).not.toContain('--grid-bg');
     });
 
+    it('lists comments that name unprefixed hooks, without rewriting them', () => {
+        const scss =
+                '// Sets --font-family for the app.\nbody.xh-app {\n  /* see --grid-bg */\n' +
+                '  --xh-font-family: serif;\n  background: url(http://x.io/--grid-bg.png);\n}\n',
+            {read, output} = run({'src/app.scss': scss});
+        const comments = output.split('Comments naming unprefixed hooks')[1];
+
+        expect(read('src/app.scss')).toBe(scss);
+        expect(comments).toContain('src/app.scss:1  --font-family → --xh-font-family');
+        expect(comments).toContain('src/app.scss:3  --grid-bg → --xh-grid-bg');
+        expect(comments).not.toContain(':5');
+    });
+
     it.each([
         ['--skip-hook', ['--skip-hook', 'white']],
         ['--exclude', ['--exclude', 'src/vendor']]
