@@ -151,6 +151,8 @@ techniques.
 | `/zoneGrid/` | Multi-zone grid layout for complex record displays |
 | `/cubegrid/` | Cube View as a tree grid, with pivot paths as nested column groups when pivoted. [See README](./cubegrid/README.md) |
 | `/statcard/` | Tiles that call out key figures (StatCard), laid out in equal-width rows (StatCardStrip) |
+| `/keyvaluelist/` | Display-only list of labeled values (KeyValueList), such as the fields of a record in a detail panel. [See README](./keyvaluelist/README.md) |
+| `/itemlist/` | Short, static list of entries with a title, description, icon and trailing detail (ItemList). [See README](./itemlist/README.md) |
 
 ### Layout and Containers
 
@@ -279,6 +281,11 @@ const dataViewModel = new DataViewModel({
 });
 ```
 
+### ItemList (`/itemlist/`)
+
+A short, static list of entries, each with a title, description, icon and trailing detail. It takes
+a plain array, so use `DataView` for many records. See the [ItemList README](./itemlist/README.md).
+
 ### TabContainer (`/tab/`)
 
 Tabbed interface for organizing content into switchable views. TabContainerModel manages tab
@@ -336,6 +343,11 @@ CardModel supports `collapsible` state with configurable `renderMode` (`'always'
 **FormFieldSet** (`/cmp/form/formfieldset/`) extends Card to group related `FormField` components,
 displaying their aggregate validation state as intent-colored borders and tooltips. See the
 [Form README](./form/README.md#formfieldset) for details.
+
+### KeyValueList (`/keyvaluelist/`)
+
+A display-only list of labeled values, such as the fields of a record in a detail panel, laid out
+in as many columns as the width allows. See the [KeyValueList README](./keyvaluelist/README.md).
 
 ### ProgressBar (`/progressbar/`)
 

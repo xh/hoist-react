@@ -596,3 +596,11 @@
   entries to `cmp/README.md`.
 - Indexed in `docs/README.md` (Quick Reference and Components), the roadmap Priority 2 table
   (Draft), and `docs/doc-registry.json`.
+
+### 2026-11-17
+- Added package READMEs for `KeyValueList` and `ItemList`. Each covers when to use the component
+  over its neighbors, examples, CSS variables and pitfalls. TSDoc holds the props and their
+  defaults, so the READMEs have no prop tables.
+- Added short `KeyValueList` and `ItemList` entries to `cmp/README.md`.
+- Indexed in `docs/README.md` (Quick Reference and Components), the roadmap Priority 2 table
+  (Draft), and `docs/doc-registry.json`.

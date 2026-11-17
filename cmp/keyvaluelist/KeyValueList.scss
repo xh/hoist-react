@@ -1,0 +1,112 @@
+/*
+ * This file belongs to Hoist, an application development toolkit
+ * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
+ *
+ * Copyright © 2026 Extremely Heavy Industries Inc.
+ */
+
+.xh-key-value-list {
+  display: grid;
+  // Each column is a label track and a value track. A label track is as wide as its widest label,
+  // up to the max label width and never more than half of the column.
+  grid-template-columns: repeat(
+    var(--xh-key-value-list-columns, 1),
+    fit-content(
+        min(
+          var(--xh-key-value-list-label-max-width),
+          calc(50% / var(--xh-key-value-list-columns, 1))
+        )
+      )
+      minmax(0, 1fr)
+  );
+  column-gap: var(--xh-key-value-list-column-gap);
+  row-gap: var(--xh-key-value-list-row-gap);
+  // Fill the width of a block, or of a flex container that does not stretch the list. Unlike
+  // `width: 100%`, this allows for a margin. The prefixed values are for browsers without `stretch`.
+  width: -webkit-fill-available;
+  width: -moz-available;
+  width: stretch;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  font-size: var(--xh-key-value-list-font-size);
+  color: var(--xh-text-color);
+
+  // Swaps in the compact variables, so the rules below draw both sizes.
+  &--compact {
+    --xh-key-value-list-font-size: var(--xh-key-value-list-compact-font-size);
+    --xh-key-value-list-row-gap: var(--xh-key-value-list-compact-row-gap);
+  }
+
+  // Spans the two tracks of its column and lays its label and value out on them, so the labels of
+  // a column line up.
+  &__entry {
+    display: grid;
+    grid-column: span 2;
+    grid-template-columns: subgrid;
+    column-gap: var(--xh-key-value-list-label-gap);
+    align-items: baseline;
+    min-width: 0;
+  }
+
+  &__label,
+  &__value {
+    min-width: 0;
+    margin: 0;
+    overflow-wrap: break-word;
+  }
+
+  &__label {
+    font-size: var(--xh-key-value-list-label-font-size);
+    font-weight: var(--xh-key-value-list-label-font-weight);
+    color: var(--xh-key-value-list-label-text-color);
+  }
+
+  &__value {
+    font-weight: var(--xh-key-value-list-value-font-weight);
+
+    &--empty {
+      color: var(--xh-key-value-list-empty-text-color);
+    }
+  }
+
+  &__entry--intent-primary &__value {
+    color: var(--xh-key-value-list-primary-color);
+  }
+
+  &__entry--intent-success &__value {
+    color: var(--xh-key-value-list-success-color);
+  }
+
+  &__entry--intent-warning &__value {
+    color: var(--xh-key-value-list-warning-color);
+  }
+
+  &__entry--intent-danger &__value {
+    color: var(--xh-key-value-list-danger-color);
+  }
+
+  // Equal-width columns, each entry a label stacked on its value.
+  &--label-top {
+    grid-template-columns: repeat(var(--xh-key-value-list-columns, 1), minmax(0, 1fr));
+  }
+
+  &--label-top &__entry {
+    display: block;
+    grid-column: auto;
+  }
+
+  // The rule replaces the row gap, with the gap as padding on each side of it.
+  &--dividers {
+    row-gap: 0;
+  }
+
+  &--dividers &__entry {
+    padding: var(--xh-key-value-list-row-gap) 0;
+    border-bottom: var(--xh-key-value-list-divider-border);
+
+    &--last-row {
+      border-bottom: none;
+    }
+  }
+}
