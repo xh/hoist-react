@@ -6,9 +6,12 @@
 
 Hoist React v91 resets Hoist's CSS custom properties onto a simpler baseline, and moves element
 factories to the standard React `children` key. A codemod automates nearly all of each migration.
+v91 also requires AG Grid 36.3 and renders desktop inline masks without a Blueprint overlay.
 
+- **AG Grid 36.3 (required)** - see Step 1.
+- **Inline masks (if your app styles them)** - see Step 5.
 - **CSS variables (required if your app customizes or reads Hoist's CSS variables)** - see Steps
-  1-4. The new baseline is designed to read the way developers - and AI coding agents - expect CSS
+  2-4. The new baseline is designed to read the way developers - and AI coding agents - expect CSS
   variables to work:
     - **One tier of variables.** The unprefixed override hooks are gone. Previously Hoist defined
       each variable as `--xh-grid-bg: var(--grid-bg, var(--xh-bg))`, with the unprefixed
@@ -23,9 +26,10 @@ factories to the standard React `children` key. A codemod automates nearly all o
     - **Overrides on `body.xh-app` always win**, in every theme and platform combination.
     - **Three variables that never had any effect were removed.**
 
-- **Element factory `children` (recommended)** - see Step 5. Element specs take child elements via
-  `children`, as React does. The legacy `item` and `items` keys still work as aliases. A
-  type-aware codemod converts app code and reports examples in docs.
+- **Element factory `children` (run the codemod)** - see Step 6. Element specs take child elements
+  via `children`, as React does. A type-aware codemod converts app code and reports examples in
+  docs. The legacy `item` and `items` keys still work as aliases in v91, but a future major version
+  will remove them.
 
 The CSS changes also cover the variables added in v90 - the panel splitter (`--xh-panel-splitter-*`,
 `--xh-panel-collapsed-strip-*`), `PdfViewer` (`--xh-pdf-viewer-*`) and `StatCard`
@@ -34,6 +38,9 @@ The CSS changes also cover the variables added in v90 - the panel splitter (`--x
 
 The most significant impacts are:
 
+- **Grids fail on AG Grid 36.2 or earlier.** Hoist checks the AG Grid version at startup. On an
+  older version it logs an error and disables every grid. AG Grid is not a peer dependency of
+  Hoist, so your package manager does not warn.
 - **Old names and unitless values fail silently.** An app still setting `--grid-bg`, `--xh-pad`, or
   `--xh-font-size: 14` loses that customization without an error. Run the codemod, and watch for
   Hoist's development-mode console warning about unitless size variables.
@@ -42,7 +49,7 @@ The most significant impacts are:
 - **A spec that sets both `children` and a legacy key now renders `children`.** Before v91 the
   legacy key won. The usual case is a container that spreads its props and adds `items`, as in
   `box({...props, items: [...]})`, where a `children` prop in the spread now hides the `items`.
-  Hoist logs a console warning naming the component. The Step 5 codemod fixes these.
+  Hoist logs a console warning naming the component. The Step 6 codemod fixes these.
 
 ## Prerequisites
 
@@ -56,20 +63,57 @@ Before starting, ensure:
 
 ## Upgrade Steps
 
-### 1. Run the CSS Variable Codemod
+### 1. Update `package.json`
+
+Bump hoist-react to v91 and AG Grid to 36.3. Hoist requires AG Grid 36.3 or later, to avoid a
+performance issue in 36.2.
+
+**File:** `client-app/package.json`
+
+Before:
+
+```json
+"dependencies": {
+    "@xh/hoist": "^90.0.0",
+    "ag-grid-community": "~36.2.0",
+    "ag-grid-enterprise": "~36.2.0",
+    "ag-grid-react": "~36.2.0"
+}
+```
+
+After:
+
+```json
+"dependencies": {
+    "@xh/hoist": "^91.0.0",
+    "ag-grid-community": "~36.3.0",
+    "ag-grid-enterprise": "~36.3.0",
+    "ag-grid-react": "~36.3.0"
+}
+```
+
+Bump `ag-grid-enterprise` only if your app uses it. Then run `pnpm install`, `yarn install`, or
+`npm install`.
+
+### 2. Run the CSS Variable Codemod
 
 From your `client-app` directory, after installing v91:
 
 ```bash
-# Preview first - reports every change without writing.
+# Preview first - lists each file it would change, and the report, without writing.
 node node_modules/@xh/hoist/docs/codemod/v91/codemod-css-vars.mjs --dry src
 
 # Then apply.
 node node_modules/@xh/hoist/docs/codemod/v91/codemod-css-vars.mjs src
 ```
 
+The dry run counts renames, unit fixes, and `calc()` fixes but does not list them. Review those in
+`git diff` after you apply.
+
 The codemod skips `node_modules`. A Hoist package that ships its own styles needs the same
-migration in its own repo, and a new release, before apps on v91 pick it up.
+migration in its own repo, and a new release, before apps on v91 pick it up. To skip other code
+that is not yours, such as a vendored third-party stylesheet, pass `--exclude <path>`. Repeat it for
+each file or folder.
 
 It scans `.scss`, `.css`, `.ts`, `.tsx`, and `.js` files and:
 
@@ -125,18 +169,25 @@ The codemod ends with a report. Work through each section of it:
 
 - **Hook migrations** - every unprefixed name it converted, with file and line. Confirm each was a
   Hoist hook rather than an app variable that happened to share a hook's name (e.g. `--gray`).
+- **Possibly local variables** - hook names that are declared and read only within the same files,
+  as a stylesheet's own variables would be, such as `--white` and `--black` in a vendored template.
+  To keep one as is, run the codemod again on the unmodified files with `--skip-hook <name>`, or
+  `--exclude` the file or folder that holds it.
 - **Removed variables still referenced** - delete these usages; the variables never had any effect.
 - **Warnings** - `calc()` expressions that add a bare number to a size variable (add a unit to the
   number) or divide by one, TypeScript assigning a size variable a bare number, and code that
   references a size variable by name. For the last, check whether the code reads the variable's
   value - e.g. via `getComputedStyle(...).getPropertyValue()` - and appends a unit, which now
   doubles up (`41pxpx`). Also any `--xh-*` variable set on `:root` or `html` - move it to
-  `body.xh-app` (Step 3).
+  `body.xh-app` (Step 4). Also any declaration left as written because, once migrated, it would
+  read the variable it declares, such as
+  `--xh-grid-header-lr-pad-px: calc(var(--xh-grid-header-lr-pad) * 1px - 1px)`. A custom property
+  that reads itself is invalid. Set the new variable to a length instead, or remove the line.
 - **Markdown naming old or removed variables** - the codemod never edits `.md` files. Update
   living docs such as a README or `CLAUDE.md` by hand. Leave changelogs and release notes as
   written.
 
-### 2. Review What the Codemod Cannot Migrate
+### 3. Review What the Codemod Cannot Migrate
 
 **Hooks set outside a root-level selector.** An unprefixed hook set on a container never had any
 effect - Hoist read the hooks only on `body` - so the codemod leaves these alone. Search for any that
@@ -171,7 +222,7 @@ properly, so setting `--xh-form-field-invalid-border-color` colors both the bord
 shadow. To keep the prior no-shadow appearance, add e.g.
 `--xh-form-field-invalid-box-shadow: none;` alongside the color.
 
-### 3. Check Override Selectors
+### 4. Check Override Selectors
 
 Set overrides on `body.xh-app`. Hoist declares its defaults on `body`, wrapping its dark-theme and
 mobile variants in `:where()` so every framework declaration has the specificity of a bare `body`
@@ -200,48 +251,37 @@ body.xh-app {
 ```
 
 The codemod migrates the name and unit here but leaves the selector, and lists the declaration in
-its warnings. Change `:root` / `html` to `body.xh-app` by hand. Where you want per-theme values, nest an `&.xh-dark` block as in Step 1.
+its warnings. Change `:root` / `html` to `body.xh-app` by hand. Where you want per-theme values, nest an `&.xh-dark` block as in Step 2.
 
 **Scoped overrides** - setting a variable on a container rather than `body.xh-app` - only reach CSS
 that reads that exact variable. Variables derived from it were resolved once on `body`, so
 `.my-panel { --xh-spacing: 4px; }` does not change `--xh-spacing-half` within the panel. See "Base
 vs. Derived Variables" in [`styles/README.md`](../../styles/README.md#base-vs-derived-variables).
 
-### 4. Check the Console and the UI
+### 5. Check Inline Mask Styling
 
-Start the app in development mode. Hoist logs a warning at startup if any size variable resolves to
-a bare number - almost always an override the codemod could not see, such as one set from
-TypeScript or built with interpolation:
+On desktop, an inline `Mask` now renders as a plain `div` with the class `xh-mask--inline`, not a
+Blueprint overlay. Its backdrop is the `::before` pseudo-element of that `div`. Showing a mask no
+longer forces a browser layout. A mask with `inline: false` still uses the Blueprint overlay.
 
-```
-[ThemeModel] | CSS size variables must include a unit as of Hoist v91 (e.g. '8px', not '8').
-Unitless values found for: --xh-spacing, ...
-```
+App CSS that targets `.bp6-overlay` classes within an inline mask no longer matches. Search for
+Blueprint overlay classes in your styles and check any hit that styles a mask:
 
-The check covers the active theme at startup. Switch themes and reload to check the other.
-
-Hoist also warns if any `--xh-*` variable is set on `:root` or `html`, by a stylesheet or an inline
-style. Move each one it names to `body.xh-app` (Step 3):
-
-```
-[ThemeModel] | CSS variables set on :root or html have no effect - Hoist's defaults on body take
-precedence. Move these overrides to body.xh-app: --xh-spacing, ...
+```bash
+grep -rn 'bp6-overlay' --include='*.scss' --include='*.css' src
 ```
 
-Then review the app in both light and dark themes, and on mobile if applicable.
+To change the backdrop color, set `--xh-mask-bg` instead.
 
-Popovers have a stronger border and shadow in v91, so they stand out from the content beneath them.
-If your app styles `.bp6-popover` or `.bp6-popover-content` directly to change a border, shadow, or
-background, set the new `--xh-popover-*` variables instead. To change one popover, set them on its
-`popoverClassName`. See "Dialogs and Popovers" in
-[`styles/README.md`](../../styles/README.md#dialogs-and-popovers).
-
-### 5. Convert Element Specs to `children` (Recommended)
+### 6. Convert Element Specs to `children`
 
 Element factories and `createElement` now take child elements via the standard React `children`
-key. The legacy `item` and `items` keys still work as aliases, so this step is not required for
-v91. Hoist's docs and examples now use `children` only. Converting keeps your code consistent with
-them, and AI coding agents follow the patterns your code shows them.
+key. Run the codemod below to convert your app as part of this upgrade.
+
+The legacy `item` and `items` keys still work as aliases in v91, so this change is not breaking and
+you can defer it. There is no reason to wait. A future major version will remove the aliases and
+force the change. Hoist's docs and examples already use `children` only, and AI coding agents
+follow the patterns your code shows them.
 
 ```typescript
 // Before
@@ -321,11 +361,49 @@ own `children` prop when it declares one, such as a render function.
 Toolbox ran this codemod over its whole client - see
 [xh/toolbox#958](https://github.com/xh/toolbox/pull/958).
 
+### 7. Check the Console and the UI
+
+Start the app in development mode. Hoist logs a warning at startup if any size variable resolves to
+a bare number - almost always an override the codemod could not see, such as one set from
+TypeScript or built with interpolation:
+
+```
+[ThemeModel] | CSS size variables must include a unit as of Hoist v91 (e.g. '8px', not '8').
+Unitless values found for: --xh-spacing, ...
+```
+
+The check covers the active theme at startup. Switch themes and reload to check the other.
+
+Hoist also warns if any `--xh-*` variable is set on `:root` or `html`, by a stylesheet or an inline
+style. Move each one it names to `body.xh-app` (Step 4):
+
+```
+[ThemeModel] | CSS variables set on :root or html have no effect - Hoist's defaults on body take
+precedence. Move these overrides to body.xh-app: --xh-spacing, ...
+```
+
+Hoist also warns, once per component, if an element spec sets both `children` and a legacy key.
+Only `children` renders. Fix each one it names as described in Step 6:
+
+```
+Element spec for "Panel" sets both `children` and a legacy `item` / `items` key. Only `children`
+is rendered - use `children` alone.
+```
+
+Then review the app in both light and dark themes, and on mobile if applicable.
+
+Popovers have a stronger border and shadow in v91, so they stand out from the content beneath them.
+If your app styles `.bp6-popover` or `.bp6-popover-content` directly to change a border, shadow, or
+background, set the new `--xh-popover-*` variables instead. To change one popover, set them on its
+`popoverClassName`. See "Dialogs and Popovers" in
+[`styles/README.md`](../../styles/README.md#dialogs-and-popovers).
+
 ## Verification Checklist
 
 After completing all steps:
 
 - [ ] `pnpm install` / `yarn install` / `npm install` completes without errors.
+- [ ] AG Grid packages are on `~36.3.0`, and the console shows no AG Grid version error.
 - [ ] `pnpm lint` / `yarn lint` / `npm run lint` passes.
 - [ ] `pnpm typecheck` / `npx tsc --noEmit` passes.
 - [ ] The application builds and loads without console errors.
@@ -335,9 +413,10 @@ After completing all steps:
   the warning about variables set on `:root` or `html`.
 - [ ] Custom colors, spacing, and typography render correctly in both light and dark themes (and on
   mobile, if applicable).
-- [ ] Form validation styling looks as intended if you override any `-border-color` (Step 2 note).
+- [ ] Inline masks look as intended if your app styles them (Step 5).
+- [ ] Form validation styling looks as intended if you override any `-border-color` (Step 3 note).
 - [ ] The items-to-children codemod report has been reviewed - conflicts, unconverted specs and
-  spreads (Step 5).
+  spreads (Step 6).
 - [ ] The application loads without the console warning about a spec that sets both `children`
   and a legacy `item` / `items` key.
 - [ ] No references to retired CSS variable names remain:
@@ -419,9 +498,9 @@ handles these; for reference, their v91 variables are:
 
 | v90 unprefixed hook | v91 variable |
 |---|---|
-| `--form-field-info-border-color` | `--xh-form-field-info-border-color` (see Step 2 note) |
-| `--form-field-invalid-border-color` | `--xh-form-field-invalid-border-color` (see Step 2 note) |
-| `--form-field-warning-border-color` | `--xh-form-field-warning-border-color` (see Step 2 note) |
+| `--form-field-info-border-color` | `--xh-form-field-info-border-color` (see Step 3 note) |
+| `--form-field-invalid-border-color` | `--xh-form-field-invalid-border-color` (see Step 3 note) |
+| `--form-field-warning-border-color` | `--xh-form-field-warning-border-color` (see Step 3 note) |
 | `--grid-cell-bg-highlight` | `--xh-grid-cell-changed-bg` |
 | `--grid-header-cell-lr-pad` | `--xh-grid-header-padding-inline` |
 | `--input-placeholder-color` | `--xh-input-placeholder-text-color` |
