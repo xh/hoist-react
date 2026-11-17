@@ -38,6 +38,11 @@ detailed, step-by-step upgrade instructions with before/after code examples.
   Blueprint overlay. Showing a mask no longer forces a browser layout. Restyle any app CSS that
   targets `.bp6-overlay` classes within an inline mask, or use `--xh-mask-bg`.
 
+### 🎁 New Features
+
+* Added `DashCanvasConfig.preventCollision` to block a drag or resize into space taken by another
+  view. Combine with `compact: false` for a free-form canvas where views stay where users put them.
+
 ### 🐞 Bug Fixes
 
 * Fixed mobile `FormField` ignoring the `--xh-form-field-inline-label-*` custom properties for

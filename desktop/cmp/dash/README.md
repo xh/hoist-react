@@ -273,6 +273,7 @@ dashCanvas({model: canvasModel})
 | `columns` | `number` | Grid columns. Default `12`. |
 | `rowHeight` | `number` | Row height in pixels. Default `50`. |
 | `compact` | `boolean \| 'vertical' \| 'horizontal' \| 'wrap'` | Compaction mode. `true` defaults to `'vertical'`. Use `'wrap'` with caution — it only works well if all items are 1 row high. Default `'vertical'`. |
+| `preventCollision` | `boolean` | Block a drag or resize into space taken by another view - the view snaps back instead of pushing the other aside. Combine with `compact: false` for a free-form canvas. Default `false`. |
 | `margin` | `[x, y]` | Gap between items in pixels. Default `[10, 10]`. |
 | `containerPadding` | `[x, y]` | Outer padding in pixels. Defaults to same as `margin`. |
 | `maxRows` | `number` | Maximum row count. Default `Infinity`. |
