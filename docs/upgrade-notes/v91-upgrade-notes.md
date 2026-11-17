@@ -265,7 +265,7 @@ where the type checker resolves it to Hoist's `ElementSpec`. Run it from the app
 installing v91, so that it also scans root-level docs such as `CLAUDE.md`:
 
 ```bash
-# Preview first - reports every change without writing.
+# Preview first - lists each file it would change, and the report, without writing.
 node client-app/node_modules/@xh/hoist/docs/codemod/v91/codemod-items-to-children.mjs --dry
 
 # Then apply, and run your formatter over the changed files.
@@ -274,9 +274,10 @@ node client-app/node_modules/@xh/hoist/docs/codemod/v91/codemod-items-to-childre
 
 The codemod finds `./tsconfig.json` or `./client-app/tsconfig.json`. Pass `--project` to name
 another. It edits source files only under the tsconfig folder, never in `node_modules`. It also
-collapses `children: children` to the `children` shorthand.
+collapses `children: children` to the `children` shorthand. The preview counts the renames but
+does not list them, so review them in `git diff` after you apply.
 
-Review the report. It lists what it could not convert safely:
+Review the report. It lists what the codemod could not convert safely, and changes to check:
 
 - **Conflicts** - a spec with more than one of `children`, `item` and `items`, left unchanged.
   Merge them by hand. In v91 such a spec renders only `children`, where before v91 the legacy key
@@ -285,9 +286,10 @@ Review the report. It lists what it could not convert safely:
   built in one place and passed to a factory later, or app options from a `getAppOptions()`
   override with no return type. Add a type, such as `ElementSpec` or `AppOptionSpec[]`, and run
   the codemod again, or convert by hand.
-- **Worth a review** - most often a renamed key followed by a spread that could carry `children`,
-  as in `{children: x, ...props}`. Before v91 the legacy key beat a `children` prop in the spread.
-  Now the spread wins. To keep the explicit value, move `children` after the spread.
+- **Worth a review** - most often a key moved after a spread that could carry `children`. Before
+  v91 the legacy key beat a `children` prop in the spread, and `children` does not. So the codemod
+  turns `panel({item: x, ...props})` into `panel({...props, children: x})`, which keeps the old
+  behavior. If a caller's `children` should win instead, move the key back before the spread.
 
 **Docs.** The codemod also scans markdown files, such as `CLAUDE.md`, `AGENTS.md` and READMEs, for
 factory examples, because agents copy them. By default it only reports suggested renames. Pass

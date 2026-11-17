@@ -140,20 +140,21 @@ describe('codemod-items-to-children', () => {
         );
     });
 
-    it('flags a later spread that could carry children', () => {
+    it('moves the key after a later spread that could carry children, flagged for review', () => {
         const {text, findings} = convert(
             `declare const props: {title?: string; children?: ReactNode};\n` +
-                `panel({items: [1], ...props});`
+                `panel({items: [1], ...props});\npanel({title: 'A', item: 1, ...props, omit: false});`
         );
 
         expect(text).toBe(
             `declare const props: {title?: string; children?: ReactNode};\n` +
-                `panel({children: [1], ...props});`
+                `panel({...props, children: [1]});\npanel({title: 'A', ...props, children: 1, omit: false});`
         );
-        expect(kinds(findings)).toEqual(['review']);
+        expect(kinds(findings)).toEqual(['review', 'review']);
+        expect(findings[0].message).toMatch(/^Moved `items` after a spread/);
     });
 
-    it('flags a later spread that could carry a legacy key', () => {
+    it('moves the key after a later spread that could carry a legacy key', () => {
         const {text, findings} = convert(
             `declare const extra: any;\n` +
                 `panel({items: [1], ...extra});\npanel({items: [1], ...{title: 'A'}});`
@@ -161,9 +162,25 @@ describe('codemod-items-to-children', () => {
 
         expect(text).toBe(
             `declare const extra: any;\n` +
-                `panel({children: [1], ...extra});\npanel({children: [1], ...{title: 'A'}});`
+                `panel({...extra, children: [1]});\npanel({children: [1], ...{title: 'A'}});`
         );
         expect(kinds(findings)).toEqual(['review']);
+    });
+
+    it('moves a multi-line key onto its own line, with the renames inside it', () => {
+        const {text, findings, renameCount} = convert(
+            `declare const props: {children?: ReactNode}, children: ReactNode, item: ReactNode;\n` +
+                `panel({\n    items: [panel({item: 1}), children],\n    ...props\n});\n` +
+                `panel({items: children, ...props});\npanel({item, ...props});`
+        );
+
+        expect(text).toBe(
+            `declare const props: {children?: ReactNode}, children: ReactNode, item: ReactNode;\n` +
+                `panel({\n    ...props,\n    children: [panel({children: 1}), children]\n});\n` +
+                `panel({...props, children});\npanel({...props, children: item});`
+        );
+        expect(kinds(findings)).toEqual(['review', 'review', 'review']);
+        expect(renameCount).toBe(4);
     });
 
     it('edits only files under the given paths', () => {
@@ -320,13 +337,17 @@ const IMPORTS = `import {createElement, el, panel, tagList, showMenu, type Eleme
 interface Finding {
     kind: string;
     line: number;
+    message: string;
 }
 
 /**
  * Run the codemod over one app file, returning its new text and the findings. Finding lines are
  * relative to the code passed in.
  */
-function convert(code: string, paths?: string[]): {text: string; findings: Finding[]} {
+function convert(
+    code: string,
+    paths?: string[]
+): {text: string; findings: Finding[]; renameCount: number} {
     const project = new Project({useInMemoryFileSystem: true, compilerOptions: {strict: false}});
     project.createSourceFile('/hoist/elem.ts', ELEM);
     const sf = project.createSourceFile('/app/view.ts', IMPORTS + code),
@@ -335,7 +356,8 @@ function convert(code: string, paths?: string[]): {text: string; findings: Findi
         text = applyEdits(sf.getFullText(), edits);
     return {
         text: text.slice(IMPORTS.length),
-        findings: result.findings.map(it => ({...it, line: it.line - 1}))
+        findings: result.findings.map(it => ({...it, line: it.line - 1})),
+        renameCount: result.renameCount
     };
 }
 

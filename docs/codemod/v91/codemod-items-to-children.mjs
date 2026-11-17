@@ -18,8 +18,12 @@
  *   - conflict - a spec with more than one of `children`, `item`, `items`. Left unchanged.
  *   - manual   - a likely spec without type information, e.g. a spec built as an untyped object
  *                and passed to a factory later. Convert it by hand.
- *   - review   - a rename outside a plain object literal, a later spread that could carry
- *                `children` and so override the renamed key, or doc prose about the old keys.
+ *   - review   - a rename outside a plain object literal, a key moved after a spread, or doc
+ *                prose about the old keys.
+ *
+ * A legacy key beat any `children` prop from a later spread, and `children` does not. So where a
+ * later spread can carry `children`, as in `panel({item: x, ...props})`, the codemod moves the
+ * renamed key after it - `panel({...props, children: x})` - and reports the move for review.
  *
  * Markdown docs get a second pass, because agents copy factory calls from CLAUDE.md, AGENTS.md,
  * READMEs and similar files. Code blocks there have no imports, so the type checker cannot read
@@ -77,7 +81,7 @@ export function collectItemsToChildren(project, opts = {}) {
         const edits = processFile(sourceFile, checker, result);
         if (edits.length) {
             result.files.push({file: sourceFile.getFilePath(), edits});
-            result.renameCount += edits.length;
+            result.renameCount += countRenames(edits);
         }
     }
 
@@ -334,6 +338,54 @@ function processFile(sf, checker, result) {
 
     const replace = (node, text) => ({start: node.getStart(file), end: node.getEnd(), text});
 
+    // Keys to move after a spread. Resolved once all edits are known, see resolveMove().
+    const moves = [];
+    const moveAfter = (prop, isFirst, next, carrier) => {
+        const text = file.text,
+            isShorthand = ts.isShorthandPropertyAssignment(prop),
+            valueNode = isShorthand ? prop.name : prop.initializer,
+            onOwnLine = text.slice(prop.getFullStart(), prop.getStart(file)).includes('\n');
+
+        // Delete the key and the comma after it. Keep the next property's leading trivia, except
+        // a lone space that would follow the opening brace, as in `{ ...props}`.
+        let end = next.getFullStart();
+        if (isFirst && /^[ \t]*$/.test(text.slice(end, next.getStart(file)))) {
+            end = next.getStart(file);
+        }
+
+        const lineStart = text.lastIndexOf('\n', carrier.getStart(file)) + 1,
+            indent = text.slice(lineStart, carrier.getStart(file)).match(/^\s*/)[0];
+        return {
+            start: prop.getFullStart(),
+            end,
+            insertAt: carrier.getEnd(),
+            separator: onOwnLine ? `,\n${indent}` : ', ',
+            valueStart: valueNode.getStart(file),
+            valueEnd: valueNode.getEnd(),
+            // `items: children` becomes the shorthand `children`.
+            toShorthand: !isShorthand && ts.isIdentifier(valueNode) && valueNode.text === 'children'
+        };
+    };
+
+    // Fold the edits inside a moved value into its new text, so no two edits overlap.
+    const resolveMove = m => {
+        const inside = edits.filter(e => e.start >= m.valueStart && e.end <= m.valueEnd),
+            value = applyEdits(
+                file.text.slice(m.valueStart, m.valueEnd),
+                inside.map(e => ({...e, start: e.start - m.valueStart, end: e.end - m.valueStart}))
+            );
+        for (const e of inside) edits.splice(edits.indexOf(e), 1);
+        edits.push(
+            {start: m.start, end: m.end, text: '', move: true},
+            {
+                start: m.insertAt,
+                end: m.insertAt,
+                text: m.separator + (m.toShorthand ? 'children' : `children: ${value}`),
+                count: countRenames(inside) + 1
+            }
+        );
+    };
+
     const isSpecType = type =>
         !!type &&
         !(type.flags & ts.TypeFlags.Any) &&
@@ -385,13 +437,22 @@ function processFile(sf, checker, result) {
 
         const [prop] = specProps,
             idx = obj.properties.indexOf(prop),
-            laterSpreads = obj.properties.filter((p, i) => i > idx && ts.isSpreadAssignment(p));
-        if (laterSpreads.some(p => mayCarryChildren(checker.getTypeAtLocation(p.expression)))) {
+            carrier = obj.properties.findLast(
+                (p, i) =>
+                    i > idx &&
+                    ts.isSpreadAssignment(p) &&
+                    mayCarryChildren(checker.getTypeAtLocation(p.expression))
+            );
+        if (carrier) {
+            // The legacy key beat a `children` prop from a later spread, and `children` does not.
+            // Move the renamed key after that spread to keep the old behavior.
+            moves.push(moveAfter(prop, idx === 0, obj.properties[idx + 1], carrier));
             report(
                 'review',
                 prop,
-                `A spread after \`${propName(prop)}\` can carry \`children\`, which now overrides it. Move \`children\` after the spread if it should win.`
+                `Moved \`${propName(prop)}\` after a spread that can carry \`children\`, renamed to \`children\`, so it still wins. Move it back if the spread's \`children\` should win.`
             );
+            return;
         }
 
         if (ts.isShorthandPropertyAssignment(prop)) {
@@ -509,7 +570,14 @@ function processFile(sf, checker, result) {
     };
 
     visit(file);
+    // Inner moves first, so an outer move carries their result.
+    moves.sort((a, b) => a.valueEnd - a.valueStart - (b.valueEnd - b.valueStart)).forEach(resolveMove);
     return dedupe(edits);
+}
+
+/** Count the renames in a list of edits. A moved key's edit includes the renames inside it. */
+function countRenames(edits) {
+    return edits.reduce((n, e) => n + (e.move ? 0 : (e.count ?? 1)), 0);
 }
 
 /** True if the type is a React element, or an array of them. */
