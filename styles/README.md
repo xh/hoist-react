@@ -174,8 +174,8 @@ The `vars.scss` file organizes its CSS custom properties into these categories:
 
 These components have their own variable sets:
 
-* AppBar, Badge, Button, Card, Chart, Form Field, Input, Loading Indicator, Mask, Menu, Popup,
-  Scrollbar, Tab, Title, Toolbar, Tooltip, and Viewport.
+* AppBar, Badge, Button, Card, Chart, Form Field, Input, Loading Indicator, Mask, Menu, Popover,
+  Popup, Scrollbar, Tab, Title, Toolbar, Tooltip, and Viewport.
 * Grid, including the Large, Compact, Tiny, and ZoneGrid variants.
 * Panel, including Panel Splitter and Collapsed Strip.
 * Resizable Splitter, which `DashContainer` and `SplitTreeMap` use.
@@ -529,6 +529,48 @@ body.xh-app {
 Hoist already themes Blueprint tooltips. To change their look, set the `--xh-tooltip-*` vars on
 `body.xh-app`, such as `--xh-tooltip-bg` or `--xh-tooltip-border-color`. Do not target
 `.bp6-tooltip` directly.
+
+### Dialogs and Popovers
+
+Dialogs and popovers share the `--xh-popup-*` vars for background, border, corner radius, and
+title bar. Dialogs read them directly. Popovers read a matching `--xh-popover-*` set, which
+defaults to the popup values. This applies to Blueprint popovers on desktop and to the mobile
+`Popover`.
+
+A dialog sits on a mask that dims the app. A popover has no mask and often opens over busy content
+such as a grid. For this reason a popover takes a stronger border and its own shadow:
+
+| Variable | Default |
+|----------|---------|
+| `--xh-popover-arrow-color` | `--xh-popover-border-color` |
+| `--xh-popover-bg` | `--xh-popup-bg` |
+| `--xh-popover-border-color` | `--xh-popup-border-color`, mixed toward `--xh-text-color` |
+| `--xh-popover-border-radius` | `--xh-popup-border-radius` |
+| `--xh-popover-border-width` | `--xh-popup-border-width` |
+| `--xh-popover-box-shadow` | Drop shadow, with a dark halo in dark theme |
+| `--xh-popover-backdrop-bg` | Mobile `Popover` with `backdrop: true` only |
+
+Set the popup vars to change dialogs and popovers together. Set the popover vars to change popovers
+alone. To change one popover, set the popover vars on its `popoverClassName`. Blueprint renders
+popovers in a portal, so a selector on the popover's target does not reach them.
+
+```scss
+body.xh-app {
+    --xh-popup-border-radius: 6px;    // Dialogs and popovers
+    --xh-popover-border-width: 2px;   // Popovers only
+}
+
+// One popover, by its `popoverClassName`.
+.my-chooser-popover {
+    --xh-popover-bg: var(--xh-bg-alt);
+}
+```
+
+The popover border is an outset box-shadow ring, so it does not change the size of the popover.
+`--xh-popover-box-shadow` holds a list of shadows drawn outside that ring. To remove the shadow,
+set it to `0 0 transparent`, not `none`.
+
+Blueprint tooltips are popovers too, but they read their own `--xh-tooltip-*` vars.
 
 ## Related Packages
 

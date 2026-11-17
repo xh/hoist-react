@@ -71,12 +71,11 @@ export const xhAgGridTheme = themeBalham.withParams({
 
     modalOverlayBackgroundColor: 'var(--xh-mask-bg)',
 
-    // Menus and popups. Box-shadow matches the Blueprint context-menu popover.
+    // Menus and popups float over the grid like popovers, so they take the popover border and shadow.
     menuBackgroundColor: 'var(--xh-menu-bg)',
     menuTextColor: 'var(--xh-menu-item-text-color)',
-    menuBorder: 'var(--xh-menu-border)',
-    menuShadow:
-        '0 0 0 1px rgba(16, 22, 26, 0.2), 0 2px 4px rgba(16, 22, 26, 0.4), 0 8px 24px rgba(16, 22, 26, 0.4)'
+    menuBorder: 'var(--xh-popover-border-width) solid var(--xh-popover-border-color)',
+    menuShadow: 'var(--xh-popover-box-shadow)'
 });
 
 const themeCache = new Map<string, Theme<ThemeDefaultParams>>();

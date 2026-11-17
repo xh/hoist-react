@@ -32,6 +32,11 @@ detailed, step-by-step upgrade instructions with before/after code examples.
       `--xh-tbar-*` -> `--xh-toolbar-*`, `--xh-grid-bg-hover` -> `--xh-grid-row-hover-bg`.
     * Removed `--xh-chart-bg`, `--xh-tab-border-width`, `--xh-toolbar-button-bg`, and
       `--xh-resizable-button-bg` and `-icon-color`, none of which had any effect.
+* Hoist now requires AG Grid `36.3` or later, to avoid a performance issue in `36.2`. Apps must bump
+  their `ag-grid-community`, `ag-grid-react`, and (if used) `ag-grid-enterprise` dependencies.
+* `Mask` now renders inline desktop masks as a plain `div` with the class `xh-mask--inline`, not a
+  Blueprint overlay. Showing a mask no longer forces a browser layout. Restyle any app CSS that
+  targets `.bp6-overlay` classes within an inline mask, or use `--xh-mask-bg`.
 
 ### 🎁 New Features
 
@@ -89,9 +94,16 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 * Fixed `TreeMap` showing its empty placeholder for a moment on mount, and when records arrived
   in an empty map. `TreeMapModel` now reads the first records of its store at once. Later
   changes are debounced as before.
+* Fixed a crash in a desktop `Toolbar` with `enableOverflowMenu: true` and only one item.
 
 ### ⚙️ Technical
 
+* `StoreRecord.getValues()` is faster for records with many fields, and so is spreading or copying
+  its result. It now returns an object in V8's compact fast-properties mode.
+* Grid autosizing now stops when its grid unmounts or is destroyed partway through a pass.
+* The desktop column chooser now builds its grids on first open and syncs them to the grid's
+  column state only while open. Apps with many grids that set `colChooserModel` now hold far fewer
+  `GridModel` and `Store` instances.
 * Deprecated desktop `FormField.inline` in favor of `labelSide: 'left'`. It still works, and logs
   a deprecation warning. Scheduled for removal in v93.
 * `TreeMap` now logs a console warning when Highcharts has no color axis, which leaves every node
@@ -106,6 +118,17 @@ detailed, step-by-step upgrade instructions with before/after code examples.
   `--xh-tab-active-indicator-color`.
 * Mobile tabs now read the `--xh-tab-*` variables, and mobile dialogs read `--xh-popup-bg` and
   `--xh-popup-title-font-family`, as on desktop.
+* Added `--xh-popover-arrow-color`, `-bg`, `-border-color`, `-border-radius` and `-border-width`,
+  and extended `--xh-popover-box-shadow` to desktop. Desktop and mobile popovers read them. They
+  default to the matching `--xh-popup-*` variables, so the popup border width and radius now reach
+  popovers too.
+* Gave popovers a stronger border and shadow than dialogs, so they stand out over busy content such
+  as a grid. In dark theme the border is lighter and has a dark halo. The popover arrow now takes
+  the border color. The `Select` dropdown and the grid context menu use the same frame.
+* Desktop popovers now fill with `--xh-popover-bg` in dark theme, not Blueprint's own gray. A menu
+  that fills a popover no longer draws a second border inside it.
+* Desktop popovers now stay 8px clear of the viewport edge, so their border shows on every side.
+  Set `modifiers.preventOverflow` or `modifiers.flip` padding on a popover to change it.
 * Added `.xh-border-rounded` for a solid border with rounded corners, and `.xh-rounded` for rounded
   corners with no border. Both use `--xh-border-radius`.
 * Removed `!important` from the `.xh-border-top`, `-right`, `-bottom` and `-left`, `.xh-pad-none`
@@ -115,6 +138,10 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 * Desktop `Select` now rounds its corners to match other inputs (4px, up from 3px). A desktop
   `TabSwitcher` placed at the bottom now marks its active tab in the active tab color, as one at
   the top does, rather than in the resting text color.
+
+### 📚 Libraries
+
+* jsdom `30 → 30 || 31` (optional peer)
 
 ## 90.1.0 - 2026-11-13
 

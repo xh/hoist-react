@@ -67,34 +67,55 @@
   }
 }
 
-// Blueprint popover borders use hardcoded SASS color variables with no CSS custom property support.
-// Override the outset 1px border-shadow layer in each theme to use Hoist's `--xh-popup-border-color`,
-// keeping remaining shadow layers (inset highlights, drop shadows) identical to BP defaults.
-.bp6-popover {
+// Popovers read the `--xh-popover-*` variables. Blueprint draws the popover border as an outset
+// box-shadow ring rather than a CSS border, so it takes no layout space and the arrow can overlap it.
+// Hoist keeps that ring and adds the drop shadow as its own layer. Selectors match Blueprint's own
+// `.bp6-dark` variants, which would otherwise outrank these rules in dark theme.
+.bp6-popover,
+.bp6-popover.bp6-dark,
+.bp6-dark .bp6-popover {
+  border-radius: var(--xh-popover-border-radius);
   box-shadow:
-    0 0 0 1px var(--xh-popup-border-color),
-    0 20px 25px -5px rgba(0, 0, 0, 0.1),
-    0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    0 0 0 var(--xh-popover-border-width) var(--xh-popover-border-color),
+    var(--xh-popover-box-shadow);
 
-  // Arrow border matches the popover border; arrow fill matches the popover background.
+  // Clip content to the rounded corners, so a title bar or other square-cornered child does not
+  // cover the inner curve of the border ring.
+  .bp6-popover-content {
+    background: var(--xh-popover-bg);
+    border-radius: var(--xh-popover-border-radius);
+    overflow: hidden;
+  }
+
+  // The arrow fill defaults to the border color. The arrow often meets a title bar or other content
+  // that does not match the popover background. The border path is a filled shape about 1px wide,
+  // so a stroke widens it to match a thicker border.
+  .bp6-popover-arrow::before {
+    box-shadow: none;
+  }
+
   .bp6-popover-arrow-border {
-    fill: var(--xh-popup-border-color);
+    fill: var(--xh-popover-border-color);
     fill-opacity: 1;
+    stroke: var(--xh-popover-border-color);
+    stroke-width: calc(var(--xh-popover-border-width) * 2 - 2px);
   }
 
   .bp6-popover-arrow-fill {
-    fill: var(--xh-popup-bg, var(--xh-bg));
+    fill: var(--xh-popover-arrow-color);
   }
+}
 
-  &.bp6-dark,
-  .bp6-dark & {
+// Blueprint moves the ring and shadow of a submenu onto its content, leaving side padding on the
+// popover itself as a mouse zone. Follow suit.
+.bp6-submenu.bp6-popover,
+.bp6-dark .bp6-submenu.bp6-popover {
+  box-shadow: none;
+
+  > .bp6-popover-content {
     box-shadow:
-      0 0 0 1px var(--xh-popup-border-color),
-      0 0 0 1px inset rgba(255, 255, 255, 0.2),
-      0 20px 25px -5px rgba(0, 0, 0, 0.3),
-      0 0 0.5px 0 inset rgba(255, 255, 255, 0.3),
-      0 0.5px 0 0 inset rgba(255, 255, 255, 0.08),
-      0 10px 30px -5px rgba(0, 0, 0, 0.3);
+      0 0 0 var(--xh-popover-border-width) var(--xh-popover-border-color),
+      var(--xh-popover-box-shadow);
   }
 }
 
@@ -232,6 +253,12 @@
   border-color: rgba(255, 255, 255, 0.15) !important;
 }
 
+// A menu that fills a popover, such as a context menu or a `MenuButton` menu, takes its frame from
+// the popover border. Drop the menu's own border so the two do not stack.
+.bp6-popover-content > .bp6-menu {
+  border: none;
+}
+
 //------------------------
 // Buttons
 //------------------------
@@ -259,7 +286,8 @@
 // Blueprint inverts tooltip colors relative to the theme (dark tooltips in light theme and vice
 // versa), and the `.bp6-popover` rules above also match tooltips. Style tooltips from the
 // `--xh-tooltip-*` vars instead, so they follow the theme. The doubled `.bp6-tooltip.bp6-popover`
-// selector outranks both BP's `.bp6-dark .bp6-tooltip` rules and the `.bp6-popover` rules above.
+// selector matches or outranks BP's `.bp6-dark .bp6-tooltip` rules and the `.bp6-popover` rules
+// above, and wins ties by coming later. Keep this block below the popover rules.
 .bp6-tooltip.bp6-popover {
   color: var(--xh-tooltip-text-color);
   border-radius: var(--xh-tooltip-border-radius);
@@ -289,6 +317,7 @@
   .bp6-popover-arrow-border {
     fill: var(--xh-tooltip-border-color);
     fill-opacity: 1;
+    stroke: none;
   }
 
   .bp6-popover-arrow-fill {

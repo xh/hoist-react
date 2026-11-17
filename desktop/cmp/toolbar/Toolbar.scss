@@ -234,18 +234,12 @@
   }
 }
 
+// The overflow menu takes the toolbar's colors, inside the standard popover border.
 .xh-toolbar-overflow-popover {
-  border: 1px solid var(--xh-toolbar-border-color);
-
-  .bp6-popover-arrow-border,
-  .bp6-popover-arrow-fill {
-    fill: var(--xh-toolbar-border-color) !important;
-  }
+  --xh-popover-bg: var(--xh-toolbar-bg);
+  color: var(--xh-toolbar-text-color);
 
   .bp6-popover-content {
-    color: var(--xh-toolbar-text-color);
-    background-color: var(--xh-toolbar-bg);
-
     & > .xh-vbox {
       align-items: flex-start;
 

@@ -23,6 +23,12 @@
     overflow-y: auto !important;
     border: var(--xh-menu-border);
 
+    // A menu shown in a popover, as by `MenuButton`, takes its frame from the popover border.
+    // Drop the menu's own border so the two do not stack.
+    .xh-popover__content-wrapper & {
+      border: none;
+    }
+
     // Textless '-' separator. The item above already draws a rule, so this is just a slim gap.
     &__divider {
       height: var(--xh-spacing-half);
