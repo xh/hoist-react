@@ -40,6 +40,8 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 
 ### 🎁 New Features
 
+* Added `isBlankNode` to `@xh/hoist/utils/react`, to test whether a node renders no content, such
+  as null, false, a blank string or an array of these.
 * Added `XH.hasRoute()` to check if a route exists. Call it before `XH.router.buildPath()` or
   `buildUrl()` with a name that may not be registered, as both throw for an unknown route.
 * Desktop `Slider` now names its handles for assistive technology. It takes the label of its
