@@ -23,3 +23,4 @@ export * from './filter/GridFilterFieldSpec';
 
 export * from './Grid';
 export * from './GridModel';
+export * from './GridCellSelectionModel';

@@ -202,6 +202,40 @@ gridModel.selectedRecords;  // Array of records
 gridModel.hasSelection;     // Boolean
 ```
 
+### Cell Range Selection
+
+Set `cellSelection: true` to let users select ranges of cells, as in Excel. Click, drag,
+Shift+click and Shift+arrow select a range, Ctrl/Cmd+click adds one, Ctrl/Cmd+A selects all cells,
+and Ctrl/Cmd+C copies them as export values. Requires ag-Grid Enterprise `CellSelectionModule`,
+desktop only.
+
+```typescript
+const gridModel = new GridModel({cellSelection: true, columns: [...]});
+
+// All observable
+const {cellSelectionModel} = gridModel;
+cellSelectionModel.ranges;  // GridCellRange[] - records and columns per range, newest last
+cellSelectionModel.cells;   // GridCell[] - {record, column} for each selected cell, once each
+cellSelectionModel.isEmpty;
+cellSelectionModel.clear();
+```
+
+The selected record follows the start cell of the newest range, so a detail panel bound to the
+selection stays on one record while the user drags. Ranges never become selected records, and
+`selModel` mode `multiple` is not supported. Ranges and the focused cell are always outlined, as in
+Excel, overriding `showCellFocus: false`.
+
+Ranges are spans of rows, so Hoist clears them whenever the rows they cover could change: on a sort,
+filter, data load, `groupBy` change, tree expand or collapse, rows added or removed, or a re-sort
+from live updates. It also clears them when app code changes the selected record. In-place value
+updates keep the ranges, and `ranges` picks up the updated records. A right-click inside a range
+keeps it, so the context menu can copy it. A right-click outside selects that record and clears it.
+
+In editable grids, Delete clears every editable cell in the ranges, as in Excel. ag-Grid applies
+each column's `editable` check and `setValueFn`, so the cleared values are ordinary Store
+modifications that `store.revert()` can undo. On macOS, Backspace does the same. Grids have no
+Ctrl+Z, so an app that enables both editing and cell selection should offer a way to revert.
+
 ### Filtering
 
 ```typescript

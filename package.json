@@ -149,6 +149,7 @@
     "@xh/eslint-config": "^8.1.0",
     "@xh/hoist-dev-utils": "^16.1.1",
     "ag-grid-community": "~36.3.0",
+    "ag-grid-enterprise": "~36.3.0",
     "ag-grid-react": "~36.3.0",
     "csstype": "^3.2.3",
     "eslint": "^10.13.0",

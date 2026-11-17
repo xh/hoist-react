@@ -14,6 +14,15 @@
 
 ## 91.0.0-SNAPSHOT - unreleased
 
+### 🎁 New Features
+
+* Added `GridConfig.cellSelection` for Excel-style cell range selection, with ranges readable from
+  the new `GridModel.cellSelectionModel`. Requires ag-Grid Enterprise `CellSelectionModule`.
+
+### ✨ Styles
+
+* Added `--xh-grid-range-bg` and `--xh-grid-range-border-color` to style selected cell ranges.
+
 ## 90.1.0 - 2026-11-13
 
 ### 🎁 New Features

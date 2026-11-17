@@ -20,6 +20,7 @@ import type {
 } from '@xh/hoist/cmp/grid';
 import {Column, ColumnGroup, isColumnSpec} from '@xh/hoist/cmp/grid';
 import {GridFilterModel} from '@xh/hoist/cmp/grid/filter/GridFilterModel';
+import {GridCellSelectionModel} from '@xh/hoist/cmp/grid/GridCellSelectionModel';
 import {fragment, p} from '@xh/hoist/cmp/layout';
 import type {
     Awaitable,
@@ -177,6 +178,17 @@ export interface GridConfig {
 
     /** Config with which to create a GridFilterModel, or `true` to enable default. Desktop only.*/
     filterModel?: GridFilterModelConfig | boolean;
+
+    /**
+     * True to let users select ranges of cells, as in Excel, and copy them with Ctrl/Cmd+C.
+     * Read the ranges from {@link GridModel.cellSelectionModel}. Default false.
+     *
+     * The selected record follows the start cell of the newest range. Requires ag-Grid Enterprise
+     * with `CellSelectionModule` registered. Desktop only. Not supported with `selModel` mode
+     * `multiple` - cell selection is turned off with a warning in that case. Ranges and the
+     * focused cell are always outlined, overriding `showCellFocus: false`.
+     */
+    cellSelection?: boolean;
 
     /**
      * Config for this grid's column chooser, a bare {@link ColChooserMode} to enable the default
@@ -613,6 +625,9 @@ export class GridModel extends HoistModel implements GridLikeModel {
     appData: PlainObject;
 
     @managed filterModel: GridFilterModel;
+
+    /** Cell range selection state - null unless `GridConfig.cellSelection` is set. */
+    @managed cellSelectionModel: GridCellSelectionModel;
     @managed agGridModel: AgGridModel;
     viewRef: RefObject<HTMLDivElement> = createRef();
 
@@ -700,6 +715,7 @@ export class GridModel extends HoistModel implements GridLikeModel {
             showSummary = false,
             selModel,
             filterModel,
+            cellSelection = false,
             colChooserModel = GridModel.defaults.colChooserModel,
             emptyText = GridModel.defaults.emptyText,
             hideEmptyTextBeforeLoad = true,
@@ -840,6 +856,7 @@ export class GridModel extends HoistModel implements GridLikeModel {
         this.selModel = this.parseSelModel(selModel);
         this.filterModel = this.parseFilterModel(filterModel);
         if (this.filterModel) this._defaultState.filter = this.filterModel.filter;
+        this.cellSelectionModel = this.parseCellSelection(cellSelection);
         if (persistWith) initPersist(this, persistWith);
         this.experimental = this.parseExperimental(experimental);
         this.onKeyDown = onKeyDown;
@@ -2253,6 +2270,23 @@ export class GridModel extends HoistModel implements GridLikeModel {
                 xhImpl: true
             })
         );
+    }
+
+    private parseCellSelection(cellSelection: boolean): GridCellSelectionModel {
+        if (!cellSelection) return null;
+        if (XH.isMobileApp) {
+            this.logWarn(
+                'GridConfig.cellSelection is not supported on mobile and will be ignored.'
+            );
+            return null;
+        }
+        if (this.selModel.mode === 'multiple') {
+            this.logWarn(
+                "GridConfig.cellSelection is not supported with selModel mode 'multiple' and will be ignored."
+            );
+            return null;
+        }
+        return new GridCellSelectionModel(this);
     }
 
     private parseFilterModel(filterModel: GridConfig['filterModel']) {
