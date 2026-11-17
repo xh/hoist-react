@@ -5,11 +5,22 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import classNames from 'classnames';
-import {first, includes, isFinite, isFunction, last, maxBy, minBy, partition} from 'lodash';
-import type {ReactElement} from 'react';
+import {
+    first,
+    includes,
+    isFinite,
+    isFunction,
+    isString,
+    last,
+    maxBy,
+    minBy,
+    partition
+} from 'lodash';
+import type {HTMLAttributes, ReactElement, Ref} from 'react';
 
 import {div, path, span, svg} from '@xh/hoist/cmp/layout';
 import {hoistCmp} from '@xh/hoist/core';
+import {sparklineTooltipImpl} from '@xh/hoist/dynamics/desktop';
 import type {
     DomAttrsProps,
     HoistProps,
@@ -18,7 +29,7 @@ import type {
     TestSupportProps
 } from '@xh/hoist/core';
 import {mergeDeep, TEST_ID} from '@xh/hoist/utils/js';
-import {splitLayoutProps} from '@xh/hoist/utils/react';
+import {composeRefs, splitLayoutProps} from '@xh/hoist/utils/react';
 
 import {
     scaleY,
@@ -40,11 +51,11 @@ export type SparklineType = 'line' | 'area' | 'bar';
 export type SparklineMarker = 'first' | 'last' | 'min' | 'max';
 
 /**
- * Function to build a Sparkline's tooltip.
+ * Function to build a Sparkline's tooltip. On desktop, called only once the sparkline is hovered.
  * @param data - the series, as passed to the component.
- * @returns the text to show on hover, or null for no tooltip.
+ * @returns the content to show on hover, or null for no tooltip.
  */
-export type SparklineTooltipFn = (data: number[]) => string;
+export type SparklineTooltipFn = (data: number[]) => ReactElement | string;
 
 export interface SparklineProps extends HoistProps, LayoutProps, TestSupportProps, DomAttrsProps {
     /**
@@ -106,10 +117,13 @@ export interface SparklineProps extends HoistProps, LayoutProps, TestSupportProp
     max?: number;
 
     /**
-     * Native browser tooltip to show on hover, or a function to build it from the data. Default
-     * none.
+     * Tooltip for the whole sparkline, or a function to build it from the data. Default none.
+     *
+     * On desktop, shows in a Blueprint tooltip. It mounts on the first hover, not with each
+     * sparkline, so it is cheap to set on a grid column. Elsewhere, string content shows as a
+     * native browser tooltip and an element shows nothing.
      */
-    tooltip?: string | SparklineTooltipFn;
+    tooltip?: ReactElement | string | SparklineTooltipFn;
 }
 
 /**
@@ -173,15 +187,8 @@ export const [Sparkline, sparkline] = hoistCmp.withFactory<SparklineProps>({
                 },
                 {style: layoutProps},
                 {[TEST_ID]: testId, ...domAttrs}
-            );
-
-        return div({
-            ref,
-            role: 'img',
-            title: isFunction(tooltip) ? tooltip(data) : tooltip,
-            ...divProps,
-            'aria-label': String(domAttrs?.['aria-label'] ?? sparklineLabel(data)),
-            item: div({
+            ),
+            plot = div({
                 className: 'xh-sparkline__plot',
                 items: [
                     svg({
@@ -199,14 +206,37 @@ export const [Sparkline, sparkline] = hoistCmp.withFactory<SparklineProps>({
                     }),
                     ...(isBar ? [] : dots(points, markers))
                 ]
-            })
-        });
+            }),
+            renderRoot = ({ref: targetRef, className, ...rootProps}: RootProps = {}) =>
+                div({
+                    ref: targetRef ? composeRefs(ref, targetRef) : ref,
+                    role: 'img',
+                    ...divProps,
+                    ...rootProps,
+                    className: classNames(divProps.className, className),
+                    'aria-label': String(domAttrs?.['aria-label'] ?? sparklineLabel(data)),
+                    item: plot
+                });
+
+        if (tooltip == null || tooltip === '') return renderRoot();
+
+        const getContent = () => (isFunction(tooltip) ? tooltip(data) : tooltip);
+        if (sparklineTooltipImpl) {
+            return sparklineTooltipImpl({getContent, renderTarget: renderRoot});
+        }
+
+        // No desktop impl, as on mobile: show text as a native tooltip, and an element not at all.
+        const content = getContent();
+        return renderRoot(isString(content) && content ? {title: content} : {});
     }
 });
 
 //------------------
 // Implementation
 //------------------
+/** Props added to the root element: a native title, or those a desktop tooltip needs. */
+type RootProps = HTMLAttributes<HTMLElement> & {ref?: Ref<HTMLElement>};
+
 function lineShapes(points: SparklinePoint[], withArea: boolean): ReactElement[] {
     // A lone value has no line to draw, and shows as a dot instead.
     if (points.length < 2) return [];

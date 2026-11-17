@@ -51,7 +51,8 @@ detailed, step-by-step upgrade instructions with before/after code examples.
   view. Combine with `compact: false` for a free-form canvas where views stay where users put them.
 * Added `Sparkline` to `@xh/hoist/cmp/sparkline`, a small inline trend chart in plain SVG for a
   `StatCard` or a grid cell. It draws a `line`, `area` or `bar` series, colored by `intent` or by
-  trend, with optional `markers` on the first, last, lowest and highest values.
+  trend, with optional `markers` on the first, last, lowest and highest values. An optional
+  `tooltip` for the whole sparkline shows on desktop and mounts only when first hovered.
 * Added `XH.hasRoute()` to check if a route exists. Call it before `XH.router.buildPath()` or
   `buildUrl()` with a name that may not be registered, as both throw for an unknown route.
 

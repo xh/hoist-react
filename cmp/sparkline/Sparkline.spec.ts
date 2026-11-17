@@ -4,11 +4,15 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
+import {span} from '@xh/hoist/cmp/layout';
 import {sparkline} from '@xh/hoist/cmp/sparkline';
 import type {SparklineProps} from '@xh/hoist/cmp/sparkline';
+import * as desktopImpls from '@xh/hoist/dynamics/desktop';
+import {installDesktopImpls} from '@xh/hoist/dynamics/desktop';
 import {initTestAppAsync} from '@xh/hoist/test-support';
-import {render} from '@testing-library/react';
-import {beforeAll, describe, expect, it} from 'vitest';
+import {fireEvent, render, screen} from '@testing-library/react';
+import {createRef} from 'react';
+import {beforeAll, describe, expect, it, vi} from 'vitest';
 
 /**
  * A Sparkline has no text, so its accessible name is all a screen reader gets. Where shapes and
@@ -30,14 +34,81 @@ describe('Sparkline', () => {
         expect(root.getAttribute('aria-label')).toBe('Orders, last 30 days');
     });
 
-    it('shows a tooltip only when given one, as a string or built from the data', () => {
-        const title = (props: Partial<SparklineProps>) =>
-            renderRoot({data: [1, 2], ...props}).getAttribute('title');
+    describe('tooltip', () => {
+        it('adds nothing to the DOM and builds no content until hovered', () => {
+            const tooltip = vi.fn(() => 'Up 4%'),
+                plain = renderRoot({data: [1, 2]}),
+                withTip = renderRoot({data: [1, 2], tooltip});
 
-        expect(title({})).toBeNull();
-        expect(title({tooltip: 'Up 4%'})).toBe('Up 4%');
-        expect(title({tooltip: data => `${data.length} days`})).toBe('2 days');
-        expect(title({tooltip: () => null})).toBeNull();
+            expect(withTip.outerHTML).toBe(plain.outerHTML);
+            expect(tooltip).not.toHaveBeenCalled();
+        });
+
+        it('shows nothing for an empty string', async () => {
+            const root = renderRoot({data: [1, 2], tooltip: ''});
+
+            fireEvent.mouseEnter(root);
+            await new Promise(resolve => setTimeout(resolve, 150));
+            expect(document.querySelector('.xh-sparkline').className).not.toContain(
+                'popover-target'
+            );
+        });
+
+        it('shows on hover in a Blueprint tooltip on desktop, built once from the data', async () => {
+            const tooltip = vi.fn((data: number[]) =>
+                    span({className: 'custom-tip', item: `${data.length} days`})
+                ),
+                root = renderRoot({data: [1, 2], tooltip});
+
+            fireEvent.mouseEnter(root);
+            expect((await screen.findByText('2 days')).className).toBe('custom-tip');
+            expect(root.hasAttribute('title')).toBe(false);
+            expect(tooltip).toHaveBeenCalledTimes(1);
+        });
+
+        it('keeps the sparkline as the tooltip target, with its layout and ref', async () => {
+            const ref = createRef<HTMLDivElement>(),
+                {container} = render(
+                    sparkline({data: [1, 2], tooltip: 'Up 4%', width: '100%', ref})
+                );
+
+            fireEvent.mouseEnter(container.querySelector('.xh-sparkline'));
+            await screen.findByText('Up 4%');
+
+            const root = container.querySelector<HTMLElement>('.xh-sparkline');
+            expect(root.parentElement).toBe(container);
+            expect(root.className).toContain('popover-target');
+            expect(root.style.width).toBe('100%');
+            expect(ref.current).toBe(root);
+        });
+
+        it('shows nothing when the function returns null', async () => {
+            const tooltip = vi.fn(() => null),
+                root = renderRoot({data: [1, 2], tooltip});
+
+            fireEvent.mouseEnter(root);
+            await vi.waitFor(() => expect(tooltip).toHaveBeenCalled());
+
+            expect(document.querySelector('.xh-sparkline').className).not.toContain(
+                'popover-target'
+            );
+        });
+
+        it('falls back to a native title for text without the desktop impl', () => {
+            const installed = {...desktopImpls};
+            installDesktopImpls({...installed, sparklineTooltipImpl: null});
+            try {
+                const title = (props: Partial<SparklineProps>) =>
+                    renderRoot({data: [1, 2], ...props}).getAttribute('title');
+
+                expect(title({tooltip: 'Up 4%'})).toBe('Up 4%');
+                expect(title({tooltip: data => `${data.length} days`})).toBe('2 days');
+                expect(title({tooltip: span('Up 4%')})).toBeNull();
+                expect(title({tooltip: () => null})).toBeNull();
+            } finally {
+                installDesktopImpls(installed);
+            }
+        });
     });
 
     it('draws a line by default, with no fill and no dots', () => {

@@ -26,6 +26,7 @@ import {maskImpl} from '@xh/hoist/desktop/cmp/mask/impl/Mask';
 import {ModalSupportModel} from '@xh/hoist/desktop/cmp/modalsupport';
 import {DashContainerViewModel} from '@xh/hoist/desktop/cmp/dash/container/DashContainerViewModel';
 import {pdfViewerToolbarImpl} from '@xh/hoist/desktop/cmp/pdfviewer/impl/PdfViewerToolbar';
+import {sparklineTooltipImpl} from '@xh/hoist/desktop/cmp/sparkline/impl/SparklineTooltipImpl';
 import {pinPadImpl} from '@xh/hoist/desktop/cmp/pinpad/impl/PinPad';
 import {storeFilterFieldImpl} from '@xh/hoist/desktop/cmp/store/impl/StoreFilterField';
 import {tabContainerImpl} from '@xh/hoist/desktop/cmp/tab/impl/TabContainer';
@@ -72,7 +73,8 @@ installDesktopImpls({
     DynamicTabSwitcherModel,
     cardHeaderImpl,
     statCardInfoImpl,
-    pdfViewerToolbarImpl
+    pdfViewerToolbarImpl,
+    sparklineTooltipImpl
 });
 /**
  * Top-level wrapper for Desktop applications.

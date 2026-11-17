@@ -27,7 +27,7 @@ In scope:
 - Color by `intent` or by trend, dots on the first, last, lowest and highest values, and a
   `baseline`.
 - A fixed scale through `min` and `max`, so that the rows of a grid compare.
-- One tooltip for the whole sparkline.
+- One tooltip for the whole sparkline, as text or an element. See [Tooltip](#tooltip).
 
 Out of scope:
 
@@ -130,6 +130,36 @@ that the reader can compare the rows. By default each sparkline scales to its ow
 - The default height fits a `standard` or `large` grid. Pass a smaller `height`, such as 14, in
   a `compact` or `tiny` grid.
 
+### Tooltip
+
+Set `tooltip` to text, an element, or a function that builds either from the data. The tooltip
+covers the whole sparkline, not one point.
+
+```typescript
+sparkline({data, tooltip: 'Daily orders, last 30 days'})
+```
+
+In a grid column, pass a function. It gets only the data, so close over the row for anything
+else:
+
+```typescript
+renderer: (data, {record}) =>
+    sparkline({
+        data,
+        width: '100%',
+        tooltip: d =>
+            div(
+                strong(record.data.symbol),
+                div(`${fmtNumber(first(d))} to ${fmtNumber(last(d))}`)
+            )
+    })
+```
+
+On desktop the tooltip shows in a Blueprint tooltip. No tooltip mounts until the user first rests
+the pointer on a sparkline, and a function runs only from then on. A sparkline with a tooltip
+renders the same DOM as one without until then, so a tooltip on a grid column costs nothing in rows
+the user does not hover.
+
 ## Styling
 
 Set the `--xh-sparkline-*` variables on `body.xh-app` to change the default size, line width and
@@ -152,6 +182,8 @@ body.xh-app {
 - **`intent` wins over `colorByTrend`.** Set one or the other.
 - **Bars grow from zero by default.** The scale takes zero in, so a bar series far from zero draws
   bars of almost equal height. Set `baseline` or `min` to change that.
+- **An element tooltip shows on desktop only.** Mobile has no hover. It shows text as a native
+  browser tooltip and an element not at all.
 - **The accessible name does not format numbers.** It reads, for example, "Trend: 12 points, from
   101 to 118". Pass an `aria-label` through `domAttrs` to name the metric and round its values.
 
