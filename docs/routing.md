@@ -462,6 +462,9 @@ const state = XH.router.getState();
 const path = XH.router.buildPath('default.other.simpleRouting.recordId', {recordId: 123});
 ```
 
+`buildPath()` and `buildUrl()` throw if no route has the given name. If the name is computed or
+the route is added later, check it first with `XH.routerModel.hasRoute(name)`.
+
 Applications should prefer the `XH` convenience methods for standard navigation and use
 `XH.router` only when they need Router5-specific features.
 

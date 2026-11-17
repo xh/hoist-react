@@ -497,6 +497,35 @@ an encoded `|`. A bookmark to `/app/users/jane@example.com`, for example, no lon
 This applies to path parameters only. See [Route Parameters](../routing.md#route-parameters)
 for a server limit on `/` in path parameters.
 
+**Review calls that build a path or URL for an unknown route.** `XH.router.buildPath()` and
+`XH.router.buildUrl()` now throw if no route has the given name. router5 7 returned `null`. The
+error reads `[route-node][buildPath] '{routeName}' is not defined`, with that literal text in
+place of the name. Typecheck, lint and the build all pass, so the error shows only at runtime.
+A component that builds a link during render now fails, and the app shows its critical error
+screen. A typical case is a menu item whose route the app adds only after its data loads.
+
+Check each call where the route name is computed or can be undefined. Also check code that tests
+the result for `null` to find out if a route exists. That test now throws. Call
+`XH.routerModel.hasRoute(name)` first, as shown below.
+
+Before:
+
+```typescript
+const href = XH.router.buildUrl(item.route);  // null if the route is unknown
+```
+
+After:
+
+```typescript
+const href = XH.routerModel.hasRoute(item.route) ? XH.router.buildUrl(item.route) : null;
+```
+
+**Find affected code:**
+
+```bash
+grep -rnE "router\.(buildPath|buildUrl)\(" client-app/src/
+```
+
 ## Verification Checklist
 
 After completing all steps:
@@ -523,6 +552,8 @@ After completing all steps:
 - [ ] The app's `package.json` declares no `router5` dependency, or declares `~8.0.1`, and
       `getRoutes()` returns `HoistRoute[]`.
 - [ ] Deep links that carry `@`, `=` or `|` in a path parameter still open the right route.
+- [ ] No code calls `buildPath()` or `buildUrl()` with a route name that may not exist, or tests
+      their result for `null`.
 
 ## Reference
 
