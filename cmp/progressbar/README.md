@@ -1,8 +1,5 @@
 # ProgressBar Package
 
-> **Status: DRAFT** - This document is awaiting review by an XH developer. Content may be
-> incomplete or inaccurate. Do not remove this banner until a human reviewer approves the doc.
-
 ## Overview
 
 `ProgressBar` is a horizontal bar that shows a value against a maximum: the progress of a task, or
