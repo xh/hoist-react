@@ -42,6 +42,10 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 
 * Added `XH.hasRoute()` to check if a route exists. Call it before `XH.router.buildPath()` or
   `buildUrl()` with a name that may not be registered, as both throw for an unknown route.
+* Desktop `Slider` now names its handles for assistive technology. It takes the label of its
+  `FormField`, and puts an `aria-label` or `aria-labelledby` set through `domAttrs` on its handles.
+* Added `SliderProps.intent` to color the track fill. It defaults to `'primary'`, and the fill now
+  uses the `--xh-intent-*` colors rather than Blueprint's own blue.
 
 ### 🐞 Bug Fixes
 
@@ -54,6 +58,8 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 * Fixed `TreeMap` showing its empty placeholder for a moment on mount, and when records arrived
   in an empty map. `TreeMapModel` now reads the first records of its store at once. Later
   changes are debounced as before.
+* Fixed several desktop `Slider` display issues: clipped labels and handles, hangs on extreme
+  scales, a missing dark-theme track, and excess height in a standard `Toolbar`.
 * Fixed a crash in a desktop `Toolbar` with `enableOverflowMenu: true` and only one item.
 
 ### ⚙️ Technical

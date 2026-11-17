@@ -6,7 +6,52 @@
  */
 
 .xh-slider {
+  // Blueprint draws the handle flush with the top of the slider, and the wrapper clips its
+  // content. Leave room for the handle's focus ring and shadow.
+  padding-top: 2px;
+  padding-bottom: 2px;
+
+  // The filled part, in the Hoist intent colors rather than Blueprint's.
+  @each $intent in (primary, success, warning, danger) {
+    .bp6-slider-progress.bp6-intent-#{$intent} {
+      background: var(--xh-intent-#{$intent});
+    }
+  }
+
+  // The empty part of the track. Blueprint's dark theme color for it does not show against the
+  // Hoist dark background. A filled part carries an intent class and keeps its color.
+  .bp6-slider-progress:not([class*='bp6-intent-']) {
+    background: var(--xh-slider-track-bg);
+  }
+
   .bp6-slider-label {
     white-space: nowrap;
+  }
+
+  // Fit a labeled slider to the item height of a standard toolbar, so it does not grow the bar.
+  // BP's slider is 40px: a 16px handle, a 4px gap, 16px labels and 4px of empty space below.
+  // Trim to 1px of room above the handle for its focus ring, and labels 1px closer and 2px
+  // shorter. The labels run into the 2px bottom padding, which an unlabeled slider keeps clear
+  // for the shadow below its handle.
+  .xh-toolbar:not(.xh-toolbar--vertical):not(.xh-toolbar--compact) & {
+    padding-top: 1px;
+
+    .bp6-slider:not(.bp6-vertical) {
+      // Toolbar min-size less its padding and border, less this slider's own padding.
+      &:not(.bp6-slider-unlabeled) {
+        height: calc(var(--xh-toolbar-min-size) - var(--xh-spacing-half) * 2 - 1px - 3px);
+      }
+
+      .bp6-slider-label {
+        transform: translate(-50%, 15px);
+        padding: 1px 4px;
+      }
+    }
+  }
+
+  // A compact toolbar caps inputs at its item height, which hides the labels of a labeled slider.
+  // Center an unlabeled one, which is 16px, less the 2px top padding above.
+  .xh-toolbar--compact & .bp6-slider-unlabeled {
+    margin-top: calc((var(--xh-toolbar-compact-item-height) - 16px) / 2 - 2px);
   }
 }

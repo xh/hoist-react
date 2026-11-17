@@ -177,12 +177,6 @@
         }
       }
 
-      // BP's unlabeled slider (labelRenderer: false) is 16px - center it. Labeled ones are 40px
-      // and overhang the bar.
-      &.xh-slider .bp6-slider-unlabeled {
-        margin-top: calc((var(--xh-toolbar-compact-item-height) - 16px) / 2);
-      }
-
       &.xh-select {
         display: flex;
         align-items: center;
