@@ -38,12 +38,7 @@ import './Sparkline.scss';
 
 export type SparklineType = 'line' | 'area' | 'bar';
 
-/**
- * Where a Sparkline takes its color from:
- * - `intent` - the `intent` prop, or the neutral color if unset.
- * - `trend` - the direction of the whole series, from its first value to its last.
- * - `sign` - the side of zero, or of `baseline` if set, of each part of the series.
- */
+/** Where a Sparkline takes its color from - see {@link SparklineProps.colorBy}. */
 export type SparklineColorBy = 'intent' | 'trend' | 'sign';
 
 /** A value to mark with a dot: the first, the last, the lowest or the highest. */
@@ -58,9 +53,9 @@ export type SparklineTooltipFn = (data: number[]) => ReactElement | string;
 
 export interface SparklineProps extends HoistProps, LayoutProps, TestSupportProps, DomAttrsProps {
     /**
-     * The series to draw, in order. A null, undefined or NaN entry is a gap: a line breaks there
-     * and a bar leaves its space empty. An empty series draws an empty box of the same size.
-     * The array is not observed - pass a new one to redraw.
+     * The series to draw, in order. A null, undefined, NaN or infinite entry is a gap: a line
+     * breaks there and a bar leaves its space empty. An empty series draws an empty box of the
+     * same size. The array is not observed - pass a new one to redraw.
      */
     data: number[];
 
@@ -102,7 +97,8 @@ export interface SparklineProps extends HoistProps, LayoutProps, TestSupportProp
 
     /**
      * Value to draw a reference line at, such as zero or a prior close. The scale extends to
-     * take it in, unless `min` or `max` fixes that side. An area fills to it, and bars grow from it.
+     * take it in, unless `min` or `max` fixes that side. An area fills to it, and bars grow
+     * from it.
      */
     baseline?: number;
 

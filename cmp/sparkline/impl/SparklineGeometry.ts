@@ -132,7 +132,7 @@ export function sparklineAreaPath(points: SparklinePoint[], floorY: number = VIE
 /**
  * The runs of a line, cut where it crosses `origin`, so each side can draw in its own color. A
  * cut adds a point on the origin, which ends one segment and starts the next. A value exactly on
- * the origin is itself the cut. Each segment draws as one run, with no gap inside it.
+ * the origin is itself the cut.
  */
 export function sparklineSegments(
     points: SparklinePoint[],
