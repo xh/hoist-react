@@ -29,7 +29,7 @@ describe('TabSwitcher', () => {
             model.activateTab('beta');
 
             await waitFor(() =>
-                expect(strip.scrollBy).toHaveBeenCalledWith({left: 30, behavior: 'auto'})
+                expect(strip.scrollBy).toHaveBeenCalledWith({left: 30, top: 0, behavior: 'auto'})
             );
         });
 
@@ -97,13 +97,15 @@ function renderOverflowSwitcher(betaLeft: number) {
         strip = container.querySelector<HTMLElement>('.xh-tab-switcher__scroll'),
         beta = container.querySelector<HTMLElement>('.bp6-tab[data-tab-id=beta]');
 
-    vi.spyOn(strip, 'getBoundingClientRect').mockReturnValue({left: 0, right: 100} as DOMRect);
-    vi.spyOn(beta, 'getBoundingClientRect').mockReturnValue({
-        left: betaLeft,
-        right: betaLeft + 50
-    } as DOMRect);
+    vi.spyOn(strip, 'getBoundingClientRect').mockReturnValue(rect(0, 100));
+    vi.spyOn(beta, 'getBoundingClientRect').mockReturnValue(rect(betaLeft, betaLeft + 50));
     strip.scrollBy = vi.fn();
     return {model, strip};
+}
+
+/** A 30px-tall box from `left` to `right`, the height of a tab strip and its tabs. */
+function rect(left: number, right: number): DOMRect {
+    return {left, right, top: 0, bottom: 30} as DOMRect;
 }
 
 function createModel(

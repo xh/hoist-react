@@ -10,7 +10,6 @@ import {TabContainerModel} from '@xh/hoist/cmp/tab';
 import type {TabSwitcherMenuContext, TabSwitcherProps} from '@xh/hoist/cmp/tab/Types';
 import {hoistCmp, HoistModel, useLocalModel, uses} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
-import {scrollTabIntoView} from '@xh/hoist/desktop/cmp/tab/impl/TabUtils';
 import '@xh/hoist/desktop/register';
 import {contextMenu} from '@xh/hoist/desktop/cmp/contextmenu';
 import {Icon} from '@xh/hoist/icon';
@@ -30,6 +29,7 @@ import {
     debounced,
     getTestId,
     isDisplayed,
+    scrollIntoViewWithin,
     TEST_ID,
     throwIf
 } from '@xh/hoist/utils/js';
@@ -325,7 +325,7 @@ class TabSwitcherLocalModel extends HoistModel {
         const tab = this.tabEls.find(
             (tab: HTMLElement) => tab.dataset.tabId === this.model.activeTabId
         );
-        if (tab) scrollTabIntoView(tab as HTMLElement, this.el, this.vertical);
+        if (tab) scrollIntoViewWithin(tab as HTMLElement, this.el);
     }
 
     getOverflowIds() {

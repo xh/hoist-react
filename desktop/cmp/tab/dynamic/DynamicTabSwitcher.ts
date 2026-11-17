@@ -13,12 +13,11 @@ import {button} from '@xh/hoist/desktop/cmp/button';
 import {contextMenu} from '@xh/hoist/desktop/cmp/contextmenu';
 import {scroller} from '@xh/hoist/desktop/cmp/tab/dynamic/scroller/Scroller';
 import {ScrollerModel} from '@xh/hoist/desktop/cmp/tab/dynamic/scroller/ScrollerModel';
-import {scrollTabIntoView} from '@xh/hoist/desktop/cmp/tab/impl/TabUtils';
 import {Icon} from '@xh/hoist/icon';
 import {tooltip as bpTooltip, showContextMenu} from '@xh/hoist/kit/blueprint';
 import {dragDropContext, draggable, droppable} from '@xh/hoist/kit/react-beautiful-dnd';
 import {wait} from '@xh/hoist/promise';
-import {consumeEvent, getTestId} from '@xh/hoist/utils/js';
+import {consumeEvent, getTestId, scrollIntoViewWithin} from '@xh/hoist/utils/js';
 import {composeRefs, getLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import {first, isFinite, last} from 'lodash';
@@ -138,11 +137,9 @@ const tabCmp = hoistCmp.factory<TabProps>(({tab, index, localModel, model}) => {
     useEffect(() => {
         if (isActive && showScrollButtons) {
             // Wait a tick for scroll buttons to render, then scroll to the active tab
-            wait().then(() =>
-                scrollTabIntoView(tabRef.current, contentRef.current, isVertical, 'smooth')
-            );
+            wait().then(() => scrollIntoViewWithin(tabRef.current, contentRef.current, 'smooth'));
         }
-    }, [isActive, showScrollButtons, isVertical, contentRef]);
+    }, [isActive, showScrollButtons, contentRef]);
 
     return draggable({
         key: tab.id,

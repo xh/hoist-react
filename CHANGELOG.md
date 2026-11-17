@@ -53,6 +53,8 @@ detailed, step-by-step upgrade instructions with before/after code examples.
   `indeterminate` for work of unknown length.
 * Added `Separator` to `@xh/hoist/cmp/layout`, a horizontal or `vertical` rule that divides
   content, with an optional `label` within the rule.
+* Added `scrollIntoViewWithin` to `@xh/hoist/utils/js`, to scroll a container just far enough to
+  show an element inside it, without moving any scrolling panel or page around the container.
 * Added `isBlankNode` to `@xh/hoist/utils/react`, to test whether a node renders no content, such
   as null, false, a blank string or an array of these.
 * Added `DashCanvasConfig.preventCollision` to block a drag or resize into space taken by another
