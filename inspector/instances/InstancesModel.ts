@@ -378,7 +378,7 @@ export class InstancesModel extends HoistModel {
                     renderer: (v, {record}) => {
                         return record.data.displayGroup === 'Watchlist'
                             ? a({
-                                  item: v,
+                                  children: v,
                                   onClick: () => this.selectInstanceAsync(record.data.instanceXhId)
                               })
                             : v;
@@ -401,7 +401,7 @@ export class InstancesModel extends HoistModel {
                     renderer: (v, {record}) => {
                         const {data} = record;
                         if (data.isGetter && !data.isLoadedGetter) {
-                            return a({item: '(...)', onClick: () => this.loadGetter(record)});
+                            return a({children: '(...)', onClick: () => this.loadGetter(record)});
                         }
                         if (
                             data.isHoistModel ||
@@ -410,7 +410,7 @@ export class InstancesModel extends HoistModel {
                             data.isCube ||
                             data.isView
                         ) {
-                            return a({item: v, onClick: () => this.selectInstanceAsync(v)});
+                            return a({children: v, onClick: () => this.selectInstanceAsync(v)});
                         }
                         return JSON.stringify(trimToDepth(v, 2));
                     }
@@ -632,5 +632,8 @@ const propsGridGroupRenderer = hoistCmp.factory<InstancesModel>(({value, node, m
 
     const firstRecData = node.allLeafChildren[0]?.data.data ?? {},
         {instanceXhId, instanceDisplayName} = firstRecData;
-    return a({item: instanceDisplayName, onClick: () => model.selectInstanceAsync(instanceXhId)});
+    return a({
+        children: instanceDisplayName,
+        onClick: () => model.selectInstanceAsync(instanceXhId)
+    });
 });

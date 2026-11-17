@@ -9,6 +9,7 @@ import type {
     AccountInfo,
     Configuration,
     IPublicClientApplication,
+    PopupRequest,
     SilentRequest
 } from '@azure/msal-browser';
 import {
@@ -16,7 +17,6 @@ import {
     InteractionRequiredAuthError,
     LogLevel
 } from '@azure/msal-browser';
-import type {CommonAuthorizationUrlRequest} from '@azure/msal-common';
 import type {PlainObject, ReactionSpec} from '@xh/hoist/core';
 import {AppState, XH} from '@xh/hoist/core';
 import {Token} from '@xh/hoist/security/Token';
@@ -498,8 +498,10 @@ export class MsalClient extends BaseOAuthClient<MsalClientConfig, MsalTokenSpec>
     }
 }
 
+// Fields shared by the popup, redirect and silent login requests. PopupRequest types them as strictly
+// as any of the three - it requires `scopes`, which SsoSilentRequest leaves optional.
 type AuthRequestCore = Pick<
-    CommonAuthorizationUrlRequest,
+    PopupRequest,
     'domainHint' | 'scopes' | 'extraScopesToConsent' | 'account' | 'loginHint' | 'redirectUri'
 >;
 

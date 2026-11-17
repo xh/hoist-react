@@ -731,7 +731,7 @@ export class ColChooserBucketModel extends HoistModel implements ColChooserDropP
                 : Icon.arrowToRight({className: 'xh-col-chooser__drop-hint__arrow', size: 'sm'});
         return hbox({
             className: 'xh-col-chooser__drop-hint',
-            items: pinned === 'left' ? [arrow, span(text)] : [span(text), arrow]
+            children: pinned === 'left' ? [arrow, span(text)] : [span(text), arrow]
         });
     }
 

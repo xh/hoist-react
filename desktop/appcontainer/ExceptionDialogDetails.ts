@@ -25,7 +25,8 @@ import {dismissButton} from './ExceptionDialog';
 export const exceptionDialogDetails = hoistCmp.factory<ExceptionDialogModel>(({model}) => {
     const {detailsIsOpen, exception, options} = model,
         {requireReload} = options,
-        row = (label, data) => tr(th({item: `${label}:`, style: {textAlign: 'left'}}), td(data));
+        row = (label, data) =>
+            tr(th({children: `${label}:`, style: {textAlign: 'left'}}), td(data));
 
     if (!detailsIsOpen || !exception) return null;
 
@@ -50,10 +51,10 @@ export const exceptionDialogDetails = hoistCmp.factory<ExceptionDialogModel>(({m
         isCloseButtonShown: !requireReload,
         onClose: !requireReload ? () => model.close() : null,
         style: {width: 800},
-        items: [
+        children: [
             dialogBody({
                 className: 'xh-exception-dialog__details',
-                items: [
+                children: [
                     header,
                     pre(errorStr),
                     textArea({

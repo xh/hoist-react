@@ -397,7 +397,7 @@ hbox(
     panel({
         title: 'Widgets',
         modelConfig: {side: 'left', defaultSize: 200, collapsible: true},
-        item: dashCanvasWidgetChooser({dashCanvasModel: canvasModel})
+        children: dashCanvasWidgetChooser({dashCanvasModel: canvasModel})
     }),
     dashCanvas({model: canvasModel})
 );
@@ -784,7 +784,7 @@ const detailPanel = hoistCmp.factory<ReportModel>(({model}) => {
             defaultSize: '30%',
             persistWith: {localStorageKey: 'detailPanelModel'}
         },
-        item: dashContainer()
+        children: dashContainer()
     });
 });
 ```

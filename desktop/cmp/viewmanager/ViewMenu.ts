@@ -26,7 +26,7 @@ export const viewMenu = hoistCmp.factory<ViewManagerLocalModel>({
         return menu({
             className: 'xh-view-manager__menu',
             [TEST_ID]: testId,
-            items: [
+            children: [
                 ...getNavMenuItems(model.parent, testId),
                 menuDivider(),
                 ...parseMenuItems(extraMenuItems),
@@ -71,7 +71,7 @@ function getNavMenuItems(model: ViewManagerModel, testId: string): ReactNode[] {
                             ? Icon.check()
                             : Icon.placeholder(),
                         shouldDismissPopover: false,
-                        items: getGroupedMenuItems(sharedViews[owner], model, testId)
+                        children: getGroupedMenuItems(sharedViews[owner], model, testId)
                     })
                 )
         );
@@ -170,7 +170,7 @@ function groupMenuItem(node: ViewGroupNode, model: ViewManagerModel, testId: str
         text: node.name,
         icon: containsSelected(node, model) ? Icon.check() : Icon.placeholder(),
         shouldDismissPopover: false,
-        items: [
+        children: [
             ...node.children.map(child => groupMenuItem(child, model, testId)),
             ...node.views.map(v => viewMenuItem(v, model, testId))
         ]

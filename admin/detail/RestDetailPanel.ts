@@ -77,22 +77,22 @@ export const restDetailPanel = hoistCmp.factory<RestDetailPanelProps>({
                 // Skip per-selection form work while collapsed.
                 renderMode: 'unmountOnHide'
             },
-            item: hasSelection
+            children: hasSelection
                 ? form({
                       model: formModel,
                       fieldDefaults: {readonlyRenderer: valOrNa},
-                      item: vframe({
+                      children: vframe({
                           className: 'xh-admin-rest-detail__form xh-admin-readonly-form',
                           // Scroll when content outgrows the panel - inline to beat the frame's
                           // own overflow: hidden.
                           overflowY: 'auto',
-                          items: renderForm(record, formModel)
+                          children: renderForm(record, formModel)
                       })
                   })
                 : placeholder(icon, emptyText),
             bbar: toolbar({
                 omit: !hasSelection || readonly,
-                items: [
+                children: [
                     filler(),
                     button({
                         text: 'Edit',

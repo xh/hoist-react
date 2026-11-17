@@ -14,14 +14,14 @@ import './AboutPanel.scss';
 export const aboutPanel = hoistCmp.factory(() =>
     div({
         className: 'xh-admin-about-panel',
-        items: [h2(Icon.info(), 'About this Application'), ...renderTables(), renderBlurb()]
+        children: [h2(Icon.info(), 'About this Application'), ...renderTables(), renderBlurb()]
     })
 );
 
 function renderTables() {
     const get = str => XH.environmentService.get(str),
         row = (label, data) => {
-            data = data || span({item: 'Not available', className: 'xh-text-color-muted'});
+            data = data || span({children: 'Not available', className: 'xh-text-color-muted'});
             return tr(th(label), td(data));
         };
 
@@ -35,7 +35,7 @@ function renderTables() {
 
     return [
         table({
-            item: tbody(
+            children: tbody(
                 row('App Name / Code', `${get('appName')} / ${get('appCode')}`),
                 row('Environment', get('appEnvironment')),
                 row('Instance Name', XH.environmentService.serverInstance),
@@ -57,7 +57,7 @@ function renderTables() {
         }),
         h2(Icon.books(), 'Application and Library Versions'),
         table({
-            item: tbody(
+            children: tbody(
                 row('UI Server', `${get('appVersion')} (build ${get('appBuild')})`),
                 row('Hoist Core', get('hoistCoreVersion')),
                 row('Grails', get('grailsVersion')),
@@ -65,7 +65,7 @@ function renderTables() {
             )
         }),
         table({
-            item: tbody(
+            children: tbody(
                 row('JS Client', `${get('clientVersion')} (build ${get('clientBuild')})`),
                 row('Hoist React', hrVersion),
                 row('React', get('reactVersion')),
@@ -80,7 +80,7 @@ function renderTables() {
 function renderBlurb() {
     return hbox({
         className: 'xh-admin-about-panel__blurb',
-        items: [
+        children: [
             xhLogo(),
             div(
                 p(
@@ -89,13 +89,13 @@ function renderBlurb() {
                         href: 'https://xh.io',
                         target: '_blank',
                         rel: 'noopener noreferrer',
-                        item: 'Extremely Heavy'
+                        children: 'Extremely Heavy'
                     }),
                     '.'
                 ),
                 p(
                     'Please contact ',
-                    a({href: 'mailto:support@xh.io', item: 'support@xh.io'}),
+                    a({href: 'mailto:support@xh.io', children: 'support@xh.io'}),
                     ' with any questions.'
                 )
             )

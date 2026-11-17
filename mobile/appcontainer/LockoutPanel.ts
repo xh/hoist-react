@@ -25,9 +25,9 @@ export const lockoutPanel = hoistCmp.factory<AppContainerModel>({
 
         return viewport({
             overflow: 'auto',
-            item: div({
+            children: div({
                 className: 'xh-lockout-panel',
-                item: div(
+                children: div(
                     appStateModel.accessDeniedMessage ?? '',
                     vspacer(10),
                     `You are logged in as ${user.username} and have the roles [${

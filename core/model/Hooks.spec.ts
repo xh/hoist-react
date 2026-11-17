@@ -56,7 +56,7 @@ describe('useModelLinker', () => {
         render(
             dashboardPanel({
                 modelRef: dashboardRef,
-                item: tradesPanel({title: 'Trades', modelRef: tradesRef})
+                children: tradesPanel({title: 'Trades', modelRef: tradesRef})
             })
         );
 
@@ -77,7 +77,7 @@ describe('useModelLinker', () => {
         const {unmount} = render(
             refreshContextView({
                 model: context,
-                item: dashboardPanel(
+                children: dashboardPanel(
                     tradesPanel({modelRef: ownedRef}),
                     tradesView({model: passedIn})
                 )
@@ -223,7 +223,7 @@ describe('useContextModel', () => {
             chart = new ChartModel();
         onTestFinished(() => XH.safeDestroy(report, chart));
 
-        const {container} = render(reportPanel({model: report, item: chartTitle()}));
+        const {container} = render(reportPanel({model: report, children: chartTitle()}));
         expect(container.textContent).toBe('None');
 
         act(() => {
@@ -300,7 +300,7 @@ class ReportModel extends HoistModel {
 
 const dashboardPanel = hoistCmp.factory<DashboardModel>({
     model: creates(DashboardModel),
-    render: ({children}) => div({items: children})
+    render: ({children}) => div({children})
 });
 
 const tradesPanel = hoistCmp.factory<TradesModel>({
@@ -323,5 +323,5 @@ const tradesView = hoistCmp.factory<TradesModel>({
 
 const reportPanel = hoistCmp.factory<ReportModel>({
     model: uses(ReportModel),
-    render: ({children}) => div({items: children})
+    render: ({children}) => div({children})
 });

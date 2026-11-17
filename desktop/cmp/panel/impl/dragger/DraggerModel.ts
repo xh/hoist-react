@@ -312,7 +312,7 @@ export class DraggerModel extends HoistModel {
      *  separate document and cannot listen for events from main document.
      */
     private setIframePointerEvents(v: 'none' | 'auto') {
-        for (const el of document.getElementsByTagName('iframe')) {
+        for (const el of Array.from(document.getElementsByTagName('iframe'))) {
             el.style.pointerEvents = v;
         }
     }

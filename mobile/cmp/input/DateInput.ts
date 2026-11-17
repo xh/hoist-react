@@ -151,7 +151,7 @@ const cmp = hoistCmp.factory<DateInputModel>(({model, className, ...props}, ref)
             ...layoutProps,
             width: withDefault(width, null)
         },
-        items: [
+        children: [
             leftIcon,
             div({
                 className: classNames(
@@ -162,7 +162,7 @@ const cmp = hoistCmp.factory<DateInputModel>(({model, className, ...props}, ref)
                 tabIndex: props.tabIndex,
                 [TEST_ID]: props.testId,
                 ...props.domAttrs,
-                item: model.formattedRenderValue,
+                children: model.formattedRenderValue,
                 onClick: () => model.openPicker()
             }),
             clearButton(),
@@ -170,7 +170,7 @@ const cmp = hoistCmp.factory<DateInputModel>(({model, className, ...props}, ref)
                 box({
                     className: 'xh-date-input__picker-button',
                     onClick: () => model.openPicker(),
-                    item: rightIcon
+                    children: rightIcon
                 }),
             pickerDialog()
         ]

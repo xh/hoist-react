@@ -25,7 +25,7 @@ export const jsonBlobPanel = hoistCmp.factory({
     render({model}) {
         return hframe(
             panel({
-                item: restGrid({
+                children: restGrid({
                     extraToolbarItems: () => [
                         button({
                             icon: Icon.diff(),

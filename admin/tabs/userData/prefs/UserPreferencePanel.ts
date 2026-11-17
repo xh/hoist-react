@@ -25,7 +25,7 @@ export const userPreferencePanel = hoistCmp.factory({
     render({model}) {
         return hframe(
             panel({
-                items: [
+                children: [
                     restGrid({
                         extraToolbarItems: () => [
                             button({

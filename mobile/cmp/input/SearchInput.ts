@@ -96,8 +96,8 @@ const cmp = hoistCmp.factory<SearchInputModel>(({model, className, ...props}, re
             ...layoutProps,
             width: withDefault(width, null)
         },
-        items: [
-            div({className: 'xh-search-input__icon', item: Icon.search()}),
+        children: [
+            div({className: 'xh-search-input__icon', children: Icon.search()}),
             input({
                 className: 'xh-search-input__input',
                 type: 'search',

@@ -49,7 +49,7 @@ export const [TabContainer, tabContainer] = hoistCmp.withFactory<TabContainerPro
     render(props, ref) {
         return refreshContextView({
             model: props.model.refreshContextModel,
-            item: XH.isMobileApp
+            children: XH.isMobileApp
                 ? mobileTabContainerImpl(props, ref)
                 : desktopTabContainerImpl(props, ref)
         });

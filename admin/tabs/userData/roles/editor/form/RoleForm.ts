@@ -31,26 +31,26 @@ export const roleForm = hoistCmp.factory({
     render({className, model}) {
         return vframe({
             className,
-            items: [
+            children: [
                 vbox({
                     className: `${className}__fields`,
-                    item: form({
+                    children: form({
                         fieldDefaults: {
                             commitOnChange: true,
                             minimal: true
                         },
-                        items: [
+                        children: [
                             hbox(
                                 formField({
                                     field: 'name',
                                     flex: 1,
-                                    item: textInput({autoFocus: true}),
+                                    children: textInput({autoFocus: true}),
                                     readonlyRenderer: v => strong(v)
                                 }),
                                 formField({
                                     field: 'category',
                                     flex: 1,
-                                    item: select({
+                                    children: select({
                                         placeholder: null,
                                         enableClear: true,
                                         enableCreate: true,
@@ -60,7 +60,7 @@ export const roleForm = hoistCmp.factory({
                             ),
                             formField({
                                 field: 'notes',
-                                item: textArea({height: 100})
+                                children: textArea({height: 100})
                             })
                         ]
                     })
@@ -74,7 +74,7 @@ export const roleForm = hoistCmp.factory({
 const assignments = hoistCmp.factory<RoleFormModel>(({model}) =>
     hframe({
         className: `xh-admin-role-form__assignments`,
-        items: [
+        children: [
             assignmentsPanel({
                 entity: 'USER',
                 omit: !model.moduleConfig?.userAssignmentSupported && model.usersGridModel.empty
@@ -120,7 +120,7 @@ const assignmentsPanel = hoistCmp.factory<AssignmentsPanelProps>({
             headerItems: [infoIcon({entity}), hspacer(2)],
             tbar: toolbar({
                 compact: true,
-                items: [
+                children: [
                     recordActionBar({
                         actions: [model.ADD_ASSIGNMENT_ACTION],
                         gridModel,
@@ -130,7 +130,7 @@ const assignmentsPanel = hoistCmp.factory<AssignmentsPanelProps>({
                     helpText ? span(helpText) : null
                 ]
             }),
-            item: grid({model: gridModel}),
+            children: grid({model: gridModel}),
             bbar: bbar({entity, gridModel}),
             loadingIndicator: forDirGroup && model.directoryGroupLookupTask
         });
@@ -154,7 +154,7 @@ const bbar = hoistCmp.factory<AssignmentsPanelProps & {gridModel: GridModel}>(
         } else {
             return toolbar({
                 compact: true,
-                items: [
+                children: [
                     gridFindField({gridModel, flex: 1, width: null, omit: entity !== 'USER'}),
                     entity === 'USER' ? '-' : filler(),
                     gridCountLabel({gridModel, unit: entity.replace('_', ' ').toLowerCase()})
@@ -181,7 +181,7 @@ const infoIcon = hoistCmp.factory<AssignmentsPanelProps>({
                 break;
         }
         return tooltip({
-            item: Icon.info(),
+            children: Icon.info(),
             content: tooltipText,
             omit: !tooltipText
         });

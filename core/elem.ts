@@ -5,7 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import type {TEST_ID} from '@xh/hoist/utils/js';
-import {castArray, isFunction, isNil, isPlainObject} from 'lodash';
+import {castArray, isFunction, isNil, isPlainObject, isString} from 'lodash';
 import type {ComponentType, JSX, Key, ReactElement, ReactNode} from 'react';
 import {createElement as reactCreateElement, isValidElement} from 'react';
 import type {PlainObject, Thunkable} from './types/Types';
@@ -18,29 +18,39 @@ import type {PlainObject, Thunkable} from './types/Types';
  * choice.)
  *
  * The core enhancement to this format over jsx is it expects child elements and props to be
- * specified in a single bundle, with children placed within an `item` or `items` key. This allows
- * developers to write declarative, multi-level element trees in a concise yet highly-readable
- * style.  An additional feature is the minor-but-useful support for an `omit` property, which
- * allows element subtrees to be declaratively excluded from rendering if a given condition is met.
- * This avoids the need for the common, but clunky React practice of wrapping elements in ternary
- * statements to accomplish conditional rendering.
+ * specified in a single bundle, with children placed within the standard React `children` key.
+ * This allows developers to write declarative, multi-level element trees in a concise yet
+ * highly-readable style. An additional feature is the minor-but-useful support for an `omit`
+ * property, which allows element subtrees to be declaratively excluded from rendering if a given
+ * condition is met. This avoids the need for the common, but clunky React practice of wrapping
+ * elements in ternary statements to accomplish conditional rendering.
  *
- * @see {@link createElement} - That function is a thin-wrapper over `React.createChildren` that
+ * The legacy `item` and `items` keys are still accepted as aliases for `children`. Prefer
+ * `children` in new code - the aliases are planned for removal in a future major release.
+ *
+ * @see {@link createElement} - That function is a thin-wrapper over `React.createElement` that
  * consumes this format.
  *
  * Finally, note that if a React Component has its own props of `item`, `items`, or `omit`, the
- * props may be specified in this object with a `$` prefix (e.g. `$item`) to avoid conflicting
+ * props may be specified in this object with a `$` prefix (e.g. `$items`) to avoid conflicting
  * with this API.  The '$' will be stripped from the prop name before passing it along to the
  * underlying component.
  */
-export type ElementSpec<P> = Omit<P, 'items' | 'item' | 'omit'> & {
+export type ElementSpec<P> = Omit<P, 'children' | 'items' | 'item' | 'omit'> & {
     //---------------------------------------------
     // Enhanced attributes to support element factory
     //---------------------------------------------
-    /** Child Element(s). Equivalent provided as Rest Arguments to React.createElement.*/
+    /**
+     * Child Element(s) - a single node or an array. Provided as Rest Arguments to
+     * `React.createElement`, so arrays do not require keys. Typed as the component's own
+     * `children` prop when it declares one (e.g. a render function).
+     */
+    children?: 'children' extends keyof P ? P['children'] : ReactNode;
+
+    /** Legacy alias for `children`. Prefer `children` in new code. */
     items?: ReactNode;
 
-    /**  Equivalent to `items`, offered for code clarity when only one child is needed. */
+    /** Legacy alias for `children`. Prefer `children` in new code. */
     item?: ReactNode;
 
     /** True to exclude the Element. */
@@ -82,7 +92,7 @@ export type ElementFactory<P = any> = ((arg: ElementSpec<P>) => ReactElement<P, 
 /**
  * Create a React Element from a Component type and an ElementSpec.
  *
- * This function is a thin-wrapper over `React.createChildren` that
+ * This function is a thin-wrapper over `React.createElement` that
  * consumes the ElementSpec format.
  *
  * @param component - React Component or string representing an HTML element.
@@ -92,14 +102,17 @@ export function createElement<C extends ReactComponent>(
     component: C,
     spec: ElementSpec<PropType<C>>
 ): ReactElement<PropType<C>, C> {
-    const {omit, item, items, ...props} = spec;
+    const {omit, children, item, items, ...props} = spec;
 
     // 1) Convenience omission syntax.
     if (isFunction(omit) ? omit() : omit) return null;
 
-    // 2) Read children from item[s] config.
-    const itemConfig = item ?? items,
-        children = isNil(itemConfig) ? [] : castArray(itemConfig);
+    // 2) Read children, accepting the legacy item[s] aliases.
+    if (!isNil(children) && (!isNil(item) || !isNil(items))) {
+        warnMixedChildren(component);
+    }
+    const childSpec = (children ?? item ?? items) as ReactNode,
+        childArgs = isNil(childSpec) ? [] : castArray(childSpec);
 
     // 3) Recapture API props that needed '$' prefix to avoid conflicts.
     ['$omit', '$item', '$items'].forEach(key => {
@@ -109,7 +122,7 @@ export function createElement<C extends ReactComponent>(
         }
     });
 
-    return reactCreateElement(component, props, ...children) as ReactElement<PropType<C>, C>;
+    return reactCreateElement(component, props, ...childArgs) as ReactElement<PropType<C>, C>;
 }
 
 /**
@@ -128,16 +141,33 @@ export function elementFactory(component: ReactComponent): ElementFactory {
 //------------------------
 // Implementation
 //------------------------
+const warnedMixedChildren = new Set<ReactComponent>();
+
+/**
+ * Warn once per component when a spec sets `children` and a legacy `item` / `items` key. Only
+ * `children` is rendered - typically a spread brought in a key the code did not expect.
+ */
+function warnMixedChildren(component: ReactComponent) {
+    if (warnedMixedChildren.has(component)) return;
+    warnedMixedChildren.add(component);
+    const name = isString(component)
+        ? component
+        : ((component as any).displayName ?? (component as any).name);
+    console.warn(
+        `Element spec for "${name}" sets both \`children\` and a legacy \`item\` / \`items\` key. ` +
+            'Only `children` is rendered - use `children` alone.'
+    );
+}
 function normalizeArgs(args: any[]) {
     const len = args.length;
     if (len === 0) return {};
     if (len === 1) {
         const arg = args[0];
         if (isPlainObject(arg) && !isValidElement(arg)) return arg;
-        return {items: arg};
+        return {children: arg};
     }
     // Assume > 1 args are children.
-    return {items: args};
+    return {children: args};
 }
 
 type PropType<C> =

@@ -39,7 +39,7 @@ import {panel} from '@xh/hoist/desktop/cmp/panel';
 panel({
     title: 'User Details',
     icon: Icon.user(),
-    item: userForm()
+    children: userForm()
 })
 
 // Panel wrapping a grid with toolbars
@@ -47,8 +47,8 @@ panel({
     title: 'Orders',
     icon: Icon.list(),
     tbar: [refreshButton(), filler(), storeFilterField()],
-    item: grid(),
-    bbar: toolbar({compact: true, items: [filler(), colChooserButton(), exportButton()]})
+    children: grid(),
+    bbar: toolbar({compact: true, children: [filler(), colChooserButton(), exportButton()]})
 })
 ```
 
@@ -95,21 +95,21 @@ classes — without introducing extra wrapper elements or CSS overrides. Pass `c
 panel({
     title: 'Details',
     contentBoxProps: {padding: true},
-    item: detailForm()
+    children: detailForm()
 })
 
 // Horizontal content layout
 panel({
     title: 'Comparison',
     contentBoxProps: {flexDirection: 'row', gap: 5},
-    items: [leftPane(), rightPane()]
+    children: [leftPane(), rightPane()]
 })
 
 // Scrollable content (via contentBoxProps)
 panel({
     title: 'Log',
     contentBoxProps: {overflow: 'auto'},
-    item: logOutput()
+    children: logOutput()
 })
 ```
 
@@ -123,8 +123,8 @@ to `contentBoxProps: {overflowY: 'auto'}` but reads more naturally for the commo
 
 ```typescript
 // These are equivalent:
-panel({scrollable: true, item: longForm()})
-panel({contentBoxProps: {overflowY: 'auto'}, item: longForm()})
+panel({scrollable: true, children: longForm()})
+panel({contentBoxProps: {overflowY: 'auto'}, children: longForm()})
 ```
 
 When both `scrollable` and `contentBoxProps.overflowY` are specified, `scrollable` takes
@@ -161,7 +161,7 @@ Use `compact: true` for reduced-height toolbars. This can be used to keep them m
 panel({
     bbar: toolbar({
         compact: true,
-        items: [filler(), colChooserButton(), exportButton()]
+        children: [filler(), colChooserButton(), exportButton()]
     })
 })
 ```
@@ -205,10 +205,10 @@ const reportPanel = hoistCmp.factory<ReportModel>({
                 '-',
                 storeFilterField()
             ],
-            item: grid(),
+            children: grid(),
             bbar: toolbar({
                 compact: true,
-                items: [
+                children: [
                     filler(),
                     expandToLevelButton(),
                     colChooserButton(),
@@ -240,13 +240,13 @@ has load support. This is the simplest and most common pattern:
 // Model implements doLoadAsync via @managed LoadSupport
 panel({
     mask: 'onLoad',
-    item: grid()
+    children: grid()
 })
 
 // Bind to a specific or multiple tasks for more targeted masking
 panel({
     mask: [model.saveTaskObserver, model.deleteTaskObserver],
-    item: grid()
+    children: grid()
 })
 ```
 
@@ -276,7 +276,7 @@ above the bottom toolbar instead.
 panel({
     title: 'Positions',
     tbar: [storeFilterField(), filler(), refreshButton()],
-    item: grid(),
+    children: grid(),
     // Conditional banners - null entries are ignored.
     banner: [
         model.isStale
@@ -349,7 +349,7 @@ panel({
         side: 'right',
         defaultSize: 380
     },
-    item: detailView()
+    children: detailView()
 })
 
 // Bottom detail panel with percentage sizing
@@ -363,7 +363,7 @@ panel({
         defaultSize: '30%',
         persistWith: {localStorageKey: 'myDetailPanelModel'}
     },
-    item: dashContainer()
+    children: dashContainer()
 })
 
 // Constrained resize range
@@ -374,7 +374,7 @@ panel({
         minSize: 200,
         maxSize: 600
     },
-    item: navTree()
+    children: navTree()
 })
 ```
 
@@ -452,7 +452,7 @@ panel({
     collapsedIcon: Icon.detail(),
     compactHeader: true,
     modelConfig: {collapsible: true, side: 'bottom', defaultSize: '30%'},
-    item: dashContainer()
+    children: dashContainer()
 })
 ```
 
@@ -466,14 +466,14 @@ the header's padding and font size, distinguishing it from primary panels with f
 panel({
     title: 'Positions Report',
     icon: Icon.portfolio(),
-    item: hframe(
+    children: hframe(
         gridPanel(),
         // Secondary panel — compact header
         panel({
             title: 'Contract Details',
             compactHeader: true,
             modelConfig: {collapsible: true, side: 'right', defaultSize: 400},
-            item: detailGrid()
+            children: detailGrid()
         })
     )
 })
@@ -493,7 +493,7 @@ panel({
         relativeTimestamp({prefix: 'Refreshed', timestamp: model.lastRefreshed}),
         select({bind: 'client', options: clientNames})
     ],
-    item: grid()
+    children: grid()
 })
 ```
 
@@ -513,7 +513,7 @@ panel({
         defaultSize: '30%',
         persistWith: {localStorageKey: 'myDetailPanelModel'}
     },
-    item: detailView()
+    children: detailView()
 })
 ```
 
@@ -527,7 +527,7 @@ panel({
         defaultSize: 380,
         persistWith: {...model.persistWith, path: 'commentsPanel'}
     },
-    item: commentView()
+    children: commentView()
 })
 ```
 
@@ -549,9 +549,9 @@ panel({
     },
     bbar: toolbar({
         compact: true,
-        items: [filler(), modalToggleButton()]
+        children: [filler(), modalToggleButton()]
     }),
-    item: chart({model: chartModel})
+    children: chart({model: chartModel})
 })
 
 // Object config — custom sizing
@@ -562,7 +562,7 @@ panel({
         side: 'bottom',
         collapsible: false
     },
-    item: rateSheetForm()
+    children: rateSheetForm()
 })
 ```
 
@@ -628,13 +628,13 @@ linked to the panel has LoadSupport enabled, or bind to a specific `TaskObserver
 // ❌ Don't: model has no doLoadAsync — mask: 'onLoad' will not work
 panel({
     mask: 'onLoad',
-    item: grid()
+    children: grid()
 })
 
 // ✅ Do: bind to a specific TaskObserver when the model lacks LoadSupport
 panel({
     mask: model.saveTask,
-    item: grid()
+    children: grid()
 })
 ```
 
@@ -652,7 +652,7 @@ then supply its own control to expand it, such as a toolbar toggle.
 // ❌ Avoid: no title or collapsedTitle - collapses to an unlabeled strip
 panel({
     modelConfig: {collapsible: true, side: 'right', defaultSize: 400},
-    item: detailView()
+    children: detailView()
 })
 
 // ✅ Better: collapsedTitle ensures the panel is identifiable when collapsed
@@ -660,7 +660,7 @@ panel({
     collapsedTitle: 'Details',
     collapsedIcon: Icon.detail(),
     modelConfig: {collapsible: true, side: 'right', defaultSize: 400},
-    item: detailView()
+    children: detailView()
 })
 ```
 

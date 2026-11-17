@@ -41,12 +41,12 @@ export const topLevelDropStrip = hoistCmp.factory<GridModel>({
             ref: impl.ref,
             className: classNames(className, mode !== 'rest' ? `${className}--${mode}` : null),
             'aria-disabled': blocked,
-            items: [
+            children: [
                 open
                     ? Icon.folderOpen({className: `${className}__icon`})
                     : Icon.folder({className: `${className}__icon`}),
                 span('Top Level'),
-                span({className: `${className}__hint`, item: hint, omit: !hint})
+                span({className: `${className}__hint`, children: hint, omit: !hint})
             ]
         });
     }

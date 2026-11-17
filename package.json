@@ -58,7 +58,6 @@
   "dependencies": {
     "@auth0/auth0-spa-js": "~2.30.0",
     "@azure/msal-browser": "~5.29.0",
-    "@azure/msal-common": "~16.16.0",
     "@blueprintjs/core": "^6.21.0",
     "@codemirror/commands": "^6.11.1",
     "@codemirror/language": "^6.13.1",

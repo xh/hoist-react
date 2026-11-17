@@ -38,7 +38,7 @@ export const [DashCanvasAddViewButton, dashCanvasAddViewButton] =
             const menuItems = createViewMenuItems({dashCanvasModel});
             return popover({
                 interactionKind: 'click',
-                item: button({
+                children: button({
                     ref,
                     icon: withDefault(icon, Icon.add()),
                     text: withDefault(text, dashCanvasModel.addViewButtonText),

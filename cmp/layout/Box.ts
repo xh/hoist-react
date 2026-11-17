@@ -49,7 +49,7 @@ export const [Box, box] = hoistCmp.withFactory<BoxComponentProps>({
         return div({
             ref,
             ...restProps,
-            items: children
+            children
         });
     }
 });

@@ -28,7 +28,7 @@ export const versionBar = hoistCmp.factory({
             flex: 'none',
             className: `xh-version-bar xh-version-bar--${env.toLowerCase()}`,
             testId: 'xh-version-bar',
-            items: [
+            children: [
                 [env, version, tabId].join(' • '),
                 button({
                     icon: Icon.info(),

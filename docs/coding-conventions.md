@@ -535,13 +535,13 @@ own app-specific prefix.
 ### Element Factories vs JSX
 
 Hoist strongly prefers element factory calls over JSX. Factories are functions that take a config
-object with an `item`/`items` key for children:
+object with a `children` key for children:
 
 ```typescript
 // ✅ Preferred: Element factory style
 panel({
     title: 'Users',
-    items: [grid({model: gridModel})],
+    children: [grid({model: gridModel})],
     bbar: toolbar(button({text: 'Save'}))
 })
 
@@ -557,12 +557,10 @@ Factories also accept children as direct arguments when no other props are neede
 hbox(leftPanel(), rightPanel())
 ```
 
-**`items` in, `children` out**: `item`/`items` is Hoist's *calling* API. When authoring a
-component, the render function receives those values as the standard React `children` prop, not as
-`items`. The canonical container pattern is to destructure `children` from props and pass them on
-to an inner factory as `items`. See
-[Authoring a Container Component](../core/README.md#authoring-a-container-component-items-in-children-out)
-in the core README for the full explanation.
+Use `children`, not the legacy `item` / `items` aliases. A container component destructures
+`children` from props and passes it on as `children` to an inner factory. See
+[Authoring a Container Component](../core/README.md#authoring-a-container-component) in the core
+README.
 
 ## Export Patterns
 

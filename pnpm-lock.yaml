@@ -14,9 +14,6 @@ importers:
       '@azure/msal-browser':
         specifier: ~5.29.0
         version: 5.29.0
-      '@azure/msal-common':
-        specifier: ~16.16.0
-        version: 16.16.1
       '@blueprintjs/core':
         specifier: ^6.21.0
         version: 6.22.0(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)

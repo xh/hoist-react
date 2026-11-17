@@ -47,7 +47,12 @@ export const [Menu, menu] = hoistCmp.withFactory<MenuProps, MenuDefaults>({
         const items = parseMenuItems(menuItems, {context});
         return isEmpty(items)
             ? null
-            : bpMenu({className, items, onContextMenu: swallowContextMenu, [TEST_ID]: testId});
+            : bpMenu({
+                  className,
+                  children: items,
+                  onContextMenu: swallowContextMenu,
+                  [TEST_ID]: testId
+              });
     }
 });
 

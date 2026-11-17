@@ -72,16 +72,16 @@ export const [TreeMap, treeMap] = hoistCmp.withFactory<TreeMapProps>({
             layoutProps.flex = 1;
         }
 
-        // Render child item - note this will NOT render the actual HighCharts viz - only a shell
+        // Render children - note this will NOT render the actual HighCharts viz - only a shell
         // div to hold one. The chart itself will be rendered once the shell's ref resolves.
         const {error, empty, emptyText, isMasking} = model;
-        let items;
+        let children;
         if (error) {
-            items = errorMessage({error});
+            children = errorMessage({error});
         } else if (empty) {
-            items = placeholder(emptyText);
+            children = placeholder(emptyText);
         } else {
-            items = [
+            children = [
                 div({
                     className: 'xh-treemap__chart-holder',
                     ref: impl.chartRef
@@ -89,7 +89,7 @@ export const [TreeMap, treeMap] = hoistCmp.withFactory<TreeMapProps>({
                 div({
                     omit: !isMasking,
                     className: 'xh-treemap__mask-holder',
-                    item: mask({isDisplayed: true, spinner: true})
+                    children: mask({isDisplayed: true, spinner: true})
                 })
             ];
         }
@@ -99,7 +99,7 @@ export const [TreeMap, treeMap] = hoistCmp.withFactory<TreeMapProps>({
             className: classNames(className, `xh-treemap--${impl.theme}`),
             ref,
             testId,
-            items
+            children
         });
     }
 });

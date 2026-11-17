@@ -105,7 +105,7 @@ export const AppContainer = hoistCmp({
                     },
                     errorRenderer: () => null
                 },
-                item: viewForState({model})
+                children: viewForState({model})
             }),
             // Modal component helpers rendered here at top-level to support display of messages
             // and exceptions at any point during the app lifecycle.
@@ -162,7 +162,7 @@ const appContainerView = hoistCmp.factory({
                 bannerList(),
                 refreshContextView({
                     model: model.refreshContextModel,
-                    item: frame(createElement(appSpec.componentClass, {model: appModel}))
+                    children: frame(createElement(appSpec.componentClass, {model: appModel}))
                 }),
                 inspectorPanel(),
                 versionBar()
@@ -195,7 +195,7 @@ const bannerList = hoistCmp.factory<AppContainerModel>({
         const {bannerModels} = model.bannerSourceModel;
         if (isEmpty(bannerModels)) return null;
         return fragment({
-            items: bannerModels.map(model => appBanner({model}))
+            children: bannerModels.map(model => appBanner({model}))
         });
     }
 });

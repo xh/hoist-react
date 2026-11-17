@@ -30,12 +30,12 @@ export const groupField = hoistCmp.factory<GroupFieldModel>({
 
         return hbox({
             className: 'xh-view-manager__group-field',
-            items: [
+            children: [
                 formField({
                     field: 'group',
                     label: 'Group',
                     flex: 1,
-                    item: select({
+                    children: select({
                         options,
                         optionRenderer: (opt: GroupPathOption) => optionDisplay(opt, value),
                         valueRenderer: (opt: GroupPathOption) => groupValueDisplay(opt.value),
@@ -65,7 +65,7 @@ const newGroupButton = hoistCmp.factory<GroupFieldModel>({
             // the popover transition and lands only intermittently.
             autoFocus: false,
             onOpened: el => el.querySelector('input')?.focus(),
-            item: button({
+            children: button({
                 icon: Icon.add(),
                 tooltip: 'Create a new group',
                 outlined: true
@@ -83,7 +83,7 @@ const newGroupForm = hoistCmp.factory<GroupFieldModel>({
 
         return vbox({
             className: 'xh-view-manager__new-group-popover__form',
-            items: [
+            children: [
                 textInput({
                     model,
                     bind: 'newGroupName',
@@ -117,12 +117,12 @@ function optionDisplay(opt: GroupPathOption, selectedValue: string): ReactNode {
 
     return hbox({
         alignItems: 'center',
-        items: [
+        children: [
             // Mirrors the left gutter of Select's default option renderer, which custom
             // renderers do not inherit.
             div({
                 style: {minWidth: 25, textAlign: 'center'},
-                item: value === selectedValue ? Icon.check({size: 'sm'}) : null
+                children: value === selectedValue ? Icon.check({size: 'sm'}) : null
             }),
             value === TOP_LEVEL_GROUP_VALUE ? topLevelLabel() : groupPathBreadcrumb({path: value})
         ]

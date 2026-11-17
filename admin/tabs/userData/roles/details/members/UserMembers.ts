@@ -26,7 +26,7 @@ export const userMembers = hoistCmp.factory({
     render({className}) {
         return panel({
             className,
-            item: grid(),
+            children: grid(),
             tbar: toolbar(span('Users below have this role.'), filler(), gridFindField())
         });
     }
@@ -67,7 +67,7 @@ class UserMembersModel extends BaseMembersModel {
                     'roles-renderer__role',
                     !isThisRole && 'roles-renderer__role--effective'
                 ),
-                item: isThisRole ? (directoryGroupDisplayName ?? '<Direct>') : role,
+                children: isThisRole ? (directoryGroupDisplayName ?? '<Direct>') : role,
                 title: isThisRole ? (directoryGroup ?? '<Direct>') : role,
                 minimal: true,
                 onDoubleClick: () => !isThisRole && this.roleModel.selectRoleAsync(role)
@@ -76,7 +76,7 @@ class UserMembersModel extends BaseMembersModel {
 
         return hbox({
             className: 'roles-renderer',
-            items: uniqBy(tagSpecs, 'item').map(it => tag(it))
+            children: uniqBy(tagSpecs, 'children').map(it => tag(it))
         });
     };
 

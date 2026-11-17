@@ -225,7 +225,7 @@ const cmp = hoistCmp.factory<RadioCardInputModel>(({model, className, ...props},
         },
         [TEST_ID]: testId,
         ...domAttrs,
-        items: normalizedOptions.map((opt, idx) => {
+        children: normalizedOptions.map((opt, idx) => {
             const isActive = opt.value === renderValue,
                 cardDisabled = isDisabled || opt.disabled;
 
@@ -244,15 +244,15 @@ const cmp = hoistCmp.factory<RadioCardInputModel>(({model, className, ...props},
                 tabIndex: cardDisabled ? null : opt === tabStopOption ? tabIndex : -1,
                 onClick: () => model.selectOption(opt),
                 [TEST_ID]: getTestId(testId, String(opt.value)),
-                items: [
+                children: [
                     opt.preview != null
-                        ? div({className: 'xh-radio-card-input__preview', item: opt.preview})
+                        ? div({className: 'xh-radio-card-input__preview', children: opt.preview})
                         : null,
-                    div({className: 'xh-radio-card-input__label', item: opt.label}),
+                    div({className: 'xh-radio-card-input__label', children: opt.label}),
                     opt.description != null
                         ? div({
                               className: 'xh-radio-card-input__description',
-                              item: opt.description
+                              children: opt.description
                           })
                         : null
                 ]

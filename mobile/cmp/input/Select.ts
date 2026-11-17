@@ -534,16 +534,16 @@ class SelectInputModel extends HoistInputModel {
 
         return isEqual(this.externalValue, opt.value)
             ? hbox({
-                  items: [
+                  children: [
                       div({
                           style: {minWidth: 25, textAlign: 'center'},
-                          item: Icon.check({size: 'sm'})
+                          children: Icon.check({size: 'sm'})
                       }),
                       span(opt.label)
                   ],
                   paddingLeft: 0
               })
-            : div({item: opt.label, style: {paddingLeft: 25}});
+            : div({children: opt.label, style: {paddingLeft: 25}});
     };
 
     //------------------------
@@ -690,8 +690,8 @@ const cmp = hoistCmp.factory<SelectInputModel>(({model, className, ...props}, re
             fullscreenWrapper({
                 model,
                 title: props.title,
-                item: box({
-                    item: factory(rsProps),
+                children: box({
+                    children: factory(rsProps),
                     className,
                     testId: props.testId,
                     domAttrs: props.domAttrs,
@@ -702,7 +702,7 @@ const cmp = hoistCmp.factory<SelectInputModel>(({model, className, ...props}, re
         ) as ReactPortal;
     } else {
         return box({
-            item: factory(rsProps),
+            children: factory(rsProps),
             className,
             ...layoutProps,
             width: withDefault(width, null),
@@ -716,10 +716,10 @@ const cmp = hoistCmp.factory<SelectInputModel>(({model, className, ...props}, re
 const fullscreenWrapper = hoistCmp.factory<SelectInputModel>(({model, title, children}) => {
     return div({
         className: 'xh-select__fullscreen-wrapper',
-        items: [
+        children: [
             toolbar({
                 className: 'xh-select__fullscreen-toolbar',
-                items: [
+                children: [
                     button({
                         icon: Icon.chevronLeft(),
                         onClick: () => (model.fullscreen = false)
