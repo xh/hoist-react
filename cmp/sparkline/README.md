@@ -10,15 +10,32 @@ key figure, or the trend cell in each row of a grid. It draws plain SVG with no 
 and takes no model. The props and their defaults are documented in `Sparkline.ts`.
 
 A sparkline shows only the shape of a series, but it is cheap enough to render in every row of a
-grid. It has a fixed scope, listed under [Scope](#scope). For anything outside that scope, use a
-`Chart` or the AG Grid sparkline, as described in
-[Sparkline, Chart or AG Grid Sparkline](#sparkline-chart-or-ag-grid-sparkline).
+grid. It has a fixed scope, listed under [Scope](#scope), which also sets it apart from `Chart`.
+For a grid cell that needs more, see
+[Sparkline or AG Grid Sparkline](#sparkline-or-ag-grid-sparkline).
 
 ## Scope
 
-`Sparkline` draws one series as a static shape. It is small by design, and the items under "Out
-of scope" are not planned. A need for one of them is a need for a `Chart` or the AG Grid
-sparkline.
+`Sparkline` answers one question at a glance: which way did this number move, and how steadily?
+The reader takes in its shape, not its values. That limit is deliberate, and it is what keeps a
+sparkline cheap enough for every row of a grid.
+
+`Chart` is Hoist's full charting component. It wraps Highcharts and is driven by a `ChartModel`,
+with axes, legends, many series and chart types, and a tooltip for each point. If the reader must
+read a value off the chart, compare series, or interact with points, use a `Chart`. See the
+[Chart section](../README.md#chart-chart) of the components README.
+
+`Sparkline` will not grow toward `Chart`. The items under "Out of scope" are not planned. When a
+need goes past the "In scope" list, switch to a `Chart` or the AG Grid sparkline. Do not add a
+prop to `Sparkline`.
+
+| | `Sparkline` | `Chart` |
+|-|-------------|---------|
+| Purpose | The shape of one trend, at a glance | Values a reader studies and compares |
+| Rendering | Plain SVG, no library | Highcharts |
+| State | Props only, no model | A `ChartModel` |
+| Size | Inline, as small as a grid cell | A panel or a large area |
+| Pointer | One tooltip for the whole sparkline | Per-point tooltips, zoom and more, through Highcharts |
 
 In scope:
 
@@ -29,21 +46,24 @@ In scope:
 - A fixed scale through `min` and `max`, so that the rows of a grid compare.
 - One tooltip for the whole sparkline, as text or an element. See [Tooltip](#tooltip).
 
-Out of scope:
+Out of scope, with what to use instead:
 
-- A tooltip or highlight for each point, or any other response to the pointer.
-- An x-axis, or points at uneven intervals, such as dates with gaps between them.
-- More than one series, a legend, axis labels or data labels.
-- Zoom, animation, or click handlers on points.
+- A tooltip or highlight for each point. Use a `Chart`, or the AG Grid sparkline in a grid cell.
+- Any response to the pointer beyond the one tooltip, such as zoom or click handlers on points.
+  Use a `Chart`.
+- An x-axis, or points at uneven intervals, such as dates with gaps between them. Use a `Chart`,
+  or the AG Grid sparkline's time axis in a grid cell.
+- More than one series, a legend, axis labels or data labels. Use a `Chart`.
+- Animation. Use a `Chart`.
 
-## Sparkline, Chart or AG Grid Sparkline
+## Sparkline or AG Grid Sparkline
 
-| Need | Use |
-|------|-----|
-| A trend beside a figure, such as in a `StatCard` | `Sparkline` |
-| A trend in each row of a grid, styled with Hoist CSS variables | `Sparkline` |
-| A tooltip for each point, or a time axis, in a grid cell | AG Grid sparkline |
-| Exact values, axes, a legend or more than one series | `Chart` - see the [Chart section](../README.md#chart-chart) |
+Both draw a trend in a grid cell. [Scope](#scope) covers when a need calls for a `Chart` instead.
+
+| Need in a grid cell | Use |
+|---------------------|-----|
+| A trend styled with Hoist CSS variables, with no extra dependencies | `Sparkline` |
+| A tooltip for each point, or a time axis | AG Grid sparkline |
 
 AG Grid has its own sparkline, the `agSparklineCellRenderer`. It renders in a grid cell only, and
 it needs AG Grid Enterprise and the `ag-charts-community` package. The app registers
