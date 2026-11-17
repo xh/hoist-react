@@ -42,6 +42,12 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 
 * Added `DashCanvasConfig.preventCollision` to block a drag or resize into space taken by another
   view. Combine with `compact: false` for a free-form canvas where views stay where users put them.
+* Added `XH.hasRoute()` to check if a route exists. Call it before `XH.router.buildPath()` or
+  `buildUrl()` with a name that may not be registered, as both throw for an unknown route.
+* Desktop `Slider` now names its handles for assistive technology. It takes the label of its
+  `FormField`, and puts an `aria-label` or `aria-labelledby` set through `domAttrs` on its handles.
+* Added `SliderProps.intent` to color the track fill. It defaults to `'primary'`, and the fill now
+  uses the `--xh-intent-*` colors rather than Blueprint's own blue.
 
 ### 🐞 Bug Fixes
 
@@ -54,6 +60,8 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 * Fixed `TreeMap` showing its empty placeholder for a moment on mount, and when records arrived
   in an empty map. `TreeMapModel` now reads the first records of its store at once. Later
   changes are debounced as before.
+* Fixed several desktop `Slider` display issues: clipped labels and handles, hangs on extreme
+  scales, a missing dark-theme track, and excess height in a standard `Toolbar`.
 * Fixed a crash in a desktop `Toolbar` with `enableOverflowMenu: true` and only one item.
 
 ### ⚙️ Technical
@@ -214,7 +222,8 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 * An app that imports a library Hoist no longer depends on, such as `semver` or `store2`, must
   declare it in its own `package.json`. The Libraries section below lists each removed library.
 * Updated router5 to 8.0. An app that declares its own `router5` must match it, or drop the
-  dependency and type its routes with `HoistRoute` from `@xh/hoist/core`.
+  dependency and type its routes with `HoistRoute` from `@xh/hoist/core`. `XH.router.buildPath()`
+  and `buildUrl()` now throw for an unknown route name, where they returned `null`.
 * Desktop `DateInput` now renders its calendar with react-day-picker 10, as the mobile `DateInput`
   already did, and its time picker is Hoist's own 24-hour control. `dayPickerProps` now takes
   react-day-picker 10 props - see the upgrade notes for the renames from v8. Removed
