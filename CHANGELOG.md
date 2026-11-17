@@ -74,6 +74,8 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 * Fixed several desktop `Slider` display issues: clipped labels and handles, hangs on extreme
   scales, a missing dark-theme track, and excess height in a standard `Toolbar`.
 * Fixed a crash in a desktop `Toolbar` with `enableOverflowMenu: true` and only one item.
+* Fixed a TypeScript 5.9 type check of Hoist sources failing when `lib` lacks `dom.iterable`, a
+  regression in v90.
 
 ### ⚙️ Technical
 
