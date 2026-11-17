@@ -11,6 +11,8 @@
  *      `.xh-dark`, `.xh-mobile`) are migrated - the old hooks only ever worked there, and an
  *      unprefixed name used anywhere else is far more likely an app's own local variable. Reads
  *      (`var(--grid-bg)`) are migrated for any hook migrated as a declaration in the same run.
+ *      A hook name that is declared and read only within the same files is reported as possibly
+ *      local, such as `--white` in a vendored stylesheet. Pass `--skip-hook` to leave it alone.
  *
  *   2. Renamed `--xh-*` variables → their new names (see RENAMES below), e.g.
  *      `--xh-pad-px` → `--xh-spacing`, `--xh-tbar-bg` → `--xh-toolbar-bg`.
@@ -33,14 +35,19 @@
  * code referencing a size variable by name (which may read a value that now includes its unit).
  * It also warns about `--xh-*` declarations on `:root` or `html`. Hoist's defaults on `body` take
  * precedence there, so those overrides do nothing until moved to `body.xh-app`.
+ * A declaration that would read the variable it declares once migrated, such as
+ * `--xh-grid-header-lr-pad-px: calc(var(--xh-grid-header-lr-pad) * 1px - 1px)`, is left as written
+ * and listed in the warnings. A custom property that reads itself is invalid.
  *
  * Usage, from an app's `client-app` directory:
- *   node node_modules/@xh/hoist/docs/codemod/v91/codemod-css-vars.mjs [--dry] [--no-hooks] [path ...]
+ *   node node_modules/@xh/hoist/docs/codemod/v91/codemod-css-vars.mjs [--dry] [--no-hooks]
+ *       [--skip-hook <name>] [--exclude <path>] [path ...]
  *
  * Paths default to `./client-app/src` if present, else the current directory - pass `src` when
  * running from `client-app`. Files are walked recursively, scanning .scss/.sass/.css/.less/.ts/
  * .tsx/.js/.jsx/.mjs, and reporting on .md. Skips node_modules, build/, dist/, and .git/. `--dry` reports without
- * writing. `--no-hooks` skips step 1.
+ * writing. `--no-hooks` skips step 1. `--skip-hook` leaves one unprefixed name as is - repeat it, or
+ * pass a comma-separated list. `--exclude` skips a file or folder - repeat it for more.
  *
  * Review the diff afterwards - in particular every hook migration listed in the output, and any
  * warnings. Then load the app in both light and dark themes (and mobile, if applicable).
@@ -684,13 +691,32 @@ const args = process.argv.slice(2);
 const DRY = args.includes('--dry');
 const NO_HOOKS = args.includes('--no-hooks');
 const SELF = path.resolve(new URL(import.meta.url).pathname);
-const paths = args.filter(a => !a.startsWith('--'));
+const paths = [],
+    excludes = [],
+    skippedHooks = new Set();
+for (let i = 0; i < args.length; i++) {
+    const m = args[i].match(/^(--exclude|--skip-hook)(?:=(.*))?$/);
+    if (m) {
+        const value = m[2] ?? args[++i];
+        if (!value) {
+            console.error(`${m[1]} needs a value`);
+            process.exit(1);
+        }
+        if (m[1] === '--exclude') {
+            excludes.push(path.resolve(value));
+        } else {
+            value.split(',').forEach(n => skippedHooks.add('--' + n.trim().replace(/^--/, '')));
+        }
+    } else if (!args[i].startsWith('--')) {
+        paths.push(args[i]);
+    }
+}
 const defaultRoot = existsSync('client-app/src') ? 'client-app/src' : '.';
 const roots = (paths.length ? paths : [defaultRoot]).map(p => path.resolve(p));
 
 const NAME = '--[a-zA-Z0-9_-]*[a-zA-Z0-9_]';
 const tokenRe = name => new RegExp(`${escapeRe(name)}(?![a-zA-Z0-9_-])`, 'g');
-const report = {files: 0, changed: 0, hooks: [], renames: 0, units: 0, calcs: 0, dropped: 0, removed: [], warnings: [], docs: []};
+const report = {files: 0, changed: 0, hooks: [], localHooks: [], renames: 0, units: 0, calcs: 0, dropped: 0, removed: [], warnings: [], docs: []};
 
 const files = [];
 for (const root of roots) await collect(root);
@@ -698,11 +724,30 @@ for (const root of roots) await collect(root);
 // Pass 1 - find hook declarations in root-level selectors (across all files, so reads anywhere follow).
 const migratedHooks = new Set();
 if (!NO_HOOKS) {
+    const declaredIn = {},
+        readIn = {};
     for (const f of files) {
-        if (!STYLE_EXTS.has(path.extname(f))) continue;
-        const src = await fs.readFile(f, 'utf8');
-        for (const {name, rootLevel} of scanDeclarations(src)) {
-            if (rootLevel && HOOKS[name]) migratedHooks.add(name);
+        const ext = path.extname(f);
+        if (DOC_EXTS.has(ext)) continue;
+        const src = await fs.readFile(f, 'utf8'),
+            rel = path.relative(process.cwd(), f);
+        if (STYLE_EXTS.has(ext)) {
+            for (const {name, rootLevel} of scanDeclarations(src)) {
+                if (!rootLevel || !HOOKS[name] || skippedHooks.has(name)) continue;
+                migratedHooks.add(name);
+                (declaredIn[name] ??= new Set()).add(rel);
+            }
+        }
+        for (const [, name] of src.matchAll(new RegExp(`var\\(\\s*(${NAME})`, 'g'))) {
+            if (HOOKS[name]) (readIn[name] ??= new Set()).add(rel);
+        }
+    }
+    // Apps set hooks but seldom read them. A hook name declared and read only within the same files
+    // is more likely a stylesheet's own variable, such as `--white` in a vendored template.
+    for (const name of migratedHooks) {
+        const reads = [...(readIn[name] ?? [])];
+        if (reads.length && reads.every(f => declaredIn[name].has(f))) {
+            report.localHooks.push(`${name}  (${[...declaredIn[name]].join(', ')})`);
         }
     }
 }
@@ -720,11 +765,13 @@ for (const f of files) {
         continue;
     }
 
+    const kept = [];
+    if (STYLE_EXTS.has(ext)) src = setAsideSelfReferences(src, kept);
     if (STYLE_EXTS.has(ext) && migratedHooks.size) src = migrateHooks(src, rel);
     src = applyRenames(src);
     if (STYLE_EXTS.has(ext)) src = addUnits(src);
     src = cleanCalcs(src);
-    if (STYLE_EXTS.has(ext)) src = dropSelfReferences(src);
+    if (STYLE_EXTS.has(ext)) src = restoreSelfReferences(dropSelfReferences(src), kept, rel);
     warn(src, rel, ext);
 
     if (src !== before) {
@@ -739,6 +786,50 @@ printReport();
 //------------------------
 // Transforms
 //------------------------
+// A declaration that would read the variable it declares once migrated - most often a retired `-px`
+// companion computed from its base, as in `--x-px: calc(var(--x) * 1px - 1px)` - would become an
+// invalid custom property. Swap each for a placeholder that no transform matches, so it stays as
+// written. A companion that reduces to exactly its base is left in, for dropSelfReferences to remove.
+function setAsideSelfReferences(src, kept) {
+    for (const d of scanDeclarations(src).reverse()) {
+        const end = declarationEnd(src, d.index),
+            value = src.slice(src.indexOf(':', d.index) + 1, end),
+            reads = [...value.matchAll(new RegExp(`var\\(\\s*(${NAME})`, 'g'))].map(m => m[1]),
+            target = migratedName(d.name, d.rootLevel);
+        if (reads.includes(d.name) || !reads.some(r => migratedName(r) === target)) continue;
+        if (migratedValue(value) === `var(${target})`) continue;
+        kept.push({name: d.name, target, text: src.slice(d.index, end)});
+        src = src.slice(0, d.index) + `\u0000${kept.length - 1}\u0000` + src.slice(end);
+    }
+    return src;
+}
+
+function restoreSelfReferences(src, kept, rel) {
+    return src.replace(/\u0000(\d+)\u0000/g, (m, i, offset) => {
+        const {name, target, text} = kept[i];
+        report.warnings.push(
+            `${rel}:${lineOf(src, offset)}  left ${name} as written - migrated, it would read itself as ${target}, ` +
+                `which is invalid. Set ${target} to a length instead (e.g. 8px), or remove it: ${text.trim()}`
+        );
+        return text;
+    });
+}
+
+// The name a declared or read variable takes after the hook migration and renames.
+function migratedName(name, rootLevel = true) {
+    const hooked = rootLevel && migratedHooks.has(name) ? HOOKS[name] : name;
+    return RENAMES[hooked] ?? hooked;
+}
+
+// A declaration's value after the hook migration, renames and calc cleanup, without counting them.
+function migratedValue(value) {
+    const {renames, calcs} = report;
+    let ret = value.replace(new RegExp(`var\\(\\s*(${NAME})`, 'g'), (m, n) => m.replace(n, migratedName(n)));
+    ret = cleanCalcs(applyRenames(ret));
+    Object.assign(report, {renames, calcs});
+    return ret.trim();
+}
+
 function migrateHooks(src, rel) {
     // Declarations: only those in a root-level selector.
     const decls = scanDeclarations(src).filter(d => d.rootLevel && migratedHooks.has(d.name));
@@ -915,6 +1006,18 @@ function isDocumentRootChain(stack) {
     return !!el && !/(^|[^\w-])body(?![\w-])/.test(el);
 }
 
+// End of the declaration value starting at `index` - the next `;` or `}` outside parentheses.
+function declarationEnd(src, index) {
+    let depth = 0;
+    for (let i = index; i < src.length; i++) {
+        const c = src[i];
+        if (c === '(') depth++;
+        else if (c === ')') depth--;
+        else if (depth <= 0 && (c === ';' || c === '}')) return i;
+    }
+    return src.length;
+}
+
 function lineOf(src, index) {
     return src.slice(0, index).split('\n').length;
 }
@@ -931,6 +1034,7 @@ async function collect(p) {
         console.warn(`skipping missing path ${p}`);
         return;
     }
+    if (excludes.some(x => p === x || p.startsWith(x + path.sep))) return;
     if (stat.isDirectory()) {
         if (EXCLUDED_DIRS.has(path.basename(p))) return;
         for (const e of await fs.readdir(p)) await collect(path.join(p, e));
@@ -940,7 +1044,7 @@ async function collect(p) {
 }
 
 function printReport() {
-    const {files, changed, hooks, renames, units, calcs, dropped, removed, warnings, docs} = report;
+    const {files, changed, hooks, localHooks, renames, units, calcs, dropped, removed, warnings, docs} = report;
     console.log(
         `\n${DRY ? '[dry] ' : ''}Done - scanned ${files} files, modified ${changed}. ` +
             `${hooks.length} hook migrations, ${renames} renames, ${units} unit additions, ` +
@@ -949,6 +1053,14 @@ function printReport() {
     if (hooks.length) {
         console.log(`\nHook migrations - review each (a local variable sharing a hook name would be caught here):`);
         hooks.forEach(h => console.log(`  ${h}`));
+    }
+    if (localHooks.length) {
+        console.log(
+            `\nPossibly local variables - each hook name below is declared and read only within the same files, ` +
+                `as a stylesheet's own variable would be. To keep one as is, run again on the unmodified ` +
+                `files with --skip-hook <name>, or --exclude the file or folder that holds it:`
+        );
+        localHooks.forEach(h => console.log(`  ${h}`));
     }
     if (removed.length) {
         console.log(`\nRemoved variables still referenced - delete these usages:`);
