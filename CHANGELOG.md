@@ -40,6 +40,11 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 
 ### 🎁 New Features
 
+* Added `ProgressBar` to `@xh/hoist/cmp/progressbar`, a cross-platform bar that shows a value
+  against a maximum, with an optional label, figure, `intent` and `target` marker. Set
+  `indeterminate` for work of unknown length.
+* Added `Separator` to `@xh/hoist/cmp/layout`, a horizontal or `vertical` rule that divides
+  content, with an optional `label` within the rule.
 * Added `isBlankNode` to `@xh/hoist/utils/react`, to test whether a node renders no content, such
   as null, false, a blank string or an array of these.
 * Added `XH.hasRoute()` to check if a route exists. Call it before `XH.router.buildPath()` or
