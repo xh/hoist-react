@@ -6,10 +6,9 @@
  */
 import classNames from 'classnames';
 import {first, includes, isFinite, isFunction, last, maxBy, minBy, partition} from 'lodash';
-import {createElement} from 'react';
 import type {ReactElement} from 'react';
 
-import {div, span, svg} from '@xh/hoist/cmp/layout';
+import {div, path, span, svg} from '@xh/hoist/cmp/layout';
 import {hoistCmp} from '@xh/hoist/core';
 import type {
     DomAttrsProps,
@@ -212,8 +211,8 @@ function lineShapes(points: SparklinePoint[], withArea: boolean): ReactElement[]
     // A lone value has no line to draw, and shows as a dot instead.
     if (points.length < 2) return [];
     return [
-        withArea ? path('area', sparklineAreaPath(points)) : null,
-        path('line', sparklineLinePath(points))
+        withArea ? shapePath('area', sparklineAreaPath(points)) : null,
+        shapePath('line', sparklineLinePath(points))
     ];
 }
 
@@ -226,23 +225,23 @@ function barShapes(
     const bars = sparklineBars(data, domain, origin),
         [negative, positive] = partition(bars, bar => colorNegative && bar.negative);
     return [
-        path('bars', sparklineBarsPath(positive)),
-        path('bars xh-sparkline__bars--negative', sparklineBarsPath(negative))
+        shapePath('bars', sparklineBarsPath(positive)),
+        shapePath('bars xh-sparkline__bars--negative', sparklineBarsPath(negative))
     ];
 }
 
 function baselineShape(baseline: number, domain: [number, number]): ReactElement {
     if (!isFinite(baseline) || !domain || baseline < domain[0] || baseline > domain[1]) return null;
-    return path('baseline', `M0 ${scaleY(baseline, domain)}h${VIEW_SIZE}`);
+    return shapePath('baseline', `M0 ${scaleY(baseline, domain)}h${VIEW_SIZE}`);
 }
 
 /**
  * A stroke that keeps its thickness when the box stretches the SVG, set as an attribute for the
  * widest browser support. Returns null for an empty path.
  */
-function path(name: string, d: string): ReactElement {
+function shapePath(name: string, d: string): ReactElement {
     if (!d) return null;
-    return createElement('path', {
+    return path({
         key: name,
         className: `xh-sparkline__${name}`,
         d,
