@@ -107,7 +107,9 @@ export const [ProgressBar, progressBar] = hoistCmp.withFactory<ProgressBarProps>
             labelId = useId(),
             fraction = indeterminate ? null : fractionOf(value, min, max),
             targetFraction =
-                indeterminate || target < min || target > max ? null : fractionOf(target, min, max),
+                indeterminate || target == null || target < min || target > max
+                    ? null
+                    : fractionOf(target, min, max),
             figure = figureOf(value, fraction, valueRenderer),
             shownFigure = valueRenderer !== false && !isBlankNode(figure) ? figure : null,
             hasLabel = !isBlankNode(label),
