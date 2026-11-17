@@ -512,9 +512,15 @@ hoist-react as a dependency.
 To see a hoist-react change in a real browser, run Toolbox with this checkout compiled inline:
 
 - **Client** - `cd ../toolbox/client-app && pnpm startWithHoist` serves `http://localhost:3000`
-  and rebuilds when files here change. Reload the page after a rebuild.
+  and rebuilds when files here change. The page reloads after each rebuild.
 - **Server** - `cd ../toolbox && ./gradlew bootRun` serves the Grails API on port 8080, against
   the developer's MySQL and login by default.
+
+From a worktree of this repo, `../toolbox` does not resolve. Run both commands in the Toolbox
+checkout, and start the client with
+`XH_HOIST_REACT_PATH=<absolute path of this worktree> pnpm startWithHoist`. Without it, Toolbox
+builds the `hoist-react` checkout next to its own repo, not the worktree. The build banner shows
+the path and branch in use.
 
 Check first whether both are already running (`curl -s -o /dev/null -w '%{http_code}'
 http://localhost:3000/admin/` and the same for `:8080`). Leave servers you did not start running
