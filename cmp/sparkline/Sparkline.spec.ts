@@ -94,17 +94,17 @@ describe('Sparkline', () => {
             );
         });
 
-        it('falls back to a native title for text without the desktop impl', () => {
+        it('shows no tooltip and builds no content without the desktop impl', () => {
             const installed = {...desktopImpls};
             installDesktopImpls({...installed, sparklineTooltipImpl: null});
             try {
-                const title = (props: Partial<SparklineProps>) =>
-                    renderRoot({data: [1, 2], ...props}).getAttribute('title');
+                const tooltip = vi.fn(() => 'Up 4%'),
+                    plain = renderRoot({data: [1, 2]}),
+                    withTip = renderRoot({data: [1, 2], tooltip});
 
-                expect(title({tooltip: 'Up 4%'})).toBe('Up 4%');
-                expect(title({tooltip: data => `${data.length} days`})).toBe('2 days');
-                expect(title({tooltip: span('Up 4%')})).toBeNull();
-                expect(title({tooltip: () => null})).toBeNull();
+                fireEvent.mouseEnter(withTip);
+                expect(withTip.outerHTML).toBe(plain.outerHTML);
+                expect(tooltip).not.toHaveBeenCalled();
             } finally {
                 installDesktopImpls(installed);
             }

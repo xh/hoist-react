@@ -202,8 +202,8 @@ body.xh-app {
 - **`intent` wins over `colorByTrend`.** Set one or the other.
 - **Bars grow from zero by default.** The scale takes zero in, so a bar series far from zero draws
   bars of almost equal height. Set `baseline` or `min` to change that.
-- **An element tooltip shows on desktop only.** Mobile has no hover. It shows text as a native
-  browser tooltip and an element not at all.
+- **The tooltip shows on desktop only.** Mobile has no hover, so a sparkline there shows no
+  tooltip, as with the `StatCard` info tooltip.
 - **The accessible name does not format numbers.** It reads, for example, "Trend: 12 points, from
   101 to 118". Pass an `aria-label` through `domAttrs` to name the metric and round its values.
 

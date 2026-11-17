@@ -5,17 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import classNames from 'classnames';
-import {
-    first,
-    includes,
-    isFinite,
-    isFunction,
-    isString,
-    last,
-    maxBy,
-    minBy,
-    partition
-} from 'lodash';
+import {first, includes, isFinite, isFunction, last, maxBy, minBy, partition} from 'lodash';
 import type {HTMLAttributes, ReactElement, Ref} from 'react';
 
 import {div, path, span, svg} from '@xh/hoist/cmp/layout';
@@ -119,9 +109,8 @@ export interface SparklineProps extends HoistProps, LayoutProps, TestSupportProp
     /**
      * Tooltip for the whole sparkline, or a function to build it from the data. Default none.
      *
-     * On desktop, shows in a Blueprint tooltip. It mounts on the first hover, not with each
-     * sparkline, so it is cheap to set on a grid column. Elsewhere, string content shows as a
-     * native browser tooltip and an element shows nothing.
+     * Desktop only - on mobile no tooltip shows. It mounts on the first hover, not with each
+     * sparkline, so it is cheap to set on a grid column.
      */
     tooltip?: ReactElement | string | SparklineTooltipFn;
 }
@@ -218,23 +207,20 @@ export const [Sparkline, sparkline] = hoistCmp.withFactory<SparklineProps>({
                     item: plot
                 });
 
-        if (tooltip == null || tooltip === '') return renderRoot();
+        // The desktop AppContainer installs the impl. Without it, as on mobile, show no tooltip.
+        if (tooltip == null || tooltip === '' || !sparklineTooltipImpl) return renderRoot();
 
-        const getContent = () => (isFunction(tooltip) ? tooltip(data) : tooltip);
-        if (sparklineTooltipImpl) {
-            return sparklineTooltipImpl({getContent, renderTarget: renderRoot});
-        }
-
-        // No desktop impl, as on mobile: show text as a native tooltip, and an element not at all.
-        const content = getContent();
-        return renderRoot(isString(content) && content ? {title: content} : {});
+        return sparklineTooltipImpl({
+            getContent: () => (isFunction(tooltip) ? tooltip(data) : tooltip),
+            renderTarget: renderRoot
+        });
     }
 });
 
 //------------------
 // Implementation
 //------------------
-/** Props added to the root element: a native title, or those a desktop tooltip needs. */
+/** Props a desktop tooltip adds to the root element. */
 type RootProps = HTMLAttributes<HTMLElement> & {ref?: Ref<HTMLElement>};
 
 function lineShapes(points: SparklinePoint[], withArea: boolean): ReactElement[] {
