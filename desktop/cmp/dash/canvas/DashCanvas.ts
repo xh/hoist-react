@@ -74,11 +74,12 @@ export const [DashCanvas, dashCanvas] = hoistCmp.withFactory<DashCanvasProps>({
             },
             // If rglOptions.compactor object is provided, set it directly before
             // mergeDeep to avoid deep merging issues.
+            {compact, preventCollision} = model,
             compactor = rglOptions?.compactor
                 ? rglOptions.compactor
-                : model.compact === 'wrap'
-                  ? wrapCompactor
-                  : getCompactor(model.compact, false, false),
+                : compact === 'wrap'
+                  ? {...wrapCompactor, preventCollision}
+                  : getCompactor(compact, false, preventCollision),
             rglProps: GridLayoutProps = {
                 ...mergeDeep(
                     {

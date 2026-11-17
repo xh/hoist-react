@@ -589,6 +589,11 @@
   `docs/doc-registry.json` to the new path and names.
 
 ### 2026-11-16
+- Added a package README for `ProgressBar`. It covers when to use the component over its
+  neighbors, examples, CSS variables and pitfalls. TSDoc holds the props and their defaults, so
+  the README has no prop table.
+- Added a `Separator` section to `cmp/layout/README.md`, and short `ProgressBar` and `Separator`
+  entries to `cmp/README.md`.
 - Added a package README for `Sparkline`. It covers when to use the component over a `Chart`,
   examples in a `StatCard` and a grid column, CSS variables and pitfalls. TSDoc holds the props
   and their defaults, so the README has no prop table.
