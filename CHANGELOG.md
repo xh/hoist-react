@@ -126,6 +126,8 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 
 ### 📚 Libraries
 
+* @azure/msal-common `removed` - Hoist used it only for a type. It still installs with
+  @azure/msal-browser, which pins its own copy, so apps no longer get a second one.
 * jsdom `30 → 30 || 31` (optional peer)
 
 ## 90.1.0 - 2026-11-13
