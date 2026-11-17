@@ -25,12 +25,12 @@ import {progressBar} from '@xh/hoist/cmp/progressbar';
 // A value on the default scale of 0 to 100, shown as a whole percent
 progressBar({label: 'Upload', value: 72})
 
-// A custom scale, a pre-formatted figure, an intent and a marker at a threshold
+// A custom scale, a formatted figure, an intent and a marker at a threshold
 progressBar({
     label: 'Desk A risk',
     value: 8.1,
     max: 10,
-    valueText: '$8.1m of $10m',
+    valueRenderer: v => `$${v}m of $10m`,
     target: 7.5,
     intent: 'warning'
 })
@@ -61,10 +61,11 @@ body.xh-app {
 - **A null `value` draws an empty bar, not an animation.** Set `indeterminate` for work of
   unknown length.
 - **A bar with no `label` has no accessible name.** Pass an `aria-label` through `domAttrs`.
-- **Only a string or number figure reaches screen readers.** An element passed as `valueText`
-  shows on screen but does not become the `aria-valuetext` of the bar.
+- **Only a string or number figure reaches screen readers.** An element returned by
+  `valueRenderer` shows on screen but does not become the `aria-valuetext` of the bar.
+- **An indeterminate bar shows no figure.** Put a status such as "Loading" in its `label`.
 
 ## Related Packages
 
 - [`/cmp/`](../README.md) - `Mask`, `LoadingIndicator` and the component catalog
-- [`/format/`](../../format/README.md) - formatters for the `valueText` figure
+- [`/format/`](../../format/README.md) - formatters and renderers to pass as `valueRenderer`

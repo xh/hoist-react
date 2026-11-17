@@ -5,7 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import classNames from 'classnames';
-import {clamp, isFinite, isNumber, isString} from 'lodash';
+import {clamp, isFinite, isFunction, isNumber, isString} from 'lodash';
 import {useId} from 'react';
 import type {CSSProperties, ReactNode} from 'react';
 
@@ -49,17 +49,18 @@ export interface ProgressBarProps extends HoistProps, LayoutProps, TestSupportPr
     label?: ReactNode;
 
     /**
-     * Figure shown above the bar, opposite the label, pre-formatted by the caller. For example
-     * `72 of 100 GB`, or a `fmtNumber` result. A blank figure takes the default: the value as a
-     * whole percent of the range. Only a full bar reads `100%` and only an empty one reads `0%`.
-     * An indeterminate bar has no default figure.
+     * Renders the figure shown above the bar, opposite the label. Passed the value as given,
+     * before it is clamped to the range, and called only for a value the bar can place. Pass a
+     * formatter such as `numberRenderer()`, or a function that returns text such as
+     * `72 of 100 GB`. A blank result shows no figure.
+     *
+     * True or null shows the default: the value as a whole percent of the range. Only a full bar
+     * reads `100%` and only an empty one reads `0%`. False hides the figure and draws the bar only.
+     * An indeterminate bar shows no figure.
      *
      * A string or number figure is also the bar's `aria-valuetext`, shown or not.
      */
-    valueText?: ReactNode;
-
-    /** False to hide the figure and draw the bar only. Default true. */
-    showValue?: boolean;
+    valueRenderer?: boolean | ((value: number) => ReactNode);
 
     /**
      * Semantic color for the fill, for example `danger` for a limit that is close. The fill takes
@@ -98,18 +99,17 @@ export const [ProgressBar, progressBar] = hoistCmp.withFactory<ProgressBarProps>
     render(props, ref) {
         const [
                 layoutProps,
-                {className, value, label, valueText, intent, target, testId, domAttrs}
+                {className, value, label, valueRenderer, intent, target, testId, domAttrs}
             ] = splitLayoutProps(props),
             min = props.min ?? 0,
             max = props.max ?? 100,
             indeterminate = props.indeterminate ?? false,
-            showValue = props.showValue ?? true,
             labelId = useId(),
             fraction = indeterminate ? null : fractionOf(value, min, max),
             targetFraction =
                 indeterminate || target < min || target > max ? null : fractionOf(target, min, max),
-            figure = isBlankNode(valueText) ? percentOf(fraction) : valueText,
-            shownFigure = showValue ? figure : null,
+            figure = figureOf(value, fraction, valueRenderer),
+            shownFigure = valueRenderer !== false && !isBlankNode(figure) ? figure : null,
             hasLabel = !isBlankNode(label),
             ariaProps = {
                 role: 'progressbar',
@@ -188,8 +188,16 @@ function fractionOf(value: number, min: number, max: number): number {
 }
 
 /** A whole percent that reads 0 or 100 only for an empty or a full bar. */
-function percentOf(fraction: number): string {
+function figureOf(
+    value: number,
+    fraction: number,
+    valueRenderer: ProgressBarProps['valueRenderer']
+): ReactNode {
     if (fraction == null) return null;
+    return isFunction(valueRenderer) ? valueRenderer(value) : percentOf(fraction);
+}
+
+function percentOf(fraction: number): string {
     const percent =
         fraction <= 0 ? 0 : fraction >= 1 ? 100 : clamp(Math.round(fraction * 100), 1, 99);
     return `${percent}%`;

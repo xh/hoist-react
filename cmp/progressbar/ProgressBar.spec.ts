@@ -8,7 +8,7 @@ import {span} from '@xh/hoist/cmp/layout';
 import {progressBar} from '@xh/hoist/cmp/progressbar';
 import {initTestAppAsync} from '@xh/hoist/test-support';
 import {render} from '@testing-library/react';
-import {beforeAll, describe, expect, it} from 'vitest';
+import {beforeAll, describe, expect, it, vi} from 'vitest';
 
 /**
  * ProgressBar takes its value straight from app data, so it must place any number: out of range,
@@ -63,13 +63,17 @@ describe('ProgressBar', () => {
             expect(figure(progressBar({value}))).toBe(text);
         });
 
-        it('shows the valueText in place of the percent, including element content', () => {
-            expect(figure(progressBar({value: 72, valueText: '72 of 100 GB'}))).toBe(
-                '72 of 100 GB'
-            );
-            expect(figure(progressBar({value: 72, valueText: span('7.2', span('m'))}))).toBe(
-                '7.2m'
-            );
+        it('shows the valueRenderer result in place of the percent, including elements', () => {
+            const gb = (v: number) => `${v} of 100 GB`;
+            expect(figure(progressBar({value: 72, valueRenderer: gb}))).toBe('72 of 100 GB');
+
+            const millions = (v: number) => span(`${v / 10}`, span('m'));
+            expect(figure(progressBar({value: 72, valueRenderer: millions}))).toBe('7.2m');
+        });
+
+        it('passes the valueRenderer the value before it is clamped', () => {
+            const used = (v: number) => `${v} GB`;
+            expect(figure(progressBar({value: 120, valueRenderer: used}))).toBe('120 GB');
         });
 
         it.each([
@@ -77,21 +81,27 @@ describe('ProgressBar', () => {
             ['false', false],
             ['an empty string', ''],
             ['a string of spaces', '  ']
-        ])('takes the default percent for a valueText of %s', (_, valueText) => {
-            expect(figure(progressBar({value: 72, valueText}))).toBe('72%');
+        ])('shows no figure for a valueRenderer result of %s', (_, result) => {
+            const {container} = render(progressBar({value: 72, valueRenderer: () => result}));
+            expect(part(container, 'value')).toBeNull();
+            expect(part(container, 'header')).toBeNull();
         });
 
-        it('is left out when showValue is false, and shown when it is null', () => {
-            const {container} = render(progressBar({value: 72, showValue: false}));
+        it('is left out when valueRenderer is false, and the percent when it is true or null', () => {
+            const {container} = render(progressBar({value: 72, valueRenderer: false}));
             expect(part(container, 'value')).toBeNull();
             expect(part(container, 'header')).toBeNull();
 
-            expect(figure(progressBar({value: 72, showValue: null}))).toBe('72%');
+            expect(figure(progressBar({value: 72, valueRenderer: true}))).toBe('72%');
+            expect(figure(progressBar({value: 72, valueRenderer: null}))).toBe('72%');
         });
 
-        it('is left out when the value cannot be placed, in place of a NaN figure', () => {
+        it('is left out when the value cannot be placed, without calling the valueRenderer', () => {
+            const valueRenderer = vi.fn(() => 'figure');
             expect(figure(progressBar({value: NaN}))).toBeNull();
-            expect(figure(progressBar({value: 5, min: 5, max: 5}))).toBeNull();
+            expect(figure(progressBar({value: 5, min: 5, max: 5, valueRenderer}))).toBeNull();
+            expect(figure(progressBar({value: null, valueRenderer}))).toBeNull();
+            expect(valueRenderer).not.toHaveBeenCalled();
         });
     });
 
@@ -102,7 +112,7 @@ describe('ProgressBar', () => {
             ['an empty string', ''],
             ['a string of spaces', '  ']
         ])('renders nothing for a label of %s, and no header with no figure', (_, label) => {
-            const {container} = render(progressBar({value: 1, label, showValue: false}));
+            const {container} = render(progressBar({value: 1, label, valueRenderer: false}));
 
             expect(part(container, 'label')).toBeNull();
             expect(part(container, 'header')).toBeNull();
@@ -145,10 +155,10 @@ describe('ProgressBar', () => {
             }
         );
 
-        it('shows a valueText when given one', () => {
-            expect(figure(progressBar({indeterminate: true, valueText: 'Loading'}))).toBe(
-                'Loading'
-            );
+        it('does not call the valueRenderer', () => {
+            const valueRenderer = vi.fn(() => 'figure');
+            expect(figure(progressBar({value: 40, indeterminate: true, valueRenderer}))).toBeNull();
+            expect(valueRenderer).not.toHaveBeenCalled();
         });
     });
 
@@ -199,11 +209,11 @@ describe('ProgressBar', () => {
         });
 
         it('reports the figure as its value text, shown or not', () => {
-            const custom = progressBar({value: 8.1, max: 10, valueText: '$8.1m', showValue: false}),
-                percent = progressBar({value: 72, showValue: false});
+            const custom = progressBar({value: 8.1, max: 10, valueRenderer: v => `$${v}m`}),
+                hidden = progressBar({value: 72, valueRenderer: false});
 
             expect(root(render(custom).container).getAttribute('aria-valuetext')).toBe('$8.1m');
-            expect(root(render(percent).container).getAttribute('aria-valuetext')).toBe('72%');
+            expect(root(render(hidden).container).getAttribute('aria-valuetext')).toBe('72%');
         });
 
         it('reports no value or range for a value it cannot place', () => {

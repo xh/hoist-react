@@ -157,7 +157,7 @@
             "mcpCategory": "package",
             "viewerCategory": "components",
             "description": "Bar that shows a value against a maximum, with an optional target marker, or an indeterminate fill for work of unknown length.",
-            "keywords": ["ProgressBar", "progress", "progress bar", "utilization", "quota", "indeterminate", "target", "valueText"]
+            "keywords": ["ProgressBar", "progress", "progress bar", "utilization", "quota", "indeterminate", "target", "valueRenderer"]
         },
         {
             "id": "desktop/cmp/dash/README.md",
