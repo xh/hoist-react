@@ -38,10 +38,22 @@ detailed, step-by-step upgrade instructions with before/after code examples.
   Blueprint overlay. Showing a mask no longer forces a browser layout. Restyle any app CSS that
   targets `.bp6-overlay` classes within an inline mask, or use `--xh-mask-bg`.
 
+### 🎁 New Features
+
+* Added `Slider.ariaLabel`, to name each handle of a slider for assistive technology. A `Slider`
+  in a `FormField` now takes the label of the field as that name.
+
 ### 🐞 Bug Fixes
 
 * Fixed mobile `FormField` ignoring the `--xh-form-field-inline-label-*` custom properties for
   inline labels - it referenced stale names left behind by an earlier rename.
+* Fixed desktop `Slider` cutting off a long label at either end of its track. An end label, or a
+  handle label at an end, now shifts inward to stay inside the slider.
+* Fixed desktop `Slider` hanging or flooding the page with labels on a scale it cannot draw, such
+  as a `stepSize` near zero, a `max` not above `min`, or a very wide range. It now falls back to a
+  safe scale, renders disabled when it has no range, and logs a warning in development mode.
+* Fixed the empty part of a desktop `Slider` track not showing in dark theme. Its color now comes
+  from the new `--xh-slider-track-bg` CSS variable.
 * Fixed a crash in a desktop `Toolbar` with `enableOverflowMenu: true` and only one item.
 
 ### ⚙️ Technical

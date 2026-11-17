@@ -6,6 +6,12 @@
  */
 
 .xh-slider {
+  // The empty part of the track. Blueprint's dark theme color for it does not show against the
+  // Hoist dark background. A filled part carries an intent class and keeps its color.
+  .bp6-slider-progress:not([class*='bp6-intent-']) {
+    background: var(--xh-slider-track-bg);
+  }
+
   .bp6-slider-label {
     white-space: nowrap;
   }
