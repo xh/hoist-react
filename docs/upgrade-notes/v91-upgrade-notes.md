@@ -395,6 +395,11 @@ is rendered - use `children` alone.
 
 Then review the app in both light and dark themes, and on mobile if applicable.
 
+`StatCard` now starts its content at the top, so cards in a `StatCardStrip` keep their titles and
+values on the same lines. A card taller than its content no longer centers that content
+vertically. To center it again, set `--xh-stat-card-justify-content: center` - on `body.xh-app` for
+every card, or on a container for the cards within it.
+
 Popovers have a stronger border and shadow in v91, so they stand out from the content beneath them.
 If your app styles `.bp6-popover` or `.bp6-popover-content` directly to change a border, shadow, or
 background, set the new `--xh-popover-*` variables instead. To change one popover, set them on its
