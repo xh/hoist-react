@@ -100,7 +100,9 @@ export const [Toolbar, toolbar] = hoistCmp.withFactory<ToolbarProps, ToolbarDefa
                 vertical ? 'xh-toolbar--vertical' : null,
                 overflow ? 'xh-toolbar--overflow' : null
             ),
-            items: overflow ? overflowBox({items, minVisibleItems, collapseFrom}) : items
+            children: overflow
+                ? overflowBox({children: items, minVisibleItems, collapseFrom})
+                : items
         });
     }
 });
@@ -133,7 +135,7 @@ const overflowButton = hoistCmp.factory({
             popover({
                 popoverClassName: 'xh-toolbar-overflow-popover',
                 position: 'bottom-right',
-                item: button({icon: Icon.ellipsisVertical()}),
+                children: button({icon: Icon.ellipsisVertical()}),
                 content: vbox(children)
             })
         );

@@ -38,7 +38,7 @@ export const saveAsDialog = hoistCmp.factory<SaveAsDialogModel>({
             style: {width: 550},
             canOutsideClickClose: false,
             onClose: () => model.close(),
-            item: formPanel({testId})
+            children: formPanel({testId})
         });
     }
 });
@@ -54,19 +54,19 @@ const formPanel = hoistCmp.factory<SaveAsDialogModel>({
         // The form takes the same testId to derive one for each field.
         return panel({
             testId,
-            item: form({
+            children: form({
                 testId,
                 fieldDefaults: {
                     commitOnChange: true,
                     inline: true,
                     minimal: true
                 },
-                item: vframe({
+                children: vframe({
                     className: 'xh-view-manager__save-dialog__form',
-                    items: [
+                    children: [
                         formField({
                             field: 'name',
-                            item: textInput({
+                            children: textInput({
                                 autoFocus: true,
                                 selectOnFocus: true,
                                 onKeyDown: e => {
@@ -77,7 +77,7 @@ const formPanel = hoistCmp.factory<SaveAsDialogModel>({
                         groupField({model: model.groupFieldModel}),
                         formField({
                             field: 'description',
-                            item: textArea({
+                            children: textArea({
                                 selectOnFocus: true,
                                 height: 70
                             })
@@ -85,7 +85,7 @@ const formPanel = hoistCmp.factory<SaveAsDialogModel>({
                         formField({
                             field: 'visibility',
                             omit: visOptions.length === 1,
-                            item: select({options: visOptions, enableFilter: false}),
+                            children: select({options: visOptions, enableFilter: false}),
                             info: visInfo
                         })
                     ]

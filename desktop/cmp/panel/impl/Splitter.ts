@@ -60,7 +60,7 @@ export const splitter = hoistCmp.factory({
                 ? {'aria-valuenow': size, 'aria-valuemin': minSize, 'aria-valuemax': maxSize}
                 : null),
             onKeyDown: model.onKeyDown,
-            items: [
+            children: [
                 div({
                     className: `${BASE}__hit`,
                     ref: model.ref,
@@ -73,7 +73,7 @@ export const splitter = hoistCmp.factory({
                     tabIndex: -1,
                     title: collapsed ? 'Expand' : 'Collapse',
                     'aria-label': collapsed ? 'Expand panel' : 'Collapse panel',
-                    item: collapseToggleIcon(panelModel),
+                    children: collapseToggleIcon(panelModel),
                     omit: !showSplitterCollapseButton,
                     onClick: e => {
                         e.stopPropagation();
@@ -83,7 +83,7 @@ export const splitter = hoistCmp.factory({
                 // Drag-to-collapse cue. Without live resizing, the ghost line shows it instead.
                 div({
                     className: 'xh-panel-splitter-snap-badge',
-                    item: collapseToggleIcon(panelModel),
+                    children: collapseToggleIcon(panelModel),
                     omit: !snapPending || !resizeWhileDragging
                 })
             ]

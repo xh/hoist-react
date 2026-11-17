@@ -145,7 +145,7 @@ const cmp = hoistCmp.factory<SliderInputModel>(({model, className, ...props}, re
     };
 
     return box({
-        item: isRange
+        children: isRange
             ? bpRangeSlider({
                   ...(sliderProps as BpRangeSliderProps),
                   handleHtmlProps: {start: handleAttrs, end: handleAttrs}

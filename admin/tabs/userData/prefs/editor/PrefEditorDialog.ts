@@ -29,8 +29,8 @@ export const prefEditorDialog = hoistCmp.factory({
             isOpen: parentModel.showEditorDialog,
             canOutsideClickClose: false,
             onClose: () => (parentModel.showEditorDialog = false),
-            item: panel({
-                items: [
+            children: panel({
+                children: [
                     restGrid({
                         extraToolbarItems: () => {
                             return button({

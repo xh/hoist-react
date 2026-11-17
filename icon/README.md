@@ -370,7 +370,7 @@ import {iconPicker} from '@xh/hoist/desktop/cmp/input';
 
 formField({
     field: 'icon',
-    item: iconPicker()
+    children: iconPicker()
 })
 ```
 

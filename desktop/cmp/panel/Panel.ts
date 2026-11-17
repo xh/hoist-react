@@ -105,7 +105,7 @@ export interface PanelProps<M extends PanelModel = PanelModel>
     /** Title to be used when the panel is collapsed. Defaults to `title`. */
     collapsedTitle?: ReactNode;
 
-    /** Additional props to pass to the inner frame hosting child `items`. */
+    /** Additional props to pass to the inner frame hosting the panel's `children`. */
     contentBoxProps?: BoxProps;
 
     /** Allow the panel content area to scroll vertically. */
@@ -216,7 +216,7 @@ export const [Panel, panel] = hoistCmp.withFactory<PanelProps, PanelDefaults>({
             const banners = parseBanners(bannerProp);
             coreContents = vframe({
                 style: {display: isRenderedCollapsed ? 'none' : 'flex'},
-                items: Children.toArray([
+                children: Children.toArray([
                     parseToolbar(tbar),
                     banners.top,
                     frame({
@@ -227,7 +227,7 @@ export const [Panel, panel] = hoistCmp.withFactory<PanelProps, PanelDefaults>({
                             ? undefined
                             : (contentBoxProps?.flexDirection ?? 'column'),
                         overflowY: scrollable ? 'auto' : contentBoxProps?.overflowY,
-                        items: children
+                        children
                     }),
                     banners.bottom,
                     parseToolbar(bbar)
@@ -242,13 +242,13 @@ export const [Panel, panel] = hoistCmp.withFactory<PanelProps, PanelDefaults>({
 
         // Apply error boundary to content *excluding* header and affordances.
         if (errorBoundaryModel) {
-            coreContents = errorBoundary({model: errorBoundaryModel, item: coreContents});
+            coreContents = errorBoundary({model: errorBoundaryModel, children: coreContents});
         }
 
         // 3) Prepare core layout with header above core.  This is what layout props are trampolined to
         let item = vbox({
             className: 'xh-panel__inner',
-            items: [
+            children: [
                 panelHeader({
                     title,
                     icon,
@@ -267,7 +267,7 @@ export const [Panel, panel] = hoistCmp.withFactory<PanelProps, PanelDefaults>({
 
         // 4) Additional optional wrappers
         if (refreshContextModel) {
-            item = refreshContextView({model: refreshContextModel, item});
+            item = refreshContextView({model: refreshContextModel, children: item});
         }
 
         // 5) Return wrapped in resizable + modal affordances if needed, or equivalent layout box
@@ -279,8 +279,8 @@ export const [Panel, panel] = hoistCmp.withFactory<PanelProps, PanelDefaults>({
         if (modalSupportModel) {
             item = modalSupport({
                 model: modalSupportModel,
-                item: frame({
-                    item,
+                children: frame({
+                    children: item,
                     className: model.isModal ? className : undefined,
                     testId: model.isModal ? testId : undefined,
                     domAttrs: model.isModal ? domAttrs : undefined
@@ -293,8 +293,8 @@ export const [Panel, panel] = hoistCmp.withFactory<PanelProps, PanelDefaults>({
         domAttrs = model.isModal ? undefined : domAttrs;
 
         return useResizeContainer
-            ? resizeContainer({ref, item, className, testId, domAttrs})
-            : box({ref, item, className, testId, domAttrs, ...layoutProps});
+            ? resizeContainer({ref, children: item, className, testId, domAttrs})
+            : box({ref, children: item, className, testId, domAttrs, ...layoutProps});
     }
 });
 

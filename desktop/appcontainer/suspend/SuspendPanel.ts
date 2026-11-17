@@ -55,15 +55,15 @@ export const suspendPanel = hoistCmp.factory<AppContainerModel>({
             justifyContent: 'center',
             flexDirection: 'column',
             className: 'xh-suspend-viewport',
-            item: panel({
+            children: panel({
                 title,
                 icon,
                 className: 'xh-suspend-panel',
                 testId: 'xh-suspend-panel',
-                item: div({
+                children: div({
                     className: 'xh-suspend-panel__inner',
-                    items: [
-                        p({item: message, omit: !message}),
+                    children: [
+                        p({children: message, omit: !message}),
                         p(`${XH.clientAppName} must be reloaded to continue.`),
                         p('Please click anywhere to reload.')
                     ]

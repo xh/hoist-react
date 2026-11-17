@@ -77,7 +77,7 @@ const modalContainer = hoistCmp.factory<ModalSupportModel>({
             onClose: () => model.toggleIsModal(),
             // Creates the dialog's portal immediately and keeps it around, to preserve correct ordering relative to any internal popups.
             lazy: false,
-            item: box({
+            children: box({
                 ref: model.modalRef,
                 flexDirection: 'column',
                 height: '100%'

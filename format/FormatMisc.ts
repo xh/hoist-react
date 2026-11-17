@@ -95,7 +95,7 @@ function fmtSpanElement(v, opts) {
         className,
         style,
         title,
-        item: txt
+        children: txt
     });
 }
 

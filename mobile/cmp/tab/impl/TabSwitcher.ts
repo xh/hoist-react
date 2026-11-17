@@ -31,7 +31,7 @@ export const tabSwitcher = hoistCmp.factory<TabSwitcherProps>({
         return div({
             className: classNames(className, `xh-tab-switcher--${orientation}`),
             [TEST_ID]: testId,
-            items: tabs.map(({id, title, icon, disabled}) =>
+            children: tabs.map(({id, title, icon, disabled}) =>
                 htmlButton({
                     key: id,
                     type: 'button',
@@ -39,7 +39,10 @@ export const tabSwitcher = hoistCmp.factory<TabSwitcherProps>({
                     disabled,
                     [TEST_ID]: getTestId(testId, id),
                     onClick: () => model.setActiveTabId(id),
-                    items: [icon, div({className: 'xh-tab__label', item: title, omit: !title})]
+                    children: [
+                        icon,
+                        div({className: 'xh-tab__label', children: title, omit: !title})
+                    ]
                 })
             )
         });

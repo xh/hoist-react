@@ -210,5 +210,5 @@ function renderInField(initialValue: Some<number>, props: SliderProps = {}) {
         fields: [{name: 'risk', displayName: 'Risk level', initialValue}]
     });
     onTestFinished(() => model.destroy());
-    return render(form({model, item: formField({field: 'risk', item: slider(props)})}));
+    return render(form({model, children: formField({field: 'risk', children: slider(props)})}));
 }

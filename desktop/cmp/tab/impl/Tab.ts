@@ -62,9 +62,9 @@ export const tab = hoistCmp.factory<TabProps>({
             display: isActive ? 'flex' : 'none',
             className,
             testId,
-            item: refreshContextView({
+            children: refreshContextView({
                 model: refreshContextModel,
-                item: errorBoundary(elementFromContent(content, contentProps))
+                children: errorBoundary(elementFromContent(content, contentProps))
             })
         });
     }

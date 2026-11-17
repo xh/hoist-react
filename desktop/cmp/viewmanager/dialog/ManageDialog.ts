@@ -49,13 +49,13 @@ export const manageDialog = hoistCmp.factory({
                 style: {width: '1000px', maxWidth: '90vw', minHeight: '600px'},
                 canOutsideClickClose: false,
                 onClose: () => model.close(),
-                item: panel({
-                    item: hframe(
+                children: panel({
+                    children: hframe(
                         selectorPanel(),
                         panel({
                             // A sole-selected group row bulk-edits its views via the multi panel -
                             // the group itself is renamed via its context menu.
-                            item: model.selectedGroupRecord
+                            children: model.selectedGroupRecord
                                 ? viewMultiPanel({defaultViewIcon})
                                 : count == 0 || model.hasGroupRowsSelected
                                   ? placeholderPanel()
@@ -81,7 +81,7 @@ const selectorPanel = hoistCmp.factory<ManageDialogModel>({
     render({model}) {
         return panel({
             modelConfig: {defaultSize: 500, side: 'left', collapsible: false},
-            item: tabContainer(),
+            children: tabContainer(),
             bbar: [
                 storeFilterField({
                     autoApply: false,
@@ -103,10 +103,10 @@ export const viewsGrid = hoistCmp.factory<GridModel>({
                 'xh-view-manager__manage-dialog__grid--drag-disabled':
                     dialogModel?.isDragDisabled(model)
             }),
-            items: [
+            children: [
                 vframe({
                     className: 'xh-view-manager__manage-dialog__grid-wrapper',
-                    items: [
+                    children: [
                         topLevelDropStrip({model}),
                         grid({
                             model,
@@ -139,7 +139,7 @@ export const viewsGrid = hoistCmp.factory<GridModel>({
                 card({
                     title: 'Help',
                     icon: helpIcon,
-                    item: helpText,
+                    children: helpText,
                     modelConfig: {collapsible: true, defaultCollapsed: true},
                     omit: !helpText,
                     intent: 'primary',

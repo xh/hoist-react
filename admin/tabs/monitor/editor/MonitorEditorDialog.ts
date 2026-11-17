@@ -28,8 +28,8 @@ export const monitorEditorDialog = hoistCmp.factory<MonitorTabModel>(({model}) =
         isOpen: model.showEditorDialog,
         canOutsideClickClose: false,
         onClose: () => (model.showEditorDialog = false),
-        item: panel({
-            item: restGrid({modelConfig: {...modelSpec, readonly: AppModel.readonly}}),
+        children: panel({
+            children: restGrid({modelConfig: {...modelSpec, readonly: AppModel.readonly}}),
             bbar: [
                 filler(),
                 button({
@@ -96,7 +96,7 @@ const modelSpec: RestGridConfig = {
         {field: 'failThreshold'},
         {field: 'metricUnit'},
         {field: 'params'},
-        {field: 'notes', formField: {item: textArea()}},
+        {field: 'notes', formField: {children: textArea()}},
         {field: 'primaryOnly'},
         {field: 'sortOrder'},
         {field: 'lastUpdated'},

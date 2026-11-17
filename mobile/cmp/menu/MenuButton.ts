@@ -92,7 +92,6 @@ export const [MenuButton, menuButton] = hoistCmp.withFactory<MenuButtonProps>({
             isOpen: impl.isOpen,
             position: menuPosition,
             disabled: disabled,
-            item: button({icon, disabled, testId, ...props}),
             content: menu({
                 menuItems: isFunction(menuItems) ? impl.menuItems : menuItems,
                 context: isFunction(context) ? impl.context : context,
@@ -103,7 +102,8 @@ export const [MenuButton, menuButton] = hoistCmp.withFactory<MenuButtonProps>({
             }),
             onInteraction: nextOpenState => impl.setOpen(nextOpenState, menuItems, context),
             backdrop: true,
-            ...popoverProps
+            ...popoverProps,
+            children: button({icon, disabled, testId, ...props})
         });
     }
 });

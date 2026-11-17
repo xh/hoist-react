@@ -299,7 +299,7 @@ function wrapWithModel(render: RenderFn, cfg: Config): RenderFn {
                 proper model is available via context, or specify using the 'model' prop.`,
                 cfg.displayName
             );
-            return cmpErrDisplay({...getLayoutProps(props), item: 'No model found'});
+            return cmpErrDisplay({...getLayoutProps(props), children: 'No model found'});
         }
 
         useDebugValue(model, m => {
@@ -354,7 +354,7 @@ function wrapWithModel(render: RenderFn, cfg: Config): RenderFn {
             : createElement(HostCmp, {managedRender, key: model?.xhId});
 
         return insertLookup.current
-            ? modelLookupContextProvider({value: insertLookup.current, item: ret})
+            ? modelLookupContextProvider({value: insertLookup.current, children: ret})
             : ret;
     };
 }

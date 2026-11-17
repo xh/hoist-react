@@ -21,7 +21,7 @@ export const badgeCol: ColumnSpec = {
 export function badgeRenderer(v) {
     return v
         ? badge({
-              item: v,
+              children: v,
               className: 'xh-badge-col',
               style: {cursor: 'copy'},
               title: 'Double-click to copy',

@@ -34,7 +34,7 @@ export const configDetailPanel = hoistCmp.factory<ConfigPanelModel>({
                 return [
                     formFieldSet({
                         title: 'Config',
-                        items: [
+                        children: [
                             hbox(
                                 formField({field: 'groupName', flex: 1}),
                                 formField({
@@ -63,7 +63,7 @@ export const configDetailPanel = hoistCmp.factory<ConfigPanelModel>({
                         title: 'Value',
                         // JSON values stretch to fill the remaining height - scalars sit compactly.
                         className: valueType === 'json' ? 'xh-admin-readonly-form__fill' : null,
-                        item: configValue({formModel})
+                        children: configValue({formModel})
                     })
                 ];
             }

@@ -35,7 +35,7 @@ export const pdfViewerToolbarImpl = hoistCmp.factory<PdfViewerToolbarModel>({
         return toolbar({
             className: 'xh-pdf-viewer__toolbar',
             compact: true,
-            items: model.toolbar.map((item, idx) => renderItem(item, idx, model))
+            children: model.toolbar.map((item, idx) => renderItem(item, idx, model))
         });
     }
 });
@@ -83,7 +83,7 @@ const pageNav = hoistCmp.factory<PdfViewerToolbarModel>(({model}) => {
             selectOnFocus: true,
             onCommit: v => model.goToPage(v)
         }),
-        span({className: 'xh-pdf-viewer__page-count', item: `/ ${pageCount}`}),
+        span({className: 'xh-pdf-viewer__page-count', children: `/ ${pageCount}`}),
         button({
             icon: Icon.chevronRight(),
             title: 'Next page',
@@ -147,11 +147,11 @@ const find = hoistCmp.factory<PdfViewerToolbarModel>(({model}) => {
         }),
         span({
             className: 'xh-pdf-viewer__find-count',
-            item: findMatchCount
+            children: findMatchCount
                 ? `${findMatchNumber} / ${findMatchCount}`
                 : isFinding
                   ? null
-                  : span({className: 'xh-text-color-muted', item: 'No results'}),
+                  : span({className: 'xh-text-color-muted', children: 'No results'}),
             omit: !findQuery
         }),
         button({

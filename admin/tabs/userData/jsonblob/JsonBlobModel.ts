@@ -99,7 +99,7 @@ export class JsonBlobModel extends HoistModel {
                 {field: 'acl'},
                 {field: 'name'},
                 {field: 'type'},
-                {field: 'description', formField: {item: textArea()}},
+                {field: 'description', formField: {children: textArea()}},
                 {field: 'value'},
                 {field: 'meta'},
                 {field: 'archived'},

@@ -93,7 +93,7 @@ export class PrefEditorModel extends HoistModel {
                 {field: 'groupName'},
                 {field: 'type'},
                 {field: 'defaultValue'},
-                {field: 'notes', formField: {item: textArea({height: 100})}},
+                {field: 'notes', formField: {children: textArea({height: 100})}},
                 {field: 'lastUpdated'},
                 {field: 'lastUpdatedBy'}
             ],

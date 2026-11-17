@@ -24,7 +24,7 @@ export const roleMembers = hoistCmp.factory({
     render({model, className}) {
         return panel({
             className,
-            item: grid(),
+            children: grid(),
             tbar: toolbar(
                 span(
                     model.type == 'inherited'

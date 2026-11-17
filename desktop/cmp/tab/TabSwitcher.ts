@@ -114,16 +114,16 @@ export const [TabSwitcher, tabSwitcher] = hoistCmp.withFactory<TabSwitcherProps>
                 id,
                 disabled,
                 style: tabStyle,
-                item: bpTooltip({
+                children: bpTooltip({
                     content: tooltip as ReactElement,
                     disabled: !tooltip,
                     hoverOpenDelay: 1000,
                     position: flipOrientation(orientation),
-                    item: hframe({
+                    children: hframe({
                         className: 'xh-tab-switcher__tab',
                         tabIndex: -1,
                         testId,
-                        items: [
+                        children: [
                             icon,
                             span(title),
                             button({
@@ -175,15 +175,15 @@ export const [TabSwitcher, tabSwitcher] = hoistCmp.withFactory<TabSwitcherProps>
                 `xh-tab-switcher--${orientation}`,
                 enableOverflow ? `xh-tab-switcher--overflow-enabled` : null
             ),
-            items: [
+            children: [
                 div({
                     ref,
                     className: `xh-tab-switcher__scroll`,
-                    item: bpTabs({
+                    children: bpTabs({
                         id: model.xhId,
                         vertical,
                         animate,
-                        items,
+                        children: items,
                         selectedTabId: activeTabId,
                         onChange: tabId => model.setActiveTabId(tabId as string)
                     }),
@@ -211,7 +211,7 @@ const groupHeader = hoistCmp.factory({
             ),
             role: 'presentation',
             [TEST_ID]: testId,
-            items: [spec?.icon, span(spec?.title ?? group)]
+            children: [spec?.icon, span(spec?.title ?? group)]
         });
     }
 });
@@ -254,13 +254,13 @@ const overflowMenu = hoistCmp.factory<TabContainerModel>({
         return popover({
             popoverClassName: 'xh-tab-switcher__overflow-popover',
             position: 'bottom-right',
-            item: button({
+            children: button({
                 icon: vertical ? Icon.ellipsisHorizontal() : Icon.ellipsisVertical()
             }),
             minimal: true,
             content: menu({
                 className: 'xh-tab-switcher__overflow-menu',
-                items
+                children: items
             })
         });
     }

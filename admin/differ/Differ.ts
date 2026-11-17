@@ -33,7 +33,7 @@ export const differ = hoistCmp.factory({
                 isOpen: true,
                 canOutsideClickClose: false,
                 onClose: () => model.parentModel.closeDiffer(),
-                item: contents()
+                children: contents()
             }),
             differDetail()
         );
@@ -43,12 +43,12 @@ export const differ = hoistCmp.factory({
 const contents = hoistCmp.factory<DifferModel>(({model}) => {
     return panel({
         tbar: tbar(),
-        item: model.hasLoaded
+        children: model.hasLoaded
             ? grid({
                   agOptions: {popupParent: null}
               })
             : frame({
-                  item: `No ${model.displayName}s loaded for comparison.`,
+                  children: `No ${model.displayName}s loaded for comparison.`,
                   padding: true
               }),
         bbar: bbar(),

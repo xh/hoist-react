@@ -29,7 +29,7 @@ Code examples for typical use cases. Use element factory style (not JSX):
 ```typescript
 panel({
     title: 'Users',
-    items: [grid({model: gridModel})],
+    children: [grid({model: gridModel})],
     bbar: toolbar(button({text: 'Save'}))
 })
 ```

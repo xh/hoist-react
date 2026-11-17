@@ -97,16 +97,16 @@ export const [Banner, banner] = hoistCmp.withFactory<BannerProps>({
             ),
             style,
             testId,
-            items: [
+            children: [
                 hframe({
                     className: 'xh-banner__content',
                     onClick,
-                    items: [
+                    children: [
                         icon,
                         div({
                             className: 'xh-banner__message',
                             title: isString(message) && !wrap ? message : undefined,
-                            item: isString(message) ? markdown({content: message}) : message
+                            children: isString(message) ? markdown({content: message}) : message
                         })
                     ]
                 }),

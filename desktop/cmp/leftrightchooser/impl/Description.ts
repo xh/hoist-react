@@ -22,6 +22,6 @@ export const description = hoistCmp.factory<LeftRightChooserModel>(({model}) => 
         className: 'xh-lr-chooser__description',
         intent: 'primary',
         icon: null,
-        item: selDescription
+        children: selDescription
     });
 });

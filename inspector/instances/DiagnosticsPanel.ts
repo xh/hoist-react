@@ -32,17 +32,17 @@ export const diagnosticsPanel = hoistCmp.factory({
             hasTracked = !isEmpty(model.trackedDiagnostics);
 
         return panel({
-            item: hasTracked
+            children: hasTracked
                 ? grid({model: model.gridModel, agOptions: {popupParent}})
                 : placeholder(
                       Icon.gauge(),
                       'Select a Store, Cube, Cube View, or GridModel to view data-pipeline diagnostics.'
                   ),
             bbar: toolbar({
-                items: [
+                children: [
                     span({
                         title: 'Stream each op performed by the selected instances to the devtools console, without raising the app-wide log level. Sticky per instance - logging continues when the selection moves elsewhere.',
-                        item: switchInput({
+                        children: switchInput({
                             value: model.logOps,
                             onChange: v => model.setLogOps(v),
                             label: 'Log operations to console',

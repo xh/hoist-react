@@ -473,7 +473,10 @@ const MenuHeadingItem = hoistCmp<MenuHeadingItemProps>({
             span({className: 'ag-menu-option-part ag-menu-option-icon'}),
             span({
                 className: 'ag-menu-option-part ag-menu-option-text',
-                item: span({className: 'xh-grid-menu-heading__label', item: heading.heading})
+                children: span({
+                    className: 'xh-grid-menu-heading__label',
+                    children: heading.heading
+                })
             }),
             span({className: 'ag-menu-option-part ag-menu-option-shortcut'}),
             span({className: 'ag-menu-option-part ag-menu-option-popup-pointer'})
@@ -489,22 +492,22 @@ const RecordActionMenuItem = hoistCmp<RecordActionMenuItemProps>({
 
         return div({
             [TEST_ID]: displaySpec.testId,
-            items: [
+            children: [
                 span({
                     className: 'ag-menu-option-part ag-menu-option-icon',
-                    item: displaySpec.icon
+                    children: displaySpec.icon
                 }),
                 span({
                     className: 'ag-menu-option-part ag-menu-option-text',
-                    item: displaySpec.text
+                    children: displaySpec.text
                 }),
                 span({
                     className: 'ag-menu-option-part ag-menu-option-shortcut',
-                    item: displaySpec.secondaryText
+                    children: displaySpec.secondaryText
                 }),
                 span({
                     className: 'ag-menu-option-part ag-menu-option-popup-pointer',
-                    item: subMenu
+                    children: subMenu
                         ? span({
                               className: 'ag-icon ag-icon-small-right',
                               unselectable: 'on',

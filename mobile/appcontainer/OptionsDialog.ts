@@ -32,12 +32,12 @@ export const optionsDialog = hoistCmp.factory({
             className: 'xh-options-dialog',
             testId: 'xh-options-dialog',
             isOpen: true,
-            item: [
+            children: [
                 mask({bind: loadTask, spinner: true}),
                 form(
                     div({
                         className: 'xh-options-dialog__form',
-                        items: [
+                        children: [
                             ...model.options.map(option => {
                                 return formField({field: option.name, ...option.formField});
                             }),

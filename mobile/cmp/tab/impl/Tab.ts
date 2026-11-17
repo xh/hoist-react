@@ -41,10 +41,10 @@ export const tab = hoistCmp.factory({
 
         return refreshContextView({
             model: refreshContextModel,
-            item: div({
+            children: div({
                 [TEST_ID]: testId,
                 className,
-                item: errorBoundary(elementFromContent(content))
+                children: errorBoundary(elementFromContent(content))
             })
         });
     }

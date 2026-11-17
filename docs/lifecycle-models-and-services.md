@@ -337,7 +337,7 @@ This is commonly used to mask UI during loading:
 panel({
     mask: 'onLoad',  // Masks entire panel (including tbar) during loadAsync()
     tbar: [refreshButton(), exportButton()],
-    items: [
+    children: [
         grid(),
         mask({bind: model.calcTask})  // Masks grid area only during a custom task
     ]
@@ -676,13 +676,13 @@ Either implement `doLoadAsync()` on the model, or bind the mask to a specific `T
 // ❌ Don't: model has no doLoadAsync — mask: 'onLoad' will silently do nothing
 panel({
     mask: 'onLoad',
-    item: grid()
+    children: grid()
 })
 
 // ✅ Do: bind to a specific TaskObserver when the model lacks LoadSupport
 panel({
     mask: model.saveTask,
-    item: grid()
+    children: grid()
 })
 ```
 
