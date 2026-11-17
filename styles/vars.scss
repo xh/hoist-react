@@ -967,7 +967,7 @@ body {
   --xh-sparkline-warning-color: var(--xh-intent-warning-text-color);
   --xh-sparkline-width: 80px;
 
-  // The muted text color is too faint for a thin line on a light background, but reads well on a dark one.
+  // The muted text color is too faint for a thin line on a light background, but fine on a dark one.
   &:where(.xh-dark) {
     --xh-sparkline-color: var(--xh-text-color-muted);
   }

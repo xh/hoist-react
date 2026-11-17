@@ -56,7 +56,7 @@ describe('Sparkline', () => {
 
         it('shows on hover in a Blueprint tooltip on desktop, built once from the data', async () => {
             const tooltip = vi.fn((data: number[]) =>
-                    span({className: 'custom-tip', item: `${data.length} days`})
+                    span({className: 'custom-tip', children: `${data.length} days`})
                 ),
                 root = renderRoot({data: [1, 2], tooltip});
 

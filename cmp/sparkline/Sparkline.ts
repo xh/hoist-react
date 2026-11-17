@@ -179,14 +179,14 @@ export const [Sparkline, sparkline] = hoistCmp.withFactory<SparklineProps>({
             ),
             plot = div({
                 className: 'xh-sparkline__plot',
-                items: [
+                children: [
                     svg({
                         className: 'xh-sparkline__svg',
                         viewBox: `0 0 ${VIEW_SIZE} ${VIEW_SIZE}`,
                         preserveAspectRatio: 'none',
                         focusable: false,
                         'aria-hidden': true,
-                        items: [
+                        children: [
                             ...(isBar
                                 ? barShapes(data, domain, origin, colorNegative)
                                 : lineShapes(points, shape === 'area')),
@@ -204,7 +204,7 @@ export const [Sparkline, sparkline] = hoistCmp.withFactory<SparklineProps>({
                     ...rootProps,
                     className: classNames(divProps.className, className),
                     'aria-label': String(domAttrs?.['aria-label'] ?? sparklineLabel(data)),
-                    item: plot
+                    children: plot
                 });
 
         // The desktop AppContainer installs the impl. Without it, as on mobile, show no tooltip.

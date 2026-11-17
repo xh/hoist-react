@@ -53,7 +53,7 @@ export const sparklineTooltipImpl = hoistCmp.factory<SparklineTooltipImplProps>(
                 onMouseEnter: () => {
                     cancel();
                     timer.current = window.setTimeout(() => {
-                        // Stay unarmed while there is nothing to show, so a later hover tries again.
+                        // Stay unarmed while there is no content, so a later hover tries again.
                         probed.current = contentOf(latestGetContent.current);
                         if (probed.current != null) setArmed(true);
                     }, HOVER_OPEN_DELAY);
