@@ -30,12 +30,21 @@ import {
     sparklineLabel,
     sparklineLinePath,
     sparklinePoints,
+    sparklineSegments,
     VIEW_SIZE
 } from './impl/SparklineGeometry';
-import type {SparklinePoint} from './impl/SparklineGeometry';
+import type {SparklinePoint, SparklineSegment} from './impl/SparklineGeometry';
 import './Sparkline.scss';
 
 export type SparklineType = 'line' | 'area' | 'bar';
+
+/**
+ * Where a Sparkline takes its color from:
+ * - `intent` - the `intent` prop, or the neutral color if unset.
+ * - `trend` - the direction of the whole series, from its first value to its last.
+ * - `sign` - the side of zero, or of `baseline` if set, of each part of the series.
+ */
+export type SparklineColorBy = 'intent' | 'trend' | 'sign';
 
 /** A value to mark with a dot: the first, the last, the lowest or the highest. */
 export type SparklineMarker = 'first' | 'last' | 'min' | 'max';
@@ -59,29 +68,30 @@ export interface SparklineProps extends HoistProps, LayoutProps, TestSupportProp
      * Shape of the series. Default `line`.
      *
      * - `line` - a line through the values.
-     * - `area` - a line, filled down to the bottom of the box.
+     * - `area` - a line, filled to `baseline` if set, to zero with `colorBy: 'sign'`, or else down
+     *   to the bottom of the box.
      * - `bar` - a bar per value. A bar grows up or down from zero, or from `baseline` if set.
      */
     type?: SparklineType;
 
     /**
-     * Semantic color for the series. Default is the neutral `--xh-sparkline-color`. For any other
-     * color, set that CSS variable or the CSS `color` of the component.
+     * Where the series takes its color from. Default `intent`. The `trend` and `sign` options use
+     * the positive and negative value colors, those of the `xh-pos-val` and `xh-neg-val` classes.
+     *
+     * - `intent` - the `intent` prop, or the neutral color if unset.
+     * - `trend` - the whole series in the positive color if its last value is above its first, or
+     *   the negative color if below. A series that ends where it started stays neutral.
+     * - `sign` - each bar, or each part of a line or area, by its side of zero or `baseline`. The
+     *   scale takes zero in, and an area fills to it. Suits a series of profit and loss.
+     */
+    colorBy?: SparklineColorBy;
+
+    /**
+     * Semantic color for the series, used when `colorBy` is `intent`. Default is the neutral
+     * `--xh-sparkline-color`. For any other color, set that CSS variable or the CSS `color` of the
+     * component.
      */
     intent?: Intent;
-
-    /**
-     * True to color the series by its direction: the positive value color if the last value is
-     * above the first, the negative value color if it is below. These are the colors of the
-     * `xh-pos-val` and `xh-neg-val` classes. Ignored when `intent` is set.
-     */
-    colorByTrend?: boolean;
-
-    /**
-     * True to draw each bar below zero, or below `baseline` if set, in the negative value color.
-     * Applies to the `bar` type only.
-     */
-    colorNegative?: boolean;
 
     /**
      * Values to mark with a dot. The `min` and `max` dots use the negative and positive value
@@ -92,7 +102,7 @@ export interface SparklineProps extends HoistProps, LayoutProps, TestSupportProp
 
     /**
      * Value to draw a reference line at, such as zero or a prior close. The scale extends to
-     * take it in, unless `min` or `max` fixes that side.
+     * take it in, unless `min` or `max` fixes that side. An area fills to it, and bars grow from it.
      */
     baseline?: number;
 
@@ -144,8 +154,7 @@ export const [Sparkline, sparkline] = hoistCmp.withFactory<SparklineProps>({
                     data,
                     type,
                     intent,
-                    colorByTrend,
-                    colorNegative,
+                    colorBy,
                     markers,
                     baseline,
                     min,
@@ -158,20 +167,22 @@ export const [Sparkline, sparkline] = hoistCmp.withFactory<SparklineProps>({
             shape = type ?? 'line',
             isBar = shape === 'bar',
             origin = isFinite(baseline) ? baseline : 0,
+            // Bars, and a series colored by sign, are drawn from the origin.
+            bySign = colorBy === 'sign',
+            fromOrigin = isBar || bySign,
             domain = sparklineDomain(data, {
                 min,
                 max,
-                include: isBar ? [origin] : [baseline]
+                include: fromOrigin ? [origin] : [baseline]
             }),
             points = sparklinePoints(data, domain),
+            floorY = fromOrigin || isFinite(baseline) ? scaleY(origin, domain) : VIEW_SIZE,
             divProps = mergeDeep(
                 {
                     className: classNames(
                         className,
                         `xh-sparkline--${shape}`,
-                        intent
-                            ? `xh-sparkline--intent-${intent}`
-                            : colorByTrend && trendClass(points)
+                        colorClass(colorBy, intent, points)
                     )
                 },
                 {style: layoutProps},
@@ -188,8 +199,13 @@ export const [Sparkline, sparkline] = hoistCmp.withFactory<SparklineProps>({
                         'aria-hidden': true,
                         children: [
                             ...(isBar
-                                ? barShapes(data, domain, origin, colorNegative)
-                                : lineShapes(points, shape === 'area')),
+                                ? barShapes(data, domain, origin, bySign)
+                                : lineShapes(
+                                      points,
+                                      shape === 'area',
+                                      floorY,
+                                      bySign && sparklineSegments(points, domain, origin)
+                                  )),
                             baselineShape(baseline, domain)
                         ]
                     }),
@@ -223,12 +239,31 @@ export const [Sparkline, sparkline] = hoistCmp.withFactory<SparklineProps>({
 /** Props a desktop tooltip adds to the root element. */
 type RootProps = HTMLAttributes<HTMLElement> & {ref?: Ref<HTMLElement>};
 
-function lineShapes(points: SparklinePoint[], withArea: boolean): ReactElement[] {
+/**
+ * The line, and the area under it down to `floorY` if `withArea`. With `segments`, the parts below
+ * the origin draw as separate shapes, in the negative color.
+ */
+function lineShapes(
+    points: SparklinePoint[],
+    withArea: boolean,
+    floorY: number,
+    segments: SparklineSegment[]
+): ReactElement[] {
     // A lone value has no line to draw, and shows as a dot instead.
     if (points.length < 2) return [];
+
+    const [negative, positive] = segments
+            ? partition(segments, 'negative')
+            : [[], [{points, negative: false}]],
+        areaPath = (segs: SparklineSegment[]) =>
+            segs.map(it => sparklineAreaPath(it.points, floorY)).join(''),
+        linePath = (segs: SparklineSegment[]) =>
+            segs.map(it => sparklineLinePath(it.points)).join('');
     return [
-        withArea ? shapePath('area', sparklineAreaPath(points)) : null,
-        shapePath('line', sparklineLinePath(points))
+        withArea ? shapePath('area', areaPath(positive)) : null,
+        withArea ? shapePath('area xh-sparkline__area--negative', areaPath(negative)) : null,
+        shapePath('line', linePath(positive)),
+        shapePath('line xh-sparkline__line--negative', linePath(negative))
     ];
 }
 
@@ -236,10 +271,10 @@ function barShapes(
     data: number[],
     domain: [number, number],
     origin: number,
-    colorNegative: boolean
+    bySign: boolean
 ): ReactElement[] {
     const bars = sparklineBars(data, domain, origin),
-        [negative, positive] = partition(bars, bar => colorNegative && bar.negative);
+        [negative, positive] = partition(bars, bar => bySign && bar.negative);
     return [
         shapePath('bars', sparklineBarsPath(positive)),
         shapePath('bars xh-sparkline__bars--negative', sparklineBarsPath(negative))
@@ -293,8 +328,17 @@ function dot(name: string, {x, y}: SparklinePoint): ReactElement {
     });
 }
 
-function trendClass(points: SparklinePoint[]): string {
-    if (points.length < 2) return null;
-    const change = last(points).value - first(points).value;
-    return change > 0 ? 'xh-sparkline--trend-up' : change < 0 ? 'xh-sparkline--trend-down' : null;
+/** The class that sets the series color. With `sign`, it colors the shapes above the origin. */
+function colorClass(colorBy: SparklineColorBy, intent: Intent, points: SparklinePoint[]): string {
+    switch (colorBy) {
+        case 'sign':
+            return 'xh-sparkline--positive';
+        case 'trend': {
+            const change = points.length > 1 ? last(points).value - first(points).value : 0;
+            if (change === 0) return null;
+            return change > 0 ? 'xh-sparkline--positive' : 'xh-sparkline--negative';
+        }
+        default:
+            return intent ? `xh-sparkline--intent-${intent}` : null;
+    }
 }

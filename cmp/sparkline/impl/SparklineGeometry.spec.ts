@@ -13,6 +13,7 @@ import {
     sparklineLabel,
     sparklineLinePath,
     sparklinePoints,
+    sparklineSegments,
     usableValues
 } from '@xh/hoist/cmp/sparkline/impl/SparklineGeometry';
 import {describe, expect, it} from 'vitest';
@@ -137,6 +138,121 @@ describe('SparklineGeometry', () => {
 
         it('has no shape for a lone value', () => {
             expect(sparklineAreaPath(sparklinePoints([5], [5, 5]))).toBe('');
+        });
+
+        it('closes each run down to a given floor, such as a baseline', () => {
+            const points = sparklinePoints([10, 5], [0, 10]);
+            expect(sparklineAreaPath(points, 50)).toBe('M0 50L0 0L100 50L100 50Z');
+        });
+    });
+
+    describe('sparklineSegments', () => {
+        // Each segment as its side, then its points' [x, value] pairs.
+        const segments = (values: number[], origin = 0) => {
+            const domain = sparklineDomain(values, {include: [origin]});
+            return sparklineSegments(sparklinePoints(values, domain), domain, origin).map(seg => [
+                seg.negative ? '-' : '+',
+                seg.points.map(pt => [pt.x, pt.value])
+            ]);
+        };
+
+        it('keeps a line on one side of the origin whole', () => {
+            expect(segments([1, 2, 3])).toEqual([
+                [
+                    '+',
+                    [
+                        [0, 1],
+                        [50, 2],
+                        [100, 3]
+                    ]
+                ]
+            ]);
+            expect(segments([-1, -2])).toEqual([
+                [
+                    '-',
+                    [
+                        [0, -1],
+                        [100, -2]
+                    ]
+                ]
+            ]);
+        });
+
+        it('cuts the line where it crosses the origin, with a point on the origin in both halves', () => {
+            expect(segments([30, -10])).toEqual([
+                [
+                    '+',
+                    [
+                        [0, 30],
+                        [75, 0]
+                    ]
+                ],
+                [
+                    '-',
+                    [
+                        [75, 0],
+                        [100, -10]
+                    ]
+                ]
+            ]);
+        });
+
+        it('cuts at a value on the origin, without adding a point', () => {
+            expect(segments([10, 0, -10])).toEqual([
+                [
+                    '+',
+                    [
+                        [0, 10],
+                        [50, 0]
+                    ]
+                ],
+                [
+                    '-',
+                    [
+                        [50, 0],
+                        [100, -10]
+                    ]
+                ]
+            ]);
+        });
+
+        it('keeps a line that touches the origin and turns back in one segment', () => {
+            expect(segments([10, 0, 10])).toEqual([
+                [
+                    '+',
+                    [
+                        [0, 10],
+                        [50, 0],
+                        [100, 10]
+                    ]
+                ]
+            ]);
+        });
+
+        it('cuts at a baseline other than zero', () => {
+            expect(segments([110, 90], 100)).toEqual([
+                [
+                    '+',
+                    [
+                        [0, 110],
+                        [50, 100]
+                    ]
+                ],
+                [
+                    '-',
+                    [
+                        [50, 100],
+                        [100, 90]
+                    ]
+                ]
+            ]);
+        });
+
+        it('starts a new segment after a gap, even on the same side', () => {
+            expect(segments([5, null, 5])).toEqual([
+                ['+', [[0, 5]]],
+                ['+', [[100, 5]]]
+            ]);
         });
     });
 

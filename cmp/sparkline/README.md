@@ -41,8 +41,10 @@ In scope:
 
 - One series of numbers, drawn as a `line`, an `area` or a `bar` series.
 - Points spaced evenly by index. A gap in the data leaves its space empty.
-- Color by `intent` or by trend, dots on the first, last, lowest and highest values, and a
-  `baseline`.
+- Color by `intent`, by trend or by the sign of each part, chosen with `colorBy`. Dots on the
+  first, last, lowest and highest values, and a `baseline`.
+- With `colorBy: 'sign'`, the parts of a series above and below zero or the `baseline` in the
+  positive and negative colors, with an area filled to that line, for a series of profit and loss.
 - A fixed scale through `min` and `max`, so that the rows of a grid compare.
 - One tooltip for the whole sparkline, as text or an element. See [Tooltip](#tooltip).
 
@@ -104,10 +106,13 @@ import {sparkline} from '@xh/hoist/cmp/sparkline';
 sparkline({data: [101, 103, 102, 106, 109, 107, 113, 118]})
 
 // Green if the series ends above its start, red if below, with a dot on the last value
-sparkline({data, colorByTrend: true, markers: ['last']})
+sparkline({data, colorBy: 'trend', markers: ['last']})
 
-// Daily P&L as bars, with losses below a zero line in the negative value color
-sparkline({data: dailyPnl, type: 'bar', colorNegative: true, baseline: 0})
+// Daily P&L as bars, gains above a zero line and losses below it, in the value colors
+sparkline({data: dailyPnl, type: 'bar', colorBy: 'sign', baseline: 0})
+
+// Running P&L as an area filled to zero, split into the same colors where it crosses
+sparkline({data: runningPnl, type: 'area', colorBy: 'sign', baseline: 0})
 ```
 
 The component renders inline with no outer margin. With `width: '100%'` or `flex: 1` it
@@ -185,7 +190,8 @@ the user does not hover.
 Set the `--xh-sparkline-*` variables on `body.xh-app` to change the default size, line width and
 colors. The full set is in the `Sparklines` block of [`styles/vars.scss`](../../styles/vars.scss).
 Every shape draws in the CSS `color` of the component, so a class that sets `color` gives one
-sparkline a color of its own.
+sparkline a color of its own. Set `--xh-sparkline-area-color` to fill an area in a color other
+than its line's. It then ignores `intent` and `colorBy`, which still color the line.
 
 ```scss
 body.xh-app {
@@ -199,7 +205,6 @@ body.xh-app {
 
 - **The data is not observed.** Pass a new array to redraw. A change to an array in place does
   not redraw the sparkline.
-- **`intent` wins over `colorByTrend`.** Set one or the other.
 - **Bars grow from zero by default.** The scale takes zero in, so a bar series far from zero draws
   bars of almost equal height. Set `baseline` or `min` to change that.
 - **The tooltip shows on desktop only.** Mobile has no hover, so a sparkline there shows no

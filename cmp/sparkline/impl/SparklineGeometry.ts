@@ -17,11 +17,21 @@ const BAR_GAP = 0.2;
 
 /** A usable value, placed in the view. A gap in the data has no point. */
 export interface SparklinePoint {
-    /** Index of the value in the data. */
+    /**
+     * Index of the value in the data. Fractional for a point added where a line crosses its
+     * origin - see {@link sparklineSegments}.
+     */
     index: number;
     value: number;
     x: number;
     y: number;
+}
+
+/** A stretch of a line that lies on one side of its origin. */
+export interface SparklineSegment {
+    points: SparklinePoint[];
+    /** True if the stretch lies below the origin. */
+    negative: boolean;
 }
 
 /** A bar, as a rectangle in the view. */
@@ -105,15 +115,53 @@ export function sparklineLinePath(points: SparklinePoint[]): string {
         .join('');
 }
 
-/** SVG path data for the fill between the line and the bottom of the view, one shape per run. */
-export function sparklineAreaPath(points: SparklinePoint[]): string {
+/**
+ * SVG path data for the fill between the line and `floorY`, one shape per run. The floor defaults
+ * to the bottom of the view.
+ */
+export function sparklineAreaPath(points: SparklinePoint[], floorY: number = VIEW_SIZE): string {
     return runs(points)
         .filter(run => run.length > 1)
         .map(run => {
             const line = run.map(pt => `L${pt.x} ${pt.y}`).join('');
-            return `M${first(run).x} ${VIEW_SIZE}${line}L${last(run).x} ${VIEW_SIZE}Z`;
+            return `M${first(run).x} ${floorY}${line}L${last(run).x} ${floorY}Z`;
         })
         .join('');
+}
+
+/**
+ * The runs of a line, cut where it crosses `origin`, so each side can draw in its own color. A
+ * cut adds a point on the origin, which ends one segment and starts the next. A value exactly on
+ * the origin is itself the cut. Each segment draws as one run, with no gap inside it.
+ */
+export function sparklineSegments(
+    points: SparklinePoint[],
+    domain: [number, number],
+    origin: number
+): SparklineSegment[] {
+    return runs(points).flatMap(run => {
+        const ret: SparklineSegment[] = [];
+        // Side of the current segment: 0 while it has only touched the origin.
+        let side = 0;
+        run.forEach((pt, idx) => {
+            const ptSide = Math.sign(pt.value - origin),
+                segment = last(ret);
+            if (idx === 0) {
+                ret.push({points: [pt], negative: ptSide < 0});
+            } else if (ptSide === 0 || side === 0 || ptSide === side) {
+                segment.points.push(pt);
+                if (side === 0) segment.negative = ptSide < 0;
+            } else {
+                // The line crosses over: end this segment on the origin and start the next there.
+                const prev = last(segment.points),
+                    cut = prev.value === origin ? prev : crossing(prev, pt, origin, domain);
+                if (cut !== prev) segment.points.push(cut);
+                ret.push({points: [cut, pt], negative: ptSide < 0});
+            }
+            if (ptSide !== 0) side = ptSide;
+        });
+        return ret;
+    });
 }
 
 /**
@@ -165,18 +213,37 @@ export function sparklineLabel(data: number[]): string {
 //------------------
 // Implementation
 //------------------
-/** Points split into runs of consecutive indexes. */
+/**
+ * Points split into runs at each gap. Indexes within a run step by at most 1, which keeps a
+ * crossing point with a fractional index in its run.
+ */
 function runs(points: SparklinePoint[]): SparklinePoint[][] {
     const ret: SparklinePoint[][] = [];
     points.forEach(pt => {
         const run = last(ret);
-        if (run && last(run).index === pt.index - 1) {
+        if (run && pt.index - last(run).index <= 1) {
             run.push(pt);
         } else {
             ret.push([pt]);
         }
     });
     return ret;
+}
+
+/** The point where the straight line from `a` to `b` meets `origin`. */
+function crossing(
+    a: SparklinePoint,
+    b: SparklinePoint,
+    origin: number,
+    domain: [number, number]
+): SparklinePoint {
+    const t = (origin - a.value) / (b.value - a.value);
+    return {
+        index: a.index + t,
+        value: origin,
+        x: round(a.x + t * (b.x - a.x), 2),
+        y: scaleY(origin, domain)
+    };
 }
 
 /** Drops binary floating-point noise, such as 0.30000000000000004. */

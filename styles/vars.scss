@@ -951,6 +951,8 @@ body {
   //------------------------
   // Sparklines
   //------------------------
+  // The line's color by default. Resolves on the area, so it follows `intent` and `colorBy`.
+  --xh-sparkline-area-color: currentColor;
   --xh-sparkline-area-opacity: 0.15;
   --xh-sparkline-baseline-color: var(--xh-text-color-muted);
   --xh-sparkline-color: var(--xh-blue-gray);

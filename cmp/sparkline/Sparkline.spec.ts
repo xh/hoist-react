@@ -128,7 +128,7 @@ describe('Sparkline', () => {
                 baseline: null,
                 min: null,
                 max: null,
-                colorByTrend: null,
+                colorBy: null,
                 markers: null,
                 tooltip: null
             });
@@ -159,8 +159,28 @@ describe('Sparkline', () => {
         expect(part(plain, 'bars--negative')).toBeNull();
         expect(part(plain, 'line')).toBeNull();
 
-        const colored = renderRoot({data: [10, -10], type: 'bar', colorNegative: true});
+        const colored = renderRoot({data: [10, -10], type: 'bar', colorBy: 'sign'});
         expect(part(colored, 'bars--negative')).not.toBeNull();
+    });
+
+    it('colors the part of a line or area below zero only when asked', () => {
+        const plain = renderRoot({data: [10, -10], type: 'area'});
+        expect(part(plain, 'area--negative')).toBeNull();
+        expect(part(plain, 'line--negative')).toBeNull();
+
+        const colored = renderRoot({data: [10, -10], type: 'area', colorBy: 'sign'});
+        expect(part(colored, 'area--negative')).not.toBeNull();
+        expect(part(colored, 'line--negative')).not.toBeNull();
+    });
+
+    it('fills an area to its baseline, or to the bottom without one', () => {
+        const floor = (props: Partial<SparklineProps>) =>
+            part(renderRoot({data: [0, 10], type: 'area', ...props}), 'area')
+                .getAttribute('d')
+                .match(/^M[\d.]+ ([\d.]+)/)[1];
+
+        expect(floor({})).toBe('100');
+        expect(floor({baseline: 5})).toBe('50');
     });
 
     it.each([
@@ -212,16 +232,18 @@ describe('Sparkline', () => {
         ).toBeNull();
     });
 
-    it('colors by intent, or by trend when asked', () => {
+    it('colors by intent by default, or by trend or sign when asked', () => {
         const classes = (props: Partial<SparklineProps>, data = [1, 2]) =>
             renderRoot({data, ...props}).className;
 
-        expect(classes({})).not.toMatch(/--intent|--trend/);
+        expect(classes({})).not.toMatch(/--intent|--positive|--negative/);
         expect(classes({intent: 'warning'})).toContain('xh-sparkline--intent-warning');
-        expect(classes({colorByTrend: true})).toContain('xh-sparkline--trend-up');
-        expect(classes({colorByTrend: true}, [2, null, 1])).toContain('xh-sparkline--trend-down');
-        expect(classes({colorByTrend: true}, [2, 9, 2])).not.toMatch(/--trend/);
-        expect(classes({colorByTrend: true, intent: 'primary'})).not.toMatch(/--trend/);
+        expect(classes({colorBy: 'intent', intent: 'warning'})).toContain('--intent-warning');
+        expect(classes({colorBy: 'trend'})).toContain('xh-sparkline--positive');
+        expect(classes({colorBy: 'trend'}, [2, null, 1])).toContain('xh-sparkline--negative');
+        expect(classes({colorBy: 'trend'}, [2, 9, 2])).not.toMatch(/--positive|--negative/);
+        expect(classes({colorBy: 'trend', intent: 'primary'}, [2, 1])).not.toMatch(/--intent/);
+        expect(classes({colorBy: 'sign'}, [2, -1])).toContain('xh-sparkline--positive');
     });
 
     it('applies layout props, a class name and a test id to its root', () => {
