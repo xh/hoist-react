@@ -124,15 +124,15 @@ import {textInput, select, dateInput} from '@xh/hoist/desktop/cmp/input';
 
 formField({
     field: 'name',
-    item: textInput()
+    children: textInput()
 }),
 formField({
     field: 'category',
-    item: select({options: categories})
+    children: select({options: categories})
 }),
 formField({
     field: 'startDate',
-    item: dateInput({enableClear: true})
+    children: dateInput({enableClear: true})
 })
 ```
 
@@ -167,7 +167,7 @@ import {iconPicker} from '@xh/hoist/desktop/cmp/input';
 
 formField({
     field: 'icon',
-    item: iconPicker({compact: true})
+    children: iconPicker({compact: true})
 })
 
 // Render the persisted choice
@@ -188,7 +188,7 @@ panel({
     icon: Icon.user(),
     tbar: toolbar(refreshButton(), exportButton()),
     bbar: toolbar(filler(), saveButton()),
-    items: [userForm()]
+    children: [userForm()]
 })
 ```
 
@@ -212,7 +212,7 @@ import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {filler} from '@xh/hoist/cmp/layout';
 
 toolbar({
-    items: [
+    children: [
         button({text: 'Add', icon: Icon.add()}),
         button({text: 'Edit', icon: Icon.edit()}),
         '-',        // separator token — shorthand for toolbarSep()
@@ -432,12 +432,12 @@ export const taskDialog = hoistCmp.factory({
             style: {width: 500},
             isOpen: true,
             onClose: () => model.close(),
-            item: panel({
-                item: form(
-                    formField({field: 'description', item: textInput()})
+            children: panel({
+                children: form(
+                    formField({field: 'description', children: textInput()})
                 ),
                 bbar: toolbar({
-                    items: [filler(), button({text: 'Save', intent: 'primary'})]
+                    children: [filler(), button({text: 'Save', intent: 'primary'})]
                 })
             })
         });
@@ -455,7 +455,7 @@ export const todoPanel = hoistCmp.factory({
     render({model}) {
         return panel({
             tbar: toolbar({
-                items: [
+                children: [
                     button({
                         text: 'New Task',
                         icon: Icon.add(),
@@ -463,7 +463,7 @@ export const todoPanel = hoistCmp.factory({
                     })
                 ]
             }),
-            items: [
+            children: [
                 grid(),
                 taskDialog()   // Always rendered - shows/hides based on isOpen
             ]
@@ -476,7 +476,7 @@ Key points:
 - Import `dialog` from `@xh/hoist/kit/blueprint` (not from Blueprint directly) to get
   Hoist's transition-disabled wrapper.
 - The parent model owns the dialog model as a `@managed` property and calls `open()`/`close()`.
-- The parent component renders the dialog factory in its `items` alongside other children -
+- The parent component renders the dialog factory in its `children` alongside other children -
   the dialog shows/hides itself based on its model's `isOpen` state.
 - Use `onClose` to handle the dialog's close button and outside-click-to-close.
 - Wrap dialog content in a `panel()` when you need toolbars, masks, or standard layout.
@@ -554,7 +554,7 @@ const userListPanel = hoistCmp.factory({
                 filler(),
                 storeFilterField()
             ),
-            item: grid(),
+            children: grid(),
             mask: 'onLoad'
         });
     }
@@ -570,10 +570,10 @@ import {textInput, select, dateInput} from '@xh/hoist/desktop/cmp/input';
 
 form({
     model: formModel,
-    items: [
-        formField({field: 'name', item: textInput()}),
-        formField({field: 'role', item: select({options: roles})}),
-        formField({field: 'startDate', item: dateInput()})
+    children: [
+        formField({field: 'name', children: textInput()}),
+        formField({field: 'role', children: select({options: roles})}),
+        formField({field: 'startDate', children: dateInput()})
     ]
 })
 ```

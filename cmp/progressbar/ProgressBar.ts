@@ -137,27 +137,27 @@ export const [ProgressBar, progressBar] = hoistCmp.withFactory<ProgressBarProps>
             ref,
             ...ariaProps,
             ...divProps,
-            items: [
+            children: [
                 div({
                     omit: !hasLabel && shownFigure == null,
                     className: 'xh-progress-bar__header',
-                    items: [
+                    children: [
                         span({
                             omit: !hasLabel,
                             id: labelId,
                             className: 'xh-progress-bar__label',
-                            item: label
+                            children: label
                         }),
                         span({
                             omit: shownFigure == null,
                             className: 'xh-progress-bar__value',
-                            item: shownFigure
+                            children: shownFigure
                         })
                     ]
                 }),
                 div({
                     className: 'xh-progress-bar__track',
-                    items: [
+                    children: [
                         div({
                             className: 'xh-progress-bar__fill',
                             style: indeterminate ? null : {width: `${(fraction ?? 0) * 100}%`}

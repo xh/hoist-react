@@ -40,7 +40,7 @@ const cmp = hoistCmp.factory<CheckboxInputModel>(({model, className, ...props}, 
         ref,
         className,
         style: props.style,
-        items: [
+        children: [
             input({
                 className: 'xh-check-box__input',
                 type: 'checkbox',

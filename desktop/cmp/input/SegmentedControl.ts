@@ -233,7 +233,7 @@ const cmp = hoistCmp.factory<SegmentedControlModel>(({model, className, ...props
         ...getLayoutProps(props),
         [TEST_ID]: props.testId,
         ...domAttrs,
-        item: bpSegmentedControl({
+        children: bpSegmentedControl({
             ...bpProps,
             fill,
             size: compact ? 'small' : undefined,

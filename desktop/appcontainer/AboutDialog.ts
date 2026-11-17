@@ -36,10 +36,10 @@ export const aboutDialog = hoistCmp.factory({
             icon: Icon.info({size: 'lg'}),
             className: 'xh-about-dialog',
             style: {width: 450},
-            items: [
+            children: [
                 frame({
                     className: 'xh-about-dialog__inner',
-                    item: model.getTable()
+                    children: model.getTable()
                 }),
                 toolbar(
                     button({

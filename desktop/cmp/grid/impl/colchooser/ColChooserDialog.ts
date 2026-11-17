@@ -25,7 +25,7 @@ export const colChooserDialog = hoistCmp.factory({
             title: 'Choose Columns',
             isOpen: true,
             onClose: () => model.close(),
-            item: colChooser({model}),
+            children: colChooser({model}),
             className,
             // Hug the chooser's content - it sizes itself to the buckets plus the library when shown.
             style: {width: 'fit-content', maxWidth: '90vw'}

@@ -65,7 +65,7 @@ export const [Badge, badge] = hoistCmp.withFactory<BadgeProps>({
         return div({
             ref,
             ...divProps,
-            items: icon ? [icon, ...castArray(children)] : children
+            children: icon ? [icon, ...castArray(children)] : children
         });
     }
 });

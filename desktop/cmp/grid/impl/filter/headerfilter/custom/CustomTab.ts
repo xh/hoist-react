@@ -27,9 +27,9 @@ export const customTab = hoistCmp.factory({
         if (!rowModels) {
             return panel({
                 className: 'xh-custom-filter-tab',
-                item: div({
+                children: div({
                     className: 'xh-custom-filter-tab__unsupported',
-                    item: 'This filter is too complex to edit here.'
+                    children: 'This filter is too complex to edit here.'
                 })
             });
         }
@@ -37,13 +37,13 @@ export const customTab = hoistCmp.factory({
         return panel({
             className: 'xh-custom-filter-tab',
             tbar: tbar(),
-            items: div({
+            children: div({
                 className: 'xh-custom-filter-tab__list',
-                items: [
+                children: [
                     ...rowModels.map(m => customRow({model: m})),
                     div({
                         className: 'xh-custom-filter-tab__list__add-btn-row',
-                        items: [
+                        children: [
                             filler(),
                             button({
                                 icon: Icon.add(),
@@ -65,12 +65,12 @@ const tbar = hoistCmp.factory<CustomTabModel>(({model}) => {
         className: 'xh-custom-filter-tab__tbar',
         omit: !model.rowModels || model.rowModels.length < 2,
         compact: true,
-        items: [
+        children: [
             filler(),
             buttonGroupInput({
                 bind: 'op',
                 outlined: true,
-                items: [button({value: 'AND', text: 'AND'}), button({value: 'OR', text: 'OR'})]
+                children: [button({value: 'AND', text: 'AND'}), button({value: 'OR', text: 'OR'})]
             }),
             filler()
         ]

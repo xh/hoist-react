@@ -165,7 +165,7 @@ const cmp = hoistCmp.factory<IntentInputModel>(({model, className, ...props}, re
         ...getLayoutProps(props),
         [TEST_ID]: testId,
         ...domAttrs,
-        items: model.options.map(intent => {
+        children: model.options.map(intent => {
             const isSelected = renderValue === intent,
                 isNull = intent == null,
                 name = isNull ? 'None' : capitalize(intent);
@@ -186,21 +186,25 @@ const cmp = hoistCmp.factory<IntentInputModel>(({model, className, ...props}, re
                 tabIndex,
                 onClick: () => model.onSwatchClick(intent),
                 [TEST_ID]: getTestId(testId, intent ?? 'none'),
-                items: [
+                children: [
                     div({
                         className: 'xh-intent-input__swatch__fill',
                         // Check is always rendered, and hidden via `visibility` when unselected.
                         // Omitting it instead would change the swatch's baseline, which shifts
                         // baseline-aligned siblings (e.g. an inline FormField label) on every
                         // selection change - see the note in IntentInput.scss.
-                        item: Icon.check({
+                        children: Icon.check({
                             className: classNames(
                                 'xh-intent-input__swatch__check',
                                 !isSelected && 'xh-intent-input__swatch__check--hidden'
                             )
                         })
                     }),
-                    div({omit: !showNames, className: 'xh-intent-input__swatch__name', item: name})
+                    div({
+                        omit: !showNames,
+                        className: 'xh-intent-input__swatch__name',
+                        children: name
+                    })
                 ]
             });
         })

@@ -38,12 +38,12 @@ export const exceptionDialog = hoistCmp.factory({
                 isCloseButtonShown: !options.requireReload,
                 onClose,
                 icon: Icon.warning(),
-                items: [
+                children: [
                     dialogBody(options.message),
                     div({
                         omit: !exception.traceId || exception.isRoutine,
                         className: 'xh-exception-dialog__trace-id',
-                        item: `Trace ID: ${exception.traceId}`
+                        children: `Trace ID: ${exception.traceId}`
                     }),
                     bbar()
                 ]

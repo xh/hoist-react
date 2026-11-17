@@ -107,7 +107,7 @@ export const [ViewManager, viewManager] = hoistCmp.withFactory<ViewManagerProps>
             }),
             menu = popover({
                 disabled: !locModel.isVisible, // Prevent orphaned popover menu
-                item: menuButton({
+                children: menuButton({
                     model: locModel,
                     icon: buttonIcon({
                         model: locModel,
@@ -121,7 +121,7 @@ export const [ViewManager, viewManager] = hoistCmp.withFactory<ViewManagerProps>
                 }),
                 content: loadObserver.isPending
                     ? box({
-                          item: spinner({compact: true}),
+                          children: spinner({compact: true}),
                           alignItems: 'center',
                           justifyContent: 'center',
                           height: 30,
@@ -140,7 +140,7 @@ export const [ViewManager, viewManager] = hoistCmp.withFactory<ViewManagerProps>
             hbox({
                 className,
                 testId,
-                items: buttonSide == 'left' ? [revert, save, menu] : [menu, save, revert],
+                children: buttonSide == 'left' ? [revert, save, menu] : [menu, save, revert],
                 ref: useOnVisibleChange(isVisible => (locModel.isVisible = isVisible))
             }),
             manageDialog({
@@ -168,7 +168,7 @@ const menuButton = hoistCmp.factory<ViewManagerLocalModel>({
             icon: !isLoading
                 ? icon
                 : box({
-                      item: spinner({compact: true}),
+                      children: spinner({compact: true}),
                       width: 16.25
                   }),
             rightIcon: Icon.chevronDown(),

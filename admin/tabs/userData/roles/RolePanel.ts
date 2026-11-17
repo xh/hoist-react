@@ -47,7 +47,7 @@ export const rolePanel = hoistCmp.factory({
                     '-',
                     colChooserButton()
                 ],
-                item: hframe(vframe(grid(), roleGraph()), detailsPanel())
+                children: hframe(vframe(grid(), roleGraph()), detailsPanel())
             }),
             roleEditor(),
             recategorizeDialog()
@@ -62,7 +62,7 @@ const detailsPanel = hoistCmp.factory<RoleModel>(({model}) => {
         compactHeader: true,
         icon: Icon.idBadge(),
         title: selectedRole?.name ? `Details - ${selectedRole.name}` : 'Details',
-        item: roleDetails(),
+        children: roleDetails(),
         bbar: canEdit
             ? [
                   filler(),

@@ -87,10 +87,10 @@ export const [AppBar, appBar] = hoistCmp.withFactory<AppBarProps>({
         return toolbar({
             ref,
             className,
-            items: [
+            children: [
                 div({
                     className: 'xh-appbar-left',
-                    items: [
+                    children: [
                         navigatorBackButton({
                             omit: hideBackButton,
                             ...backButtonProps
@@ -113,11 +113,11 @@ export const [AppBar, appBar] = hoistCmp.withFactory<AppBarProps>({
                 }),
                 div({
                     className: 'xh-appbar-title',
-                    item: title || XH.clientAppName
+                    children: title || XH.clientAppName
                 }),
                 div({
                     className: 'xh-appbar-right',
-                    items: [
+                    children: [
                         ...(rightItems || []),
                         refreshButton({
                             omit: hideRefreshButton,

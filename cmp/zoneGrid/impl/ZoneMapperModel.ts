@@ -337,7 +337,7 @@ export class ZoneMapperModel extends HoistModel {
         const label = mapping.showLabel && !ignoreLabel ? `${field.label}: ` : null;
         return span(
             label,
-            isEmpty(classes) ? value : span({className: classes.join(' '), item: value})
+            isEmpty(classes) ? value : span({className: classes.join(' '), children: value})
         );
     }
 

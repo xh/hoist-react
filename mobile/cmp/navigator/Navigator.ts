@@ -41,11 +41,11 @@ export const [Navigator, navigator] = hoistCmp.withFactory<NavigatorModel>({
                     }
                 },
                 onSwiper: swiper => model.setSwiper(swiper),
-                items: stack.map(it => {
+                children: stack.map(it => {
                     const {key} = it as PageModel;
                     return swiperSlide({
                         key: `slide-${key}`,
-                        item: page({
+                        children: page({
                             key: `page-${key}`,
                             model: it
                         })

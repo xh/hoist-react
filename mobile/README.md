@@ -158,11 +158,11 @@ import {textInput, select, searchInput} from '@xh/hoist/mobile/cmp/input';
 
 formField({
     field: 'name',
-    item: textInput({placeholder: 'Enter name...'})
+    children: textInput({placeholder: 'Enter name...'})
 }),
 formField({
     field: 'category',
-    item: select({options: categories})
+    children: select({options: categories})
 })
 
 // Search input for filtering
@@ -183,7 +183,7 @@ panel({
     title: 'User Details',
     icon: Icon.user(),
     headerItems: [refreshButton()],
-    items: [userForm()],
+    children: [userForm()],
     bbar: toolbar(saveButton()),
     scrollable: true,
     mask: 'onLoad'
@@ -301,7 +301,7 @@ Touch-triggered popover for additional content:
 import {popover} from '@xh/hoist/mobile/cmp/popover';
 
 popover({
-    item: button({icon: Icon.info()}),
+    children: button({icon: Icon.info()}),
     content: detailCard(),
     position: 'auto'
 })
@@ -386,7 +386,7 @@ const userListPage = hoistCmp.factory({
             headerItems: [
                 button({icon: Icon.add(), onClick: () => model.addUser()})
             ],
-            items: [
+            children: [
                 searchInput({
                     bind: 'searchQuery',
                     placeholder: 'Search users...'
@@ -425,28 +425,28 @@ import {textInput, select, switchInput, numberInput} from '@xh/hoist/mobile/cmp/
 
 form({
     model: formModel,
-    items: [
+    children: [
         formFieldSet({
             title: 'Basic Info',
             modelConfig: {collapsible: true},
-            items: [
-                formField({field: 'name', item: textInput({enableClear: true})}),
+            children: [
+                formField({field: 'name', children: textInput({enableClear: true})}),
                 formField({
                     field: 'customer',
-                    item: select({
+                    children: select({
                         enableFullscreen: true,
                         queryFn: q => model.queryCustomersAsync(q)
                     })
                 }),
-                formField({field: 'active', item: switchInput()})
+                formField({field: 'active', children: switchInput()})
             ]
         }),
         formFieldSet({
             title: 'Financials',
-            items: [
+            children: [
                 formField({
                     field: 'salary',
-                    item: numberInput({displayWithCommas: true})
+                    children: numberInput({displayWithCommas: true})
                 })
             ]
         })

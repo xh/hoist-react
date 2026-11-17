@@ -48,11 +48,11 @@ export const dialogContainer = hoistCmp.factory<DialogContainerProps>({
         return createPortal(
             div({
                 className,
-                items: [
+                children: [
                     div({className: 'xh-dialog__mask', onClick: cancel}),
                     div({
                         className: 'xh-dialog__frame',
-                        item: div({className: 'xh-dialog__container', items: children})
+                        children: div({className: 'xh-dialog__container', children})
                     })
                 ]
             }),

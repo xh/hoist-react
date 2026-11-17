@@ -26,14 +26,14 @@ export const clusterObjectsPanel = hoistCmp.factory({
     render({model}) {
         return panel({
             tbar: tbar(),
-            item: hframe(
+            children: hframe(
                 panel({
                     modelConfig: {
                         side: 'left',
                         defaultSize: 475,
                         collapsible: false
                     },
-                    item: grid()
+                    children: grid()
                 }),
                 detailPanel()
             ),
@@ -71,7 +71,7 @@ const diffBar = hoistCmp.factory<ClusterObjectsModel>(({model}) => {
         label('Cross-instance comparisons'),
         fragment({
             omit: !counts.failed,
-            items: [
+            children: [
                 toolbarSep(),
                 Icon.diff({prefix: 'fas', intent: 'danger'}),
                 label(`${counts.failed} diffs`)
@@ -79,7 +79,7 @@ const diffBar = hoistCmp.factory<ClusterObjectsModel>(({model}) => {
         }),
         fragment({
             omit: !counts.passed,
-            items: [
+            children: [
                 toolbarSep(),
                 Icon.checkCircle({prefix: 'fas', intent: 'success'}),
                 label(`${counts.passed} in-sync`)
@@ -87,7 +87,7 @@ const diffBar = hoistCmp.factory<ClusterObjectsModel>(({model}) => {
         }),
         fragment({
             omit: !counts.unchecked,
-            items: [
+            children: [
                 toolbarSep(),
                 Icon.disabled({prefix: 'fas', className: 'xh-text-color-muted'}),
                 label(`${counts.unchecked} unchecked`)

@@ -42,7 +42,7 @@ describe('Toolbar', () => {
 
 /** Render a toolbar with its overflow menu open, so every item is in the document. */
 async function renderWithMenuOpenAsync(items: ReactNode[]) {
-    const {container} = render(toolbar({enableOverflowMenu: true, items}));
+    const {container} = render(toolbar({enableOverflowMenu: true, children: items}));
     const overflowButton = container.querySelector('.bp6-popover-target button');
     if (overflowButton) {
         fireEvent.click(overflowButton);

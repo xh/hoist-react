@@ -4,8 +4,8 @@
 
 ## Overview
 
-Hoist React v91 resets Hoist's CSS custom properties onto a simpler baseline. A codemod automates
-nearly all of the migration.
+Hoist React v91 resets Hoist's CSS custom properties onto a simpler baseline, and moves element
+factories to the standard React `children` key. A codemod automates nearly all of each migration.
 
 - **CSS variables (required if your app customizes or reads Hoist's CSS variables)** - see Steps
   1-4. The new baseline is designed to read the way developers - and AI coding agents - expect CSS
@@ -23,7 +23,11 @@ nearly all of the migration.
     - **Overrides on `body.xh-app` always win**, in every theme and platform combination.
     - **Three variables that never had any effect were removed.**
 
-The changes also cover the variables added in v90 - the panel splitter (`--xh-panel-splitter-*`,
+- **Element factory `children` (recommended)** - see Step 5. Element specs take child elements via
+  `children`, as React does. The legacy `item` and `items` keys still work as aliases. A
+  type-aware codemod converts app code and reports examples in docs.
+
+The CSS changes also cover the variables added in v90 - the panel splitter (`--xh-panel-splitter-*`,
 `--xh-panel-collapsed-strip-*`), `PdfViewer` (`--xh-pdf-viewer-*`) and `StatCard`
 (`--xh-stat-card-*`) sets. Their hooks are gone, `--xh-panel-splitter-hit-size` and
 `--xh-panel-collapsed-strip-size` now hold lengths, and their `-px` companions are removed.
@@ -35,6 +39,10 @@ The most significant impacts are:
   Hoist's development-mode console warning about unitless size variables.
 - **Overrides set on `:root` or `html` no longer apply** - move them to `body.xh-app`. The codemod
   and a development-mode console warning both name any it finds.
+- **A spec that sets both `children` and a legacy key now renders `children`.** Before v91 the
+  legacy key won. The usual case is a container that spreads its props and adds `items`, as in
+  `box({...props, items: [...]})`, where a `children` prop in the spread now hides the `items`.
+  Hoist logs a console warning naming the component. The Step 5 codemod fixes these.
 
 ## Prerequisites
 
@@ -228,6 +236,91 @@ background, set the new `--xh-popover-*` variables instead. To change one popove
 `popoverClassName`. See "Dialogs and Popovers" in
 [`styles/README.md`](../../styles/README.md#dialogs-and-popovers).
 
+### 5. Convert Element Specs to `children` (Recommended)
+
+Element factories and `createElement` now take child elements via the standard React `children`
+key. The legacy `item` and `items` keys still work as aliases, so this step is not required for
+v91. Hoist's docs and examples now use `children` only. Converting keeps your code consistent with
+them, and AI coding agents follow the patterns your code shows them.
+
+```typescript
+// Before
+panel({
+    title: 'Users',
+    items: [grid(), toolbar()]
+});
+box({flex: 1, item: 'Hello'});
+
+// After
+panel({
+    title: 'Users',
+    children: [grid(), toolbar()]
+});
+box({flex: 1, children: 'Hello'});
+```
+
+A text search cannot tell element specs from data, because `items` is also the key for menu items,
+column groups and similar configs. The codemod loads your TypeScript project and renames a key only
+where the type checker resolves it to Hoist's `ElementSpec`. Run it from the app root, after
+installing v91, so that it also scans root-level docs such as `CLAUDE.md`:
+
+```bash
+# Preview first - lists each file it would change, and the report, without writing.
+node client-app/node_modules/@xh/hoist/docs/codemod/v91/codemod-items-to-children.mjs --dry
+
+# Then apply, and run your formatter over the changed files.
+node client-app/node_modules/@xh/hoist/docs/codemod/v91/codemod-items-to-children.mjs
+```
+
+The codemod finds `./tsconfig.json` or `./client-app/tsconfig.json`. Pass `--project` to name
+another. It edits source files only under the tsconfig folder, never in `node_modules`. It also
+collapses `children: children` to the `children` shorthand. The preview counts the renames but
+does not list them, so review them in `git diff` after you apply.
+
+Review the report. It lists what the codemod could not convert safely, and changes to check:
+
+- **Conflicts** - a spec with more than one of `children`, `item` and `items`, left unchanged.
+  Merge them by hand. In v91 such a spec renders only `children`, where before v91 the legacy key
+  won.
+- **Not converted** - a likely spec with no type information. An example is an untyped object
+  built in one place and passed to a factory later, or app options from a `getAppOptions()`
+  override with no return type. Add a type, such as `ElementSpec` or `AppOptionSpec[]`, and run
+  the codemod again, or convert by hand.
+- **Worth a review** - most often a key moved after a spread that could carry `children`. Before
+  v91 the legacy key beat a `children` prop in the spread, and `children` does not. So the codemod
+  turns `panel({item: x, ...props})` into `panel({...props, children: x})`, which keeps the old
+  behavior. If a caller's `children` should win instead, move the key back before the spread.
+
+**Docs.** The codemod also scans markdown files, such as `CLAUDE.md`, `AGENTS.md` and READMEs, for
+factory examples, because agents copy them. By default it only reports suggested renames. Pass
+`--fix-docs` to apply them in code blocks that parse cleanly. Pass `--no-docs` to skip markdown.
+
+**Container components.** A component that renders its children inside another factory should
+pass them on as `children`. The codemod makes this change:
+
+```typescript
+// Before
+render({children, ...props}) {
+    return vbox({...props, className: 'my-container', items: children});
+}
+
+// After
+render({children, ...props}) {
+    return vbox({...props, className: 'my-container', children});
+}
+```
+
+A component with its own prop named `items`, such as Blueprint's `OverflowList`, still takes it
+via the `$items` escape hatch. See
+[Authoring a Container Component](../../core/README.md#authoring-a-container-component).
+
+**TypeScript.** Two type changes can surface new compile errors. `AppOptionSpec.formField` is now
+typed as an element spec instead of `any`. `ElementSpec.children` takes the type of the component's
+own `children` prop when it declares one, such as a render function.
+
+Toolbox ran this codemod over its whole client - see
+[xh/toolbox#958](https://github.com/xh/toolbox/pull/958).
+
 ## Verification Checklist
 
 After completing all steps:
@@ -243,6 +336,10 @@ After completing all steps:
 - [ ] Custom colors, spacing, and typography render correctly in both light and dark themes (and on
   mobile, if applicable).
 - [ ] Form validation styling looks as intended if you override any `-border-color` (Step 2 note).
+- [ ] The items-to-children codemod report has been reviewed - conflicts, unconverted specs and
+  spreads (Step 5).
+- [ ] The application loads without the console warning about a spec that sets both `children`
+  and a legacy `item` / `items` key.
 - [ ] No references to retired CSS variable names remain:
   ```bash
   # Should return nothing
@@ -338,3 +435,7 @@ handles these; for reference, their v91 variables are:
 - [`styles/README.md`](../../styles/README.md) - CSS variable system documentation, including
   naming conventions.
 - [`codemod-css-vars.mjs`](../codemod/v91/codemod-css-vars.mjs) - the CSS variable migration codemod.
+- [`codemod-items-to-children.mjs`](../codemod/v91/codemod-items-to-children.mjs) - the element
+  spec `children` codemod.
+- [Element Factories](../../core/README.md#element-factories) - the `children` key, the legacy
+  aliases, and authoring container components.

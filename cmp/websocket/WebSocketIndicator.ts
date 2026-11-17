@@ -42,17 +42,17 @@ export const [WebSocketIndicator, webSocketIndicator] =
             }
 
             return hbox({
-                items: [
+                title: tooltip,
+                alignItems: 'center',
+                ...props,
+                children: [
                     icon,
                     span({
-                        item: txt,
+                        children: txt,
                         omit: iconOnly,
                         style: {margin: 8, cursor: 'help'}
                     })
-                ],
-                title: tooltip,
-                alignItems: 'center',
-                ...props
+                ]
             });
         }
     });

@@ -80,7 +80,7 @@ const cmp = hoistCmp.factory<TextAreaInputModel>(({model, className, ...props}, 
     const {width, height, ...layoutProps} = getLayoutProps(props);
 
     return div({
-        item: textareaTag({
+        children: textareaTag({
             value: model.renderValue || '',
 
             disabled: props.disabled,

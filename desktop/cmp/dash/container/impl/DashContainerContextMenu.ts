@@ -40,7 +40,7 @@ export const dashContainerAddViewButton = hoistCmp.factory<DashContainerModel>({
             menuItems = createAddMenuItems({dashContainerModel: model, stack: viewState[0]});
         return popover({
             interactionKind: 'click',
-            item: button({icon: Icon.add(), text: addViewButtonText}),
+            children: button({icon: Icon.add(), text: addViewButtonText}),
             content: contextMenu({menuItems})
         });
     }

@@ -22,6 +22,6 @@ export const statCardInfoImpl = hoistCmp.factory<StatCardInfoImplProps>({
     model: false,
 
     render({icon, content}) {
-        return bpTooltip({className: 'xh-stat-card__info', item: icon, content});
+        return bpTooltip({className: 'xh-stat-card__info', children: icon, content});
     }
 });

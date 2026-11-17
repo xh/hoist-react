@@ -54,7 +54,7 @@ export const [Clock, clock] = hoistCmp.withFactory<ClockProps>({
             ...getLayoutProps(props),
             testId,
             ref,
-            item: span(impl.display)
+            children: span(impl.display)
         });
     }
 });

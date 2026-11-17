@@ -51,7 +51,7 @@ export class AboutDialogModel extends HoistModel {
             tr(
                 th(it.label),
                 td({
-                    item: it.value,
+                    children: it.value,
                     onClick: () => {
                         const val = it.value?.toString();
                         if (val === 'null' || val === '[object Object]') return;

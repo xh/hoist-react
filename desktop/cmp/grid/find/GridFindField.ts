@@ -74,7 +74,7 @@ export const [GridFindField, gridFindField] = hoistCmp.withFactory<GridFindField
             width: 240,
             className,
             ...layoutProps,
-            items: [
+            children: [
                 textInput({
                     model: impl,
                     bind: 'query',
@@ -117,11 +117,11 @@ const controls = hoistCmp.factory(({impl}) => {
     if (!hasFocus && !hasQuery) return null;
     return hbox({
         className: 'xh-grid-find-field__controls',
-        items: [
+        children: [
             span({
                 omit: !countLabel,
                 className: 'xh-grid-find-field__count-label',
-                item: countLabel
+                children: countLabel
             }),
             vbox(
                 button({

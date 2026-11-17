@@ -89,9 +89,9 @@ export const [RelativeTimestamp, relativeTimestamp] = hoistCmp.withFactory<Relat
             className,
             ref,
             ...layoutProps,
-            item: span({
+            children: span({
                 className: 'xh-title-tip',
-                item: impl.display,
+                children: impl.display,
                 title: fmtDateTime(impl.timestamp) as string
             })
         });

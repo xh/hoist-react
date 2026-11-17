@@ -55,7 +55,7 @@ export const [TabContainer, tabContainer] = hoistCmp.withFactory<TabContainerPro
 // Application usage - factory style (preferred)
 panel({
     title: 'Data View',
-    items: [
+    children: [
         grid({model: gridModel}),
         tabContainer({model: tabModel})
     ]
@@ -68,8 +68,8 @@ panel({
 </Panel>
 ```
 
-Factories accept a config object with `item`/`items` for children, or children directly as
-arguments when no other props are needed.
+Factories accept a config object with `children`, or children directly as arguments when no other
+props are needed.
 
 For details on creating components with `hoistCmp.factory()` and `hoistCmp.withFactory()`,
 see the [Core Package README](../core/README.md#element-factories).
@@ -271,7 +271,7 @@ const dataViewModel = new DataViewModel({
     itemHeight: 80,
     renderer: (value, {record}) => div({
         className: 'my-card',
-        items: [
+        children: [
             img({src: record.data.thumbnail}),
             span(record.data.title)
         ]
@@ -311,7 +311,7 @@ import {card, CardModel} from '@xh/hoist/cmp/card';
 card({
     title: 'User Details',
     icon: Icon.user(),
-    items: [nameField(), emailField()]
+    children: [nameField(), emailField()]
 })
 
 // Collapsible card with persistence
@@ -325,7 +325,7 @@ const cardModel = new CardModel({
 card({
     model: cardModel,
     title: 'Details',
-    items: [/* ... */]
+    children: [/* ... */]
 })
 ```
 
@@ -357,8 +357,8 @@ Foundational flexbox containers for building layouts:
 import {vframe, hbox} from '@xh/hoist/cmp/layout';
 
 vframe({
-    items: [
-        hbox({items: [sidebar(), mainContent()]}),
+    children: [
+        hbox({children: [sidebar(), mainContent()]}),
         footer()
     ]
 })

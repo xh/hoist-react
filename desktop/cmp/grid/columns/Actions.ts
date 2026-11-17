@@ -79,7 +79,7 @@ export const actionCol: ColumnSpec = {
 
         return buttonGroup({
             className: actionsShowOnHoverOnly ? 'xh-show-on-hover' : null,
-            items: buttons
+            children: buttons
         });
     }
 };

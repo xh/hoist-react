@@ -44,7 +44,7 @@ export const sizingModeAppOption = ({
         name: 'sizingMode',
         formField: {
             label: 'Grid sizing',
-            item: previewCards
+            children: previewCards
                 ? radioCardInput({
                       options: modes.map(mode => ({
                           value: mode,
@@ -83,18 +83,18 @@ function sizingModePreview(mode: SizingMode): ReactElement {
     return div({
         className: `xh-sizing-mode-preview xh-sizing-mode-preview--${mode}`,
         style: {height: PREVIEW_HEIGHT},
-        items: [
+        children: [
             div({
                 className: 'xh-sizing-mode-preview__header',
                 style: {height: headerHeight},
-                items: previewCells()
+                children: previewCells()
             }),
             ...times(rowCount, i =>
                 div({
                     key: i,
                     className: 'xh-sizing-mode-preview__row',
                     style: {height: rowHeight},
-                    items: previewCells()
+                    children: previewCells()
                 })
             )
         ]

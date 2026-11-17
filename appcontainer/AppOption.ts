@@ -24,7 +24,7 @@ export class AppOption {
     name: string;
     prefName: string;
     fieldModel: Omit<BaseFieldConfig, 'name'>;
-    formField: any;
+    formField: AppOptionSpec['formField'];
     valueGetter: () => any;
     valueSetter: (s: any) => any;
     reloadRequired: boolean;

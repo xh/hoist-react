@@ -107,7 +107,7 @@ export const [ColChooserButton, colChooserButton] = hoistCmp.withFactory<ColChoo
             popoverClassName: 'xh-col-chooser-popover',
             position: withDefault(popoverPosition, 'auto'),
             isOpen: modalModel.isPopoverOpen,
-            item: button({
+            children: button({
                 icon,
                 title,
                 className,
@@ -120,8 +120,8 @@ export const [ColChooserButton, colChooserButton] = hoistCmp.withFactory<ColChoo
             content: vbox({
                 onClick: stopPropagation,
                 onDoubleClick: stopPropagation,
-                items: [
-                    div({ref, className: 'xh-popup__title', item: 'Choose Columns'}),
+                children: [
+                    div({ref, className: 'xh-popup__title', children: 'Choose Columns'}),
                     colChooser({model: modalModel})
                 ]
             }),

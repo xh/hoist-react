@@ -94,13 +94,16 @@ export const panelHeader = hoistCmp.factory({
             return vbox({
                 className: classNames(className, sideCls, compactCls, collapsedCls),
                 flex: 1,
-                items: [
+                children: [
                     displayedIcon,
                     displayedTitle
                         ? box({
                               className: titleCls,
                               flex: 1,
-                              item: span({className: `${titleCls}__inner`, item: displayedTitle})
+                              children: span({
+                                  className: `${titleCls}__inner`,
+                                  children: displayedTitle
+                              })
                           })
                         : filler(),
                     ...displayedHeaderItems
@@ -114,18 +117,21 @@ export const panelHeader = hoistCmp.factory({
         // Panel is expanded, modal, and/or collapsed to the top or bottom side.
         return hbox({
             className: classNames(className, compactCls, collapsedCls),
-            items: [
+            children: [
                 displayedIcon,
                 displayedTitle
                     ? box({
                           className: titleCls,
                           flex: 1,
-                          item: span({className: `${titleCls}__inner`, item: displayedTitle})
+                          children: span({
+                              className: `${titleCls}__inner`,
+                              children: displayedTitle
+                          })
                       })
                     : filler(),
                 hbox({
                     className: 'xh-panel-header__items',
-                    items: displayedHeaderItems,
+                    children: displayedHeaderItems,
                     onDoubleClick: e => e.stopPropagation()
                 })
             ],
