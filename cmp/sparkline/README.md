@@ -9,10 +9,71 @@
 key figure, or the trend cell in each row of a grid. It draws plain SVG with no charting library
 and takes no model. The props and their defaults are documented in `Sparkline.ts`.
 
-Use a `Chart` instead when the reader must take exact values from the chart, or needs axes, a
-legend or a tooltip for each point. A sparkline shows only the shape of a series, but it is cheap
-enough to render in every row of a grid. See the [Chart section](../README.md#chart-chart) of the
-component catalog.
+A sparkline shows only the shape of a series, but it is cheap enough to render in every row of a
+grid. It has a fixed scope, listed under [Scope](#scope). For anything outside that scope, use a
+`Chart` or the AG Grid sparkline, as described in
+[Sparkline, Chart or AG Grid Sparkline](#sparkline-chart-or-ag-grid-sparkline).
+
+## Scope
+
+`Sparkline` draws one series as a static shape. It is small by design, and the items under "Out
+of scope" are not planned. A need for one of them is a need for a `Chart` or the AG Grid
+sparkline.
+
+In scope:
+
+- One series of numbers, drawn as a `line`, an `area` or a `bar` series.
+- Points spaced evenly by index. A gap in the data leaves its space empty.
+- Color by `intent` or by trend, dots on the first, last, lowest and highest values, and a
+  `baseline`.
+- A fixed scale through `min` and `max`, so that the rows of a grid compare.
+- One tooltip for the whole sparkline.
+
+Out of scope:
+
+- A tooltip or highlight for each point, or any other response to the pointer.
+- An x-axis, or points at uneven intervals, such as dates with gaps between them.
+- More than one series, a legend, axis labels or data labels.
+- Zoom, animation, or click handlers on points.
+
+## Sparkline, Chart or AG Grid Sparkline
+
+| Need | Use |
+|------|-----|
+| A trend beside a figure, such as in a `StatCard` | `Sparkline` |
+| A trend in each row of a grid, styled with Hoist CSS variables | `Sparkline` |
+| A tooltip for each point, or a time axis, in a grid cell | AG Grid sparkline |
+| Exact values, axes, a legend or more than one series | `Chart` - see the [Chart section](../README.md#chart-chart) |
+
+AG Grid has its own sparkline, the `agSparklineCellRenderer`. It renders in a grid cell only, and
+it needs AG Grid Enterprise and the `ag-charts-community` package. The app registers
+`SparklinesModule.with(AgChartsCommunityModule)` from `ag-grid-enterprise`, then sets the renderer
+on a column through `agOptions`. It draws each cell with AG Charts, and it takes its colors from an
+AG Charts theme, not from Hoist CSS variables.
+
+```typescript
+{
+    field: {name: 'closingPrices', type: 'json'},
+    sortable: false,
+    autosizable: false,
+    width: 100,
+    agOptions: {
+        cellRenderer: 'agSparklineCellRenderer',
+        cellRendererParams: {
+            // Data as [date, price] pairs, placed on a time axis, with a tooltip for each point
+            sparklineOptions: {
+                axis: {type: 'time'},
+                tooltip: {
+                    renderer: ({xValue, yValue}) => ({
+                        title: fmtDate(xValue),
+                        content: fmtNumber(yValue)
+                    })
+                }
+            }
+        }
+    }
+}
+```
 
 ## Usage
 
