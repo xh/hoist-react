@@ -45,7 +45,7 @@ detailed, step-by-step upgrade instructions with before/after code examples.
   factory passes an array of `children` as rest arguments, so the array needs no keys.
     * If a spec sets `children` and a legacy key, only `children` renders and Hoist logs a warning.
     * To convert an app, upgrade to v91 and run `codemod-items-to-children.mjs` from the installed
-      `@xh/hoist/docs/codemod/v91` folder - see its header for usage. It uses the TypeScript
+      `@xh/hoist/docs/codemod/v91` folder - see Step 5 of the upgrade notes. It uses the TypeScript
       checker, so `items` keys that hold menu or other data stay unchanged. It also reports
       factory examples in markdown docs such as CLAUDE.md, and edits them only with `--fix-docs`.
 * Added `ProgressBar` to `@xh/hoist/cmp/progressbar`, a cross-platform bar that shows a value
