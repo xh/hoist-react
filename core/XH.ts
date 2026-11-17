@@ -660,6 +660,15 @@ export class XHApi {
         return this.routerModel.popRoute();
     }
 
+    /**
+     * Does a route exist with the given fully qualified name?
+     * Check before calling `XH.router.buildPath()` or `buildUrl()` with a name that may not be
+     * registered, as both throw for an unknown route.
+     */
+    hasRoute(routeName: string): boolean {
+        return this.routerModel.hasRoute(routeName);
+    }
+
     //------------------------------
     // Message Support
     //------------------------------

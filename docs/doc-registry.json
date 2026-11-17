@@ -460,8 +460,8 @@
             "title": "Compilation Notes",
             "mcpCategory": "devops",
             "viewerCategory": "devops",
-            "description": "Notes on TypeScript/SWC compilation and build tooling internals.",
-            "keywords": ["compilation", "TypeScript", "SWC", "Rsbuild", "transpilation", "build tooling"]
+            "description": "Notes on TypeScript/SWC compilation, build tooling internals, and running an app against a local hoist-react checkout.",
+            "keywords": ["compilation", "TypeScript", "SWC", "Rsbuild", "transpilation", "build tooling", "inline Hoist", "inline packages", "startWithHoist", "testWithHoist", "XH_HOIST_REACT_PATH", "XH_INLINE_PACKAGES"]
         },
         {
             "id": "docs/changelog-format.md",

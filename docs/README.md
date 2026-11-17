@@ -166,7 +166,7 @@ for planned coverage:
 | [App Build & Deploy](./build-and-deploy-app.md) | Building and deploying full-stack Hoist applications (Gradle, Rsbuild, Docker) |
 | [Development Environment](./development-environment.md) | Local development environment setup for Hoist and app developers |
 | [Unit Testing](./unit-testing.md) | Unit tests for apps and hoist-react: the `@xh/hoist/test-support` kit, the fake hoist-core server, writing tests, and CI reports |
-| [Compilation Notes](./compilation-notes.md) | Notes on TypeScript/SWC compilation and build tooling internals |
+| [Compilation Notes](./compilation-notes.md) | Notes on TypeScript/SWC compilation, build tooling internals, and running an app against a local hoist-react checkout |
 
 ## Developer Tools
 

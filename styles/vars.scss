@@ -572,7 +572,7 @@ body {
   // Sliders
   //------------------------
   --xh-slider-handle-focused-box-shadow: #{inset 0 0 0 1px var(--xh-form-field-focused-border-color), 0 0 0 1px var(--xh-form-field-focused-border-color)};
-  // The empty part of the track. The filled part takes the primary intent color.
+  // The empty part of the track. The filled part takes the color of the slider's intent.
   --xh-slider-track-bg: rgba(95, 107, 124, 0.2);
 
   &:where(.xh-dark) {

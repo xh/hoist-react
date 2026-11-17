@@ -11,13 +11,13 @@ import type {
 import type {HoistInputProps} from '@xh/hoist/cmp/input';
 import {HoistInputModel, useHoistInputModel} from '@xh/hoist/cmp/input';
 import {box} from '@xh/hoist/cmp/layout';
-import type {HoistProps, LayoutProps, Some} from '@xh/hoist/core';
+import type {HoistProps, Intent, LayoutProps, Some} from '@xh/hoist/core';
 import {hoistCmp, XH} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {rangeSlider as bpRangeSlider, slider as bpSlider} from '@xh/hoist/kit/blueprint';
 import {logWarn, withDefault} from '@xh/hoist/utils/js';
 import {composeRefs, getLayoutProps, useOnResize} from '@xh/hoist/utils/react';
-import {castArray, isArray, isEmpty} from 'lodash';
+import {isArray, isEmpty, omit, pick} from 'lodash';
 import type {ReactNode} from 'react';
 import {useLayoutEffect, useRef} from 'react';
 import './Slider.scss';
@@ -25,12 +25,8 @@ import './Slider.scss';
 export interface SliderProps extends HoistProps, HoistInputProps, LayoutProps {
     value?: Some<number>;
 
-    /**
-     * Accessible name for the handle, set as its `aria-label`. For a range slider, pass a pair to
-     * name the start and end handles, or one name for both. A slider in a `FormField` with no
-     * `ariaLabel` takes the label of the field as the name of its handles.
-     */
-    ariaLabel?: Some<string>;
+    /** Color of the track fill. Defaults to `'primary'`. */
+    intent?: Intent;
 
     /** Maximum value. Must be greater than `min`. Defaults to 10. */
     max?: number;
@@ -118,21 +114,23 @@ const cmp = hoistCmp.factory<SliderInputModel>(({model, className, ...props}, re
 
     model.warnOfScaleChanges(scale.changes);
 
-    // Set default left / right padding
+    // Set default left / right padding. Slider.scss sets the top and bottom padding.
     if (!layoutProps.padding && !layoutProps.paddingLeft) layoutProps.paddingLeft = 20;
     if (!layoutProps.padding && !layoutProps.paddingRight) layoutProps.paddingRight = 20;
 
+    // The handles hold the `slider` role, so they take the accessible name from `domAttrs`. With
+    // none, they point at the label FormField renders with an id derived from the input's id.
     const isRange = isArray(model.renderValue),
-        [startLabel, endLabel = startLabel] = castArray(props.ariaLabel ?? []),
-        // FormField renders its label with an id derived from the input's id - see FormField.
-        labelledBy = props.id ? `${props.id}-label` : null,
-        handleAttrs = (label: string) =>
-            label ? {'aria-label': label} : {'aria-labelledby': labelledBy};
+        nameAttrs = pick(props.domAttrs, HANDLE_NAME_ATTRS),
+        handleAttrs = isEmpty(nameAttrs)
+            ? {'aria-labelledby': props.id ? `${props.id}-label` : null}
+            : nameAttrs;
 
     const sliderProps: BpRangeSliderProps | BpSliderProps = {
         value: model.renderValue,
 
         disabled: props.disabled || scale.disabled,
+        intent: withDefault(props.intent, 'primary'),
         labelPrecision: scale.labelPrecision,
         labelRenderer: props.labelRenderer,
         labelStepSize: scale.labelStepSize,
@@ -150,24 +148,27 @@ const cmp = hoistCmp.factory<SliderInputModel>(({model, className, ...props}, re
         item: isRange
             ? bpRangeSlider({
                   ...(sliderProps as BpRangeSliderProps),
-                  handleHtmlProps: {start: handleAttrs(startLabel), end: handleAttrs(endLabel)}
+                  handleHtmlProps: {start: handleAttrs, end: handleAttrs}
               })
             : bpSlider({
                   ...(sliderProps as BpSliderProps),
-                  handleHtmlProps: handleAttrs(startLabel)
+                  handleHtmlProps: handleAttrs
               }),
 
         ...layoutProps,
         width: withDefault(width, 200),
         className,
         testId: props.testId,
-        domAttrs: props.domAttrs,
+        domAttrs: omit(props.domAttrs, HANDLE_NAME_ATTRS),
 
         onBlur: model.onBlur,
         onFocus: model.onFocus,
         ref: composeRefs(ref, boxRef, resizeRef)
     });
 });
+
+/** `domAttrs` that name the slider, set on its handles and not on the wrapper. */
+const HANDLE_NAME_ATTRS = ['aria-label', 'aria-labelledby'];
 
 //-----------------------
 // Labels
