@@ -7,7 +7,7 @@
 
 import * as Col from '@xh/hoist/admin/columns/Rest';
 import * as AdminCol from '@xh/hoist/admin/columns';
-import {hframe} from '@xh/hoist/cmp/layout';
+import {fragment} from '@xh/hoist/cmp/layout';
 import {creates, hoistCmp} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {jsonSearchButton} from '@xh/hoist/admin/jsonsearch/JsonSearch';
@@ -23,9 +23,10 @@ export const jsonBlobPanel = hoistCmp.factory({
     model: creates(JsonBlobModel),
 
     render({model}) {
-        return hframe(
+        return fragment(
             panel({
                 children: restGrid({
+                    detailPanel: jsonBlobDetailPanel(),
                     extraToolbarItems: () => [
                         button({
                             icon: Icon.diff(),
@@ -65,7 +66,6 @@ export const jsonBlobPanel = hoistCmp.factory({
                     ]
                 })
             }),
-            jsonBlobDetailPanel(),
             differ({omit: !model.differModel})
         );
     }

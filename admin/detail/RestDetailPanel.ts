@@ -45,8 +45,8 @@ export interface RestDetailPanelProps extends HoistProps<RestDetailModel> {
  * grid's selection, refreshes when the grid reloads, and offers an Edit button to open the grid's
  * editor dialog for the selected record.
  *
- * Render as a sibling of `restGrid()` within an `hframe`. The host RestGridModel is resolved via
- * `@lookup`, so the model of an enclosing component must expose it as a public property.
+ * Pass to `restGrid()` via its `detailPanel` prop, which renders it beside the grid and below the
+ * grid's toolbar. The host RestGridModel is resolved via `@lookup` from that context.
  */
 export const restDetailPanel = hoistCmp.factory<RestDetailPanelProps>({
     displayName: 'RestDetailPanel',
