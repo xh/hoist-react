@@ -15,13 +15,14 @@ import type {
     ComponentSize,
     DomAttrsProps,
     HoistProps,
+    HSide,
     Intent,
     LayoutProps,
     TestSupportProps
 } from '@xh/hoist/core';
 import {throwIfRowsPassedAsItems} from '@xh/hoist/utils/impl';
 import {mergeDeep, TEST_ID} from '@xh/hoist/utils/js';
-import {composeRefs, isBlankNode, splitLayoutProps, useOnResize} from '@xh/hoist/utils/react';
+import {isBlankNode, splitLayoutProps, useComposedRefs, useOnResize} from '@xh/hoist/utils/react';
 
 import './KeyValueList.scss';
 
@@ -54,6 +55,20 @@ export interface KeyValueListProps
      * aligned and as wide as the widest of them. Use `top` to stack each label above its value.
      */
     labelSide?: 'left' | 'top';
+
+    /**
+     * Side of its column each label aligns to, when `labelSide` is `left`. Default `left`. Use
+     * `right` to set each label against its value. No effect when `labelSide` is `top`.
+     */
+    labelAlign?: HSide;
+
+    /**
+     * Side of its column each value aligns to, when `labelSide` is `left`. Default `left`, with
+     * each value beside its label. Use `right` to set the values at the far side of the column,
+     * across from their labels, as in a summary or statement. Digits then take equal widths, so
+     * the figures in a column line up. No effect when `labelSide` is `top`.
+     */
+    valueAlign?: HSide;
 
     /**
      * Most columns to lay the entries out in, filled row by row. The list uses fewer in a
@@ -104,6 +119,8 @@ export const [KeyValueList, keyValueList] = hoistCmp.withFactory<KeyValueListPro
                     className,
                     entries,
                     labelSide,
+                    labelAlign,
+                    valueAlign,
                     columns,
                     minColumnWidth,
                     emptyText,
@@ -121,7 +138,8 @@ export const [KeyValueList, keyValueList] = hoistCmp.withFactory<KeyValueListPro
             listRef = useRef<HTMLDListElement>(null),
             minWidthRef = useRef(minWidth),
             measure = () => setFitColumns(columnsThatFit(listRef.current, minWidthRef.current)),
-            resizeRef = useOnResize(measure);
+            resizeRef = useOnResize(measure),
+            composedRef = useComposedRefs(ref, listRef, resizeRef);
 
         // The resize observer keeps the first `measure` it is given, so it reads from a ref.
         minWidthRef.current = minWidth;
@@ -130,16 +148,22 @@ export const [KeyValueList, keyValueList] = hoistCmp.withFactory<KeyValueListPro
         if (isEmpty(visibleEntries)) return null;
 
         const maxColumns = Math.min(columns ?? count, count),
-            columnCount = Math.min(maxColumns, fitColumns),
+            columnCount = Math.max(Math.min(maxColumns, fitColumns), 1),
             lastRowStart = count - (count % columnCount || columnCount);
 
         return dl({
-            ref: composeRefs(ref, listRef, resizeRef),
+            ref: composedRef,
             ...mergeDeep(
                 {
                     className: classNames(
                         className,
                         labelOnTop && 'xh-key-value-list--label-top',
+                        !labelOnTop &&
+                            labelAlign === 'right' &&
+                            'xh-key-value-list--label-align-right',
+                        !labelOnTop &&
+                            valueAlign === 'right' &&
+                            'xh-key-value-list--value-align-right',
                         size === 'compact' && 'xh-key-value-list--compact',
                         dividers && 'xh-key-value-list--dividers'
                     )

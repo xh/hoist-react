@@ -389,36 +389,6 @@ body {
 
 
   //------------------------
-  // Key Value Lists
-  //------------------------
-  // Gap between the columns of a multi-column list.
-  --xh-key-value-list-column-gap: var(--xh-spacing-double);
-  --xh-key-value-list-compact-font-size: var(--xh-font-size-small-relative);
-  --xh-key-value-list-compact-row-gap: 2px;
-  --xh-key-value-list-danger-color: var(--xh-intent-danger-text-color);
-  --xh-key-value-list-divider-border: var(--xh-border-solid);
-  --xh-key-value-list-empty-text-color: var(--xh-text-color-muted);
-  --xh-key-value-list-font-size: inherit;
-  --xh-key-value-list-label-text-color: var(--xh-blue-gray);
-  --xh-key-value-list-label-font-size: inherit;
-  --xh-key-value-list-label-font-weight: normal;
-  // Gap between a label and its value, when the label is on the left.
-  --xh-key-value-list-label-gap: var(--xh-spacing);
-  // Widest a column of labels gets, when the label is on the left. Longer labels wrap.
-  --xh-key-value-list-label-max-width: 16em;
-  --xh-key-value-list-primary-color: var(--xh-intent-primary-text-color);
-  --xh-key-value-list-row-gap: var(--xh-spacing-half);
-  --xh-key-value-list-success-color: var(--xh-intent-success-text-color);
-  --xh-key-value-list-value-font-weight: normal;
-  --xh-key-value-list-warning-color: var(--xh-intent-warning-text-color);
-
-  // The muted text color is too faint for labels on a light background, but reads well on a dark one.
-  &:where(.xh-dark) {
-    --xh-key-value-list-label-text-color: var(--xh-text-color-muted);
-  }
-
-
-  //------------------------
   // Menus
   //------------------------
   --xh-menu-bg: var(--xh-bg);
@@ -792,6 +762,35 @@ body {
     --xh-item-list-description-text-color: var(--xh-text-color-muted);
     --xh-item-list-empty-text-color: var(--xh-text-color-muted);
     --xh-item-list-marker-text-color: var(--xh-text-color-muted);
+  }
+
+  //------------------------
+  // Key Value Lists
+  //------------------------
+  // Gap between the columns of a multi-column list.
+  --xh-key-value-list-column-gap: var(--xh-spacing-double);
+  --xh-key-value-list-compact-font-size: var(--xh-font-size-small-relative);
+  --xh-key-value-list-compact-row-gap: 2px;
+  --xh-key-value-list-danger-color: var(--xh-intent-danger-text-color);
+  --xh-key-value-list-divider-border: var(--xh-border-solid);
+  --xh-key-value-list-empty-text-color: var(--xh-text-color-muted);
+  --xh-key-value-list-font-size: inherit;
+  --xh-key-value-list-label-font-size: inherit;
+  --xh-key-value-list-label-font-weight: normal;
+  // Gap between a label and its value, when the label is on the left.
+  --xh-key-value-list-label-gap: var(--xh-spacing);
+  // Widest a column of labels gets, when the label is on the left. Longer labels wrap.
+  --xh-key-value-list-label-max-width: 16em;
+  --xh-key-value-list-label-text-color: var(--xh-blue-gray);
+  --xh-key-value-list-primary-color: var(--xh-intent-primary-text-color);
+  --xh-key-value-list-row-gap: var(--xh-spacing-half);
+  --xh-key-value-list-success-color: var(--xh-intent-success-text-color);
+  --xh-key-value-list-value-font-weight: normal;
+  --xh-key-value-list-warning-color: var(--xh-intent-warning-text-color);
+
+  // The muted text color is too faint for labels on a light background, but reads well on a dark one.
+  &:where(.xh-dark) {
+    --xh-key-value-list-label-text-color: var(--xh-text-color-muted);
   }
 
   //------------------------

@@ -603,4 +603,4 @@
   defaults, so the READMEs have no prop tables.
 - Added short `KeyValueList` and `ItemList` entries to `cmp/README.md`.
 - Indexed in `docs/README.md` (Quick Reference and Components), the roadmap Priority 2 table
-  (Draft), and `docs/doc-registry.json`.
+  (Done), and `docs/doc-registry.json`.

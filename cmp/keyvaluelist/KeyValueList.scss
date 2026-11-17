@@ -30,7 +30,6 @@
   margin: 0;
   padding: 0;
   font-size: var(--xh-key-value-list-font-size);
-  color: var(--xh-text-color);
 
   // Swaps in the compact variables, so the rules below draw both sizes.
   &--compact {
@@ -49,11 +48,13 @@
     min-width: 0;
   }
 
+  // Text wraps, at any character if it must. Unlike `break-word`, `anywhere` lets a long word
+  // shrink the label track, which is sized to its content.
   &__label,
   &__value {
     min-width: 0;
     margin: 0;
-    overflow-wrap: break-word;
+    overflow-wrap: anywhere;
   }
 
   &__label {
@@ -68,6 +69,16 @@
     &--empty {
       color: var(--xh-key-value-list-empty-text-color);
     }
+  }
+
+  &--label-align-right &__label {
+    text-align: right;
+  }
+
+  // Equal-width digits, so the figures in a column of right-aligned values line up.
+  &--value-align-right &__value {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
   }
 
   &__entry--intent-primary &__value {

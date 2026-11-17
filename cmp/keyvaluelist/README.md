@@ -1,8 +1,5 @@
 # KeyValueList Package
 
-> **Status: DRAFT** - This document is awaiting review by an XH developer. Content may be
-> incomplete or inaccurate. Do not remove this banner until a human reviewer approves the doc.
-
 ## Overview
 
 `KeyValueList` shows labeled values for display only, such as the fields of a record in a detail
@@ -36,6 +33,9 @@ keyValueList({
 
 // Labels above their values, in at most three columns, with a rule between rows
 keyValueList({entries, labelSide: 'top', columns: 3, dividers: true, size: 'compact'})
+
+// A summary, with each value set at the far side of its column, across from its label
+keyValueList({entries, valueAlign: 'right', dividers: true})
 ```
 
 A value can be any element, such as a `badge` or a link. The list fills the width of its

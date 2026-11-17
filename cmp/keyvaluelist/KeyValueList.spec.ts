@@ -133,6 +133,25 @@ describe('KeyValueList', () => {
         expect(list.getAttribute('data-testid')).toBe('trade-detail');
     });
 
+    it('aligns labels and values right only when the label is on the left', () => {
+        const props = {
+                entries: [{label: 'A', value: 1}],
+                labelAlign: 'right' as const,
+                valueAlign: 'right' as const
+            },
+            alignClasses = (labelSide: 'left' | 'top') =>
+                Array.from(
+                    render(keyValueList({...props, labelSide})).container.querySelector('dl')
+                        .classList
+                ).filter(it => it.includes('-align-'));
+
+        expect(alignClasses('left')).toEqual([
+            'xh-key-value-list--label-align-right',
+            'xh-key-value-list--value-align-right'
+        ]);
+        expect(alignClasses('top')).toEqual([]);
+    });
+
     describe('columns', () => {
         it('uses the given number of columns when the width allows', () => {
             setListWidth(500);
@@ -156,6 +175,13 @@ describe('KeyValueList', () => {
             const {container} = render(keyValueList({entries: fiveEntries(), columns: 10}));
 
             expect(columnCount(container)).toBe('5');
+        });
+
+        it('uses at least one column when given fewer', () => {
+            setListWidth(2000);
+            const {container} = render(keyValueList({entries: fiveEntries(), columns: 0}));
+
+            expect(columnCount(container)).toBe('1');
         });
 
         it('uses fewer than the given columns to keep a given minColumnWidth', () => {

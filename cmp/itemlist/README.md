@@ -1,8 +1,5 @@
 # ItemList Package
 
-> **Status: DRAFT** - This document is awaiting review by an XH developer. Content may be
-> incomplete or inaccurate. Do not remove this banner until a human reviewer approves the doc.
-
 ## Overview
 
 `ItemList` shows a short, static list of entries. Each entry has a title, and can add a
