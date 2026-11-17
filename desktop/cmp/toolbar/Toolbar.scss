@@ -57,26 +57,6 @@
     }
   }
 
-  // Fit a labeled slider to the 30px item height of a standard bar, so it does not grow the bar.
-  // BP's slider is 40px: a 16px handle, a 4px gap, 16px labels and 4px of empty space below.
-  // Trim to 1px of room above the handle for its focus ring, and labels 1px closer and 2px
-  // shorter. The labels run into the 2px bottom padding, which an unlabeled slider keeps clear
-  // for the shadow below its handle.
-  &:not(&--vertical):not(&--compact) .xh-slider {
-    padding-top: 1px;
-
-    .bp6-slider:not(.bp6-vertical) {
-      &:not(.bp6-slider-unlabeled) {
-        height: 27px;
-      }
-
-      .bp6-slider-label {
-        transform: translate(-50%, 15px);
-        padding: 1px 4px;
-      }
-    }
-  }
-
   // Vertical mode
   &--vertical {
     width: var(--xh-toolbar-min-size);
@@ -195,12 +175,6 @@
             margin: 0 0 0 var(--xh-spacing-half);
           }
         }
-      }
-
-      // BP's unlabeled slider (labelRenderer: false) is 16px - center it, less the 2px top padding
-      // that Slider sets by default. Labeled ones are 40px and overhang the bar.
-      &.xh-slider .bp6-slider-unlabeled {
-        margin-top: calc((var(--xh-toolbar-compact-item-height) - 16px) / 2 - 2px);
       }
 
       &.xh-select {
