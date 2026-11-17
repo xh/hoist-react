@@ -58,15 +58,8 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 * Fixed `TreeMap` showing its empty placeholder for a moment on mount, and when records arrived
   in an empty map. `TreeMapModel` now reads the first records of its store at once. Later
   changes are debounced as before.
-* Fixed desktop `Slider` cutting off a long label at either end of its track. An end label, or a
-  handle label at an end, now shifts inward to stay inside the slider.
-* Fixed desktop `Slider` hanging or flooding the page with labels on a scale it cannot draw, such
-  as a `stepSize` near zero, a `max` not above `min`, or a very wide range. It now falls back to a
-  safe scale, renders disabled when it has no range, and logs a warning in development mode.
-* Fixed the empty part of a desktop `Slider` track not showing in dark theme. Its color now comes
-  from the new `--xh-slider-track-bg` CSS variable.
-* Fixed desktop `Slider` clipping the top of its handle, and growing a standard `Toolbar` when
-  labeled.
+* Fixed several desktop `Slider` display issues: clipped labels and handles, hangs on extreme
+  scales, a missing dark-theme track, and excess height in a standard `Toolbar`.
 * Fixed a crash in a desktop `Toolbar` with `enableOverflowMenu: true` and only one item.
 
 ### ⚙️ Technical
