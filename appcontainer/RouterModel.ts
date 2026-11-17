@@ -31,7 +31,9 @@ export class RouterModel extends HoistModel {
     router: Router = this.createRouter();
 
     /**
-     * Does the routing system already have a given route?
+     * Does a route exist with the given fully qualified name, such as `default.grids`?
+     * Check before calling `router.buildPath()` or `buildUrl()` with a name that may not be
+     * registered, as both throw for an unknown route. Apps typically call `XH.hasRoute()`.
      */
     hasRoute(routeName: string): boolean {
         const flatNames = this.getRouteNames(this.router.rootNode);

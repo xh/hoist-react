@@ -117,7 +117,7 @@
             "mcpCategory": "package",
             "viewerCategory": "components",
             "description": "Flexbox-based layout containers.",
-            "keywords": ["Box", "VBox", "HBox", "Frame", "Viewport", "LayoutProps", "pixel conversion"]
+            "keywords": ["Box", "VBox", "HBox", "Frame", "Viewport", "LayoutProps", "pixel conversion", "Separator", "divider"]
         },
         {
             "id": "cmp/tab/README.md",
@@ -150,6 +150,14 @@
             "viewerCategory": "components",
             "description": "PDF document viewer built on pdf.js, with a configurable toolbar and an observable model API for paging, zoom, find, and download.",
             "keywords": ["PdfViewerModel", "PdfViewer", "PdfSource", "PdfScale", "PdfViewerToolbarToken", "pdfjs-dist", "pdf.js", "PDF", "document preview"]
+        },
+        {
+            "id": "cmp/progressbar/README.md",
+            "title": "ProgressBar Package",
+            "mcpCategory": "package",
+            "viewerCategory": "components",
+            "description": "Bar that shows a value against a maximum, with an optional target marker, or an indeterminate fill for work of unknown length.",
+            "keywords": ["ProgressBar", "progress", "progress bar", "utilization", "quota", "indeterminate", "target", "valueRenderer"]
         },
         {
             "id": "desktop/cmp/dash/README.md",
@@ -420,8 +428,8 @@
             "title": "Compilation Notes",
             "mcpCategory": "devops",
             "viewerCategory": "devops",
-            "description": "Notes on TypeScript/SWC compilation and build tooling internals.",
-            "keywords": ["compilation", "TypeScript", "SWC", "Rsbuild", "transpilation", "build tooling"]
+            "description": "Notes on TypeScript/SWC compilation, build tooling internals, and running an app against a local hoist-react checkout.",
+            "keywords": ["compilation", "TypeScript", "SWC", "Rsbuild", "transpilation", "build tooling", "inline Hoist", "inline packages", "startWithHoist", "testWithHoist", "XH_HOIST_REACT_PATH", "XH_INLINE_PACKAGES"]
         },
         {
             "id": "docs/changelog-format.md",

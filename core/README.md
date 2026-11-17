@@ -674,13 +674,13 @@ import {hbox, vbox, div} from '@xh/hoist/cmp/layout';
 // each wrapped in a styled row.
 export const labeledList = hoistCmp.factory({
     render({header, children}) {
-        const items = Children.toArray(children);
+        const childArray = Children.toArray(children);
 
         return vbox({
             className: 'my-labeled-list',
             children: [
                 div({className: 'my-labeled-list__header', children: header}),
-                ...items.map((child, idx) =>
+                ...childArray.map((child, idx) =>
                     hbox({
                         className: 'my-labeled-list__row',
                         children: [div({children: `${idx + 1}.`}), child]
@@ -711,7 +711,7 @@ reaches the component.
 // `overflowList` is from Blueprint and has its own `items` prop.
 // Use `$items` to pass an array as a regular prop (not as Hoist children).
 overflowList({
-    $items: children as readonly ReactNode[],
+    $items: Children.toArray(children),
     minVisibleItems: 3,
     visibleItemRenderer: item => item
 });

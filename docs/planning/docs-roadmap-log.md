@@ -587,3 +587,12 @@
 - `data/cube/README.md` no longer documents `View.createStore()`, now `@internal`.
 - Updated the index entries in `docs/README.md`, the roadmap, `cmp/README.md` and
   `docs/doc-registry.json` to the new path and names.
+
+### 2026-11-16
+- Added a package README for `ProgressBar`. It covers when to use the component over its
+  neighbors, examples, CSS variables and pitfalls. TSDoc holds the props and their defaults, so
+  the README has no prop table.
+- Added a `Separator` section to `cmp/layout/README.md`, and short `ProgressBar` and `Separator`
+  entries to `cmp/README.md`.
+- Indexed in `docs/README.md` (Quick Reference and Components), the roadmap Priority 2 table
+  (Draft), and `docs/doc-registry.json`.

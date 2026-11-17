@@ -327,9 +327,12 @@ hoist-react 89 and hoist-dev-utils 16.1 - see [Version Compatibility](./version-
 4. Write each spec beside the code it tests, as `Foo.spec.ts` for `Foo.ts`, and run `pnpm test`.
 
 `configureVitest()` compiles specs with the same SWC settings and build constants as the app
-build, and loads the kit's setup file. The hoist-dev-utils README lists its options, including a
-mode that runs specs against a local hoist-react checkout. React Testing Library is required even
-if no spec renders, because the kit's setup unmounts rendered components after each test.
+build, and loads the kit's setup file. The hoist-dev-utils README lists its options. An app's
+`testWithHoist` script runs specs against a local hoist-react checkout, and `XH_INLINE_PACKAGES`
+works with plain `pnpm test` - see
+[Running Against a Local Checkout](./compilation-notes.md#running-against-a-local-checkout).
+React Testing Library is required even if no spec renders, because the kit's setup unmounts
+rendered components after each test.
 
 ### The app's server state
 

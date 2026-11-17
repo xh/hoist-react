@@ -48,11 +48,31 @@ detailed, step-by-step upgrade instructions with before/after code examples.
       `@xh/hoist/docs/codemod/v91` folder - see its header for usage. It uses the TypeScript
       checker, so `items` keys that hold menu or other data stay unchanged. It also reports
       factory examples in markdown docs such as CLAUDE.md, and edits them only with `--fix-docs`.
+* Added `ProgressBar` to `@xh/hoist/cmp/progressbar`, a cross-platform bar that shows a value
+  against a maximum, with an optional label, figure, `intent` and `target` marker. Set
+  `indeterminate` for work of unknown length.
+* Added `Separator` to `@xh/hoist/cmp/layout`, a horizontal or `vertical` rule that divides
+  content, with an optional `label` within the rule.
+* Added `isBlankNode` to `@xh/hoist/utils/react`, to test whether a node renders no content, such
+  as null, false, a blank string or an array of these.
+* Added `DashCanvasConfig.preventCollision` to block a drag or resize into space taken by another
+  view. Combine with `compact: false` for a free-form canvas where views stay where users put them.
+* Added `XH.hasRoute()` to check if a route exists. Call it before `XH.router.buildPath()` or
+  `buildUrl()` with a name that may not be registered, as both throw for an unknown route.
 
 ### 🐞 Bug Fixes
 
 * Fixed mobile `FormField` ignoring the `--xh-form-field-inline-label-*` custom properties for
   inline labels - it referenced stale names left behind by an earlier rename.
+* Fixed `StatCard` titles and values not lining up across a `StatCardStrip` whose cards differ in
+  height. A card now starts its content at the top. Set `--xh-stat-card-justify-content` to change.
+* Fixed `TreeMap` drawing nodes in an invalid color when every heat value was zero, or `maxHeat`
+  was zero. Those nodes now take the neutral color.
+* Fixed `TreeMap` showing its empty placeholder for a moment on mount, and when records arrived
+  in an empty map. `TreeMapModel` now reads the first records of its store at once. Later
+  changes are debounced as before.
+* Fixed several desktop `Slider` display issues: clipped labels and handles, hangs on extreme
+  scales, a missing dark-theme track, and excess height in a standard `Toolbar`.
 * Fixed a crash in a desktop `Toolbar` with `enableOverflowMenu: true` and only one item.
 
 ### ⚙️ Technical
@@ -63,6 +83,9 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 * The desktop column chooser now builds its grids on first open and syncs them to the grid's
   column state only while open. Apps with many grids that set `colChooserModel` now hold far fewer
   `GridModel` and `Store` instances.
+* `TreeMap` now logs a console warning when Highcharts has no color axis, which leaves every node
+  in one default color. Import `highcharts/modules/heatmap` or `highcharts/modules/coloraxis`
+  before `highcharts/modules/treemap` in `Bootstrap.ts`.
 
 ### ⚙️ Typescript API Adjustments
 
@@ -216,7 +239,8 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 * An app that imports a library Hoist no longer depends on, such as `semver` or `store2`, must
   declare it in its own `package.json`. The Libraries section below lists each removed library.
 * Updated router5 to 8.0. An app that declares its own `router5` must match it, or drop the
-  dependency and type its routes with `HoistRoute` from `@xh/hoist/core`.
+  dependency and type its routes with `HoistRoute` from `@xh/hoist/core`. `XH.router.buildPath()`
+  and `buildUrl()` now throw for an unknown route name, where they returned `null`.
 * Desktop `DateInput` now renders its calendar with react-day-picker 10, as the mobile `DateInput`
   already did, and its time picker is Hoist's own 24-hour control. `dayPickerProps` now takes
   react-day-picker 10 props - see the upgrade notes for the renames from v8. Removed

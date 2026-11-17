@@ -147,7 +147,7 @@ techniques.
 | `/grid/` | Primary data grid built on ag-Grid (sorting, grouping, filtering, editing, export). [See README](./grid/README.md) |
 | `/dataview/` | Custom item rendering using Grid infrastructure |
 | `/chart/` | Highcharts integration for data visualization |
-| `/treemap/` | Hierarchical treemap and split treemap visualizations |
+| `/treemap/` | Hierarchical treemap and split treemap visualizations. Needs the Highcharts `treemap` module, and `heatmap` or `coloraxis` for its colors |
 | `/zoneGrid/` | Multi-zone grid layout for complex record displays |
 | `/cubegrid/` | Cube View as a tree grid, with pivot paths as nested column groups when pivoted. [See README](./cubegrid/README.md) |
 | `/statcard/` | Tiles that call out key figures (StatCard), laid out in equal-width rows (StatCardStrip) |
@@ -156,7 +156,7 @@ techniques.
 
 | Sub-package | Description |
 |-------------|-------------|
-| `/layout/` | Foundational flexbox containers (Box, VBox, HBox, Frame, Viewport). [See README](./layout/README.md) |
+| `/layout/` | Foundational flexbox containers (Box, VBox, HBox, Frame, Viewport) and Separator. [See README](./layout/README.md) |
 | `/card/` | Bordered container for grouping content with optional header, intent styling, and collapsibility |
 
 ### Forms and Input
@@ -194,6 +194,7 @@ techniques.
 | `/badge/` | Badge component for counts and status indicators         |
 | `/loadingindicator/` | Loading state display in a compact and non-blocking form |
 | `/mask/` | Overlay mask for blocking interactions                   |
+| `/progressbar/` | Bar that shows a value against a maximum, or indeterminate progress (ProgressBar). [See README](./progressbar/README.md) |
 | `/spinner/` | Loading spinner animations                               |
 
 ### Utilities
@@ -336,6 +337,11 @@ CardModel supports `collapsible` state with configurable `renderMode` (`'always'
 displaying their aggregate validation state as intent-colored borders and tooltips. See the
 [Form README](./form/README.md#formfieldset) for details.
 
+### ProgressBar (`/progressbar/`)
+
+A bar that shows a value against a maximum, with an optional target marker, or an animated fill
+for work of unknown length. See the [ProgressBar README](./progressbar/README.md).
+
 ### Layout (`/layout/`)
 
 Foundational flexbox containers for building layouts:
@@ -345,6 +351,7 @@ Foundational flexbox containers for building layouts:
 - **HBox** - Horizontal (row) flex layout
 - **Frame** - Box that flexes to fill available space (`flex: 'auto'`) with **HFrame/VFrame** variants
 - **Viewport** - Full-screen container
+- **Separator** - Rule between sections, with an optional label
 
 ```typescript
 import {vframe, hbox} from '@xh/hoist/cmp/layout';
