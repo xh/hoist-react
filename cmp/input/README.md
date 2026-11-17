@@ -196,17 +196,15 @@ the user types into, as on desktop.
 
 Use `domAttrs` to set `aria-label` or `aria-labelledby` on the primary element of an input.
 
-A desktop `Slider` needs its own prop, because its handle holds the `slider` role and not its
-primary element. Name the handle with `ariaLabel`. A range slider takes a pair of names, one for
-each handle, or one name for both.
+A desktop `Slider` puts these two attributes on its handles instead, because the handles hold the
+`slider` role. A range slider gives both handles the same name.
 
 ```typescript
-slider({bind: 'risk', min: 0, max: 10, ariaLabel: 'Risk level'})
-slider({bind: 'priceRange', min: 0, max: 500, ariaLabel: ['Lowest price', 'Highest price']})
+slider({bind: 'risk', min: 0, max: 10, domAttrs: {'aria-label': 'Risk level'}})
 ```
 
-In a `FormField`, a `Slider` with no `ariaLabel` takes the label of the field as the name of each
-handle.
+In a `FormField`, a `Slider` with neither attribute takes the label of the field as the name of
+each handle.
 
 ### Password Managers
 

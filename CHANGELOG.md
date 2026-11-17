@@ -40,8 +40,8 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 
 ### 🎁 New Features
 
-* Added `Slider.ariaLabel`, to name each handle of a slider for assistive technology. A `Slider`
-  in a `FormField` now takes the label of the field as that name.
+* Desktop `Slider` now names its handles for assistive technology. It takes the label of its
+  `FormField`, and puts an `aria-label` or `aria-labelledby` set through `domAttrs` on its handles.
 
 ### 🐞 Bug Fixes
 
