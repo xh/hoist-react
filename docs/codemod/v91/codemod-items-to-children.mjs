@@ -54,7 +54,7 @@
  *   --no-docs    Skip markdown entirely.
  *   --project    Path to the tsconfig.json to load.
  */
-import {existsSync, readdirSync, readFileSync, statSync, writeFileSync} from 'node:fs';
+import {existsSync, readdirSync, readFileSync, realpathSync, statSync, writeFileSync} from 'node:fs';
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 
@@ -789,6 +789,8 @@ function fail(msg) {
     process.exit(1);
 }
 
-if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+// Run when invoked as a script, not when imported by the spec. Compare real paths: under pnpm,
+// node_modules/@xh/hoist is a symlink, and Node resolves import.meta.url through it but not argv[1].
+if (process.argv[1] && realpathSync(process.argv[1]) === realpathSync(fileURLToPath(import.meta.url))) {
     main(process.argv.slice(2));
 }
