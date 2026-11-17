@@ -81,6 +81,23 @@ describe('Slider', () => {
     // Blueprint does not guard its scale. A step too small for a number hangs the render, a step
     // of zero throws, and a label step too small for the range floods the page with labels. A
     // scale can come from data, so the slider must draw something for each. Fixed in v91.
+    describe('track fill', () => {
+        it('fills the track with the primary intent by default', () => {
+            renderSlider(5);
+            expect(trackFillIntents()).toEqual(['bp6-intent-primary']);
+        });
+
+        it('fills the track with the given intent', () => {
+            renderSlider(5, {intent: 'danger'});
+            expect(trackFillIntents()).toEqual(['bp6-intent-danger']);
+        });
+
+        it('fills the track between the handles of a range with the given intent', () => {
+            renderSlider([2, 8], {intent: 'success'});
+            expect(trackFillIntents()).toEqual(['bp6-intent-success']);
+        });
+    });
+
     describe('scale', () => {
         it('draws an ordinary scale as given', () => {
             const warn = spyOnWarn();
@@ -174,6 +191,14 @@ function spyOnWarn() {
 /** The element that takes the slider's `domAttrs`, around the Blueprint slider. */
 function wrapper(): HTMLElement {
     return document.querySelector('.xh-slider');
+}
+
+/** Intent classes on the filled parts of the track. */
+function trackFillIntents(): string[] {
+    const fills = document.querySelectorAll('.bp6-slider-progress[class*="bp6-intent-"]');
+    return Array.from(fills).flatMap(it =>
+        Array.from(it.classList).filter(cls => cls.startsWith('bp6-intent-'))
+    );
 }
 
 function handleNames(): string[] {

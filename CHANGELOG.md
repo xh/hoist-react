@@ -42,6 +42,8 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 
 * Desktop `Slider` now names its handles for assistive technology. It takes the label of its
   `FormField`, and puts an `aria-label` or `aria-labelledby` set through `domAttrs` on its handles.
+* Added `SliderProps.intent` to color the track fill. It defaults to `'primary'`, and the fill now
+  uses the `--xh-intent-*` colors rather than Blueprint's own blue.
 
 ### 🐞 Bug Fixes
 
@@ -61,6 +63,8 @@ detailed, step-by-step upgrade instructions with before/after code examples.
   safe scale, renders disabled when it has no range, and logs a warning in development mode.
 * Fixed the empty part of a desktop `Slider` track not showing in dark theme. Its color now comes
   from the new `--xh-slider-track-bg` CSS variable.
+* Fixed desktop `Slider` clipping the top of its handle, and growing a standard `Toolbar` when
+  labeled.
 * Fixed a crash in a desktop `Toolbar` with `enableOverflowMenu: true` and only one item.
 
 ### ⚙️ Technical

@@ -11,7 +11,7 @@ import type {
 import type {HoistInputProps} from '@xh/hoist/cmp/input';
 import {HoistInputModel, useHoistInputModel} from '@xh/hoist/cmp/input';
 import {box} from '@xh/hoist/cmp/layout';
-import type {HoistProps, LayoutProps, Some} from '@xh/hoist/core';
+import type {HoistProps, Intent, LayoutProps, Some} from '@xh/hoist/core';
 import {hoistCmp, XH} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {rangeSlider as bpRangeSlider, slider as bpSlider} from '@xh/hoist/kit/blueprint';
@@ -24,6 +24,9 @@ import './Slider.scss';
 
 export interface SliderProps extends HoistProps, HoistInputProps, LayoutProps {
     value?: Some<number>;
+
+    /** Color of the track fill. Defaults to `'primary'`. */
+    intent?: Intent;
 
     /** Maximum value. Must be greater than `min`. Defaults to 10. */
     max?: number;
@@ -111,7 +114,7 @@ const cmp = hoistCmp.factory<SliderInputModel>(({model, className, ...props}, re
 
     model.warnOfScaleChanges(scale.changes);
 
-    // Set default left / right padding
+    // Set default left / right padding. Slider.scss sets the top and bottom padding.
     if (!layoutProps.padding && !layoutProps.paddingLeft) layoutProps.paddingLeft = 20;
     if (!layoutProps.padding && !layoutProps.paddingRight) layoutProps.paddingRight = 20;
 
@@ -127,6 +130,7 @@ const cmp = hoistCmp.factory<SliderInputModel>(({model, className, ...props}, re
         value: model.renderValue,
 
         disabled: props.disabled || scale.disabled,
+        intent: withDefault(props.intent, 'primary'),
         labelPrecision: scale.labelPrecision,
         labelRenderer: props.labelRenderer,
         labelStepSize: scale.labelStepSize,

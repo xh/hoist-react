@@ -6,6 +6,18 @@
  */
 
 .xh-slider {
+  // Blueprint draws the handle flush with the top of the slider, and the wrapper clips its
+  // content. Leave room for the handle's focus ring and shadow.
+  padding-top: 2px;
+  padding-bottom: 2px;
+
+  // The filled part, in the Hoist intent colors rather than Blueprint's.
+  @each $intent in (primary, success, warning, danger) {
+    .bp6-slider-progress.bp6-intent-#{$intent} {
+      background: var(--xh-intent-#{$intent});
+    }
+  }
+
   // The empty part of the track. Blueprint's dark theme color for it does not show against the
   // Hoist dark background. A filled part carries an intent class and keeps its color.
   .bp6-slider-progress:not([class*='bp6-intent-']) {
