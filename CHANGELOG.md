@@ -47,6 +47,8 @@ detailed, step-by-step upgrade instructions with before/after code examples.
   content, with an optional `label` within the rule.
 * Added `isBlankNode` to `@xh/hoist/utils/react`, to test whether a node renders no content, such
   as null, false, a blank string or an array of these.
+* Added `DashCanvasConfig.preventCollision` to block a drag or resize into space taken by another
+  view. Combine with `compact: false` for a free-form canvas where views stay where users put them.
 * Added `XH.hasRoute()` to check if a route exists. Call it before `XH.router.buildPath()` or
   `buildUrl()` with a name that may not be registered, as both throw for an unknown route.
 
