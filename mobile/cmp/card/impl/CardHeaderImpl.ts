@@ -28,7 +28,7 @@ export const cardHeaderImpl = hoistCmp.factory<CardModel>({
         } else if (icon || title) {
             item = div({
                 className: `xh-card__header xh-card__header--intent-${intent ?? 'none'}`,
-                items: [icon, title]
+                children: [icon, title]
             });
         }
 

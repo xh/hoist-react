@@ -75,6 +75,6 @@ export const [Form, form] = hoistCmp.withFactory<FormProps>({
             },
             (a, b) => a.model === b.model && equal(a.fieldDefaults, b.fieldDefaults)
         );
-        return formContextProvider({value: formContext, items: children});
+        return formContextProvider({value: formContext, children});
     }
 });

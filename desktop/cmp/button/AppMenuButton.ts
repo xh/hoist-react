@@ -98,7 +98,7 @@ export const [AppMenuButton, appMenuButton] = hoistCmp.withFactory<AppMenuButton
             disabled,
             position: 'bottom-right',
             minimal: true,
-            item: button({
+            children: button({
                 icon: renderWithUserProfile ? null : Icon.menu(),
                 text: renderWithUserProfile ? userProfile({renderWithUserProfile}) : null,
                 disabled,
@@ -107,7 +107,7 @@ export const [AppMenuButton, appMenuButton] = hoistCmp.withFactory<AppMenuButton
             popoverClassName: 'xh-app-menu-popover',
             content: menu({
                 className: 'xh-app-menu',
-                items: buildMenuItems(props)
+                children: buildMenuItems(props)
             })
         });
     }
@@ -123,7 +123,7 @@ const userProfile = hoistCmp.factory<
     render({renderWithUserProfile}) {
         return div({
             className: 'xh-app-menu-button__user-profile',
-            item: isFunction(renderWithUserProfile)
+            children: isFunction(renderWithUserProfile)
                 ? renderWithUserProfile(XH.getUser())
                 : XH.getUserInitials()
         });

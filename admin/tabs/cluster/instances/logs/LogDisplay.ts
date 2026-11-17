@@ -31,7 +31,7 @@ export const logDisplay = hoistCmp.factory({
         return panel({
             className,
             tbar: tbar(),
-            item: model.file ? grid() : placeholder(Icon.fileText(), 'Select a log file.'),
+            children: model.file ? grid() : placeholder(Icon.fileText(), 'Select a log file.'),
             bbar: bbar(),
             model: model.panelModel,
             loadingIndicator: loadingIndicator({
@@ -130,7 +130,7 @@ const bbar = hoistCmp.factory<LogDisplayModel>({
             }),
             fragment({
                 omit: !logRootPath,
-                items: [toolbarSep(), Icon.folder({className: 'xh-margin-right'}), logRootPath]
+                children: [toolbarSep(), Icon.folder({className: 'xh-margin-right'}), logRootPath]
             })
         );
     }

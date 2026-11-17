@@ -28,7 +28,7 @@ export const valuesTab = hoistCmp.factory({
         return panel({
             className: 'xh-values-filter-tab',
             tbar: tbar(),
-            item: body()
+            children: body()
         });
     }
 });
@@ -61,7 +61,7 @@ const storeFilterSelect = hoistCmp.factory<ValuesTabModel>(({model}) => {
 
     return vbox({
         className: 'xh-values-filter-tab__filter-controls',
-        items: [
+        children: [
             hframe(
                 checkbox({
                     id: selectAllId,
@@ -72,12 +72,12 @@ const storeFilterSelect = hoistCmp.factory<ValuesTabModel>(({model}) => {
                 }),
                 label({
                     htmlFor: selectAllId,
-                    item: `(Select All${filterText ? ' Search Results' : ''})`
+                    children: `(Select All${filterText ? ' Search Results' : ''})`
                 }),
                 filler(),
                 div({
                     className: 'xh-values-filter-tab__filter-controls__sort-icon',
-                    item: model.sortIcon,
+                    children: model.sortIcon,
                     onClick: () => model.toggleSort()
                 })
             ),
@@ -87,14 +87,14 @@ const storeFilterSelect = hoistCmp.factory<ValuesTabModel>(({model}) => {
                     isEmpty(model.columnFilters) ||
                     store.empty ||
                     headerFilterModel.commitOnChange,
-                items: [
+                children: [
                     checkbox({
                         id: addToFilterId,
                         bind: 'combineCurrentFilters'
                     }),
                     label({
                         htmlFor: addToFilterId,
-                        item: 'Add current selection to filter'
+                        children: 'Add current selection to filter'
                     })
                 ]
             })
@@ -106,7 +106,7 @@ const customFilterPlaceholder = hoistCmp.factory<ValuesTabModel>(({model}) => {
     return placeholder(
         div({
             className: 'xh-values-filter-tab__custom-filter-message',
-            items: [
+            children: [
                 'Custom filter active',
                 button({
                     icon: Icon.undo(),
@@ -123,6 +123,6 @@ const hiddenValuesMessage = hoistCmp.factory<ValuesTabModel>(({model}) => {
     return div({
         omit: !model.hasHiddenValues,
         className: 'xh-values-filter-tab__hidden-values-message',
-        items: [Icon.info(), div('Some values are hidden due to filters on other columns')]
+        children: [Icon.info(), div('Some values are hidden due to filters on other columns')]
     });
 });

@@ -20,7 +20,7 @@ export const chooserToolbar = hoistCmp.factory<LeftRightChooserModel>(({model}) 
         width: 50,
         vertical: true,
         className: 'xh-lr-chooser__toolbar',
-        items: [
+        children: [
             vspacer(10),
             button({
                 icon: Icon.chevronRight(),

@@ -121,7 +121,7 @@ export function parseMenuItems(
 
             // Recursively parse any submenus
             if (!isEmpty(item.items)) {
-                cfg.items = parseMenuItems(item.items, opts);
+                cfg.children = parseMenuItems(item.items, opts);
                 cfg.popoverProps = popoverProps;
             }
 

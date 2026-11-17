@@ -20,7 +20,7 @@ export const presetsTab = hoistCmp.factory<DateRangePickerLocalModel>(({model, t
 
     return vbox({
         className: 'xh-date-range-picker-popover__tab',
-        items: [
+        children: [
             sectionHeader('Presets'),
             ...parentModel.presets.map(preset => {
                 const {token} = preset,
@@ -34,7 +34,7 @@ export const presetsTab = hoistCmp.factory<DateRangePickerLocalModel>(({model, t
                     ),
                     [TEST_ID]: getTestId(testId, `preset-${token}`),
                     ...clickable(() => model.commit({kind: 'preset', token})),
-                    items: [
+                    children: [
                         Icon.check({
                             className: classNames(
                                 'xh-date-range-picker-popover__row-check',
@@ -43,12 +43,12 @@ export const presetsTab = hoistCmp.factory<DateRangePickerLocalModel>(({model, t
                         }),
                         span({
                             className: 'xh-date-range-picker-popover__row-name',
-                            item: getDateRangePresetName(preset, context)
+                            children: getDateRangePresetName(preset, context)
                         }),
                         span({
                             omit: singleTab,
                             className: 'xh-date-range-picker-popover__row-range',
-                            item: parentModel.fmtRange(range)
+                            children: parentModel.fmtRange(range)
                         })
                     ]
                 });

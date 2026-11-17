@@ -14,6 +14,6 @@ export function tagsRenderer(v): ReactNode {
 
     return hbox({
         className: 'xh-tags-renderer',
-        items: v.map(tag => div({className: 'xh-tags-renderer__tag', item: tag}))
+        children: v.map(tag => div({className: 'xh-tags-renderer__tag', children: tag}))
     });
 }

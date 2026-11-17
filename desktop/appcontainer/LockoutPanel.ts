@@ -28,7 +28,7 @@ export const lockoutPanel = hoistCmp.factory({
                 box({
                     className: 'xh-lockout-panel',
                     testId: 'xh-lockout-panel',
-                    item: unauthorizedMessage()
+                    children: unauthorizedMessage()
                 }),
                 filler()
             )
@@ -53,7 +53,7 @@ const unauthorizedMessage = hoistCmp.factory<AppContainerModel>({
             p(appStateModel.accessDeniedMessage ?? ''),
             p(`${authMsg} and have ${roleMsg}.`),
             p({
-                item: appSpec.lockoutMessage,
+                children: appSpec.lockoutMessage,
                 omit: !appSpec.lockoutMessage
             }),
             hbox(

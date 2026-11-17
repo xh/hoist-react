@@ -98,7 +98,7 @@ export const [RestGrid, restGrid] = hoistCmp.withFactory<RestGridProps>({
                 ref,
                 ...restProps,
                 tbar: innerToolbar({model, tbar, extraToolbarItems, testId}),
-                item: grid({model: gridModel, agOptions, testId: getTestId(testId, 'grid')}),
+                children: grid({model: gridModel, agOptions, testId: getTestId(testId, 'grid')}),
                 mask: getMaskFromProp(model, mask)
             }),
             restForm({

@@ -414,7 +414,7 @@ const cmp = hoistCmp.factory<IconPickerModel>(({model, className, ...props}, ref
             'xh-icon-picker__popover',
             compact && 'xh-icon-picker__popover--compact'
         ),
-        item: triggerButton({model, props, ref}),
+        children: triggerButton({model, props, ref}),
         content: iconMenu({model, props}),
         [TEST_ID]: props.testId
     });
@@ -481,11 +481,11 @@ const iconMenu = hoistCmp.factory<IconPickerModel>(({model, props}) => {
         // Keyboard nav is driven from whatever holds focus within the popover - the filter input
         // when present, otherwise this container itself (focused on open - see `onOpened`).
         tabIndex: enableFilter ? null : 0,
-        items: [
+        children: [
             div({
                 omit: !enableFilter,
                 className: 'xh-icon-picker__filter',
-                item: textInput({
+                children: textInput({
                     model,
                     bind: 'filterValue',
                     commitOnChange: true,
@@ -515,7 +515,7 @@ const iconGrid = hoistCmp.factory<IconPickerModel>(({model, props}) => {
     useEffect(() => model.scrollToActive('auto'), [model, activeIdx, filteredOptions]);
 
     if (isEmpty(filteredOptions)) {
-        return div({className: 'xh-icon-picker__no-results', item: 'No matching icons found.'});
+        return div({className: 'xh-icon-picker__no-results', children: 'No matching icons found.'});
     }
 
     // Size the list to its columns, plus room for a scrollbar so one never covers the last column.
@@ -523,7 +523,7 @@ const iconGrid = hoistCmp.factory<IconPickerModel>(({model, props}) => {
 
     return div({
         className: 'xh-icon-picker__grid',
-        item: reactWindowList({
+        children: reactWindowList({
             className: 'xh-icon-picker__grid-list',
             listRef: model.listRef,
             rowComponent: iconRow,
@@ -578,7 +578,7 @@ function iconRow({
             gridTemplateColumns: `repeat(${columns}, var(--xh-icon-picker-cell-size))`,
             columnGap: CELL_GAP
         },
-        items: filteredOptions.slice(start, start + columns).map((option, i) =>
+        children: filteredOptions.slice(start, start + columns).map((option, i) =>
             iconCell({
                 key: option.value,
                 model,
@@ -609,7 +609,7 @@ const iconCell = hoistCmp.factory<IconPickerModel>(
                 e.stopPropagation();
                 model.onIconClick(option);
             },
-            item: option.factory({prefix})
+            children: option.factory({prefix})
         })
 );
 
@@ -619,10 +619,10 @@ const menuFooter = hoistCmp.factory<IconPickerModel>(({model, props}) => {
 
     return hbox({
         className: 'xh-icon-picker__footer',
-        items: [
+        children: [
             span({
                 className: 'xh-icon-picker__footer-name',
-                item: activeOption?.displayName ?? ''
+                children: activeOption?.displayName ?? ''
             }),
             filler(),
             div({
@@ -631,7 +631,7 @@ const menuFooter = hoistCmp.factory<IconPickerModel>(({model, props}) => {
                     'xh-icon-picker__footer-action',
                     !hasSelection && 'xh-icon-picker__footer-action--disabled'
                 ),
-                item: 'Clear',
+                children: 'Clear',
                 [TEST_ID]: getTestId(props, 'clear-btn'),
                 onClick: e => {
                     e.stopPropagation();

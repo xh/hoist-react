@@ -40,6 +40,14 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 
 ### 🎁 New Features
 
+* Element factories and `createElement` now take child elements via the standard React `children`
+  key. The `item` and `items` keys still work as aliases, but a future major version will remove
+  them. A factory passes an array of `children` as rest arguments, so the array needs no keys.
+    * If a spec sets `children` and a legacy key, only `children` renders and Hoist logs a warning.
+    * To convert an app, upgrade to v91 and run `codemod-items-to-children.mjs` from the installed
+      `@xh/hoist/docs/codemod/v91` folder - see Step 6 of the upgrade notes. It uses the TypeScript
+      checker, so `items` keys that hold menu or other data stay unchanged. It also reports
+      factory examples in markdown docs such as CLAUDE.md, and edits them only with `--fix-docs`.
 * Added `KeyValueList` to `@xh/hoist/cmp/keyvaluelist`, a display-only list of labeled values,
   such as the fields of a record in a detail panel. It lays out its `entries` in aligned columns
   that fit the available width, with each label to the left of or above its value.
@@ -72,6 +80,8 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 * Fixed several desktop `Slider` display issues: clipped labels and handles, hangs on extreme
   scales, a missing dark-theme track, and excess height in a standard `Toolbar`.
 * Fixed a crash in a desktop `Toolbar` with `enableOverflowMenu: true` and only one item.
+* Fixed a TypeScript 5.9 type check of Hoist sources failing when `lib` lacks `dom.iterable`, a
+  regression in v90.
 
 ### ⚙️ Technical
 
@@ -84,6 +94,12 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 * `TreeMap` now logs a console warning when Highcharts has no color axis, which leaves every node
   in one default color. Import `highcharts/modules/heatmap` or `highcharts/modules/coloraxis`
   before `highcharts/modules/treemap` in `Bootstrap.ts`.
+
+### ⚙️ Typescript API Adjustments
+
+* `ElementSpec.children` takes the type of the component's own `children` prop when it declares
+  one, such as a render function.
+* `AppOptionSpec.formField` is now typed as a loose element spec instead of `any`.
 
 ### ✨ Styles
 

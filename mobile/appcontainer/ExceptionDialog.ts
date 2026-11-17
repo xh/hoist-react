@@ -39,7 +39,7 @@ export const exceptionDialog = hoistCmp.factory({
                     div({
                         omit: !exception.traceId || exception.isRoutine,
                         className: 'xh-exception-dialog__trace-id',
-                        item: `Trace ID: ${exception.traceId}`
+                        children: `Trace ID: ${exception.traceId}`
                     })
                 ),
                 onCancel: !options.requireReload ? () => model.close() : null,

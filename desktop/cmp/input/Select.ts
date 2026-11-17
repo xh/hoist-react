@@ -637,16 +637,16 @@ class SelectInputModel extends HoistInputModel {
 
         return castArray(this.externalValue).some(v => isEqual(v, opt.value))
             ? hbox({
-                  items: [
+                  children: [
                       div({
                           style: {minWidth: 25, textAlign: 'center'},
-                          item: Icon.check({size: 'sm'})
+                          children: Icon.check({size: 'sm'})
                       }),
                       span(opt.label)
                   ],
                   paddingLeft: 0
               })
-            : div({item: opt.label, style: {paddingLeft: 25}});
+            : div({children: opt.label, style: {paddingLeft: 25}});
     };
 
     //------------------------
@@ -662,7 +662,7 @@ class SelectInputModel extends HoistInputModel {
                     valueContainer = createElement(components.ValueContainer, props);
                 return leftIcon
                     ? fragment(
-                          span({className: 'xh-select__control__left-icon', item: leftIcon}),
+                          span({className: 'xh-select__control__left-icon', children: leftIcon}),
                           valueContainer
                       )
                     : valueContainer;
@@ -721,7 +721,7 @@ class SelectInputModel extends HoistInputModel {
                 ...restInnerProps,
                 ref,
                 [TEST_ID]: getTestId(this.componentProps, 'clear-btn'),
-                item: Icon.x({className: 'xh-select__indicator'})
+                children: Icon.x({className: 'xh-select__indicator'})
             });
         };
     }
@@ -792,7 +792,7 @@ class SelectInputModel extends HoistInputModel {
             children: tooltip({
                 className,
                 content: props.children,
-                item: props.children
+                children: props.children
             })
         };
     }
@@ -886,7 +886,7 @@ const cmp = hoistCmp.factory<SelectInputModel>(({model, className, ...props}, re
     mergeDeep(rsProps, props.rsOptions);
 
     return box({
-        item: factory(rsProps),
+        children: factory(rsProps),
         className: classNames(className, height ? 'xh-select--has-height' : null),
         onKeyDown: e => {
             // Esc. and Enter can be listened for by parents -- stop the keydown event

@@ -30,7 +30,7 @@ export const themeAppOption = ({
         name: 'theme',
         formField: {
             label: 'Theme',
-            item: segmentedControl({
+            children: segmentedControl({
                 options: [
                     {value: 'light', label: 'Light', icon: Icon.sun()},
                     {value: 'dark', label: 'Dark', icon: Icon.moon()},

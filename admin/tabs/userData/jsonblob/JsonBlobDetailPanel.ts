@@ -32,7 +32,7 @@ export const jsonBlobDetailPanel = hoistCmp.factory<JsonBlobModel>({
                 return [
                     formFieldSet({
                         title: 'Blob',
-                        items: [
+                        children: [
                             hbox(
                                 formField({field: 'type', flex: 1}),
                                 formField({field: 'owner', flex: 1}),
@@ -69,7 +69,7 @@ export const jsonBlobDetailPanel = hoistCmp.factory<JsonBlobModel>({
                         title: 'Value',
                         className: 'xh-admin-readonly-form__fill',
                         flexGrow: 3,
-                        item: formField({
+                        children: formField({
                             field: 'value',
                             label: null,
                             readonlyRenderer: jsonRenderer
@@ -80,7 +80,7 @@ export const jsonBlobDetailPanel = hoistCmp.factory<JsonBlobModel>({
                         className: 'xh-admin-readonly-form__fill',
                         flexGrow: 2,
                         omit: !hasMeta,
-                        item: formField({
+                        children: formField({
                             field: 'meta',
                             label: null,
                             readonlyRenderer: jsonRenderer

@@ -73,7 +73,7 @@ export abstract class BaseMembersModel extends HoistModel {
     protected sourcesRenderer: ColumnRenderer = (sources: string[]) => {
         return hbox({
             className: 'roles-renderer',
-            items: sources.map(role => {
+            children: sources.map(role => {
                 const isThisRole = role === this.selectedRole.name;
                 return tag({
                     className: classNames(
@@ -81,7 +81,7 @@ export abstract class BaseMembersModel extends HoistModel {
                         !isThisRole && 'roles-renderer__role--effective'
                     ),
                     minimal: true,
-                    item: isThisRole ? '<Direct>' : role,
+                    children: isThisRole ? '<Direct>' : role,
                     onDoubleClick: isThisRole ? null : () => this.roleModel.selectRoleAsync(role)
                 });
             })

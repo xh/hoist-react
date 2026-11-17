@@ -24,9 +24,9 @@ export const pinPadImpl = hoistCmp.factory({
     render(_props, ref) {
         return frame({
             ref,
-            item: vframe({
+            children: vframe({
                 className: 'xh-pinpad__frame',
-                items: [header(), display(), errorDisplay(), keypad()]
+                children: [header(), display(), errorDisplay(), keypad()]
             })
         });
     }
@@ -35,14 +35,14 @@ export const pinPadImpl = hoistCmp.factory({
 const header = hoistCmp.factory<PinPadModel>(({model}) =>
     div({
         className: 'xh-pinpad__header',
-        items: [h1(model.headerText), p(model.subHeaderText)]
+        children: [h1(model.headerText), p(model.subHeaderText)]
     })
 );
 
 const display = hoistCmp.factory<PinPadModel>(({model}) =>
     hbox({
         className: 'xh-pinpad__display',
-        items: model.displayedDigits.map((num, index) => digit({num, index}))
+        children: model.displayedDigits.map((num, index) => digit({num, index}))
     })
 );
 
@@ -53,21 +53,21 @@ const digit = hoistCmp.factory<PinPadModel>(({num, index, model}) => {
     if (isActive) className += ' active';
     return span({
         className,
-        item: `${num}`
+        children: `${num}`
     });
 });
 
 const errorDisplay = hoistCmp.factory<PinPadModel>(({model}) =>
     div({
         className: 'xh-pinpad__error',
-        item: p(model.errorText)
+        children: p(model.errorText)
     })
 );
 
 const keypad = hoistCmp.factory<PinPadModel>(({model}) =>
     vbox({
         className: 'xh-pinpad__keyboard',
-        items: [
+        children: [
             keypadRow({keys: [1, 2, 3]}),
             keypadRow({keys: [4, 5, 6]}),
             keypadRow({keys: [7, 8, 9]}),
@@ -85,7 +85,7 @@ const keypad = hoistCmp.factory<PinPadModel>(({model}) =>
 const keypadRow = hoistCmp.factory<PinPadModel>(({keys, model}) =>
     hbox({
         className: 'xh-pinpad__keyboard__row',
-        items: keys.map(key =>
+        children: keys.map(key =>
             button({
                 className: 'xh-pinpad__keyboard__key',
                 disabled: model.disabled,

@@ -114,9 +114,9 @@ export class InstancesTabModel extends HoistModel {
 
     formatInstance(instance: PlainObject): ReactNode {
         const content = [instance.name];
-        if (instance.isPrimary) content.push(' ', badge({item: 'primary', intent: 'primary'}));
+        if (instance.isPrimary) content.push(' ', badge({children: 'primary', intent: 'primary'}));
         if (instance.isLocal) content.push(' ', badge('local'));
-        return span({items: content});
+        return span({children: content});
     }
 
     //------------------

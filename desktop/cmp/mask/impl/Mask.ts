@@ -22,10 +22,10 @@ export const maskImpl = hoistCmp.factory<MaskProps>({
         const body = vbox({
             onClick,
             className: 'xh-mask-body',
-            items: [
+            children: [
                 spinner ? spinnerCmp() : null,
                 spinner ? vspacer(10) : null,
-                message ? box({className: 'xh-mask-text', item: message}) : null
+                message ? box({className: 'xh-mask-text', children: message}) : null
             ]
         });
 
@@ -34,7 +34,7 @@ export const maskImpl = hoistCmp.factory<MaskProps>({
             return div({
                 className: classNames(className, 'xh-mask--inline'),
                 'aria-live': 'polite',
-                item: body
+                children: body
             });
         }
 
@@ -43,7 +43,7 @@ export const maskImpl = hoistCmp.factory<MaskProps>({
             autoFocus: false,
             isOpen: true,
             canEscapeKeyClose: false,
-            item: body
+            children: body
         });
     }
 });

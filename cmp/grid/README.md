@@ -358,7 +358,7 @@ own chrome. To take Hoist's frame instead, add `xh-grid-tooltip-frame` to your o
     tooltip: volume =>
         vbox({
             className: 'xh-grid-tooltip-frame',
-            items: [fmtNumberTooltip(volume), div('Unusually high volume')]
+            children: [fmtNumberTooltip(volume), div('Unusually high volume')]
         })
 }
 ```

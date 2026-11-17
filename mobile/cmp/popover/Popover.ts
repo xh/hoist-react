@@ -102,11 +102,11 @@ export const [Popover, popover] = hoistCmp.withFactory<PopoverProps>({
 
         return div({
             className,
-            items: [
+            children: [
                 div({
                     ref: refs.setReference,
                     className: 'xh-popover__target-wrapper',
-                    items: children,
+                    children,
                     onClick: () => {
                         if (disabled) return;
                         impl.toggleOpen();
@@ -115,7 +115,7 @@ export const [Popover, popover] = hoistCmp.withFactory<PopoverProps>({
                 ReactDom.createPortal(
                     fragment({
                         omit: !impl.isOpen,
-                        items: [
+                        children: [
                             div({
                                 ref: refs.setFloating,
                                 style: floatingStyles,
@@ -123,7 +123,7 @@ export const [Popover, popover] = hoistCmp.withFactory<PopoverProps>({
                                     'xh-popover__content-wrapper',
                                     popoverClassName
                                 ),
-                                items: elementFromContent(content)
+                                children: elementFromContent(content)
                             }),
                             div({
                                 className: classNames(

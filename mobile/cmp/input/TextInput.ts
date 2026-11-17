@@ -144,7 +144,7 @@ const cmp = hoistCmp.factory<TextInputModel>(({model, className, ...props}, ref)
             ...layoutProps,
             width: withDefault(width, null)
         },
-        items: [
+        children: [
             leftIcon(),
             input({
                 value: model.renderValue || '',
@@ -177,7 +177,7 @@ const cmp = hoistCmp.factory<TextInputModel>(({model, className, ...props}, ref)
 
 const leftIcon = hoistCmp.factory<TextInputModel>(({model}) => {
     const {leftIcon} = model.componentProps;
-    return leftIcon ? box({className: 'xh-text-input__left-icon', item: leftIcon}) : null;
+    return leftIcon ? box({className: 'xh-text-input__left-icon', children: leftIcon}) : null;
 });
 
 const clearButton = hoistCmp.factory<TextInputModel>(({model}) =>

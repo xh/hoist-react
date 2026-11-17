@@ -50,7 +50,7 @@ describe('StatCard', () => {
             statCard({
                 title: 'Orders',
                 value: 1,
-                infoTooltip: span({className: 'custom-tip', item: 'Shipped orders only'}),
+                infoTooltip: span({className: 'custom-tip', children: 'Shipped orders only'}),
                 infoIcon: span({className: 'custom-icon'})
             })
         );

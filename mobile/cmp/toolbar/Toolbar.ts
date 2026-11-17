@@ -36,7 +36,7 @@ export const [Toolbar, toolbar] = hoistCmp.withFactory<ToolbarProps>({
 
         return (vertical ? vbox : hbox)({
             ref,
-            items,
+            children: items,
             className: classNames(className, vertical ? 'xh-toolbar--vertical' : null),
             ...rest
         });

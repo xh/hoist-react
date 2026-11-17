@@ -74,8 +74,8 @@ export const [Separator, separator] = hoistCmp.withFactory<SeparatorProps>({
                 {style: layoutProps},
                 {[TEST_ID]: testId, ...domAttrs}
             ),
-            item: hasLabel
-                ? span({id: labelId, className: 'xh-separator__label', item: label})
+            children: hasLabel
+                ? span({id: labelId, className: 'xh-separator__label', children: label})
                 : null
         });
     }

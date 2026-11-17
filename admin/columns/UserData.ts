@@ -49,7 +49,7 @@ export function valueTypeRenderer(valueType: string): ReactElement {
     if (!valueType) return null;
     const {icon, intent} = VALUE_TYPE_BADGES[valueType] ?? {};
     return badge({
-        item: valueType,
+        children: valueType,
         icon: icon?.(),
         intent,
         className: 'xh-value-type-badge'

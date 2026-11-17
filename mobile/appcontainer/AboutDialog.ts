@@ -29,7 +29,7 @@ export const aboutDialog = hoistCmp.factory({
             title: `About ${XH.appName}`,
             className: 'xh-about-dialog',
             testId: 'xh-about-dialog',
-            item: model.getTable(),
+            children: model.getTable(),
             isOpen: model.isOpen,
             bbar: [
                 button({

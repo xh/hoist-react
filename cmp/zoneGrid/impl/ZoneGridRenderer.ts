@@ -64,14 +64,14 @@ export function zoneGridRenderer(value: any, context: CellContext, isLeft: boole
 
     return div({
         className: getStyleClassName(null, isLeft ? 'left' : 'right'),
-        items: [
+        children: [
             div({
                 className: getStyleClassName('section', 'top'),
-                items: topSectionItems
+                children: topSectionItems
             }),
             div({
                 className: getStyleClassName('section', 'bottom'),
-                items: bottomSectionItems
+                children: bottomSectionItems
             })
         ]
     });
@@ -85,7 +85,7 @@ function renderMainField(value: any, resolvedRenderer: ColumnRenderer, context: 
     const {content, rendererClass} = renderValue(value, resolvedRenderer, column, context);
     return div({
         className: rendererClass,
-        item: content
+        children: content
     });
 }
 
@@ -114,9 +114,9 @@ function renderSubField({colId, label}: ZoneGridSubField, context: CellContext) 
         ? null
         : div({
               className: rendererClass,
-              items: [
+              children: [
                   labelStr
-                      ? span({item: `${labelStr}:`, className: getStyleClassName('label')})
+                      ? span({children: `${labelStr}:`, className: getStyleClassName('label')})
                       : null,
                   content
               ]
@@ -149,7 +149,7 @@ function renderValue(
 function renderDelimiter(delimiter: string) {
     return span({
         className: getStyleClassName('delimiter'),
-        item: delimiter
+        children: delimiter
     });
 }
 

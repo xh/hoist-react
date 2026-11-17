@@ -58,7 +58,7 @@ export const [ZoneMapperButton, zoneMapperButton] = hoistCmp.withFactory<ZoneMap
             isOpen,
             popoverClassName: 'xh-zone-mapper-popover',
             position: withDefault(popoverPosition, 'auto'),
-            item: button({
+            children: button({
                 icon: withDefault(icon, Icon.gridLarge()),
                 title: withDefault(title, 'Customize fields...'),
                 className,
@@ -70,8 +70,8 @@ export const [ZoneMapperButton, zoneMapperButton] = hoistCmp.withFactory<ZoneMap
             content: vbox({
                 onClick: stopPropagation,
                 onDoubleClick: stopPropagation,
-                items: [
-                    div({ref, className: 'xh-popup__title', item: 'Customize Fields'}),
+                children: [
+                    div({ref, className: 'xh-popup__title', children: 'Customize Fields'}),
                     zoneMapper({model: mapperModel})
                 ]
             }),

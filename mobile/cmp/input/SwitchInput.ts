@@ -40,7 +40,7 @@ const cmp = hoistCmp.factory<SwitchInputModel>(({model, className, ...props}, re
         ref,
         className,
         style: props.style,
-        items: [
+        children: [
             input({
                 className: 'xh-switch-input__input',
                 type: 'checkbox',
@@ -58,7 +58,7 @@ const cmp = hoistCmp.factory<SwitchInputModel>(({model, className, ...props}, re
             }),
             div({
                 className: 'xh-switch-input__toggle',
-                item: div({className: 'xh-switch-input__handle'})
+                children: div({className: 'xh-switch-input__handle'})
             })
         ]
     });
