@@ -67,12 +67,12 @@ detailed, step-by-step upgrade instructions with before/after code examples.
   number of characters a user can enter.
 * Added `SegmentedControl.wrap` to the desktop control, to let options flow onto more rows when
   the control is too narrow to hold them on one row.
+* Added `isBlankNode` to `@xh/hoist/utils/react`, to test whether a node renders no content, such
+  as null, false, a blank string or an array of these.
+* Added `DashCanvasConfig.preventCollision` to block a drag or resize into space taken by another
+  view. Combine with `compact: false` for a free-form canvas where views stay where users put them.
 * Added `XH.hasRoute()` to check if a route exists. Call it before `XH.router.buildPath()` or
   `buildUrl()` with a name that may not be registered, as both throw for an unknown route.
-* Desktop `Slider` now names its handles for assistive technology. It takes the label of its
-  `FormField`, and puts an `aria-label` or `aria-labelledby` set through `domAttrs` on its handles.
-* Added `SliderProps.intent` to color the track fill. It defaults to `'primary'`, and the fill now
-  uses the `--xh-intent-*` colors rather than Blueprint's own blue.
 
 ### 🐞 Bug Fixes
 

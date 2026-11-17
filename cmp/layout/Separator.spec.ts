@@ -48,11 +48,13 @@ describe('Separator', () => {
         }
     );
 
-    it('shows no label when vertical', () => {
-        const el = renderSeparator({vertical: true, label: 'Settlement'});
+    it('shows its label when vertical', () => {
+        const el = renderSeparator({vertical: true, label: 'or'}),
+            label = el.querySelector('.xh-separator__label');
 
-        expect(el.childNodes).toHaveLength(0);
-        expect(el.hasAttribute('aria-labelledby')).toBe(false);
+        expect(label.textContent).toBe('or');
+        expect(el.getAttribute('aria-labelledby')).toBe(label.id);
+        expect(el.classList).toContain('xh-separator--label-center');
     });
 
     it('applies layout props, testId and domAttrs to the separator', () => {

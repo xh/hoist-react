@@ -25,14 +25,15 @@ export interface SeparatorProps extends HoistProps, LayoutProps, TestSupportProp
     vertical?: boolean;
 
     /**
-     * Caption shown within a horizontal rule, such as the title of the section that follows. A
-     * vertical separator shows no label.
+     * Caption shown within the rule, such as the title of the section that follows a horizontal
+     * rule, or a short word such as "or" between the items a vertical rule divides.
      */
     label?: ReactNode;
 
     /**
      * Where the label sits along the rule. Default `center`, with the rule drawn on each side of
-     * the label. With `start` the rule follows the label, and with `end` it leads up to it.
+     * the label. With `start` the rule follows the label, and with `end` it leads up to it. For a
+     * vertical rule, `start` is the top and `end` the bottom.
      */
     labelPosition?: 'start' | 'center' | 'end';
 }
@@ -55,7 +56,7 @@ export const [Separator, separator] = hoistCmp.withFactory<SeparatorProps>({
         const [layoutProps, {className, vertical, label, labelPosition, testId, domAttrs}] =
                 splitLayoutProps(props),
             labelId = useId(),
-            hasLabel = !vertical && !isBlankNode(label);
+            hasLabel = !isBlankNode(label);
 
         return div({
             ref,

@@ -35,7 +35,7 @@ describe('Toolbar', () => {
 
             expect(screen.getAllByText('A')).toHaveLength(1);
             expect(screen.getAllByText('B')).toHaveLength(1);
-            expect(document.querySelectorAll('.xh-toolbar__separator')).toHaveLength(1);
+            expect(screen.getAllByRole('separator')).toHaveLength(1);
         });
     });
 });
