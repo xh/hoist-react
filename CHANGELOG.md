@@ -89,6 +89,9 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 * Fixed desktop `TabSwitcher` with `enableOverflow: true`, and `DynamicTabSwitcher` when its tabs
   overflow, moving a scrolling panel or page around them to show the active tab. Each now scrolls
   only its own tab strip.
+* Fixed a component with a `uses()` model crashing with a React hooks error when its model went
+  missing between renders, e.g. after a dev-server hot reload of the model class. The component
+  now shows its "No model found" placeholder.
 
 ### ⚙️ Technical
 
