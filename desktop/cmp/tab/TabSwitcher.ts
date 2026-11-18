@@ -13,9 +13,9 @@ import {button} from '@xh/hoist/desktop/cmp/button';
 import '@xh/hoist/desktop/register';
 import {contextMenu} from '@xh/hoist/desktop/cmp/contextmenu';
 import {Icon} from '@xh/hoist/icon';
-import {tab as bpTab, tabs as bpTabs, tooltip as bpTooltip} from '@xh/hoist/kit/blueprint';
+import {tab as bpTab, tabs as bpTabs} from '@xh/hoist/kit/blueprint';
 import {menuDivider, menuItem, menuList} from '@xh/hoist/desktop/cmp/menu/impl/MenuImpl';
-import {popover} from '@xh/hoist/cmp/popover';
+import {popover, tooltip as tooltipCmp} from '@xh/hoist/cmp/popover';
 import {showContextMenu} from '@xh/hoist/desktop/cmp/contextmenu/impl/ShowContextMenu';
 import {bindableRef} from '@xh/hoist/mobx';
 import {
@@ -108,7 +108,7 @@ export const [TabSwitcher, tabSwitcher] = hoistCmp.withFactory<TabSwitcherProps>
                 id,
                 disabled,
                 style: tabStyle,
-                children: bpTooltip({
+                children: tooltipCmp({
                     content: tooltip as ReactElement,
                     disabled: !tooltip,
                     hoverOpenDelay: 1000,

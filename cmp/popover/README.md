@@ -60,15 +60,34 @@ A popover renders in a portal on `document.body`, so no clipping ancestor cuts i
 element. To send every popover within part of the app to one container, such as a popped-out
 child window, wrap that part in `portalContainerProvider` from `@xh/hoist/utils/react`.
 
-## Falling Back to Blueprint
+## Tooltip
 
-For one release, an app can render desktop popovers with Blueprint's popover, as before Hoist had
-its own. Set this before the app renders:
+`Tooltip` is a popover for a short label. It opens while the pointer rests on its target or the
+target has keyboard focus, and presents itself to assistive tech with the `tooltip` role.
 
 ```typescript
-import {Popover} from '@xh/hoist/cmp/popover';
+import {tooltip} from '@xh/hoist/cmp/popover';
+
+tooltip({
+    content: 'Net of returns and discounts.',
+    intent: 'primary',
+    children: Icon.info()
+})
+```
+
+For a plain-text label on a button, the button's `tooltip` prop - a native `title` - is often
+enough. Style tooltips with the `--xh-tooltip-*` variables.
+
+## Falling Back to Blueprint
+
+For one release, an app can render desktop popovers and tooltips with Blueprint's, as before Hoist
+had its own. Set this before the app renders:
+
+```typescript
+import {Popover, Tooltip} from '@xh/hoist/cmp/popover';
 
 Popover.defaults.useBlueprint = true;
+Tooltip.defaults.useBlueprint = true;
 ```
 
 ## Common Pitfalls

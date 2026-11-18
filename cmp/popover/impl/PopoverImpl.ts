@@ -72,6 +72,9 @@ export interface PopoverImplProps extends PopoverProps {
 
     /** Distance from the target, overriding the default for the arrow. */
     offset?: {mainAxis?: number; crossAxis?: number};
+
+    /** ARIA role of the popup - e.g. `tooltip`. */
+    popupRole?: string;
 }
 
 export const PopoverImpl: FC<PopoverImplProps> = props => {
@@ -84,6 +87,8 @@ const PopoverInner: FC<PopoverImplProps> = props => {
     const {
             anchorPoint,
             backdropProps,
+            popupRole,
+            renderTarget: renderTargetFn,
             autoFocus,
             boundary = 'clippingParents',
             canEscapeKeyClose = true,
@@ -303,9 +308,12 @@ const PopoverInner: FC<PopoverImplProps> = props => {
               children,
               className,
               disabled,
+              interactionKind,
               isControlled,
               isHover,
               open,
+              openOnTargetFocus,
+              renderTargetFn,
               targetTagName,
               testId,
               wrapperProps: {
@@ -333,6 +341,7 @@ const PopoverInner: FC<PopoverImplProps> = props => {
                 'div',
                 {
                     ref: mergedPanelRef,
+                    role: popupRole,
                     className: classNames(
                         'xh-popover__content-wrapper',
                         `xh-popover__content-wrapper--${side}`,
@@ -386,19 +395,43 @@ function renderTarget({
     children,
     className,
     disabled,
+    interactionKind,
     isControlled,
     isHover,
     open,
+    openOnTargetFocus,
+    renderTargetFn,
     targetTagName,
     testId,
     wrapperProps
 }): ReactElement {
+    // Marks a button-like target as pressed while its uncontrolled click popover is open.
+    const isActive = open && !isControlled && !isHover,
+        ariaProps = {
+            // A hover-target popover is a tooltip, which is not a popup the user opens.
+            'aria-haspopup': interactionKind === 'hover-target' ? undefined : 'menu',
+            ...(isHover ? {} : {'aria-expanded': open})
+        },
+        // A hover popover that opens on focus needs a target that can take focus.
+        tabIndex = isHover && openOnTargetFocus && !disabled ? 0 : undefined;
+
+    if (renderTargetFn) {
+        return renderTargetFn({
+            ...wrapperProps,
+            ...ariaProps,
+            tabIndex,
+            className: classNames(className, 'xh-popover__target-wrapper', 'bp6-popover-target', {
+                'xh-popover__target-wrapper--open': open,
+                'bp6-popover-open bp6-active': isActive
+            }),
+            isOpen: open
+        });
+    }
+
     let child = Children.toArray(children)[0];
     if (child == null) return null;
     if (!isValidElement(child)) child = h('span', null, child);
-    const el = child as ReactElement<any>,
-        // Marks a button-like target as pressed while its uncontrolled click popover is open.
-        isActive = open && !isControlled && !isHover;
+    const el = child as ReactElement<any>;
 
     return h(
         targetTagName,
@@ -411,8 +444,8 @@ function renderTarget({
             [TEST_ID]: testId
         },
         cloneElement(el, {
-            'aria-haspopup': 'menu',
-            ...(isHover ? {} : {'aria-expanded': open}),
+            ...ariaProps,
+            tabIndex: el.props.tabIndex ?? tabIndex,
             className: classNames(el.props.className, {'bp6-active': isActive}),
             disabled: el.props.disabled ?? (disabled || undefined)
         })

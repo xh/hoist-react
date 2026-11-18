@@ -1,9 +1,9 @@
 import type {CardModel} from '@xh/hoist/cmp/card/CardModel';
 import {div, legend} from '@xh/hoist/cmp/layout';
+import {tooltip as tooltipCmp} from '@xh/hoist/cmp/popover';
 import {hoistCmp} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {Icon} from '@xh/hoist/icon';
-import {tooltip as bpTooltip} from '@xh/hoist/kit/blueprint';
 import type {ReactNode} from 'react';
 
 /**
@@ -35,7 +35,7 @@ export const cardHeaderImpl = hoistCmp.factory<CardModel>({
             header &&
             legend(
                 tooltip
-                    ? bpTooltip({
+                    ? tooltipCmp({
                           children: header,
                           content: tooltip,
                           intent

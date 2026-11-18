@@ -4,8 +4,8 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import type {HoistProps, TestSupportProps} from '@xh/hoist/core';
-import type {ReactNode, Ref, SyntheticEvent} from 'react';
+import type {HoistProps, Intent, TestSupportProps} from '@xh/hoist/core';
+import type {HTMLAttributes, ReactElement, ReactNode, Ref, SyntheticEvent} from 'react';
 
 /**
  * Where a popover, menu or tooltip appears relative to its target. The first word is the side of
@@ -99,6 +99,12 @@ export interface PopoverProps extends HoistProps, TestSupportProps {
     /** Tag of the element wrapping the target. Default 'span'. */
     targetTagName?: 'span' | 'div';
 
+    /**
+     * Render the target directly, in place of `children` and the element that wraps them. Spread
+     * the props it receives, including `ref`, onto the target element.
+     */
+    renderTarget?: (props: PopoverTargetProps) => ReactElement;
+
     /** False to render the popover inline, next to its target, rather than in a portal. */
     usePortal?: boolean;
 
@@ -133,10 +139,53 @@ export interface PopoverProps extends HoistProps, TestSupportProps {
     onClosed?: (node: HTMLElement) => void;
 }
 
+/** Props for a target rendered by `PopoverProps.renderTarget`. */
+export type PopoverTargetProps = HTMLAttributes<HTMLElement> & {
+    ref: Ref<HTMLElement>;
+    isOpen: boolean;
+};
+
 export interface PopoverDefaults {
     /**
      * True to render desktop popovers with Blueprint's popover, as before Hoist had its own. For
      * apps to fall back on while they adopt Hoist's popover - removed in the next major version.
+     */
+    useBlueprint?: boolean;
+}
+
+export interface TooltipProps extends Pick<
+    PopoverProps,
+    | 'boundary'
+    | 'children'
+    | 'className'
+    | 'content'
+    | 'defaultIsOpen'
+    | 'disabled'
+    | 'hoverCloseDelay'
+    | 'hoverOpenDelay'
+    | 'isOpen'
+    | 'minimal'
+    | 'onInteraction'
+    | 'openOnTargetFocus'
+    | 'popoverClassName'
+    | 'portalContainer'
+    | 'position'
+    | 'renderTarget'
+    | 'targetTagName'
+    | 'testId'
+    | 'usePortal'
+> {
+    /** Intent to color the tooltip with. */
+    intent?: Intent;
+
+    /** True to draw the tooltip with less padding. */
+    compact?: boolean;
+}
+
+export interface TooltipDefaults {
+    /**
+     * True to render desktop tooltips with Blueprint's tooltip, as before Hoist had its own. For
+     * apps to fall back on while they adopt Hoist's tooltip - removed in the next major version.
      */
     useBlueprint?: boolean;
 }

@@ -7,6 +7,7 @@
 import {box, div, hframe} from '@xh/hoist/cmp/layout';
 import {TabContainerModel, TabModel} from '@xh/hoist/cmp/tab';
 import type {TabSwitcherMenuContext, TabSwitcherProps} from '@xh/hoist/cmp/tab/Types';
+import {tooltip as tooltipCmp} from '@xh/hoist/cmp/popover';
 import type {HoistProps, Side} from '@xh/hoist/core';
 import {hoistCmp, HoistModel, useContextModel, useLocalModel, uses} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
@@ -14,7 +15,6 @@ import {contextMenu} from '@xh/hoist/desktop/cmp/contextmenu';
 import {scroller} from '@xh/hoist/desktop/cmp/tab/dynamic/scroller/Scroller';
 import {ScrollerModel} from '@xh/hoist/desktop/cmp/tab/dynamic/scroller/ScrollerModel';
 import {Icon} from '@xh/hoist/icon';
-import {tooltip as bpTooltip} from '@xh/hoist/kit/blueprint';
 import {showContextMenu} from '@xh/hoist/desktop/cmp/contextmenu/impl/ShowContextMenu';
 import {dragDropContext, draggable, droppable} from '@xh/hoist/kit/react-beautiful-dnd';
 import {wait} from '@xh/hoist/promise';
@@ -184,7 +184,7 @@ const tabCmp = hoistCmp.factory<TabProps>(({tab, index, localModel, model}) => {
                         'aria-selected': isActive,
                         'aria-disabled': disabled,
                         className: 'bp6-tab',
-                        children: bpTooltip({
+                        children: tooltipCmp({
                             content: tooltip as ReactElement,
                             disabled: !tooltip,
                             hoverOpenDelay: 1000,

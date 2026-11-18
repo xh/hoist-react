@@ -6,12 +6,12 @@
  */
 import type {ColumnSpec, GridConfig, GridModel} from '@xh/hoist/cmp/grid';
 import {div, fragment, hbox, hframe, span, vbox, vframe} from '@xh/hoist/cmp/layout';
+import {tooltip} from '@xh/hoist/cmp/popover';
 import type {HoistProps} from '@xh/hoist/core';
 import {hoistCmp, type Some} from '@xh/hoist/core';
 import type {StoreRecord, StoreRecordId} from '@xh/hoist/data';
 import {Icon} from '@xh/hoist/icon';
 import type {GridOptions, ICellRendererParams, RowDragEndEvent} from '@xh/hoist/kit/ag-grid';
-import {tooltip} from '@xh/hoist/kit/blueprint';
 import {isEmpty} from 'lodash';
 import {type ReactNode, useEffect, useRef} from 'react';
 

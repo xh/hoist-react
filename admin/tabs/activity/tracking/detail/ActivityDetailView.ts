@@ -9,6 +9,7 @@ import {badgeRenderer, elapsedRenderer} from '@xh/hoist/admin/columns';
 import {form} from '@xh/hoist/cmp/form';
 import {grid, gridCountLabel} from '@xh/hoist/cmp/grid';
 import {a, br, div, filler, h3, hframe, placeholder, span} from '@xh/hoist/cmp/layout';
+import {tooltip} from '@xh/hoist/cmp/popover';
 import {creates, hoistCmp} from '@xh/hoist/core';
 import {colChooserButton, exportButton} from '@xh/hoist/desktop/cmp/button';
 import {formField} from '@xh/hoist/desktop/cmp/form';
@@ -18,7 +19,6 @@ import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {dateTimeSecRenderer} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon/Icon';
-import {tooltip} from '@xh/hoist/kit/blueprint';
 import {isNil} from 'lodash';
 import {ActivityDetailModel} from './ActivityDetailModel';
 

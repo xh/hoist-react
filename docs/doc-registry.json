@@ -156,8 +156,8 @@
             "title": "Popover Package",
             "mcpCategory": "package",
             "viewerCategory": "components",
-            "description": "Floating content opened from a target by click or hover, built on Floating UI - how it closes and nests, portals, and the Blueprint fallback.",
-            "keywords": ["Popover", "popover", "PopoverProps", "interactionKind", "onInteraction", "xh-popover-dismiss", "portalContainerProvider", "useBlueprint", "Floating UI"]
+            "description": "Popover and Tooltip - floating content opened from a target by click, hover or focus, built on Floating UI - how they close and nest, portals, and the Blueprint fallback.",
+            "keywords": ["Popover", "popover", "PopoverProps", "Tooltip", "TooltipProps", "interactionKind", "onInteraction", "xh-popover-dismiss", "portalContainerProvider", "useBlueprint", "Floating UI"]
         },
         {
             "id": "cmp/progressbar/README.md",

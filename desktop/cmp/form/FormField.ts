@@ -8,6 +8,7 @@ import type {BaseFormFieldProps, FormContextType} from '@xh/hoist/cmp/form';
 import {FieldModel, FormContext, FormFieldSetContext} from '@xh/hoist/cmp/form';
 import {box, div, label as labelEl, li, span, ul} from '@xh/hoist/cmp/layout';
 import type {PopoverBoundary, PopoverPosition} from '@xh/hoist/cmp/popover';
+import {tooltip} from '@xh/hoist/cmp/popover';
 import type {DefaultHoistProps, HoistProps, HSide, TestSupportProps} from '@xh/hoist/core';
 import {hoistCmp, uses, XH} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
@@ -16,7 +17,6 @@ import type {ValidationResult} from '@xh/hoist/data';
 import {maxSeverity} from '@xh/hoist/data';
 import {fmtDate, fmtDateTime, fmtJson, fmtNumber} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
-import {tooltip} from '@xh/hoist/kit/blueprint';
 import {isLocalDate} from '@xh/hoist/utils/datetime';
 import {errorIf, getTestId, logWarn, TEST_ID, throwIf, withDefault} from '@xh/hoist/utils/js';
 import {

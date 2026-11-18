@@ -4,9 +4,9 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
+import {tooltip as tooltipCmp} from '@xh/hoist/cmp/popover';
 import type {HoistProps} from '@xh/hoist/core';
 import {hoistCmp} from '@xh/hoist/core';
-import {tooltip as bpTooltip} from '@xh/hoist/kit/blueprint';
 import type {ReactElement} from 'react';
 
 interface StatCardInfoImplProps extends HoistProps {
@@ -15,13 +15,13 @@ interface StatCardInfoImplProps extends HoistProps {
 }
 
 /**
- * Desktop implementation of a StatCard's info icon, showing its tooltip in a Blueprint tooltip.
+ * Desktop implementation of a StatCard's info icon, showing its tooltip in a Hoist tooltip.
  * @internal
  */
 export const statCardInfoImpl = hoistCmp.factory<StatCardInfoImplProps>({
     model: false,
 
     render({icon, content}) {
-        return bpTooltip({className: 'xh-stat-card__info', children: icon, content});
+        return tooltipCmp({className: 'xh-stat-card__info', children: icon, content});
     }
 });

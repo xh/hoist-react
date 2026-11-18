@@ -4,9 +4,9 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
+import {tooltip as tooltipCmp} from '@xh/hoist/cmp/popover';
 import type {HoistProps} from '@xh/hoist/core';
 import {hoistCmp} from '@xh/hoist/core';
-import {tooltip as bpTooltip} from '@xh/hoist/kit/blueprint';
 import type {HTMLAttributes, ReactElement, Ref} from 'react';
 import {useEffect, useRef, useState} from 'react';
 
@@ -21,15 +21,15 @@ interface SparklineTooltipImplProps extends HoistProps {
     renderTarget: (targetProps: SparklineTooltipTargetProps) => ReactElement;
 }
 
-/** Matches the Blueprint Tooltip default, so the first open feels like every later one. */
+/** Matches the Tooltip default, so the first open feels like every later one. */
 const HOVER_OPEN_DELAY = 100;
 
 /**
- * Desktop implementation of a Sparkline's tooltip, shown in a Blueprint tooltip.
+ * Desktop implementation of a Sparkline's tooltip, shown in a Hoist tooltip.
  *
  * Sparklines often render in every row of a grid, so this mounts no tooltip until the pointer
  * first rests on the sparkline. Until then it renders the sparkline with two mouse handlers. On
- * the first hover it swaps in a Blueprint tooltip, opened, which then handles later hovers itself.
+ * the first hover it swaps in a tooltip, opened, which then handles later hovers itself.
  * @internal
  */
 export const sparklineTooltipImpl = hoistCmp.factory<SparklineTooltipImplProps>({
@@ -65,9 +65,9 @@ export const sparklineTooltipImpl = hoistCmp.factory<SparklineTooltipImplProps>(
         const content = probed.current ?? contentOf(getContent);
         probed.current = null;
 
-        // Once armed, stay mounted even if the content goes empty. Blueprint then shows no tooltip,
+        // Once armed, stay mounted even if the content goes empty. The tooltip then shows nothing,
         // and a remount would open it again while the pointer is elsewhere.
-        return bpTooltip({
+        return tooltipCmp({
             content,
             defaultIsOpen: true,
             openOnTargetFocus: false,

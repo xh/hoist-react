@@ -55,7 +55,10 @@ import {
     Tooltip,
     Tree
 } from '@blueprintjs/core';
-import {registerLegacyPopover} from '@xh/hoist/cmp/popover/impl/LegacyPopover';
+import {
+    registerLegacyPopover,
+    registerLegacyTooltip
+} from '@xh/hoist/cmp/popover/impl/LegacyPopover';
 import {elementFactory} from '@xh/hoist/core';
 import type React from 'react';
 import {createElement as reactCreateElement, useMemo} from 'react';
@@ -82,6 +85,7 @@ const Popover: React.FC<PopoverProps> = props => {
 // the popover box, so a popover flush with the edge loses its border on that side.
 // Blueprint's popover, for apps that set `Popover.defaults.useBlueprint` while they adopt Hoist's.
 registerLegacyPopover(Popover as React.ComponentType<any>);
+registerLegacyTooltip(Tooltip as React.ComponentType<any>);
 
 const POPOVER_VIEWPORT_PADDING = 8;
 

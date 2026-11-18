@@ -41,6 +41,9 @@ detailed, step-by-step upgrade instructions with before/after code examples.
   DOM keeps Blueprint's `bp6-popover*` classes alongside new `xh-popover__*` ones, so app CSS still
   applies. Set `Popover.defaults.useBlueprint = true` at startup to fall back to Blueprint's
   popover for this release. `DateInputProps.popoverModifiers` no longer has any effect.
+* Desktop tooltips now render with Hoist's new `Tooltip`, in `@xh/hoist/cmp/popover`, not
+  Blueprint's. They keep Blueprint's `bp6-tooltip` class next to `xh-tooltip`. Set
+  `Tooltip.defaults.useBlueprint = true` at startup to fall back to Blueprint's for this release.
 * Desktop menus and context menus now render with Hoist's own components, not Blueprint's. The DOM
   keeps Blueprint's `bp6-menu*` classes alongside new `xh-menu-*` ones, so app CSS still applies.
   Set `Menu.defaults.useBlueprint = true` at startup to fall back to Blueprint's for this release.
