@@ -1,6 +1,7 @@
 # Plan: Removing BlueprintJS from hoist-react
 
-Status: draft for discussion, Phase 0 spike done - see [Phase 0 results](#phase-0-results).
+Status: draft for discussion. Phase 0 spike done - see [Phase 0 results](#phase-0-results).
+Phase 1 in review as xh/hoist-react#4995.
 Baseline: `develop` at `5e18f21` (91.0.0-SNAPSHOT), `@blueprintjs/core` 6.23.
 
 ## Goal
@@ -16,8 +17,9 @@ Expected gains:
   `loadAllBlueprintJsIcons`) - see `kit/blueprint/README.md`.
 - No more major-version churn from Blueprint upgrades (`Popover` -> `PopoverNext`, `bp5-` ->
   `bp6-` class renames, `Overlay` -> `Overlay2`).
-- One overlay stack shared by desktop and mobile. Mobile is already Blueprint-free and has its own
-  Floating UI popover (`mobile/cmp/popover/Popover.ts`).
+- One `Popover` for desktop and mobile. Mobile is already Blueprint-free, with its own smaller
+  Floating UI popover (`mobile/cmp/popover/Popover.ts`). Phase 2 replaces both with a single
+  component in `cmp/popover`.
 - Overlays in the app font. Blueprint's portals set `font-family:
   var(--bp-typography-family-default)` (Blueprint's system font stack), so popovers, menus and
   dialogs ignore `--xh-font-family` today. Hoist-owned overlays inherit the app font.
@@ -114,8 +116,8 @@ and CSS classes change regardless, which is the app-facing break covered under R
 
 `kit/blueprint` is already the single integration point. Use that:
 
-1. Create Hoist-owned implementations (e.g. `desktop/cmp/popover`, `desktop/cmp/overlay`) with
-   Hoist-owned prop types.
+1. Create Hoist-owned implementations (e.g. `cmp/popover`, `desktop/cmp/overlay`) with
+   Hoist-owned prop types, kept in the same package as the component.
 2. Point framework code at them, one component family per PR.
 3. Leave `kit/blueprint` exporting Blueprint, marked `@deprecated`, for apps still using it.
 4. Drop the dependency in a later major, once internal use is zero and apps have had a release to
@@ -183,16 +185,24 @@ Findings that shape the later phases:
   the simple controls. The spike still takes Blueprint prop types and uses Blueprint's
   `popoverPropsToNextProps`. Phase 2 code would use Hoist-owned types.
 
-### Phase 1 - Decouple the public API (M, breaking)
+### Phase 1 - Decouple the public API (M, in review as xh/hoist-react#4995)
 
-- Define Hoist types to replace each item in [Blueprint types in Hoist's public
-  API](#blueprint-types-in-hoists-public-api). Use Floating UI's `Placement` strings for
-  position, and accept Blueprint `Position` values for one release with a dev-mode warning.
-- Define `ButtonProps` explicitly. Decide which Blueprint button props to keep (`intent`,
-  `minimal`, `outlined`, `active`, `rightIcon`, `loading` are likely in use) and drop the rest.
-- Add Hoist class names (`xh-button`, `xh-button--minimal`, `xh-popover`, ...) alongside the
-  `bp6-` classes now, so app CSS can move to them before the `bp6-` classes disappear.
-- Fix the `@blueprintjs/core/src/...` imports.
+Types only - runtime behavior is unchanged.
+
+- Added `PopoverPosition` and `PopoverBoundary` to a new `cmp/popover` package, the home of the
+  Phase 2 `Popover`. They keep Blueprint's position strings (`bottom-left`), not Floating UI's
+  `Placement` strings (`bottom-start`) as first planned. Blueprint's `Position` constants are those
+  same strings, so existing app code still compiles. Phase 2 maps them to Floating UI internally.
+- `ButtonProps` and `ButtonGroupProps` keep their declared props plus native `<button>` / `<div>`
+  attributes. They drop Blueprint-only props (`loading`, `alignText`, `large`, `small`, ...) that
+  neither hoist-react nor Toolbox use.
+- `MenuButtonProps.popoverProps` takes a Hoist `MenuButtonPopoverProps` subset. Phase 2 replaces it
+  with the shared `PopoverProps`.
+- Added a Hoist-owned `HotkeyConfig` to `desktop/hooks`, removing the `@blueprintjs/core/src/...`
+  imports. Deprecated `DateInputProps.popoverModifiers`.
+- Toolbox typechecks against the branch with no errors.
+- Deferred: `xh-*` classes alongside `bp6-*` ones. Under the two-release plan, each component gets
+  them when it is rebuilt.
 
 ### Phase 2 - Overlay stack (L, the core of the work)
 
@@ -201,8 +211,24 @@ In this order, since later items build on earlier ones:
 1. **Portal and stacking** - one Hoist portal container and z-index scale, replacing
    `BlueprintProvider` / `PortalProvider`. Check interplay with AG Grid popups and
    `ModalSupport`.
-2. **Popover** - 26 call sites through one factory. Port the viewport-padding middleware already
-   in `kit/blueprint/Wrappers.ts`.
+2. **Popover** - one cross-platform `Popover` in `cmp/popover`, built from the spike, replacing
+   both Blueprint's on desktop (26 call sites through one factory) and mobile's own
+   `mobile/cmp/popover/Popover.ts`. Port the viewport-padding middleware already in
+   `kit/blueprint/Wrappers.ts`.
+    - Mobile's props (`content`, `isOpen`, `onInteraction`, `disabled`, `position`, `backdrop`,
+      `popoverClassName`) are a subset of the spike's. Mobile's one framework call site is its
+      `MenuButton`.
+    - Platform defaults cover mobile's own behavior: a transparent tap-catching backdrop that
+      respects the safe-area insets, fixed positioning, and `auto` placement. Closing on route
+      change moves into the shared component for both platforms.
+    - `mobile/cmp/popover` re-exports the shared component for one release.
+    - The shared component must not import `kit/blueprint`, which would pull Blueprint into mobile
+      bundles. Check mobile bundle size before and after.
+    - Test touch behavior with Playwright's mobile emulation and on a device - in particular that
+      focus handling on open does not raise the on-screen keyboard. Toolbox's
+      `docs/running-locally.md` covers on-device testing.
+    - A shared `PopoverProps` replaces `MenuButtonPopoverProps`, and mobile's inline position union
+      moves to `PopoverPosition`.
 3. **Tooltip** - on the Popover base, keeping the `--xh-tooltip-*` vars.
 4. **Menu, MenuItem, MenuDivider, submenus** - `FloatingTree`, list navigation, typeahead.
    `MenuButton`, `ContextMenu`, `DashContainerMenuButton` and ViewManager menus move with it.
