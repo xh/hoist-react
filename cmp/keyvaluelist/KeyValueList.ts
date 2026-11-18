@@ -5,7 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import classNames from 'classnames';
-import {isEmpty} from 'lodash';
+import {isBoolean, isEmpty} from 'lodash';
 import {useLayoutEffect, useRef, useState} from 'react';
 import type {ReactNode} from 'react';
 
@@ -18,6 +18,7 @@ import type {
     HSide,
     Intent,
     LayoutProps,
+    PlainObject,
     TestSupportProps
 } from '@xh/hoist/core';
 import {throwIfRowsPassedAsChildren} from '@xh/hoist/utils/impl';
@@ -32,9 +33,9 @@ export interface KeyValueEntry {
     label: ReactNode;
 
     /**
-     * Content, pre-formatted by the caller. The list never formats a value. A value React renders
-     * as nothing - null, a boolean or a blank string - shows the list's `emptyText`. Pass a string
-     * such as `Yes` or `No` to show a boolean.
+     * Content, pre-formatted by the caller. A boolean shows as `Yes` or `No`. A null, undefined or
+     * blank string value shows the list's `nullDisplay`. For a value that may be missing, pass
+     * `cond ? value : null`, not `cond && value`, which shows `No` when `cond` is false.
      */
     value?: ReactNode;
 
@@ -85,6 +86,12 @@ export interface KeyValueListProps
     minColumnWidth?: number;
 
     /** Shown in place of a null, undefined or blank string value. Default `-`. */
+    nullDisplay?: ReactNode;
+
+    /**
+     * Shown in place of the list when it has no entries to show. Default is to render nothing,
+     * as does a blank `emptyText`.
+     */
     emptyText?: ReactNode;
 
     /** Size of the list - `compact` for smaller text and tighter rows. Default `standard`. */
@@ -98,13 +105,12 @@ export interface KeyValueListProps
  * A display-only list of labeled values, such as the fields of a record in a detail panel. Renders
  * as an HTML description list.
  *
- * The list is presentation-only. Callers pass each `value` already formatted.
+ * The list is presentation-only. Callers pass each `value` already formatted, except for booleans,
+ * which show as `Yes` or `No`.
  *
  * The list fills the width of its container and has no outer margin. Long labels and values wrap,
  * breaking within a word if needed, so the list never forces horizontal overflow. To truncate a
  * value instead, pass an element that does so.
- *
- * Renders nothing if given no entries.
  */
 export const [KeyValueList, keyValueList] = hoistCmp.withFactory<KeyValueListProps>({
     displayName: 'KeyValueList',
@@ -123,6 +129,7 @@ export const [KeyValueList, keyValueList] = hoistCmp.withFactory<KeyValueListPro
                     valueAlign,
                     columns,
                     minColumnWidth,
+                    nullDisplay,
                     emptyText,
                     size,
                     dividers,
@@ -139,13 +146,23 @@ export const [KeyValueList, keyValueList] = hoistCmp.withFactory<KeyValueListPro
             minWidthRef = useRef(minWidth),
             measure = () => setFitColumns(columnsThatFit(listRef.current, minWidthRef.current)),
             resizeRef = useOnResize(measure),
-            composedRef = useComposedRefs(ref, listRef, resizeRef);
+            composedRef = useComposedRefs(ref, listRef, resizeRef),
+            rootProps = (classes: string[], style?: PlainObject) =>
+                mergeDeep(
+                    {className: classNames(className, classes)},
+                    {style: {...layoutProps, ...style}},
+                    {[TEST_ID]: testId, ...domAttrs}
+                );
 
         // The resize observer keeps the first `measure` it is given, so it reads from a ref.
         minWidthRef.current = minWidth;
         useLayoutEffect(measure, [minWidth, count]);
 
-        if (isEmpty(visibleEntries)) return null;
+        if (isEmpty(visibleEntries)) {
+            return isBlankNode(emptyText)
+                ? null
+                : div({ref, ...rootProps(['xh-key-value-list--empty']), children: emptyText});
+        }
 
         const maxColumns = Math.min(columns ?? count, count),
             columnCount = Math.max(Math.min(maxColumns, fitColumns), 1),
@@ -153,26 +170,19 @@ export const [KeyValueList, keyValueList] = hoistCmp.withFactory<KeyValueListPro
 
         return dl({
             ref: composedRef,
-            ...mergeDeep(
-                {
-                    className: classNames(
-                        className,
-                        labelOnTop && 'xh-key-value-list--label-top',
-                        !labelOnTop &&
-                            labelAlign === 'right' &&
-                            'xh-key-value-list--label-align-right',
-                        !labelOnTop &&
-                            valueAlign === 'right' &&
-                            'xh-key-value-list--value-align-right',
-                        size === 'compact' && 'xh-key-value-list--compact',
-                        dividers && 'xh-key-value-list--dividers'
-                    )
-                },
-                {style: {...layoutProps, '--xh-key-value-list-columns': columnCount}},
-                {[TEST_ID]: testId, ...domAttrs}
+            ...rootProps(
+                [
+                    labelOnTop && 'xh-key-value-list--label-top',
+                    !labelOnTop && labelAlign === 'right' && 'xh-key-value-list--label-align-right',
+                    !labelOnTop && valueAlign === 'right' && 'xh-key-value-list--value-align-right',
+                    size === 'compact' && 'xh-key-value-list--compact',
+                    dividers && 'xh-key-value-list--dividers'
+                ],
+                {'--xh-key-value-list-columns': columnCount}
             ),
             children: visibleEntries.map(({label, value, intent}, idx) => {
-                const empty = isBlankNode(value);
+                const shown = isBoolean(value) ? (value ? 'Yes' : 'No') : value,
+                    empty = isBlankNode(shown);
                 return div({
                     key: idx,
                     className: classNames(
@@ -187,7 +197,7 @@ export const [KeyValueList, keyValueList] = hoistCmp.withFactory<KeyValueListPro
                                 'xh-key-value-list__value',
                                 empty && 'xh-key-value-list__value--empty'
                             ),
-                            children: empty ? (emptyText ?? '-') : value
+                            children: empty ? (nullDisplay ?? '-') : shown
                         })
                     ]
                 });

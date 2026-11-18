@@ -31,6 +31,11 @@
   padding: 0;
   font-size: var(--xh-key-value-list-font-size);
 
+  &--empty {
+    display: block;
+    color: var(--xh-key-value-list-empty-text-color);
+  }
+
   // Swaps in the compact variables, so the rules below draw both sizes.
   &--compact {
     --xh-key-value-list-font-size: var(--xh-key-value-list-compact-font-size);
@@ -67,7 +72,7 @@
     font-weight: var(--xh-key-value-list-value-font-weight);
 
     &--empty {
-      color: var(--xh-key-value-list-empty-text-color);
+      color: var(--xh-key-value-list-null-text-color);
     }
   }
 

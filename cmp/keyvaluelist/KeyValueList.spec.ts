@@ -39,8 +39,7 @@ describe('KeyValueList', () => {
         ['null', null],
         ['undefined', undefined],
         ['an empty string', ''],
-        ['a blank string', '   '],
-        ['a boolean', true]
+        ['a blank string', '   ']
     ])('shows the placeholder for a value that is %s', (_, value) => {
         const {container} = render(keyValueList({entries: [{label: 'Broker', value}]})),
             dd = container.querySelector('dd');
@@ -57,9 +56,20 @@ describe('KeyValueList', () => {
         expect(dd.classList).not.toContain('xh-key-value-list__value--empty');
     });
 
-    it('shows the default placeholder when emptyText is null', () => {
+    it.each([
+        [true, 'Yes'],
+        [false, 'No']
+    ])('shows the boolean %j as %s, not as the placeholder', (value, text) => {
+        const {container} = render(keyValueList({entries: [{label: 'Confirmed', value}]})),
+            dd = container.querySelector('dd');
+
+        expect(dd.textContent).toBe(text);
+        expect(dd.classList).not.toContain('xh-key-value-list__value--empty');
+    });
+
+    it('shows the default placeholder when nullDisplay is null', () => {
         const {container} = render(
-            keyValueList({entries: [{label: 'Broker', value: null}], emptyText: null})
+            keyValueList({entries: [{label: 'Broker', value: null}], nullDisplay: null})
         );
 
         expect(container.querySelector('dd').textContent).toBe('-');
@@ -72,9 +82,9 @@ describe('KeyValueList', () => {
         expect(texts(container, 'dd')).toEqual(['AAPL']);
     });
 
-    it('shows a custom emptyText', () => {
+    it('shows a custom nullDisplay', () => {
         const {container} = render(
-            keyValueList({entries: [{label: 'Broker', value: null}], emptyText: 'None'})
+            keyValueList({entries: [{label: 'Broker', value: null}], nullDisplay: 'None'})
         );
 
         expect(container.querySelector('dd').textContent).toBe('None');
@@ -102,6 +112,15 @@ describe('KeyValueList', () => {
             render(keyValueList({entries: [{label: 'A', value: 1, omit: true}]})).container
                 .innerHTML
         ).toBe('');
+    });
+
+    it('shows emptyText in place of an empty list, with layout props and class name', () => {
+        const root = render(keyValueList({entries: [], emptyText: 'No trade', width: 200}))
+            .container.firstElementChild as HTMLElement;
+
+        expect(root.classList).toContain('xh-key-value-list--empty');
+        expect(root.textContent).toBe('No trade');
+        expect(root.style.width).toBe('200px');
     });
 
     it("marks an entry with its intent, and leaves the others' classes alone", () => {
