@@ -70,7 +70,10 @@ export const [Callout, callout] = hoistCmp.withFactory<CalloutProps>({
             titleId = useId(),
             hasTitle = !isBlankNode(title),
             hasBody = !isBlankNode(children),
-            shownIcon = icon === false ? null : (icon ?? defaultIcon(intent));
+            shownIcon =
+                icon === false
+                    ? null
+                    : (icon ?? Icon.forIntent(intent, {title: INTENT_LABELS[intent]}));
 
         if (!hasTitle && !hasBody) return null;
 
@@ -106,17 +109,9 @@ export const [Callout, callout] = hoistCmp.withFactory<CalloutProps>({
 // Implementation
 //------------------
 /** The icon is the signal of the intent that reaches a screen reader, so it takes a title. */
-function defaultIcon(intent: Intent): ReactElement {
-    switch (intent) {
-        case 'primary':
-            return Icon.info({title: 'Info'});
-        case 'success':
-            return Icon.success({title: 'Success'});
-        case 'warning':
-            return Icon.warning({title: 'Warning'});
-        case 'danger':
-            return Icon.danger({title: 'Error'});
-        default:
-            return null;
-    }
-}
+const INTENT_LABELS: Record<Intent, string> = {
+    primary: 'Info',
+    success: 'Success',
+    warning: 'Warning',
+    danger: 'Error'
+};

@@ -1034,6 +1034,18 @@ export const aliasFactories = {
 };
 
 /**
+ * Name of the icon that stands for each intent, resolved by {@link Icon.forIntent} when called.
+ * An app that replaces one of these icons via {@link Icon.register} changes it for every intent
+ * icon in Hoist.
+ */
+const INTENT_ICON_NAMES: Record<Intent, string> = {
+    primary: 'info',
+    success: 'success',
+    warning: 'warning',
+    danger: 'danger'
+};
+
+/**
  * Singleton class to provide factories for creating standard FontAwesome-based icons.
  *
  * Hoist imports the licensed "pro" library with additional icons - note this requires fetching the
@@ -1120,6 +1132,16 @@ export const Icon = {
      */
     register(config: IconRegistrationConfig): IconFactory {
         return iconCatalog.register(config);
+    },
+
+    /**
+     * Render the standard icon for an intent - `info` for `primary`, then `success`, `warning`
+     * and `danger`. Returns null for no intent. Hoist components that show an intent with an
+     * icon, such as `Banner` and `Callout`, use this. To change the icon for an intent, replace
+     * its icon via {@link Icon.register} with `replace: true`.
+     */
+    forIntent(intent: Intent, props?: IconProps): any {
+        return intent ? Icon.get(INTENT_ICON_NAMES[intent], props) : null;
     },
 
     /** Register multiple custom icons - see {@link Icon.register}. */
