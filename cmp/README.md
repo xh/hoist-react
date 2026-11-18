@@ -348,8 +348,8 @@ displaying their aggregate validation state as intent-colored borders and toolti
 ### Callout (`/callout/`)
 
 A short note set off within a body of content, with an intent, its icon, an optional title and a
-body. Use it for a caveat or a warning inside content, and a desktop `Banner` for a status strip in
-panel chrome. See the [Callout README](./callout/README.md).
+body. Use it for a caveat or a warning inside content, and a `Banner` for a status strip in panel
+chrome. See the [Callout README](./callout/README.md).
 
 ### ProgressBar (`/progressbar/`)
 

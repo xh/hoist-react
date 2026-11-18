@@ -54,7 +54,7 @@
     gap: var(--xh-callout-title-gap);
     min-width: 0;
     // Text breaks between words. Only a word wider than the callout, such as a URL, breaks inside.
-    overflow-wrap: anywhere;
+    overflow-wrap: break-word;
   }
 
   &__title {

@@ -32,7 +32,8 @@ export interface CalloutProps extends HoistProps, LayoutProps, TestSupportProps,
 
     /**
      * Icon shown before the text. Default a standard icon for the `intent`: info, success,
-     * warning or danger. A callout with no intent has no default icon. False for no icon.
+     * warning or danger, titled to name the intent to screen readers. A callout with no intent
+     * has no default icon. False for no icon.
      */
     icon?: ReactElement | false;
 
@@ -83,7 +84,7 @@ export const [Callout, callout] = hoistCmp.withFactory<CalloutProps>({
                 {[TEST_ID]: testId, ...domAttrs}
             ),
             children: [
-                shownIcon ? div({className: 'xh-callout__icon', children: shownIcon}) : null,
+                div({omit: !shownIcon, className: 'xh-callout__icon', children: shownIcon}),
                 div({
                     className: 'xh-callout__content',
                     children: [
@@ -104,16 +105,17 @@ export const [Callout, callout] = hoistCmp.withFactory<CalloutProps>({
 //------------------
 // Implementation
 //------------------
+/** The icon is the signal of the intent that reaches a screen reader, so it takes a title. */
 function defaultIcon(intent: Intent): ReactElement {
     switch (intent) {
         case 'primary':
-            return Icon.info();
+            return Icon.info({title: 'Info'});
         case 'success':
-            return Icon.success();
+            return Icon.success({title: 'Success'});
         case 'warning':
-            return Icon.warning();
+            return Icon.warning({title: 'Warning'});
         case 'danger':
-            return Icon.danger();
+            return Icon.danger({title: 'Error'});
         default:
             return null;
     }

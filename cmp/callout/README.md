@@ -3,16 +3,16 @@
 ## Overview
 
 `Callout` is a short note set off within a body of content. Use one for a caveat in a form, a
-warning about stale data above a grid, or a success or error summary in a detail panel. It shows an icon, an
-optional title and a body on a background tinted by its intent. It takes no model and works on
-desktop and mobile. The props and their defaults are documented in `Callout.ts`.
+warning about stale data above a grid, or a success or error summary in a detail panel. It shows
+an icon, an optional title and a body on a background tinted by its intent. It takes no model and
+works on desktop and mobile. The props and their defaults are documented in `Callout.ts`.
 
 Hoist has three components that look alike. Choose by where the message sits:
 
 - **Callout** - a block inside a body of content, read along with the content around it. It has
   no buttons and does not close.
 - **`Banner`** - a status strip in app or panel chrome, edge to edge, with optional close and
-  action buttons. Show one with `Panel.banner` or `XH.showBanner()`. Desktop only. See
+  action buttons. Show one with `Panel.banner`, or with `XH.showBanner()` on desktop. See
   [Panel Banners](../../desktop/cmp/panel/README.md#banners).
 - **`Card`** - a bordered container that groups other components under a header, and can
   collapse. Use it for a section, not for a message.
@@ -46,7 +46,8 @@ callout({
 ```
 
 Each intent has its own icon - info, success, warning and danger - so color is never the only
-signal. Pass `icon` to show another, or `false` for none.
+signal. The default icon also names the intent to screen readers, as "Info", "Success", "Warning"
+or "Error". Pass `icon` to show another, or `false` for none.
 
 The callout is a block with no outer margin, so it fills the width of a block or a column. Space
 it from its neighbors with a `gap` on its container or a `margin` layout prop. In a row such as an

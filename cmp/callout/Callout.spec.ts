@@ -31,16 +31,21 @@ describe('Callout', () => {
     });
 
     it.each([
-        ['primary', 'circle-info'],
-        ['success', 'circle-check'],
-        ['warning', 'triangle-exclamation'],
-        ['danger', 'circle-xmark']
-    ] as const)('shows the standard icon for intent %s', (intent, iconName) => {
-        const el = renderCallout({intent, children: 'Text'});
+        ['primary', 'circle-info', 'Info'],
+        ['success', 'circle-check', 'Success'],
+        ['warning', 'triangle-exclamation', 'Warning'],
+        ['danger', 'circle-xmark', 'Error']
+    ] as const)(
+        'shows the standard icon for intent %s, named for screen readers',
+        (intent, name, label) => {
+            const el = renderCallout({intent, children: 'Text'}),
+                svg = part(el, 'icon').querySelector('svg');
 
-        expect(el.classList).toContain(`xh-callout--intent-${intent}`);
-        expect(part(el, 'icon').querySelector('svg').getAttribute('data-icon')).toBe(iconName);
-    });
+            expect(el.classList).toContain(`xh-callout--intent-${intent}`);
+            expect(svg.getAttribute('data-icon')).toBe(name);
+            expect(svg.getAttribute('aria-label')).toBe(label);
+        }
+    );
 
     it('shows no icon and no intent class with no intent, or a null one', () => {
         for (const intent of [undefined, null]) {
