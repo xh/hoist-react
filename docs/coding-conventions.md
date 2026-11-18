@@ -492,6 +492,26 @@ const tradeDetail = hoistCmp.factory<TradeDetailProps>({
 });
 ```
 
+### Choosing an Element Factory Call Form
+
+Element factories take either a config object or children as arguments. Pick the form by what the
+call passes:
+
+```typescript
+// Only children - use the shortcut form
+toolbar(refreshButton(), filler(), exportButton());
+p('No trades match the current filter.');
+
+// Any other prop - use the config object form, with children in `children`
+toolbar({compact: true, children: [refreshButton(), filler(), exportButton()]});
+p({className: 'empty-msg', children: 'No trades match the current filter.'});
+```
+
+Never write `{children: ...}` as the only key, and never pass a factory directly as an array
+callback. `rows.map(span)` also renders each row's index and the whole array - write
+`rows.map(it => span(it))`. Hoist logs a warning when it detects that call, or a spec that is not
+a plain object.
+
 ### Model Binding
 
 The `model` option in `hoistCmp.withFactory` declares how a component finds its model:

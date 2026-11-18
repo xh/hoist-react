@@ -159,6 +159,15 @@ export class FakeJsonBlobStore {
         return Object.keys(this.endpoints);
     }
 
+    /** @internal - the read-only endpoints among `paths`, which the client calls with GET. */
+    readonly readPaths: string[] = [
+        'xh/getJsonBlob',
+        'xh/findJsonBlob',
+        'xh/listJsonBlobs',
+        'xhView/allData',
+        'xhView/get'
+    ];
+
     /**
      * @internal - answer a request to one of `paths`. Returns the response body, or undefined for
      * an empty 204. Throws a `FakeServerError` for an error response.

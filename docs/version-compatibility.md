@@ -188,7 +188,8 @@ minor that changes a pairing. These are hard gates stated in the [hoist-dev-util
 
 | hoist-dev-utils | Min hoist-react | Min Node | Notes |
 |---|---|---|---|
-| 16.3 | -- | -- | Builds and the dev server fail on `@rspack/core` 2.3.2, which Rsbuild's `~2.3` range resolves by default. Pin Rspack 2.3.0 with an app-level pnpm override - see [Rspack 2.3.2 build failure](#rspack-232-build-failure). |
+| 16.4.1 | -- | -- | Requires Rsbuild 2.3.3, which brings in the fixed `@rspack/core` 2.3.3. Take it and remove the `@rspack/core` override that 16.3 advised - see [Rspack 2.3.2 build failure](#rspack-232-build-failure). |
+| 16.3 | -- | -- | Builds and the dev server fail on `@rspack/core` 2.3.2. Take 16.4.1+ rather than pinning Rspack 2.3.0 - see [Rspack 2.3.2 build failure](#rspack-232-build-failure). |
 | 16.1 | -- | -- | Adds `configureVitest()`, the Vitest preset for app unit tests. The preset alone needs hoist-react 89, which ships the `@xh/hoist/test-support` kit. Builds keep the 88 floor. |
 | 16.0 | 88.0 | 22.15 | Rsbuild replaces webpack, and TC39 `2023-11` decorators replace `legacy`. Both require app changes. |
 | 15.0 | 87.1 | 22.15 | Take 15.0.1+ - 15.0.0 can crash app boot ([#4640](https://github.com/xh/hoist-react/issues/4640)). Apps must be TypeScript-only - `.jsx` files are no longer resolved or transpiled. Re-enables Terser name-mangling, ships ESLint v10 via `@xh/eslint-config` 8, and emits pre-compressed `.br` / `.gz` assets on prod builds. |
@@ -233,17 +234,14 @@ starting the dev server or building rather than at runtime. See
 
 ### Rspack 2.3.2 build failure
 
-hoist-dev-utils 16.3 and later refuse to build or start the dev server with `@rspack/core` 2.3.2.
-Its minifier breaks classes that reference themselves in a static initializer, so the built app
-crashes on load. Rsbuild's own `~2.3` range resolves 2.3.2 on any fresh install or lockfile
-refresh, so the pin must be an app-level pnpm override. In `client-app/pnpm-workspace.yaml`:
+The minifier in `@rspack/core` 2.3.2 breaks classes that reference themselves in a static
+initializer, so the built app crashes on load. hoist-dev-utils 16.3 and later refuse to build or
+start the dev server with that version.
 
-```yaml
-overrides:
-  '@rspack/core': 2.3.0
-```
-
-Remove the override once a fixed Rspack release ships and hoist-dev-utils raises its floor. See
+Take hoist-dev-utils 16.4.1 or later. It requires Rsbuild 2.3.3, which brings in the fixed
+`@rspack/core` 2.3.3. If the app added the `'@rspack/core': 2.3.0` pnpm override that 16.3
+advised, remove it from `client-app/pnpm-workspace.yaml`. Left in place, it runs Rspack 2.3.0
+under Rsbuild 2.3.3, which expects 2.3.3. See
 [xh/hoist-dev-utils#85](https://github.com/xh/hoist-dev-utils/issues/85).
 
 ### Upgrading hoist-core without upgrading hoist-react

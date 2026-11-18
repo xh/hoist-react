@@ -37,6 +37,9 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 * `Mask` now renders inline desktop masks as a plain `div` with the class `xh-mask--inline`, not a
   Blueprint overlay. Showing a mask no longer forces a browser layout. Restyle any app CSS that
   targets `.bp6-overlay` classes within an inline mask, or use `--xh-mask-bg`.
+* `FetchService` now sends a request with no `method` as a GET, even when it sets `params`. Before,
+  `params` made it a POST with a form-encoded body. Set `method: 'POST'` on calls that change data,
+  send credentials, or send large params - see Step 7 of the upgrade notes.
 
 ### 🎁 New Features
 
@@ -59,10 +62,17 @@ detailed, step-by-step upgrade instructions with before/after code examples.
   `indeterminate` for work of unknown length.
 * Added `Separator` to `@xh/hoist/cmp/layout`, a horizontal or `vertical` rule that divides
   content, with an optional `label` within the rule.
+* Added `scrollIntoViewWithin` to `@xh/hoist/utils/js`, to scroll a container just far enough to
+  show an element inside it, without moving any scrolling panel or page around the container.
 * Added `isBlankNode` to `@xh/hoist/utils/react`, to test whether a node renders no content, such
   as null, false, a blank string or an array of these.
 * Added `DashCanvasConfig.preventCollision` to block a drag or resize into space taken by another
   view. Combine with `compact: false` for a free-form canvas where views stay where users put them.
+* Added `Sparkline` to `@xh/hoist/cmp/sparkline`, a small inline trend chart in plain SVG for a
+  `StatCard` or a grid cell. It draws a `line`, `area` or `bar` series, colored with `colorBy` by
+  `intent`, by its trend, or by the sign of each part, as for profit and loss. Optional
+  `markers` dot the first, last, lowest and highest values. An optional `tooltip` for the whole
+  sparkline shows on desktop and mounts only when first hovered.
 * Added `XH.hasRoute()` to check if a route exists. Call it before `XH.router.buildPath()` or
   `buildUrl()` with a name that may not be registered, as both throw for an unknown route.
 
@@ -82,6 +92,9 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 * Fixed a crash in a desktop `Toolbar` with `enableOverflowMenu: true` and only one item.
 * Fixed a TypeScript 5.9 type check of Hoist sources failing when `lib` lacks `dom.iterable`, a
   regression in v90.
+* Fixed desktop `TabSwitcher` with `enableOverflow: true`, and `DynamicTabSwitcher` when its tabs
+  overflow, moving a scrolling panel or page around them to show the active tab. Each now scrolls
+  only its own tab strip.
 
 ### ⚙️ Technical
 
@@ -94,12 +107,17 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 * `TreeMap` now logs a console warning when Highcharts has no color axis, which leaves every node
   in one default color. Import `highcharts/modules/heatmap` or `highcharts/modules/coloraxis`
   before `highcharts/modules/treemap` in `Bootstrap.ts`.
+* Element factories now log a console warning when passed directly as an array callback
+  (`items.map(span)`), which renders each item's index and the whole array, or when given a spec
+  that is not a plain object, which renders as a child.
 
 ### ⚙️ Typescript API Adjustments
 
 * `ElementSpec.children` takes the type of the component's own `children` prop when it declares
   one, such as a render function.
 * `AppOptionSpec.formField` is now typed as a loose element spec instead of `any`.
+* `ElementFactory` now lists its spec signature last, so a malformed spec reports the real problem
+  (a missing prop, or a misspelled one with a suggested fix) instead of an error about `ReactNode`.
 
 ### ✨ Styles
 
@@ -132,6 +150,8 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 
 ### 📚 Libraries
 
+* @azure/msal-common `removed` - Hoist used it only for a type. It still installs with
+  @azure/msal-browser, which pins its own copy, so apps no longer get a second one.
 * jsdom `30 → 30 || 31` (optional peer)
 
 ## 90.1.0 - 2026-11-13

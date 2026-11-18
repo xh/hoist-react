@@ -594,6 +594,10 @@
   the README has no prop table.
 - Added a `Separator` section to `cmp/layout/README.md`, and short `ProgressBar` and `Separator`
   entries to `cmp/README.md`.
+- Added a package README for `Sparkline`. It covers when to use the component over a `Chart`,
+  examples in a `StatCard` and a grid column, CSS variables and pitfalls. TSDoc holds the props
+  and their defaults, so the README has no prop table.
+- Added a short `Sparkline` entry to `cmp/README.md`.
 - Indexed in `docs/README.md` (Quick Reference and Components), the roadmap Priority 2 table
   (Draft), and `docs/doc-registry.json`.
 

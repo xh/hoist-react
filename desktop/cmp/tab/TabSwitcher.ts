@@ -29,6 +29,7 @@ import {
     debounced,
     getTestId,
     isDisplayed,
+    scrollIntoViewWithin,
     TEST_ID,
     throwIf
 } from '@xh/hoist/utils/js';
@@ -324,7 +325,7 @@ class TabSwitcherLocalModel extends HoistModel {
         const tab = this.tabEls.find(
             (tab: HTMLElement) => tab.dataset.tabId === this.model.activeTabId
         );
-        if (tab) tab.scrollIntoView();
+        if (tab) scrollIntoViewWithin(tab as HTMLElement, this.el);
     }
 
     getOverflowIds() {

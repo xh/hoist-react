@@ -6,7 +6,7 @@
  */
 
 import {grid} from '@xh/hoist/cmp/grid';
-import {fragment} from '@xh/hoist/cmp/layout';
+import {fragment, hframe} from '@xh/hoist/cmp/layout';
 import type {HoistProps, PlainObject} from '@xh/hoist/core';
 import {hoistCmp, uses} from '@xh/hoist/core';
 import type {MaskProps} from '@xh/hoist/cmp/mask';
@@ -31,6 +31,13 @@ export interface RestGridProps
      * the implementation of this component and its use of AG Grid.
      */
     agOptions?: PlainObject;
+
+    /**
+     * Optional component rendered to the right of the grid, below the toolbar - typically a
+     * collapsible Panel showing details of the selected record. The toolbar spans both, so
+     * showing this panel does not take width away from the toolbar's controls.
+     */
+    detailPanel?: ReactNode;
 
     /**
      * Optional components rendered adjacent to the top toolbar's action buttons.
@@ -86,6 +93,7 @@ export const [RestGrid, restGrid] = hoistCmp.withFactory<RestGridProps>({
                 tbar,
                 mask = true,
                 agOptions,
+                detailPanel,
                 formClassName,
                 formBbar,
                 testId,
@@ -93,12 +101,14 @@ export const [RestGrid, restGrid] = hoistCmp.withFactory<RestGridProps>({
             } = props,
             {formModel, gridModel} = model;
 
+        const gridCmp = grid({model: gridModel, agOptions, testId: getTestId(testId, 'grid')});
+
         return fragment(
             panel({
                 ref,
                 ...restProps,
                 tbar: innerToolbar({model, tbar, extraToolbarItems, testId}),
-                children: grid({model: gridModel, agOptions, testId: getTestId(testId, 'grid')}),
+                children: detailPanel ? hframe(gridCmp, detailPanel) : gridCmp,
                 mask: getMaskFromProp(model, mask)
             }),
             restForm({

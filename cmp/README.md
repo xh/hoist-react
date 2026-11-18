@@ -68,8 +68,9 @@ panel({
 </Panel>
 ```
 
-Factories accept a config object with `children`, or children directly as arguments when no other
-props are needed.
+Factories accept a config object with `children`, or children directly as arguments. Use the
+shortcut form when a call passes only children - see
+[Choosing a Call Form](../docs/coding-conventions.md#choosing-an-element-factory-call-form).
 
 For details on creating components with `hoistCmp.factory()` and `hoistCmp.withFactory()`,
 see the [Core Package README](../core/README.md#element-factories).
@@ -153,6 +154,7 @@ techniques.
 | `/statcard/` | Tiles that call out key figures (StatCard), laid out in equal-width rows (StatCardStrip) |
 | `/keyvaluelist/` | Display-only list of labeled values (KeyValueList), such as the fields of a record in a detail panel. [See README](./keyvaluelist/README.md) |
 | `/itemlist/` | Short, static list of entries with a title, description, icon and trailing detail (ItemList). [See README](./itemlist/README.md) |
+| `/sparkline/` | Small inline trend chart in plain SVG (Sparkline), for a stat card or a grid cell. [See README](./sparkline/README.md) |
 
 ### Layout and Containers
 
@@ -259,6 +261,11 @@ const chartModel = new ChartModel({
 
 chartModel.setSeries([{name: 'Series 1', data: [...]}]);
 ```
+
+### Sparkline (`/sparkline/`)
+
+A small inline trend chart in plain SVG, with no axes or labels, for a `StatCard` or a grid cell.
+Use a `Chart` when the reader needs exact values. See the [Sparkline README](./sparkline/README.md).
 
 ### DataView (`/dataview/`)
 

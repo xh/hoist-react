@@ -122,6 +122,7 @@ export class ServiceModel extends BaseInstanceModel {
             .span('clearCaches')
             .fetchJson({
                 url: 'serviceManagerAdmin/clearCaches',
+                method: 'POST',
                 params: {
                     instance: entireCluster ? null : instanceName,
                     names: selectedRecords.map(it => it.data.name)

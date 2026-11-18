@@ -18,6 +18,7 @@ export const fragment = elementFactory(Fragment);
 export const iframe = elementFactory('iframe');
 export const img = elementFactory('img');
 export const input = elementFactory('input');
+export const path = elementFactory('path');
 export const svg = elementFactory('svg');
 export const textarea = elementFactory('textarea');
 

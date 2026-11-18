@@ -148,6 +148,7 @@ export class ConnPoolMonitorModel extends BaseInstanceModel {
             .linkTo(this.loadObserver)
             .fetchJson({
                 url: 'connectionPoolMonitorAdmin/takeSnapshot',
+                method: 'POST',
                 params: {instance: this.instanceName}
             })
             .then(async () => {
@@ -162,6 +163,7 @@ export class ConnPoolMonitorModel extends BaseInstanceModel {
             .span('resetStats')
             .fetchJson({
                 url: 'connectionPoolMonitorAdmin/resetStats',
+                method: 'POST',
                 params: {instance: this.instanceName}
             })
             .linkTo(this.loadObserver)
@@ -201,6 +203,7 @@ export class ConnPoolMonitorModel extends BaseInstanceModel {
             .span('purgeConnections')
             .fetchJson({
                 url: 'connectionPoolMonitorAdmin/purgeConnections',
+                method: 'POST',
                 params: {instance: entireCluster ? null : instanceName}
             })
             .linkTo(loadObserver)
