@@ -5,6 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
+export * from './data/RestField';
 export * from './data/RestStore';
 export * from './Actions';
 export * from './RestGridModel';

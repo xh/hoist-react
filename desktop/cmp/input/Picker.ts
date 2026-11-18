@@ -4,28 +4,23 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {HoistInputModel, HoistInputProps, useHoistInputModel} from '@xh/hoist/cmp/input';
+import type {HoistInputProps} from '@xh/hoist/cmp/input';
+import {HoistInputModel, useHoistInputModel} from '@xh/hoist/cmp/input';
 import {div, filler, hbox, span, vbox} from '@xh/hoist/cmp/layout';
 import {textInput} from './TextInput';
-import {
-    elementFactory,
-    hoistCmp,
-    HoistProps,
-    LayoutProps,
-    SelectOption,
-    StyleProps,
-    Thunkable
-} from '@xh/hoist/core';
+import type {HoistProps, LayoutProps, SelectOption, StyleProps, Thunkable} from '@xh/hoist/core';
+import {elementFactory, hoistCmp} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
-import {button, ButtonProps} from '@xh/hoist/desktop/cmp/button';
+import type {ButtonProps} from '@xh/hoist/desktop/cmp/button';
+import {button} from '@xh/hoist/desktop/cmp/button';
 import {Icon} from '@xh/hoist/icon';
 import {popover} from '@xh/hoist/kit/blueprint';
-import {action, bindable, makeObservable, observable} from '@xh/hoist/mobx';
+import {action, bindable, observable, bindableRef} from '@xh/hoist/mobx';
 import {TEST_ID, getTestId, withDefault, pluralize, executeIfFunction} from '@xh/hoist/utils/js';
 import {getLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import {capitalize, castArray, isEmpty, isEqual, isPlainObject} from 'lodash';
-import {ReactNode} from 'react';
+import type {ReactNode} from 'react';
 import {List} from 'react-window';
 import './Picker.scss';
 
@@ -224,9 +219,9 @@ export const [Picker, picker] = hoistCmp.withFactory<PickerProps, PickerDefaults
 class PickerModel extends HoistInputModel {
     override xhImpl = true;
 
-    @bindable.ref internalOptions: SelectOption[] = [];
-    @observable popoverIsOpen: boolean = false;
-    @bindable filterValue: string = '';
+    @bindableRef accessor internalOptions: SelectOption[] = [];
+    @observable accessor popoverIsOpen: boolean = false;
+    @bindable accessor filterValue: string = '';
 
     get multiMode(): boolean {
         return !!this.componentProps.enableMulti;
@@ -246,11 +241,6 @@ class PickerModel extends HoistInputModel {
         const {enableFilter, filterThreshold} = this.componentProps;
         if (enableFilter != null) return enableFilter;
         return this.internalOptions.length > withDefault(filterThreshold, 8);
-    }
-
-    constructor() {
-        super();
-        makeObservable(this);
     }
 
     override onLinked() {
@@ -388,12 +378,12 @@ class PickerModel extends HoistInputModel {
             return hbox({
                 className: 'xh-picker__multi-text',
                 alignItems: 'center',
-                items: [
+                children: [
                     div({
                         className: 'xh-picker__count',
-                        item: selectedOpts.length.toString()
+                        children: selectedOpts.length.toString()
                     }),
-                    span({className: 'xh-picker__multi-text-label', item: text})
+                    span({className: 'xh-picker__multi-text-label', children: text})
                 ]
             });
         }
@@ -445,7 +435,7 @@ const cmp = hoistCmp.factory<PickerModel>(({model, className, ...props}, ref) =>
             compact && 'xh-picker__popover--compact'
         ),
         matchTargetWidth: !props.popoverWidth,
-        item: triggerButton({model, props, nothingSelected, ref}),
+        children: triggerButton({model, props, nothingSelected, ref}),
         content: optionsList({model, props}),
         [TEST_ID]: props.testId
     });
@@ -478,6 +468,7 @@ const triggerButton = hoistCmp.factory<PickerModel>(({model, props, nothingSelec
         width: withDefault(width, 160),
         style: props.style,
         [TEST_ID]: getTestId(props, 'trigger'),
+        ...props.domAttrs,
         onClick: () => {
             if (model.popoverIsOpen) {
                 model.closePopover();
@@ -509,17 +500,17 @@ const optionsList = hoistCmp.factory<PickerModel>(({model, props}) => {
     return vbox({
         className: 'xh-picker__menu',
         style: widthStyle,
-        items: [
+        children: [
             enableFilter ? filterInput({model, props}) : null,
             useVirtual
                 ? virtualOptionsList({model, props, filteredOptions, maxMenuHeight, optionHeight})
                 : div({
                       className: 'xh-picker__options',
                       style: {maxHeight: maxMenuHeight, overflowY: 'auto'},
-                      items: isEmpty(filteredOptions)
+                      children: isEmpty(filteredOptions)
                           ? div({
                                 className: 'xh-picker__no-results',
-                                item: 'No matches found.'
+                                children: 'No matches found.'
                             })
                           : filteredOptions.map((opt, index) =>
                                 optionItem({model, opt, props, index})
@@ -536,7 +527,7 @@ const optionsList = hoistCmp.factory<PickerModel>(({model, props}) => {
 const filterInput = hoistCmp.factory<PickerModel>(({model, props}) => {
     return div({
         className: 'xh-picker__filter',
-        item: textInput({
+        children: textInput({
             model,
             bind: 'filterValue',
             commitOnChange: true,
@@ -597,7 +588,7 @@ const menuFooter = hoistCmp.factory<PickerModel>(({model, props}) => {
                     'xh-picker__footer-action',
                     allSelected && 'xh-picker__footer-action--disabled'
                 ),
-                item: 'All',
+                children: 'All',
                 [TEST_ID]: getTestId(props, 'select-all-btn'),
                 onClick: e => {
                     e.stopPropagation();
@@ -608,7 +599,7 @@ const menuFooter = hoistCmp.factory<PickerModel>(({model, props}) => {
     }
     if (enableClear) {
         if (actions.length > 0) {
-            actions.push(span({className: 'xh-picker__footer-separator', item: '\u00b7'}));
+            actions.push(span({className: 'xh-picker__footer-separator', children: '\u00b7'}));
         }
         actions.push(
             div({
@@ -616,7 +607,7 @@ const menuFooter = hoistCmp.factory<PickerModel>(({model, props}) => {
                     'xh-picker__footer-action',
                     noneSelected && 'xh-picker__footer-action--disabled'
                 ),
-                item: 'Clear',
+                children: 'Clear',
                 [TEST_ID]: getTestId(props, 'clear-btn'),
                 onClick: e => {
                     e.stopPropagation();
@@ -628,7 +619,11 @@ const menuFooter = hoistCmp.factory<PickerModel>(({model, props}) => {
 
     return hbox({
         className: 'xh-picker__footer',
-        items: [div({className: 'xh-picker__footer-count', item: countText}), filler(), ...actions]
+        children: [
+            div({className: 'xh-picker__footer-count', children: countText}),
+            filler(),
+            ...actions
+        ]
     });
 });
 
@@ -664,16 +659,16 @@ function renderOption(
             e.stopPropagation();
             model.onOptionClick(opt.value);
         },
-        items: optionRenderer
+        children: optionRenderer
             ? optionRenderer(opt, isSelected)
             : [
                   div({
                       className: 'xh-picker__option-check',
-                      item: isSelected ? Icon.check({size: 'sm'}) : null
+                      children: isSelected ? Icon.check({size: 'sm'}) : null
                   }),
                   div({
                       className: 'xh-picker__option-label',
-                      item: opt.label
+                      children: opt.label
                   })
               ]
     });

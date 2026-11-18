@@ -39,7 +39,7 @@ After:
 ### 2. Update `GridModel.setColumnState` Usage
 
 `GridModel.setColumnState` no longer patches existing column state — it replaces it wholesale.
-If your app passes a partial column state object expecting it to be merged with existing state,
+If your app passes a partial array of column state expecting it to be merged with existing state,
 switch to `GridModel.applyColumnStateChanges` instead.
 
 **Find affected files:**
@@ -49,17 +49,28 @@ grep -r "setColumnState" client-app/src/
 
 Before:
 ```typescript
-// Partial update — this no longer works as a patch
-gridModel.setColumnState({visible: ['name', 'status']});
+// Partial state for two columns - previously patched into the existing state
+gridModel.setColumnState([
+    {colId: 'name', hidden: false},
+    {colId: 'status', hidden: true, width: 120}
+]);
 ```
 
 After:
 ```typescript
-// Use applyColumnStateChanges for partial updates
-gridModel.applyColumnStateChanges({visible: ['name', 'status']});
+// Use applyColumnStateChanges to apply targeted changes to particular columns
+gridModel.applyColumnStateChanges([
+    {colId: 'name', hidden: false},
+    {colId: 'status', hidden: true, width: 120}
+]);
 ```
 
-If your app always passes a complete column state object to `setColumnState`, no change is needed.
+Note that `setColumnState` now takes a full `ColumnState[]` (`colId` + `width` + `hidden`, plus
+optional `pinned` and `manuallySized`), while `applyColumnStateChanges` continues to accept a
+`Partial<ColumnState>[]`, requiring only `colId` plus the properties to change.
+
+If your app always passes a complete array of column state to `setColumnState` - e.g. a snapshot
+read back from `gridModel.columnState` - no change is needed.
 
 Note: `GridModel.cleanColumnState` is now private. This is not expected to impact applications.
 

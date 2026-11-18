@@ -19,3 +19,18 @@ export function shallowEqualArrays<T = any>(a: T[], b: T[]): boolean {
     }
     return true;
 }
+
+/**
+ * @internal
+ */
+export function shallowEqualObjects(a: Record<string, any>, b: Record<string, any>): boolean {
+    if (a === b) return true;
+    if (!a || !b) return false;
+
+    const keys = Object.keys(a);
+    if (Object.keys(b).length !== keys.length) return false;
+    for (const key of keys) {
+        if (a[key] !== b[key]) return false;
+    }
+    return true;
+}

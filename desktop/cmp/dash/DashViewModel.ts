@@ -6,21 +6,18 @@
  */
 import {createObservableRef} from '@xh/hoist/utils/react';
 import {isNil, remove} from 'lodash';
-import {ReactElement} from 'react';
+import type {ReactElement} from 'react';
+import type {MenuItemLike, PlainObject, RefreshMode, RenderMode} from '@xh/hoist/core';
 import {
     type DashViewProvider,
     HoistModel,
     managed,
-    ManagedRefreshContextModel,
-    MenuItemLike,
-    PlainObject,
-    RefreshMode,
-    RenderMode
+    ManagedRefreshContextModel
 } from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
-import {action, makeObservable, bindable} from '@xh/hoist/mobx';
+import {action, bindable, bindableRef} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
-import {DashViewSpec} from './DashViewSpec';
+import type {DashViewSpec} from './DashViewSpec';
 
 export type DashViewState = PlainObject;
 
@@ -48,30 +45,30 @@ export abstract class DashViewModel<T extends DashViewSpec = DashViewSpec> exten
     containerModel: any;
 
     /** Title with which to initialize the view.  Value is persisted. */
-    @bindable title: string;
+    @bindable accessor title: string;
 
     /**
      * Additional info that will be displayed after the title.
      * Applications can bind to this property to provide dynamic title details.
      * Value is not persisted.
      */
-    @bindable titleDetails: string;
+    @bindable accessor titleDetails: string;
 
     get fullTitle(): string {
         return [this.title, this.titleDetails].filter(it => !isNil(it)).join(' ');
     }
 
     /** Icon with which to initialize the view. */
-    @bindable.ref icon: ReactElement;
+    @bindableRef accessor icon: ReactElement;
 
     /** State with which to initialize the view. */
-    @bindable.ref viewState: DashViewState;
+    @bindableRef accessor viewState: DashViewState;
 
     /** Extra menu items for the context menu. */
-    @bindable.ref extraMenuItems: MenuItemLike[] = [];
+    @bindableRef accessor extraMenuItems: MenuItemLike[] = [];
 
     @managed refreshContextModel;
-    @bindable isActive: boolean;
+    @bindable accessor isActive: boolean;
 
     viewRef = createObservableRef<HTMLDivElement>();
 
@@ -92,9 +89,16 @@ export abstract class DashViewModel<T extends DashViewSpec = DashViewSpec> exten
         return this.viewSpec.refreshMode ?? this.containerModel.refreshMode;
     }
 
-    constructor({id, viewSpec, icon, title, viewState = null, containerModel}: DashViewConfig<T>) {
+    constructor({
+        id,
+        viewSpec,
+        icon,
+        title,
+        viewState = null,
+        containerModel,
+        xhName = null
+    }: DashViewConfig<T>) {
         super();
-        makeObservable(this);
         throwIf(!id, 'DashViewModel requires an id');
         throwIf(!viewSpec, 'DashViewModel requires an DashViewSpec');
 
@@ -104,8 +108,10 @@ export abstract class DashViewModel<T extends DashViewSpec = DashViewSpec> exten
         this.title = title ?? viewSpec.title;
         this.viewState = viewState;
         this.containerModel = containerModel;
+        this.xhName = xhName ?? containerModel?.childXhName(id);
 
         this.refreshContextModel = new ManagedRefreshContextModel(this);
+        this.refreshContextModel.xhName = this.childXhName('refreshContextModel');
     }
 
     /**
@@ -154,4 +160,7 @@ export interface DashViewConfig<T extends DashViewSpec = DashViewSpec> {
     title?: string;
     viewState?: DashViewState;
     containerModel?: any;
+
+    /** See {@link HoistBase.xhName}. */
+    xhName?: string;
 }

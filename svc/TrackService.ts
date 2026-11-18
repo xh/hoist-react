@@ -4,7 +4,8 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {HoistService, PlainObject, TrackOptions, XH} from '@xh/hoist/core';
+import type {PlainObject, TrackOptions} from '@xh/hoist/core';
+import {HoistService, XH} from '@xh/hoist/core';
 import {SECONDS} from '@xh/hoist/utils/datetime';
 import {isOmitted} from '@xh/hoist/utils/impl';
 import {debounced, stripTags, withDefault} from '@xh/hoist/utils/js';
@@ -143,7 +144,7 @@ export class TrackService extends HoistService {
             loadId: XH.loadId,
             tabId: XH.tabId,
             url: window.location.href,
-            timestamp: Date.now()
+            timestamp: options.timestamp
         };
 
         if (options.category) ret.category = options.category;

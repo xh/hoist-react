@@ -4,10 +4,11 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {GridModel, IColChooserModel} from '@xh/hoist/cmp/grid';
-import {HoistModel, HSide, XH} from '@xh/hoist/core';
+import type {ColChooserMode, GridModel, IColChooserModel} from '@xh/hoist/cmp/grid';
+import type {HSide} from '@xh/hoist/core';
+import {HoistModel, XH} from '@xh/hoist/core';
 import '@xh/hoist/mobile/register';
-import {bindable, action, makeObservable, observable} from '@xh/hoist/mobx';
+import {bindable, action, observable, observableRef} from '@xh/hoist/mobx';
 import {warnIf} from '@xh/hoist/utils/js';
 import {clone, find, sortBy} from 'lodash';
 
@@ -21,13 +22,14 @@ export class ColChooserModel extends HoistModel implements IColChooserModel {
     override xhImpl = true;
 
     gridModel: GridModel;
+    readonly mode: ColChooserMode = 'modal';
     showRestoreDefaults: boolean;
     autosizeOnCommit: boolean;
 
-    @observable.ref columns: ColMeta[] = [];
-    @bindable pinFirst: boolean;
+    @observableRef accessor columns: ColMeta[] = [];
+    @bindable accessor pinFirst: boolean;
 
-    @observable isOpen = false;
+    @observable accessor isOpen = false;
 
     get pinnedColumn() {
         return this.pinFirst ? this.columns.find(it => it.pinned) : null;
@@ -43,7 +45,6 @@ export class ColChooserModel extends HoistModel implements IColChooserModel {
 
     constructor({gridModel, showRestoreDefaults = true, autosizeOnCommit = true}) {
         super();
-        makeObservable(this);
 
         this.gridModel = gridModel;
         this.showRestoreDefaults = showRestoreDefaults;
@@ -76,6 +77,10 @@ export class ColChooserModel extends HoistModel implements IColChooserModel {
     @action
     close() {
         this.isOpen = false;
+    }
+
+    toggle() {
+        this.isOpen ? this.close() : this.open();
     }
 
     @action

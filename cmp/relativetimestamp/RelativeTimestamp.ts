@@ -5,17 +5,10 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {box, span} from '@xh/hoist/cmp/layout';
-import {
-    BoxProps,
-    hoistCmp,
-    HoistModel,
-    HoistProps,
-    managed,
-    useLocalModel,
-    XH
-} from '@xh/hoist/core';
+import type {BoxProps, HoistProps} from '@xh/hoist/core';
+import {hoistCmp, HoistModel, managed, useLocalModel, XH} from '@xh/hoist/core';
 import {fmtCompactDate, fmtDateTime} from '@xh/hoist/format';
-import {action, computed, makeObservable, observable} from '@xh/hoist/mobx';
+import {action, observable, computedStruct} from '@xh/hoist/mobx';
 import {Timer} from '@xh/hoist/utils/async';
 import {DAYS, HOURS, LocalDate, SECONDS} from '@xh/hoist/utils/datetime';
 import {logWarn, withDefault} from '@xh/hoist/utils/js';
@@ -96,9 +89,9 @@ export const [RelativeTimestamp, relativeTimestamp] = hoistCmp.withFactory<Relat
             className,
             ref,
             ...layoutProps,
-            item: span({
+            children: span({
                 className: 'xh-title-tip',
-                item: impl.display,
+                children: impl.display,
                 title: fmtDateTime(impl.timestamp) as string
             })
         });
@@ -108,7 +101,7 @@ export const [RelativeTimestamp, relativeTimestamp] = hoistCmp.withFactory<Relat
 class RelativeTimestampLocalModel extends HoistModel {
     override xhImpl = true;
 
-    @observable display: string = '';
+    @observable accessor display: string = '';
 
     model: HoistModel;
 
@@ -125,14 +118,9 @@ class RelativeTimestampLocalModel extends HoistModel {
         return withDefault(timestamp, model && bind ? model[bind] : null);
     }
 
-    @computed.struct
+    @computedStruct
     get options(): RelativeTimestampOptions {
         return this.componentProps as RelativeTimestampProps;
-    }
-
-    constructor() {
-        super();
-        makeObservable(this);
     }
 
     override onLinked() {
@@ -242,7 +230,7 @@ function doFormat(timestamp: Date | number, opts: RelativeTimestampOptions): str
     }
 
     // 3) Basic timestamp, with suffix /prefix
-    let ret = '';
+    let ret: string;
     if (elapsed < 60 * SECONDS) {
         // By default, moment will show 'a few seconds' for durations of 0-45 seconds. At the higher
         // end of that range that output is a bit too inaccurate, so we replace as per below.

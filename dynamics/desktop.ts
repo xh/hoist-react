@@ -15,11 +15,13 @@
  *
  * See the platform specific AppContainer where these implementations are actually provided.
  */
-export let ColChooserModel = null;
+export let ModalColChooserModel = null;
+export let DockedColChooserModel = null;
 export let ColumnHeaderFilterModel = null;
 export let ModalSupportModel = null;
 export let DashContainerViewModel = null;
 export let colChooser = null;
+export let dockedColChooser = null;
 export let zoneMapper = null;
 export let columnHeaderFilter = null;
 export let dockContainerImpl = null;
@@ -32,17 +34,22 @@ export let errorMessageImpl = null;
 export let maskImpl = null;
 export let DynamicTabSwitcherModel = null;
 export let cardHeaderImpl = null;
+export let statCardInfoImpl = null;
+export let pdfViewerToolbarImpl = null;
+export let sparklineTooltipImpl = null;
 /**
  * Provide implementations of functions and classes exported in this file.
  *
  * Not for Application use.
  */
 export function installDesktopImpls(impls) {
-    ColChooserModel = impls.ColChooserModel;
+    ModalColChooserModel = impls.ModalColChooserModel;
+    DockedColChooserModel = impls.DockedColChooserModel;
     ColumnHeaderFilterModel = impls.ColumnHeaderFilterModel;
     ModalSupportModel = impls.ModalSupportModel;
     DashContainerViewModel = impls.DashContainerViewModel;
     colChooser = impls.colChooser;
+    dockedColChooser = impls.dockedColChooser;
     zoneMapper = impls.zoneMapper;
     columnHeaderFilter = impls.columnHeaderFilter;
     dockContainerImpl = impls.dockContainerImpl;
@@ -55,4 +62,7 @@ export function installDesktopImpls(impls) {
     maskImpl = impls.maskImpl;
     DynamicTabSwitcherModel = impls.DynamicTabSwitcherModel;
     cardHeaderImpl = impls.cardHeaderImpl;
+    statCardInfoImpl = impls.statCardInfoImpl;
+    pdfViewerToolbarImpl = impls.pdfViewerToolbarImpl;
+    sparklineTooltipImpl = impls.sparklineTooltipImpl;
 }

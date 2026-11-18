@@ -28,7 +28,7 @@ GridModel (orchestrator)
 ├── selModel: StoreSelectionModel # Selection state
 ├── columns: Column[]             # Column definitions
 ├── filterModel: GridFilterModel  # Column-level filtering (desktop only)
-├── colChooserModel: HoistModel   # Column visibility UI
+├── colChooserModel: HoistModel   # Column visibility UI (modal or docked)
 └── agGridModel: AgGridModel      # ag-Grid wrapper (from /cmp/ag-grid/)
 ```
 
@@ -134,6 +134,39 @@ gridModel.collapseAll();
 gridModel.expandToLevel(2);
 ```
 
+### Column Groups
+
+```typescript
+new GridModel({
+    columns: [
+        {field: 'name', flex: 1},
+        {
+            headerName: 'Q1',
+            collapsed: true,                   // Render collapsed until the user expands
+            children: [
+                {field: 'q1Jan', groupShowMode: 'expanded'},
+                {field: 'q1Feb', groupShowMode: 'expanded'},
+                {field: 'q1Total', groupShowMode: 'collapsed'}
+            ]
+        }
+    ]
+});
+```
+
+`groupShowMode` is what makes a group expandable, and it takes a mix of values to do so: the group's
+children must resolve to at least one column shown while expanded *and* one shown while collapsed.
+Columns default to `'always'`, shown in either state. A group of always-shown columns is a static
+header, as is one where every child specifies the same value.
+This is evaluated over currently-visible children only, so hiding columns via the chooser can leave a
+group non-expandable.
+
+Expand/collapse state is tracked on `GridModel.columnGroupState`, one entry per configured group.
+Read it with `isColumnGroupExpanded(groupId)`, drive it with `setColumnGroupExpanded()` or
+`setColumnGroupState()`, and persist it via `persistWith` (on by default, alongside column state -
+see `GridModelPersistOptions.persistColumnGroups`).
+
+Collapsing affects display only: `columnState`, `isColumnVisible()`, and export are all unaffected.
+
 ### Tree Mode
 
 ```typescript
@@ -205,7 +238,8 @@ new GridModel({
     filterModel: true,  // Default config
     filterModel: {
         bind: store,    // Filter target (defaults to grid's store)
-        commitOnChange: true
+        commitOnChange: true,
+        fieldSpecs: [{field: 'status', renderer: statusRenderer}]  // Optional custom config
     },
     columns: [
         {field: 'status', filterable: true},  // Enable filter on specific columns
@@ -213,6 +247,10 @@ new GridModel({
     ]
 });
 ```
+
+A `filterable` column gets a filter with default config even if `fieldSpecs` omits its field, as
+long as that field exists in the bound Store or View.
+List only the fields that need custom config. Set `filterable: false` to disable a column's filter.
 
 ### Inline Editing
 
@@ -248,23 +286,63 @@ await gridModel.exportAsync({type: 'excel'});
 gridModel.localExport('my-data', 'csv');
 ```
 
+### Text Renderers
+
+Prefer a `textRenderer` over a `renderer` wherever a cell shows only text. A text renderer returns
+the display text, and ag-Grid writes it into a plain cell with no React component. A renderer makes
+every cell of its column a React component. The built-in `number`, `date`, `dateTime`,
+`dateTimeSec`, `time`, `compactDate` and `localDate` column specs use text renderers.
+
+For numbers and dates, build one with the `xxxTextRenderer` factories in `@xh/hoist/format`. They
+take the options of their `xxxRenderer` counterparts, less those that need markup. See
+[Text Renderer Factories](../../format/README.md#text-renderer-factories) for what each option does
+in a text renderer. A custom text renderer gets the same `(value, {record, column, gridModel})`
+arguments as a renderer, and must return a string.
+
+```typescript
+import {numberTextRenderer} from '@xh/hoist/format';
+
+columns: [
+    {field: 'pnl', textRenderer: numberTextRenderer({precision: 0, ledger: true, colorSpec: true})},
+    {
+        field: 'qty',
+        textRenderer: (v, {record}) => `${v} ${record.data.unit}`,
+        rendererIsComplex: true
+    }
+]
+```
+
+- **Styling by value** - a text renderer or renderer can carry `cellClassRules`, as the text
+  renderer factories do for `colorSpec` and ledger alignment. `Column` applies them beneath its own.
+- **Other record fields** - a text renderer that reads them needs `rendererIsComplex`, as a
+  renderer does. Autosize relies on it to measure each row's own text.
+- **Group rows** - a group row's label shows its raw group value, as with a renderer. Set
+  `GridModel.groupRowRenderer` to format it. An ag-Grid total row has no record, so the text
+  renderer gets `record` undefined there.
+- **With a renderer** - the `renderer` wins, and `Column` ignores the text renderer and its rules.
+  This lets `{...number, renderer}` override a built-in spec.
+- **Outside the cell** - autosize, header filters and `ZoneGrid` use the text, as do
+  `StoreFilterField` and `GridFindField` on date fields. Copy and both exports send the cell's
+  value, as for any column.
+
 ### Custom Renderers
 
-Use `xxxRenderer` factory functions (e.g., `numberRenderer`) when passing a statically configured
-renderer directly to the `renderer` config - the factory returns a reusable function. When rendering
-dynamically based on record data or otherwise customizing per-cell, call the underlying formatter
-directly (e.g., `fmtNumber`) to avoid creating a new function on each render. See
-[`/format/README.md`](../../format/README.md) for the full formatter and renderer API.
+Use an `xxxRenderer` factory function, for example `numberRenderer`, when a cell needs markup such
+as `withSignGlyph` or a styled label. Pass a statically configured renderer directly to the
+`renderer` config. To render dynamically from record data or otherwise customize per cell, call
+the underlying `fmtXxx` function directly, for example `fmtNumber`. Doing so avoids creating a new
+function on each render. See [`/format/README.md`](../../format/README.md) for the full formatter
+and renderer API.
 
 ```typescript
 import {numberRenderer, fmtNumber} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
 
 columns: [
-    // Configured formatter - passes options to the underlying format function
+    // Configured renderer - for an option that needs markup
     {
-        field: 'price',
-        renderer: numberRenderer({precision: 2, prefix: '$'})
+        field: 'change',
+        renderer: numberRenderer({precision: 2, withSignGlyph: true})
     },
 
     // Renderer function returning different icons based on value
@@ -292,6 +370,111 @@ columns: [
 ]
 ```
 
+### Tooltips
+
+Hoist styles the tooltip content it renders itself - a plain value or string, and the validation
+messages shown on an editable cell - with `xh-grid-tooltip-frame` (background, border, radius,
+padding, max-width) and `xh-grid-tooltip--prewrap` (honors `\n` line breaks while still wrapping at
+max-width).
+
+A `tooltip` that returns an **element** is left unstyled, so that a custom tooltip can supply its
+own chrome. To take Hoist's frame instead, add `xh-grid-tooltip-frame` to your own root:
+
+```typescript
+{
+    field: 'volume',
+    tooltip: volume =>
+        vbox({
+            className: 'xh-grid-tooltip-frame',
+            children: [fmtNumberTooltip(volume), div('Unusually high volume')]
+        })
+}
+```
+
+`xh-grid-tooltip-frame` is a standalone utility class, usable on any element - a custom tooltip is
+not nested in anything that provides the frame for it. (`--prewrap` is an ordinary modifier that
+Hoist applies to its own tooltips; set `white-space` directly if a custom tooltip needs it.)
+
+### Cell Corner Flags
+
+`cellFlag` marks a cell with a small triangle in its top-right corner, in the color of a standard
+Hoist `Intent` - a compact alternative to spending a column or restyling the cell. Called per
+record, returning an `Intent` or `null`.
+
+```typescript
+columns: [
+    {
+        field: 'volume',
+        cellFlag: volume => (volume >= 9_000_000_000 ? 'warning' : null)
+    },
+    {
+        field: 'price',
+        cellFlag: (value, {record}) => (record.data.isStale ? 'warning' : null)
+    }
+]
+```
+
+One flag renders per cell, and on an editable column a failing validation always wins. Keep the
+function cheap - it runs once per candidate `Intent` on each rendered cell and is deliberately
+uncached, so a flag still reflects state that changes without the record, such as an async
+validation result. Size follows the grid's `sizingMode` via the `--xh-grid-cell-flag-size` custom
+property. Flags are CSS pseudo-elements, so they add no width and do not appear in grid exports.
+
+### Context Menus
+
+`GridModel.contextMenu` takes an array of entries, or a function returning one. Entries can be a
+`RecordAction` (or its config), a `'-'` separator, a `MenuHeading`, or a token - either one of
+Hoist's own (`copyCell`, `colChooser`, `export`, `filter`, `restoreDefaults`, and others) or one
+built into ag-Grid.
+
+A `MenuHeading` is a non-interactive label for the items below it, written as `{heading: '...'}`.
+Use it to break a long menu into sections.
+
+```typescript
+contextMenu: [
+    {heading: 'This Row'},
+    'copyCell',
+    editAction,
+    deleteAction,
+
+    {heading: 'Grid'},
+    'colChooser',
+    'export',
+    'restoreDefaults'
+]
+```
+
+Headings render their own divider rule, so they need no `'-'` alongside. A heading with nothing
+below it is dropped automatically - at the end of a menu, or when its entire section has hidden
+itself. That matters because actions commonly hide based on the clicked row, via `hidden`,
+`recordsRequired`, or `displayFn`: right-clicking empty space in the grid above drops the
+`This Row` heading along with the actions under it.
+
+A heading takes a `displayFn` of its own for dynamic text, receiving the same `ActionFnData` passed
+to the actions beside it:
+
+```typescript
+{
+    heading: 'This Row',
+    displayFn: ({record}) => (record ? {heading: `Row: ${record.get('company')}`} : {hidden: true})
+}
+```
+
+Headings are also accepted by the desktop and mobile menus that take `MenuItemLike` entries - e.g.
+a dropdown attached to a button. Those menus supply no record context, so a `displayFn` there is
+called with no argument.
+
+#### Header Context Menu
+
+`GridModel.headerContextMenu` configures a second menu, shown on right-click of a column header on
+desktop. It takes the same entries and tokens as `contextMenu`, with no row in context: actions
+receive the clicked `column` but no `record`, so row-specific ones hide themselves. The default
+menu sorts, pins, hides and autosizes the clicked column, then ends as `contextMenu` does. Tokens
+for the clicked column (`sort`, `pinColumn`, `hideColumn`, `autosizeColumn`) hide
+over a column group header. Set `false` to show no header menu; a grid that disables `contextMenu`
+gets none by default. The menu is ag-Grid's column menu and needs its `ColumnMenuModule`, which
+`MenuModule` includes.
+
 ## Column Properties Reference
 
 Every column within a `GridModel` must resolve to a **unique ID**. The `colId` defaults to `field`
@@ -305,13 +488,13 @@ Key categories of `ColumnSpec` properties:
 | Category | Properties                                                                                                   |
 |----------|--------------------------------------------------------------------------------------------------------------|
 | Identity | `field`, `colId` (unique), `displayName`, `description`                                                      |
-| Display | `headerName`, `headerTooltip`, `width`, `flex`, `minWidth`, `maxWidth`, `hidden`, `align`                    |
+| Display | `headerName`, `headerTooltip`, `width`, `flex`, `minWidth`, `maxWidth`, `hidden`, `align`, `groupShowMode` |
 | Sorting | `sortable`, `sortingOrder`, `absSort`, `sortValue`, `sortToBottom`, `comparator`                             |
 | Filtering | `filterable`                                                                                                 |
 | Editing | `editable`, `editor`, `editorIsPopup`                                                                        |
 | Export | `exportName`, `exportValue`, `excludeFromExport`, `excelFormat`, `excelWidth`                                |
 | Chooser | `chooserName`, `chooserGroup`, `chooserDescription`\*, `excludeFromChooser`, `hideable`                      |
-| Rendering | `renderer`, `rendererIsComplex`, `tooltip`, `cellClass`, `cellClassRules`                                    |
+| Rendering | `textRenderer`, `renderer`, `rendererIsComplex`, `tooltip`, `cellClass`, `cellClassRules`, `cellFlag`        |
 | Tree | `isTreeColumn`, `headerHasExpandCollapse`                                                                    |
 | Autosize | `autosizable`, `autosizeIncludeHeader`, `autosizeIncludeHeaderIcons`, `autosizeMinWidth`, `autosizeMaxWidth` |
 

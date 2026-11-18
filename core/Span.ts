@@ -4,7 +4,7 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {PlainObject, FullSpanConfig, SpanKind} from '@xh/hoist/core';
+import type {PlainObject, FullSpanConfig, SpanKind} from '@xh/hoist/core';
 import {isHoistException} from '@xh/hoist/exception';
 import {isString} from 'lodash';
 

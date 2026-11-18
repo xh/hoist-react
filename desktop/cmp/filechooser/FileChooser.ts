@@ -6,13 +6,14 @@
  */
 import {box, frame, hframe, input, vframe} from '@xh/hoist/cmp/layout';
 import {mask} from '@xh/hoist/cmp/mask';
-import {BoxProps, Content, hoistCmp, HoistProps, uses} from '@xh/hoist/core';
+import type {BoxProps, Content, HoistProps} from '@xh/hoist/core';
+import {hoistCmp, uses} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {dropzone} from '@xh/hoist/kit/react-dropzone';
 import {elementFromContent, getLayoutProps} from '@xh/hoist/utils/react';
-import {FileRejection} from 'react-dropzone';
+import type {FileRejection} from 'react-dropzone';
 import {FileChooserModel} from './FileChooserModel';
-import {fromPairs, isEmpty} from 'lodash';
+import {isEmpty} from 'lodash';
 import classNames from 'classnames';
 import {defaultEmptyDisplay} from './impl/DefaultEmptyDisplay';
 import {defaultFileDisplay} from './impl/DefaultFileDisplay';
@@ -88,8 +89,11 @@ export const [FileChooser, fileChooser] = hoistCmp.withFactory<FileChooserProps>
 
         return dropzone({
             ref: model.dropzoneRef,
-            // react-dropzone wants a {type: [extensions]} map; extensions serve as their own keys.
-            accept: accept ? fromPairs(accept.map(ext => [ext, [ext]])) : null,
+            // react-dropzone expects `accept` to be a {type: [extensions]} map. The FileChooserModel
+            // only accepts a list of extensions. Extensions alone are sufficient for validation and
+            // a MIME type is not required. Use `_/_` as a dummy MIME type to prevent console warnings
+            // from react-dropzone.
+            accept: accept ? {'_/_': accept} : null,
             // Disable interaction (drag/click/drop) at the limit; the target shows a clear message.
             disabled: disabled || atLimit,
             maxFiles,
@@ -109,7 +113,9 @@ export const [FileChooser, fileChooser] = hoistCmp.withFactory<FileChooserProps>
                         container = isTop ? vframe : hframe;
                     return container({
                         className,
-                        items: [
+                        testId: props.testId,
+                        domAttrs: props.domAttrs,
+                        children: [
                             // `box` (flex: none) so the rail keeps a fixed size beside the grid;
                             // `frame` would grow and crowd it out.
                             box({
@@ -124,10 +130,14 @@ export const [FileChooser, fileChooser] = hoistCmp.withFactory<FileChooserProps>
                                     atLimit ? 'xh-file-chooser__target--disabled' : null
                                 ),
                                 width: isTop ? null : 200,
-                                items: [multiDropTarget(), targetMask, input({...getInputProps()})],
-                                ...getRootProps()
+                                ...getRootProps(),
+                                children: [
+                                    multiDropTarget(),
+                                    targetMask,
+                                    input({...getInputProps()})
+                                ]
                             }),
-                            frame({flex: 1, item: elementFromContent(resolvedFileDisplay)})
+                            frame({flex: 1, children: elementFromContent(resolvedFileDisplay)})
                         ],
                         ...getLayoutProps(props)
                     });
@@ -146,8 +156,10 @@ export const [FileChooser, fileChooser] = hoistCmp.withFactory<FileChooserProps>
                         !hasFiles ? 'xh-file-chooser__target--empty' : null,
                         clickable ? 'xh-file-chooser__target--clickable' : null
                     ),
-                    items: [dropzoneItem, targetMask, input({...getInputProps()})],
+                    testId: props.testId,
+                    domAttrs: props.domAttrs,
                     ...getRootProps(),
+                    children: [dropzoneItem, targetMask, input({...getInputProps()})],
                     ...getLayoutProps(props)
                 });
             },

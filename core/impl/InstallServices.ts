@@ -4,7 +4,8 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {HoistService, HoistServiceClass, InitContext, Some, XH} from '@xh/hoist/core';
+import type {HoistService, HoistServiceClass, InitContext, Some} from '@xh/hoist/core';
+import {XH} from '@xh/hoist/core';
 import {instanceManager} from '@xh/hoist/core/impl/InstanceManager';
 import {createSingleton, throwIf} from '@xh/hoist/utils/js';
 import {camelCase, castArray} from 'lodash';
@@ -34,7 +35,11 @@ export async function installServicesAsync(
     const notSvc = serviceClasses.find((it: any) => !it.isHoistService);
     throwIf(notSvc, `Cannot initialize ${notSvc?.name} - does not extend HoistService`);
 
-    const svcs = serviceClasses.map(c => createSingleton(c));
+    const svcs = serviceClasses.map(c => {
+        const svc = createSingleton(c);
+        svc.xhName ??= camelCase(c.name);
+        return svc;
+    });
     await initServicesInternalAsync(svcs, ctx);
 
     svcs.forEach(svc => {

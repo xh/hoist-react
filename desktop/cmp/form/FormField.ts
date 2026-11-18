@@ -4,46 +4,42 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {PopoverPosition, PopperBoundary} from '@blueprintjs/core';
-import {BaseFormFieldProps, FieldModel, FormContext, FormContextType} from '@xh/hoist/cmp/form';
+import type {PopoverPosition, PopperBoundary} from '@blueprintjs/core';
+import type {BaseFormFieldProps, FormContextType} from '@xh/hoist/cmp/form';
+import {FieldModel, FormContext, FormFieldSetContext} from '@xh/hoist/cmp/form';
 import {box, div, label as labelEl, li, span, ul} from '@xh/hoist/cmp/layout';
-import {
-    DefaultHoistProps,
-    hoistCmp,
-    HoistProps,
-    HSide,
-    TestSupportProps,
-    useContextModel,
-    uses,
-    XH
-} from '@xh/hoist/core';
+import type {DefaultHoistProps, HoistProps, HSide, TestSupportProps} from '@xh/hoist/core';
+import {hoistCmp, uses, XH} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {instanceManager} from '@xh/hoist/core/impl/InstanceManager';
-import {maxSeverity, ValidationResult} from '@xh/hoist/data';
-import {FormFieldSetModel} from '@xh/hoist/cmp/form/formfieldset/FormFieldSetModel';
+import type {ValidationResult} from '@xh/hoist/data';
+import {maxSeverity} from '@xh/hoist/data';
 import {fmtDate, fmtDateTime, fmtJson, fmtNumber} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
 import {tooltip} from '@xh/hoist/kit/blueprint';
 import {isLocalDate} from '@xh/hoist/utils/datetime';
 import {errorIf, getTestId, logWarn, TEST_ID, throwIf, withDefault} from '@xh/hoist/utils/js';
 import {
-    composeRefs,
     getLayoutProps,
     getReactElementName,
+    useComposedRefs,
     useOnMount,
     useOnUnmount
 } from '@xh/hoist/utils/react';
 import classNames from 'classnames';
-import {first, isBoolean, isDate, isEmpty, isFinite, isNil, isUndefined, kebabCase} from 'lodash';
 import {
-    Children,
-    cloneElement,
-    ReactElement,
-    ReactNode,
-    useContext,
-    useEffect,
-    useState
-} from 'react';
+    first,
+    isDate,
+    isEmpty,
+    isFinite,
+    isNil,
+    isObjectLike,
+    isString,
+    isUndefined,
+    kebabCase
+} from 'lodash';
+import type {ReactElement, ReactNode} from 'react';
+import {Children, cloneElement, useContext, useEffect, useState} from 'react';
 import './FormField.scss';
 
 export interface FormFieldProps extends BaseFormFieldProps {
@@ -135,7 +131,7 @@ export const [FormField, formField] = hoistCmp.withFactory<FormFieldProps>({
         }
 
         // If within a FormFieldSet, register with its model for validation grouping
-        const fieldSetModel = useContextModel(FormFieldSetModel);
+        const fieldSetModel = useContext(FormFieldSetContext);
         useEffect(() => {
             if (fieldSetModel && model) {
                 fieldSetModel.registerChildFieldModel(model);
@@ -158,7 +154,7 @@ export const [FormField, formField] = hoistCmp.withFactory<FormFieldProps>({
             requiredIndicator =
                 isRequired && !readonly && requiredStr
                     ? span({
-                          item: ' ' + requiredStr,
+                          children: ' ' + requiredStr,
                           className: 'xh-form-field__required-indicator'
                       })
                     : null;
@@ -230,7 +226,7 @@ export const [FormField, formField] = hoistCmp.withFactory<FormFieldProps>({
 
         if (minimal) {
             childEl = tooltip({
-                item: childEl,
+                children: childEl,
                 className: classNames(
                     'xh-input',
                     severityToDisplay && `xh-input--${severityToDisplay}`,
@@ -256,14 +252,14 @@ export const [FormField, formField] = hoistCmp.withFactory<FormFieldProps>({
                     ? tooltip({
                           openOnTargetFocus: false,
                           className: validationMsgCls,
-                          item: firstMsg + ' (...)',
+                          children: firstMsg + ' (...)',
                           content: getValidationTooltipContent(
                               validationResultsToDisplay
                           ) as ReactElement
                       })
                     : div({
                           className: validationMsgCls,
-                          item: firstMsg
+                          children: firstMsg
                       });
         }
 
@@ -273,11 +269,15 @@ export const [FormField, formField] = hoistCmp.withFactory<FormFieldProps>({
             className: classNames(className, classes),
             ...getLayoutProps(props),
             testId,
-            items: [
+            domAttrs: props.domAttrs,
+            children: [
                 labelEl({
                     omit: !label,
                     className: 'xh-form-field__label',
-                    items: [label, requiredIndicator],
+                    children: [label, requiredIndicator],
+                    // Id lets inputs that are not labelable elements (e.g. RadioCardInput) name
+                    // themselves via `aria-labelledby`.
+                    id: `${childId}-label`,
                     htmlFor: clickableLabel ? childId : null,
                     style: {
                         textAlign: labelTextAlign,
@@ -292,12 +292,12 @@ export const [FormField, formField] = hoistCmp.withFactory<FormFieldProps>({
                             ? 'xh-form-field__inner--flex'
                             : 'xh-form-field__inner--block'
                     ),
-                    items: [
+                    children: [
                         childEl,
                         div({
                             className: 'xh-form-field__inner__info-msg',
                             omit: !info,
-                            item: info
+                            children: info
                         }),
                         validationMsgEl
                     ]
@@ -319,7 +319,7 @@ const readonlyChild = hoistCmp.factory<ReadonlyChildProps>({
         return div({
             className: 'xh-form-field__readonly-display',
             [TEST_ID]: testId,
-            item: readonlyRenderer(value, model)
+            children: readonlyRenderer(value, model)
         });
     }
 });
@@ -346,7 +346,7 @@ const editableChild = hoistCmp.factory<FieldModel>({
             bind: 'value',
             id: childId,
             disabled: props.disabled || disabled,
-            ref: composeRefs(model?.boundInputRef, child.ref),
+            ref: useComposedRefs(model?.boundInputRef, child.ref),
             testId: props.testId ?? testId
         };
 
@@ -379,17 +379,24 @@ const editableChild = hoistCmp.factory<FieldModel>({
 // Helper Functions
 //---------------------------------
 export function defaultReadonlyRenderer(value: any): ReactNode {
+    // First try type-specific formatting
     if (isLocalDate(value)) return fmtDate(value);
     if (isDate(value)) return fmtDateTime(value);
     if (isFinite(value)) return fmtNumber(value);
-    if (isBoolean(value)) return value.toString();
+    if (isObjectLike(value)) return fmtJson(value);
 
-    // format JSON, but fail and ignore on plain text
-    try {
-        value = fmtJson(value);
-    } catch (e) {}
+    // ... pretty printing json strings as well.
+    if (isString(value)) {
+        const trimmed = value.trim();
+        if (trimmed.startsWith('{') || trimmed.startsWith('[')) {
+            try {
+                value = fmtJson(trimmed);
+            } catch {}
+        }
+    }
 
-    return span(value != null ? value.toString() : null);
+    // Otherwise just fall back to string rendering
+    return span(value?.toString());
 }
 
 const blockChildren = ['CodeInput', 'JsonInput', 'Select', 'TextInput'];
@@ -429,7 +436,7 @@ function getValidationTooltipContent(validationResults: ValidationResult[]): Rea
         const severity = first(validationResults).severity;
         return ul({
             className: `xh-form-field__validation-tooltip xh-form-field__validation-tooltip--${severity}`,
-            items: validationResults.map((it, idx) => li({key: idx, item: it.message}))
+            children: validationResults.map((it, idx) => li({key: idx, children: it.message}))
         });
     }
 }

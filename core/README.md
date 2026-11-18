@@ -106,14 +106,26 @@ class MyModel extends HoistModel {
     override persistWith = {prefKey: 'MyModelState'};
 
     // Decorator form - syncs with configured PersistenceProvider
-    @persist @bindable showAdvanced = false;
+    @bindable @persist accessor showAdvanced = false;
 
     // Or programmatic form for custom timing
     constructor() {
         super();
-        makeObservable(this);
         this.markPersist('showAdvanced', {path: 'myModel.showAdvanced'});
     }
+}
+```
+
+**Instance Naming**
+
+Set `xhName` to distinguish instances of the same class in logs, telemetry, and the Inspector.
+Config-driven models accept it as a config; any `HoistBase` can set it directly.
+
+```typescript
+new GridModel({xhName: 'positionsGrid', store: {...}});
+
+export class PositionsModel extends HoistModel {
+    override xhName = 'positions';
 }
 ```
 
@@ -128,6 +140,8 @@ class MyModel extends HoistModel {
 | `setBindable(prop, val)` | Set value via conventional setter |
 | `destroy()` | Clean up all managed resources |
 | `xhId` | Unique identifier for this instance |
+| `xhName` | Optional developer-facing name for logs, telemetry, and Inspector |
+| `childXhName(key)` | `{xhName}.{key}`, for naming child objects |
 
 ## HoistModel
 
@@ -157,20 +171,15 @@ Models can operate in two modes:
 
 ```typescript
 import {HoistModel, LoadSpec, managed, XH} from '@xh/hoist/core';
-import {bindable, makeObservable, observable, runInAction} from '@xh/hoist/mobx';
+import {bindable, observableRef, runInAction} from '@xh/hoist/mobx';
 
 class UserListModel extends HoistModel {
     // Observable state
-    @observable.ref users: User[] = [];
-    @bindable selectedUserId: string = null;
+    @observableRef accessor users: User[] = [];
+    @bindable accessor selectedUserId: string = null;
 
     // Managed child model - we create it, so we manage it
     @managed detailModel = new UserDetailModel();
-
-    constructor() {
-        super();
-        makeObservable(this);  // Required when adding new observables
-    }
 
     // Opt into managed loading by implementing this template method
     override async doLoadAsync(loadSpec: LoadSpec) {
@@ -315,10 +324,10 @@ Services are installed in your `AppModel.initAsync()`:
 
 ```typescript
 class AppModel extends HoistAppModel {
-    override async initAsync() {
+    override async initAsync(ctx: InitContext) {
         // Install custom services - multiple calls for ordered initialization
-        await XH.installServicesAsync(TradeService, PortfolioService);
-        await XH.installServicesAsync(ReportService);  // Depends on above
+        await XH.installServicesAsync([TradeService, PortfolioService], ctx);
+        await XH.installServicesAsync([ReportService], ctx);  // Depends on above
     }
 }
 ```
@@ -363,7 +372,7 @@ export const userList = hoistCmp.factory({
     render({model}) {
         return panel({
             title: 'Users',
-            item: grid(), // auto-discovers `GridModel` instance on `model`
+            children: grid(), // auto-discovers `GridModel` instance on `model`
             mask: 'onLoad'
         });
     }
@@ -375,8 +384,8 @@ export const userDetail = hoistCmp.factory({
     render({model}) {
         return panel({
             title: model.hasUser ? `Viewing ${model.username}` : `Select a User`,
-            item: form({ // auto-discovers `FormModel` instance on `model`
-                items: [/* formField components */]
+            children: form({ // auto-discovers `FormModel` instance on `model`
+                children: [/* formField components */]
             })
         })
     }
@@ -387,7 +396,7 @@ export const statusBadge = hoistCmp.factory({
     model: false,
     className: 'my-app-status-badge',
     render({status, className}) {
-        return div({className, item: status});
+        return div({className, children: status});
     }
 });
 ```
@@ -472,7 +481,7 @@ const [PortfolioPanel, portfolioPanel] = hoistCmp.withFactory({
     render() {
         return panel({
             title: 'Portfolio',
-            item: grid()  // GridModel found via context lookup
+            children: grid()  // GridModel found via context lookup
         });
     }
 });
@@ -538,6 +547,37 @@ Button.defaults.minimal = false;
 This pattern is analogous to `static defaults` on Model and Service classes (e.g.
 `GridModel.defaults`), adapted for functional components created via `hoistCmp`.
 
+### Extra DOM Attributes with `domAttrs`
+
+Hoist components choose which props they pass along to the elements they render. An attribute that
+a component does not model with a dedicated prop is therefore dropped and never reaches the DOM.
+
+`DomAttrsProps` provides the escape hatch. Components that support it accept a `domAttrs` object
+and apply its entries to their primary DOM element - the same element that receives `data-testid`
+when `testId` is set.
+
+```typescript
+textInput({
+    bind: 'email',
+    testId: 'signup-email',
+    domAttrs: {'data-analytics-id': 'signup-email', 'aria-describedby': 'email-help'}
+});
+```
+
+Keys are constrained by type to `data-*` and `aria-*` attributes, plus `role`, so the prop cannot
+be used to reach for attributes the component manages itself (`className`, `style`, `value`). The
+constraint applies to object literals only; a pre-built `Record<string, string>` still assigns, for
+the rare attribute outside that set. Take care there - precedence against component-managed
+attributes is not guaranteed and varies by component.
+
+As with `style`, an inline `domAttrs` literal is a new object on each render, so hoist a constant
+out of the render function when passing one to a component that relies on `memo`.
+
+Support is provided by `Box` and the layout components built on it (and therefore by `Panel`,
+`Toolbar`, and similar containers), by `Button` and `ButtonGroup`, by `Card` and `Badge`, and by
+the input components in `/cmp/input/`. See [`/cmp/input/README.md`](../cmp/input/README.md) for
+notes specific to inputs.
+
 ## Element Factories
 
 **File**: `elem.ts`
@@ -552,12 +592,12 @@ import {div, span} from '@xh/hoist/cmp/layout';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 
-// Config object form - props + children via item/items
+// Config object form - props + children
 panel({
     title: 'My Panel',
     className: 'my-panel',
-    items: [
-        div({className: 'header', item: 'Welcome'}),
+    children: [
+        div({className: 'header', children: 'Welcome'}),
         button({text: 'Click Me', onClick: handleClick})
     ]
 })
@@ -573,60 +613,53 @@ div(
 
 | Property | Purpose |
 |----------|---------|
-| `item` / `items` | Child element(s) |
+| `children` | Child element(s) - a single node or an array |
 | `omit` | Conditional rendering - `true` or `() => boolean` to exclude |
 | `key` | React key |
 | `className` | CSS class(es) |
 | All others | Passed as props to component |
 
-> **Note:** `item` and `items` are interchangeable - either accepts a single element or an array.
-> Use whichever reads better in context.
+A factory passes `children` to `React.createElement` as rest arguments, not as a prop. An array
+of children therefore needs no keys, and React does not warn about missing ones.
 
-### Authoring a Container Component: `items` In, `children` Out
+> **Legacy `item` / `items`:** Earlier Hoist versions used `item` and `items` for children. Both
+> still work as aliases for `children`. If a spec sets `children` and a legacy key, only `children`
+> renders and Hoist logs a warning. New code should use `children`. To convert an app, run
+> `node_modules/@xh/hoist/docs/codemod/v91/codemod-items-to-children.mjs` - see its header for
+> usage.
 
-There is an important asymmetry between the **calling** side of an element factory and the
-**authoring** side of a Hoist component's render function. Understanding it is essential when
-writing any component that accepts and renders child elements.
+### Authoring a Container Component
 
-| Side | Prop name | Why |
-|------|-----------|-----|
-| **Calling** a factory | `item` / `items` | Hoist's config-object API for passing children |
-| **Inside** a render function | `children` | The standard React prop populated by `React.createElement` |
-
-When you call a factory like `panel({items: [a, b, c]})`, the factory strips `items` off the
-config object and passes the values as **rest arguments** to `React.createElement(Panel, props,
-a, b, c)`. React then exposes them inside the component as `props.children` — the standard React
-children prop. There is no `items` prop reaching the render function; only `children` does.
-
-The canonical pattern when writing a container component is therefore: **destructure `children`
-from props, then pass them along to your inner factory as `items`**. This is exactly how Hoist's
-own library components are implemented. From `cmp/layout/Box.ts`:
+A container component takes children and renders them inside its own elements. The factory call
+and the render function use the same standard React prop: `children`. Destructure `children` from
+props and pass it on to the inner factory. Hoist's own library components work this way. From
+`cmp/layout/Box.ts`:
 
 ```typescript
 export const [Box, box] = hoistCmp.withFactory<BoxComponentProps>({
     render(props, ref) {
-        // Read inbound children as the standard React `children` prop...
         let [layoutProps, {children, model, testId, ...restProps}] = splitLayoutProps(props);
 
-        // ...and pass them onward to the inner factory as `items`.
         return div({
             ref,
             ...restProps,
-            items: children
+            children
         });
     }
 });
 ```
 
 Typing follows the same convention: `HoistProps` declares `children?: ReactNode`, so destructuring
-`children` from `props` is fully typed and works for any component extending `HoistProps`.
+`children` from `props` is fully typed and works for any component extending `HoistProps`. If a
+component declares its own `children` type, such as a render function, its factory spec uses that
+type for `children`.
 
 #### Iterating, Wrapping, or Spreading Children
 
-The simple pass-through pattern above relies on the fact that `items` and `item` accept any
-`ReactNode` shape, so you can hand `children` directly to an inner factory. But if your
-component needs to **inspect, transform, or interleave** children — e.g. prepend a header before
-each child, wrap each in a styled box, or count them — you need an iterable array first.
+The simple pass-through pattern above works because `children` accepts any `ReactNode` shape. But
+if your component needs to **inspect, transform, or interleave** children - for example, prepend
+a header before each child, wrap each in a styled box, or count them - you need an iterable array
+first.
 
 React's `children` prop is intentionally opaque: it can be a single node, an array, a fragment,
 `null`, or `undefined` depending on how the caller invoked the factory. Don't try to iterate it
@@ -641,16 +674,16 @@ import {hbox, vbox, div} from '@xh/hoist/cmp/layout';
 // each wrapped in a styled row.
 export const labeledList = hoistCmp.factory({
     render({header, children}) {
-        const items = Children.toArray(children);
+        const childArray = Children.toArray(children);
 
         return vbox({
             className: 'my-labeled-list',
-            items: [
-                div({className: 'my-labeled-list__header', item: header}),
-                ...items.map((child, idx) =>
+            children: [
+                div({className: 'my-labeled-list__header', children: header}),
+                ...childArray.map((child, idx) =>
                     hbox({
                         className: 'my-labeled-list__row',
-                        items: [div({item: `${idx + 1}.`}), child]
+                        children: [div({children: `${idx + 1}.`}), child]
                     })
                 )
             ]
@@ -667,25 +700,18 @@ internally by `Toolbar` (filtering and inserting separators between children) an
 you don't also need an array (e.g. to count, slice, or interleave), `Children.map(children, fn)`
 is a slightly more direct alternative.
 
-#### Why the asymmetry?
+#### The `$items` / `$item` / `$omit` Escape Hatch
 
-`item`/`items` are deliberate Hoist enhancements to the config-object form — `item` (singular)
-has no equivalent in standard React, and reads naturally for the very common case of a single
-child (`panel({title, item: grid()})`). On the receiving side, however, the framework rides on
-React's standard `createElement(type, props, ...children)` contract; what arrives at the render
-function is whatever React provides, which is always `children`.
-
-#### The `$item` / `$items` Escape Hatch
-
-When a component being rendered actually defines its own `items` (or `item`/`omit`) prop — for
-example, Blueprint's `OverflowList` — prefix it with `$` to bypass the factory's special handling
-and pass it through as a real prop. The `$` is stripped before the prop reaches the component.
+The factory treats `item`, `items`, and `omit` as spec keys, so a component with its own prop of
+one of those names cannot receive it directly. Blueprint's `OverflowList` is one example. Prefix
+the key with `$` to pass it through as a real prop. The factory strips the `$` before the prop
+reaches the component.
 
 ```typescript
 // `overflowList` is from Blueprint and has its own `items` prop.
 // Use `$items` to pass an array as a regular prop (not as Hoist children).
 overflowList({
-    $items: children as readonly ReactNode[],
+    $items: Children.toArray(children),
     minVisibleItems: 3,
     visibleItemRenderer: item => item
 });
@@ -697,7 +723,7 @@ The `omit` property provides clean conditional rendering without ternaries:
 
 ```typescript
 panel({
-    items: [
+    children: [
         grid({model: gridModel}),
         // Only render when data is loaded
         chart({model: chartModel, omit: !hasData}),
@@ -782,14 +808,11 @@ XH.popRoute();
 
 ```typescript
 class MyModel extends HoistModel {
-    @observable value = null;
+    @observable accessor value = null;
     @managed childModel = new ChildModel();
 
     constructor() {
         super();
-        makeObservable(this);  // Always call when adding observables
-
-        // Set up reactions after makeObservable
         this.addReaction({
             track: () => this.value,
             run: () => this.onValueChange()
@@ -870,28 +893,28 @@ override async doLoadAsync(loadSpec: LoadSpec) {
 
 ## Common Pitfalls
 
-### Forgetting `makeObservable(this)` in Subclasses
+### Forgetting the `accessor` Keyword on Observables
 
-MobX requires each class that introduces new `@observable` or `@computed` properties to call
-`makeObservable(this)` in its constructor. The base class call doesn't cover subclass decorators.
+TC39 decorators require the `accessor` keyword on properties decorated with `@observable`,
+`@observableRef`, `@bindable`, `@bindableRef`, or `@persist`. Without `accessor`, the decorator
+cannot intercept the property. `tsc` reports the error for `@bindable`, `@bindableRef`, and
+`@persist`, but not for the MobX `@observable` decorators. A dev build then throws when the class
+loads. A production build skips that check, and the property silently stops being observable.
 
 ```typescript
-// ❌ Wrong: Observables won't work
+// ❌ Wrong: Missing accessor - throws in dev, silently not observable in production
 class MyModel extends HoistModel {
     @observable data = null;
-    // Missing makeObservable call!
 }
 
-// ✅ Correct: Call makeObservable in constructor
+// ✅ Correct: Use accessor with observable decorators
 class MyModel extends HoistModel {
-    @observable data = null;
-
-    constructor() {
-        super();
-        makeObservable(this);
-    }
+    @observable accessor data = null;
 }
 ```
+
+Note: `@computed` (on getters), `@action` (on methods), and `@managed` (on properties) do **not**
+use `accessor`.
 
 ### Calling `lookupModel()` Before Model is Linked
 
@@ -935,31 +958,6 @@ class ChildModel extends HoistModel {
 }
 ```
 
-### Expecting `items` in Render Functions
-
-A common trap when authoring a Hoist component is to assume that the `items`/`item` prop used to
-*call* the factory also appears in the render function's `props`. It does not. The factory
-translates `items` to React's standard children rest-args, which arrive at the render function as
-`props.children`. See [Authoring a Container Component](#authoring-a-container-component-items-in-children-out)
-for the full explanation.
-
-```typescript
-// ❌ Wrong: `items` is never populated on the inbound props.
-export const myContainer = hoistCmp.factory({
-    render({items, ...rest}) {           // items is always undefined here
-        return panel({items, ...rest});
-    }
-});
-
-// ✅ Correct: Destructure the standard React `children` prop, then pass it
-// downstream as `items` to the next factory.
-export const myContainer = hoistCmp.factory({
-    render({children, ...rest}) {
-        return panel({items: children, ...rest});
-    }
-});
-```
-
 ### Mutating Observables Outside Actions
 
 MobX requires observable state changes to occur within actions. Use `@action`, `runInAction()`,
@@ -979,7 +977,7 @@ async doLoadAsync() {
 }
 
 // ✅ Also correct: Use @bindable to reduce boilerplate
-@bindable data = null;  // Hoist installs an action-wrapped setter
+@bindable accessor data = null;  // Hoist installs an action-wrapped setter
 
 async doLoadAsync() {
     const data = await fetchData();
@@ -993,6 +991,6 @@ async doLoadAsync() {
 - [`/svc/`](../svc/README.md) - Built-in services (FetchService, ConfigService, etc.)
 - [`/cmp/`](../cmp/README.md) - Cross-platform components
 - [`/desktop/`](../desktop/README.md) and [`/mobile/`](../mobile/README.md) - Platform-specific components
-- [`/mobx/`](../mobx/README.md) - `@bindable`, `makeObservable`, MobX re-exports and configuration
+- [`/mobx/`](../mobx/README.md) - `@bindable`, MobX re-exports and configuration
 - [`/promise/`](../promise/README.md) - Promise extensions (`catchDefault`, `track`, `linkTo`, `timeout`)
 - [`/utils/`](../utils/README.md) - Decorators (`@debounced`, `@computeOnce`), Timer, LocalDate, logging

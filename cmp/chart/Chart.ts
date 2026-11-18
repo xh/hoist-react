@@ -5,24 +5,14 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {box, div} from '@xh/hoist/cmp/layout';
-import {
-    hoistCmp,
-    HoistModel,
-    HoistProps,
-    LayoutProps,
-    lookup,
-    PlainObject,
-    TestSupportProps,
-    useLocalModel,
-    uses,
-    XH
-} from '@xh/hoist/core';
+import type {HoistProps, LayoutProps, PlainObject, TestSupportProps} from '@xh/hoist/core';
+import {hoistCmp, HoistModel, lookup, useLocalModel, uses, XH} from '@xh/hoist/core';
 import {useContextMenu} from '@xh/hoist/dynamics/desktop';
 import {Highcharts} from '@xh/hoist/kit/highcharts';
 import {runInAction} from '@xh/hoist/mobx';
 import {logError, mergeDeep} from '@xh/hoist/utils/js';
 import {
-    composeRefs,
+    useComposedRefs,
     createObservableRef,
     getLayoutProps,
     useOnResize,
@@ -70,7 +60,7 @@ export const [Chart, chart] = hoistCmp.withFactory<ChartProps>({
         }
 
         const impl = useLocalModel(ChartLocalModel);
-        ref = composeRefs(
+        ref = useComposedRefs(
             ref,
             useOnResize(impl.onResize),
             useOnVisibleChange(impl.onVisibleChange)
@@ -89,7 +79,7 @@ export const [Chart, chart] = hoistCmp.withFactory<ChartProps>({
             className,
             testId,
             ref,
-            item: div({
+            children: div({
                 style: {margin: 'auto'},
                 ref: impl.chartRef
             })

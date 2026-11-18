@@ -23,6 +23,9 @@ The most significant app-level impacts are:
 Before starting, ensure:
 
 - [ ] Running hoist-react v75.x
+- [ ] **hoist-core** upgraded to >= v32.0 (**recommended** — required for the new `ViewManager`
+  visibility editing and for `XH.restoreDefaultsAsync` to clear basic view state, not for the
+  hoist-react upgrade itself)
 
 ## Upgrade Steps
 

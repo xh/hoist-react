@@ -4,10 +4,10 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {Span} from '../Span';
-import {LoadSpec, LoadSpecConfig} from '../load';
-import {NameSource} from '@xh/hoist/utils/js';
-import {PlainObject, Thunkable} from './Types';
+import type {Span} from '../Span';
+import type {LoadSpec, LoadSpecConfig} from '../load';
+import type {NameSource} from '@xh/hoist/utils/js';
+import type {PlainObject, Thunkable} from './Types';
 
 //------------------------
 // Call Context
@@ -88,7 +88,7 @@ export interface FullSpanConfig extends SpanConfig {
      */
     startTime?: number;
 
-    /** Source for the `code.namespace` tag - usually the calling object/function. */
+    /** Usually the calling object/function - source of the `code.namespace` and `xh.name` tags. */
     caller?: NameSource;
 }
 

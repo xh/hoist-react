@@ -6,8 +6,8 @@
  */
 
 import {compact, omit} from 'lodash';
-import {Class} from 'type-fest';
-import {DebounceSpec, PersistenceProvider, PersistenceProviderConfig} from '../';
+import type {Class} from 'type-fest';
+import type {DebounceSpec, PersistenceProvider, PersistenceProviderConfig} from '../';
 import type {DashViewModel} from '@xh/hoist/desktop/cmp/dash'; // Import type only
 import type {ViewManagerModel} from '@xh/hoist/cmp/viewmanager'; // Import type only
 
@@ -15,12 +15,7 @@ import type {ViewManagerModel} from '@xh/hoist/cmp/viewmanager'; // Import type 
  * Built-in Hoist PersistenceProviders.
  */
 export type PersistenceProviderType =
-    | 'pref'
-    | 'localStorage'
-    | 'sessionStorage'
-    | 'dashView'
-    | 'viewManager'
-    | 'custom';
+    'pref' | 'localStorage' | 'sessionStorage' | 'dashView' | 'viewManager' | 'custom';
 
 export interface PersistOptions {
     /** Dot delimited path to store state. */

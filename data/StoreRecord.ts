@@ -4,14 +4,14 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {PlainObject} from '@xh/hoist/core';
-import {ValidationResult} from '@xh/hoist/data/validation/Types';
+import type {PlainObject} from '@xh/hoist/core';
+import type {ValidationResult} from '@xh/hoist/data/validation/Types';
 import {throwIf} from '@xh/hoist/utils/js';
-import {isNil, flatMap, isMatch, isEmpty, pickBy} from 'lodash';
-import {Store} from './Store';
-import {ValidationState} from './validation/ValidationState';
-import {RecordValidator} from './impl/RecordValidator';
-import {Field} from './Field';
+import {isNil, flatMap, isMatch, isEmpty} from 'lodash';
+import type {Store} from './Store';
+import type {ValidationState} from './validation/ValidationState';
+import type {RecordValidator} from './impl/RecordValidator';
+import type {Field} from './Field';
 import equal from 'fast-deep-equal';
 
 /**
@@ -37,22 +37,23 @@ export class StoreRecord<
     readonly parentId: StoreRecordId;
     readonly store: Store<TData, TId>;
     readonly isSummary: boolean;
-    readonly treePath: StoreRecordId[];
 
-    /** Raw data loaded into via Store.loadData() or Store.updateData(). */
+    /**
+     * Raw data loaded via Store.loadData() or Store.updateData(). Null for locally-added records,
+     * or for all records if the parent Store was configured with `retainRaw: false`.
+     */
     readonly raw: PlainObject;
 
     /**
      * An object containing the current field values for this record.
      *
-     * Note that this object will only contain explicit 'own' properties for fields that are
-     * not at their default values - default values will be present via the prototype.
+     * Read values from this object by field name - but never enumerate it. Its internal
+     * representation is memory-optimized and varies, so `Object.keys()`, spread and
+     * `JSON.stringify()` do not reliably see every field. Call {@link getValues} for an explicit
+     * enumeration of all field values, or {@link getModifiedValues} for locally-modified values
+     * only.
      *
-     * Call {@link getValues} for an object providing an explicit enumeration of all field values.
-     *
-     * Note - `id` is always present on the underlying object at runtime (stamped by the
-     * constructor) even though the `data` type reflects only the declared field shape. Use
-     * `record.id` to access the id in a type-safe way.
+     * With {@link StoreConfig.projectionOnly}, this is the raw source object itself.
      */
     readonly data: TData;
 
@@ -65,12 +66,42 @@ export class StoreRecord<
     readonly committedData: TData;
 
     /**
+     * Digest snapshotted from this record's raw data at creation, used by
+     * {@link StoreConfig.digestSpec} to detect unchanged records across loads. Null when
+     * `digestSpec` is unset.
+     */
+    readonly digest: StoreRecordDigest;
+
+    /**
+     * Count of non-default field values written into `data` when built by the parent Store -
+     * null when unknown (e.g. `projectionOnly` records, whose data is the raw object itself).
+     * Supports value-based record rescue across loads - see `Store.parseOrRescue()`.
+     * @internal
+     */
+    readonly nonDefaultCount: number;
+
+    private _treePath: StoreRecordId[];
+    private _agId: string;
+
+    /**
      * Unique ID for representing record within ag-Grid node API.
      *
      * A string variant of the main record ID.  It should be used when trying to identify or
      * locate the record using the ag-Grid callbacks and API.
      */
-    readonly agId: string;
+    get agId(): string {
+        return (this._agId ??= 'ag_' + this.id.toString());
+    }
+
+    /**
+     * Path to this record within any tree hierarchy, as an array of string record IDs ending
+     * with this record's own. Required by ag-Grid to place rows within tree grids.
+     * See https://www.ag-grid.com/javascript-data-grid/tree-data-paths/
+     */
+    get treePath(): StoreRecordId[] {
+        // Non-root tree paths are set in constructor.  Lazy here to avoid setting for flat stores.
+        return (this._treePath ??= [this.id.toString()]);
+    }
 
     get isRecord(): boolean {
         return true;
@@ -83,7 +114,7 @@ export class StoreRecord<
 
     /** True if the StoreRecord has been modified since it was last committed. */
     get isDirty(): boolean {
-        return this.committedData && this.committedData !== this.data;
+        return this.committedData != null && this.committedData !== this.data;
     }
 
     /** Alias for {@link StoreRecord.isDirty} */
@@ -155,7 +186,10 @@ export class StoreRecord<
 
     /** The current validation state of the record. */
     get validationState(): ValidationState {
-        return this.validator?.validationState ?? 'Unknown';
+        const {validator} = this;
+        if (validator) return validator.validationState;
+
+        return this.store.validator.hasRules ? 'Unknown' : 'Valid';
     }
 
     /** Map of field names to list of errors. */
@@ -196,12 +230,13 @@ export class StoreRecord<
      * Get a new object with enumerated values for all Fields in this StoreRecord.
      * Unlike 'data', the object returned by this method contains an 'own' property for every
      * Field in the Store. Useful for cloning/iterating over all values (including defaults).
+     * The caller owns the returned object, and can add or change its properties.
      */
     getValues(): TData & {id: TId} {
-        const ret = {id: this.id};
-        this.fields.forEach(({name}) => {
-            ret[name] = this.data[name];
-        });
+        const {data} = this,
+            ret = this.store.cloneValuesTemplate();
+        ret.id = this.id;
+        for (const {name} of this.fields) ret[name] = data[name];
         return ret as TData & {id: TId};
     }
 
@@ -216,7 +251,11 @@ export class StoreRecord<
         if (!this.isModified) return null;
 
         const {data, committedData} = this,
-            ret = pickBy(data, (v, k) => !equal(v, committedData[k]));
+            ret: PlainObject = {};
+        this.fields.forEach(({name}) => {
+            const val = data[name];
+            if (!equal(val, committedData[name])) ret[name] = val;
+        });
         if (!isEmpty(ret)) {
             ret.id = this.id;
             return ret;
@@ -236,27 +275,35 @@ export class StoreRecord<
      * @internal
      */
     constructor(config: StoreRecordConfig) {
-        const {id, store, raw, data, committedData, parent, isSummary} = config;
+        const {
+            id,
+            store,
+            raw,
+            data,
+            committedData,
+            parent,
+            isSummary,
+            digest = null,
+            nonDefaultCount = null
+        } = config;
         throwIf(
             isNil(id),
             "Record needs an ID. Use 'Store.idSpec' to specify a unique ID for each record."
         );
-        data.id = id;
 
         this.id = id as TId;
-        this.agId = 'ag_' + id.toString();
         this.store = store as Store<TData, TId>;
-        this.data = data as TData & {id?: TId};
+        this.data = data as TData;
         this.raw = raw;
         this.committedData = committedData as TData & {id?: TId};
         this.parentId = parent?.id;
-        /*
-         * See https://www.ag-grid.com/javascript-data-grid/tree-data-paths/
-         * Each row's position in the hierarchy must be provided to the grid as an array of strings,
-         * representing the path to the row.
-         */
-        this.treePath = parent ? [...parent.treePath, id.toString()] : [id.toString()];
+        // Root record paths are built lazily by the getter - we may never need for flat data.
+        this._treePath = parent ? [...parent.treePath, id.toString()] : null;
+        this.digest = digest;
         this.isSummary = isSummary;
+        this.nonDefaultCount = nonDefaultCount;
+
+        if (this.ownsData) data.id = id;
     }
 
     /**
@@ -297,6 +344,15 @@ export class StoreRecord<
     // Protected methods
     // --------------------------
     /**
+     * True if this record's `data` object belongs to it alone and may be written to and frozen.
+     * False only for records holding a provider-owned raw object under `projectionOnly`.
+     * @internal
+     */
+    get ownsData(): boolean {
+        return this.data !== this.raw;
+    }
+
+    /**
      * Finalize this record for use in Store, post acceptance by RecordSet.
      *
      * We finalize the StoreRecord post-construction in RecordSet, only once we know that it is
@@ -306,7 +362,7 @@ export class StoreRecord<
      * @internal
      */
     finalize() {
-        if (this.store.freezeData) {
+        if (this.store.freezeData && this.ownsData) {
             Object.freeze(this.data);
         }
     }
@@ -321,6 +377,9 @@ export type StoreRecordId = number | string;
  * Used as the default for the second type parameter of {@link StoreRecord} and {@link Store}.
  */
 export type RecordId<TData> = TData extends {id: infer I extends StoreRecordId} ? I : StoreRecordId;
+
+/** Value snapshotted on a StoreRecord to detect changes - see {@link StoreConfig.digestSpec}. */
+export type StoreRecordDigest = number | string;
 
 /** A Hoist StoreRecord, or an ID for one. */
 export type StoreRecordOrId = StoreRecordId | StoreRecord;
@@ -359,4 +418,13 @@ export interface StoreRecordConfig {
      * information in grids when enabled.
      */
     isSummary?: boolean;
+
+    /** See {@link StoreRecord.digest}. */
+    digest?: StoreRecordDigest;
+
+    /**
+     * See {@link StoreRecord.nonDefaultCount}.
+     * @internal
+     */
+    nonDefaultCount?: number;
 }

@@ -7,17 +7,11 @@
 
 import {useContext, useEffect, useState} from 'react';
 import {throwIf} from '@xh/hoist/utils/js';
-import {
-    HoistModel,
-    HoistModelClass,
-    ModelSelector,
-    ModelLookupContext,
-    ModelLookup,
-    formatSelector,
-    RefreshContextModel
-} from './';
+import type {HoistModel, HoistModelClass, ModelSelector, ModelLookup} from './';
+import {ModelLookupContext, formatSelector, RefreshContextModel} from './';
 
 import {XH} from '../';
+import {untracked} from '@xh/hoist/mobx';
 import {useOnUnmount} from '@xh/hoist/utils/react';
 import {each, isUndefined} from 'lodash';
 
@@ -37,11 +31,13 @@ export function useContextModel<T extends HoistModel>(selector: ModelSelector<T>
  * @param spec - class of HoistModel to create, or a function returning one.
  */
 export function useLocalModel<T extends HoistModel>(spec?: HoistModelClass<T> | (() => T)): T {
-    const [ret] = useState(() => {
-        const s = spec as any;
-        if (!s) return null;
-        return s.isHoistModel ? new s() : s.call();
-    });
+    const [ret] = useState(() =>
+        untracked(() => {
+            const s = spec as any;
+            if (!s) return null;
+            return s.isHoistModel ? new s() : s.call();
+        })
+    );
     const {modelLookup, props} = localModelContext;
     throwIf(
         !modelLookup || !props,
@@ -64,6 +60,7 @@ export function useModelLinker(model: HoistModel, modelLookup: ModelLookup, prop
 
     // 1) Linking synchronous work: resolve lookups, initialize props, and call onLinked()
     if (isLinking) {
+        model._linked = true;
         model._modelLookup = modelLookup;
         each(model['_xhInjectedParentProperties'], (selector, name) => {
             const parentModel = modelLookup?.lookupModel(selector);
@@ -87,7 +84,7 @@ export function useModelLinker(model: HoistModel, modelLookup: ModelLookup, prop
         }
 
         model.setComponentProps(props);
-        model.onLinked();
+        untracked(() => model.onLinked());
     }
 
     // 2) Linking async work: call afterLinked(), and wire up loadSupport

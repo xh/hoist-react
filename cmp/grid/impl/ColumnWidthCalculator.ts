@@ -5,9 +5,13 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
-import {GridAutosizeOptions} from '@xh/hoist/cmp/grid/GridAutosizeOptions';
+import type {GridAutosizeOptions} from '@xh/hoist/cmp/grid/GridAutosizeOptions';
+import type {SizingMode} from '@xh/hoist/core';
 import {XH} from '@xh/hoist/core';
-import {CompoundFilter, FieldFilter, Filter, StoreRecord} from '@xh/hoist/data';
+import {Icon} from '@xh/hoist/icon';
+import type {CellClassParams} from '@xh/hoist/kit/ag-grid';
+import type {Filter, StoreRecord} from '@xh/hoist/data';
+import {CompoundFilter, FieldFilter} from '@xh/hoist/data';
 import {forEachAsync} from '@xh/hoist/utils/async';
 import {logWarn, stripTags} from '@xh/hoist/utils/js';
 import {
@@ -26,8 +30,9 @@ import {
 } from 'lodash';
 import {isValidElement} from 'react';
 import {renderToStaticMarkup} from '@xh/hoist/utils/react';
-import {Column} from '../columns';
-import {GridModel} from '../GridModel';
+import type {Column} from '../columns';
+import type {GridModel} from '../GridModel';
+import {CanvasTextMeasurer} from './CanvasTextMeasurer';
 
 /**
  * Calculates the column width required to display column.  Used by GridAutoSizeService.
@@ -38,10 +43,16 @@ import {GridModel} from '../GridModel';
  * @internal
  */
 export class ColumnWidthCalculator {
-    /** Max number value to calculate size per column */
+    /** Max number of values to measure in the DOM per column. */
     SIZE_CALC_SAMPLES = 10;
 
-    private _canvasContext;
+    /**
+     * Max number of values to measure exactly on the canvas per column, taken from the widest
+     * estimates. Columns with up to this many distinct values are measured exactly.
+     */
+    RANK_SAMPLES = 500;
+
+    private _measurer: CanvasTextMeasurer;
     private _headerEl;
     private _cellEl;
     private _rowEl;
@@ -110,15 +121,26 @@ export class ColumnWidthCalculator {
         }
     }
 
-    async calcLevelWidthAsync(gridModel, records, column, options, indentationPx = 0) {
-        const {field, getValueFn, renderer, rendererIsComplex, cellClassFn, cellClassRules} =
+    async calcLevelWidthAsync(
+        gridModel: GridModel,
+        records: StoreRecord[],
+        column: Column,
+        options: Omit<GridAutosizeOptions, 'columns'>,
+        indentationPx = 0
+    ): Promise<number> {
+        const {field, getValueFn, renderer, resolvedRenderer, rendererIsComplex, cellClassRules} =
                 column,
             {store, sizingMode, rowClassFn, rowClassRules} = gridModel,
             bufferPx = column.autosizeBufferPx ?? options.bufferPx;
 
         // 1) Get map of rendered values to data about it
-        const estimatesByValue = new Map(),
-            renderMemo = renderer && !rendererIsComplex ? new Map() : null;
+        const measurer = this.getMeasurer(),
+            estimatesByValue = new Map<any, ValueEstimate>(),
+            // A text renderer's text is measured as text, and a renderer's markup as HTML.
+            renderMemo = resolvedRenderer && !rendererIsComplex ? new Map() : null,
+            // Ledger alignment from a cell class rule is a hidden `::after`, not part of the
+            // text. Count it in the estimate so the widest positives make the sample.
+            ledgerRule = resolvedRenderer?.cellClassRules?.['xh-cell--ledger-align'];
 
         await forEachAsync(records, record => {
             if (!record) return;
@@ -128,25 +150,30 @@ export class ColumnWidthCalculator {
 
             // 1a) Get rendered markup value from raw.  Use memoization if appropriate
             let value = rawValue;
-            if (renderer) {
+            if (resolvedRenderer) {
                 if (renderMemo?.has(rawValue)) {
                     value = renderMemo.get(rawValue);
                 } else {
-                    value = renderer(rawValue, ctx);
+                    value = resolvedRenderer(rawValue, ctx);
                     if (isValidElement(value)) value = renderToStaticMarkup(value);
                     renderMemo?.set(rawValue, value);
                 }
             }
 
-            // 1b) Use a canvas to estimate pixel width of new markup.
-            // Strip html tags but include parentheses / units etc. for renderers that may return elements.
+            // 1b) Estimate the pixel width of new markup from cached per-character widths.
+            // Strip html tags from a renderer's markup, keeping parentheses / units etc. A text
+            // renderer's text is shown as-is.
             const est = estimatesByValue.get(value);
             if (!est) {
+                let text = isNil(value) ? null : value.toString();
+                if (renderer) text = stripTags(text);
+                if (text && ledgerRule?.({value: rawValue, data: record} as CellClassParams)) {
+                    text += ')';
+                }
                 estimatesByValue.set(value, {
                     value,
-                    width: isNil(value)
-                        ? 0
-                        : this.getStringWidth(stripTags(value.toString())) + indentationPx,
+                    text,
+                    width: text == null ? 0 : measurer.estimateWidth(text) + indentationPx,
                     records: [record]
                 });
             } else {
@@ -154,20 +181,24 @@ export class ColumnWidthCalculator {
             }
         });
 
-        // 2) Extract the sample set of widest estimate values for rendering and sizing
-        let sample = Array.from(estimatesByValue.values());
-        sample = takeRight(sortBy(sample, 'width'), this.SIZE_CALC_SAMPLES);
+        // 2) Re-measure the widest estimates exactly, then extract the sample set for rendering
+        const {SIZE_CALC_SAMPLES, RANK_SAMPLES} = this;
+        let sample = takeRight(sortBy([...estimatesByValue.values()], 'width'), RANK_SAMPLES);
+        sample.forEach(est => {
+            if (est.text != null) est.width = measurer.measureWidth(est.text) + indentationPx;
+        });
+        sample = takeRight(sortBy(sample, 'width'), SIZE_CALC_SAMPLES);
 
         // 3) Get widest values, after actually rendering all css combinations for all records
         let ret = 0;
         await forEachAsync(sample, ({value, records}) => {
             // Get unique combinations of row and cell classes applied
             const classNames = new Set<string>();
-            if (rowClassFn || cellClassFn || !isEmpty(rowClassRules) || !isEmpty(cellClassRules)) {
+            if (rowClassFn || !isEmpty(rowClassRules) || !isEmpty(cellClassRules)) {
                 records.forEach(record => {
                     const rawValue = getValueFn({record, field, column, gridModel, store}),
                         rowClass = this.getRowClass(gridModel, record),
-                        cellClass = this.getCellClass(gridModel, column, record, rawValue);
+                        cellClass = this.getCellClass(column, record, rawValue);
                     classNames.add(rowClass + '|' + cellClass);
                 });
             } else {
@@ -212,6 +243,22 @@ export class ColumnWidthCalculator {
         this.setHeaderClassNames(sizingMode, showSort, showMenu, headerClass);
         headerEl.firstChild.innerHTML = headerHtml;
         return Math.ceil(headerEl.clientWidth) + bufferPx;
+    }
+
+    /**
+     * Width of a plain-text header label, with the header font and padding of a sizing mode, and
+     * optionally the expand icon of a collapsible column group.
+     */
+    calcHeaderTextWidth(sizingMode: SizingMode, text: string, withExpandIcon = false): number {
+        try {
+            const headerEl = this.getHeaderEl();
+            this.setHeaderClassNames(sizingMode, false, false, '');
+            if (withExpandIcon) headerEl.classList.add('xh-grid-autosize-header--expand');
+            headerEl.firstChild.textContent = text;
+            return Math.ceil(headerEl.clientWidth);
+        } finally {
+            this.resetHeaderClassNames();
+        }
     }
 
     isColumnFiltered(filter: Filter, column: Column): boolean {
@@ -269,6 +316,12 @@ export class ColumnWidthCalculator {
             const menuIcon = document.createElement('div');
             menuIcon.classList.add('xh-grid-header-menu-icon');
             headerEl.appendChild(menuIcon);
+
+            // As ColumnGroupHeader renders it.
+            const expandIcon = document.createElement('div');
+            expandIcon.classList.add('xh-grid-header-expand-icon');
+            expandIcon.innerHTML = Icon.chevronRight({size: 'sm', asHtml: true});
+            headerEl.appendChild(expandIcon);
 
             document.body.appendChild(headerEl);
             this._headerEl = headerEl;
@@ -342,13 +395,9 @@ export class ColumnWidthCalculator {
         return this._cellEl;
     }
 
-    getCellClass(gridModel, column, record, value) {
-        const {cellClassFn, cellClassRules} = column,
+    getCellClass(column, record, value) {
+        const {cellClassRules} = column,
             ret = [];
-
-        if (cellClassFn) {
-            ret.push(cellClassFn({record, column, gridModel}));
-        }
 
         if (cellClassRules) {
             forOwn(cellClassRules, (fn, className) => {
@@ -406,27 +455,17 @@ export class ColumnWidthCalculator {
     //------------------
     // Canvas-based width estimation
     //------------------
-    getStringWidth(string) {
-        const canvasContext = this.getCanvasContext();
-        return canvasContext.measureText(string).width;
+    private getMeasurer(): CanvasTextMeasurer {
+        // Uses the hidden cell's font, as styled for the standard sizing mode.
+        return (this._measurer ??= new CanvasTextMeasurer(this.getCellEl()));
     }
+}
 
-    getCanvasContext() {
-        if (!this._canvasContext) {
-            // Create hidden canvas
-            const canvasEl = document.createElement('canvas');
-            canvasEl.classList.add('xh-grid-autosize-canvas');
-            document.body.appendChild(canvasEl);
-
-            // Create context which uses grid fonts
-            const canvasContext = canvasEl.getContext('2d'),
-                cellEl = this.getCellEl(),
-                fontSize = window.getComputedStyle(cellEl).getPropertyValue('font-size'),
-                fontFamily = window.getComputedStyle(cellEl).getPropertyValue('font-family');
-
-            canvasContext.font = `${fontSize} ${fontFamily}`;
-            this._canvasContext = canvasContext;
-        }
-        return this._canvasContext;
-    }
+/** A rendered column value, with its width and the records that show it. */
+interface ValueEstimate {
+    value: any;
+    /** Value with tags stripped, or null for a nil value. */
+    text: string;
+    width: number;
+    records: StoreRecord[];
 }

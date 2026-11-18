@@ -7,8 +7,9 @@
 import {exportFilenameWithDate} from '@xh/hoist/admin/AdminUtils';
 import {AppModel} from '@xh/hoist/admin/AppModel';
 import * as Col from '@xh/hoist/admin/columns';
-import {HoistModel, LoadSpec, managed, XH} from '@xh/hoist/core';
-import {FieldSpec} from '@xh/hoist/data';
+import type {LoadSpec} from '@xh/hoist/core';
+import {HoistModel, managed, XH} from '@xh/hoist/core';
+import type {FieldSpec} from '@xh/hoist/data';
 import {textArea} from '@xh/hoist/desktop/cmp/input';
 import {
     addAction,
@@ -18,7 +19,7 @@ import {
     RestGridModel
 } from '@xh/hoist/desktop/cmp/rest';
 import {fmtDateTime} from '@xh/hoist/format';
-import {action, makeObservable, observable} from '@xh/hoist/mobx';
+import {action, observableRef} from '@xh/hoist/mobx';
 import {isDate} from 'lodash';
 import {DifferModel} from '../../../differ/DifferModel';
 import * as JBCol from './JsonBlobColumns';
@@ -30,12 +31,11 @@ export class JsonBlobModel extends HoistModel {
     gridModel: RestGridModel;
 
     @managed
-    @observable.ref
-    differModel: DifferModel;
+    @observableRef
+    accessor differModel: DifferModel;
 
     constructor() {
         super();
-        makeObservable(this);
 
         const required = true,
             enableCreate = true,
@@ -68,6 +68,10 @@ export class JsonBlobModel extends HoistModel {
                     {...(Col.lastUpdatedBy.field as FieldSpec), editable: false}
                 ]
             },
+            onRowDoubleClicked: ({data}) => {
+                if (data && !this.gridModel.readonly) this.gridModel.editRecord(data);
+            },
+            toolbarActions: [addAction, editAction, cloneAction, deleteAction],
             menuActions: [addAction, editAction, cloneAction, deleteAction],
             prepareCloneFn: ({clone}) => (clone.name = `${clone.name}_CLONE`),
             sortBy: ['owner', 'name'],
@@ -95,7 +99,7 @@ export class JsonBlobModel extends HoistModel {
                 {field: 'acl'},
                 {field: 'name'},
                 {field: 'type'},
-                {field: 'description', formField: {item: textArea()}},
+                {field: 'description', formField: {children: textArea()}},
                 {field: 'value'},
                 {field: 'meta'},
                 {field: 'archived'},

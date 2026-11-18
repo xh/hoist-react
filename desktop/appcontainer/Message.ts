@@ -10,7 +10,7 @@ import {div, filler} from '@xh/hoist/cmp/layout';
 import {hoistCmp, uses} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {formField} from '@xh/hoist/desktop/cmp/form';
-import {textInput} from '@xh/hoist/desktop/cmp/input';
+import {checkbox, textInput} from '@xh/hoist/desktop/cmp/input';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {dialog, dialogBody} from '@xh/hoist/kit/blueprint';
 import {withDefault} from '@xh/hoist/utils/js';
@@ -35,9 +35,9 @@ export const message = hoistCmp.factory({
             title: model.title,
             icon: model.icon,
             className: classNames(className, model.className),
-            items: [dialogBody(model.message, inputsCmp()), bbar()],
             onClose: () => model.doEscape(),
-            ...props
+            ...props,
+            children: [dialogBody(model.message, inputsCmp()), bbar()]
         });
     }
 });
@@ -46,14 +46,14 @@ const inputsCmp = hoistCmp.factory<MessageModel>(({model}) => {
     const {formModel, input, extraConfirmLabel} = model;
     if (!formModel) return null;
 
-    const items = [];
+    const children = [];
     if (formModel.getField('value')) {
-        items.push(
+        children.push(
             formField({
                 field: 'value',
                 label: null,
                 testId: 'xh-message-value',
-                item: withDefault(
+                children: withDefault(
                     input.item,
                     textInput({
                         autoFocus: true,
@@ -67,12 +67,12 @@ const inputsCmp = hoistCmp.factory<MessageModel>(({model}) => {
         );
     }
     if (formModel.getField('extraConfirm')) {
-        items.push(
+        children.push(
             formField({
                 label: extraConfirmLabel,
                 field: 'extraConfirm',
                 testId: 'xh-message-extra-confirm',
-                item: textInput({
+                children: textInput({
                     autoFocus: true,
                     selectOnFocus: true,
                     onKeyDown: evt => {
@@ -82,12 +82,22 @@ const inputsCmp = hoistCmp.factory<MessageModel>(({model}) => {
             })
         );
     }
+    if (formModel.getField('suppress')) {
+        children.push(
+            formField({
+                field: 'suppress',
+                label: null,
+                testId: 'xh-message-suppress',
+                children: checkbox({label: model.suppressLabel})
+            })
+        );
+    }
     return form({
         model: formModel,
         fieldDefaults: {commitOnChange: true, minimal: true},
-        item: div({
+        children: div({
             className: 'xh-pad',
-            items
+            children
         })
     });
 });

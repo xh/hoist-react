@@ -4,13 +4,13 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {RouterModel} from '@xh/hoist/appcontainer/RouterModel';
-import {HoistAuthModel} from '@xh/hoist/core/HoistAuthModel';
-import {Store} from '@xh/hoist/data';
+import type {RouterModel} from '@xh/hoist/appcontainer/RouterModel';
+import type {HoistAuthModel} from '@xh/hoist/core/HoistAuthModel';
+import type {Cube, Store, View} from '@xh/hoist/data';
 import {Icon} from '@xh/hoist/icon';
 import {action} from '@xh/hoist/mobx';
 import {never} from '@xh/hoist/promise';
-import {
+import type {
     AlertBannerService,
     AutoRefreshService,
     ChangelogService,
@@ -27,30 +27,31 @@ import {
     JsonBlobService,
     LocalStorageService,
     MetricsService,
+    NdjsonFetchOptions,
+    NdjsonResult,
     PrefService,
     SessionStorageService,
     TrackService,
     TraceService,
     WebSocketService
 } from '@xh/hoist/svc';
-import {getLogLevel, LogLevel, setLogLevel} from '@xh/hoist/utils/js';
+import type {LogLevel} from '@xh/hoist/utils/js';
+import {genRandomId, getLogLevel, logError, setLogLevel} from '@xh/hoist/utils/js';
 import {camelCase, flatten, isString, uniqueId} from 'lodash';
-import {Router, State} from 'router5';
-import {CancelFn} from 'router5/types/types/base';
-import ShortUniqueId from 'short-unique-id';
-import {SetOptional} from 'type-fest';
+import type {Router, State} from 'router5';
+import type {SetOptional} from 'type-fest';
 import {AppContainerModel} from '../appcontainer/AppContainerModel';
-import {BannerModel} from '../appcontainer/BannerModel';
-import {ToastModel} from '../appcontainer/ToastModel';
+import type {BannerModel} from '../appcontainer/BannerModel';
+import type {ToastModel} from '../appcontainer/ToastModel';
 import '../styles/XH.scss';
-import {Exception, HoistException} from '../exception';
+import type {HoistException} from '../exception';
+import {Exception} from '../exception';
 
-import {
+import type {
     AppSpec,
     AppState,
     AppSuspendData,
     BannerSpec,
-    ExceptionHandler,
     ExceptionHandlerOptions,
     CallContextLike,
     HoistAppModel,
@@ -69,11 +70,12 @@ import {
     ToastSpec,
     TrackOptions
 } from './';
+import {ExceptionHandler} from './';
 import {installServicesAsync} from './impl/InstallServices';
 import {instanceManager} from './impl/InstanceManager';
-import {HoistModel, ModelSelector, RefreshContextModel} from './model';
+import type {HoistModel, ModelSelector, RefreshContextModel} from './model';
 
-export const MIN_HOIST_CORE_VERSION = '31.2';
+export const MIN_HOIST_CORE_VERSION = '40.5.0';
 
 declare const xhAppCode: string;
 declare const xhAppName: string;
@@ -82,6 +84,9 @@ declare const xhAppBuild: string;
 declare const xhBaseUrl: string;
 declare const xhClientApps: string[];
 declare const xhIsDevelopmentMode: boolean;
+
+/** Returned by `navigate` and its siblings to cancel a transition in progress. */
+type CancelFn = ReturnType<Router['navigate']>;
 
 /**
  * Top-level Singleton model for Hoist. This is the main entry point for the API.
@@ -114,7 +119,7 @@ export class XHApi {
 
     //----------------------------------------------------------------------------------------------
     // Metadata - the `xhXXX` values on the right hand of these assignments are injected at build
-    // time via webpack.DefinePlugin. See @xh/hoist-dev-utils/configureWebpack.js.
+    // time via Rsbuild's `source.define`. See @xh/hoist-dev-utils/configureRsbuild.js.
     //----------------------------------------------------------------------------------------------
     /** Short internal code for the application. */
     readonly appCode: string = xhAppCode;
@@ -303,6 +308,14 @@ export class XHApi {
      */
     getJson(opts: FetchOptions, ctx?: CallContextLike): Promise<any> {
         return this.fetchService.getJson(opts, ctx);
+    }
+
+    /**
+     * Send an HTTP request and decode the response incrementally as NDJSON.
+     * @see FetchService.fetchNdjson
+     */
+    fetchNdjson(opts: NdjsonFetchOptions, ctx?: CallContextLike): NdjsonResult {
+        return this.fetchService.fetchNdjson(opts, ctx);
     }
 
     /**
@@ -512,7 +525,11 @@ export class XHApi {
 
         if (opts.removeQueryParams) url.search = '';
         // Add a unique query param to force a full reload without using the browser cache.
-        url.searchParams.set('xhCacheBuster', Date.now().toString());
+        // Appended by hand, as `url.searchParams.set()` would re-serialize the entire query string
+        // with form encoding - converting `%20` to `+` and corrupting existing route params.
+        // `AppContainerModel.initAsync()` removes the param again once the app has loaded.
+        const {search} = url;
+        url.search = `${search}${search ? '&' : '?'}xhCacheBuster=${Date.now()}`;
         document.location.assign(url);
     }
 
@@ -643,6 +660,15 @@ export class XHApi {
         return this.routerModel.popRoute();
     }
 
+    /**
+     * Does a route exist with the given fully qualified name?
+     * Check before calling `XH.router.buildPath()` or `buildUrl()` with a name that may not be
+     * registered, as both throw for an unknown route.
+     */
+    hasRoute(routeName: string): boolean {
+        return this.routerModel.hasRoute(routeName);
+    }
+
     //------------------------------
     // Message Support
     //------------------------------
@@ -653,8 +679,14 @@ export class XHApi {
      * button instead (e.g. for confirming risky operations), applications should specify a
      * `cancelProps` argument of the following form `cancelProps: {..., autoFocus: true}`.
      *
-     * @returns true if user confirms, false if user cancels. If an input is provided, the
-     * returned Promise will resolve to the input value if user confirms, false if user cancels.
+     * If `suppress` is specified and the user has previously opted to suppress this message,
+     * this method will resolve immediately to their previously saved response, without showing
+     * a dialog. This also applies to the `alert`, `confirm`, and `prompt` variants below.
+     *
+     * @returns true if the user confirms, or the input value if an input is provided. Resolves
+     * false for any other outcome - a cancel, a dismiss, or a close without a choice, e.g. by a
+     * route change or a later message with the same `messageKey`. With an input, test the result
+     * with `!== false`, as null and an empty string are valid confirmed values.
      */
     message<T = unknown>(config: MessageSpec): Promise<T | boolean> {
         return this.acm.messageSourceModel.message(config);
@@ -670,7 +702,7 @@ export class XHApi {
 
     /**
      * Show a modal 'confirm' dialog with message and default 'OK'/'Cancel' buttons.
-     * @returns true if user confirms, false if user cancels.
+     * @returns true if user confirms, false otherwise. See {@link message} for details.
      */
     confirm(config: MessageSpec): Promise<boolean> {
         return this.acm.messageSourceModel.confirm(config);
@@ -685,7 +717,8 @@ export class XHApi {
      *   3. onKeyDown handler to confirm on <enter> (same as clicking 'OK') (desktop only)
      * Applications may also provide a custom HoistInput, in which all props must be set.
      *
-     * @returns value of input if user confirms, false if user cancels.
+     * @returns value of input if user confirms, false otherwise. See {@link message} for details.
+     * Test the result with `!== false`, as null and an empty string are valid confirmed values.
      */
     prompt<T = unknown>(config: MessageSpec): Promise<T | false> {
         return this.acm.messageSourceModel.prompt(config);
@@ -865,6 +898,16 @@ export class XHApi {
         return Array.from(instanceManager.stores);
     }
 
+    /** All Cubes registered with this application. */
+    getCubes(): Cube[] {
+        return Array.from(instanceManager.cubes);
+    }
+
+    /** All Cube Views registered with this application. */
+    getViews(): View[] {
+        return Array.from(instanceManager.views);
+    }
+
     /**
      * Reset user state and then reload the app.
      * @see HoistAppModel.restoreDefaultsAsync()
@@ -884,7 +927,8 @@ export class XHApi {
 
     /**
      * Helper method to destroy resources safely (e.g. child HoistModels). Will quietly skip args
-     * that are null / undefined or that do not implement destroy().
+     * that are null / undefined or that do not implement destroy(). Logs, rather than throws, an
+     * error from any destroy(), so the remaining args are still destroyed.
      *
      * @param args - objects to be destroyed. If any argument is an array, each top-level element
      *      in the array will be destroyed. (Note this is *not* done recursively.)
@@ -893,7 +937,11 @@ export class XHApi {
         if (args) {
             args = flatten(args);
             args.forEach(it => {
-                it?.destroy?.();
+                try {
+                    it?.destroy?.();
+                } catch (e) {
+                    logError(['Error destroying object', e], it);
+                }
             });
         }
     }
@@ -916,13 +964,13 @@ export class XHApi {
     }
 
     private genLoadId(): string {
-        return new ShortUniqueId({length: 8}).rnd();
+        return genRandomId();
     }
 
     private genTabId(): string {
         let ret = window.sessionStorage?.getItem('xhTabId');
         if (!ret) {
-            ret = new ShortUniqueId({length: 8}).rnd();
+            ret = genRandomId();
             window.sessionStorage?.setItem('xhTabId', ret);
         }
         return ret;

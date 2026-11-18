@@ -7,7 +7,8 @@
 import {BaseInstanceModel} from '@xh/hoist/admin/tabs/cluster/instances/BaseInstanceModel';
 import {exportFilenameWithDate} from '@xh/hoist/admin/AdminUtils';
 import {GridModel} from '@xh/hoist/cmp/grid';
-import {LoadSpec, managed, XH} from '@xh/hoist/core';
+import type {LoadSpec} from '@xh/hoist/core';
+import {managed, XH} from '@xh/hoist/core';
 import {forOwn} from 'lodash';
 
 /**

@@ -5,7 +5,8 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {hbox, span} from '@xh/hoist/cmp/layout';
-import {BoxProps, hoistCmp, HoistProps, XH} from '@xh/hoist/core';
+import type {BoxProps, HoistProps} from '@xh/hoist/core';
+import {hoistCmp, XH} from '@xh/hoist/core';
 import {fmtTime} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
 
@@ -41,17 +42,17 @@ export const [WebSocketIndicator, webSocketIndicator] =
             }
 
             return hbox({
-                items: [
+                title: tooltip,
+                alignItems: 'center',
+                ...props,
+                children: [
                     icon,
                     span({
-                        item: txt,
+                        children: txt,
                         omit: iconOnly,
                         style: {margin: 8, cursor: 'help'}
                     })
-                ],
-                title: tooltip,
-                alignItems: 'center',
-                ...props
+                ]
             });
         }
     });

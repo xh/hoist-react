@@ -1,0 +1,108 @@
+/*
+ * This file belongs to Hoist, an application development toolkit
+ * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
+ *
+ * Copyright © 2026 Extremely Heavy Industries Inc.
+ */
+
+//--------------------
+// Touch-device defaults
+//--------------------
+html {
+  height: 100%;
+  width: 100%;
+}
+
+.xh-app.xh-mobile {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  padding: 0;
+  overflow: hidden;
+  touch-action: manipulation;
+
+  * {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  input,
+  textarea,
+  select,
+  button {
+    &:focus {
+      outline: none;
+    }
+  }
+}
+
+// Heading sizes at tag specificity, so any app rule on a heading wins, as it always has.
+:where(.xh-app.xh-mobile) h1 {
+  font-size: 36px;
+}
+
+:where(.xh-app.xh-mobile) h2 {
+  font-size: 30px;
+}
+
+:where(.xh-app.xh-mobile) h3 {
+  font-size: 24px;
+}
+
+:where(.xh-app.xh-mobile) h4,
+:where(.xh-app.xh-mobile) h5,
+:where(.xh-app.xh-mobile) h6 {
+  font-size: 18px;
+}
+
+//--------------------
+// Inputs
+//--------------------
+.xh-input {
+  input,
+  textarea {
+    font-family: var(--xh-font-family);
+    font-size: var(--xh-input-font-size);
+    font-weight: 400;
+
+    color: var(--xh-text-color);
+    border: none !important;
+    outline: none !important;
+    text-align: inherit;
+
+    &::placeholder {
+      color: var(--xh-input-placeholder-text-color);
+      opacity: 1;
+    }
+  }
+
+  &:not(.xh-input-label):not(.xh-button-group):not(.xh-switch-input):not(.xh-check-box) {
+    font-size: var(--xh-input-font-size);
+    border: var(--xh-border-solid);
+    border-radius: var(--xh-input-border-radius);
+
+    &:not(.xh-input--invalid):not(.xh-input--warning):not(.xh-input--info):focus-within {
+      border-color: var(--xh-focus-outline-color);
+    }
+
+    &.xh-input--invalid {
+      border: var(--xh-form-field-invalid-border);
+    }
+
+    &.xh-input--warning {
+      border: var(--xh-form-field-warning-border);
+    }
+
+    &.xh-input--info {
+      border: var(--xh-form-field-info-border);
+    }
+  }
+}
+
+//--------------------
+// Grid
+//--------------------
+.xh-grid .ag-body-vertical-scroll-viewport::-webkit-scrollbar {
+  display: none;
+}

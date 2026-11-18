@@ -1,10 +1,10 @@
-import {CardModel} from '@xh/hoist/cmp/card/CardModel';
+import type {CardModel} from '@xh/hoist/cmp/card/CardModel';
 import {div, fragment, legend} from '@xh/hoist/cmp/layout';
 import {hoistCmp} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {button} from '@xh/hoist/mobile/cmp/button';
 import {warnIf} from '@xh/hoist/utils/js';
-import {ReactNode} from 'react';
+import type {ReactNode} from 'react';
 
 /**
  * Mobile implementation of CardHeader.
@@ -28,7 +28,7 @@ export const cardHeaderImpl = hoistCmp.factory<CardModel>({
         } else if (icon || title) {
             item = div({
                 className: `xh-card__header xh-card__header--intent-${intent ?? 'none'}`,
-                items: [icon, title]
+                children: [icon, title]
             });
         }
 

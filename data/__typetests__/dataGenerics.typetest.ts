@@ -4,7 +4,8 @@
  * `npx tsc --noEmit` and intentionally contains `@ts-expect-error` directives. It is not
  * executed and exports nothing at runtime.
  */
-import {Store, StoreRecord} from '@xh/hoist/data';
+import type {StoreRecord} from '@xh/hoist/data';
+import {Store} from '@xh/hoist/data';
 
 interface Person {
     id: number;

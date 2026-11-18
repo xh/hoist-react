@@ -5,10 +5,10 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {HoistModel, managed, TaskObserver, XH} from '@xh/hoist/core';
-import {action, computed, makeObservable, observable} from '@xh/hoist/mobx';
+import {action, computed, observable} from '@xh/hoist/mobx';
 import {omit} from 'lodash';
-import {RoleModel} from '../RoleModel';
-import {HoistRole} from '../Types';
+import type {RoleModel} from '../RoleModel';
+import type {HoistRole} from '../Types';
 import {RoleFormModel} from './form/RoleFormModel';
 
 export class RoleEditorModel extends HoistModel {
@@ -20,8 +20,8 @@ export class RoleEditorModel extends HoistModel {
 
     @managed roleFormModel: RoleFormModel;
 
-    @observable isOpen = false;
-    @observable role?: HoistRole;
+    @observable accessor isOpen = false;
+    @observable accessor role: HoistRole;
 
     private resolve: (role?: HoistRole) => void;
 
@@ -32,7 +32,6 @@ export class RoleEditorModel extends HoistModel {
 
     constructor(roleModel: RoleModel) {
         super();
-        makeObservable(this);
         this.roleModel = roleModel;
         this.roleFormModel = new RoleFormModel(roleModel);
     }

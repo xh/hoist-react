@@ -4,9 +4,12 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {HoistInputModel, HoistInputProps, useHoistInputModel} from '@xh/hoist/cmp/input';
-import {hoistCmp, HoistProps} from '@xh/hoist/core';
-import {searchInput as onsenSearchInput} from '@xh/hoist/kit/onsen';
+import type {HoistInputProps} from '@xh/hoist/cmp/input';
+import {HoistInputModel, useHoistInputModel} from '@xh/hoist/cmp/input';
+import {div, hbox, input} from '@xh/hoist/cmp/layout';
+import type {HoistProps} from '@xh/hoist/core';
+import {hoistCmp} from '@xh/hoist/core';
+import {Icon} from '@xh/hoist/icon';
 import '@xh/hoist/mobile/register';
 import {TEST_ID, withDefault} from '@xh/hoist/utils/js';
 import {getLayoutProps} from '@xh/hoist/utils/react';
@@ -19,9 +22,6 @@ export interface SearchInputProps extends HoistProps, HoistInputProps {
     /** True to commit on every change/keystroke, default false. */
     commitOnChange?: boolean;
 
-    /** Onsen modifier string */
-    modifier?: string;
-
     /** Text to display when control is empty */
     placeholder?: string;
 
@@ -33,6 +33,12 @@ export interface SearchInputProps extends HoistProps, HoistInputProps {
 
     /** Alignment of entry text within control, default 'left'. */
     textAlign?: Property.TextAlign;
+
+    /**
+     * True to trim leading/trailing whitespace from this input's value as committed to any bound
+     * model and reported to `onChange` / `onCommit`. Default true.
+     */
+    trimWhitespace?: boolean;
 }
 
 /**
@@ -57,6 +63,10 @@ class SearchInputModel extends HoistInputModel {
         return withDefault(this.componentProps.commitOnChange, false);
     }
 
+    override get trimWhitespace() {
+        return withDefault(this.componentProps.trimWhitespace, true);
+    }
+
     onChange = ev => {
         this.noteValueChange(ev.target.value);
     };
@@ -77,28 +87,36 @@ class SearchInputModel extends HoistInputModel {
 const cmp = hoistCmp.factory<SearchInputModel>(({model, className, ...props}, ref) => {
     const {width, ...layoutProps} = getLayoutProps(props);
 
-    return onsenSearchInput({
-        value: model.renderValue || '',
-
-        disabled: props.disabled,
-        modifier: props.modifier,
-        placeholder: props.placeholder,
-        spellCheck: withDefault(props.spellCheck, false),
-        tabIndex: props.tabIndex,
-
+    return hbox({
+        ref,
         className,
+        display: 'inline-flex',
         style: {
             ...props.style,
             ...layoutProps,
-            width: withDefault(width, null),
-            textAlign: withDefault(props.textAlign, 'left')
+            width: withDefault(width, null)
         },
-        [TEST_ID]: props.testId,
+        children: [
+            div({className: 'xh-search-input__icon', children: Icon.search()}),
+            input({
+                className: 'xh-search-input__input',
+                type: 'search',
+                value: model.renderValue || '',
 
-        onInput: model.onChange,
-        onKeyDown: model.onKeyDown,
-        onBlur: model.onBlur,
-        onFocus: model.onFocus,
-        ref
+                disabled: props.disabled,
+                placeholder: props.placeholder,
+                spellCheck: withDefault(props.spellCheck, false),
+                tabIndex: props.tabIndex,
+
+                style: {textAlign: withDefault(props.textAlign, 'left')},
+                [TEST_ID]: props.testId,
+                ...props.domAttrs,
+
+                onChange: model.onChange,
+                onKeyDown: model.onKeyDown,
+                onBlur: model.onBlur,
+                onFocus: model.onFocus
+            })
+        ]
     });
 });

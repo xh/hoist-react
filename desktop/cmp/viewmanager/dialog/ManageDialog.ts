@@ -5,21 +5,26 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
-import {grid, GridModel} from '@xh/hoist/cmp/grid';
-import {div, filler, hframe, placeholder, vframe} from '@xh/hoist/cmp/layout';
+import {card} from '@xh/hoist/cmp/card';
+import type {GridModel} from '@xh/hoist/cmp/grid';
+import {grid} from '@xh/hoist/cmp/grid';
+import {filler, fragment, hframe, placeholder, vframe} from '@xh/hoist/cmp/layout';
 import {storeFilterField} from '@xh/hoist/cmp/store';
 import {tabContainer} from '@xh/hoist/cmp/tab';
-import {hoistCmp, uses} from '@xh/hoist/core';
+import {hoistCmp, useContextModel, uses} from '@xh/hoist/core';
 import {button, refreshButton} from '@xh/hoist/desktop/cmp/button';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {toolbar, toolbarSep} from '@xh/hoist/desktop/cmp/toolbar';
 import {Icon} from '@xh/hoist/icon';
 import {dialog} from '@xh/hoist/kit/blueprint';
-import {pluralize} from '@xh/hoist/utils/js';
+import {getTestId, pluralize} from '@xh/hoist/utils/js';
+import classNames from 'classnames';
 import {capitalize} from 'lodash';
 import {ManageDialogModel} from './ManageDialogModel';
-import {viewMultiPanel} from './ViewMultiPanel';
-import {viewPanel} from './ViewPanel';
+import {topLevelDropStrip} from './TopLevelDropStrip';
+import {renameGroupDialog} from './editpanels/RenameGroupDialog';
+import {viewMultiPanel} from './editpanels/ViewMultiPanel';
+import {viewPanel} from './editpanels/ViewPanel';
 
 /**
  * Default management dialog for ViewManager.
@@ -29,44 +34,54 @@ export const manageDialog = hoistCmp.factory({
     className: 'xh-view-manager__manage-dialog',
     model: uses(() => ManageDialogModel),
 
-    render({model, className}) {
+    render({model, className, defaultViewIcon, testId}) {
         if (!model.isOpen) return null;
 
         const {updateTask, loadTask, selectedViews, viewManagerModel} = model,
             count = selectedViews.length;
 
-        return dialog({
-            title: `Manage ${capitalize(pluralize(viewManagerModel.typeDisplayName))}`,
-            icon: Icon.gear(),
-            className,
-            isOpen: true,
-            style: {width: '1000px', maxWidth: '90vw', minHeight: '550px'},
-            canOutsideClickClose: false,
-            onClose: () => model.close(),
-            item: panel({
-                item: hframe(
-                    selectorPanel(),
-                    panel({
-                        item:
-                            count == 0
-                                ? placeholderPanel()
-                                : count > 1
-                                  ? viewMultiPanel()
-                                  : viewPanel(),
-                        bbar: bbar()
-                    })
-                ),
-                mask: [updateTask, loadTask]
-            })
-        });
+        return fragment(
+            dialog({
+                title: `Manage ${capitalize(pluralize(viewManagerModel.typeDisplayName))}`,
+                icon: defaultViewIcon,
+                className,
+                isOpen: true,
+                style: {width: '1000px', maxWidth: '90vw', minHeight: '600px'},
+                canOutsideClickClose: false,
+                onClose: () => model.close(),
+                children: panel({
+                    children: hframe(
+                        selectorPanel(),
+                        panel({
+                            // A sole-selected group row bulk-edits its views via the multi panel -
+                            // the group itself is renamed via its context menu.
+                            children: model.selectedGroupRecord
+                                ? viewMultiPanel({defaultViewIcon})
+                                : count == 0 || model.hasGroupRowsSelected
+                                  ? placeholderPanel()
+                                  : count > 1
+                                    ? viewMultiPanel({defaultViewIcon})
+                                    : viewPanel(),
+                            bbar: bbar({testId})
+                        })
+                    ),
+                    // Anchors this dialog's toasts within it - see ManageDialogModel.toastOpts.
+                    ref: model.dialogRef,
+                    // Blueprint's Dialog does not pass `data-testid` through - tag this panel.
+                    testId,
+                    mask: [updateTask, loadTask]
+                })
+            }),
+            renameGroupDialog()
+        );
     }
 });
 
 const selectorPanel = hoistCmp.factory<ManageDialogModel>({
     render({model}) {
         return panel({
-            modelConfig: {defaultSize: 650, side: 'left', collapsible: false},
-            item: tabContainer(),
+            modelConfig: {defaultSize: 500, side: 'left', collapsible: false},
+            children: tabContainer(),
             bbar: [
                 storeFilterField({
                     autoApply: false,
@@ -81,19 +96,53 @@ const selectorPanel = hoistCmp.factory<ManageDialogModel>({
 });
 
 export const viewsGrid = hoistCmp.factory<GridModel>({
-    render({model, helpText}) {
+    render({model, helpText, helpIcon}) {
+        const dialogModel = useContextModel(ManageDialogModel);
         return vframe({
-            paddingTop: 5,
-            items: [
-                grid({
-                    model,
-                    agOptions: {
-                        suppressGroupChangesColumnVisibility: 'suppressShowOnUngroup'
-                    }
+            className: classNames({
+                'xh-view-manager__manage-dialog__grid--drag-disabled':
+                    dialogModel?.isDragDisabled(model)
+            }),
+            children: [
+                vframe({
+                    className: 'xh-view-manager__manage-dialog__grid-wrapper',
+                    children: [
+                        topLevelDropStrip({model}),
+                        grid({
+                            model,
+                            agOptions: {
+                                // Icon size is set via --xh-grid-tree-icon-size in ViewManager.scss.
+                                icons: {
+                                    groupExpanded: Icon.folderOpen({
+                                        asHtml: true,
+                                        className: 'ag-group-expanded'
+                                    }),
+                                    groupContracted: Icon.folder({
+                                        asHtml: true,
+                                        className: 'ag-group-contracted'
+                                    }),
+                                    // Replaces ag-Grid's own grip glyph, matching the ColChooser.
+                                    // Must be set here - the row-drag comp reads only grid-level
+                                    // icons, never the column's own.
+                                    rowDrag: Icon.grip({
+                                        asHtml: true,
+                                        prefix: 'fas',
+                                        className:
+                                            'xh-view-manager__manage-dialog__drag-handle__grip'
+                                    })
+                                },
+                                ...dialogModel?.getRowDragAgOptions(model)
+                            }
+                        })
+                    ]
                 }),
-                div({
-                    item: helpText,
+                card({
+                    title: 'Help',
+                    icon: helpIcon,
+                    children: helpText,
+                    modelConfig: {collapsible: true, defaultCollapsed: true},
                     omit: !helpText,
+                    intent: 'primary',
                     className: 'xh-view-manager__manage-dialog__help-text'
                 })
             ]
@@ -103,23 +152,31 @@ export const viewsGrid = hoistCmp.factory<GridModel>({
 
 const placeholderPanel = hoistCmp.factory<ManageDialogModel>({
     render({model}) {
-        return placeholder(Icon.gears(), `Select a ${model.viewManagerModel.typeDisplayName}`);
+        return placeholder(
+            Icon.gears(),
+            `Select ${pluralize(model.viewManagerModel.typeDisplayName)}, or a single group, to edit`
+        );
     }
 });
 
 const bbar = hoistCmp.factory<ManageDialogModel>({
-    render({model}) {
+    render({model, testId}) {
         const {selectedView} = model;
         return toolbar(
             filler(),
             button({
                 text: selectedView?.isCurrentView ? 'Currently Active' : 'Activate + Close',
+                testId: getTestId(testId, 'activate-btn'),
                 onClick: () => model.activateSelectedViewAndClose(),
                 disabled: selectedView?.isCurrentView,
                 omit: !selectedView
             }),
             toolbarSep({omit: !selectedView}),
-            button({text: 'Close', onClick: () => model.close()})
+            button({
+                text: 'Close',
+                testId: getTestId(testId, 'close-btn'),
+                onClick: () => model.close()
+            })
         );
     }
 });

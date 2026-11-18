@@ -5,45 +5,31 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {instanceManager} from '@xh/hoist/core/impl/InstanceManager';
-import {
-    CreatesSpec,
-    UsesSpec,
+import type {
     HoistProps,
     DefaultHoistProps,
-    elementFactory,
     ElementFactory,
     TestSupportProps,
     PlainObject
 } from './';
+import {CreatesSpec, UsesSpec, elementFactory} from './';
+import type {ModelSpec, HoistModel} from './model';
 import {
     useModelLinker,
     localModelContext,
     ModelLookup,
     ModelLookupContext,
     modelLookupContextProvider,
-    ModelSpec,
     uses,
-    formatSelector,
-    HoistModel
+    formatSelector
 } from './model';
 import {logError, throwIf, warnIf, withDefault} from '@xh/hoist/utils/js';
 import {getLayoutProps, useOnMount, useOnUnmount} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import {isFunction, isPlainObject, isObject} from 'lodash';
-import {observer} from '../mobx';
-import {
-    ForwardedRef,
-    forwardRef,
-    FC,
-    memo,
-    ReactNode,
-    useContext,
-    useEffect,
-    useRef,
-    createElement,
-    FunctionComponent,
-    useDebugValue
-} from 'react';
+import {observer, untracked} from '../mobx';
+import type {ForwardedRef, FC, ReactNode, FunctionComponent} from 'react';
+import {forwardRef, memo, useContext, useEffect, useRef, createElement, useDebugValue} from 'react';
 
 /**
  * Type representing props passed to a HoistComponent's render function.
@@ -313,7 +299,7 @@ function wrapWithModel(render: RenderFn, cfg: Config): RenderFn {
                 proper model is available via context, or specify using the 'model' prop.`,
                 cfg.displayName
             );
-            return cmpErrDisplay({...getLayoutProps(props), item: 'No model found'});
+            return cmpErrDisplay({...getLayoutProps(props), children: 'No model found'});
         }
 
         useDebugValue(model, m => {
@@ -368,7 +354,7 @@ function wrapWithModel(render: RenderFn, cfg: Config): RenderFn {
             : createElement(HostCmp, {managedRender, key: model?.xhId});
 
         return insertLookup.current
-            ? modelLookupContextProvider({value: insertLookup.current, item: ret})
+            ? modelLookupContextProvider({value: insertLookup.current, children: ret})
             : ret;
     };
 }
@@ -408,10 +394,11 @@ function useResolvedModel(props: HoistProps, modelLookup: ModelLookup, cfg: Conf
 }
 
 function createModel(spec: CreatesSpec<HoistModel>): ResolvedModel {
-    let model = spec.createFn();
-    if (isFunction(model)) {
-        model = new (model as any)();
-    }
+    // Model creation is one-time, don't track.
+    const model = untracked(() => {
+        const ret = spec.createFn();
+        return isFunction(ret) ? new (ret as any)() : ret;
+    });
 
     return {model, isLinked: true, fromContext: false};
 }
@@ -424,7 +411,8 @@ function lookupModel(props: HoistProps, modelLookup: ModelLookup, cfg: Config): 
     // 1) props - config
     if (spec.createFromConfig) {
         if (isPlainObject(modelConfig)) {
-            return {model: new selector(modelConfig), isLinked: true, fromContext: false};
+            const model = untracked(() => new selector(modelConfig));
+            return {model, isLinked: true, fromContext: false};
         }
     }
 
@@ -451,7 +439,7 @@ function lookupModel(props: HoistProps, modelLookup: ModelLookup, cfg: Config): 
     // 4) default create
     const create = spec.createDefault;
     if (create) {
-        const model = isFunction(create) ? create() : new selector();
+        const model = untracked(() => (isFunction(create) ? create() : new selector()));
         return {model, isLinked: true, fromContext: false};
     }
 

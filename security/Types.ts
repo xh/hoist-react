@@ -5,7 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
-import {Token} from './Token';
+import type {Token} from './Token';
 
 export interface AccessTokenSpec {
     /**
@@ -22,3 +22,9 @@ export interface AccessTokenSpec {
 }
 
 export type TokenMap = Record<string, Token>;
+
+/**
+ * Path by which an OAuth client completed authentication. Not every client uses every path -
+ * e.g. only `MsalClient` supports `ssoSilent`.
+ */
+export type AuthMethod = 'acquireSilent' | 'ssoSilent' | 'loginPopup' | 'loginRedirect';

@@ -7,12 +7,15 @@
 import {grid, gridCountLabel} from '@xh/hoist/cmp/grid';
 import {a, div, filler, hframe, hspacer, p, span} from '@xh/hoist/cmp/layout';
 import {storeFilterField} from '@xh/hoist/cmp/store';
-import {creates, hoistCmp} from '@xh/hoist/core';
+import {tabContainer} from '@xh/hoist/cmp/tab';
+import {creates, hoistCmp, useContextModel} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {buttonGroupInput} from '@xh/hoist/desktop/cmp/input';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {Icon} from '@xh/hoist/icon';
+import {InspectorModel} from '@xh/hoist/inspector/InspectorModel';
+import {diagnosticsPanel} from '@xh/hoist/inspector/instances/DiagnosticsPanel';
 import {InstancesModel} from '@xh/hoist/inspector/instances/InstancesModel';
 import {popover} from '@xh/hoist/kit/blueprint';
 
@@ -21,17 +24,19 @@ export const instancesPanel = hoistCmp.factory({
 
     render({model}) {
         const {instancesPanelModel, selectedSyncRun} = model,
+            // Re-parent grid popups (context/column menus) when Inspector is detached.
+            popupParent = useContextModel(InspectorModel)?.windowContainer ?? undefined,
             headerItems = [];
 
         if (selectedSyncRun) {
             headerItems.push(
                 popover({
                     interactionKind: 'hover',
-                    item: span(Icon.filter(), ` registered @ sync run ${selectedSyncRun}`),
+                    children: span(Icon.filter(), ` registered @ sync run ${selectedSyncRun}`),
                     content: div({
                         className: 'xh-pad',
                         style: {width: '300px'},
-                        items: [
+                        children: [
                             p('Triggered by your selection in the Stats grid.'),
                             p(
                                 'Focuses this grid on instances created around the same time, in-between batched updates to stats.'
@@ -41,7 +46,7 @@ export const instancesPanel = hoistCmp.factory({
                             ),
                             p(
                                 a({
-                                    item: '(click to clear)',
+                                    children: '(click to clear)',
                                     onClick: () => model.statsModel.gridModel.clearSelection()
                                 })
                             )
@@ -53,42 +58,71 @@ export const instancesPanel = hoistCmp.factory({
         }
 
         return panel({
-            item: hframe(
+            children: hframe(
                 panel({
-                    title: `Models · Services · Stores`,
+                    title: `Models · Services · Data`,
                     headerItems,
                     icon: Icon.cube(),
                     compactHeader: true,
-                    item: grid({
+                    children: grid({
                         model: model.instancesGridModel,
                         agOptions: {
-                            suppressGroupChangesColumnVisibility: true
+                            suppressGroupChangesColumnVisibility: true,
+                            popupParent
                         }
                     }),
                     bbar: instanceGridBar(),
                     model: instancesPanelModel
                 }),
-                panel({
-                    title: 'Properties',
-                    icon: Icon.fileText(),
-                    compactHeader: true,
-                    item: grid({model: model.propertiesGridModel}),
-                    bbar: propertiesGridBar()
+                tabContainer({
+                    modelConfig: {
+                        persistWith: {...model.persistWith, path: 'detailTabs'},
+                        xhImpl: true,
+                        tabs: [
+                            {
+                                id: 'properties',
+                                icon: Icon.fileText(),
+                                content: propertiesView
+                            },
+                            {
+                                id: 'diagnostics',
+                                icon: Icon.gauge(),
+                                content: diagnosticsView
+                            }
+                        ]
+                    }
                 })
             )
         });
     }
 });
 
+const propertiesView = hoistCmp.factory<InstancesModel>({
+    render({model}) {
+        // Re-parent grid popups (context/column menus) when Inspector is detached.
+        const popupParent = useContextModel(InspectorModel)?.windowContainer ?? undefined;
+        return panel({
+            children: grid({model: model.propertiesGridModel, agOptions: {popupParent}}),
+            bbar: propertiesGridBar()
+        });
+    }
+});
+
+const diagnosticsView = hoistCmp.factory<InstancesModel>({
+    render({model}) {
+        return diagnosticsPanel({model: model.diagnosticsModel});
+    }
+});
+
 const instanceGridBar = hoistCmp.factory<InstancesModel>(({model}) => {
     const {instancesGridModel} = model;
     return toolbar({
-        items: [
+        children: [
             buttonGroupInput({
                 bind: 'instQuickFilters',
                 enableMulti: true,
                 outlined: true,
-                items: [
+                children: [
                     button({
                         text: 'Grouped',
                         value: 'showInGroups'
@@ -98,6 +132,12 @@ const instanceGridBar = hoistCmp.factory<InstancesModel>(({model}) => {
                         value: 'showXhImpl',
                         tooltip:
                             'Show instances created as part of internal Hoist model/component implementations'
+                    }),
+                    button({
+                        text: 'Favorites',
+                        value: 'favoritesOnly',
+                        tooltip:
+                            'Show only favorited instances, including any not currently alive. Star any instance with an xhName to favorite it - favorites persist across reloads.'
                     })
                 ]
             }),
@@ -116,12 +156,12 @@ const instanceGridBar = hoistCmp.factory<InstancesModel>(({model}) => {
 const propertiesGridBar = hoistCmp.factory<InstancesModel>(({model}) => {
     const {propertiesGridModel} = model;
     return toolbar({
-        items: [
+        children: [
             buttonGroupInput({
                 bind: 'propQuickFilters',
                 enableMulti: true,
                 outlined: true,
-                items: [
+                children: [
                     button({
                         text: 'Own only',
                         value: 'ownPropsOnly',

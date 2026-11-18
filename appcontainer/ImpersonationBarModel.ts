@@ -4,9 +4,9 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {HoistInputModel} from '@xh/hoist/cmp/input';
+import type {HoistInputModel} from '@xh/hoist/cmp/input';
 import {HoistModel, XH} from '@xh/hoist/core';
-import {action, bindable, makeObservable, observable} from '@xh/hoist/mobx';
+import {action, bindable, observable, observableRef} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
 import {createRef} from 'react';
 
@@ -17,22 +17,20 @@ export class ImpersonationBarModel extends HoistModel {
     override telemetryPrefix = 'xh.client.identity';
 
     override xhImpl = true;
+    override xhName = 'impersonationBarModel';
 
-    @observable showRequested: boolean = false;
-    @observable.ref targets: string[] = [];
-    @bindable pendingTarget: string = null;
+    @observable accessor showRequested: boolean = false;
+    @observableRef accessor targets: string[] = null;
+    @bindable accessor pendingTarget: string = null;
 
     // For managed focus of desktop select.
     inputRef = createRef<HoistInputModel>();
 
-    constructor() {
-        super();
-        makeObservable(this);
-    }
-
     init() {
-        this.addAutorun(() => {
-            if (this.isOpen) {
+        this.addReaction({
+            track: () => this.isOpen,
+            run: isOpen => {
+                if (!isOpen) return;
                 this.ensureTargetsLoaded();
 
                 // We don't have an impersonation message on mobile, so instead we
@@ -40,7 +38,8 @@ export class ImpersonationBarModel extends HoistModel {
                 if (XH.isMobileApp && XH.identityService.isImpersonating) {
                     this.pendingTarget = XH.getUsername();
                 }
-            }
+            },
+            fireImmediately: true
         });
     }
 
@@ -93,7 +92,7 @@ export class ImpersonationBarModel extends HoistModel {
     // Implementation
     //--------------------
     private ensureTargetsLoaded() {
-        if (this.targets.length) return;
+        if (this.targets) return;
 
         this.runner()
             .span('impersonationTargets')

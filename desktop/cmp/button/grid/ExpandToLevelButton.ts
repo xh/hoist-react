@@ -4,20 +4,27 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {GridModel} from '@xh/hoist/cmp/grid';
+import type {GridLikeModel} from '@xh/hoist/cmp/grid';
+import {isGridLikeModel} from '@xh/hoist/cmp/grid/impl/GridLikeModel';
 import {div, vbox} from '@xh/hoist/cmp/layout';
-import {hoistCmp, MenuItemLike, useContextModel} from '@xh/hoist/core';
+import type {MenuItemLike} from '@xh/hoist/core';
+import {hoistCmp, useContextModel} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
-import {menu, popover, Position} from '@xh/hoist/kit/blueprint';
-import {parseMenuItems} from '@xh/hoist/utils/impl';
+import type {Position} from '@xh/hoist/kit/blueprint';
+import {menu, popover} from '@xh/hoist/kit/blueprint';
+import {parseMenuItems} from '@xh/hoist/desktop/cmp/menu/impl/MenuItems';
 import {logError, withDefault} from '@xh/hoist/utils/js';
-import {ReactNode} from 'react';
-import {button, ButtonProps} from '../Button';
+import type {ReactNode} from 'react';
+import type {ButtonProps} from '../Button';
+import {button} from '../Button';
 
 export interface ExpandToLevelButtonProps extends Omit<ButtonProps, 'title'> {
-    /** GridModel to which this button should bind. Will find nearest in context if not provided. */
-    gridModel?: GridModel;
+    /**
+     * GridModel, or a model wrapping one, to which this button should bind. Will find the
+     * nearest in context if not provided.
+     */
+    gridModel?: GridLikeModel;
 
     /** Position for menu, as per Blueprint docs. */
     popoverPosition?: Position;
@@ -37,8 +44,19 @@ export const [ExpandToLevelButton, expandToLevelButton] =
         className: 'xh-expand-to-level-button',
         model: false,
 
-        render({gridModel, className, icon, title, popoverPosition, disabled, ...rest}) {
-            gridModel = withDefault(gridModel, useContextModel(GridModel));
+        render({
+            gridModel: boundModel,
+            className,
+            icon,
+            title,
+            popoverPosition,
+            disabled,
+            ...rest
+        }) {
+            const gridModel = withDefault(
+                boundModel,
+                useContextModel<GridLikeModel>(isGridLikeModel)
+            )?.innerGridModel;
             icon = withDefault(icon, Icon.treeList());
             title = withDefault(title, 'Expand To Level');
 
@@ -70,13 +88,13 @@ export const [ExpandToLevelButton, expandToLevelButton] =
             return popover({
                 popoverClassName: 'xh-expand-to-level-button__popover',
                 position: withDefault(popoverPosition, 'auto'),
-                item: button({
+                children: button({
                     icon,
                     className,
                     ...rest
                 }),
                 content: vbox(
-                    div({className: 'xh-popup__title', item: title, omit: !title}),
+                    div({className: 'xh-popup__title', children: title, omit: !title}),
                     menu(parseMenuItems(menuItems))
                 )
             });

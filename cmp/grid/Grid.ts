@@ -4,56 +4,68 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {GridApi, AgColumnState} from '@xh/hoist/kit/ag-grid';
+import type {GridApi, AgColumnState} from '@xh/hoist/kit/ag-grid';
 
-import {agGrid, AgGrid} from '@xh/hoist/cmp/ag-grid';
-import {ColumnState, getTreeStyleClasses} from '@xh/hoist/cmp/grid';
-import {gridHScrollbar} from '@xh/hoist/cmp/grid/impl/GridHScrollbar';
+import {agGrid} from '@xh/hoist/cmp/ag-grid';
+import type {ColumnGroupState, ColumnState} from '@xh/hoist/cmp/grid';
+import {getTreeStyleClasses} from '@xh/hoist/cmp/grid';
 import {getAgGridMenuItems} from '@xh/hoist/cmp/grid/impl/MenuSupport';
-import {div, fragment, frame, vframe} from '@xh/hoist/cmp/layout';
-import {
-    hoistCmp,
-    HoistModel,
+import {div, fragment, frame, hframe} from '@xh/hoist/cmp/layout';
+import type {
     HoistProps,
     LayoutProps,
-    lookup,
     PlainObject,
     ReactionSpec,
-    TestSupportProps,
-    useLocalModel,
-    uses,
-    XH
+    TestSupportProps
 } from '@xh/hoist/core';
-import {RecordSet} from '@xh/hoist/data/impl/RecordSet';
+import {hoistCmp, HoistModel, lookup, managed, useLocalModel, uses, XH} from '@xh/hoist/core';
+import type {Filter} from '@xh/hoist/data';
+import type {RecordSet, RecordSetDelta} from '@xh/hoist/data/impl/RecordSet';
+import {GridTransactionManager} from '@xh/hoist/cmp/grid/impl/GridTransactionManager';
+import {DeferredWorkScheduler} from '@xh/hoist/cmp/grid/impl/DeferredWorkScheduler';
 import {
     colChooser as desktopColChooser,
+    dockedColChooser as desktopDockedColChooser,
     gridFilterDialog,
     ModalSupportModel,
     DashContainerViewModel
 } from '@xh/hoist/dynamics/desktop';
 import {colChooser as mobileColChooser} from '@xh/hoist/dynamics/mobile';
+import type {DockedColChooserModel} from '@xh/hoist/desktop/cmp/grid/impl/colchooser/DockedColChooserModel';
 import {Icon} from '@xh/hoist/icon';
 
 import type {
     ColDef,
     ColGroupDef,
     GetContextMenuItemsParams,
+    GetMainMenuItemsParams,
     GridOptions,
     GridReadyEvent,
     ProcessCellForExportParams
 } from '@xh/hoist/kit/ag-grid';
-import {computed, observer} from '@xh/hoist/mobx';
+import {computed, observer, runInAction, untracked} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
-import {consumeEvent, isDisplayed, logWithDebug} from '@xh/hoist/utils/js';
-import {composeRefs, createObservableRef, getLayoutProps} from '@xh/hoist/utils/react';
+import {shallowEqualArrays} from '@xh/hoist/utils/impl';
+import {consumeEvent, isDisplayed, warnIf} from '@xh/hoist/utils/js';
+import {useComposedRefs, createObservableRef, getLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
-import {compact, debounce, isBoolean, isEmpty, isEqual, isNil, max, maxBy, merge} from 'lodash';
-import {type MouseEvent} from 'react';
+import {compact, debounce, isBoolean, isEmpty, isEqual, isNil, merge} from 'lodash';
+import type {MouseEvent} from 'react';
+import type {PartialDeep} from 'type-fest';
 import './Grid.scss';
 import {GridModel} from './GridModel';
 import {columnGroupHeader} from './impl/ColumnGroupHeader';
 import {columnHeader} from './impl/ColumnHeader';
+import {RowHeightSupport} from './impl/RowHeightSupport';
 import {RowKeyNavSupport} from './impl/RowKeyNavSupport';
+
+/**
+ * Deep-partial ag-Grid options. DOM-typed options are excluded from the recursion - TS 6+ cannot
+ * assign a real `HTMLElement` to its deep-partial form.
+ */
+type DomGridOptions = 'popupParent' | 'advancedFilterParent' | 'themeStyleContainer';
+type GridAgOptions = PartialDeep<Omit<GridOptions, DomGridOptions>> &
+    Pick<GridOptions, DomGridOptions>;
 
 export interface GridProps<M extends GridModel = GridModel>
     extends HoistProps<M>, LayoutProps, TestSupportProps {
@@ -66,7 +78,7 @@ export interface GridProps<M extends GridModel = GridModel>
      *
      * Note that changes to these options after the component's initial render will be ignored.
      */
-    agOptions?: GridOptions;
+    agOptions?: GridAgOptions;
 
     /**
      * Callback when the grid has initialized. The component will call this with the ag-Grid
@@ -97,19 +109,11 @@ export const [Grid, grid] = hoistCmp.withFactory<GridProps>({
     className: 'xh-grid',
 
     render({model, className, testId, ...props}, ref) {
-        const {
-                store,
-                treeMode,
-                treeStyle,
-                highlightRowOnClick,
-                colChooserModel,
-                filterModel,
-                enableFullWidthScroll
-            } = model,
+        const {store, treeMode, treeStyle, highlightRowOnClick, colChooserModel, filterModel} =
+                model,
             impl = useLocalModel(GridLocalModel),
             platformColChooser = XH.isMobileApp ? mobileColChooser : desktopColChooser,
-            maxDepth = impl.isHierarchical ? store.maxDepth : null,
-            container = enableFullWidthScroll ? vframe : frame;
+            maxDepth = impl.isHierarchical ? store.maxDepth : null;
 
         className = classNames(
             className,
@@ -120,28 +124,45 @@ export const [Grid, grid] = hoistCmp.withFactory<GridProps>({
             highlightRowOnClick ? 'xh-grid--highlight-row-on-click' : null
         );
 
-        return fragment(
-            container({
-                className,
-                items: [
-                    agGrid({
-                        model: model.agGridModel,
-                        ...getLayoutProps(props),
-                        ...impl.agOptions
-                    }),
-                    gridHScrollbar({
-                        omit: !enableFullWidthScroll,
-                        gridLocalModel: impl
-                    })
-                ],
-                testId,
-                onKeyDown: impl.onKeyDown,
-                onMouseDown: impl.onViewMouseDown,
-                ref: composeRefs(impl.viewRef, model.viewRef, ref)
-            }),
-            colChooserModel ? platformColChooser({model: colChooserModel}) : null,
-            filterModel ? gridFilterDialog({model: filterModel}) : null
-        );
+        const gridContainer = frame({
+            className,
+            children: [
+                agGrid({
+                    model: model.agGridModel,
+                    ...getLayoutProps(props),
+                    ...impl.agOptions,
+                    ...impl.rowHeightSupport.agGridProps
+                })
+            ],
+            testId,
+            onKeyDown: impl.onKeyDown,
+            onMouseDown: impl.onViewMouseDown,
+            ref: useComposedRefs(impl.viewRef, model.viewRef, ref)
+        });
+
+        const filterDialog = filterModel ? gridFilterDialog({model: filterModel}) : null;
+
+        if (colChooserModel?.mode === 'docked') {
+            // 1) docked chooser - laid out beside the grid rather than shown above it. Safe to use
+            // the desktop component unconditionally, as GridModel never creates it on mobile.
+            const chooser = desktopDockedColChooser({model: colChooserModel}),
+                {side} = colChooserModel as DockedColChooserModel;
+
+            return fragment(
+                side === 'left' ? hframe(chooser, gridContainer) : hframe(gridContainer, chooser),
+                filterDialog
+            );
+        } else if (colChooserModel) {
+            // 2) modal chooser
+            return fragment(
+                gridContainer,
+                platformColChooser({model: colChooserModel}),
+                filterDialog
+            );
+        } else {
+            // 3) no chooser
+            return fragment(gridContainer, filterDialog);
+        }
     }
 });
 
@@ -155,14 +176,25 @@ export class GridLocalModel extends HoistModel {
 
     // Structural "empty" grid space.
     private static EMPTY_SPACE_SELECTOR =
-        '.ag-body-viewport, .ag-center-cols-viewport, .ag-center-cols-container, .ag-row';
+        '.ag-grid-viewport, .ag-grid-scrollable-area, .ag-grid-scrolling-container, .ag-row';
 
     @lookup(GridModel)
-    private model: GridModel;
+    model: GridModel;
     agOptions: GridOptions;
     viewRef = createObservableRef<HTMLElement>();
     private rowKeyNavSupport: RowKeyNavSupport;
-    private prevRs: RecordSet;
+    @managed private transactionMgr: GridTransactionManager;
+    @managed rowHeightSupport: RowHeightSupport;
+
+    // State for the managed-autosize trigger - see `noteManagedAutosizeTrigger()`.
+    private autosizedAsOfFilter: Filter = null;
+
+    @managed
+    private autosizeScheduler = new DeferredWorkScheduler({
+        runFn: () => this.autosizeManagedAsync(),
+        maxDeferral: GridModel.MAX_DEFERRED_AUTOSIZE,
+        factorFn: () => this.model.experimental.deferredAutosizeFactor ?? 10
+    });
 
     /** @returns true if any root-level records have children */
     @computed
@@ -184,15 +216,19 @@ export class GridLocalModel extends HoistModel {
     }
 
     override onLinked() {
+        // This mount's ag instance starts empty, regardless of what a prior mount applied.
+        runInAction(() => (this.model._syncedRs = null));
+
         this.rowKeyNavSupport = XH.isDesktop ? new RowKeyNavSupport(this.model) : null;
         this.addReaction(
             this.selectionReaction(),
             this.sortReaction(),
             this.columnsReaction(),
             this.columnStateReaction(),
+            this.columnGroupStateReaction(),
             this.dataReaction(),
             this.groupReaction(),
-            this.rowHeightReaction(),
+            this.expandLevelReaction(),
             this.sizingModeReaction(),
             this.validationDisplayReaction(),
             this.modalReaction(),
@@ -200,14 +236,19 @@ export class GridLocalModel extends HoistModel {
         );
 
         this.agOptions = merge(this.createDefaultAgOptions(), this.componentProps.agOptions || {});
+        warnIf(
+            this.componentProps.agOptions?.groupDefaultExpanded != null,
+            'agOptions.groupDefaultExpanded is ignored. Set GridModel.expandLevel instead.'
+        );
+        this.rowHeightSupport = new RowHeightSupport(this);
+        this.transactionMgr = new GridTransactionManager(this.model);
     }
 
     private createDefaultAgOptions(): GridOptions {
         const {model} = this,
-            {clicksToEdit, selModel, deltaSort} = model;
+            {clicksToEdit, selModel} = model;
 
         let ret: GridOptions = {
-            deltaSort,
             animateRows: false,
             suppressColumnVirtualisation: !model.useVirtualColumns,
             getRowId: ({data}) => data.agId,
@@ -236,8 +277,7 @@ export class GridLocalModel extends HoistModel {
                 agColumnGroupHeader: props => columnGroupHeader({...props, gridModel: model})
             },
             tooltipShowDelay: 0,
-            getRowHeight: this.defaultGetRowHeight,
-            getRowClass: ({data}) => (model.rowClassFn ? model.rowClassFn(data) : null),
+            getRowClass: model.rowClassFn ? ({data}) => model.rowClassFn(data) : undefined,
             rowClassRules: model.rowClassRules,
             noRowsOverlayComponent: observer(() => div(this.emptyText)),
             onCellContextMenu: model.onCellContextMenu,
@@ -253,12 +293,14 @@ export class GridLocalModel extends HoistModel {
             onColumnRowGroupChanged: this.onColumnRowGroupChanged,
             onColumnPinned: this.onColumnPinned,
             onColumnVisible: this.onColumnVisible,
+            onDisplayedColumnsChanged: this.onDisplayedColumnsChanged,
+            onColumnGroupOpened: this.onColumnGroupOpened,
             onCellEditingStarted: model.onCellEditingStarted,
             onCellEditingStopped: model.onCellEditingStopped,
             navigateToNextCell: this.navigateToNextCell,
             processCellForClipboard: this.processCellForClipboard,
             initialGroupOrderComparator: model.groupSortFn ? this.groupSortComparator : undefined,
-            groupDefaultExpanded: model.expandLevel,
+            isGroupOpenByDefault: this.isGroupOpenByDefault,
             groupDisplayType: 'groupRows',
             groupRowRendererParams: {
                 innerRenderer: model.groupRowRenderer,
@@ -299,7 +341,8 @@ export class GridLocalModel extends HoistModel {
             ret = {
                 ...ret,
                 allowContextMenuWithControlKey: true,
-                getContextMenuItems: this.getContextMenuItems as any
+                getContextMenuItems: this.getContextMenuItems as any,
+                getMainMenuItems: this.getHeaderContextMenuItems as any
             };
         }
 
@@ -311,11 +354,6 @@ export class GridLocalModel extends HoistModel {
                 treeData: true,
                 getDataPath: this.getDataPath
             };
-        }
-
-        // Support for FullWidthScroll
-        if (model.enableFullWidthScroll) {
-            ret.suppressHorizontalScroll = true;
         }
 
         return ret;
@@ -331,7 +369,7 @@ export class GridLocalModel extends HoistModel {
     getContextMenuItems = (params: GetContextMenuItemsParams) => {
         const {model} = this,
             {contextMenu} = model;
-        if (!contextMenu || XH.isMobileApp || model.isEditing) return [];
+        if (!contextMenu || model.isEditing) return [];
 
         // Manipulate selection if needed.
         if (model.selModel.isEnabled) {
@@ -345,10 +383,15 @@ export class GridLocalModel extends HoistModel {
             if (!record) selModel.clear();
         }
 
-        const ret = getAgGridMenuItems(params, model, contextMenu);
-        if (isEmpty(ret)) return [];
+        return getAgGridMenuItems(params, model, contextMenu) ?? [];
+    };
 
-        return ret;
+    // ag-Grid shows its column menu on header right-click, with these as its items.
+    getHeaderContextMenuItems = (params: GetMainMenuItemsParams) => {
+        const {model} = this,
+            {headerContextMenu} = model;
+        if (!headerContextMenu || model.isEditing) return [];
+        return getAgGridMenuItems(params, model, headerContextMenu) ?? [];
     };
 
     //------------------------
@@ -360,15 +403,17 @@ export class GridLocalModel extends HoistModel {
         return {
             track: () => [model.isReady, store._filtered, model.showSummary, store.summaryRecords],
             run: () => {
-                if (model.isReady) this.syncData();
-            }
+                if (!this.isDestroyed && model.isReady) this.syncData();
+            },
+            // Sync in a fresh macrotask - lets pending UI paint first and coalesces rapid arrivals.
+            debounce: 0
         };
     }
 
     selectionReaction() {
         const {model} = this;
         return {
-            track: () => [model.isReady, model.selectedRecords],
+            track: () => [model.isReady, model.selModel.selectedIds],
             run: () => {
                 if (model.isReady) this.syncSelection();
             }
@@ -393,91 +438,18 @@ export class GridLocalModel extends HoistModel {
             track: () => [model.agApi, model.groupBy],
             run: ([agApi, groupBy]) => {
                 if (!agApi) return;
+
+                // Sync first - new group rows read it once, and a view switch may change level too.
+                this.syncGroupOpenByDefault();
                 agApi.setRowGroupColumns(groupBy);
 
                 // Re-assert configured visibility - AG Grid re-shows a column when ungrouped (#4473).
                 const state = model.columnState
-                    .filter(({colId}) => !groupBy.includes(colId))
+                    .filter(({colId}) => !model.isColumnHiddenByGrouping(colId))
                     .map(({colId, hidden}) => ({colId, hide: hidden}));
                 agApi.applyColumnState({state});
             }
         };
-    }
-
-    //----------------------
-    // Row Height Management
-    //----------------------
-    @computed
-    get calculatedRowHeight() {
-        const {model} = this,
-            AgGridCmp = AgGrid as any;
-        return max([
-            AgGridCmp.getRowHeightForSizingMode(model.sizingMode),
-            maxBy(model.getVisibleLeafColumns(), 'rowHeight')?.rowHeight
-        ]);
-    }
-
-    @computed
-    get calculatedGroupRowHeight() {
-        const {sizingMode, groupRowHeight} = this.model,
-            {groupDisplayType} = this.agOptions,
-            AgGridCmp = AgGrid as any;
-        return (
-            groupRowHeight ??
-            (groupDisplayType === 'groupRows'
-                ? AgGridCmp.getGroupRowHeightForSizingMode(sizingMode)
-                : AgGridCmp.getRowHeightForSizingMode(sizingMode))
-        );
-    }
-
-    defaultGetRowHeight = ({node}) => {
-        return node.group ? this.calculatedGroupRowHeight : this.calculatedRowHeight;
-    };
-
-    rowHeightReaction() {
-        return {
-            track: () => [
-                this.useScrollOptimization,
-                this.calculatedRowHeight,
-                this.calculatedGroupRowHeight
-            ],
-            run: () => {
-                const {agApi} = this.model;
-                if (!agApi) return;
-                agApi.resetRowHeights();
-                this.applyScrollOptimization();
-            },
-            debounce: 1
-        };
-    }
-
-    @computed
-    get useScrollOptimization() {
-        // When true, we preemptively evaluate and assign functional row heights after data loading.
-        // This improves slow scrolling but means function not guaranteed to be re-called
-        // when node is rendered in viewport.
-        const {model, agOptions} = this;
-        return (
-            !model.disableScrollOptimization &&
-            agOptions.getRowHeight &&
-            !agOptions.rowHeight &&
-            !model.getVisibleLeafColumns().some(c => c.autoHeight)
-        );
-    }
-
-    applyScrollOptimization() {
-        if (!this.useScrollOptimization) return;
-
-        const {agApi} = this.model,
-            {getRowHeight} = this.agOptions,
-            params = {api: agApi, context: null} as any;
-
-        agApi.forEachNode(node => {
-            params.node = node;
-            params.data = node.data;
-            node.setRowHeight(getRowHeight(params));
-        });
-        agApi.onRowHeightChanged();
     }
 
     columnsReaction() {
@@ -494,6 +466,22 @@ export class GridLocalModel extends HoistModel {
         };
     }
 
+    columnGroupStateReaction(): ReactionSpec<[GridApi, ColumnGroupState[]]> {
+        const {model} = this;
+        return {
+            track: () => [model.agApi, model.columnGroupState],
+            run: ([api, groupState]) => {
+                if (!api || isEmpty(groupState)) return;
+
+                // Pass the full set: ag-Grid skips any groupId it cannot resolve, and skips groups
+                // already in the requested state, so this neither throws nor re-enters.
+                api.setColumnGroupState(
+                    groupState.map(({groupId, expanded}) => ({groupId, open: expanded}))
+                );
+            }
+        };
+    }
+
     columnStateReaction(): ReactionSpec<[GridApi, ColumnState[]]> {
         const {model} = this;
         return {
@@ -501,12 +489,16 @@ export class GridLocalModel extends HoistModel {
             run: ([api, colState]) => {
                 if (!api) return;
 
-                const agColState = api.getColumnState();
+                const agColState = api.getColumnState(),
+                    agColStateMap = new Map(agColState.map(c => [c.colId, c]));
 
-                // Insert the auto group col state if it exists, since we won't have it in our column state list
-                const autoColState = agColState.find(c => c.colId === 'ag-Grid-AutoColumn');
+                // Insert the auto group col state if it exists, since we won't have it in our
+                // column state list. Work on a local copy - the tracked `colState` is the model's
+                // own observable array and must never be mutated in place.
+                const autoColState = agColStateMap.get('ag-Grid-AutoColumn');
                 if (autoColState) {
                     const {colId, width, hide, pinned} = autoColState;
+                    colState = [...colState];
                     colState.splice(agColState.indexOf(autoColState), 0, {
                         colId,
                         width,
@@ -524,9 +516,7 @@ export class GridLocalModel extends HoistModel {
                 // Build a list of column state changes
                 colState = compact(
                     colState.map(({colId, width, hidden, pinned}) => {
-                        const agCol: AgColumnState = agColState.find(c => c.colId === colId) || {
-                                colId
-                            },
+                        const agCol: AgColumnState = agColStateMap.get(colId) || {colId},
                             ret: any = {colId};
 
                         let hasChanges = applyOrder;
@@ -536,7 +526,7 @@ export class GridLocalModel extends HoistModel {
                             hasChanges = true;
                         }
 
-                        if (agCol.hide !== hidden) {
+                        if (agCol.hide !== hidden && !model.isColumnHiddenByGrouping(colId)) {
                             ret.hide = hidden;
                             hasChanges = true;
                         }
@@ -623,84 +613,54 @@ export class GridLocalModel extends HoistModel {
         };
     }
 
+    expandLevelReaction() {
+        const {model} = this;
+        return {
+            track: () => [model.agApi, model.expandLevel],
+            run: ([agApi]) => {
+                if (agApi) this.syncGroupOpenByDefault();
+            }
+        };
+    }
+
     updatePinnedSummaryRowData() {
         const {model} = this,
-            {store, showSummary, agGridModel} = model,
+            {showSummary, agGridModel} = model,
+            {summaryRecords} = model.store,
             {agApi} = agGridModel,
             filterSummaryFn = record => !record.isSummary,
-            pinnedTopRowData = agGridModel.getPinnedTopRowData().filter(filterSummaryFn),
-            pinnedBottomRowData = agGridModel.getPinnedBottomRowData().filter(filterSummaryFn);
+            prevTop = agGridModel.getPinnedTopRowData(),
+            prevBot = agGridModel.getPinnedBottomRowData(),
+            top = prevTop.filter(filterSummaryFn),
+            bot = prevBot.filter(filterSummaryFn);
 
-        if (showSummary && !isEmpty(store.summaryRecords)) {
-            if (showSummary === 'bottom') {
-                pinnedBottomRowData.push(...store.summaryRecords);
-            } else {
-                pinnedTopRowData.unshift(...store.summaryRecords);
-            }
+        if (showSummary && !isEmpty(summaryRecords)) {
+            showSummary === 'bottom' ? bot.push(...summaryRecords) : top.unshift(...summaryRecords);
         }
 
-        // Early out if the data hasn't actually changed
-        if (
-            isEqual(pinnedTopRowData, agGridModel.getPinnedTopRowData()) &&
-            isEqual(pinnedBottomRowData, agGridModel.getPinnedBottomRowData())
-        ) {
-            return;
-        }
-
-        agApi.updateGridOptions({
-            pinnedTopRowData,
-            pinnedBottomRowData
-        });
+        // Pass only the side that changed - AG Grid redraws all rows for each pinned option passed.
+        const opts: GridOptions = {};
+        if (!shallowEqualArrays(top, prevTop)) opts.pinnedTopRowData = top;
+        if (!shallowEqualArrays(bot, prevBot)) opts.pinnedBottomRowData = bot;
+        if (!isEmpty(opts)) agApi.updateGridOptions(opts);
     }
 
-    @logWithDebug
-    genTransaction(newRs, prevRs) {
-        if (!prevRs) return {add: newRs.list};
-
-        const newList = newRs.list,
-            prevList = prevRs.list;
-
-        let add = [],
-            update = [],
-            remove = [];
-        newList.forEach(rec => {
-            const existing = prevRs.getById(rec.id);
-            if (!existing) {
-                add.push(rec);
-            } else if (existing !== rec) {
-                update.push(rec);
-            }
-        });
-
-        if (newList.length !== prevList.length + add.length) {
-            remove = prevList.filter(rec => !newRs.getById(rec.id));
-        }
-
-        // Only include lists in transaction if non-empty (ag-grid is not internally optimized)
-        const ret: any = {};
-        if (!isEmpty(add)) ret.add = add;
-        if (!isEmpty(update)) ret.update = update;
-        if (!isEmpty(remove)) ret.remove = remove;
-        return ret;
-    }
-
-    @logWithDebug
     syncData() {
         const {model} = this,
             {agGridModel, store, agApi} = model,
             newRs = store._filtered,
-            prevRs = this.prevRs,
-            prevCount = prevRs ? prevRs.count : 0;
+            prevRs = model._syncedRs;
 
-        let transaction = null;
-        if (prevCount !== 0) {
-            transaction = this.genTransaction(newRs, prevRs);
-            if (!this.transactionIsEmpty(transaction)) {
-                this.logDebug(...this.genTxnLogMsgs(transaction));
-                agApi.applyTransaction(transaction);
-            }
-        } else {
-            agApi.updateGridOptions({rowData: newRs.list});
+        const start = performance.now(),
+            transaction = newRs.diffFrom(prevRs);
+        model.diagnostics.noteGenTransaction(transaction, newRs, prevRs, start);
+
+        const applyStart = performance.now();
+        if (!this.transactionIsEmpty(transaction)) {
+            this.transactionMgr.apply(transaction, prevRs, newRs);
+        } else if (!prevRs) {
+            // AG Grid needs rowData (even if empty) to exit its initial loading state.
+            agApi.updateGridOptions({rowData: []});
         }
 
         if (model.externalSort) {
@@ -709,7 +669,7 @@ export class GridLocalModel extends HoistModel {
 
         this.updatePinnedSummaryRowData();
 
-        if (transaction?.update) {
+        if (!isEmpty(transaction.update)) {
             const visibleCols = model.getVisibleLeafColumns();
 
             // Refresh cells in columns with complex renderers
@@ -723,21 +683,22 @@ export class GridLocalModel extends HoistModel {
             }
         }
 
-        if (!transaction || transaction.add || transaction.remove) {
+        if (!isEmpty(transaction.add) || !isEmpty(transaction.remove)) {
             wait().then(() => this.syncSelection());
         }
 
         if (model.autosizeOptions.mode === 'managed') {
-            const columns = model.columnState.filter(it => !it.manuallySized).map(it => it.colId);
-            model.autosizeAsync({columns});
+            this.noteManagedAutosizeTrigger();
         }
 
-        if (model.treeMode || !isEmpty(model.groupBy)) {
+        if (this.transactionCouldChangeStructure(transaction, prevRs)) {
             model.noteAgExpandStateChange();
         }
 
-        this.prevRs = newRs;
-        this.applyScrollOptimization();
+        model._syncedRs = newRs;
+        this.rowHeightSupport.noteRecordsAdded(transaction.add);
+
+        model.diagnostics.noteApplyTransaction(transaction, newRs, applyStart);
     }
 
     syncSelection() {
@@ -748,17 +709,19 @@ export class GridLocalModel extends HoistModel {
         }
     }
 
-    transactionIsEmpty(t) {
+    transactionIsEmpty(t: RecordSetDelta): boolean {
         return isEmpty(t.update) && isEmpty(t.add) && isEmpty(t.remove);
     }
 
-    private genTxnLogMsgs(t): string[] {
-        const {add, update, remove} = t;
-        return [
-            `update: ${update ? update.length : 0}`,
-            `add: ${add ? add.length : 0}`,
-            `remove: ${remove ? remove.length : 0}`
-        ];
+    transactionCouldChangeStructure(t: RecordSetDelta, prevRs: RecordSet): boolean {
+        const {model} = this;
+        if (!isEmpty(model.groupBy) || !prevRs || !isEmpty(t.add) || !isEmpty(t.remove)) {
+            return true;
+        }
+        return (
+            model.treeMode &&
+            t.update.some(rec => rec.parentId !== prevRs.getById(rec.id)?.parentId)
+        );
     }
 
     //------------------------
@@ -768,9 +731,36 @@ export class GridLocalModel extends HoistModel {
         return record.treePath;
     };
 
-    // We debounce this handler because the implementation of `AgGridModel.setSelectedRowNodeIds()`
-    // selects nodes one-by-one, and ag-Grid will fire a selection changed event for each iteration.
-    // This avoids a storm of events looping through the reaction when selecting in bulk.
+    /**
+     * Loads and filter changes autosize immediately - the visible dataset changed. Data updates
+     * instead pace off autosize's own cost, so a streaming grid isn't re-measuring every tick.
+     */
+    private noteManagedAutosizeTrigger() {
+        const {store} = this.model,
+            {filter} = store,
+            // Store stamps lastLoaded and lastUpdated together on load, then bumps lastUpdated
+            // alone per update - so equality means the latest change was a load. `setFilter` moves
+            // neither, hence the separate filter check.
+            isLoad = store.lastUpdated === store.lastLoaded;
+
+        if (!isLoad && filter === this.autosizedAsOfFilter) {
+            this.autosizeScheduler.scheduleAsync();
+            return;
+        }
+
+        this.autosizedAsOfFilter = filter;
+        this.autosizeScheduler.clearBackoff();
+        this.autosizeScheduler.runNow();
+    }
+
+    private async autosizeManagedAsync() {
+        const {model} = this,
+            columns = model.columnState.filter(it => !it.manuallySized).map(it => it.colId);
+        await model.autosizeAsync({columns});
+    }
+
+    // Debounced to coalesce the (up to two) events fired by `AgGridModel.setSelectedRowNodeIds()`
+    // bulk delta application, plus rapid user-driven selection changes.
     onSelectionChanged = debounce(() => {
         this.model.noteAgSelectionStateChanged();
         this.syncSelection();
@@ -817,6 +807,30 @@ export class GridLocalModel extends HoistModel {
             this.model.noteAgColumnStateChanged(ev.api.getColumnState());
         }
     };
+
+    // Cell class rules such as column group borders can depend on column position - re-evaluate.
+    onDisplayedColumnsChanged = ev => ev.api.refreshCells();
+
+    // Fires for our own writes too (no `source` on this event) - model's equality check stops the loop.
+    onColumnGroupOpened = ev => {
+        this.model.noteAgColumnGroupStateChanged(ev.api.getColumnGroupState());
+    };
+
+    // Unset at level 0, where ag-Grid's default `groupDefaultExpanded` of 0 opens nothing. With the
+    // option set, ag-Grid's state module, when registered, walks every row after each data update.
+    get isGroupOpenByDefault() {
+        return this.model.expandLevel !== 0 ? this._isGroupOpenByDefault : undefined;
+    }
+
+    // Untracked - ag-Grid can resolve a row's expanded state inside a MobX derivation.
+    private _isGroupOpenByDefault = ({level}) => untracked(() => this.model.isLevelExpanded(level));
+
+    private syncGroupOpenByDefault() {
+        // Let app escape hatch win.
+        if (!this.componentProps.agOptions?.isGroupOpenByDefault) {
+            this.model.agApi.setGridOption('isGroupOpenByDefault', this.isGroupOpenByDefault);
+        }
+    }
 
     groupSortComparator = ({nodeA, nodeB}) => {
         const gridModel = this.model;

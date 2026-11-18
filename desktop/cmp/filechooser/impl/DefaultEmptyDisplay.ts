@@ -53,6 +53,6 @@ const emptyHint = hoistCmp.factory({
             hint = isEmpty(parts) ? null : `(${parts.join(' · ')})`;
         }
 
-        return div({className: 'xh-file-chooser__empty-hint', item: hint, omit: hint == null});
+        return div({className: 'xh-file-chooser__empty-hint', children: hint, omit: hint == null});
     }
 });

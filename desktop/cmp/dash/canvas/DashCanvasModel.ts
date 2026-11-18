@@ -6,13 +6,15 @@
  */
 import {wait} from '@xh/hoist/promise';
 import type {LayoutItem} from 'react-grid-layout';
-import {Persistable, PersistableState, PersistenceProvider, XH} from '@xh/hoist/core';
+import type {Persistable} from '@xh/hoist/core';
+import {PersistableState, PersistenceProvider, XH} from '@xh/hoist/core';
 import {required} from '@xh/hoist/data';
-import {DashCanvasViewModel, DashCanvasViewSpec, DashConfig, DashViewState, DashModel} from '../';
+import type {DashCanvasViewSpec, DashConfig, DashViewState} from '../';
+import {DashCanvasViewModel, DashModel} from '../';
 import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
-import {action, makeObservable, computed, observable, bindable} from '@xh/hoist/mobx';
-import {ensureUniqueBy, observeResize, throwIf} from '@xh/hoist/utils/js';
+import {action, bindable, observableRef, computedStruct, bindableRef} from '@xh/hoist/mobx';
+import {ensureUniqueBy, throwIf} from '@xh/hoist/utils/js';
 import {isOmitted} from '@xh/hoist/utils/impl';
 import {createObservableRef} from '@xh/hoist/utils/react';
 import {
@@ -27,6 +29,7 @@ import {
     pick,
     isEqual,
     startCase,
+    map,
     partition,
     keyBy,
     compact
@@ -59,6 +62,14 @@ export interface DashCanvasConfig extends DashConfig<DashCanvasViewSpec, DashCan
      * works well if all items are 1 row high. Default `'vertical'`.
      */
     compact?: boolean | 'vertical' | 'horizontal' | 'wrap';
+
+    /**
+     * True to block a drag or resize that would move a view into space taken by another view.
+     * The view snaps back instead of pushing the other view aside. Compaction still applies.
+     * Combine with `compact: false` for a free-form canvas where views stay where users put them.
+     * Default `false`.
+     */
+    preventCollision?: boolean;
 
     /** Gap between items [x, y] in pixels. Default `[10, 10]`. */
     margin?: [number, number];
@@ -146,14 +157,15 @@ export class DashCanvasModel
     //-----------------------------
     // Settable State
     //------------------------------
-    @bindable columns: number;
-    @bindable rowHeight: number;
-    @bindable compact: 'vertical' | 'horizontal' | 'wrap';
-    @bindable.ref margin: [number, number]; // [x, y]
-    @bindable.ref containerPadding: [number, number]; // [x, y]
-    @bindable showGridBackground: boolean;
-    @bindable rglHeight: number;
-    @bindable showAddViewButtonWhenEmpty: boolean;
+    @bindable accessor columns: number;
+    @bindable accessor rowHeight: number;
+    @bindable accessor compact: 'vertical' | 'horizontal' | 'wrap';
+    @bindable accessor preventCollision: boolean;
+    @bindableRef accessor margin: [number, number]; // [x, y]
+    @bindableRef accessor containerPadding: [number, number]; // [x, y]
+    @bindable accessor showGridBackground: boolean;
+    @bindable accessor rglHeight: number;
+    @bindable accessor showAddViewButtonWhenEmpty: boolean;
 
     //-----------------------------
     // Public properties
@@ -163,7 +175,7 @@ export class DashCanvasModel
     onDropDone: (viewModel: DashCanvasViewModel) => void;
 
     /** The view currently being dragged in from an external source (e.g. a DashCanvasWidgetChooser). */
-    @observable.ref draggedInView: DashCanvasItemState;
+    @observableRef accessor draggedInView: DashCanvasItemState;
 
     /** Current number of rows in the canvas. */
     get rows(): number {
@@ -178,7 +190,7 @@ export class DashCanvasModel
     //----------------------------
     // Implementation properties
     //----------------------------
-    @observable.ref layout: any[] = [];
+    @observableRef accessor layout: any[] = [];
     ref = createObservableRef<HTMLElement>();
     isResizing: boolean;
     private _onDropDragOverFn: DashCanvasConfig['onDropDragOver'];
@@ -220,6 +232,7 @@ export class DashCanvasModel
         columns = DashCanvasModel.defaults.columns,
         rowHeight = DashCanvasModel.defaults.rowHeight,
         compact = 'vertical',
+        preventCollision = false,
         margin = DashCanvasModel.defaults.margin,
         maxRows = DashCanvasModel.defaults.maxRows,
         containerPadding = DashCanvasModel.defaults.containerPadding ?? margin,
@@ -228,10 +241,11 @@ export class DashCanvasModel
         showAddViewButtonWhenEmpty = true,
         allowsDrop = false,
         onDropDone,
-        onDropDragOver
+        onDropDragOver,
+        xhName = null
     }: DashCanvasConfig) {
         super();
-        makeObservable(this);
+        this.xhName = xhName;
         viewSpecs = viewSpecs.filter(it => !isOmitted(it));
         ensureUniqueBy(viewSpecs, 'id');
         this.viewSpecs = viewSpecs.map(cfg => {
@@ -259,6 +273,7 @@ export class DashCanvasModel
             columns,
             rowHeight,
             compact,
+            preventCollision,
             margin,
             maxRows,
             containerPadding
@@ -272,6 +287,7 @@ export class DashCanvasModel
         this.containerPadding = containerPadding;
         this.margin = margin;
         this.compact = compact === true ? 'vertical' : compact === false ? null : compact;
+        this.preventCollision = preventCollision;
         this.emptyText = emptyText;
         this.addViewButtonText = addViewButtonText;
         this.extraMenuItems = extraMenuItems;
@@ -302,18 +318,6 @@ export class DashCanvasModel
             track: () => this.viewState,
             run: () => (this.state = this.buildState()),
             fireImmediately: true
-        });
-
-        // Used to make the height of RGL available to the gridBackground component
-        this.addReaction({
-            when: () => !!this.ref.current,
-            run: () => {
-                this.rglResizeObserver = observeResize(
-                    rect => (this.rglHeight = rect.height),
-                    this.ref.current.querySelector('.react-grid-layout'),
-                    {debounce: 100}
-                );
-            }
         });
     }
 
@@ -426,6 +430,7 @@ export class DashCanvasModel
      * and places it at the drop location. Called by the DashCanvas component - not typically
      * called directly by application code.
      */
+    @action // collapse internal actions
     onDrop(rglLayout: LayoutItem[], layoutItem: LayoutItem, evt: Event) {
         throwIf(
             !this.draggedInView,
@@ -434,8 +439,7 @@ export class DashCanvasModel
              a DashCanvasWidgetChooser or similar component.`
         );
 
-        const droppingItem: any = rglLayout.find(it => it.i === RGL_DROPPING_ITEM_ID);
-        if (!droppingItem) {
+        if (!rglLayout.some(it => it.i === RGL_DROPPING_ITEM_ID)) {
             // if `onDropDragOver` returned false, we won't have a dropping item
             // and we cancel the drop
             this.setDraggedInView(null);
@@ -450,14 +454,21 @@ export class DashCanvasModel
                 layout
             });
 
-        // Change ID of dropping item to the new view's id
-        // so that the new view goes where the dropping item is.
-        droppingItem.i = newViewModel.id;
+        // Adopt RGL's mid-drag layout - views already shifted aside - and give the placeholder's
+        // slot to the new view. Appending to our own pre-drag layout would leave it overlapping,
+        // and RGL settles such collisions by pushing the new view clear of where it was dropped.
+        this.setLayout(
+            rglLayout.map(({i, x, y, w, h}) => ({
+                i: i === RGL_DROPPING_ITEM_ID ? newViewModel.id : i,
+                x,
+                y,
+                w,
+                h
+            }))
+        );
 
-        // must wait a tick for RGL to settle
         wait().then(() => {
             this.setDraggedInView(null);
-            this.onRglLayoutChange(rglLayout);
             this.onDropDone?.(newViewModel);
         });
     }
@@ -495,6 +506,14 @@ export class DashCanvasModel
      * Note this applies full replace (not patch) semantics, at both levels: views not present in
      * the given state are removed, and entries fully replace each matched view's state - omitted
      * properties (e.g. `title`, `state`) reset to their defaults.
+     *
+     * Views are matched to incoming state by their generated ids, which encode position (spec id
+     * plus instance index - see {@link DashModel.genViewId}), not identity. Matched view models
+     * are reused rather than rebuilt: their content components stay mounted and any models owned
+     * by that content remain live, with the incoming state pushed into them. This holds for any
+     * state loaded here, including state saved from a logically different dashboard (e.g. a
+     * saved-view switch driven by a ViewManager-linked provider). Call {@link clear} immediately
+     * beforehand to instead force a full teardown and remount of all views.
      */
     @action
     loadState(state: DashCanvasItemState[]) {
@@ -558,8 +577,6 @@ export class DashCanvasModel
     //------------------------
     // Implementation
     //------------------------
-    private rglResizeObserver: ResizeObserver;
-
     private getLayoutFromPosition(position: string, specId: string) {
         switch (position) {
             case 'first':
@@ -620,10 +637,11 @@ export class DashCanvasModel
     onRglLayoutChange(rglLayout: LayoutItem[]) {
         rglLayout = rglLayout.map(it => pick(it, ['i', 'x', 'y', 'w', 'h']));
 
-        // Early out if RGL is changing layout as user is dragging droppable
-        // item around the canvas.  This will be called again once dragging
-        // has stopped and user has dropped the item onto the canvas.
-        if (rglLayout.some(it => it.i === RGL_DROPPING_ITEM_ID)) return;
+        // Accept only layouts whose ids correspond 1:1 with our current viewModels - RGL's copy
+        // lags ours by a render after a drop. Adopting it would trap the app in an update loop.
+        const layoutIds = sortBy(map(rglLayout, 'i')),
+            viewIds = sortBy(map(this.viewModels, 'id'));
+        if (!isEqual(layoutIds, viewIds)) return;
 
         this.setLayout(rglLayout);
     }
@@ -651,7 +669,7 @@ export class DashCanvasModel
         });
     }
 
-    @computed.struct
+    @computedStruct
     private get viewState() {
         const ret = {};
         this.viewModels.forEach(({id, viewSpec, title, viewState}) => {
@@ -730,7 +748,8 @@ export class DashCanvasModel
 
 /**
  * Sentinel layout item ID hardcoded by react-grid-layout for the temporary placeholder element
- * shown while an external item is being dragged over the canvas. Used internally to detect
- * and filter RGL's in-flight drop placeholder from layout change events.
+ * shown while an external item is being dragged over the canvas. Its presence in the layout
+ * handed to {@link DashCanvasModel.onDrop} is what distinguishes a real drop from one vetoed by
+ * `onDropDragOver`.
  */
 const RGL_DROPPING_ITEM_ID = '__dropping-elem__';

@@ -4,7 +4,7 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {ColumnSpec} from '@xh/hoist/cmp/grid/columns';
+import type {ColumnSpec} from '@xh/hoist/cmp/grid/columns';
 import {RecordAction} from '@xh/hoist/data';
 import {button, buttonGroup} from '@xh/hoist/desktop/cmp/button';
 import '@xh/hoist/desktop/register';
@@ -79,7 +79,7 @@ export const actionCol: ColumnSpec = {
 
         return buttonGroup({
             className: actionsShowOnHoverOnly ? 'xh-show-on-hover' : null,
-            items: buttons
+            children: buttons
         });
     }
 };

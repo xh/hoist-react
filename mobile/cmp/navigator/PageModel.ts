@@ -4,20 +4,13 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {
-    Content,
-    HoistModel,
-    HoistProps,
-    managed,
-    ManagedRefreshContextModel,
-    RefreshMode,
-    RenderMode
-} from '@xh/hoist/core';
+import type {Content, HoistProps, RefreshMode, RenderMode} from '@xh/hoist/core';
+import {HoistModel, managed, ManagedRefreshContextModel} from '@xh/hoist/core';
 import '@xh/hoist/mobile/register';
-import {computed, makeObservable} from '@xh/hoist/mobx';
+import {computed} from '@xh/hoist/mobx';
 import {warnIf, withDefault} from '@xh/hoist/utils/js';
 import {stringify} from 'qs';
-import {NavigatorModel} from './NavigatorModel';
+import type {NavigatorModel} from './NavigatorModel';
 
 /**
  * Configuration for a {@link PageModel} - a single page within a {@link NavigatorModel}.
@@ -62,6 +55,9 @@ export interface PageConfig {
      * no need to specify manually.
      */
     navigatorModel?: NavigatorModel;
+
+    /** See {@link HoistBase.xhName}. */
+    xhName?: string;
 }
 
 /**
@@ -116,10 +112,10 @@ export class PageModel extends HoistModel {
         renderMode,
         refreshMode,
         disableDirectLink,
-        disableAppRefreshButton
+        disableAppRefreshButton,
+        xhName = null
     }: PageConfig) {
         super();
-        makeObservable(this);
         warnIf(
             renderMode === 'always',
             "RenderMode.ALWAYS is not supported in PageModel. Pages can't exist before being mounted."
@@ -127,6 +123,7 @@ export class PageModel extends HoistModel {
 
         this.id = id;
         this.navigatorModel = navigatorModel;
+        this.xhName = xhName ?? navigatorModel?.childXhName(id);
         this.content = content;
         this.props = withDefault(props, {});
         this.disableDirectLink = withDefault(disableDirectLink, false);

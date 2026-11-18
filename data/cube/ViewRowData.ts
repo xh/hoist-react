@@ -4,7 +4,8 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {Some} from '@xh/hoist/core';
+import type {Some} from '@xh/hoist/core';
+import type {FieldSpec} from '@xh/hoist/data';
 import {flatMap} from 'lodash';
 
 /**
@@ -13,12 +14,8 @@ import {flatMap} from 'lodash';
  *
  * @mcpHint row shape returned by Cube queries and View results
  */
-export class ViewRowData {
-    constructor(id: string) {
-        this.id = id;
-    }
-
-    /** Unique id. */
+export interface ViewRowData {
+    /** Unique id - the source cube record id for leaf rows, a dimension-path id for others. */
     id: string;
 
     /** Denotes a type for the row */
@@ -32,6 +29,13 @@ export class ViewRowData {
 
     /** Dimension on which this row was computed, or null for leaf rows. */
     cubeDimension: string;
+
+    /**
+     * Raw, typed value behind {@link cubeLabel} - the dimension or bucket value, or a leaf's record
+     * id; null on the root. Bind a tree column's `sortValue` to it so numbers and dates sort by
+     * value rather than as text.
+     */
+    cubeLabelValue: any;
 
     /**
      * Buckets this row appears in
@@ -48,29 +52,41 @@ export class ViewRowData {
     children: ViewRowData[];
 
     /** True for leaf rows loaded into the cube (i.e. not a grouped aggregation). */
-    get isCubeLeaf(): boolean {
-        return this.cubeDimension == null;
-    }
+    isCubeLeaf: boolean;
 
     /**
-     * All visible (i.e. non-locked) cube leaves associated with this row.
-     *
-     * For this to be populated, either {@link Query.includeLeaves} or {@link Query.provideLeaves}
-     * must have been set on the underlying Query.
+     * Monotonic stamp updated on each create or mutation - read as the record-reuse digest by
+     * stores connected to this row's View. See `StoreConfig.digestSpec`.
      */
-    get cubeLeaves(): Some<ViewRowData> {
-        if (this.isCubeLeaf) return this;
-        return this._cubeLeafChildren ?? flatMap(this.children, 'cubeLeaves');
-    }
+    cubeRowDigest: number;
 
     /**
      * Support all other string keys for application fields in source data.
      */
     [key: string]: any;
+}
 
-    //------------------
-    // Implementation
-    //-----------------
-    /** @internal */
-    _cubeLeafChildren: ViewRowData[];
+/**
+ * Store Field specs for the published members of {@link ViewRowData}. Excludes `id` and
+ * `children`, which Store consumes structurally, and `cubeRowDigest`, read as a digest.
+ * @internal
+ */
+export const VIEW_ROW_DATA_FIELDS: FieldSpec[] = [
+    {name: 'cubeRowType', type: 'string'},
+    {name: 'cubeLabel', type: 'string'},
+    {name: 'cubeDimension', type: 'string'},
+    {name: 'cubeLabelValue', type: 'auto'},
+    {name: 'cubeBuckets', type: 'auto'},
+    {name: 'isCubeLeaf', type: 'bool'}
+];
+
+/**
+ * All visible (i.e. non-locked) cube leaves associated with a row.
+ *
+ * For this to be populated, either {@link Query.includeLeaves} or {@link Query.provideLeaves}
+ * must have been set on the underlying Query.
+ */
+export function getCubeLeaves(row: ViewRowData): Some<ViewRowData> {
+    if (row.isCubeLeaf) return row;
+    return row._cubeLeafChildren ?? flatMap(row.children, getCubeLeaves);
 }

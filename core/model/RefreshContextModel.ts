@@ -5,7 +5,8 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {HoistModel} from './';
-import {loadAllAsync, LoadSpec, Loadable} from '../load';
+import type {LoadSpec, Loadable} from '../load';
+import {loadAllAsync} from '../load';
 import {pull} from 'lodash';
 
 /**

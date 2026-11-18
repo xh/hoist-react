@@ -5,12 +5,12 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {ExcelFormat} from '@xh/hoist/cmp/grid';
-import {CallContext, HoistService, TrackOptions, XH} from '@xh/hoist/core';
+import type {CallContext, TrackOptions} from '@xh/hoist/core';
+import {HoistService, XH} from '@xh/hoist/core';
 import {fmtDate} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
 import {isLocalDate, SECONDS} from '@xh/hoist/utils/datetime';
 import {downloadBlob, withDefault} from '@xh/hoist/utils/js';
-import {StatusCodes} from 'http-status-codes';
 import {
     castArray,
     countBy,
@@ -29,8 +29,8 @@ import {
 } from 'lodash';
 import {span, a} from '@xh/hoist/cmp/layout';
 import {wait} from '@xh/hoist/promise';
-import {GridModel, Column} from '@xh/hoist/cmp/grid';
-import {StoreRecord} from '@xh/hoist/data';
+import type {GridModel, Column} from '@xh/hoist/cmp/grid';
+import type {StoreRecord} from '@xh/hoist/data';
 
 /**
  * Exports Grid data to either Excel or CSV via Hoist's server-side export capabilities.
@@ -85,7 +85,7 @@ export class GridExportService extends HoistService {
                   )
                 : []),
 
-            ...this.getRecordRowsRecursive(gridModel, records, exportColumns, type, 1)
+            ...this.getRecordRows(gridModel, exportColumns, type)
         ];
 
         // Show separate 'started' toasts for larger (i.e. slower) exports.
@@ -139,7 +139,7 @@ export class GridExportService extends HoistService {
                 ctx
             );
 
-            const blob = response.status === StatusCodes.NO_CONTENT ? null : await response.blob(),
+            const blob = response.status === 204 ? null : await response.blob(),
                 fileExt = this.getFileExtension(type);
 
             if (blob) downloadBlob(blob, `${filename}${fileExt}`);
@@ -245,7 +245,7 @@ export class GridExportService extends HoistService {
             message: span(
                 'Export failed ',
                 a({
-                    item: '(show details...)',
+                    children: '(show details...)',
                     onClick: () => {
                         failToast?.dismiss();
                         XH.exceptionHandler.showExceptionDetails(e);
@@ -343,46 +343,11 @@ export class GridExportService extends HoistService {
         return {data: headers, depth: 0};
     }
 
-    private getRecordRowsRecursive(gridModel, records, columns, type, depth) {
-        const {sortBy, treeMode, agApi} = gridModel,
-            ret = [];
-
-        records = [...records];
-
-        // Sort using comparator functions we pass to ag-Grid - imitating rendered data
-        [...sortBy].reverse().forEach(it => {
-            const column = gridModel.getColumn(it.colId);
-            if (!column) return;
-
-            const {field, getValueFn} = column,
-                compFn = column.getAgSpec().comparator.bind(column),
-                direction = it.sort === 'desc' ? -1 : 1;
-
-            records.sort((a, b) => {
-                const valueA = getValueFn({record: a, field, column, gridModel}),
-                    valueB = getValueFn({record: b, field, column, gridModel}),
-                    agNodeA = agApi?.getRowNode(a.agId),
-                    agNodeB = agApi?.getRowNode(b.agId);
-
-                return compFn(valueA, valueB, agNodeA, agNodeB) * direction;
-            });
-        });
-
-        records.forEach(record => {
-            ret.push(this.getRecordRow(gridModel, record, columns, type, depth));
-            if (treeMode && record.children.length) {
-                const childRows = this.getRecordRowsRecursive(
-                    gridModel,
-                    record.children,
-                    columns,
-                    type,
-                    depth + 1
-                );
-                childRows.forEach(r => ret.push(r));
-            }
-        });
-
-        return ret;
+    // Rows in rendered order - roots at depth 1, below the depth 0 header row.
+    private getRecordRows(gridModel, columns, type) {
+        return gridModel
+            .getSortedRecords()
+            .map(record => this.getRecordRow(gridModel, record, columns, type, record.depth + 1));
     }
 
     private getRecordRow(gridModel, record, columns, type, depth) {

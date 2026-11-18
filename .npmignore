@@ -4,9 +4,17 @@
 .husky
 .idea
 .planning
-.yarn
 node_modules
 scripts
+
+# Unit tests (see docs/unit-testing.md). The test kit in /test-support ships as
+# @xh/hoist/test-support for apps - only the specs and hoist-react's own CI reporter stay out.
+*.spec.ts
+*.spec.d.ts
+/test-support/report
+/build/types/test-support/report
+/.vitest
+vitest.config.*
 
 # Development configuration
 *.log
@@ -20,12 +28,12 @@ scripts
 .prettierignore
 .prettierrc.json
 .stylelintrc
-.yarnrc
 context7.json
 eslint.config.js
+pnpm-lock.yaml
+pnpm-workspace.yaml
 tsconfig.tsbuildinfo
 webpack.config.intellij.js
-yarn.lock
 
 # Development documentation
 AGENTS.md

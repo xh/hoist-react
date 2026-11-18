@@ -5,7 +5,8 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {XH} from '../';
-import {LoadSpec, loadAllAsync} from '../load';
+import type {LoadSpec} from '../load';
+import {loadAllAsync} from '../load';
 import {RefreshContextModel} from './';
 
 /**
@@ -18,6 +19,8 @@ import {RefreshContextModel} from './';
  * The `XH.refreshAppAsync()` convenience method is the recommended entry-point for apps to call.
  */
 export class RootRefreshContextModel extends RefreshContextModel {
+    override xhName = 'refreshContextModel';
+
     override async doLoadAsync(loadSpec: LoadSpec) {
         const {appModel} = XH;
         if (appModel.loadSupport) {

@@ -4,7 +4,8 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {HoistService, InitContext, managed, XH} from '@xh/hoist/core';
+import type {InitContext} from '@xh/hoist/core';
+import {HoistService, managed, XH} from '@xh/hoist/core';
 import {Timer} from '@xh/hoist/utils/async';
 import {olderThan, ONE_SECOND, SECONDS} from '@xh/hoist/utils/datetime';
 import {withDefault} from '@xh/hoist/utils/js';

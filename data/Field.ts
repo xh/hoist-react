@@ -6,7 +6,7 @@
  */
 
 import {XH} from '@xh/hoist/core';
-import {RuleLike} from '@xh/hoist/data/validation/Types';
+import type {RuleLike} from '@xh/hoist/data/validation/Types';
 import {isLocalDate, LocalDate} from '@xh/hoist/utils/datetime';
 import {withDefault} from '@xh/hoist/utils/js';
 import {Rule} from './validation/Rule';
@@ -30,10 +30,20 @@ export interface FieldSpec {
      */
     displayName?: string;
 
+    /**
+     * Shorter name for headers, where space is tight - a grid column's default `headerName`, and a
+     * pivot grid's headers. Choosers, menus and exports keep `displayName`. Defaults to
+     * `displayName`.
+     */
+    shortDisplayName?: string;
+
     /** Supplementary descriptive text for this field, for use in tooltips and other UI. */
     description?: string;
 
-    /** Value to be used for records with a null, or non-existent value. */
+    /**
+     * Value to be used for records with a null, or non-existent value. Parsed per `type` when the
+     * Field is constructed.
+     */
     defaultValue?: any;
 
     /** True if this field is intended to be used for grouping.  Defaults to false. */
@@ -76,6 +86,7 @@ export class Field {
     readonly name: string;
     readonly type: FieldType;
     readonly displayName: string;
+    readonly shortDisplayName: string;
     readonly description: string;
     readonly defaultValue: any;
     readonly isDimension: boolean;
@@ -86,6 +97,7 @@ export class Field {
         name,
         type = 'auto',
         displayName,
+        shortDisplayName,
         description,
         defaultValue = null,
         isDimension = false,
@@ -95,16 +107,16 @@ export class Field {
         this.name = name;
         this.type = type;
         this.displayName = withDefault(displayName, genDisplayName(name));
+        this.shortDisplayName = withDefault(shortDisplayName, this.displayName);
         this.description = description;
-        this.defaultValue = defaultValue;
         this.isDimension = isDimension;
         this.rules = this.processRuleSpecs(rules);
         this.enableXssProtection = enableXssProtection;
+        this.defaultValue = this.parseValueInternal(defaultValue);
     }
 
     parseVal(val: any): any {
-        const {type, defaultValue, enableXssProtection} = this;
-        return parseFieldValue(val, type, defaultValue, enableXssProtection);
+        return val == null ? this.defaultValue : this.parseValueInternal(val);
     }
 
     isEqual(val1: any, val2: any): boolean {
@@ -121,13 +133,17 @@ export class Field {
             return new Rule(spec);
         });
     }
+
+    private parseValueInternal(raw: any): any {
+        return parseFieldValue(raw, this.type, null, this.enableXssProtection);
+    }
 }
 
 /**
  * Parse a value according to a field type.
  * @param val - raw value to parse.
  * @param type - data type of the field to use for possible conversion.
- * @param defaultValue - typed value to return if `val` undefined or null.
+ * @param defaultValue - value to parse and return if `val` undefined or null.
  * @param enableXssProtection - true to enable XSS (cross-site scripting) protection.
  *      See {@link FieldSpec.enableXssProtection} for additional details.
  * @returns resulting value, potentially parsed or cast as per type.
@@ -145,13 +161,13 @@ export function parseFieldValue(
         case 'tags':
             val = castArray(val);
             val = val.map(v => {
-                v = !enableXssProtection || !isString(v) ? v : DOMPurify.sanitize(v);
+                v = !enableXssProtection || !isString(v) ? v : sanitizeVal(v);
                 return v.toString();
             });
             return val;
         case 'auto':
         case 'json':
-            return !enableXssProtection || !isString(val) ? val : DOMPurify.sanitize(val);
+            return !enableXssProtection || !isString(val) ? val : sanitizeVal(val);
         case 'int':
             val = toNumber(val);
             return isFinite(val) ? Math.trunc(val) : null;
@@ -161,10 +177,11 @@ export function parseFieldValue(
             return !!val;
         case 'pwd':
         case 'string':
-            val = !enableXssProtection || !isString(val) ? val : DOMPurify.sanitize(val);
+            val = !enableXssProtection || !isString(val) ? val : sanitizeVal(val);
             return val.toString();
         case 'date':
-            return isLocalDate(val) ? val.date : isDate(val) ? val : new Date(val);
+            val = isLocalDate(val) ? val.date : isDate(val) ? val : new Date(val);
+            return isNaN(val.getTime()) ? INVALID_DATE : val;
         case 'localDate':
             if (isLocalDate(val)) return val;
             // `get` parses strict 'YYYYMMDD'/'YYYY-MM-DD' strings; `from` coerces Date/number/moment.
@@ -172,6 +189,22 @@ export function parseFieldValue(
     }
 
     throw XH.exception(`Unknown field type '${type}'`);
+}
+
+/**
+ * Sanitize via DOMPurify, preserving the reference identity of values it does not modify.
+ * DOMPurify allocates a fresh string whenever it parses markup, even when sanitization is a
+ * no-op - returning the original in that case keeps values deduplicated upstream (e.g. via
+ * `FetchOptions.internStrings`) shared, and avoids retaining a second copy of every parsed
+ * string value alongside `StoreRecord.raw`.
+ *
+ * A string with no `<` holds no markup, and DOMPurify returns it as-is. Return it here instead,
+ * because DOMPurify parses its config on every call before it checks for `<`.
+ */
+function sanitizeVal(val: string): string {
+    if (!val.includes('<')) return val;
+    const ret = DOMPurify.sanitize(val);
+    return ret === val ? val : ret;
 }
 
 /** Data types for Fields used within Hoist Store Records and Cubes. */
@@ -204,3 +237,9 @@ export function genDisplayName(fieldName: string): string {
 export function getFieldName(field: string | Field | FieldSpec): string {
     return field ? (isString(field) ? field : field.name) : null;
 }
+
+/**
+ * Shared result for every unparseable `date` value. Invalid Dates never compare equal, but this
+ * instance does by identity, so Stores can reuse records holding it. Never mutate it.
+ */
+const INVALID_DATE = new Date(NaN);

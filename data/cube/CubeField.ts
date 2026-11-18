@@ -5,17 +5,17 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
-import {PlainObject} from '@xh/hoist/core';
+import type {PlainObject} from '@xh/hoist/core';
+import type {AggregationContext, FieldSpec} from '@xh/hoist/data';
 import {
-    AggregationContext,
     Aggregator,
     AverageAggregator,
     AverageStrictAggregator,
     ChildCountAggregator,
     Field,
-    FieldSpec,
     LeafCountAggregator,
     MaxAggregator,
+    MedianAggregator,
     MinAggregator,
     NullAggregator,
     SingleAggregator,
@@ -26,10 +26,27 @@ import {
 import {isString} from 'lodash';
 
 export interface CubeFieldSpec extends FieldSpec {
-    /** Instance of a Hoist Cube {@link Aggregator} or string token alias for one. */
+    /**
+     * Instance of a Hoist Cube {@link Aggregator} or string token alias for one.
+     *
+     * A field is never aggregated at or below the level at which it is applied as a dimension -
+     * rows there publish the dimension value. Rows above aggregate over those published values,
+     * one per grouped row, so aggregations that depend on the leaf population (`SUM`, `AVG`) are
+     * not meaningful for a grouping field. To average a field you also group by, add a second
+     * measure field over the same value.
+     */
     aggregator?: Aggregator | AggregatorToken;
 
-    /** Function to determine if aggregation should be performed at a given level of a query result. */
+    /**
+     * Function to determine if aggregation should be performed at a given level of a query result.
+     *
+     * Evaluated when a row is built and re-evaluated on each subsequent query result for rows
+     * that are reused - so may depend on the current {@link AggregationContext} as well as on its
+     * first three args. Values are recomputed for any field whose eligibility changes as a result.
+     *
+     * A row for which this returns false publishes a null value and contributes nothing to the
+     * aggregations of its ancestors.
+     */
     canAggregateFn?: CanAggregateFn;
 
     /** True if any further groupings below this dimension would be derivative (have only one member). */
@@ -50,6 +67,7 @@ export type AggregatorToken =
     | 'CHILD_COUNT'
     | 'LEAF_COUNT'
     | 'MAX'
+    | 'MEDIAN'
     | 'MIN'
     | 'NULL'
     | 'SINGLE'
@@ -88,6 +106,7 @@ export class CubeField extends Field {
     static childCountAggregator = new ChildCountAggregator();
     static leafCountAggregator = new LeafCountAggregator();
     static maxAggregator = new MaxAggregator();
+    static medianAggregator = new MedianAggregator();
     static minAggregator = new MinAggregator();
     static nullAggregator = new NullAggregator();
     static singleAggregator = new SingleAggregator();
@@ -129,6 +148,8 @@ export class CubeField extends Field {
                     return CubeField.leafCountAggregator;
                 case 'MAX':
                     return CubeField.maxAggregator;
+                case 'MEDIAN':
+                    return CubeField.medianAggregator;
                 case 'MIN':
                     return CubeField.minAggregator;
                 case 'NULL':

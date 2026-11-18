@@ -12,6 +12,7 @@ export * from './RecordAction';
 export * from './StoreSelectionModel';
 export * from './UrlStore';
 
+export * from './filter/BaseFilterFieldSpec';
 export * from './filter/Filter';
 export * from './filter/CompoundFilter';
 export * from './filter/FieldFilter';
@@ -26,20 +27,27 @@ export * from './cube/aggregate/AverageStrictAggregator';
 export * from './cube/aggregate/ChildCountAggregator';
 export * from './cube/aggregate/LeafCountAggregator';
 export * from './cube/aggregate/MaxAggregator';
+export * from './cube/aggregate/MedianAggregator';
 export * from './cube/aggregate/MinAggregator';
 export * from './cube/aggregate/NullAggregator';
 export * from './cube/aggregate/SingleAggregator';
 export * from './cube/aggregate/SumAggregator';
+export * from './cube/aggregate/SumIfSameAggregator';
 export * from './cube/aggregate/SumStrictAggregator';
 export * from './cube/aggregate/UniqueAggregator';
+export * from './cube/aggregate/WeightedAverageAggregator';
 
+export * from './cube/BucketSpec';
 export * from './cube/Cube';
 export * from './cube/CubeField';
+export * from './cube/pivot/PivotPath';
 export * from './cube/Query';
 export * from './cube/View';
+export type * from './cube/ViewRow';
 export * from './cube/ViewRowData';
+export * from './cube/row/RowUpdate';
 
 export * from './validation/constraints';
 export * from './validation/Rule';
 export * from './validation/ValidationState';
-export * from './validation/Types';
+export type * from './validation/Types';

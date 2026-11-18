@@ -37,7 +37,7 @@ export const userPanel = hoistCmp.factory({
                 storeFilterField(),
                 exportButton()
             ],
-            item: grid()
+            children: grid()
         });
     }
 });

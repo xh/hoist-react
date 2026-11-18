@@ -4,25 +4,29 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import type {GridModel} from '@xh/hoist/cmp/grid';
+import type {GridLikeModel} from '@xh/hoist/cmp/grid';
 import {hbox, span, vbox} from '@xh/hoist/cmp/layout';
-import {hoistCmp, LayoutProps, useLocalModel} from '@xh/hoist/core';
+import type {LayoutProps} from '@xh/hoist/core';
+import {hoistCmp, useLocalModel} from '@xh/hoist/core';
 import type {FilterMatchMode} from '@xh/hoist/data';
 import {button} from '@xh/hoist/desktop/cmp/button';
-import {textInput, TextInputProps} from '@xh/hoist/desktop/cmp/input';
+import type {TextInputProps} from '@xh/hoist/desktop/cmp/input';
+import {textInput} from '@xh/hoist/desktop/cmp/input';
 import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
 import {consumeEvent} from '@xh/hoist/utils/js';
-import {composeRefs, splitLayoutProps} from '@xh/hoist/utils/react';
+import {useComposedRefs, splitLayoutProps} from '@xh/hoist/utils/react';
 import './GridFindField.scss';
 import {GridFindFieldImplModel} from './impl/GridFindFieldImplModel';
 
 export interface GridFindFieldProps extends TextInputProps, LayoutProps {
     /**
-     * GridModel whose data this control should search. This component will, by default, use the
-     * fields for all *visible* columns when matching, as well as any groupBy field.
+     * Model whose data this control should search. When given a GridModel or CubeGridModel, this
+     * component will, by default, use the fields for all *visible* columns when
+     * matching, as well as any groupBy field. When given a ZoneGridModel, it
+     * uses the fields currently mapped to any of its zones.
      */
-    gridModel?: GridModel;
+    gridModel?: GridLikeModel;
 
     /** Mode to use when searching (default 'startWord'). */
     matchMode?: FilterMatchMode;
@@ -47,10 +51,11 @@ export interface GridFindFieldProps extends TextInputProps, LayoutProps {
  * the entered search term based on simple word-boundary matching of its value to the value of
  * configured fields on a record. If any field values match, the record itself is considered a match.
  *
- * This component is designed to be bound to a GridModel via `gridModel` prop. (If not configured to
- * bind to a specific GridModel, this component will bind by default to the nearest GridModel found
- * in context.) Binding in this way allows the component to auto-generate the fields in the store to
- * be searched by the field and to automatically select the results in the Grid.
+ * This component is designed to be bound to a GridModel, ZoneGridModel or CubeGridModel via its
+ * `gridModel` prop. If not configured, it binds by default to the nearest such model found in
+ * context. Binding in this way allows the component to
+ * auto-generate the fields in the store to be searched by the field and to automatically select
+ * the results in the Grid.
  *
  * Fields to be searched can be automatically determined from the bound Grid's Store, and/or
  * customized via the include/excludeFields props. See prop comments for details.
@@ -66,14 +71,14 @@ export const [GridFindField, gridFindField] = hoistCmp.withFactory<GridFindField
         const impl = useLocalModel(GridFindFieldImplModel);
 
         return hbox({
-            width: 180,
+            width: 240,
             className,
             ...layoutProps,
-            items: [
+            children: [
                 textInput({
                     model: impl,
                     bind: 'query',
-                    ref: composeRefs(impl.inputRef, ref),
+                    ref: useComposedRefs(impl.inputRef, ref),
                     commitOnChange: true,
                     leftIcon: Icon.search(),
                     enableClear: true,
@@ -112,11 +117,11 @@ const controls = hoistCmp.factory(({impl}) => {
     if (!hasFocus && !hasQuery) return null;
     return hbox({
         className: 'xh-grid-find-field__controls',
-        items: [
+        children: [
             span({
                 omit: !countLabel,
                 className: 'xh-grid-find-field__count-label',
-                item: countLabel
+                children: countLabel
             }),
             vbox(
                 button({

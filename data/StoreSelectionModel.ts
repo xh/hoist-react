@@ -5,11 +5,13 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
-import {HoistModel, PlainObject} from '@xh/hoist/core';
-import {action, computed, observable, makeObservable} from '@xh/hoist/mobx';
-import {castArray, compact, remove, isEqual, union} from 'lodash';
-import {Store} from './Store';
-import {RecordId, StoreRecord, StoreRecordId, StoreRecordOrId} from './StoreRecord';
+import type {PlainObject} from '@xh/hoist/core';
+import {HoistModel} from '@xh/hoist/core';
+import {action, computed, observableRef, computedStruct} from '@xh/hoist/mobx';
+import {castArray, compact, remove, isEmpty, isEqual, union} from 'lodash';
+import type {Store} from './Store';
+import type {RecordId, StoreRecordId, StoreRecordOrId} from './StoreRecord';
+import {StoreRecord} from './StoreRecord';
 
 /**
  * Configuration for a {@link StoreSelectionModel}. Typically passed via the `selModel` config
@@ -25,6 +27,9 @@ export interface StoreSelectionConfig<
     mode?: 'single' | 'multiple' | 'disabled';
     /** @internal */
     xhImpl?: boolean;
+
+    /** See {@link HoistBase.xhName}. */
+    xhName?: string;
 }
 
 /**
@@ -49,29 +54,33 @@ export class StoreSelectionModel<
     readonly store: Store<TData, TId>;
     mode: 'single' | 'multiple' | 'disabled';
 
-    @observable.ref
-    private _ids = [];
+    @observableRef private accessor _ids = [];
 
     get isEnabled(): boolean {
         return this.mode !== 'disabled';
     }
 
-    constructor({store, mode = 'single', xhImpl = false}: StoreSelectionConfig<TData, TId>) {
+    constructor({
+        store,
+        mode = 'single',
+        xhName = null,
+        xhImpl = false
+    }: StoreSelectionConfig<TData, TId>) {
         super();
-        makeObservable(this);
 
         this.xhImpl = xhImpl;
+        this.xhName = xhName;
         this.store = store;
         this.mode = mode;
         this.addReaction(this.cullSelectionReaction());
     }
 
-    @computed.struct
+    @computedStruct
     get selectedRecords(): StoreRecord<TData, TId>[] {
         return compact(this._ids.map(it => this.store.getById(it, true)));
     }
 
-    @computed.struct
+    @computedStruct
     get selectedIds(): TId[] {
         return this.selectedRecords.map(it => it.id);
     }
@@ -135,7 +144,8 @@ export class StoreSelectionModel<
             return;
         }
 
-        this._ids = clearSelection ? ids : union(this._ids, ids);
+        const replace = clearSelection || (this.mode === 'single' && !isEmpty(ids));
+        this._ids = replace ? ids : union(this._ids, ids);
     }
 
     /** Select all filtered records. */
@@ -156,11 +166,10 @@ export class StoreSelectionModel<
     // Implementation
     //------------------------
     private cullSelectionReaction() {
-        // Remove recs from selection if they are no longer in store. Cleanup array in place without
-        // modifying observable -- the 'records' getter provides all observable state.
+        // Remove recs from selection if they are no longer in store.
         const {store} = this;
         return {
-            track: () => store.records,
+            track: () => store._filtered,
             run: () => remove(this._ids, id => !store.getById(id, true))
         };
     }

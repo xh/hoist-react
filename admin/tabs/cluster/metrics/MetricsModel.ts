@@ -10,12 +10,13 @@ import {BaseAdminTabModel} from '@xh/hoist/admin/tabs/BaseAdminTabModel';
 import {GridModel, tagsRenderer} from '@xh/hoist/cmp/grid';
 import * as Col from '@xh/hoist/cmp/grid/columns';
 import {GroupingChooserModel} from '@xh/hoist/cmp/grouping';
-import {LoadSpec, managed, XH} from '@xh/hoist/core';
-import {RecordActionSpec} from '@xh/hoist/data';
-import {CellClickedEvent} from '@xh/hoist/kit/ag-grid';
+import type {LoadSpec} from '@xh/hoist/core';
+import {managed, XH} from '@xh/hoist/core';
+import type {RecordActionSpec} from '@xh/hoist/data';
+import type {CellClickedEvent} from '@xh/hoist/kit/ag-grid';
 import {numberRenderer} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
-import {bindable, computed, makeObservable, observable, runInAction} from '@xh/hoist/mobx';
+import {bindable, computed, runInAction, observableRef} from '@xh/hoist/mobx';
 import {Timer} from '@xh/hoist/utils/async';
 import {SECONDS} from '@xh/hoist/utils/datetime';
 import {groupBy} from 'lodash';
@@ -32,9 +33,9 @@ export class MetricsModel extends BaseAdminTabModel {
     @managed detailGridModel: GridModel;
     @managed private timer: Timer;
 
-    @bindable sourceFilter: SourceFilter = 'all';
+    @bindable accessor sourceFilter: SourceFilter = 'all';
 
-    @observable.ref allMetrics: any[] = [];
+    @observableRef accessor allMetrics: any[] = [];
 
     get selectedMetricNames(): string[] {
         return this.gridModel.selectedRecords.map(r => r.data.name);
@@ -50,7 +51,6 @@ export class MetricsModel extends BaseAdminTabModel {
 
     constructor() {
         super();
-        makeObservable(this);
 
         this.gridModel = new GridModel({
             autosizeOptions: {mode: 'managed', includeCollapsedChildren: true},

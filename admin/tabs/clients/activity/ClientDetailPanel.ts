@@ -26,7 +26,7 @@ export const clientDetailPanel = hoistCmp.factory({
             collapsedIcon: Icon.analytics(),
             compactHeader: true,
             modelConfig: {side: 'right', defaultSize: '40%'},
-            item: model.hasSelection
+            children: model.hasSelection
                 ? clientDetail()
                 : placeholder(Icon.analytics(), 'Select a client to view activity...')
         });
@@ -36,14 +36,14 @@ export const clientDetailPanel = hoistCmp.factory({
 const clientDetail = hoistCmp.factory<ClientDetailModel>(({model}) => {
     const {data} = model.selectedRec;
     return panel({
-        items: [
+        children: [
             hbox({
                 className: 'xh-admin-client-detail__header',
-                items: [
+                children: [
                     h2(isOpen.renderer(data.isOpen, null), data.user),
                     vbox({
                         className: 'xh-admin-client-detail__header__meta',
-                        items: [
+                        children: [
                             relativeTimestamp({
                                 timestamp: data.createdTime,
                                 prefix: 'Session established'
@@ -58,7 +58,7 @@ const clientDetail = hoistCmp.factory<ClientDetailModel>(({model}) => {
                 ]
             }),
             panel({
-                item: activityDetailView(),
+                children: activityDetailView(),
                 mask: mask({
                     bind: model.loadObserver,
                     spinner: true,

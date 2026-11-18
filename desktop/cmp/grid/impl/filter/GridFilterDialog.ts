@@ -41,8 +41,8 @@ export const gridFilterDialog = hoistCmp.factory({
             title: 'Grid Filters',
             isOpen: true,
             onClose: () => impl.close(),
-            item: panel({
-                item: filterForm({impl}),
+            children: panel({
+                children: filterForm({impl}),
                 bbar: bbar({impl})
             })
         });
@@ -53,9 +53,9 @@ const filterForm = hoistCmp.factory(({impl}) => {
     return form({
         model: impl.formModel,
         fieldDefaults: {label: null, minimal: true},
-        item: formField({
+        children: formField({
             field: 'filter',
-            item: jsonInput({autoFormat: true})
+            children: jsonInput({autoFormat: true})
         })
     });
 });

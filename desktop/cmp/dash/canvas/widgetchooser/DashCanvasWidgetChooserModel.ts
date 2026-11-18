@@ -6,20 +6,14 @@
  */
 import {HoistModel} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
-import {DashCanvasModel, DashCanvasViewSpec} from '@xh/hoist/desktop/cmp/dash';
-import {makeObservable, observable, runInAction} from '@xh/hoist/mobx';
-import {DragEvent} from 'react';
+import type {DashCanvasModel, DashCanvasViewSpec} from '@xh/hoist/desktop/cmp/dash';
+import {runInAction, observableRef} from '@xh/hoist/mobx';
+import type {DragEvent} from 'react';
 
 export class DashCanvasWidgetChooserModel extends HoistModel {
-    @observable.ref
-    dashCanvasModel: DashCanvasModel;
+    @observableRef accessor dashCanvasModel: DashCanvasModel;
 
     private _savedShowAddViewButtonWhenEmpty: boolean;
-
-    constructor() {
-        super();
-        makeObservable(this);
-    }
 
     override onLinked() {
         this.addReaction({

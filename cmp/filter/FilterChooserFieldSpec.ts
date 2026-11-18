@@ -5,16 +5,15 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {parseFieldValue} from '@xh/hoist/data';
-import {
-    BaseFilterFieldSpec,
-    BaseFilterFieldSpecConfig
-} from '@xh/hoist/data/filter/BaseFilterFieldSpec';
-import {FieldFilterOperator} from '@xh/hoist/data/filter/Types';
+import type {BaseFilterFieldSpecConfig} from '@xh/hoist/data/filter/BaseFilterFieldSpec';
+import {BaseFilterFieldSpec} from '@xh/hoist/data/filter/BaseFilterFieldSpec';
+import type {FieldFilterOperator} from '@xh/hoist/data/filter/Types';
 import {fmtDate, parseNumber} from '@xh/hoist/format';
 import {stripTags, throwIf} from '@xh/hoist/utils/js';
 import {renderToStaticMarkup} from '@xh/hoist/utils/react';
 import {isFunction} from 'lodash';
-import {isValidElement, ReactNode} from 'react';
+import type {ReactNode} from 'react';
+import {isValidElement} from 'react';
 
 export interface FilterChooserFieldSpecConfig extends BaseFilterFieldSpecConfig {
     /**

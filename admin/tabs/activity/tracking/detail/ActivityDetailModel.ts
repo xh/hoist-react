@@ -6,13 +6,15 @@
  */
 import {exportFilename} from '@xh/hoist/admin/AdminUtils';
 import * as Col from '@xh/hoist/admin/columns';
-import {ActivityTrackingDataFieldSpec} from '@xh/hoist/admin/tabs/activity/tracking/datafields/DataFieldsEditorModel';
+import type {ActivityTrackingDataFieldSpec} from '@xh/hoist/admin/tabs/activity/tracking/datafields/DataFieldsEditorModel';
 import {FormModel} from '@xh/hoist/cmp/form';
-import {ColumnSpec, GridModel} from '@xh/hoist/cmp/grid';
-import {HoistModel, lookup, managed, PersistOptions, PlainObject} from '@xh/hoist/core';
-import {StoreRecord} from '@xh/hoist/data';
+import type {ColumnSpec} from '@xh/hoist/cmp/grid';
+import {GridModel} from '@xh/hoist/cmp/grid';
+import type {PersistOptions, PlainObject} from '@xh/hoist/core';
+import {HoistModel, lookup, managed} from '@xh/hoist/core';
+import type {StoreRecord} from '@xh/hoist/data';
 import {timestampReplacer} from '@xh/hoist/format';
-import {action, bindable, computed, makeObservable, observable} from '@xh/hoist/mobx';
+import {action, bindable, computed, observable, observableRef} from '@xh/hoist/mobx';
 import {get, isString} from 'lodash';
 
 /**
@@ -29,22 +31,22 @@ export interface ActivityDetailProvider {
 
 export class ActivityDetailModel extends HoistModel {
     @lookup(model => {
-        return model.isActivityDetailProvider ?? false;
+        return (model as any).isActivityDetailProvider ?? false;
     })
     parentModel: ActivityDetailProvider;
 
-    @managed @observable.ref gridModel: GridModel;
-    @managed @observable.ref formModel: FormModel;
+    @managed @observableRef accessor gridModel: GridModel;
+    @managed @observableRef accessor formModel: FormModel;
 
     /**
      * Optional dot-delimited path(s) to filter the displayed `data` payload down to a particular
      * node or nodes, for easier browsing of records with a large data payload. Multiple paths
      * can be separated with `|`.
      */
-    @bindable formattedDataFilterPath: string;
+    @bindable accessor formattedDataFilterPath: string;
 
     /** Stringified, pretty-printed, optionally path-filtered `data` payload. */
-    @observable formattedData: string;
+    @observable accessor formattedData: string;
 
     get dataFields(): ActivityTrackingDataFieldSpec[] {
         return this.parentModel?.dataFields ?? [];
@@ -62,11 +64,6 @@ export class ActivityDetailModel extends HoistModel {
     @computed
     get hasSelection() {
         return this.gridModel?.selectedRecord != null;
-    }
-
-    constructor() {
-        super();
-        makeObservable(this);
     }
 
     override onLinked() {

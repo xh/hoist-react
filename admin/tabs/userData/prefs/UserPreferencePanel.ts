@@ -8,6 +8,7 @@
 import * as Col from '@xh/hoist/admin/columns/Rest';
 import * as AdminCol from '@xh/hoist/admin/columns';
 import {prefEditorDialog} from '@xh/hoist/admin/tabs/userData/prefs/editor/PrefEditorDialog';
+import {userPreferenceDetailPanel} from '@xh/hoist/admin/tabs/userData/prefs/UserPreferenceDetailPanel';
 import {UserPreferenceModel} from '@xh/hoist/admin/tabs/userData/prefs/UserPreferenceModel';
 import {hframe} from '@xh/hoist/cmp/layout';
 import {creates, hoistCmp} from '@xh/hoist/core';
@@ -24,7 +25,7 @@ export const userPreferencePanel = hoistCmp.factory({
     render({model}) {
         return hframe(
             panel({
-                items: [
+                children: [
                     restGrid({
                         extraToolbarItems: () => [
                             button({
@@ -59,7 +60,8 @@ export const userPreferencePanel = hoistCmp.factory({
                     prefEditorDialog()
                 ],
                 mask: 'onLoad'
-            })
+            }),
+            userPreferenceDetailPanel()
         );
     }
 });

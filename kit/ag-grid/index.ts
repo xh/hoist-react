@@ -6,7 +6,7 @@
  */
 
 import {checkVersion, logError} from '@xh/hoist/utils/js';
-import {Component} from 'react';
+import type {Component} from 'react';
 
 /**
  * The exports below are ag-Grid components provided at runtime by applications.
@@ -20,15 +20,19 @@ export let agGridVersion = null;
 
 /**
  * However Hoist does import the following community-only TYPES to help validate its internal
- * implementations.
+ * implementations, plus a few unlicensed community VALUES: the React hooks below, and `themeBalham`.
+ * All ag-Grid imports route through this module.
  */
 export type {
     GridOptions,
     GridApi,
+    Theme,
+    ThemeDefaultParams,
     SortDirection,
     ColDef,
     ColGroupDef,
     GetContextMenuItemsParams,
+    GetMainMenuItemsParams,
     GridReadyEvent,
     IHeaderGroupParams,
     IHeaderParams,
@@ -40,9 +44,11 @@ export type {
     ITooltipParams,
     IRowNode,
     RowClassParams,
+    ValueFormatterParams,
     ValueGetterParams,
     ValueSetterParams,
     MenuItemDef,
+    DefaultMenuItem,
     CellPosition,
     NavigateToNextCellParams,
     ColumnEvent,
@@ -53,11 +59,21 @@ export type {
     RowDoubleClickedEvent,
     RowClickedEvent,
     RowHeightParams,
+    RowDropZoneEvents,
     CellClickedEvent,
     CellContextMenuEvent,
     CellDoubleClickedEvent,
     CellEditingStartedEvent,
-    CellEditingStoppedEvent
+    CellEditingStoppedEvent,
+    RowDragEndEvent,
+    RowDragEnterEvent,
+    RowDragLeaveEvent,
+    RowDragMoveEvent,
+    RowDragCancelEvent,
+    IsRowValidDropPositionParams,
+    IsRowValidDropPositionResult,
+    RowDropTargetPosition,
+    RowDropZoneParams
 } from 'ag-grid-community';
 
 export type {
@@ -66,9 +82,10 @@ export type {
     CustomMenuItemProps
 } from 'ag-grid-react';
 export {useGridCellEditor, useGridMenuItem} from 'ag-grid-react';
+export {themeBalham} from 'ag-grid-community';
 
-const MIN_VERSION = '35.3.0';
-const MAX_VERSION = '35.*.*';
+const MIN_VERSION = '36.3.0';
+const MAX_VERSION = '36.*.*';
 
 /**
  * Expose application versions of ag-Grid to Hoist.

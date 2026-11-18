@@ -4,10 +4,10 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {IconName} from '@fortawesome/fontawesome-svg-core';
 import {BannerModel} from '@xh/hoist/appcontainer/BannerModel';
 import {markdown} from '@xh/hoist/cmp/markdown';
-import {BannerSpec, HoistService, Intent, XH} from '@xh/hoist/core';
+import type {BannerSpec, Intent} from '@xh/hoist/core';
+import {HoistService, XH} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {compact, isEmpty, map, trim} from 'lodash';
 
@@ -48,10 +48,11 @@ export class AlertBannerService extends HoistService {
     genBannerSpec(
         message: string,
         intent: Intent,
-        iconName: IconName,
+        iconName: string,
         enableClose: boolean
     ): BannerSpec {
-        const icon = iconName ? Icon.icon({iconName, size: 'lg'}) : null,
+        // Icon.get() returns null for a name it does not know, so a stale icon simply drops out.
+        const icon = iconName ? Icon.get(iconName, {size: 'lg'}) : null,
             msgLines = compact(map(message.split('\n'), trim)),
             showFullAlert = () =>
                 XH.alert({
@@ -98,19 +99,11 @@ export interface AlertBannerSpec {
     publishDate: number;
     message: string;
     intent: Intent;
-    iconName: AlertBannerIconName;
+    /** FA name of the banner icon, as chosen by `IconPicker`. Kept as `iconName` in stored specs. */
+    iconName: string;
     enableClose: boolean;
     clientApps: string[];
     created: number;
     updated: number;
     updatedBy: string;
 }
-
-/** @internal */
-export type AlertBannerIconName =
-    | 'bullhorn'
-    | 'check-circle'
-    | 'exclamation-triangle'
-    | 'times-circle'
-    | 'info-circle'
-    | 'question-circle';

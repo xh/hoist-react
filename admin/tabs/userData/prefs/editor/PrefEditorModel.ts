@@ -8,11 +8,12 @@ import {exportFilenameWithDate} from '@xh/hoist/admin/AdminUtils';
 import {AppModel} from '@xh/hoist/admin/AppModel';
 import * as Col from '@xh/hoist/admin/columns';
 import {br, fragment} from '@xh/hoist/cmp/layout';
-import {HoistModel, LoadSpec, managed, XH} from '@xh/hoist/core';
-import {FieldSpec} from '@xh/hoist/data';
+import type {LoadSpec} from '@xh/hoist/core';
+import {HoistModel, managed, XH} from '@xh/hoist/core';
+import type {FieldSpec} from '@xh/hoist/data';
 import {textArea} from '@xh/hoist/desktop/cmp/input';
 import {addAction, deleteAction, editAction, RestGridModel} from '@xh/hoist/desktop/cmp/rest';
-import {action, makeObservable, observable} from '@xh/hoist/mobx';
+import {action, observableRef} from '@xh/hoist/mobx';
 import {pluralize} from '@xh/hoist/utils/js';
 import {DifferModel} from '../../../../differ/DifferModel';
 import {RegroupDialogModel} from '../../../../regroup/RegroupDialogModel';
@@ -27,12 +28,11 @@ export class PrefEditorModel extends HoistModel {
     gridModel: RestGridModel;
 
     @managed
-    @observable.ref
-    differModel: DifferModel;
+    @observableRef
+    accessor differModel: DifferModel;
 
     constructor() {
         super();
-        makeObservable(this);
 
         const {regroupAction} = this.regroupDialogModel,
             required = true,
@@ -93,7 +93,7 @@ export class PrefEditorModel extends HoistModel {
                 {field: 'groupName'},
                 {field: 'type'},
                 {field: 'defaultValue'},
-                {field: 'notes', formField: {item: textArea({height: 100})}},
+                {field: 'notes', formField: {children: textArea({height: 100})}},
                 {field: 'lastUpdated'},
                 {field: 'lastUpdatedBy'}
             ],

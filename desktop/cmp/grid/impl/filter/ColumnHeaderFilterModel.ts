@@ -5,19 +5,22 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
-import {Column} from '@xh/hoist/cmp/grid';
+import type {Column} from '@xh/hoist/cmp/grid';
 import {HoistModel} from '@xh/hoist/core';
-import {action, makeObservable, observable} from '@xh/hoist/mobx';
+import {action, observable} from '@xh/hoist/mobx';
 import {isEmpty} from 'lodash';
-import {GridFilterModel} from '@xh/hoist/cmp/grid';
+import type {GridFilterModel} from '@xh/hoist/cmp/grid';
 
+/**
+ * @internal
+ */
 export class ColumnHeaderFilterModel extends HoistModel {
     override xhImpl = true;
 
     readonly column: Column;
     readonly filterModel: GridFilterModel;
 
-    @observable isOpen: boolean = false;
+    @observable accessor isOpen: boolean = false;
 
     get hasFilter() {
         const filters = this.filterModel.getColumnFilters(this.column.field);
@@ -30,7 +33,6 @@ export class ColumnHeaderFilterModel extends HoistModel {
 
     constructor(filterModel: GridFilterModel, column: Column) {
         super();
-        makeObservable(this);
         this.filterModel = filterModel;
         this.column = column;
     }

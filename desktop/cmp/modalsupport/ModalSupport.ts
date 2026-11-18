@@ -9,7 +9,8 @@ import {box, fragment} from '@xh/hoist/cmp/layout';
 import {hoistCmp, uses} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {dialog} from '@xh/hoist/kit/blueprint';
-import {Children, ReactPortal} from 'react';
+import type {ReactPortal} from 'react';
+import {Children} from 'react';
 import {createPortal} from 'react-dom';
 import './ModalSupport.scss';
 import {ModalSupportModel} from './ModalSupportModel';
@@ -76,7 +77,7 @@ const modalContainer = hoistCmp.factory<ModalSupportModel>({
             onClose: () => model.toggleIsModal(),
             // Creates the dialog's portal immediately and keeps it around, to preserve correct ordering relative to any internal popups.
             lazy: false,
-            item: box({
+            children: box({
                 ref: model.modalRef,
                 flexDirection: 'column',
                 height: '100%'

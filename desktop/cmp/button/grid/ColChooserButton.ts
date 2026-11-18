@@ -4,22 +4,38 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {GridModel} from '@xh/hoist/cmp/grid';
+import type {GridLikeModel} from '@xh/hoist/cmp/grid';
+import {isGridLikeModel} from '@xh/hoist/cmp/grid/impl/GridLikeModel';
 import {div, vbox} from '@xh/hoist/cmp/layout';
 import {hoistCmp, useContextModel} from '@xh/hoist/core';
 import {colChooser} from '@xh/hoist/desktop/cmp/grid/impl/colchooser/ColChooser';
-import {ColChooserModel} from '@xh/hoist/desktop/cmp/grid/impl/colchooser/ColChooserModel';
+import type {ModalColChooserModel} from '@xh/hoist/desktop/cmp/grid/impl/colchooser/ModalColChooserModel';
 import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
-import {popover, Position} from '@xh/hoist/kit/blueprint';
+import type {Position} from '@xh/hoist/kit/blueprint';
+import {popover} from '@xh/hoist/kit/blueprint';
 import {logError, stopPropagation, withDefault} from '@xh/hoist/utils/js';
-import {button, ButtonProps} from '../Button';
+import type {ButtonProps} from '../Button';
+import {button} from '../Button';
 
 export interface ColChooserButtonProps extends ButtonProps {
-    /** GridModel to which this button should bind. Will find nearest in context if not provided. */
-    gridModel?: GridModel;
+    /**
+     * GridModel, or a model wrapping one, to which this button should bind. Will find the
+     * nearest in context if not provided. A ZoneGridModel has no column chooser - see
+     * `zoneMapperButton`.
+     */
+    gridModel?: GridLikeModel;
 
-    /** Position for chooser popover, as per Blueprint docs. */
+    /**
+     * Overlay to show a modal chooser in (default 'popover'). Ignored by a chooser configured with
+     * `mode: 'docked'`, which this button toggles in place.
+     */
+    modalTarget?: 'dialog' | 'popover';
+
+    /**
+     * Position for chooser popover, as per Blueprint docs. Only applies when `modalTarget` is
+     * 'popover'.
+     */
     popoverPosition?: Position;
 }
 
@@ -28,57 +44,92 @@ export interface ColChooserButtonProps extends ButtonProps {
  * available Grid columns. For use by applications when a button is desired in addition to the
  * context menu item built into the Grid component directly.
  *
- * Requires {@link GridConfig.colChooserModel} to be configured on the bound GridModel.
+ * Requires {@link GridConfig.colChooserModel} on the bound GridModel.
  */
 export const [ColChooserButton, colChooserButton] = hoistCmp.withFactory<ColChooserButtonProps>({
     displayName: 'ColChooserButton',
     className: 'xh-col-chooser-button',
     model: false,
 
-    render({className, icon, title, gridModel, popoverPosition, disabled, ...rest}, ref) {
-        gridModel = withDefault(gridModel, useContextModel(GridModel));
-        const colChooserModel = gridModel?.colChooserModel as ColChooserModel;
+    render(
+        {
+            className,
+            icon,
+            title,
+            gridModel: boundModel,
+            modalTarget,
+            popoverPosition,
+            disabled,
+            onClick,
+            ...rest
+        },
+        ref
+    ) {
+        const contextModel = useContextModel<GridLikeModel>(isGridLikeModel),
+            gridModel = withDefault(boundModel, contextModel)?.innerGridModel;
+        modalTarget = withDefault(modalTarget, 'popover');
 
-        // Validate bound model available and suitable for use.
-        if (!gridModel) {
+        const chooserModel = gridModel?.colChooserModel,
+            isDocked = chooserModel?.mode === 'docked';
+
+        icon = withDefault(icon, Icon.gridPanel());
+        title = withDefault(title, isDocked ? 'Toggle column panel' : 'Choose grid columns...');
+
+        // Return a plain disabled button rather than falling through - the popover config below
+        // dereferences chooserModel.
+        if (!gridModel || !chooserModel) {
             logError(
-                'No GridModel available - provide via a `gridModel` prop or context - button will be disabled.',
+                !gridModel
+                    ? 'No GridModel available - provide via a `gridModel` prop or context - button will be disabled.'
+                    : 'ColChooser not enabled on bound GridModel - button will be disabled.',
                 ColChooserButton
             );
-            disabled = true;
-        } else if (!colChooserModel) {
-            logError(
-                'ColChooser not enabled on bound GridModel - button will be disabled.',
-                ColChooserButton
-            );
-            disabled = true;
+            return button({ref, icon, title, className, disabled: true, ...rest});
         }
 
+        if (isDocked || modalTarget === 'dialog') {
+            return button({
+                ref,
+                icon,
+                title,
+                className,
+                disabled,
+                onClick: e => {
+                    onClick?.(e);
+                    isDocked ? chooserModel.toggle() : chooserModel.open();
+                },
+                ...rest
+            });
+        }
+
+        const modalModel = chooserModel as ModalColChooserModel;
         return popover({
             popoverClassName: 'xh-col-chooser-popover',
             position: withDefault(popoverPosition, 'auto'),
-            isOpen: colChooserModel.isPopoverOpen,
-            item: button({
-                icon: withDefault(icon, Icon.gridPanel()),
-                title: withDefault(title, 'Choose grid columns...'),
+            isOpen: modalModel.isPopoverOpen,
+            children: button({
+                icon,
+                title,
                 className,
                 disabled,
+                active: modalModel.isPopoverOpen,
+                onClick,
                 ...rest
             }),
             disabled,
             content: vbox({
                 onClick: stopPropagation,
                 onDoubleClick: stopPropagation,
-                items: [
-                    div({ref, className: 'xh-popup__title', item: 'Choose Columns'}),
-                    colChooser({model: colChooserModel})
+                children: [
+                    div({ref, className: 'xh-popup__title', children: 'Choose Columns'}),
+                    colChooser({model: modalModel})
                 ]
             }),
             onInteraction: willOpen => {
                 if (willOpen) {
-                    colChooserModel.openPopover();
+                    modalModel.openPopover();
                 } else {
-                    colChooserModel.close();
+                    modalModel.closeConfirmAsync().catchDefault();
                 }
             }
         });

@@ -5,23 +5,14 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {frame, placeholder} from '@xh/hoist/cmp/layout';
-import {
-    createElement,
-    hoistCmp,
-    HoistModel,
-    HoistProps,
-    LayoutProps,
-    lookup,
-    TestSupportProps,
-    useLocalModel,
-    uses,
-    XH
-} from '@xh/hoist/core';
-import {AgGridReact, GridOptions} from '@xh/hoist/kit/ag-grid';
+import type {HoistProps, LayoutProps, TestSupportProps} from '@xh/hoist/core';
+import {createElement, hoistCmp, HoistModel, lookup, useLocalModel, uses, XH} from '@xh/hoist/core';
+import type {GridOptions} from '@xh/hoist/kit/ag-grid';
+import {AgGridReact} from '@xh/hoist/kit/ag-grid';
 import {logError} from '@xh/hoist/utils/js';
-import {splitLayoutProps} from '@xh/hoist/utils/react';
+import {splitLayoutProps, useComposedRefs} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
-import {isNil} from 'lodash';
+import type {CSSProperties} from 'react';
 import './AgGrid.scss';
 import {AgGridModel} from './AgGridModel';
 
@@ -54,7 +45,7 @@ export const [AgGrid, agGrid] = hoistCmp.withFactory<AgGridProps>({
             return placeholder('ag-Grid library not available.');
         }
 
-        const [layoutProps, agGridProps] = splitLayoutProps(props),
+        const [layoutProps, agProps] = splitLayoutProps(props),
             {
                 sizingMode,
                 showHover,
@@ -62,17 +53,22 @@ export const [AgGrid, agGrid] = hoistCmp.withFactory<AgGridProps>({
                 stripeRows,
                 cellBorders,
                 showCellFocus,
-                hideHeaders
+                hideHeaders,
+                agTheme
             } = model,
-            {darkTheme, isDesktop} = XH;
+            {isDesktop} = XH;
 
-        const impl = useLocalModel(AgGridLocalModel);
+        const impl = useLocalModel(AgGridLocalModel),
+            frameRef = useComposedRefs(ref, impl.wheelAxisLockRef);
 
         return frame({
-            ref,
+            ref: frameRef,
+            style: {
+                '--ag-row-height': `${impl.rowHeight}px`,
+                '--ag-header-height': `${impl.headerHeight}px`
+            } as CSSProperties,
             className: classNames(
                 className,
-                darkTheme ? 'ag-theme-balham-dark' : 'ag-theme-balham',
                 `xh-ag-grid--${sizingMode}`,
                 rowBorders ? 'xh-ag-grid--row-borders' : 'xh-ag-grid--no-row-borders',
                 stripeRows ? 'xh-ag-grid--stripe-rows' : 'xh-ag-grid--no-stripe-rows',
@@ -83,12 +79,15 @@ export const [AgGrid, agGrid] = hoistCmp.withFactory<AgGridProps>({
             ),
             ...layoutProps,
             testId,
-            item: createElement(AgGridReact, {
-                ...AgGrid['DEFAULT_PROPS'],
+            children: createElement(AgGridReact, {
+                ...AgGridCmp.DEFAULT_PROPS,
                 // Default some ag-grid props, but allow overriding.
+                theme: agTheme,
                 getRowHeight: impl.getRowHeight,
+                rowHeight: impl.rowHeight,
+                headerHeight: impl.headerHeight,
                 // Pass others on directly.
-                ...agGridProps,
+                ...agProps,
 
                 // These handlers are overridden, but also delegate to props passed
                 onGridReady: impl.noteGridReady
@@ -135,37 +134,58 @@ export const [AgGrid, agGrid] = hoistCmp.withFactory<AgGridProps>({
     AgGrid.DEFAULT_PROPS = {};
 })(AgGrid);
 
+const AgGridCmp = AgGrid as any;
+
 class AgGridLocalModel extends HoistModel {
     override xhImpl = true;
 
     @lookup(AgGridModel) model: AgGridModel;
 
-    get headerHeight() {
-        const {hideHeaders, sizingMode} = this.model,
-            AgGridCmp = AgGrid as any;
-
-        return hideHeaders ? 0 : AgGridCmp.getHeaderHeightForSizingMode(sizingMode);
+    get rowHeight(): number {
+        const {rowHeight} = this.componentProps;
+        return rowHeight ?? AgGridCmp.getRowHeightForSizingMode(this.model.sizingMode);
     }
 
-    override onLinked() {
-        const {model} = this;
-
-        // manage header height if was not explicitly provided to component
-        if (isNil(this.componentProps.headerHeight)) {
-            this.addReaction({
-                track: () => [model.agApi, this.headerHeight],
-                run: ([api, headerHeight]) => api?.updateGridOptions({headerHeight})
-            });
-        }
+    get headerHeight(): number {
+        const {headerHeight} = this.componentProps,
+            {hideHeaders, sizingMode} = this.model;
+        return (
+            headerHeight ?? (hideHeaders ? 0 : AgGridCmp.getHeaderHeightForSizingMode(sizingMode))
+        );
     }
 
-    getRowHeight = ({node}) => {
-        const {sizingMode} = this.model,
-            {groupDisplayType} = this.componentProps,
-            AgGridCmp = AgGrid as any;
-        return node.group && groupDisplayType === 'groupRows'
-            ? AgGridCmp.getGroupRowHeightForSizingMode(sizingMode)
-            : AgGridCmp.getRowHeightForSizingMode(sizingMode);
+    // Only full-width group rows differ from `rowHeight` - otherwise pass no function, so ag-Grid
+    // sizes every row from `rowHeight` without per-row calls or estimated heights.
+    get getRowHeight(): GridOptions['getRowHeight'] {
+        return this.componentProps.groupDisplayType === 'groupRows'
+            ? this.groupRowsGetRowHeight
+            : null;
+    }
+
+    private groupRowsGetRowHeight = ({node}) =>
+        node.group
+            ? AgGridCmp.getGroupRowHeightForSizingMode(this.model.sizingMode)
+            : this.rowHeight;
+
+    // Lock each wheel event to its dominant axis, to stop trackpad gestures scrolling diagonally.
+    // Remove once fixed upstream - https://github.com/ag-grid/ag-grid/issues/15905
+    wheelAxisLockRef = (el: HTMLElement) => {
+        if (!el) return;
+        el.addEventListener('wheel', this.onWheel, {passive: false});
+        return () => el.removeEventListener('wheel', this.onWheel);
+    };
+
+    private onWheel = (e: WheelEvent) => {
+        const {deltaX, deltaY, deltaMode, ctrlKey, defaultPrevented, currentTarget, target} = e;
+        if (!deltaX || !deltaY || deltaMode || ctrlKey || defaultPrevented) return;
+
+        const viewport = (target as Element).closest?.('.ag-grid-viewport');
+        if (!viewport || !(currentTarget as Element).contains(viewport)) return;
+
+        e.preventDefault();
+        Math.abs(deltaX) > Math.abs(deltaY)
+            ? viewport.scrollBy({left: deltaX})
+            : viewport.scrollBy({top: deltaY});
     };
 
     noteGridReady = agParams => {

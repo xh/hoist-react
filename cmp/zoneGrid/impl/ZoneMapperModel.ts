@@ -6,14 +6,15 @@
  */
 import {HoistModel, XH} from '@xh/hoist/core';
 import {span} from '@xh/hoist/cmp/layout';
-import {action, bindable, computed, makeObservable, observable} from '@xh/hoist/mobx';
-import {StoreRecord} from '@xh/hoist/data';
+import {action, bindable, computed, observable, observableRef} from '@xh/hoist/mobx';
+import type {StoreRecord} from '@xh/hoist/data';
 import {GridSorter} from '@xh/hoist/cmp/grid';
+import {getCellClasses} from '@xh/hoist/cmp/grid/impl/Utils';
 import {Icon} from '@xh/hoist/icon';
 import {cloneDeep, findIndex, isBoolean, isEmpty, isEqual, isFinite, isString} from 'lodash';
-import {ReactNode} from 'react';
-import {ZoneGridModel} from '../ZoneGridModel';
-import {ZoneField, Zone, ZoneLimit, ZoneMapping} from '../Types';
+import type {ReactNode} from 'react';
+import type {ZoneGridModel} from '../ZoneGridModel';
+import type {ZoneField, Zone, ZoneLimit, ZoneMapping} from '../Types';
 
 /**
  * Configuration for a ZoneMapperModel - the UI for user-driven customization of zone
@@ -45,19 +46,16 @@ export class ZoneMapperModel extends HoistModel {
     groupColumns: boolean;
 
     // Show in dialog
-    @observable isOpen: boolean = false;
+    @observable accessor isOpen: boolean = false;
 
     // Show in popover (desktop only)
-    @observable isPopoverOpen = false;
+    @observable accessor isPopoverOpen = false;
 
-    @bindable
-    selectedZone: Zone = 'tl';
+    @bindable accessor selectedZone: Zone = 'tl';
 
-    @observable.ref
-    mappings: Record<Zone, ZoneMapping[]>;
+    @observableRef accessor mappings: Record<Zone, ZoneMapping[]>;
 
-    @observable.ref
-    sortBy: GridSorter;
+    @observableRef accessor sortBy: GridSorter;
 
     fields: ZoneField[] = [];
     sampleRecord: StoreRecord;
@@ -105,7 +103,6 @@ export class ZoneMapperModel extends HoistModel {
 
     constructor(config: ZoneMapperConfig) {
         super();
-        makeObservable(this);
 
         const {zoneGridModel, showRestoreDefaults = true, groupColumns = true} = config;
 
@@ -240,7 +237,7 @@ export class ZoneMapperModel extends HoistModel {
                 displayName: displayName,
                 label: label,
                 column: column,
-                renderer: column.renderer,
+                resolvedRenderer: column.resolvedRenderer,
                 chooserGroup: column.chooserGroup,
                 sortable: column.sortable,
                 sortingOrder: column.sortingOrder
@@ -317,15 +314,17 @@ export class ZoneMapperModel extends HoistModel {
 
         if (!field) return null;
 
-        let value;
+        let value, classes: string[];
         if (sampleRecord) {
-            value = sampleRecord.data[mapping.field];
-            if (field.renderer) {
-                value = field.renderer(value, {
+            const rawValue = sampleRecord.data[mapping.field];
+            value = rawValue;
+            if (field.resolvedRenderer) {
+                value = field.resolvedRenderer(rawValue, {
                     record: sampleRecord,
                     column: field.column,
                     gridModel: this.zoneGridModel.gridModel
                 });
+                classes = getCellClasses(field.resolvedRenderer, rawValue, sampleRecord);
             }
         }
 
@@ -336,7 +335,10 @@ export class ZoneMapperModel extends HoistModel {
 
         // Render label if requested
         const label = mapping.showLabel && !ignoreLabel ? `${field.label}: ` : null;
-        return span(label, value);
+        return span(
+            label,
+            isEmpty(classes) ? value : span({className: classes.join(' '), children: value})
+        );
     }
 
     private getSampleRecord(): StoreRecord {

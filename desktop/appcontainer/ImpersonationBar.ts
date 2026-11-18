@@ -42,7 +42,7 @@ export const impersonationBar = hoistCmp.factory({
         return toolbar({
             className: 'xh-impersonation-bar',
             testId: 'xh-impersonation-bar',
-            items: [
+            children: [
                 Icon.impersonate(),
                 span(msg),
                 filler(),
@@ -103,7 +103,7 @@ const showUseResponsiblyAlert = () => {
             ),
             p(
                 'Contact ',
-                a({href: 'mailto:support@xh.io', item: 'XH support'}),
+                a({href: 'mailto:support@xh.io', children: 'XH support'}),
                 ' with any questions or concerns.'
             )
         ),

@@ -5,11 +5,12 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {div, frame, vbox, vspacer} from '@xh/hoist/cmp/layout';
-import {hoistCmp, HoistProps, refreshContextView, TestSupportProps, uses} from '@xh/hoist/core';
+import type {HoistProps, TestSupportProps} from '@xh/hoist/core';
+import {hoistCmp, refreshContextView, uses} from '@xh/hoist/core';
 import {mask} from '@xh/hoist/cmp/mask';
 import {dashContainerView} from '@xh/hoist/desktop/cmp/dash/container/impl/DashContainerView';
 import {Classes, overlay} from '@xh/hoist/kit/blueprint';
-import {composeRefs, useOnResize} from '@xh/hoist/utils/react';
+import {useComposedRefs, useOnResize} from '@xh/hoist/utils/react';
 import './DashContainer.scss';
 import {createPortal} from 'react-dom';
 import {DashContainerModel} from './DashContainerModel';
@@ -26,14 +27,14 @@ export const [DashContainer, dashContainer] = hoistCmp.withFactory<DashContainer
     className: 'xh-dash-container',
 
     render({model, className, testId}, ref) {
-        ref = composeRefs(
+        ref = useComposedRefs(
             ref,
             model.containerRef,
             useOnResize(() => model.onResize(), {debounce: 100})
         );
         return refreshContextView({
             model: model.refreshContextModel,
-            item: frame(
+            children: frame(
                 frame({className, ref, testId}),
                 mask({spinner: true, bind: model.loadingStateTask}),
                 emptyContainerOverlay(),
@@ -58,9 +59,9 @@ const emptyContainerOverlay = hoistCmp.factory<DashContainerModel>(({model}) => 
         canEscapeKeyClose: false,
         usePortal: false,
         enforceFocus: false,
-        item: vbox({
+        children: vbox({
             alignItems: 'center',
-            items: [div(emptyText), vspacer(10), dashContainerAddViewButton()]
+            children: [div(emptyText), vspacer(10), dashContainerAddViewButton()]
         })
     });
 });

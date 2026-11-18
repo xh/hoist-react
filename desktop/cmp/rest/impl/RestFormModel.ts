@@ -5,14 +5,15 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {FormModel} from '@xh/hoist/cmp/form';
-import {HoistModel, managed, PlainObject, TaskObserver, XH} from '@xh/hoist/core';
-import {required} from '@xh/hoist/data';
-import {RestGridEditor, RestGridModel} from '@xh/hoist/desktop/cmp/rest';
-import {action, makeObservable, observable} from '@xh/hoist/mobx';
+import type {PlainObject, TaskObserver} from '@xh/hoist/core';
+import {HoistModel, managed, XH} from '@xh/hoist/core';
+import {isValidJson, required} from '@xh/hoist/data';
+import type {RestGridEditor, RestGridModel} from '@xh/hoist/desktop/cmp/rest';
+import {action, observable, observableRef} from '@xh/hoist/mobx';
 import {mergeDeep, throwIf} from '@xh/hoist/utils/js';
 import {isFunction, isNil} from 'lodash';
 import {createRef} from 'react';
-import {RestField} from '../data/RestField';
+import type {RestField} from '../data/RestField';
 
 /**
  * @internal
@@ -21,16 +22,16 @@ export class RestFormModel extends HoistModel {
     parent: RestGridModel = null;
 
     // Mutable State
-    @observable.ref currentRecord = null;
-    @observable readonly: boolean = null;
-    @observable isAdd: boolean = null;
-    @observable isOpen: boolean = false;
+    @observableRef accessor currentRecord = null;
+    @observable accessor readonly: boolean = null;
+    @observable accessor isAdd: boolean = null;
+    @observable accessor isOpen: boolean = false;
 
     @managed
     @observable
-    formModel: FormModel;
+    accessor formModel: FormModel;
 
-    @observable types: PlainObject = {};
+    @observable accessor types: PlainObject = {};
 
     dialogRef = createRef<HTMLElement>();
 
@@ -59,7 +60,6 @@ export class RestFormModel extends HoistModel {
 
     constructor(parent: RestGridModel) {
         super();
-        makeObservable(this);
         this.parent = parent;
     }
 
@@ -180,10 +180,21 @@ export class RestFormModel extends HoistModel {
             restField = this.getStoreField(name);
         throwIf(!restField, `Unknown field '${name}' in RestGrid.`);
 
+        const {typeField, type} = restField,
+            rules: any[] = restField.required ? [required] : [];
+
+        // Validate JSON content for json-type fields, incl. dynamically-typed fields.
+        if (type === 'json' || typeField) {
+            rules.push({
+                when: (fs, values) => (typeField ? values[typeField] : type) === 'json',
+                check: isValidJson
+            });
+        }
+
         return mergeDeep(
             {
                 name,
-                rules: restField.required ? [required] : [],
+                rules,
                 displayName: restField.displayName,
                 readonly:
                     restField.editable === false || (restField.editable === 'onAdd' && !this.isAdd),

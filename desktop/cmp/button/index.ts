@@ -11,6 +11,7 @@ export * from './OptionsButton';
 export * from './RefreshButton';
 export * from './RestoreDefaultsButton';
 export * from './ThemeToggleButton';
+export * from './WhatsNewButton';
 export * from './grid/ColAutosizeButton';
 export * from './grid/ColChooserButton';
 export * from './grid/ExpandToLevelButton';

@@ -9,7 +9,7 @@ import '@xh/hoist/desktop/register';
 import classNames from 'classnames';
 import './Dock.scss';
 import {dockView} from './DockView';
-import {DockContainerProps} from '../DockContainer';
+import type {DockContainerProps} from '../DockContainer';
 
 /**
  * Desktop implementation of DockContainer.
@@ -23,13 +23,13 @@ export function dockContainerImpl(
     return hbox({
         ref,
         className: classNames(className, `xh-dock-container--${model.direction}`),
-        items: model.views.map(viewModel => {
+        ...props,
+        children: model.views.map(viewModel => {
             return dockView({
                 key: viewModel.xhId,
                 model: viewModel,
                 compactHeaders
             });
-        }),
-        ...props
+        })
     });
 }

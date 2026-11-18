@@ -72,6 +72,21 @@ export async function whileAsync(
     }
 }
 
+/**
+ * Run a function when the browser is next idle, or after `timeout` ms - whichever comes first.
+ *
+ * Intended for low-priority or cosmetic work that should cede the main thread to rendering,
+ * input handling, and other tasks under load. Falls back to a prompt macrotask on browsers
+ * without `requestIdleCallback` support.
+ */
+export function runWhenIdle(fn: () => void, opts: {timeout: number}) {
+    if (typeof window.requestIdleCallback === 'function') {
+        window.requestIdleCallback(() => fn(), opts);
+    } else {
+        setTimeout(fn, 0);
+    }
+}
+
 export interface AsyncLoopOptions {
     /**
      * Interval in ms after which the loop should pause and wait. If the loop completes before

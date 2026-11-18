@@ -5,16 +5,24 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {getAgHeaderClassFn} from '@xh/hoist/cmp/grid/impl/Utils';
-import {HAlign, PlainObject, Some, Thunkable, XH} from '@xh/hoist/core';
+import type {HAlign, PlainObject, Some, Thunkable} from '@xh/hoist/core';
+import {XH} from '@xh/hoist/core';
 import {genDisplayName} from '@xh/hoist/data';
 
 import type {ColGroupDef} from '@xh/hoist/kit/ag-grid';
-import {throwIf, withDefault} from '@xh/hoist/utils/js';
+import {throwIf, warnIf, withDefault} from '@xh/hoist/utils/js';
 import {clone, isEmpty, isFunction, isString, keysIn} from 'lodash';
-import {ReactNode} from 'react';
-import {GridModel} from '../GridModel';
-import {ColumnHeaderClassFn, ColumnHeaderNameFn, ColumnOrGroup} from '../Types';
-import {Column, ColumnSpec} from './Column';
+import type {ReactNode} from 'react';
+import type {GridModel} from '../GridModel';
+import type {
+    ColumnGroupShowMode,
+    ColumnHeaderClassFn,
+    ColumnHeaderNameFn,
+    ColumnOrGroup
+} from '../Types';
+import {toAgColumnGroupShow} from '../Types';
+import type {ColumnSpec} from './Column';
+import {Column} from './Column';
 
 /**
  * Configuration for a {@link ColumnGroup} - a hierarchical grouping of columns that renders
@@ -39,8 +47,29 @@ export interface ColumnGroupSpec {
     headerAlign?: HAlign;
     /** Tooltip text for grid header. */
     headerTooltip?: string;
+    /**
+     * Name to display within the column chooser. Defaults to `headerName` when that is a string,
+     * otherwise derived from `groupId`. Specify when `headerName` is a function or element.
+     */
+    chooserName?: string;
     /** True to render borders on column group edges. */
     borders?: boolean;
+
+    /**
+     * Show this group only while its containing parent ColumnGroup is 'expanded' or 'collapsed',
+     * or 'always' (default) to show it in either state. Ignored for a top-level group.
+     */
+    groupShowMode?: ColumnGroupShowMode;
+
+    /**
+     * True to render this group collapsed until the user expands it. Defaults to false.
+     * Applies only to an expandable group - i.e. one with a direct child specifying
+     * `groupShowMode`.
+     *
+     * Note this is the initial state only: once rendered, expand/collapse state is tracked on
+     * {@link GridModel.columnGroupState} and is persisted with the grid's `persistWith`.
+     */
+    collapsed?: boolean;
 
     /**
      * "Escape hatch" object to pass directly to Ag-Grid for desktop implementations. Note
@@ -68,7 +97,10 @@ export class ColumnGroup {
     readonly headerClass: Some<string> | ColumnHeaderClassFn;
     readonly headerAlign: HAlign;
     readonly headerTooltip: string;
+    readonly chooserName: string;
     readonly borders: boolean;
+    readonly groupShowMode: ColumnGroupShowMode;
+    readonly collapsed: boolean;
     readonly omit: Thunkable<boolean>;
 
     /**
@@ -97,8 +129,11 @@ export class ColumnGroup {
             headerClass,
             headerAlign,
             headerTooltip,
+            chooserName,
             agOptions,
             borders,
+            groupShowMode,
+            collapsed,
             appData,
             omit,
             ...rest
@@ -115,12 +150,32 @@ export class ColumnGroup {
         this.headerClass = headerClass;
         this.headerAlign = headerAlign;
         this.headerTooltip = headerTooltip;
+        this.chooserName =
+            chooserName ??
+            (isString(this.headerName) ? this.headerName : genDisplayName(this.groupId));
         this.borders = withDefault(borders, true);
+        this.groupShowMode = groupShowMode;
+        this.collapsed = withDefault(collapsed, false);
         this.children = children;
         this.gridModel = gridModel;
         this.agOptions = agOptions ? clone(agOptions) : {};
         this.appData = appData ? clone(appData) : {};
         this.omit = omit;
+
+        const changeable = children.some(it => it.groupShowMode && it.groupShowMode !== 'always'),
+            showsWhenExpanded = children.some(it => it.groupShowMode !== 'collapsed'),
+            showsWhenCollapsed = children.some(it => it.groupShowMode !== 'expanded'),
+            expandable = changeable && showsWhenExpanded && showsWhenCollapsed;
+
+        warnIf(
+            changeable && !expandable,
+            `Column group '${this.groupId}' specifies 'groupShowMode' on its children but cannot be expanded - that requires at least one child shown when expanded and one shown when collapsed.`
+        );
+
+        warnIf(
+            !expandable && this.collapsed,
+            `Column group '${this.groupId}' specifies 'collapsed: true' but cannot be expanded - this config will be ignored.`
+        );
 
         if (!isEmpty(rest)) {
             const keys = keysIn(rest);
@@ -145,6 +200,8 @@ export class ColumnGroup {
             },
             headerClass: getAgHeaderClassFn(this),
             headerTooltip: this.headerTooltip,
+            columnGroupShow: toAgColumnGroupShow(this.groupShowMode),
+            openByDefault: !this.collapsed,
             headerGroupComponentParams: {gridModel, xhColumnGroup: this},
             children: this.children.map(it => it.getAgSpec()),
             marryChildren: gridModel.lockColumnGroups,

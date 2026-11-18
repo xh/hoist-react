@@ -4,7 +4,13 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {Constraint, RuleSpec, ValidationResult, ValidationSeverity, When} from '@xh/hoist/data';
+import type {
+    Constraint,
+    RuleSpec,
+    ValidationResult,
+    ValidationSeverity,
+    When
+} from '@xh/hoist/data';
 import {castArray, groupBy, isEmpty} from 'lodash';
 
 /**

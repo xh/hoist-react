@@ -110,6 +110,35 @@ list of `{match, sampleRate}` rules. `match` is a map of tag keys to glob patter
 name. The first matching rule's `sampleRate` wins, falling back to a top-level `sampleRate`.
 Child spans inherit their root's decision.
 
+### Trace headers on fetch requests
+
+While tracing is enabled, each fetch records a client span. `FetchService` sends that span to the
+server in a W3C `traceparent` header, so the server's spans join the trace. By default it sends the
+header only to the app's own server. That covers relative URLs, and absolute URLs on the origin of
+the page or of `XH.baseUrl`.
+
+A request to another origin still records its client span, but it carries no header. The
+`traceparent` header is not CORS-safelisted. If a cross-origin server does not list it in
+`Access-Control-Allow-Headers`, the preflight fails and the browser blocks the request. The header
+would also send the app's trace IDs to a server outside the app.
+
+To send the header to another server that accepts it, such as a second traced backend, set
+`propagateTrace` on the request or in `FetchService.defaults`:
+
+```typescript
+// One request
+await XH.fetchJson({url: 'https://pricing.example.com/quote', propagateTrace: true});
+
+// Every request, in the app's Bootstrap module - a boolean, or a function of the FetchOptions
+FetchService.defaults.propagateTrace = opts =>
+    FetchService.isHoistServerUrl(opts.url) ||
+    new URL(opts.url, window.location.href).origin === 'https://pricing.example.com';
+```
+
+A function default replaces the built-in check. Call `FetchService.isHoistServerUrl()` in it, as
+shown, to keep sending the header to the app's own server. Set
+`propagateTrace: false` on a request to omit the header for that request only.
+
 ### Joining a remote trace
 
 To continue a trace started elsewhere (a `traceparent` received off-channel via WebSocket, SSE,
@@ -205,18 +234,22 @@ forgettable beats ambient-but-wrong until a real propagation primitive lands.
 Forgetting to thread `ctx` into a nested fetch or runner produces a detached root span instead of
 a child — silently, with no error. See [Threading context](#threading-context).
 
-### Using deprecated fetch/span APIs
+### Carrying over the removed fetch/span APIs
 
-`HoistBase.withSpan()` and the `FetchOptions.span` / `loadSpec` fields are **deprecated** (removal
-in **v88**). Use `runner().span(...)` and pass context via the fetch method's second argument:
+`HoistBase.withSpan()` and the `FetchOptions.span` / `loadSpec` fields were deprecated in v86 and
+**removed in v88**. Use `runner().span(...)` and pass context via the fetch method's second
+argument:
 
 ```typescript
-// ❌ Don't (deprecated)
+// ❌ Don't (removed in v88)
 await XH.fetchJson({url: 'api/data', loadSpec});
 
 // ✅ Do
 await XH.fetchJson({url: 'api/data'}, {loadSpec});
 ```
+
+Note that `TraceService.withSpan()` remains as the low-level API for advanced use - only the
+`HoistBase` convenience wrapper was removed.
 
 ### Expecting metrics without the server endpoint
 

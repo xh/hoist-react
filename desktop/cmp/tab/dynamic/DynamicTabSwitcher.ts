@@ -6,16 +6,9 @@
  */
 import {box, div, hframe} from '@xh/hoist/cmp/layout';
 import {TabContainerModel, TabModel} from '@xh/hoist/cmp/tab';
-import {TabSwitcherProps} from '@xh/hoist/cmp/tab/Types';
-import {
-    hoistCmp,
-    HoistModel,
-    HoistProps,
-    Side,
-    useContextModel,
-    useLocalModel,
-    uses
-} from '@xh/hoist/core';
+import type {TabSwitcherMenuContext, TabSwitcherProps} from '@xh/hoist/cmp/tab/Types';
+import type {HoistProps, Side} from '@xh/hoist/core';
+import {hoistCmp, HoistModel, useContextModel, useLocalModel, uses} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {contextMenu} from '@xh/hoist/desktop/cmp/contextmenu';
 import {scroller} from '@xh/hoist/desktop/cmp/tab/dynamic/scroller/Scroller';
@@ -24,12 +17,13 @@ import {Icon} from '@xh/hoist/icon';
 import {tooltip as bpTooltip, showContextMenu} from '@xh/hoist/kit/blueprint';
 import {dragDropContext, draggable, droppable} from '@xh/hoist/kit/react-beautiful-dnd';
 import {wait} from '@xh/hoist/promise';
-import {consumeEvent, getTestId} from '@xh/hoist/utils/js';
+import {consumeEvent, getTestId, scrollIntoViewWithin} from '@xh/hoist/utils/js';
 import {composeRefs, getLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import {first, isFinite, last} from 'lodash';
-import {computed} from 'mobx';
-import {CSSProperties, ReactElement, Ref, useEffect, useRef} from 'react';
+import {computed} from '@xh/hoist/mobx';
+import type {CSSProperties, ReactElement, Ref} from 'react';
+import {useEffect, useRef} from 'react';
 import {DynamicTabSwitcherModel} from './DynamicTabSwitcherModel';
 import './DynamicTabSwitcher.scss';
 
@@ -85,7 +79,7 @@ const tabs = hoistCmp.factory<TabsProps>({
             layoutProps = getLayoutProps(props);
         return dragDropContext({
             onDragEnd: result => model.onDragEnd(result),
-            item: droppable({
+            children: droppable({
                 droppableId: model.xhId,
                 direction: isVertical ? 'vertical' : 'horizontal',
                 children: provided =>
@@ -93,11 +87,13 @@ const tabs = hoistCmp.factory<TabsProps>({
                         ...layoutProps,
                         className: `xh-dynamic-tab-switcher__tabs xh-tab-switcher xh-tab-switcher--${props.orientation}`,
                         ref: composeRefs(provided.innerRef, ref),
-                        item: div({
+                        children: div({
                             className: classNames('bp6-tabs', isVertical && 'bp6-vertical'),
-                            item: div({
+                            children: div({
                                 className: 'bp6-tab-list',
-                                items: [
+                                role: 'tablist',
+                                'aria-orientation': isVertical ? 'vertical' : 'horizontal',
+                                children: [
                                     visibleTabs.map((tab, index) =>
                                         tabCmp({key: tab.id, localModel, tab, index})
                                     ),
@@ -122,9 +118,9 @@ const tabCmp = hoistCmp.factory<TabProps>(({tab, index, localModel, model}) => {
         isCloseable =
             tab.disabled ||
             model.enabledVisibleTabs.filter(it => it instanceof TabModel).length > 1,
-        tabRef = useRef<HTMLDivElement>(),
+        tabRef = useRef<HTMLDivElement>(null),
         scrollerModel = useContextModel(ScrollerModel),
-        {showScrollButtons} = scrollerModel,
+        {contentRef, showScrollButtons} = scrollerModel,
         {disabled, icon, tooltip} = tab,
         isFavorite = model.isTabFavorite(tab.id),
         {isVertical, props} = localModel,
@@ -141,9 +137,9 @@ const tabCmp = hoistCmp.factory<TabProps>(({tab, index, localModel, model}) => {
     useEffect(() => {
         if (isActive && showScrollButtons) {
             // Wait a tick for scroll buttons to render, then scroll to the active tab
-            wait().then(() => tabRef.current.scrollIntoView({behavior: 'smooth'}));
+            wait().then(() => scrollIntoViewWithin(tabRef.current, contentRef.current, 'smooth'));
         }
-    }, [isActive, showScrollButtons]);
+    }, [isActive, showScrollButtons, contentRef]);
 
     return draggable({
         key: tab.id,
@@ -161,12 +157,11 @@ const tabCmp = hoistCmp.factory<TabProps>(({tab, index, localModel, model}) => {
                     if (!disabled) model.activate(tab.id);
                 },
                 onContextMenu: e => {
-                    const domRect = e.currentTarget.getBoundingClientRect();
+                    const domRect = e.currentTarget.getBoundingClientRect(),
+                        context: TabSwitcherMenuContext = {contextMenuEvent: e, tab};
                     consumeEvent(e);
                     showContextMenu(
-                        contextMenu({
-                            menuItems: model.getContextMenuItems(e, tab)
-                        }),
+                        contextMenu({menuItems: model.getContextMenuItems(tab), context}),
                         {
                             left: props.orientation === 'left' ? domRect.right : domRect.left,
                             top: props.orientation === 'top' ? domRect.bottom : domRect.top
@@ -177,25 +172,30 @@ const tabCmp = hoistCmp.factory<TabProps>(({tab, index, localModel, model}) => {
                 testId: tabTestId,
                 ...provided.draggableProps,
                 ...provided.dragHandleProps,
+                // Focusable drag handle is the tab itself - override dnd's default `button` role.
+                role: 'tab',
+                'aria-selected': isActive,
+                'aria-disabled': disabled,
                 style: getStyles(isVertical, provided.draggableProps.style),
-                items: [
+                children: [
                     div({
+                        // Styling hooks shared with Blueprint tabs - see Tabs.scss.
                         'aria-selected': isActive,
                         'aria-disabled': disabled,
                         className: 'bp6-tab',
-                        item: bpTooltip({
+                        children: bpTooltip({
                             content: tooltip as ReactElement,
                             disabled: !tooltip,
                             hoverOpenDelay: 1000,
                             position: flipOrientation(props.orientation),
-                            item: hframe({
+                            children: hframe({
                                 className: 'xh-tab-switcher__tab',
                                 style: tabStyle,
                                 tabIndex: -1,
-                                items: [
+                                children: [
                                     div({
                                         className: 'xh-dynamic-tab-switcher__tabs__tab__icon',
-                                        item: icon,
+                                        children: icon,
                                         omit: !icon
                                     }),
                                     tab.title,

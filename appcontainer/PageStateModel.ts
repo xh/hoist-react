@@ -4,8 +4,9 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {HoistModel, PageState} from '@xh/hoist/core';
-import {action, makeObservable, observable} from '@xh/hoist/mobx';
+import type {PageState} from '@xh/hoist/core';
+import {HoistModel} from '@xh/hoist/core';
+import {action, observable} from '@xh/hoist/mobx';
 
 /**
  * Implementation of PageState maintenance.
@@ -16,12 +17,12 @@ import {action, makeObservable, observable} from '@xh/hoist/mobx';
  */
 export class PageStateModel extends HoistModel {
     override xhImpl = true;
+    override xhName = 'pageStateModel';
 
-    @observable state: PageState = null;
+    @observable accessor state: PageState = null;
 
     constructor() {
         super();
-        makeObservable(this);
 
         this.setState(this.getLiveState());
         this.addListeners();

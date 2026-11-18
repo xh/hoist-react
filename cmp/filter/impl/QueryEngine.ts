@@ -5,8 +5,9 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
-import {Some} from '@xh/hoist/core';
-import {FieldFilter, FieldFilterOperator} from '@xh/hoist/data';
+import type {Some} from '@xh/hoist/core';
+import type {FieldFilterOperator} from '@xh/hoist/data';
+import {FieldFilter} from '@xh/hoist/data';
 import {fmtNumber} from '@xh/hoist/format';
 import {
     castArray,
@@ -19,15 +20,10 @@ import {
     sortBy,
     without
 } from 'lodash';
-import {
-    fieldFilterOption,
-    fieldOption,
-    FilterChooserOption,
-    minimalFieldOption,
-    msgOption
-} from './Option';
-import {FilterChooserModel} from '../FilterChooserModel';
-import {FilterChooserFieldSpec} from '../FilterChooserFieldSpec';
+import type {FilterChooserOption} from './Option';
+import {fieldFilterOption, fieldOption, minimalFieldOption, msgOption} from './Option';
+import type {FilterChooserModel} from '../FilterChooserModel';
+import type {FilterChooserFieldSpec} from '../FilterChooserFieldSpec';
 
 /**
  * Provide the querying support for FilterChooserModel.
@@ -292,9 +288,13 @@ export class QueryEngine {
         operatorRegs.push('\\bends\\b');
         operatorRegs.push('\\bis\\b');
 
-        let [field = '', op = '', value = ''] = raw
-            .split(new RegExp('(' + operatorRegs.join('|') + ')', 'i'))
-            .map(s => s.trim());
+        // Split on the first operator only - the value may itself contain operator words or symbols.
+        const match = new RegExp(operatorRegs.join('|'), 'i').exec(raw),
+            opStart = match ? match.index : raw.length,
+            opEnd = match ? opStart + match[0].length : raw.length;
+        let field = raw.slice(0, opStart).trim(),
+            op = raw.slice(opStart, opEnd).trim(),
+            value = raw.slice(opEnd).trim();
 
         // Catch special case where some partial operator bits being interpreted as field
         if (!op && field) {

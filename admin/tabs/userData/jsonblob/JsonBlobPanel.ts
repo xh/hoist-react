@@ -16,6 +16,7 @@ import {restGrid} from '@xh/hoist/desktop/cmp/rest';
 import {toolbarSep} from '@xh/hoist/desktop/cmp/toolbar';
 import {Icon} from '@xh/hoist/icon';
 import {differ} from '../../../differ/Differ';
+import {jsonBlobDetailPanel} from './JsonBlobDetailPanel';
 import {JsonBlobModel} from './JsonBlobModel';
 
 export const jsonBlobPanel = hoistCmp.factory({
@@ -24,7 +25,7 @@ export const jsonBlobPanel = hoistCmp.factory({
     render({model}) {
         return hframe(
             panel({
-                item: restGrid({
+                children: restGrid({
                     extraToolbarItems: () => [
                         button({
                             icon: Icon.diff(),
@@ -64,6 +65,7 @@ export const jsonBlobPanel = hoistCmp.factory({
                     ]
                 })
             }),
+            jsonBlobDetailPanel(),
             differ({omit: !model.differModel})
         );
     }

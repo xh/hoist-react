@@ -6,37 +6,45 @@
  */
 
 import {fragment, strong, p, span} from '@xh/hoist/cmp/layout';
-import {
+import {HoistModel, TaskObserver, XH} from '@xh/hoist/core';
+import type {
+    ViewManagerProvider,
+    ReactionSpec,
     CallContext,
     CallContextLike,
     ExceptionHandlerOptions,
-    HoistModel,
     LoadSpec,
     PlainObject,
-    TaskObserver,
-    Thunkable,
-    XH
+    Thunkable
 } from '@xh/hoist/core';
-import type {ViewManagerProvider, ReactionSpec} from '@xh/hoist/core';
 import {genDisplayName} from '@xh/hoist/data';
 import {fmtDateTime} from '@xh/hoist/format';
-import {action, bindable, makeObservable, observable, comparer, runInAction} from '@xh/hoist/mobx';
-import {ONE_SECOND, SECONDS} from '@xh/hoist/utils/datetime';
+import {
+    action,
+    bindable,
+    observable,
+    runInAction,
+    observableRef,
+    compareStructural
+} from '@xh/hoist/mobx';
+import {SECONDS} from '@xh/hoist/utils/datetime';
 import {executeIfFunction, pluralize, throwIf} from '@xh/hoist/utils/js';
 import {
     find,
+    isEmpty,
     isEqual,
     isNil,
     isNull,
     isObject,
     isUndefined,
     lowerCase,
+    pickBy,
     remove,
     uniqBy
 } from 'lodash';
-import {ReactNode} from 'react';
-import {ViewInfo} from './ViewInfo';
-import {View} from './View';
+import type {ReactNode} from 'react';
+import type {ViewInfo} from './ViewInfo';
+import type {View} from './View';
 import {DataAccess} from './DataAccess';
 
 export interface ViewCreateSpec {
@@ -97,8 +105,8 @@ export interface ViewManagerConfig {
 
     /**
      * True (default) to enable "global" views - i.e. views that are not owned by a user and are
-     * available to all. At least some users should have `manageGlobal` set to true to allow
-     * creation and management of these views.
+     * available to all. Creating and managing these views requires a role in the server-side
+     * `xhJsonBlobConfig.globalWriteRoles` soft config - see {@link manageGlobal}.
      */
     enableGlobal?: boolean;
 
@@ -131,8 +139,9 @@ export interface ViewManagerConfig {
     instance?: string;
 
     /**
-     * True to allow the user to creat and manage Global views. Apps are expected to commonly set
-     * this based on user roles - e.g. `XH.getUser().hasRole('MANAGE_GRID_VIEWS')`.
+     * False to prevent the user from creating and managing global views, even if permitted by
+     * the server. Defaults to the server's determination, per the roles configured in the
+     * `xhJsonBlobConfig.globalWriteRoles` soft config (hoist-core v42+).
      */
     manageGlobal?: Thunkable<boolean>;
 
@@ -154,6 +163,9 @@ export interface ViewManagerConfig {
      * ViewManager menu.
      */
     viewMenuItemFn?: (view: ViewInfo, model: ViewManagerModel) => ReactNode;
+
+    /** See {@link HoistBase.xhName}. */
+    xhName?: string;
 }
 
 /**
@@ -211,13 +223,16 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
     readonly enableGlobal: boolean;
     readonly enableSharing: boolean;
     readonly preserveUnsavedChanges: boolean;
-    readonly manageGlobal: boolean;
     readonly initialViewSpec: (views: ViewInfo[]) => ViewInfo;
+    private readonly manageGlobalConfig: boolean;
+
+    /** Server-reported ability to manage global views. Null until loaded, or on hoist-core before v42. */
+    @observable private accessor serverManageGlobal: boolean = null;
 
     /** Current view. Will not include uncommitted changes */
-    @observable.ref view: View<T> = null;
+    @observableRef accessor view: View<T> = null;
     /** Loaded saved view library - both private and global */
-    @observable.ref views: ViewInfo[] = [];
+    @observableRef accessor views: ViewInfo[] = [];
 
     /**
      * Map of user's preferred pinned state for views.
@@ -225,13 +240,13 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
      * Note that the actual pinned state for the views is determined by this value, layered
      * over the default state of the views themselves.
      */
-    @observable.ref userPinned: Record<string, boolean> = {};
+    @observableRef accessor userPinned: Record<string, boolean> = {};
 
     /**
      * True if user has opted-in to automatically saving changes to personal views (if auto-save
      * generally available as per `enableAutoSave`).
      */
-    @bindable autoSave = false;
+    @bindable accessor autoSave = false;
 
     /**
      * TaskObserver linked to {@link selectViewAsync}. If a change to the active view is likely to
@@ -246,14 +261,23 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
     // Private, internal state.
     //-------------------------
     /** Unsaved changes on the current view.*/
-    @observable.ref
-    private pendingValue: PendingValue<T> = null;
+    @observableRef private accessor pendingValue: PendingValue<T> = null;
 
     /**
      * Array of {@link ViewManagerProvider} instances bound to this model. Used to proactively push
      * state to the target components when the model's selected `value` changes.
      */
     private providers: ViewManagerProvider<any>[] = [];
+
+    /** Count of calls to {@link loadViewAsync}, used to identify the latest. */
+    private viewLoadCount = 0;
+
+    /**
+     * Pin and auto-save state as of the last load or write attempt. While a local change is not
+     * yet written here, a refresh leaves both values alone. A failed write still advances this,
+     * so the next refresh resyncs from the server rather than shielding the value forever.
+     */
+    private savedUserState: ViewUserState = {userPinned: {}, autoSave: false};
 
     /** Data access for persisting views. */
     private dataAccess: DataAccess<T>;
@@ -263,6 +287,15 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
     //---------------
     get isValueDirty(): boolean {
         return !!this.pendingValue;
+    }
+
+    /** True if the current user may create and manage global views. */
+    get manageGlobal(): boolean {
+        const {serverManageGlobal, manageGlobalConfig} = this;
+        // TODO: drop nil branch once hoist-core v42 is the minimum.
+        return isNil(serverManageGlobal)
+            ? (manageGlobalConfig ?? false)
+            : serverManageGlobal && manageGlobalConfig !== false;
     }
 
     get isViewSavable(): boolean {
@@ -322,16 +355,17 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
         defaultDisplayName = 'default',
         globalDisplayName = 'global',
         viewMenuItemFn,
-        manageGlobal = false,
+        manageGlobal = null,
         enableAutoSave = true,
         enableDefault = true,
         enableGlobal = true,
         enableSharing = true,
         preserveUnsavedChanges = true,
-        initialViewSpec = null
+        initialViewSpec = null,
+        xhName = null
     }: ViewManagerConfig) {
         super();
-        makeObservable(this);
+        this.xhName = xhName ?? type;
 
         throwIf(
             !enableDefault && !initialViewSpec,
@@ -344,7 +378,7 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
         this.defaultDisplayName = defaultDisplayName;
         this.globalDisplayName = globalDisplayName;
         this.viewMenuItemFn = viewMenuItemFn;
-        this.manageGlobal = executeIfFunction(manageGlobal) ?? false;
+        this.manageGlobalConfig = executeIfFunction(manageGlobal);
         this.enableDefault = enableDefault;
         this.enableGlobal = enableGlobal;
         this.enableSharing = enableSharing;
@@ -363,21 +397,25 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
     }
 
     override async doLoadAsync(loadSpec: LoadSpec) {
-        const {dataAccess, view} = this;
+        const {dataAccess} = this;
         await this.runner({loadSpec})
             .span('refresh')
             .run(async ctx => {
-                // 1) Update views and related state
-                const {views, state} = await dataAccess.fetchDataAsync(ctx);
+                // 1) Update views and related state. Skip user state if a local change was
+                // unsaved at send or return - its pending write will land after this fetch.
+                const hadUnsavedState = this.hasUnsavedState,
+                    {views, state, manageGlobal} = await dataAccess.fetchDataAsync(ctx);
                 if (loadSpec.isStale) return;
                 runInAction(() => {
                     this.views = views;
-                    this.userPinned = state.userPinned;
-                    this.autoSave = state.autoSave;
+                    this.serverManageGlobal = manageGlobal ?? null;
+                    if (!hadUnsavedState && !this.hasUnsavedState) this.applyUserState(state);
                 });
 
-                // potentially fast-forward current view.
-                if (!view.isDefault) {
+                // Fast-forward the current view if it was updated elsewhere.
+                // Skip while an explicit view load is pending - this is subordinate background work
+                const {view} = this;
+                if (!view.isDefault && !this.selectTask.isPending) {
                     const latestInfo = find(views, {token: view.token});
                     if (latestInfo && latestInfo.lastUpdated > view.lastUpdated) {
                         this.loadViewAsync(view.token, this.pendingValue, ctx);
@@ -446,7 +484,7 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
                     .updateViewValueAsync(view, pendingValue.value, ctx)
                     .linkTo(this.saveTask);
 
-                this.setAsView(updated);
+                this.applySavedView(updated, pendingValue);
                 this.noteSuccess(`Saved ${view.typedName}`);
 
                 this.refreshAsync();
@@ -533,6 +571,23 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
             .run(ctx => this.dataAccess.updateViewInfoAsync(view, updates, ctx));
     }
 
+    /** Apply the same metadata updates to multiple views. */
+    async updateViewsInfoAsync(views: ViewInfo[], updates: ViewUpdateSpec): Promise<void> {
+        return this.runner()
+            .span('bulkUpdateInfo')
+            .run(ctx => this.dataAccess.updateViewsInfoAsync(views, updates, ctx));
+    }
+
+    /**
+     * Rename or re-parent a group, cascading to every view at or nested under `from`. Groups are
+     * namespaced separately for global vs. user-owned views - `isGlobal` selects which to rename.
+     */
+    async renameGroupAsync(from: string, to: string, isGlobal: boolean): Promise<void> {
+        return this.runner()
+            .span('renameGroup')
+            .run(ctx => this.dataAccess.renameGroupAsync(from, to, isGlobal, ctx));
+    }
+
     async deleteViewsAsync(toDelete: ViewInfo[]): Promise<void> {
         await this.runner()
             .span('delete')
@@ -588,12 +643,12 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
             .span('init')
             .run(async ctx => {
                 // 1) Initialize views and related state
-                const {views, state} = await dataAccess.fetchDataAsync(ctx);
+                const {views, state, manageGlobal} = await dataAccess.fetchDataAsync(ctx);
                 initialState = state;
                 runInAction(() => {
                     this.views = views;
-                    this.userPinned = state.userPinned;
-                    this.autoSave = state.autoSave;
+                    this.serverManageGlobal = manageGlobal ?? null;
+                    this.applyUserState(state);
                     if (this.preserveUnsavedChanges) {
                         this.pendingValue = XH.sessionStorageService.get(pendingValueStorageKey);
                     }
@@ -618,9 +673,9 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
                 // and load the in-code default, even if not enabled. We have no other choice!
                 await this.loadViewAsync(initialView?.token, this.pendingValue, ctx);
             })
-            .catch(e => {
+            .catch(async e => {
                 // Always ensure at least default view is installed (other state defaults are fine)
-                this.runner()
+                await this.runner()
                     .span('fallbackLoad')
                     .run(ctx => this.loadViewAsync(null, this.pendingValue, ctx));
                 this.handleException(e, {showAlert: false, logOnServer: true});
@@ -629,7 +684,7 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
         this.addReaction(
             this.preserveUnsavedChanges ? this.unsavedChangesReaction() : null,
             this.autoSaveReaction(),
-            ...this.stateReactions(initialState)
+            this.stateReaction(initialState)
         );
     }
 
@@ -648,28 +703,54 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
         };
     }
 
-    private stateReactions(initialState: ViewUserState): ReactionSpec[] {
-        const updateState = (spanName: string, update: Partial<ViewUserState>) =>
-            this.runner()
-                .span(spanName)
-                .run(ctx => this.dataAccess.updateStateAsync(update, ctx));
-        return [
-            {
-                track: () => this.userPinned,
-                run: userPinned => updateState('updateUserPinned', {userPinned}),
-                equals: comparer.structural,
-                debounce: ONE_SECOND
-            },
-            {
-                track: () => this.autoSave,
-                run: autoSave => updateState('updateAutoSave', {autoSave})
-            },
-            {
-                track: () => this.view?.token,
-                run: tkn => updateState('updateCurrentView', {currentView: tkn}),
-                fireImmediately: this.view?.token !== initialState?.currentView
-            }
-        ];
+    private stateReaction(initialState: ViewUserState): ReactionSpec {
+        return {
+            track: () => this.userState,
+            run: state => this.writeStateAsync(state),
+            equals: compareStructural,
+            debounce: 500,
+            fireImmediately: !!initialState && this.view?.token !== initialState.currentView
+        };
+    }
+
+    private get userState(): ViewUserState {
+        return {
+            currentView: this.view?.token,
+            userPinned: this.userPinned,
+            autoSave: this.autoSave
+        };
+    }
+
+    /**
+     * Write the keys of user state that changed since the server last held it. The server merges
+     * keys, so an unchanged key is left out rather than overwrite a change made in another tab.
+     * A failed write is logged and dropped - the next refresh resyncs.
+     */
+    private async writeStateAsync(state: ViewUserState) {
+        const update = pickBy(state, (v, k) => !isEqual(v, this.savedUserState[k]));
+        if (isEmpty(update)) return;
+        await this.runner()
+            .span('updateState')
+            .run(ctx => this.dataAccess.updateStateAsync(update, ctx))
+            .catch(e => this.handleException(e, {showAlert: false}));
+        this.savedUserState = state;
+    }
+
+    /** True if pin or auto-save state has changed locally since the server last held it. */
+    private get hasUnsavedState(): boolean {
+        const {savedUserState} = this;
+        return (
+            this.autoSave !== savedUserState.autoSave ||
+            !isEqual(this.userPinned, savedUserState.userPinned)
+        );
+    }
+
+    /** Install pin and auto-save state fetched from the server, and record that it holds it. */
+    @action
+    private applyUserState(state: ViewUserState) {
+        this.userPinned = state.userPinned;
+        this.autoSave = state.autoSave;
+        this.savedUserState = state;
     }
 
     private async loadViewAsync(
@@ -677,11 +758,18 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
         pendingValue: PendingValue<T> = null,
         ctx: CallContext
     ): Promise<void> {
+        const loadNum = ++this.viewLoadCount,
+            isStale = () => loadNum !== this.viewLoadCount;
+
         return this.dataAccess
             .fetchViewAsync(token, ctx)
             .thenAction(latest => {
+                if (isStale()) return;
                 this.setAsView(latest, pendingValue?.token == token ? pendingValue : null);
                 this.providers.forEach(it => it.pushStateToTarget());
+            })
+            .catch(e => {
+                if (!isStale()) throw e;
             })
             .linkTo(this.selectTask);
     }
@@ -698,7 +786,7 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
                         .updateViewValueAsync(view, pendingValue.value, ctx)
                         .linkTo(this.saveTask);
 
-                    this.setAsView(updated);
+                    this.applySavedView(updated, pendingValue);
                 } catch (e) {
                     // TODO: How to alert but avoid for flaky or spam when user editing a deleted view
                     // Keep count and alert server and user once at count n?
@@ -709,6 +797,22 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
                     });
                 }
             });
+    }
+
+    /** Apply a completed save, installing the saved view only if it is still current. */
+    @action
+    private applySavedView(saved: View<T>, sent: PendingValue<T>) {
+        // User has moved on - just update the list entry (map, so a deleted view stays out).
+        if (saved.token !== this.view.token) {
+            this.views = this.views.map(it => (it.token === saved.token ? saved.info : it));
+            return;
+        }
+
+        const value = this.getValue(),
+            pendingValue = isEqual(value, sent.value)
+                ? null
+                : {token: saved.token, baseUpdated: saved.lastUpdated, value};
+        this.setAsView(saved, pendingValue);
     }
 
     @action

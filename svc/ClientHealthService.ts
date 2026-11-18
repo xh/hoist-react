@@ -4,8 +4,9 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {HoistService, InitContext, PageState, PlainObject, TrackOptions, XH} from '@xh/hoist/core';
-import {WebSocketTelemetry} from '@xh/hoist/svc/WebSocketService';
+import type {InitContext, PageState, PlainObject, TrackOptions} from '@xh/hoist/core';
+import {HoistService, XH} from '@xh/hoist/core';
+import type {WebSocketTelemetry} from '@xh/hoist/svc/WebSocketService';
 import {Timer} from '@xh/hoist/utils/async';
 import {MINUTES} from '@xh/hoist/utils/datetime';
 import {withFormattedTimestamps} from '@xh/hoist/format';

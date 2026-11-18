@@ -26,20 +26,27 @@ See [`docs-roadmap.md`](./planning/docs-roadmap.md) for documentation coverage t
 | Understand the component/model/service pattern | [`/core/`](../core/README.md)                                                                                       |
 | Work with `XH` singleton API | [`/core/`](../core/README.md)                                                                                       |
 | Build or configure a data grid | [`/cmp/grid/`](../cmp/grid/README.md)                                                                               |
+| Render a Cube view as a grid, with or without pivoting | [`/cmp/cubegrid/`](../cmp/cubegrid/README.md) |
 | Build a form with validation | [`/cmp/form/`](../cmp/form/README.md)                                                                               |
 | Understand input change/commit lifecycle | [`/cmp/input/`](../cmp/input/README.md)                                                                             |
 | Create a tabbed interface | [`/cmp/tab/`](../cmp/tab/README.md)                                                                                 |
 | Build a desktop app or explore desktop components | [`/desktop/`](../desktop/README.md)                                                                                 |
 | Build a configurable dashboard | [`/desktop/cmp/dash/`](../desktop/cmp/dash/README.md)                                                               |
 | Configure a desktop panel (toolbars, masks, collapse) | [`/desktop/cmp/panel/`](../desktop/cmp/panel/README.md)                                                             |
+| Show an info or warning banner within a panel | [Panel Banners](../desktop/cmp/panel/README.md#banners) |
 | Build a mobile app | [`/mobile/`](../mobile/README.md)                                                                                   |
 | Save and restore named view configurations | [`/cmp/viewmanager/`](../cmp/viewmanager/README.md)                                                                 |
+| Select a period or date range (presets, lookbacks, months, custom) | [`/cmp/daterange/`](../cmp/daterange/README.md)                                                                   |
+| Display a PDF document (page nav, zoom, find, download) | [`/cmp/pdfviewer/`](../cmp/pdfviewer/README.md) |
+| Show progress or usage against a limit as a bar | [`/cmp/progressbar/`](../cmp/progressbar/README.md) |
+| Show a small inline trend chart beside a figure or in a grid cell | [`/cmp/sparkline/`](../cmp/sparkline/README.md) |
 | Use layout containers (Box, HBox, VBox, Frame) | [`/cmp/layout/`](../cmp/layout/README.md)                                                                           |
 | Work with Stores, Records, Fields, or Filters | [`/data/`](../data/README.md)                                                                                       |
 | Set up Cube aggregation with Views and Queries | [`/data/cube/`](../data/cube/README.md)                                                                             |
 | Use FetchService, ConfigService, or PrefService | [`/svc/`](../svc/README.md)                                                                                         |
 | Add tracing, metrics, or activity tracking | [Telemetry & Observability](./telemetry.md)                                                                                         |
 | Format numbers, dates, or currencies | [`/format/`](../format/README.md)                                                                                   |
+| Understand localization / locale support | [`/format/` Localization](../format/README.md#localization) |
 | Understand app lifecycle (startup sequence) | [Lifecycle: App](./lifecycle-app.md)                                                                                |
 | Understand model/service lifecycles and loading | [Lifecycle: Models & Services](./lifecycle-models-and-services.md)                                                  |
 | Add authentication (OAuth, login) | [Authentication](./authentication.md)                                                                               |
@@ -59,10 +66,12 @@ See [`docs-roadmap.md`](./planning/docs-roadmap.md) for documentation coverage t
 | Understand third-party library integration | [`/kit/`](../kit/README.md)                                                                                         |
 | Set up builds, CI/CD, or deployment | [Build & Publish Hoist React](./build-and-publish.md), [Build & Deploy Apps](./build-and-deploy-app.md) |
 | Configure local development environment | [Development Environment](./development-environment.md)                                                             |
+| Write or run unit tests, in an app or hoist-react | [Unit Testing](./unit-testing.md) |
 | Use MCP tools with AI assistants | [`/mcp/`](../mcp/README.md)                                                                                         |
+| Serve a Hoist library's docs through the MCP tools | [Companion Library Docs](./companion-library-docs.md) |
 | Customize colors, fonts, spacing, or theme | [`/styles/`](../styles/README.md)                                                                                   |
 | Follow XH coding conventions | [Coding Conventions](./coding-conventions.md)                                                                       |
-| Check hoist-react / hoist-core version compatibility | [Version Compatibility](./version-compatibility.md)                                                                 |
+| Check hoist-react / hoist-core / hoist-dev-utils version compatibility | [Version Compatibility](./version-compatibility.md)                                              |
 | Upgrade to a new major hoist-react version | [Upgrade Notes](#upgrade-notes)                                                                                     |
 
 ## Package Documentation
@@ -72,8 +81,8 @@ See [`docs-roadmap.md`](./planning/docs-roadmap.md) for documentation coverage t
 | Package | Description | Key Topics |
 |---------|-------------|------------|
 | [`/core/`](../core/README.md) | Foundation classes defining Hoist's component, model, and service architecture | HoistBase, HoistModel, HoistService, hoistCmp, XH, element factories, decorators, lifecycle |
-| [`/data/`](../data/README.md) | Observable data layer with Store, Field, filtering, validation, and tree data | Store, StoreRecord, Field, Filter, tree data, loadData, processRawData |
-| [`/data/cube/`](../data/cube/README.md) | Client-side OLAP-style aggregation with dimensions, measures, and Views | Cube, CubeField, View, Query, aggregator, dimension, includeRoot, includeLeaves |
+| [`/data/`](../data/README.md) | Observable data layer with Store, Field, filtering, validation, tree data, and memory tuning | Store, StoreRecord, Field, Filter, tree data, loadData, loadDataAsync, updateData, digestSpec, projectionOnly, diagnostics |
+| [`/data/cube/`](../data/cube/README.md) | Client-side OLAP-style aggregation with dimensions, measures, Views, and pivoting | Cube, CubeField, View, Query, aggregator, dimension, includeRoot, includeLeaves, pivot |
 | [`/svc/`](../svc/README.md) | Built-in singleton services for data access and app-wide operations | FetchService, ConfigService, PrefService, IdentityService, TrackService, TraceService, WebSocketService |
 
 ### Components
@@ -81,26 +90,31 @@ See [`docs-roadmap.md`](./planning/docs-roadmap.md) for documentation coverage t
 | Package | Description | Key Topics |
 |---------|-------------|------------|
 | [`/cmp/`](../cmp/README.md) | Cross-platform component overview and catalog | Component categories, factory pattern, platform-specific vs shared |
-| [`/cmp/grid/`](../cmp/grid/README.md) | Primary data grid built on ag-Grid | GridModel, Column, ColumnGroup, sorting, grouping, filtering, selection, inline editing, export |
+| [`/cmp/grid/`](../cmp/grid/README.md) | Primary data grid built on AG Grid | GridModel, Column, ColumnGroup, sorting, grouping, filtering, selection, inline editing, export |
+| [`/cmp/cubegrid/`](../cmp/cubegrid/README.md) | Cube View rendered as a tree grid with the app's columns, plus pivot paths as nested column groups and docked summaries | CubeGridModel, CubeGrid, CubeGridPivotModel, cube, pivot, PivotSpec, measures, cellFields, pivotConfig, PivotDimensionSpec, PivotMeasureSpec, measuresOutermost |
 | [`/cmp/form/`](../cmp/form/README.md) | Form infrastructure for data entry with validation | FormModel, FieldModel, SubformsFieldModel, validation rules, data binding |
 | [`/cmp/input/`](../cmp/input/README.md) | Base classes and interfaces for input components | HoistInputModel, change/commit lifecycle, value binding, focus management |
-| [`/cmp/layout/`](../cmp/layout/README.md) | Flexbox-based layout containers | Box, VBox, HBox, Frame, Viewport, LayoutProps, pixel conversion |
+| [`/cmp/layout/`](../cmp/layout/README.md) | Flexbox-based layout containers | Box, VBox, HBox, Frame, Viewport, Separator, LayoutProps, pixel conversion |
+| [`/cmp/progressbar/`](../cmp/progressbar/README.md) | Bar that shows a value against a maximum, or indeterminate progress | ProgressBar, value, min, max, label, valueRenderer, intent, target, indeterminate |
 | [`/cmp/tab/`](../cmp/tab/README.md) | Tabbed interface system | TabContainerModel, routing integration, render modes, refresh strategies |
 | [`/cmp/viewmanager/`](../cmp/viewmanager/README.md) | Save/load named bundles of component state | ViewManagerModel, views, sharing, pinning, auto-save, JsonBlob persistence |
+| [`/cmp/daterange/`](../cmp/daterange/README.md) | Period selection as presets, relative lookbacks, months/years, or custom ranges, resolved to dates and filters | DateRangePickerModel, DateRangePicker, DateRangeSelection, presets, anchorDate, LocalDateRange, currentRangeFilter, priorRange |
+| [`/cmp/pdfviewer/`](../cmp/pdfviewer/README.md) | PDF document viewer built on pdf.js, with a configurable toolbar and observable model API | PdfViewerModel, PdfViewer, PdfSource, toolbar tokens, find, zoom presets, pdfjs-dist |
+| [`/cmp/sparkline/`](../cmp/sparkline/README.md) | Small inline trend chart in plain SVG, for a stat card or a grid cell | Sparkline, line, area, bar, colorBy, markers, baseline, shared scale, grid column renderer, scope, Sparkline or Chart, AG Grid sparkline |
 | [`/desktop/`](../desktop/README.md) | Desktop-specific components and app container | Desktop components, Blueprint wrappers, desktop navigation |
 | [`/desktop/cmp/dash/`](../desktop/cmp/dash/README.md) | Configurable dashboard system with draggable, resizable widgets | DashContainerModel, DashCanvasModel, DashViewSpec, DashViewModel, widget persistence, ViewManager integration |
-| [`/desktop/cmp/panel/`](../desktop/cmp/panel/README.md) | Desktop panel container with toolbars, masks, and collapsible behavior | Panel, PanelModel, Toolbar, mask, collapse/resize, persistence, modal support |
-| [`/mobile/`](../mobile/README.md) | Mobile-specific components built on Onsen UI | AppContainer, NavigatorModel, Panel, AppBar, mobile inputs, touch navigation, swipeable tabs |
+| [`/desktop/cmp/panel/`](../desktop/cmp/panel/README.md) | Desktop panel container with toolbars, banners, masks, and collapsible behavior | Panel, PanelModel, Toolbar, Banner, mask, collapse/resize, persistence, modal support |
+| [`/mobile/`](../mobile/README.md) | Mobile-specific components for touch devices | AppContainer, NavigatorModel, Panel, AppBar, mobile inputs, touch navigation, tabs |
 
 ### Utilities
 
 | Package | Description | Key Topics |
 |---------|-------------|------------|
-| [`/format/`](../format/README.md) | Number, date, and miscellaneous formatting for grids and display | fmtNumber, fmtPercent, fmtMillions, numberRenderer, dateRenderer, ledger, colorSpec, auto-precision |
+| [`/format/`](../format/README.md) | Number, date, and miscellaneous formatting for grids and display | fmtNumber, fmtPercent, fmtMillions, numberRenderer, dateRenderer, numberTextRenderer, dateTextRenderer, ledger, colorSpec, auto-precision, localization |
 | [`/appcontainer/`](../appcontainer/README.md) | Application shell — lifecycle, dialogs, toasts, banners, theming, and environment | AppContainerModel, MessageSpec, ToastSpec, BannerSpec, ExceptionDialogModel, ThemeModel, RouterModel, AppOption |
 | [`/utils/`](../utils/README.md) | Async, datetime, JS, and React utility functions used throughout hoist-react | Timer, LocalDate, forEachAsync, decorators (@debounced, @computeOnce, @sharePendingPromise), logging, hooks |
 | [`/promise/`](../promise/README.md) | Promise prototype extensions for error handling, tracking, masking, and timeouts | catchDefault, catchWhen, track, linkTo, timeout, thenAction, wait, waitFor, tap |
-| [`/mobx/`](../mobx/README.md) | MobX integration layer — re-exports, action enforcement, and @bindable decorator | @bindable, @bindable.ref, makeObservable, observer, action, observable, computed, enforceActions |
+| [`/mobx/`](../mobx/README.md) | MobX integration layer — re-exports, action enforcement, and @bindable decorator | @bindable, @bindableRef, accessor, observer, action, observable, computed, enforceActions |
 
 ### Concepts
 
@@ -118,7 +132,7 @@ Cross-cutting documentation that spans multiple packages:
 | [Telemetry & Observability](./telemetry.md) | Client-side tracing, metrics, activity tracking, and timed logging composed via the Runner chain | Runner, CallContext, TraceService, MetricsService, span, traceparent, sampling, telemetryPrefix, metrics, activity tracking |
 | [Test Automation](./test-automation.md) | Test automation support via testId selectors | testId, TestSupportProps, data-testid, getTestId, FormField auto-testId, XH.getModelByTestId |
 | [Coding Conventions](./coding-conventions.md) | Coding conventions for imports, naming, class structure, component patterns, null handling, async, error handling, logging, and CSS | conventions, code style, imports, naming, TypeScript, class structure, hoistCmp, exports, async, error handling, logging, CSS, BEM |
-| [Version Compatibility](./version-compatibility.md) | Reference mapping hoist-react releases to required/recommended hoist-core versions | version matrix, hoist-core pairing, upgrade requirements, compatibility |
+| [Version Compatibility](./version-compatibility.md) | Reference mapping hoist-react releases to required/recommended hoist-core and hoist-dev-utils versions | version matrix, hoist-core pairing, hoist-dev-utils pairing, node version, upgrade requirements, compatibility |
 
 ### Supporting Packages
 
@@ -126,8 +140,9 @@ Cross-cutting documentation that spans multiple packages:
 |---------|-------------|------------|
 | [`/icon/`](../icon/README.md) | Factory-based icon system wrapping FontAwesome Pro | Icon singleton, IconProps, intent coloring, size variants, asHtml, fileIcon, Spinner, SpinnerProps |
 | [`/security/`](../security/README.md) | OAuth 2.0 client abstraction for Auth0 and Microsoft Entra ID (MSAL) | BaseOAuthClient, AuthZeroClient, MsalClient, Token, AccessTokenSpec, auto-refresh, re-login |
-| [`/kit/`](../kit/README.md) | Centralized wrappers for third-party libraries used by Hoist | installAgGrid, installHighcharts, Blueprint, Onsen, GoldenLayout, react-select, version constraints |
-| [`/inspector/`](../inspector/README.md) | Built-in developer tool for real-time inspection of Hoist instances and memory | InspectorPanel, StatsModel, InstancesModel, property watchlist, model leak detection |
+| [`/kit/`](../kit/README.md) | Centralized wrappers for third-party libraries used by Hoist | installAgGrid, installHighcharts, Blueprint, GoldenLayout, react-select, version constraints |
+| [`/kit/blueprint/`](../kit/blueprint/README.md) | Blueprint integration - wrapped components, element factories, and build-time icon stubbing | Blueprint, Popover, Dialog, element factories, blueprint icons, loadAllBlueprintJsIcons, upgrade checklist |
+| [`/inspector/`](../inspector/README.md) | Built-in developer tool for real-time inspection of Hoist instances and memory | InspectorPanel, InspectorModel, StatsModel, InstancesModel, DiagnosticsModel, property watchlist, model leak detection |
 | [`/styles/`](../styles/README.md) | CSS custom properties, theming, BEM naming, SCSS conventions, and utility classes | `--xh-*` CSS vars, vars.scss, XH.scss, dark theme, ThemeModel, BEM, `xh-` prefix, intent colors, utility classes |
 
 ### Other Packages
@@ -141,16 +156,18 @@ for planned coverage:
 
 | Document | Description |
 |----------|-------------|
-| [Build & Publish](./build-and-publish.md) | GitHub Actions workflows for linting, CodeQL analysis, and npm publishing of hoist-react |
-| [App Build & Deploy](./build-and-deploy-app.md) | Building and deploying full-stack Hoist applications (Gradle, Webpack, Docker) |
+| [Build & Publish](./build-and-publish.md) | GitHub Actions workflows for linting, unit tests, CodeQL analysis, and npm publishing of hoist-react |
+| [App Build & Deploy](./build-and-deploy-app.md) | Building and deploying full-stack Hoist applications (Gradle, Rsbuild, Docker) |
 | [Development Environment](./development-environment.md) | Local development environment setup for Hoist and app developers |
-| [Compilation Notes](./compilation-notes.md) | Notes on TypeScript/Babel compilation and build tooling internals |
+| [Unit Testing](./unit-testing.md) | Unit tests for apps and hoist-react: the `@xh/hoist/test-support` kit, the fake hoist-core server, writing tests, and CI reports |
+| [Compilation Notes](./compilation-notes.md) | Notes on TypeScript/SWC compilation, build tooling internals, and running an app against a local hoist-react checkout |
 
 ## Developer Tools
 
 | Tool | Description |
 |------|-------------|
 | [MCP Server](../mcp/README.md) | Model Context Protocol server providing AI assistants with structured access to documentation, TypeScript types, and code generation prompts |
+| [Companion Library Docs](./companion-library-docs.md) | How a library that builds on Hoist serves its docs through the MCP server and `hoist-docs` CLI, using a `hoist.docRegistry` field in its `package.json` |
 
 ## Upgrade Notes
 
@@ -165,7 +182,12 @@ breaking changes, before/after code examples, and verification checklists.
 
 | Version | Released | Difficulty | Key Changes |
 |---------|----------|------------|-------------|
-| [v86](./upgrade-notes/v86-upgrade-notes.md) | TBD | 🟠 MEDIUM | AG Grid 34→35, CodeInput → CodeMirror v6 (`mode`→`language`), FileChooser redesign, mobile DateInput native picker, `Runner` API + `withSpan` deprecation |
+| [v91](./upgrade-notes/v91-upgrade-notes.md) | TBD | 🟠 MEDIUM | CSS custom property overhaul (override hooks removed, units in values, renamed vars), element factory `children` key - both with codemods |
+| [v90](./upgrade-notes/v90-upgrade-notes.md) | 2026-11-02 | 🟢 LOW | numbro removed (`formatConfig`), desktop `DateInput` on react-day-picker 10, Onsen UI removed from mobile, `Column.textRenderer` on built-in column specs, panel splitter redesign, renderer import paths, removed libraries |
+| [v89](./upgrade-notes/v89-upgrade-notes.md) | 2026-10-13 | 🟢 LOW | TypeScript 7 (strongly recommended), `GridFilterModelConfig.fieldSpecs` no longer an allow-list |
+| [v88](./upgrade-notes/v88-upgrade-notes.md) | 2026-09-28 | 🔴 HIGH | TC39 decorators (`accessor`, no `makeObservable`) + dev-utils 16 / Rsbuild, MobX 7 named exports, AG Grid 36 + Theming API, React 19.3, v86 scheduled removals |
+| [v87](./upgrade-notes/v87-upgrade-notes.md) | TBD | 🟠 MEDIUM | React 19 + Floating UI popovers, data-layer perf overhaul (`leafMap`, `getCubeLeaves`, `StoreRecord.data` access), new column chooser + `RowDragModule`, hoist-core >= 40.5.0 |
+| [v86](./upgrade-notes/v86-upgrade-notes.md) | 2026-06-12 | 🟠 MEDIUM | AG Grid 34→35, CodeInput → CodeMirror v6 (`mode`→`language`), FileChooser redesign, mobile DateInput native picker, `Runner` API + `withSpan` deprecation |
 | [v85](./upgrade-notes/v85-upgrade-notes.md) | 2026-04-23 | 🟢 LOW | `InitContext` on `HoistService.initAsync()` / `HoistAppModel.initAsync()`, nested app-load spans, Swiper 11→12 |
 | [v84](./upgrade-notes/v84-upgrade-notes.md) | 2026-04-15 | 🟢 LOW | FontAwesome v7, icon-based Spinner, `getClassName` removal, hoistCmp `defaults` |
 | [v83](./upgrade-notes/v83-upgrade-notes.md) | 2026-03-24 | 🟢 LOW | TraceService, static defaults pattern, `downloadjs` removal, `SegmentedControl` |

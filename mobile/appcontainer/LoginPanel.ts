@@ -31,27 +31,28 @@ export const loginPanel = hoistCmp.factory({
             panel({
                 className: 'xh-login',
                 testId: 'xh-login',
-                item: div({
+                children: div({
                     className: 'xh-login__content',
-                    items: [
+                    children: [
                         box({
                             className: 'xh-login__icon',
-                            item: loginPanelIcon ?? Icon.shieldHalved({prefix: 'fas'})
+                            children: loginPanelIcon ?? Icon.shieldHalved({prefix: 'fas'})
                         }),
-                        div({className: 'xh-login__title', item: `Login to ${clientAppName}`}),
+                        div({className: 'xh-login__title', children: `Login to ${clientAppName}`}),
                         div({
                             className: 'xh-login__subtitle',
-                            item: 'Enter your credentials to continue.'
+                            children: 'Enter your credentials to continue.'
                         }),
                         form({
                             className: 'xh-login__fields',
-                            items: [
+                            children: [
                                 field({
                                     label: 'Username',
                                     input: textInput({
                                         bind: 'username',
                                         leftIcon: Icon.user(),
                                         autoComplete: 'username',
+                                        enablePasswordManagers: true,
                                         autoCapitalize: 'none',
                                         commitOnChange: true,
                                         testId: 'xh-login-username'
@@ -64,6 +65,7 @@ export const loginPanel = hoistCmp.factory({
                                         leftIcon: Icon.lock(),
                                         type: 'password',
                                         autoComplete: 'current-password',
+                                        enablePasswordManagers: true,
                                         commitOnChange: true,
                                         testId: 'xh-login-password'
                                     })
@@ -71,12 +73,12 @@ export const loginPanel = hoistCmp.factory({
                                 div({
                                     className: 'xh-login__message',
                                     omit: !loginMessage,
-                                    item: loginMessage
+                                    children: loginMessage
                                 }),
                                 div({
                                     className: 'xh-login__warning',
                                     omit: !warning,
-                                    item: warning
+                                    children: warning
                                 }),
                                 button({
                                     className: 'xh-login__submit',
@@ -102,7 +104,7 @@ const field = hoistCmp.factory({
     render({label, input}) {
         return div({
             className: 'xh-login__field',
-            items: [div({className: 'xh-login__field-label', item: label}), input]
+            children: [div({className: 'xh-login__field-label', children: label}), input]
         });
     }
 });

@@ -1,0 +1,97 @@
+/*
+ * This file belongs to Hoist, an application development toolkit
+ * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
+ *
+ * Copyright © 2026 Extremely Heavy Industries Inc.
+ */
+
+// Theme previews for `themeAppOption()`. Colors are fixed, not theme-aware,
+// so each card shows its own theme regardless of the active one.
+.xh-theme-preview {
+  display: flex;
+  flex-direction: column;
+  width: 64px;
+  height: 36px;
+  border: 1px solid rgba(0, 0, 0, 0.18);
+  border-radius: 5px;
+  overflow: hidden;
+
+  &__chrome {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    height: 9px;
+    padding: 0 4px;
+  }
+
+  &__dot {
+    width: 3px;
+    height: 3px;
+    border-radius: 50%;
+
+    &:nth-child(1) {
+      background: #ff5f57;
+    }
+
+    &:nth-child(2) {
+      background: #febc2e;
+    }
+
+    &:nth-child(3) {
+      background: #28c840;
+    }
+  }
+
+  &__content {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: 3px;
+    padding: 4px;
+  }
+
+  &__accent {
+    width: 60%;
+    height: 4px;
+    border-radius: 2px;
+    background: var(--xh-blue);
+  }
+
+  &__line {
+    height: 3px;
+    border-radius: 2px;
+    background: currentColor;
+    opacity: 0.28;
+
+    &--short {
+      width: 65%;
+    }
+  }
+
+  &--light {
+    background: #ffffff;
+    color: #1a1a1a;
+
+    .xh-theme-preview__chrome {
+      background: #ececec;
+    }
+  }
+
+  &--dark {
+    background: #21242b;
+    color: #e8e8e8;
+
+    .xh-theme-preview__chrome {
+      background: #15171c;
+    }
+  }
+
+  &--system {
+    color: #808080;
+    background: linear-gradient(135deg, #ffffff 0 49.5%, #21242b 50.5% 100%);
+
+    .xh-theme-preview__chrome {
+      background: linear-gradient(135deg, #ececec 0 49.5%, #15171c 50.5% 100%);
+    }
+  }
+}

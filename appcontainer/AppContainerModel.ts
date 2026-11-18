@@ -4,24 +4,20 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
+import type {AppState, CallContext, HoistAppModel, IdentityInfo, InitContext} from '@xh/hoist/core';
 import {
     AppSpec,
-    AppState,
-    CallContext,
     createElement,
-    HoistAppModel,
     HoistModel,
-    IdentityInfo,
-    InitContext,
     managed,
     RootRefreshContextModel,
     TaskObserver,
     XH
 } from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
-import {bindable, makeObservable, when as mobxWhen} from '@xh/hoist/mobx';
+import {bindable, when as mobxWhen} from '@xh/hoist/mobx';
 import {never, wait} from '@xh/hoist/promise';
-import {ReactNode} from 'react';
+import type {ReactNode} from 'react';
 import {createRoot} from 'react-dom/client';
 import {
     AlertBannerService,
@@ -50,6 +46,7 @@ import {compact, isEmpty} from 'lodash';
 import {AboutDialogModel} from './AboutDialogModel';
 import {BannerSourceModel} from './BannerSourceModel';
 import {ChangelogDialogModel} from './ChangelogDialogModel';
+import {ColChooserOptionsModel} from './ColChooserOptionsModel';
 import {ExceptionDialogModel} from './ExceptionDialogModel';
 import {FeedbackDialogModel} from './FeedbackDialogModel';
 import {ImpersonationBarModel} from './ImpersonationBarModel';
@@ -70,6 +67,8 @@ import {installServicesAsync} from '../core/impl/InstallServices';
  * Root object for Framework GUI State.
  */
 export class AppContainerModel extends HoistModel {
+    override xhName = 'appContainerModel';
+
     override telemetryPrefix = 'xh.client';
 
     private initCalled = false;
@@ -83,7 +82,7 @@ export class AppContainerModel extends HoistModel {
     //------------
     // Sub-models
     //------------
-    @managed appLoadObserver = TaskObserver.trackAll();
+    appLoadObserver = TaskObserver.trackAll();
     @managed appStateModel = new AppStateModel();
     @managed pageStateModel = new PageStateModel();
     @managed routerModel = new RouterModel();
@@ -103,13 +102,14 @@ export class AppContainerModel extends HoistModel {
     @managed sizingModeModel = new SizingModeModel();
     @managed viewportSizeModel = new ViewportSizeModel();
     @managed themeModel = new ThemeModel();
+    @managed colChooserOptionsModel = new ColChooserOptionsModel();
     @managed userAgentModel = new UserAgentModel();
 
     /**
      * Message shown on spinner while the application is in a pre-running state.
      * Update within `AppModel.initAsync()` to relay app-specific initialization status.
      */
-    @bindable initializingLoadMaskMessage: ReactNode;
+    @bindable accessor initializingLoadMaskMessage: ReactNode;
 
     /**
      * The last interactive login in the app. Hoist's security package will mark the last
@@ -120,11 +120,6 @@ export class AppContainerModel extends HoistModel {
      * @internal
      */
     lastRelogin: {started: number; completed: number} = null;
-
-    constructor() {
-        super();
-        makeObservable(this);
-    }
 
     /**
      * Main entry point. Initialize and render application code.
@@ -146,6 +141,8 @@ export class AppContainerModel extends HoistModel {
      * Triggers initial authentication and initialization of Hoist and application.
      */
     async initAsync() {
+        this.removeCacheBusterFromUrl();
+
         // Avoid bug where "Discarded" browser tabs can re-init an old version (see #3574)
         if (window.document['wasDiscarded']) {
             XH.reloadApp();
@@ -321,7 +318,8 @@ export class AppContainerModel extends HoistModel {
                     this.sizingModeModel,
                     this.viewportSizeModel,
                     this.themeModel,
-                    this.userAgentModel
+                    this.userAgentModel,
+                    this.colChooserOptionsModel
                 ];
                 models.forEach((m: any) => m.init?.());
 
@@ -335,6 +333,7 @@ export class AppContainerModel extends HoistModel {
         // App init phase
         this.setAppState('INITIALIZING_APP');
         this.appModel = createSingleton(this.appSpec.modelClass);
+        this.appModel.xhName ??= 'appModel';
         await this.runner(ctx)
             .span('appInit')
             .run(ctx => this.appModel.initAsync(ctx as InitContext));
@@ -389,6 +388,20 @@ export class AppContainerModel extends HoistModel {
         const env = XH.getEnv('appEnvironment'),
             {clientAppName} = this.appSpec;
         document.title = env === 'Production' ? clientAppName : `${clientAppName} (${env})`;
+    }
+
+    // Drop the param `XH.reloadApp()` appends to bypass the browser cache. Filter the raw query
+    // string rather than using URLSearchParams, which would re-encode the other params.
+    private removeCacheBusterFromUrl() {
+        const {pathname, search, hash} = window.location;
+        if (!search.includes('xhCacheBuster=')) return;
+
+        const params = search
+                .slice(1)
+                .split('&')
+                .filter(it => it && !it.startsWith('xhCacheBuster=')),
+            newSearch = params.length ? `?${params.join('&')}` : '';
+        window.history.replaceState(window.history.state, '', pathname + newSearch + hash);
     }
 
     private startRouter() {

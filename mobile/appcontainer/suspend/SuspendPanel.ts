@@ -5,7 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
-import {AppContainerModel} from '@xh/hoist/appcontainer/AppContainerModel';
+import type {AppContainerModel} from '@xh/hoist/appcontainer/AppContainerModel';
 import {XH, hoistCmp} from '@xh/hoist/core';
 import {vframe, div, p} from '@xh/hoist/cmp/layout';
 import {panel} from '@xh/hoist/mobile/cmp/panel';
@@ -56,20 +56,20 @@ export const suspendPanel = hoistCmp.factory<AppContainerModel>({
             testId: 'xh-suspend-panel',
             title,
             icon,
-            items: [
+            children: [
                 vframe({
                     className: 'xh-suspend-panel__content',
-                    items: [
+                    children: [
                         div({
                             className: 'xh-suspend-panel__text-container',
-                            items: [
-                                p({item: message, omit: !message}),
+                            children: [
+                                p({children: message, omit: !message}),
                                 p(`${XH.clientAppName} must be reloaded to continue.`)
                             ]
                         }),
                         div({
                             className: 'xh-suspend-panel__button-container',
-                            items: [
+                            children: [
                                 button({
                                     text: 'Reload Now',
                                     icon: Icon.refresh(),

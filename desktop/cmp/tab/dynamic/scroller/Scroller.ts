@@ -1,10 +1,12 @@
 import {hbox, vbox} from '@xh/hoist/cmp/layout';
-import {BoxProps, creates, hoistCmp, HoistProps} from '@xh/hoist/core';
+import type {BoxProps, HoistProps} from '@xh/hoist/core';
+import {creates, hoistCmp} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {ScrollerModel} from '@xh/hoist/desktop/cmp/tab/dynamic/scroller/ScrollerModel';
 import {Icon} from '@xh/hoist/icon';
-import {composeRefs, useOnResize} from '@xh/hoist/utils/react';
-import React, {Ref} from 'react';
+import {useComposedRefs, useOnResize} from '@xh/hoist/utils/react';
+import type {ReactElement, Ref} from 'react';
+import type React from 'react';
 
 /**
  * A scroller component that displays a content component with directional scroll buttons when the
@@ -30,15 +32,15 @@ export const [Scroller, scroller] = hoistCmp.withFactory<ScrollerProps>({
         return container({
             ...layoutProps,
             className,
-            items: [
+            children: [
                 scrollButton({direction: 'backward', model}),
                 content({
                     ...contentProps,
-                    ref: composeRefs(
+                    ref: useComposedRefs(
                         contentRef,
                         useOnResize(() => model.onViewportEvent())
                     )
-                }),
+                }) as ReactElement,
                 scrollButton({direction: 'forward', model})
             ]
         });

@@ -8,12 +8,14 @@ import '@xh/hoist/desktop/register';
 import {hoistCmp, useContextModel} from '@xh/hoist/core';
 import {div, vbox} from '@xh/hoist/cmp/layout';
 import {ZoneGridModel} from '@xh/hoist/cmp/zoneGrid';
-import {ZoneMapperModel} from '@xh/hoist/cmp/zoneGrid/impl/ZoneMapperModel';
+import type {ZoneMapperModel} from '@xh/hoist/cmp/zoneGrid/impl/ZoneMapperModel';
 import {zoneMapper} from '@xh/hoist/desktop/cmp/zoneGrid/impl/ZoneMapper';
 import {Icon} from '@xh/hoist/icon';
-import {popover, Position} from '@xh/hoist/kit/blueprint';
+import type {Position} from '@xh/hoist/kit/blueprint';
+import {popover} from '@xh/hoist/kit/blueprint';
 import {logError, stopPropagation, withDefault} from '@xh/hoist/utils/js';
-import {button, ButtonProps} from '../Button';
+import type {ButtonProps} from '../Button';
+import {button} from '../Button';
 
 export interface ZoneMapperButtonProps extends ButtonProps {
     /** ZoneGridModel to which this button should bind. Will find nearest in context if not provided. */
@@ -56,19 +58,20 @@ export const [ZoneMapperButton, zoneMapperButton] = hoistCmp.withFactory<ZoneMap
             isOpen,
             popoverClassName: 'xh-zone-mapper-popover',
             position: withDefault(popoverPosition, 'auto'),
-            item: button({
+            children: button({
                 icon: withDefault(icon, Icon.gridLarge()),
                 title: withDefault(title, 'Customize fields...'),
                 className,
                 disabled,
+                active: isOpen,
                 ...rest
             }),
             disabled,
             content: vbox({
                 onClick: stopPropagation,
                 onDoubleClick: stopPropagation,
-                items: [
-                    div({ref, className: 'xh-popup__title', item: 'Customize Fields'}),
+                children: [
+                    div({ref, className: 'xh-popup__title', children: 'Customize Fields'}),
                     zoneMapper({model: mapperModel})
                 ]
             }),

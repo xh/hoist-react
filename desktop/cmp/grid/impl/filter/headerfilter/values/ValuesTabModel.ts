@@ -4,17 +4,12 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {
-    GridFilterModel,
-    GridFilterRenderer,
-    GridFilterSortValueFn,
-    GridModel
-} from '@xh/hoist/cmp/grid';
+import {type ColumnCellClassRuleFn, GridFilterModel, GridModel} from '@xh/hoist/cmp/grid';
 import {HoistModel, managed} from '@xh/hoist/core';
 import type {FieldFilterOperator, FieldFilterSpec} from '@xh/hoist/data';
 import {checkbox} from '@xh/hoist/desktop/cmp/input';
 import {Icon} from '@xh/hoist/icon';
-import {action, bindable, computed, makeObservable, observable} from '@xh/hoist/mobx';
+import {action, bindable, computed, observableRef, computedStruct} from '@xh/hoist/mobx';
 import {
     castArray,
     difference,
@@ -22,12 +17,16 @@ import {
     isEmpty,
     isFunction,
     map,
+    mapValues,
     partition,
     uniq,
     without
 } from 'lodash';
-import {HeaderFilterModel} from '../HeaderFilterModel';
+import type {HeaderFilterModel} from '../HeaderFilterModel';
 
+/**
+ * @internal
+ */
 export class ValuesTabModel extends HoistModel {
     override xhImpl = true;
 
@@ -37,19 +36,19 @@ export class ValuesTabModel extends HoistModel {
     @managed gridModel: GridModel;
 
     /** List of currently checked values. */
-    @observable.ref pendingValues: any[] = [];
+    @observableRef accessor pendingValues: any[] = [];
 
     /** Bound search term for `StoreFilterField`. */
-    @bindable filterText: string = null;
+    @bindable accessor filterText: string = null;
 
     /**
      * Merge current filter with pendingValues on commit.
      * Used when commitOnChange is false.
      */
-    @bindable combineCurrentFilters: boolean = false;
+    @bindable accessor combineCurrentFilters: boolean = false;
 
     /** FieldFilter output by this model. */
-    @computed.struct
+    @computedStruct
     get filter(): FieldFilterSpec {
         return this.getFilter();
     }
@@ -111,7 +110,6 @@ export class ValuesTabModel extends HoistModel {
 
     constructor(headerFilterModel: HeaderFilterModel) {
         super();
-        makeObservable(this);
 
         this.headerFilterModel = headerFilterModel;
         this.gridModel = this.createGridModel();
@@ -275,7 +273,7 @@ export class ValuesTabModel extends HoistModel {
 
     private syncGrid() {
         const {values, pendingValues} = this;
-        const data = values.map(value => {
+        const data = map(values, value => {
             const isChecked = pendingValues.includes(value);
             return {value, isChecked};
         });
@@ -298,16 +296,35 @@ export class ValuesTabModel extends HoistModel {
             {headerFilterModel, fieldSpec} = this,
             {fieldType, column} = headerFilterModel;
 
-        // Default to the column's renderer/sortValue, but only where they apply to a bare value -
-        // we call them with the value alone (see below), so treat them as pure value transforms.
-        const renderer =
-                fieldSpec.renderer ??
-                (fieldType !== 'tags' ? (column.renderer as GridFilterRenderer) : null),
-            sortValue =
-                fieldSpec.sortValue ??
-                (fieldType !== 'tags' && isFunction(column.sortValue)
-                    ? (column.sortValue as GridFilterSortValueFn)
-                    : null);
+        // Default to the column's cell function and sortValue where they apply to a bare value.
+        // A text renderer stays one, so its cells render plain.
+        const col = fieldType !== 'tags' ? column : null,
+            textRenderer = fieldSpec.renderer ? null : col?.textRenderer,
+            renderer = fieldSpec.renderer ?? col?.renderer,
+            sortValue = fieldSpec.sortValue ?? (isFunction(col?.sortValue) ? col.sortValue : null),
+            // Each is called with the value alone, skips the blank placeholder and swallows a throw.
+            guard = (fn: (v: any, ...rest: any[]) => any) =>
+                fn &&
+                ((v: any) => {
+                    if (v === BLANK_PLACEHOLDER) return v;
+                    try {
+                        return fn(v);
+                    } catch {
+                        return v;
+                    }
+                }),
+            cellClassRules = mapValues(
+                fieldSpec.renderer ? null : col?.resolvedRenderer?.cellClassRules,
+                (rule): ColumnCellClassRuleFn =>
+                    ({value}) => {
+                        if (value === BLANK_PLACEHOLDER) return false;
+                        try {
+                            return rule({value} as any);
+                        } catch {
+                            return false;
+                        }
+                    }
+            );
 
         return new GridModel({
             store: {
@@ -365,24 +382,10 @@ export class ValuesTabModel extends HoistModel {
                         if (v2 === BLANK_PLACEHOLDER) return -1 * mul;
                         return defaultComparator(v1, v2);
                     },
-                    // Apply renderer/sortValue as pure value transforms - pass no context, skip the
-                    // blank placeholder, and fall back to the raw value if either throws.
-                    sortValue: v => {
-                        if (v === BLANK_PLACEHOLDER || !sortValue) return v;
-                        try {
-                            return sortValue(v);
-                        } catch {
-                            return v;
-                        }
-                    },
-                    renderer: v => {
-                        if (v === BLANK_PLACEHOLDER || !renderer) return v;
-                        try {
-                            return renderer(v);
-                        } catch {
-                            return v;
-                        }
-                    }
+                    cellClassRules,
+                    textRenderer: guard(textRenderer),
+                    renderer: guard(renderer),
+                    sortValue: guard(sortValue)
                 }
             ],
             xhImpl: true

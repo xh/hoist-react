@@ -4,10 +4,13 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {HoistInputModel, HoistInputProps, useHoistInputModel} from '@xh/hoist/cmp/input';
+import type {HoistInputProps} from '@xh/hoist/cmp/input';
+import {HoistInputModel, useHoistInputModel} from '@xh/hoist/cmp/input';
 import {div} from '@xh/hoist/cmp/layout';
-import {hoistCmp, HoistProps, StyleProps} from '@xh/hoist/core';
+import type {HoistProps, StyleProps} from '@xh/hoist/core';
+import {hoistCmp} from '@xh/hoist/core';
 import '@xh/hoist/mobile/register';
+import {TEST_ID} from '@xh/hoist/utils/js';
 import './Label.scss';
 
 export interface LabelProps extends HoistProps, HoistInputProps, StyleProps {}
@@ -30,11 +33,15 @@ class LabelInputModel extends HoistInputModel {
 //-----------------------
 // Implementation
 //-----------------------
-const cmp = hoistCmp.factory(({model, className, style, width, children}, ref) => {
-    return div({
-        className,
-        style: {...style, whiteSpace: 'nowrap', width},
-        items: children,
-        ref
-    });
-});
+const cmp = hoistCmp.factory(
+    ({model, className, style, width, children, testId, domAttrs}, ref) => {
+        return div({
+            className,
+            [TEST_ID]: testId,
+            ...domAttrs,
+            style: {...style, whiteSpace: 'nowrap', width},
+            children,
+            ref
+        });
+    }
+);

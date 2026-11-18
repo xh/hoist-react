@@ -5,9 +5,10 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {HoistBase} from '@xh/hoist/core';
-import {Field, FieldFilter, FieldType, FilterValueSource, genDisplayName} from '@xh/hoist/data';
-import {compact, isArray, isEmpty} from 'lodash';
-import {FieldFilterOperator} from './Types';
+import type {Field, FieldType, FilterValueSource} from '@xh/hoist/data';
+import {FieldFilter, genDisplayName} from '@xh/hoist/data';
+import {isArray, isEmpty} from 'lodash';
+import type {FieldFilterOperator} from './Types';
 
 /**
  * Base configuration for field-level filtering options - defines available operators, value
@@ -91,7 +92,7 @@ export abstract class BaseFilterFieldSpec extends HoistBase {
         this.ops = this.parseOperators(ops);
         this.forceSelection = forceSelection ?? false;
         this.values = isArray(values)
-            ? compact(values)
+            ? values.filter(v => v != null)
             : this.isBoolFieldType
               ? [true, false]
               : null;

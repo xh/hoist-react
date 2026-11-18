@@ -4,47 +4,39 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {
+import type {
     CellClickedEvent,
     CellContextMenuEvent,
     CellDoubleClickedEvent,
     RowClickedEvent,
     RowDoubleClickedEvent
 } from '@xh/hoist/kit/ag-grid';
-import {
-    Column,
+import type {
     ColumnRenderer,
     ColumnSpec,
-    Grid,
     GridConfig,
+    GridContextMenuItemLike,
     GridContextMenuSpec,
+    GridEnsureVisibleOptions,
     GridGroupSortFn,
-    GridModel,
-    GridSorter,
+    GridLikeModel,
+    GridSelectFirstOptions,
+    GridSelectOptions,
     GridSorterLike,
     GroupRowRenderer,
     RowClassFn,
     RowClassRuleFn,
     TreeStyle
 } from '@xh/hoist/cmp/grid';
-import {
+import {Column, Grid, GridModel, GridSorter} from '@xh/hoist/cmp/grid';
+import type {
     ZoneGridColConfig,
-    zoneGridRenderer,
     ZoneGridSubField
 } from '@xh/hoist/cmp/zoneGrid/impl/ZoneGridRenderer';
-import {
-    Awaitable,
-    HoistModel,
-    LoadSpec,
-    managed,
-    PlainObject,
-    Some,
-    Thunkable,
-    VSide,
-    XH
-} from '@xh/hoist/core';
-import {
-    RecordAction,
+import {zoneGridRenderer} from '@xh/hoist/cmp/zoneGrid/impl/ZoneGridRenderer';
+import type {Awaitable, LoadSpec, PlainObject, Some, Thunkable, VSide} from '@xh/hoist/core';
+import {HoistModel, managed, XH} from '@xh/hoist/core';
+import type {
     RecordId,
     Store,
     StoreConfig,
@@ -55,14 +47,26 @@ import {
     StoreSelectionModel,
     StoreTransaction
 } from '@xh/hoist/data';
+import {RecordAction} from '@xh/hoist/data';
 import {Icon} from '@xh/hoist/icon';
-import {action, bindable, makeObservable, observable} from '@xh/hoist/mobx';
+import {action, observableRef, bindableRef} from '@xh/hoist/mobx';
 import {executeIfFunction, throwIf, withDefault} from '@xh/hoist/utils/js';
-import {castArray, find, forOwn, isEmpty, isFinite, isPlainObject, isString} from 'lodash';
-import {ReactNode} from 'react';
+import {
+    castArray,
+    find,
+    flatMap,
+    forOwn,
+    isEmpty,
+    isFinite,
+    isPlainObject,
+    isString,
+    uniq
+} from 'lodash';
+import type {ReactNode} from 'react';
 import {initPersist} from './impl/InitPersist';
-import {ZoneMapperConfig, ZoneMapperModel} from './impl/ZoneMapperModel';
-import {Zone, ZoneGridModelPersistOptions, ZoneLimit, ZoneMapping} from './Types';
+import type {ZoneMapperConfig} from './impl/ZoneMapperModel';
+import {ZoneMapperModel} from './impl/ZoneMapperModel';
+import type {Zone, ZoneGridModelPersistOptions, ZoneLimit, ZoneMapping} from './Types';
 
 /**
  * Configuration for a {@link ZoneGridModel} - a card-style grid that arranges column data
@@ -270,11 +274,10 @@ export interface ZoneGridConfig<
     contextMenu?: GridContextMenuSpec;
 
     /**
-     * Governs if the grid should reuse a limited set of DOM elements for columns visible in the
-     * scroll area (versus rendering all columns).  Consider this performance optimization for
-     * grids with a very large number of columns obscured by horizontal scrolling. Note that
-     * setting this value to true may limit the ability of the grid to autosize offscreen columns
-     * effectively. Default false.
+     * True (default) to render cells only for the columns within or near the visible scroll area,
+     * as ag-Grid does by default. Set false to render the cells of every column, e.g. for test
+     * automation that must find offscreen cells in the DOM.
+     * See {@link GridConfig.useVirtualColumns}.
      */
     useVirtualColumns?: boolean;
 
@@ -307,6 +310,9 @@ export interface ZoneGridConfig<
 
     /** @internal */
     xhImpl?: boolean;
+
+    /** See {@link HoistBase.xhName}. */
+    xhName?: string;
 }
 
 /**
@@ -329,23 +335,23 @@ export interface ZoneGridConfig<
 export class ZoneGridModel<
     TData extends PlainObject = PlainObject,
     TId extends StoreRecordId = RecordId<TData>
-> extends HoistModel {
+>
+    extends HoistModel
+    implements GridLikeModel
+{
     @managed
     gridModel: GridModel<TData, TId>;
 
     @managed
     mapperModel: ZoneMapperModel;
 
-    @observable.ref
-    mappings: Record<Zone, ZoneMapping[]>;
+    @observableRef accessor mappings: Record<Zone, ZoneMapping[]>;
 
     labelRenderers: Record<string, ColumnRenderer>;
 
-    @bindable.ref
-    leftColumnSpec: Partial<ColumnSpec>;
+    @bindableRef accessor leftColumnSpec: Partial<ColumnSpec>;
 
-    @bindable.ref
-    rightColumnSpec: Partial<ColumnSpec>;
+    @bindableRef accessor rightColumnSpec: Partial<ColumnSpec>;
 
     availableColumns: ColumnSpec[];
     limits: Partial<Record<Zone, ZoneLimit>>;
@@ -357,7 +363,6 @@ export class ZoneGridModel<
 
     constructor(config: ZoneGridConfig<TData, TId>) {
         super();
-        makeObservable(this);
 
         const {
             columns,
@@ -373,8 +378,10 @@ export class ZoneGridModel<
             restoreDefaultsFn,
             restoreDefaultsWarning,
             persistWith,
+            xhName = null,
             ...rest
         } = config;
+        this.xhName = xhName;
 
         this.availableColumns = columns
             .filter(it => !executeIfFunction(it.omit))
@@ -401,6 +408,7 @@ export class ZoneGridModel<
         this.setGroupBy(groupBy);
 
         this.mapperModel = this.parseMapperModel(zoneMapperModel);
+        if (this.mapperModel) this.mapperModel.xhName = this.childXhName('mapperModel');
         if (persistWith) initPersist(this, persistWith);
 
         this.addReaction({
@@ -451,7 +459,18 @@ export class ZoneGridModel<
         this.gridModel.setColumns(this.getColumns());
     }
 
-    getDefaultContextMenu = () => [
+    /**
+     * Columns backing the fields currently mapped to any zone. These columns are hidden within the
+     * underlying GridModel, but their fields are what the user sees rendered within each row.
+     */
+    getMappedColumns(): Column[] {
+        const fields = uniq(
+            flatMap(this.mappings, zoneMappings => zoneMappings.map(it => it.field))
+        );
+        return this.gridModel.getLeafColumns().filter(col => fields.includes(col.field));
+    }
+
+    getDefaultContextMenu = (): GridContextMenuItemLike[] => [
         'filter',
         '-',
         'copy',
@@ -506,6 +525,10 @@ export class ZoneGridModel<
         return this.gridModel.store;
     }
 
+    get innerGridModel(): GridModel {
+        return this.gridModel;
+    }
+
     get empty() {
         return this.gridModel.empty;
     }
@@ -534,10 +557,7 @@ export class ZoneGridModel<
         return this.gridModel.groupBy;
     }
 
-    selectAsync(
-        records: Some<StoreRecordOrId>,
-        opts: {ensureVisible?: boolean; clearSelection?: boolean}
-    ) {
+    selectAsync(records: Some<StoreRecordOrId>, opts?: GridSelectOptions) {
         return this.gridModel.selectAsync(records, opts);
     }
 
@@ -545,12 +565,12 @@ export class ZoneGridModel<
         return this.gridModel.preSelectFirstAsync();
     }
 
-    selectFirstAsync(opts: {ensureVisible?: boolean} = {}) {
+    selectFirstAsync(opts?: GridSelectFirstOptions) {
         return this.gridModel.selectFirstAsync(opts);
     }
 
-    ensureSelectionVisibleAsync() {
-        return this.gridModel.ensureSelectionVisibleAsync();
+    ensureSelectionVisibleAsync(opts?: GridEnsureVisibleOptions) {
+        return this.gridModel.ensureSelectionVisibleAsync(opts);
     }
 
     override doLoadAsync(loadSpec: LoadSpec) {
@@ -578,6 +598,7 @@ export class ZoneGridModel<
     //-----------------------
     private createGridModel(config: GridConfig): GridModel<TData, TId> {
         return new GridModel<TData, TId>({
+            xhName: this.childXhName('gridModel'),
             ...config,
             xhImpl: true,
             contextMenu: withDefault(config.contextMenu, this.getDefaultContextMenu),
@@ -632,7 +653,7 @@ export class ZoneGridModel<
         });
 
         const zoneGridConfig: ZoneGridColConfig = {
-            mainRenderer: primaryCol.renderer,
+            mainRenderer: primaryCol.resolvedRenderer,
             delimiter,
             subFields
         };

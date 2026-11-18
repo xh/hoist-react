@@ -6,7 +6,7 @@
  */
 import {fmtDateTime} from '@xh/hoist/format';
 import * as Col from '@xh/hoist/cmp/grid/columns';
-import {ColumnSpec} from '@xh/hoist/cmp/grid/columns';
+import type {ColumnSpec} from '@xh/hoist/cmp/grid/columns';
 
 export const owner: ColumnSpec = {
     field: {name: 'owner', type: 'string'},

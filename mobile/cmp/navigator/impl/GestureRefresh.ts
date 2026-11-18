@@ -7,7 +7,6 @@
 import {div, frame} from '@xh/hoist/cmp/layout';
 import {creates, hoistCmp} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
-import {gestureDetector} from '@xh/hoist/kit/onsen';
 import classNames from 'classnames';
 import './GestureRefresh.scss';
 import {GestureRefreshModel} from './GestureRefreshModel';
@@ -22,12 +21,13 @@ export const gestureRefresh = hoistCmp.factory({
     render({model, children}) {
         return frame(
             refreshIndicator(),
-            gestureDetector({
+            div({
                 className: 'xh-gesture-refresh',
-                onDragStart: model.onDragStart,
-                onDrag: model.onDrag,
-                onDragEnd: model.onDragEnd,
-                item: children
+                onTouchStart: model.onTouchStart,
+                onTouchMove: model.onTouchMove,
+                onTouchEnd: model.onTouchEnd,
+                onTouchCancel: model.onTouchEnd,
+                children
             })
         );
     }
@@ -50,6 +50,6 @@ const refreshIndicator = hoistCmp.factory<GestureRefreshModel>(({model}) => {
             left: '50%',
             transform: `translateX(-50%) rotate(${degrees}deg)`
         },
-        item: Icon.refresh()
+        children: Icon.refresh()
     });
 });

@@ -4,18 +4,12 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {FilterChooserFilter, FilterChooserModel} from '@xh/hoist/cmp/filter';
+import type {FilterChooserFilter} from '@xh/hoist/cmp/filter';
+import {FilterChooserModel} from '@xh/hoist/cmp/filter';
 import {box, div, hbox, hframe, vbox} from '@xh/hoist/cmp/layout';
-import {
-    hoistCmp,
-    HoistModel,
-    HoistProps,
-    LayoutProps,
-    lookup,
-    useLocalModel,
-    uses
-} from '@xh/hoist/core';
-import {bindable, makeObservable} from '@xh/hoist/mobx';
+import type {HoistProps, LayoutProps} from '@xh/hoist/core';
+import {hoistCmp, HoistModel, lookup, useLocalModel, uses} from '@xh/hoist/core';
+import {bindable} from '@xh/hoist/mobx';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {select} from '@xh/hoist/desktop/cmp/input';
 import '@xh/hoist/desktop/register';
@@ -26,7 +20,8 @@ import {getLayoutProps, splitLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import {isEmpty, sortBy} from 'lodash';
 import {badge} from '@xh/hoist/cmp/badge';
-import {cloneElement, ReactElement} from 'react';
+import type {ReactElement} from 'react';
+import {cloneElement} from 'react';
 import './FilterChooser.scss';
 
 export interface FilterChooserProps extends HoistProps<FilterChooserModel>, LayoutProps {
@@ -119,12 +114,12 @@ const filterChooserControl = hoistCmp.factory<FilterChooserControlProps>({
             ref,
             className,
             ...layoutProps,
-            item: popover({
-                item: hframe(
+            children: popover({
+                children: hframe(
                     badge({
                         omit: !displayCount || tagCount < 1,
                         className: 'xh-filter-chooser__count',
-                        item: tagCount
+                        children: tagCount
                     }),
                     select({
                         flex: 1,
@@ -198,13 +193,13 @@ const popoverFilterChooser = hoistCmp.factory<FilterChooserProps>({
             ref,
             className: classNames(className, 'xh-filter-chooser--popover'),
             ...layoutProps,
-            item: popover({
+            children: popover({
                 isOpen: popoverIsOpen,
                 popoverClassName: 'xh-filter-chooser__popover',
                 matchTargetWidth: true,
                 minimal: true,
                 position: 'bottom',
-                item: filterChooserControl({
+                children: filterChooserControl({
                     model,
                     flex: 1,
                     className: 'xh-filter-chooser__trigger',
@@ -249,13 +244,7 @@ class FilterChooserLocalModel extends HoistModel {
     @lookup(FilterChooserModel)
     model: FilterChooserModel;
 
-    @bindable
-    popoverIsOpen: boolean = false;
-
-    constructor() {
-        super();
-        makeObservable(this);
-    }
+    @bindable accessor popoverIsOpen: boolean = false;
 
     open() {
         this.popoverIsOpen = true;
@@ -302,11 +291,11 @@ const fieldOption = hoistCmp.factory({
             displayOps = [...ops, 'is']; // Always include the 'is' pseudo-operator so users know to try to use it.
         return hframe({
             className: 'xh-filter-chooser-option__field',
-            items: [
-                div({className: 'prefix', item: 'e.g.'}),
-                div({className: 'name', item: displayName}),
-                div({className: 'operators', item: '[ ' + displayOps.join(', ') + ' ]'}),
-                div({className: 'example', item: example})
+            children: [
+                div({className: 'prefix', children: 'e.g.'}),
+                div({className: 'name', children: displayName}),
+                div({className: 'operators', children: '[ ' + displayOps.join(', ') + ' ]'}),
+                div({className: 'example', children: example})
             ]
         });
     }
@@ -320,7 +309,7 @@ const minimalFieldOption = hoistCmp.factory({
         const {displayName} = fieldSpec;
         return hframe({
             className: 'xh-filter-chooser-option__minimal-field',
-            item: displayName
+            children: displayName
         });
     }
 });
@@ -331,10 +320,10 @@ const filterOption = hoistCmp.factory({
     render({fieldSpec, displayOp, displayValue}) {
         return hframe({
             className: 'xh-filter-chooser-option',
-            items: [
-                div({className: 'name', item: fieldSpec.displayName}),
-                div({className: 'operator', item: displayOp}),
-                div({className: 'value', item: displayValue})
+            children: [
+                div({className: 'name', children: fieldSpec.displayName}),
+                div({className: 'operator', children: displayOp}),
+                div({className: 'value', children: displayValue})
             ]
         });
     }
@@ -346,7 +335,7 @@ const messageOption = hoistCmp.factory({
     render({label}) {
         return hframe({
             className: 'xh-filter-chooser-option__message',
-            item: label
+            children: label
         });
     }
 });
@@ -391,7 +380,10 @@ const favoritesMenu = hoistCmp.factory<FilterChooserModel>({
             })
         );
 
-        return vbox(div({className: 'xh-popup__title', item: 'Favorites'}), menu({items}));
+        return vbox(
+            div({className: 'xh-popup__title', children: 'Favorites'}),
+            menu({children: items})
+        );
     }
 });
 
@@ -418,7 +410,7 @@ const favoriteTag = hoistCmp.factory({
     render({label}) {
         return div({
             className: 'xh-filter-chooser-favorite__tag',
-            item: label
+            children: label
         });
     }
 });

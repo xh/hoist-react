@@ -5,15 +5,17 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {div} from '@xh/hoist/cmp/layout';
-import {hoistCmp, HoistProps, HoistUser, MenuItemLike, XH} from '@xh/hoist/core';
-import {ButtonProps, button} from '@xh/hoist/desktop/cmp/button';
+import type {HoistProps, HoistUser, MenuItemLike} from '@xh/hoist/core';
+import {hoistCmp, XH} from '@xh/hoist/core';
+import type {ButtonProps} from '@xh/hoist/desktop/cmp/button';
+import {button} from '@xh/hoist/desktop/cmp/button';
 import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
 import {menu, popover} from '@xh/hoist/kit/blueprint';
-import {parseMenuItems} from '@xh/hoist/utils/impl';
+import {parseMenuItems} from '@xh/hoist/desktop/cmp/menu/impl/MenuItems';
 import {withDefault} from '@xh/hoist/utils/js';
 import {isFunction} from 'lodash';
-import {ReactNode} from 'react';
+import type {ReactNode} from 'react';
 
 export interface AppMenuButtonProps extends ButtonProps {
     /**
@@ -96,7 +98,7 @@ export const [AppMenuButton, appMenuButton] = hoistCmp.withFactory<AppMenuButton
             disabled,
             position: 'bottom-right',
             minimal: true,
-            item: button({
+            children: button({
                 icon: renderWithUserProfile ? null : Icon.menu(),
                 text: renderWithUserProfile ? userProfile({renderWithUserProfile}) : null,
                 disabled,
@@ -105,7 +107,7 @@ export const [AppMenuButton, appMenuButton] = hoistCmp.withFactory<AppMenuButton
             popoverClassName: 'xh-app-menu-popover',
             content: menu({
                 className: 'xh-app-menu',
-                items: buildMenuItems(props)
+                children: buildMenuItems(props)
             })
         });
     }
@@ -121,7 +123,7 @@ const userProfile = hoistCmp.factory<
     render({renderWithUserProfile}) {
         return div({
             className: 'xh-app-menu-button__user-profile',
-            item: isFunction(renderWithUserProfile)
+            children: isFunction(renderWithUserProfile)
                 ? renderWithUserProfile(XH.getUser())
                 : XH.getUserInitials()
         });

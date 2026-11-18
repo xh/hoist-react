@@ -6,7 +6,7 @@
  */
 import {hoistCmp} from '@xh/hoist/core';
 import {box, div, vbox, vspacer} from '@xh/hoist/cmp/layout';
-import {MaskProps} from '@xh/hoist/cmp/mask';
+import type {MaskProps} from '@xh/hoist/cmp/mask';
 import {spinner as spinnerCmp} from '@xh/hoist/cmp/spinner';
 import '@xh/hoist/mobile/register';
 import './Mask.scss';
@@ -21,12 +21,12 @@ export const maskImpl = hoistCmp.factory<MaskProps>({
             ref,
             onClick,
             className,
-            item: vbox({
+            children: vbox({
                 className: 'xh-mask-body',
-                items: [
+                children: [
                     spinner ? spinnerCmp() : null,
                     spinner ? vspacer(10) : null,
-                    message ? box({className: 'xh-mask-text', item: message}) : null
+                    message ? box({className: 'xh-mask-text', children: message}) : null
                 ]
             })
         });

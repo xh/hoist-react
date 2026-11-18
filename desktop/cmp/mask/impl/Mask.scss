@@ -4,6 +4,22 @@
   flex-direction: column;
   justify-content: center;
 
+  &--inline {
+    inset: 0;
+    position: absolute;
+    user-select: none;
+    z-index: 20; // Blueprint's overlay z-index, which other components stack against.
+
+    // Backdrop as a pseudo-element, so the fade leaves the spinner and text opaque.
+    &::before {
+      animation: xh-mask-fade-in 200ms cubic-bezier(0.4, 1, 0.75, 0.9);
+      background-color: var(--xh-mask-bg);
+      content: '';
+      inset: 0;
+      position: absolute;
+    }
+  }
+
   .bp6-overlay-backdrop {
     background-color: var(--xh-mask-bg);
   }
@@ -15,11 +31,17 @@
     .xh-mask-text {
       background-color: var(--xh-mask-text-bg);
       border: var(--xh-mask-text-border);
-      border-radius: var(--xh-border-radius-px);
+      border-radius: var(--xh-border-radius);
       color: var(--xh-mask-text-color);
       max-width: 200px;
-      padding: var(--xh-pad-half-px);
+      padding: var(--xh-spacing-half);
       text-align: center;
     }
+  }
+}
+
+@keyframes xh-mask-fade-in {
+  from {
+    opacity: 0;
   }
 }

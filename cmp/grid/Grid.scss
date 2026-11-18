@@ -16,6 +16,7 @@
     display: flex;
     flex-direction: row;
     align-items: center;
+    gap: var(--xh-spacing-half);
     min-height: 32px;
     width: 100%;
 
@@ -23,8 +24,9 @@
       cursor: pointer;
     }
 
+    // The label sizes to its text, so the expand control sits right after it.
     span {
-      flex: 1;
+      min-width: 0;
       overflow: hidden;
       text-overflow: ellipsis;
     }
@@ -71,23 +73,27 @@
   }
 
   .xh-column-header-align-right {
-    .xh-grid-header,
-    .xh-grid-group-header {
+    .xh-grid-header {
       text-align: right;
+    }
+    .xh-grid-group-header {
+      justify-content: flex-end;
     }
   }
 
   .xh-column-header-align-center {
-    .xh-grid-header,
-    .xh-grid-group-header {
+    .xh-grid-header {
       text-align: center;
+    }
+    .xh-grid-group-header {
+      justify-content: center;
     }
   }
 
-  // Floating viewports host total rows.
-  .ag-floating-bottom,
-  .ag-floating-top {
-    // Background on viewport itself covers area left blank by presence of a flex column.
+  // Pinned-row containers host total rows.
+  .ag-grid-pinned-bottom-rows-container,
+  .ag-grid-pinned-top-rows-container {
+    // Background on container itself covers area left blank by presence of a flex column.
     background-color: var(--xh-grid-total-row-bg);
 
     .ag-row-pinned.ag-row-first {
@@ -104,40 +110,63 @@
     padding-right: 0;
   }
 
-  // Render badge on cells with validation issues
-  .ag-cell.xh-cell--invalid,
-  .ag-cell.xh-cell--warning,
+  // Cell corner flags - small triangular markers in a cell's top-right corner, colored by Intent.
+  // Driven by `Column.cellFlag`, and by the framework to surface cell validation state.
+  .ag-cell.xh-cell--flag-primary {
+    --xh-grid-cell-flag-color: var(--xh-intent-primary);
+  }
+
+  .ag-cell.xh-cell--flag-success {
+    --xh-grid-cell-flag-color: var(--xh-intent-success);
+  }
+
+  .ag-cell.xh-cell--flag-warning {
+    --xh-grid-cell-flag-color: var(--xh-intent-warning);
+  }
+
+  .ag-cell.xh-cell--flag-danger {
+    --xh-grid-cell-flag-color: var(--xh-intent-danger);
+  }
+
+  // DEPRECATED - legacy validation flag classes, superseded by the intent-keyed classes above.
+  // Hoist no longer emits these; they are retained only so that an app applying them directly
+  // (e.g. via its own `cellClassRules`) continues to render a flag. Remove in a future major.
   .ag-cell.xh-cell--info {
+    --xh-grid-cell-flag-color: var(--xh-intent-primary);
+  }
+
+  .ag-cell.xh-cell--warning {
+    --xh-grid-cell-flag-color: var(--xh-intent-warning);
+  }
+
+  .ag-cell.xh-cell--invalid {
+    --xh-grid-cell-flag-color: var(--xh-intent-danger);
+  }
+
+  .ag-cell[class*='xh-cell--flag-'],
+  .ag-cell.xh-cell--info,
+  .ag-cell.xh-cell--warning,
+  .ag-cell.xh-cell--invalid {
+    // Drawn as a triangle via two colored borders meeting at the cell's top-right corner.
     &::before {
       content: '';
       position: absolute;
       top: 0;
       right: 0;
       border-color: transparent;
+      border-top-color: var(--xh-grid-cell-flag-color, transparent);
+      border-right-color: var(--xh-grid-cell-flag-color, transparent);
       border-style: solid;
+      // Sized per grid sizing mode - see the size-mode blocks below.
+      border-width: var(--xh-grid-cell-flag-size, 5px);
     }
 
-    // Render badge on top of nested editor, and move to account for padding while editing
+    // Render flag on top of a nested editor, nudged to clear the editor's padding.
     &.ag-cell-inline-editing::before {
       z-index: 1;
       margin-top: 1px;
       margin-right: 3px;
     }
-  }
-
-  .ag-cell.xh-cell--invalid::before {
-    border-right-color: var(--xh-intent-danger);
-    border-top-color: var(--xh-intent-danger);
-  }
-
-  .ag-cell.xh-cell--warning::before {
-    border-right-color: var(--xh-intent-warning);
-    border-top-color: var(--xh-intent-warning);
-  }
-
-  .ag-cell.xh-cell--info::before {
-    border-right-color: var(--xh-intent-primary);
-    border-top-color: var(--xh-intent-primary);
   }
 
   // Render left / right group borders
@@ -149,37 +178,23 @@
     @include AgGrid.group-border(right);
   }
 
+  // Corner flag size by grid sizing mode. Apps may override per mode, e.g.
+  // `.xh-ag-grid--standard {--xh-grid-cell-flag-size: 8px;}`.
   .xh-ag-grid {
     &--tiny {
-      .ag-cell.xh-cell--invalid::before,
-      .ag-cell.xh-cell--warning::before,
-      .ag-cell.xh-cell--info::before {
-        border-width: 3px;
-      }
+      --xh-grid-cell-flag-size: 3px;
     }
 
     &--compact {
-      .ag-cell.xh-cell--invalid::before,
-      .ag-cell.xh-cell--warning::before,
-      .ag-cell.xh-cell--info::before {
-        border-width: 4px;
-      }
+      --xh-grid-cell-flag-size: 4px;
     }
 
     &--standard {
-      .ag-cell.xh-cell--invalid::before,
-      .ag-cell.xh-cell--warning::before,
-      .ag-cell.xh-cell--info::before {
-        border-width: 5px;
-      }
+      --xh-grid-cell-flag-size: 5px;
     }
 
     &--large {
-      .ag-cell.xh-cell--invalid::before,
-      .ag-cell.xh-cell--warning::before,
-      .ag-cell.xh-cell--info::before {
-        border-width: 6px;
-      }
+      --xh-grid-cell-flag-size: 6px;
     }
   }
 }
@@ -209,7 +224,7 @@
 
   // Adjust left padding for tree columns.
   .ag-cell.xh-tree-column {
-    padding-left: calc(var(--xh-grid-tree-indent) - var(--xh-grid-tree-icon-px));
+    padding-left: calc(var(--xh-grid-tree-indent) - var(--xh-grid-tree-icon-size));
   }
 
   // Suppress (almost all) left padding in tree column header when actively showing expand/collapse
@@ -243,7 +258,7 @@
       .xh-ag-grid--show-hover {
         .ag-row:not(.ag-row-level-#{$i}) {
           &.ag-row.ag-row-hover:not(.ag-full-width-row):not(.ag-row-selected):not(.ag-row-pinned) {
-            background-color: var(--xh-grid-bg-hover);
+            background-color: var(--xh-grid-row-hover-bg);
           }
         }
       }
@@ -251,16 +266,16 @@
 
     // With colors
     &.xh-grid--tree-style-colors.xh-grid--max-depth-#{$i} {
-      .ag-floating-bottom,
-      .ag-floating-top {
-        background-color: var(--xh-grid-tree-group-color-level-0);
+      .ag-grid-pinned-bottom-rows-container,
+      .ag-grid-pinned-top-rows-container {
+        background-color: var(--xh-grid-tree-group-level-0-bg);
       }
 
       @for $level from 0 to 9 {
         .ag-row.ag-row-level-#{$level}:not(.ag-row-level-#{$i}) {
           &:not(.ag-row-selected),
           &.ag-row.ag-row-odd:not(.ag-full-width-row):not(.ag-row-selected) {
-            background-color: var(--xh-grid-tree-group-color-level-#{$level});
+            background-color: var(--xh-grid-tree-group-level-#{$level}-bg);
           }
         }
       }
@@ -274,12 +289,12 @@
       }
     }
 
-    // Floating viewports host total rows.
-    .ag-floating-bottom {
+    // Pinned-row containers host total rows.
+    .ag-grid-pinned-bottom-rows-container {
       border-color: var(--xh-grid-tree-group-border-color);
     }
 
-    .ag-floating-top {
+    .ag-grid-pinned-top-rows-container {
       border-color: var(--xh-grid-tree-group-border-color);
     }
   }
@@ -315,7 +330,7 @@
       .xh-ag-grid--show-hover {
         .ag-row:not(.ag-row-level-#{$i}) {
           &.ag-row.ag-row-hover:not(.ag-full-width-row):not(.ag-row-selected):not(.ag-row-pinned) {
-            background-color: var(--xh-grid-bg-hover);
+            background-color: var(--xh-grid-row-hover-bg);
           }
         }
       }
@@ -323,16 +338,16 @@
 
     // With colors
     &.xh-grid--tree-style-colors.xh-grid--max-depth-#{$i} {
-      .ag-floating-bottom,
-      .ag-floating-top {
-        background-color: var(--xh-grid-tree-group-color-level-0);
+      .ag-grid-pinned-bottom-rows-container,
+      .ag-grid-pinned-top-rows-container {
+        background-color: var(--xh-grid-tree-group-level-0-bg);
       }
 
       @for $level from 0 to 9 {
         .ag-row.ag-row-level-#{$level}:not(.ag-row-level-#{$i}) {
           &:not(.ag-row-selected),
           &.ag-row.ag-row-odd:not(.ag-full-width-row):not(.ag-row-selected) {
-            background-color: var(--xh-grid-tree-group-color-level-#{$level});
+            background-color: var(--xh-grid-tree-group-level-#{$level}-bg);
           }
         }
       }
@@ -344,7 +359,7 @@
 // Row highlight
 //------------------------
 .xh-grid--highlight-row-on-click .xh-ag-grid .ag-row .ag-cell-data-changed {
-  background-color: var(--xh-grid-selected-row-bg) !important;
+  background-color: var(--xh-grid-row-selected-bg) !important;
 }
 
 //------------------------
@@ -358,45 +373,40 @@
     display: none;
   }
 
-  // Default minimal styling. Not applied when using a custom tooltip.
-  // Uses pre-wrap to honor intentional \n line breaks in tooltip content
-  // while still wrapping long lines at the max-width boundary.
-  &--default {
-    padding: var(--xh-grid-tooltip-padding);
-    background: var(--xh-grid-tooltip-bg);
-    border: var(--xh-grid-tooltip-border);
-    border-radius: var(--xh-grid-tooltip-border-radius);
-    max-width: var(--xh-grid-tooltip-max-width);
+  // Honors intentional \n line breaks in tooltip content, while still wrapping long lines at the
+  // max-width boundary. Applied by Hoist to the tooltip content it renders itself.
+  &--prewrap {
     white-space: pre-wrap;
   }
 
-  // Validation tooltip styling. Adjust depending on if within a default or custom tooltip.
-  &--validation {
+  // Validation messages, which Hoist renders in place of a column's own tooltip, as a list within
+  // the tooltip. Framed by the wrapper in every case, so this only needs list padding - the 2em
+  // reserves room for the markers, which a lone message does without.
+  &--validation ul {
     margin: 0;
-
-    &--single {
-      list-style-type: none;
-    }
+    padding: 0 var(--xh-spacing-half) 0 2em;
   }
 
-  &--default > div > .xh-grid-tooltip--validation {
-    padding: 0 var(--xh-pad-half-px) 0 2em;
-
-    &--single {
-      padding: 0 var(--xh-pad-half-px);
-    }
+  &--validation-single ul {
+    list-style-type: none;
+    padding: 0 var(--xh-spacing-half);
   }
+}
 
-  &--custom > div > .xh-grid-tooltip--validation {
-    padding: var(--xh-grid-tooltip-padding) var(--xh-grid-tooltip-padding)
-      var(--xh-grid-tooltip-padding) 2em;
-    background: var(--xh-grid-tooltip-bg);
-    border: var(--xh-grid-tooltip-border);
-
-    &--single {
-      padding: var(--xh-grid-tooltip-padding);
-    }
-  }
+// Standard grid-tooltip chrome, applied by Hoist to any tooltip content it renders itself, and
+// available to apps for a custom (element) tooltip - which is otherwise left unframed so that it
+// can supply its own chrome.
+// Note this is a standalone utility class, not a BEM element or modifier of `.xh-grid-tooltip`:
+// unlike `--prewrap` above, it is applied to elements an app may own, and so must be valid with no
+// `.xh-grid-tooltip` ancestor.
+.xh-grid-tooltip-frame {
+  padding: var(--xh-grid-tooltip-padding);
+  background: var(--xh-grid-tooltip-bg);
+  border: var(--xh-grid-tooltip-border);
+  border-radius: var(--xh-grid-tooltip-border-radius);
+  filter: var(--xh-grid-tooltip-shadow);
+  font-size: var(--xh-grid-tooltip-font-size);
+  max-width: var(--xh-grid-tooltip-max-width);
 }
 
 //-----------
@@ -408,8 +418,8 @@
 }
 
 .xh-grid-autosize-cell {
-  padding: 0 var(--xh-grid-cell-lr-pad-px);
-  font-size: var(--xh-grid-font-size-px);
+  padding: 0 var(--xh-grid-cell-padding-inline);
+  font-size: var(--xh-grid-font-size);
   font-family: var(--xh-grid-font-family);
   visibility: hidden;
   display: none;
@@ -423,25 +433,31 @@
     display: inline-block;
   }
 
+  // Measure a text renderer's ledger alignment - see the matching rule for cells in AgGrid.scss.
+  &.xh-cell--ledger-align::after {
+    content: ')';
+    visibility: hidden;
+  }
+
   &--large {
-    font-size: var(--xh-grid-large-font-size-px);
-    padding: 0 var(--xh-grid-large-cell-lr-pad-px);
+    font-size: var(--xh-grid-large-font-size);
+    padding: 0 var(--xh-grid-large-cell-padding-inline);
   }
 
   &--compact {
-    font-size: var(--xh-grid-compact-font-size-px);
-    padding: 0 var(--xh-grid-compact-cell-lr-pad-px);
+    font-size: var(--xh-grid-compact-font-size);
+    padding: 0 var(--xh-grid-compact-cell-padding-inline);
   }
 
   &--tiny {
-    font-size: var(--xh-grid-tiny-font-size-px);
-    padding: 0 var(--xh-grid-tiny-cell-lr-pad-px);
+    font-size: var(--xh-grid-tiny-font-size);
+    padding: 0 var(--xh-grid-tiny-cell-padding-inline);
   }
 }
 
 .xh-grid-autosize-header {
-  padding: 0 var(--xh-grid-header-lr-pad-px);
-  font-size: var(--xh-grid-header-font-size-px);
+  padding: 0 var(--xh-grid-header-padding-inline);
+  font-size: var(--xh-grid-header-font-size);
   font-weight: var(--xh-grid-header-font-weight);
   font-family: var(--xh-grid-header-font-family);
   flex-direction: row;
@@ -467,19 +483,68 @@
     display: block;
   }
 
+  // Spaced as the expand icon of a group header.
+  .xh-grid-header-expand-icon {
+    display: none;
+    margin-left: var(--xh-spacing-half);
+  }
+
+  &--expand .xh-grid-header-expand-icon {
+    display: block;
+  }
+
   &--large {
-    font-size: var(--xh-grid-large-header-font-size-px);
-    padding: 0 var(--xh-grid-large-header-lr-pad-px);
+    font-size: var(--xh-grid-large-header-font-size);
+    padding: 0 var(--xh-grid-large-header-padding-inline);
   }
 
   &--compact {
-    font-size: var(--xh-grid-compact-header-font-size-px);
-    padding: 0 var(--xh-grid-compact-header-lr-pad-px);
+    font-size: var(--xh-grid-compact-header-font-size);
+    padding: 0 var(--xh-grid-compact-header-padding-inline);
   }
 
   &--tiny {
-    font-size: var(--xh-grid-tiny-header-font-size-px);
-    padding: 0 var(--xh-grid-tiny-header-lr-pad-px);
+    font-size: var(--xh-grid-tiny-header-font-size);
+    padding: 0 var(--xh-grid-tiny-header-padding-inline);
+  }
+}
+
+// Non-interactive heading within a context menu - see MenuHeading.
+// Styled to match the Blueprint menu headers used by our other menus: a bold label with a rule
+// above it, suppressed when the heading leads the menu. The rule is drawn on each cell so that it
+// spans the full width of the menu, as ag-Grid does for its own separators.
+.xh-grid-menu-heading {
+  // Marked disabled to keep ag-Grid from activating it as a menu item - see MenuSupport. Undo the
+  // styling that comes with that, and the active highlight ag still applies on arrow-key nav.
+  &.ag-menu-option-disabled {
+    cursor: default;
+    opacity: 1;
+  }
+
+  &.ag-menu-option-active {
+    background-color: transparent;
+  }
+
+  // Rule sits below the label, tying it to the items it introduces. Space above separates it from
+  // the section it closes - that gap, plus the absent icon, is what reads as a heading rather than
+  // an item. Drawn on each cell so it spans the full menu width, as ag-Grid does for separators.
+  .ag-menu-option-part {
+    border-bottom: var(--xh-menu-heading-border);
+    padding-top: calc(var(--ag-grid-size) * 2);
+    padding-bottom: var(--ag-grid-size);
+  }
+
+  // Outdent the label to start where the item icons do, rather than where their text does. The
+  // shift is applied to the label, not its cell - a table row paints its background only behind
+  // areas a cell still covers, so moving the cell itself punches a gap in the band. Keeping the
+  // cell in place also lets it reserve its natural width, so the menu sizes to a long heading
+  // rather than letting it overflow.
+  &__label {
+    position: relative;
+    left: calc(-1 * (var(--ag-icon-size) + var(--ag-grid-size) * 2));
+    color: var(--xh-menu-heading-text-color);
+    font-size: var(--xh-menu-heading-font-size);
+    font-weight: var(--xh-menu-heading-font-weight);
   }
 }
 

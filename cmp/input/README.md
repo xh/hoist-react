@@ -26,6 +26,7 @@ HoistInputModel (class)
 ├── externalValue: any    # Value from bound model or props
 ├── internalValue: any    # Cached internal representation
 ├── commitOnChange: bool  # Commit immediately on change?
+├── trimWhitespace: bool  # Trim leading/trailing whitespace?
 ├── Methods:
 │   ├── focus(), blur(), select()
 │   ├── noteValueChange(), doCommit()
@@ -49,7 +50,7 @@ focus state.
 
 ```typescript
 // Bound mode - connects to FieldModel via FormField
-formField({field: 'email', item: textInput()})
+formField({field: 'email', children: textInput()})
 
 // Also bound mode - direct binding to any HoistModel
 textInput({model: myModel, bind: 'searchQuery'})
@@ -101,6 +102,36 @@ class NumberInputModel extends HoistInputModel {
 }
 ```
 
+### Whitespace Trimming
+
+Single-line text inputs - `TextInput` (desktop + mobile) and mobile `SearchInput` - trim leading
+and trailing whitespace from their value by default. Leading/trailing whitespace is essentially
+always unintentional in a single-line field, and it is invisible in the UI, so it tends to surface
+only as a confusing validation failure - e.g. a pasted email address that fails the anchored
+`validEmail` rule for no apparent reason.
+
+Trimming happens as the internal value is converted to its external form, so it applies to the
+value flushed to any bound model and to the values passed to `onChange` / `onCommit`. It catches
+whitespace from typing, pasting, autofill, and IME input alike. The user sees exactly what they
+type while the control has focus; any stray whitespace drops from the display when the value is
+committed on blur or <enter>. A `TextInput` whose value trims away to nothing commits `null`, the
+same as one the user has cleared.
+
+```typescript
+// Commits 'user@example.com' - the pasted padding never reaches the model.
+textInput({bind: 'email'})
+
+// Set false to preserve whitespace exactly as entered.
+textInput({bind: 'rawToken', trimWhitespace: false})
+```
+
+`TextInput` does *not* trim by default when `type: 'password'`, as passwords can legitimately
+carry leading or trailing whitespace. Pass `trimWhitespace: true` to opt such a field in.
+
+Multi-line and free-text controls - `TextArea`, `CodeInput`, `JsonInput` - never trim and do not
+accept the prop, since whitespace can be meaningful there. Custom inputs can opt in by overriding
+the `HoistInputModel.trimWhitespace` getter.
+
 ### Focus Management
 
 ```typescript
@@ -139,6 +170,59 @@ The common props interface extended by all input components.
 | `onCommit` | `(value, oldValue) => void` | Called when value is committed |
 | `tabIndex` | `number` | Tab order for focus (-1 to skip) |
 | `id` | `string` | DOM ID for the input element |
+| `testId` | `string` | Emits `data-testid` on the input's primary DOM element |
+| `domAttrs` | `data-*` / `aria-*` / `role` keys | Extra HTML attributes for that same element |
+
+### Extra DOM Attributes with `domAttrs`
+
+Input components pass an explicit, named set of props to the element they render, so any other
+attribute is dropped. Use `domAttrs` to apply `data-*` or `aria-*` attributes that Hoist does not
+model with a dedicated prop.
+
+```typescript
+textInput({
+    bind: 'email',
+    domAttrs: {'data-analytics-id': 'signup-email', 'aria-describedby': 'email-help'}
+});
+```
+
+Keys are constrained by type to `data-*` and `aria-*` attributes, plus `role`, so the prop cannot
+reach attributes the component manages itself.
+
+Mobile inputs render native `<input>` and `<textarea>` elements, so `domAttrs` reach the element
+the user types into, as on desktop.
+
+### Accessible Names
+
+Use `domAttrs` to set `aria-label` or `aria-labelledby` on the primary element of an input.
+
+A desktop `Slider` puts these two attributes on its handles instead, because the handles hold the
+`slider` role. A range slider gives both handles the same name.
+
+```typescript
+slider({bind: 'risk', min: 0, max: 10, domAttrs: {'aria-label': 'Risk level'}})
+```
+
+In a `FormField`, a `Slider` with neither attribute takes the label of the field as the name of
+each handle.
+
+### Password Managers
+
+Password manager extensions flag any field that *looks* like a username, email, or password and
+offer a saved-login prompt, whether or not the field has anything to do with signing in. Note that
+`autocomplete="off"` does not stop them - they have ignored it on login-like fields for years.
+
+`TextInput`, `TextArea`, and `NumberInput` therefore opt out by default, applying the vendor
+attributes for 1Password, LastPass, and Bitwarden. Set `enablePasswordManagers: true` on genuine
+credential fields, as Hoist's own `LoginPanel` does:
+
+```typescript
+textInput({bind: 'password', type: 'password', autoComplete: 'current-password',
+           enablePasswordManagers: true});
+```
+
+The attributes are applied during render, never in an effect - 1Password caches its assessment of
+a field on first focus, so they must already be present. The mobile caveat above applies here too.
 
 ## Integration with Forms
 
@@ -152,10 +236,10 @@ HoistInputModel integrates with the form system:
 
 form({
     model: formModel,
-    items: [
+    children: [
         formField({
             field: 'email',          // Connects to formModel.fields.email
-            item: textInput()        // textInput gets model/bind props automatically
+            children: textInput()        // textInput gets model/bind props automatically
         })
     ]
 })
@@ -220,7 +304,7 @@ const cmp = hoistCmp.factory<MyInputModel>(({model, className, ...props}, ref) =
         ref,                                      // Outer ref on wrapper
         onFocus: model.onFocus,
         onBlur: model.onBlur,
-        item: input({
+        children: input({
             ref: model.inputRef,                  // inputRef on actual <input>
             value: model.renderValue ?? '',
             onChange: e => model.noteValueChange(e.target.value),

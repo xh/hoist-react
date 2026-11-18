@@ -7,21 +7,20 @@
 
 import {li, ul} from '@xh/hoist/cmp/layout';
 import {card} from '@xh/hoist/cmp/card/Card';
+import type {BoxProps, HoistProps, Intent} from '@xh/hoist/core';
 import {
-    BoxProps,
+    elementFactory,
     hoistCmp,
-    HoistProps,
-    Intent,
     type LayoutProps,
     type TestSupportProps,
-    useContextModel,
     uses,
     XH
 } from '@xh/hoist/core';
-import {ValidationSeverity} from '@xh/hoist/data';
+import type {ValidationSeverity} from '@xh/hoist/data';
 import {FormFieldSetModel} from '@xh/hoist/cmp/form/formfieldset/FormFieldSetModel';
-import {runInAction} from 'mobx';
-import {ReactElement, type ReactNode, useEffect} from 'react';
+import {runInAction} from '@xh/hoist/mobx';
+import type {ReactElement} from 'react';
+import {createContext, type ReactNode, useContext, useEffect} from 'react';
 import './FormFieldSet.scss';
 
 export interface FormFieldSetProps
@@ -33,6 +32,16 @@ export interface FormFieldSetProps
     /** Additional props to pass to the inner content box. */
     contentBoxProps?: BoxProps;
 }
+
+/**
+ * Context that publishes the model of the nearest enclosing FormFieldSet, as `FormContext` does for
+ * Form. Nested sets and FormFields read it to register with the set that encloses them in the
+ * component tree. A model lookup does not fit: it also finds sets held on an enclosing model, and a
+ * set passed its model would find itself.
+ * @internal
+ */
+export const FormFieldSetContext = createContext<FormFieldSetModel>(null);
+const formFieldSetContextProvider = elementFactory(FormFieldSetContext.Provider);
 
 /**
  * A container for grouping related form fields, with optional title and icon. Displays validation
@@ -47,7 +56,7 @@ export const [FormFieldSet, formFieldSet] = hoistCmp.withFactory<FormFieldSetPro
     }),
     render({model, ...props}) {
         // Handle if nested within another FormFieldSet
-        const parentModel = useContextModel(FormFieldSetModel);
+        const parentModel = useContext(FormFieldSetContext);
         useEffect(() => {
             if (parentModel) {
                 runInAction(() => {
@@ -72,17 +81,20 @@ export const [FormFieldSet, formFieldSet] = hoistCmp.withFactory<FormFieldSetPro
                     ? displayedValidationMessages[0]
                     : ul({
                           className: 'xh-form-field-set-tooltip',
-                          items: displayedValidationMessages.map((it, idx) =>
-                              li({key: idx, item: it})
+                          children: displayedValidationMessages.map((it, idx) =>
+                              li({key: idx, children: it})
                           )
                       });
         }
 
-        return card({
-            intent: intentForSeverity(displayedSeverity),
-            tooltip,
-            model,
-            ...props
+        return formFieldSetContextProvider({
+            value: model,
+            children: card({
+                intent: intentForSeverity(displayedSeverity),
+                tooltip,
+                model,
+                ...props
+            })
         });
     }
 });

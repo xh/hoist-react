@@ -4,12 +4,15 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {RowClickedEvent, RowDoubleClickedEvent, RowHeightParams} from '@xh/hoist/kit/ag-grid';
-import {
+import type {RowClickedEvent, RowDoubleClickedEvent, RowHeightParams} from '@xh/hoist/kit/ag-grid';
+import type {
     ColumnRenderer,
     ColumnSpec,
     GridConfig,
-    GridModel,
+    GridEnsureVisibleOptions,
+    GridLikeModel,
+    GridSelectFirstOptions,
+    GridSelectOptions,
     GroupRowRenderer,
     RowClassFn,
     RowClassRuleFn,
@@ -17,8 +20,10 @@ import {
     GridContextMenuSpec,
     GridGroupSortFn
 } from '@xh/hoist/cmp/grid';
-import {HoistModel, LoadSpec, managed, PlainObject, Some} from '@xh/hoist/core';
-import {
+import {GridModel} from '@xh/hoist/cmp/grid';
+import type {LoadSpec, PlainObject, Some} from '@xh/hoist/core';
+import {HoistModel, managed} from '@xh/hoist/core';
+import type {
     RecordId,
     Store,
     StoreConfig,
@@ -29,10 +34,10 @@ import {
     StoreSelectionModel,
     StoreTransaction
 } from '@xh/hoist/data';
-import {bindable, makeObservable} from '@xh/hoist/mobx';
+import {bindable, bindableRef} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
 import {isFunction, isNumber} from 'lodash';
-import {ReactNode} from 'react';
+import type {ReactNode} from 'react';
 
 /**
  * Configuration for a {@link DataViewModel} - a list-style data component that renders
@@ -130,6 +135,9 @@ export interface DataViewConfig<
      * with its usages of GridModel.
      */
     gridOptions?: Omit<GridConfig, keyof DataViewConfig>;
+
+    /** See {@link HoistBase.xhName}. */
+    xhName?: string;
 }
 
 export type ItemHeightFn = (params: {
@@ -156,14 +164,16 @@ export type ItemHeightFn = (params: {
 export class DataViewModel<
     TData extends PlainObject = PlainObject,
     TId extends StoreRecordId = RecordId<TData>
-> extends HoistModel {
+>
+    extends HoistModel
+    implements GridLikeModel
+{
     @managed gridModel: GridModel<TData, TId>;
-    @bindable.ref itemHeight: number | ItemHeightFn;
-    @bindable groupRowHeight: number;
+    @bindableRef accessor itemHeight: number | ItemHeightFn;
+    @bindable accessor groupRowHeight: number;
 
     constructor(config: DataViewConfig<TData, TId>) {
         super();
-        makeObservable(this);
         const {
             store,
             renderer,
@@ -185,8 +195,10 @@ export class DataViewModel<
             rowClassRules,
             onRowClicked,
             onRowDoubleClicked,
-            gridOptions
+            gridOptions,
+            xhName = null
         } = config;
+        this.xhName = xhName;
 
         throwIf(
             !isFunction(itemHeight) && !isNumber(itemHeight),
@@ -211,6 +223,8 @@ export class DataViewModel<
         });
 
         this.gridModel = new GridModel<TData, TId>({
+            theme: THEME_PARAMS,
+            xhName: this.childXhName('gridModel'),
             store,
             sortBy,
             selModel,
@@ -237,6 +251,10 @@ export class DataViewModel<
     get store(): Store<TData, TId> {
         return this.gridModel.store;
     }
+    get innerGridModel(): GridModel {
+        return this.gridModel;
+    }
+
     get empty() {
         return this.gridModel.empty;
     }
@@ -262,10 +280,7 @@ export class DataViewModel<
         return this.gridModel.sortBy;
     }
 
-    selectAsync(
-        records: Some<StoreRecordOrId>,
-        opts?: {ensureVisible?: boolean; clearSelection?: boolean}
-    ) {
+    selectAsync(records: Some<StoreRecordOrId>, opts?: GridSelectOptions) {
         return this.gridModel.selectAsync(records, opts);
     }
 
@@ -273,12 +288,12 @@ export class DataViewModel<
         return this.gridModel.preSelectFirstAsync();
     }
 
-    selectFirstAsync(opts: {ensureVisible?: boolean} = {}) {
+    selectFirstAsync(opts?: GridSelectFirstOptions) {
         return this.gridModel.selectFirstAsync(opts);
     }
 
-    ensureSelectionVisibleAsync() {
-        return this.gridModel.ensureSelectionVisibleAsync();
+    ensureSelectionVisibleAsync(opts?: GridEnsureVisibleOptions) {
+        return this.gridModel.ensureSelectionVisibleAsync(opts);
     }
 
     override doLoadAsync(loadSpec: LoadSpec) {
@@ -305,3 +320,20 @@ export class DataViewModel<
         return this.gridModel.setSortBy(sorters);
     }
 }
+
+const THEME_PARAMS = {
+    // DataView items render app content rather than grid cells, so they take the app tokens.
+    backgroundColor: 'var(--xh-bg)',
+    foregroundColor: 'var(--xh-text-color)',
+    fontFamily: 'var(--xh-font-family)',
+    fontSize: 'var(--xh-font-size)',
+
+    // No header. The `headerHeight` grid option set by DataView drives layout; this keeps the themed
+    // side in sync, and suppressing the border stops the zero-height header leaving a 1px gap.
+    headerHeight: 0,
+    headerRowBorder: false,
+
+    // Items own their full cell - no padding, and no focus border (DataView has no cell navigation).
+    cellHorizontalPadding: 0,
+    rangeSelectionBorderColor: 'transparent'
+} as const;

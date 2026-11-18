@@ -55,7 +55,7 @@ grep -r "settleTime" client-app/src/
 Before:
 ```typescript
 const viewManagerModel = await ViewManagerModel.createAsync({
-    persistWith: {localStorageKey: 'myApp'},
+    type: 'portfolioGridView',
     settleTime: 1000,
     // ...
 });
@@ -64,10 +64,15 @@ const viewManagerModel = await ViewManagerModel.createAsync({
 After:
 ```typescript
 // settleTime is now configured on individual PersistOptions, not on ViewManagerModel.
-// If your grids or other persisted components need settle time, configure it on their
-// persistWith options:
+const viewManagerModel = await ViewManagerModel.createAsync({
+    type: 'portfolioGridView',
+    // ...
+});
+
+// Components bind to the ViewManager via their own `persistWith` config - set settleTime there
+// for any grid or other persisted component that needs it:
 new GridModel({
-    persistWith: {localStorageKey: 'myApp', settleTime: 1000},
+    persistWith: {viewManagerModel, settleTime: 1000},
     // ...
 });
 ```

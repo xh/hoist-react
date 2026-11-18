@@ -39,6 +39,7 @@
   // Generic tab defaults - orientation-specific blocks below layer on top of these.
   .bp6-tab {
     color: var(--xh-tab-text-color);
+    font-weight: var(--xh-tab-font-weight);
 
     &[aria-disabled='true'] {
       color: var(--xh-tab-disabled-text-color);
@@ -59,23 +60,23 @@
   }
 
   &--top {
-    padding-left: var(--xh-pad-px);
+    padding-left: var(--xh-spacing);
     max-width: 100%;
 
     // Active indicator sits on the bottom edge of the tab, adjacent to the content below.
     .bp6-tab[aria-selected='true'] {
-      box-shadow: inset 0 -3px 0 var(--xh-tab-active-text-color);
+      box-shadow: inset 0 -3px 0 var(--xh-tab-active-indicator-color);
     }
   }
 
   &--bottom {
-    padding-left: var(--xh-pad-px);
-    padding-top: var(--xh-pad-half-px);
+    padding-left: var(--xh-spacing);
+    padding-top: var(--xh-spacing-half);
     max-width: 100%;
 
     // Flip the indicator to be on top of the tab label
     .bp6-tab[aria-selected='true'] {
-      box-shadow: inset 0 3px 0 currentColor;
+      box-shadow: inset 0 3px 0 var(--xh-tab-active-indicator-color);
     }
   }
 
@@ -142,7 +143,7 @@
   &__tab {
     align-items: baseline;
     font-family: var(--xh-tab-font-family);
-    font-size: var(--xh-tab-font-size-px);
+    font-size: var(--xh-tab-font-size);
     user-select: none;
 
     & > svg:first-child {
@@ -165,6 +166,61 @@
       min-width: 15px;
       border-radius: 100% !important;
     }
+  }
+
+  // Display-only header above a run of grouped tabs - only rendered in vertical orientations.
+  &__group-header {
+    position: relative;
+    display: flex;
+    align-self: stretch;
+    align-items: baseline;
+    gap: 0.4em;
+    margin-bottom: var(--xh-tab-switcher-vertical-item-gap);
+    padding: var(--xh-tab-switcher-vertical-group-header-padding);
+    background-color: var(--xh-tab-switcher-vertical-group-header-bg);
+    border-radius: var(--xh-tab-switcher-vertical-group-header-border-radius);
+    color: var(--xh-tab-switcher-vertical-group-header-text-color);
+    font-family: var(--xh-tab-font-family);
+    font-size: var(--xh-tab-switcher-vertical-group-header-font-size);
+    font-weight: var(--xh-tab-switcher-vertical-group-header-font-weight);
+    letter-spacing: var(--xh-tab-switcher-vertical-group-header-letter-spacing);
+    text-transform: var(--xh-tab-switcher-vertical-group-header-text-transform);
+    white-space: nowrap;
+    user-select: none;
+    cursor: default;
+
+    // Rule line centered in the gap above each group after the first. Drawn outside the header
+    // box, so a header background never touches the rule or skews the header's own padding.
+    // Leading header flagged via class, not `:first-child` - Blueprint's `animate` indicator
+    // renders as the tab list's first child.
+    &:not(.xh-tab-switcher__group-header--first) {
+      margin-top: calc(2 * var(--xh-tab-switcher-vertical-group-gap));
+
+      &::before {
+        content: '';
+        position: absolute;
+        top: calc(-1 * var(--xh-tab-switcher-vertical-group-gap));
+        left: 0;
+        right: 0;
+        border-top: var(--xh-tab-switcher-vertical-group-border);
+      }
+    }
+
+    & > span {
+      flex: 1;
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+  }
+
+  // Spacer before an ungrouped tab that follows a grouped run - only rendered in vertical
+  // orientations.
+  &__group-end {
+    align-self: stretch;
+    margin-top: var(--xh-tab-switcher-vertical-group-gap);
+    height: var(--xh-tab-switcher-vertical-group-gap);
+    border-top: var(--xh-tab-switcher-vertical-group-border);
   }
 
   &__overflow-menu {

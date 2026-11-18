@@ -4,9 +4,9 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {Content, Thunkable} from '@xh/hoist/core';
+import type {Content, Thunkable} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
-import {ReactElement} from 'react';
+import type {ReactElement} from 'react';
 
 /**
  * Spec used to generate DashViews and DashViewModels within a DashContainer or DashCanvas.
@@ -28,7 +28,8 @@ export interface DashViewSpec {
 
     /**
      * Group name to display within the add view component. The default context menu will
-     * automatically group its available views if provided.
+     * automatically group its available views if provided. Separate names with '/' to nest
+     * groups - e.g. `Charts/Line`.
      */
     groupName?: string;
 

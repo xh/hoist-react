@@ -4,13 +4,15 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {GridModel, GridSorterLike} from '@xh/hoist/cmp/grid';
+import type {GridSorterLike} from '@xh/hoist/cmp/grid';
+import {GridModel} from '@xh/hoist/cmp/grid';
 import {div} from '@xh/hoist/cmp/layout';
-import {HoistModel, HSide, managed, Some, XH} from '@xh/hoist/core';
+import type {HSide, Some} from '@xh/hoist/core';
+import {HoistModel, managed, XH} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
-import {bindable, computed, makeObservable} from '@xh/hoist/mobx';
-import {FilterTestFn, StoreConfig, StoreRecord} from '@xh/hoist/data';
+import {bindable, computed} from '@xh/hoist/mobx';
+import type {FilterTestFn, StoreConfig, StoreRecord} from '@xh/hoist/data';
 
 /**
  * Configuration for a {@link LeftRightChooserModel} - a dual-list control for moving items
@@ -49,6 +51,9 @@ export interface LeftRightChooserConfig {
 
     /** @internal */
     xhImpl?: boolean;
+
+    /** See {@link HoistBase.xhName}. */
+    xhName?: string;
 }
 
 /** Data record object for a LeftRightChooser value item. */
@@ -85,7 +90,7 @@ export class LeftRightChooserModel extends HoistModel {
     @managed leftModel: GridModel;
     @managed rightModel: GridModel;
 
-    @bindable readonly = false;
+    @bindable accessor readonly = false;
 
     onChange: () => void;
 
@@ -146,11 +151,12 @@ export class LeftRightChooserModel extends HoistModel {
         rightGroupingExpanded = true,
         rightEmptyText = null,
         showCounts = true,
+        xhName = null,
         xhImpl = false
     }: LeftRightChooserConfig) {
         super();
-        makeObservable(this);
         this.xhImpl = xhImpl;
+        this.xhName = xhName;
 
         this.onChange = onChange;
         this._ungroupedName = ungroupedName;
@@ -267,7 +273,7 @@ export class LeftRightChooserModel extends HoistModel {
                 groupingEnabled && this._hasGrouping ? 'xh-lr-chooser__group-row' : '';
             return div({
                 className: `xh-lr-chooser__item-row ${groupClass}`,
-                items: [v, record.data.locked ? lockSvg : null]
+                children: [v, record.data.locked ? lockSvg : null]
             });
         };
     }

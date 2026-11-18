@@ -4,29 +4,26 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
+import type {PersistOptions, Thunkable} from '@xh/hoist/core';
 import {
     HoistModel,
     managed,
     PersistableState,
     PersistenceProvider,
     persistOptions,
-    PersistOptions,
     TaskObserver,
-    Thunkable,
     XH
 } from '@xh/hoist/core';
+import type {Filter, FilterBindTarget, FilterValueSource} from '@xh/hoist/data';
 import {
     appendFilter,
     CompoundFilter,
     FieldFilter,
-    Filter,
-    FilterBindTarget,
-    FilterValueSource,
     isFilterValueSource,
     parseFilter
 } from '@xh/hoist/data';
-import {CompoundFilterSpec, FieldFilterSpec, FilterLike} from '@xh/hoist/data/filter/Types';
-import {action, makeObservable, observable} from '@xh/hoist/mobx';
+import type {CompoundFilterSpec, FieldFilterSpec, FilterLike} from '@xh/hoist/data/filter/Types';
+import {action, observable, observableRef} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 import {executeIfFunction, throwIf, withDefault} from '@xh/hoist/utils/js';
 import {createObservableRef} from '@xh/hoist/utils/react';
@@ -50,10 +47,12 @@ import {
     uniq,
     uniqBy
 } from 'lodash';
-import {ReactNode} from 'react';
+import type {ReactNode} from 'react';
 
-import {FilterChooserFieldSpec, FilterChooserFieldSpecConfig} from './FilterChooserFieldSpec';
-import {compoundFilterOption, fieldFilterOption, FilterChooserOption} from './impl/Option';
+import type {FilterChooserFieldSpecConfig} from './FilterChooserFieldSpec';
+import {FilterChooserFieldSpec} from './FilterChooserFieldSpec';
+import type {FilterChooserOption} from './impl/Option';
+import {compoundFilterOption, fieldFilterOption} from './impl/Option';
 import {QueryEngine} from './impl/QueryEngine';
 
 /**
@@ -136,6 +135,9 @@ export interface FilterChooserConfig {
 
     /** Options governing persistence. */
     persistWith?: FilterChooserPersistOptions;
+
+    /** See {@link HoistBase.xhName}. */
+    xhName?: string;
 }
 
 /**
@@ -157,8 +159,8 @@ export interface FilterChooserConfig {
  * @see FilterChooserFieldSpec
  */
 export class FilterChooserModel extends HoistModel {
-    @observable.ref value: FilterChooserFilter = null;
-    @observable.ref favorites: FilterChooserFilter[] = [];
+    @observableRef accessor value: FilterChooserFilter = null;
+    @observableRef accessor favorites: FilterChooserFilter[] = [];
     bind: FilterBindTarget;
     valueSource: FilterValueSource;
 
@@ -172,14 +174,14 @@ export class FilterChooserModel extends HoistModel {
     persistFavorites: boolean = false;
 
     /** Tracks execution of filtering operation on bound object.*/
-    @managed filterTask = TaskObserver.trackAll();
+    filterTask = TaskObserver.trackAll();
 
     // Implementation fields for Control
     @managed queryEngine: QueryEngine;
-    @observable.ref selectOptions: FilterChooserOption[];
-    @observable.ref selectValue: string[];
-    @observable favoritesIsOpen = false;
-    @observable unsupportedFilter = false;
+    @observableRef accessor selectOptions: FilterChooserOption[];
+    @observableRef accessor selectValue: string[];
+    @observable accessor favoritesIsOpen = false;
+    @observable accessor unsupportedFilter = false;
     inputRef = createObservableRef<HTMLElement>();
 
     get tagCount(): number {
@@ -198,10 +200,11 @@ export class FilterChooserModel extends HoistModel {
         maxTags = 100,
         maxResults = 50,
         persistWith,
-        introHelpText
+        introHelpText,
+        xhName = null
     }: FilterChooserConfig = {}) {
         super();
-        makeObservable(this);
+        this.xhName = xhName;
 
         this.bind = bind;
 
@@ -656,6 +659,4 @@ export type FilterChooserFilterSpec = CompoundFilterSpec | FieldFilterSpec;
 
 /** A variant of {@link FilterLike} that excludes FunctionFilters and FilterTestFn. */
 export type FilterChooserFilterLike =
-    | FilterChooserFilter
-    | FilterChooserFilterSpec
-    | FilterChooserFilterLike[];
+    FilterChooserFilter | FilterChooserFilterSpec | FilterChooserFilterLike[];

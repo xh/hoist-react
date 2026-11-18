@@ -4,7 +4,7 @@ import {button} from '@xh/hoist/desktop/cmp/button';
 import {FileChooserModel} from '../FileChooserModel';
 import {Icon} from '@xh/hoist/icon';
 import {filesize} from 'filesize';
-import {MouseEvent} from 'react';
+import type {MouseEvent} from 'react';
 import './SingleFileDisplay.scss';
 
 /**
@@ -20,10 +20,10 @@ export const singleFileDisplay = hoistCmp.factory({
 
         return placeholder(
             Icon.fileIcon({filename: file.name}),
-            div({className: 'xh-file-chooser__file-name', item: file.name}),
+            div({className: 'xh-file-chooser__file-name', children: file.name}),
             div({
                 className: 'xh-file-chooser__file-hint',
-                item: `${filesize(file.size)} · drop or click to replace`
+                children: `${filesize(file.size)} · drop or click to replace`
             }),
             button({
                 text: 'Remove',

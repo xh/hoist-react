@@ -6,9 +6,11 @@
  */
 import {SECONDS} from '@xh/hoist/utils/datetime';
 import {throwIf} from '@xh/hoist/utils/js';
-import {ViewManagerModel} from './ViewManagerModel';
-import {JsonBlob} from '@xh/hoist/svc';
-import {PlainObject, XH} from '@xh/hoist/core';
+import {normalizeGroupPath} from './GroupUtils';
+import type {ViewManagerModel} from './ViewManagerModel';
+import type {JsonBlob} from '@xh/hoist/svc';
+import type {PlainObject} from '@xh/hoist/core';
+import {XH} from '@xh/hoist/core';
 
 /**
  * Metadata describing {@link View} managed by {@link ViewManagerModel}.
@@ -38,7 +40,10 @@ export class ViewInfo {
     /** True if this view is global and visible to all users. */
     readonly isGlobal: boolean;
 
-    /** Optional group name used for bucketing this view in display. */
+    /**
+     * Optional group name used for bucketing this view in display. Slashes within the name
+     * delimit nested sub-groups - see `VIEW_GROUP_DELIMITER`.
+     */
     readonly group: string;
 
     /**
@@ -65,7 +70,7 @@ export class ViewInfo {
         this.meta = (blob.meta as PlainObject) ?? {};
         this.isGlobal = !this.owner;
 
-        this.group = this.meta.group ?? null;
+        this.group = normalizeGroupPath(this.meta.group);
         this.isShared = !!(!this.isGlobal && this.meta.isShared);
 
         // Round to seconds.  See: https://github.com/xh/hoist-core/issues/423

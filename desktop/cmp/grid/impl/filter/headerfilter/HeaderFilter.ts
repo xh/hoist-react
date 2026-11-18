@@ -31,7 +31,7 @@ export const headerFilter = hoistCmp.factory({
             onClick: stopPropagation,
             onDoubleClick: stopPropagation,
             headerItems: [switcher()],
-            item: tabContainer({switcher: false}),
+            children: tabContainer({switcher: false}),
             bbar: bbar(),
             hotkeys: [
                 {
@@ -54,7 +54,7 @@ const bbar = hoistCmp.factory<HeaderFilterModel>({
     render({model}) {
         const {commitOnChange, hasFilter, isDirty} = model;
         return toolbar({
-            items: [
+            children: [
                 button({
                     icon: Icon.delete(),
                     text: 'Clear',
@@ -88,7 +88,7 @@ const switcher = hoistCmp.factory<HeaderFilterModel>(({model}) => {
     return buttonGroup({
         omit: !enableValues || fieldType === 'bool',
         className: 'xh-column-header-filter__tab-switcher',
-        items: tabs.map(it => switcherButton({...it}))
+        children: tabs.map(it => switcherButton({id: it.id, title: it.title}))
     });
 });
 

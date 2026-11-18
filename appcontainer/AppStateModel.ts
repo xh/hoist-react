@@ -4,8 +4,9 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {AppState, AppSuspendData, HoistModel, PlainObject, XH} from '@xh/hoist/core';
-import {action, makeObservable, observable} from '@xh/hoist/mobx';
+import type {AppState, AppSuspendData, PlainObject} from '@xh/hoist/core';
+import {HoistModel, XH} from '@xh/hoist/core';
+import {action, observable} from '@xh/hoist/mobx';
 import {Timer} from '@xh/hoist/utils/async';
 import {camelCase, isBoolean, isString, mapKeys, pick} from 'lodash';
 
@@ -16,17 +17,15 @@ import {camelCase, isBoolean, isString, mapKeys, pick} from 'lodash';
  */
 export class AppStateModel extends HoistModel {
     override xhImpl = true;
+    override xhName = 'appStateModel';
 
-    @observable state: AppState = 'PRE_AUTH';
+    @observable accessor state: AppState = 'PRE_AUTH';
 
     lastActivityMs: number = Date.now();
     suspendData: AppSuspendData;
     accessDeniedMessage: string = 'Access Denied';
 
-    /**
-     * Timestamp when the app first started loading, prior to even JS download/eval.
-     * Read from timestamp set on window within index.html.
-     */
+    // Captured by preflight.js, before any Hoist JS has loaded.
     readonly loadStarted: number = window['_xhLoadTimestamp'];
     readonly timings: Record<AppState, number> = {} as Record<AppState, number>;
 
@@ -34,7 +33,6 @@ export class AppStateModel extends HoistModel {
 
     constructor() {
         super();
-        makeObservable(this);
         this.trackLoad();
         this.createActivityListeners();
     }
@@ -82,24 +80,28 @@ export class AppStateModel extends HoistModel {
     // Implementation
     //------------------
     private trackLoad() {
-        const {timings, loadStarted} = this;
         this.addReaction({
             when: () => this.state === 'RUNNING',
             run: () => {
+                const {timings, loadStarted} = this,
+                    loginTime = timings.LOGIN_REQUIRED ?? 0,
+                    hiddenDuringLoad = window['_xhWasHidden'];
                 XH.track({
                     category: 'App',
                     message: `Loaded ${XH.clientAppCode}`,
                     timestamp: loadStarted,
-                    elapsed: Date.now() - loadStarted - (timings.LOGIN_REQUIRED ?? 0),
+                    // Hidden pages may be throttled, elapsed time is misleading
+                    elapsed: hiddenDuringLoad ? null : Date.now() - loadStarted - loginTime,
                     data: {
                         timings: mapKeys(timings, (v, k) => camelCase(k)),
+                        hiddenDuringLoad,
                         clientHealth: XH.clientHealthService.getReport(),
                         window: this.getWindowData(),
                         screen: this.getScreenData()
                     },
                     omit: !XH.appSpec.trackAppLoad
                 });
-                this.logDebug('Load timings', this.timings);
+                this.logDebug('Load timings', timings);
             }
         });
     }

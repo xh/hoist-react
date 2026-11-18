@@ -4,14 +4,22 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {ElementFactory} from '@xh/hoist/core';
-import {LocalDate} from '@xh/hoist/utils/datetime';
-import {MomentInput} from 'moment';
-import {Component, FunctionComponent, ReactElement} from 'react';
-import {DebounceSettings} from 'lodash';
+import type {ElementFactory} from '@xh/hoist/core';
+import type {LocalDate} from '@xh/hoist/utils/datetime';
+import type {MomentInput} from 'moment';
+import type {Component, FunctionComponent, ReactElement} from 'react';
+import type {DebounceSettings} from 'lodash';
+import type {Route} from 'router5';
 
 /** Values available for intents. */
 export type Intent = 'primary' | 'success' | 'warning' | 'danger';
+
+/**
+ * Sizes a component can be drawn at, chosen by the developer for emphasis or space. Distinct from
+ * `SizingMode`, the density preference that a user can change for the whole app. A component
+ * that takes this type may support only some of the sizes.
+ */
+export type ComponentSize = 'compact' | 'standard' | 'large';
 
 /** Values available for App Theme. */
 export type Theme = 'system' | 'dark' | 'light';
@@ -30,6 +38,9 @@ export type NonEmptyArray<T> = [T, ...T[]];
 
 export type Thunkable<T> = T | (() => T);
 export type Awaitable<T> = Promise<T> | T;
+
+/** Convenience type for accepting a sync or async iterable of Ts - e.g. a streaming source. */
+export type AnyIterable<T> = Iterable<T> | AsyncIterable<T>;
 
 /** Convenience type for a "plain", string-keyed object holding any kind of values. */
 export type PlainObject = Record<string, any>;
@@ -55,13 +66,21 @@ export type DebounceSpec = number | (DebounceSettings & {interval: number});
  * function that returns a ReactElement. In either case, the function will be called with no arguments.
  */
 export type Content =
-    | ReactElement
-    | FunctionComponent
-    | Component
-    | ElementFactory
-    | (() => ReactElement);
+    ReactElement | FunctionComponent | Component | ElementFactory | (() => ReactElement);
 
 export type DateLike = Date | LocalDate | MomentInput;
+
+/**
+ * A Router5 {@link Route} spec, extended with Hoist's `omit` support for declarative exclusion of
+ * routes at registration time (e.g. role-gated sections). Note `omit` is evaluated once when routes
+ * are added to the router during app startup - it is not reactive.
+ *
+ * @see HoistAppModel.getRoutes
+ */
+export interface HoistRoute extends Omit<Route, 'children'> {
+    omit?: Thunkable<boolean>;
+    children?: HoistRoute[];
+}
 
 /** Valid units for the {@link LocalDate} adjustment methods. */
 export type LocalDateUnit =

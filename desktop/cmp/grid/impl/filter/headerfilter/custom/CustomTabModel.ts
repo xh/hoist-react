@@ -5,29 +5,32 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {HoistModel, XH} from '@xh/hoist/core';
-import {
+import type {
     CompoundFilterOperator,
-    FieldFilter,
     FieldFilterOperator,
     FieldFilterSpec,
     FilterLike
 } from '@xh/hoist/data';
-import {action, bindable, computed, makeObservable, observable} from '@xh/hoist/mobx';
+import {FieldFilter} from '@xh/hoist/data';
+import {action, bindable, observableRef, computedStruct} from '@xh/hoist/mobx';
 import {compact, first, flatMap, forEach, groupBy, isArray, isEmpty, uniq} from 'lodash';
-import {HeaderFilterModel} from '../HeaderFilterModel';
+import type {HeaderFilterModel} from '../HeaderFilterModel';
 
 import {CustomRowModel, usesMultiValueInput} from './CustomRowModel';
 
+/**
+ * @internal
+ */
 export class CustomTabModel extends HoistModel {
     override xhImpl = true;
 
     headerFilterModel: HeaderFilterModel;
 
-    @bindable op: CompoundFilterOperator = 'AND';
-    @observable.ref rowModels: CustomRowModel[] = [];
+    @bindable accessor op: CompoundFilterOperator = 'AND';
+    @observableRef accessor rowModels: CustomRowModel[] = [];
 
     /** Filter config output by this model. */
-    @computed.struct
+    @computedStruct
     get filter(): FilterLike {
         const {op, rowModels} = this;
 
@@ -59,7 +62,6 @@ export class CustomTabModel extends HoistModel {
 
     constructor(headerFilterModel: HeaderFilterModel) {
         super();
-        makeObservable(this);
         this.headerFilterModel = headerFilterModel;
     }
 

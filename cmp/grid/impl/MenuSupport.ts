@@ -4,36 +4,52 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {isEmpty, isFunction, isNil, isString, uniq} from 'lodash';
-import {copyToClipboard} from '@xh/hoist/utils/js';
-import {hoistCmp, type HoistProps, type Some, XH} from '@xh/hoist/core';
-import {Column, GridModel} from '@xh/hoist/cmp/grid';
-import {RecordAction, type RecordActionSpec, Store, StoreRecord} from '@xh/hoist/data';
+import {compact, isEmpty, isFunction, isNil, isString, sortBy, uniq} from 'lodash';
+import {copyToClipboard, TEST_ID} from '@xh/hoist/utils/js';
+import {hoistCmp, type HoistProps, type HSide, isMenuHeading, type Some, XH} from '@xh/hoist/core';
+import type {Column, GridModel} from '@xh/hoist/cmp/grid';
+import type {StoreRecord} from '@xh/hoist/data';
+import {
+    type ActionFnData,
+    RecordAction,
+    type RecordActionHeading,
+    type RecordActionSpec,
+    Store
+} from '@xh/hoist/data';
 import {Icon} from '@xh/hoist/icon';
 import {filterConsecutiveMenuSeparators} from '@xh/hoist/utils/impl';
+import {filterMenuHeadings, resolveMenuHeading} from '@xh/hoist/cmp/menu/impl/Menus';
 import {wait} from '@xh/hoist/promise';
 import {div, span} from '@xh/hoist/cmp/layout';
 import {
     useGridMenuItem,
     type GetContextMenuItemsParams,
+    type GetMainMenuItemsParams,
     type MenuItemDef,
     type CustomMenuItemProps
 } from '@xh/hoist/kit/ag-grid';
-import type {GridContextMenuItemLike, GridContextMenuSpec} from '../GridContextMenu';
+import type {
+    GridContextMenuItemLike,
+    GridContextMenuSpec,
+    GridHeaderContextMenuSpec
+} from '../GridContextMenu';
+
+/** ag-Grid params for a cell context menu, or for a column header one, which carries no row. */
+type GridMenuAgParams = GetContextMenuItemsParams | (GetMainMenuItemsParams & {node?: never});
 
 /**
  * @internal
  */
 export function getAgGridMenuItems(
-    params: GetContextMenuItemsParams,
+    params: GridMenuAgParams,
     model: GridModel,
-    spec: GridContextMenuSpec
+    spec: GridContextMenuSpec | GridHeaderContextMenuSpec
 ): Array<string | MenuItemDef> {
-    let menuItems: GridContextMenuItemLike[] = isFunction(spec) ? spec(params, model) : spec;
+    let menuItems: GridContextMenuItemLike[] = isFunction(spec) ? spec(params as any, model) : spec;
 
     if (isEmpty(menuItems)) return null;
 
-    const record = params.node?.data,
+    const record = params.node?.data ?? null,
         colId = params.column?.getColId(),
         column = !isNil(colId) ? model.getColumn(colId) : null;
 
@@ -45,14 +61,23 @@ function buildMenuItems(
     record: StoreRecord,
     gridModel: GridModel,
     column: Column,
-    agParams: GetContextMenuItemsParams
+    agParams: GridMenuAgParams
 ) {
-    // Transform to actions or ag-Grid ready strings.
-    const actions: Array<RecordAction | string> = menuItems.flatMap(it => {
-        if (isString(it)) return replaceHoistToken(it, gridModel);
+    // Transform to actions, headings, or ag-Grid ready strings.
+    const actions: Array<RecordAction | RecordActionHeading | string> = menuItems.flatMap(it => {
+        if (isString(it)) return replaceHoistToken(it, gridModel, column);
         if (it instanceof RecordAction) return it;
+        if (isMenuHeading(it)) return it;
         return new RecordAction(it);
     });
+
+    const actionParams: ActionFnData = {
+        record,
+        selectedRecords: gridModel.selectedRecords,
+        gridModel,
+        column,
+        agParams
+    };
 
     const ret = [];
     actions.forEach(action => {
@@ -63,13 +88,22 @@ function buildMenuItems(
             return;
         }
 
-        const actionParams = {
-            record,
-            selectedRecords: gridModel.selectedRecords,
-            gridModel,
-            column,
-            agParams
-        };
+        if (isMenuHeading(action)) {
+            const heading = resolveMenuHeading(action, actionParams);
+            if (heading) {
+                ret.push({
+                    menuItem: MenuHeadingItem,
+                    menuItemParams: {heading},
+                    cssClasses: ['xh-grid-menu-heading', heading.className].filter(Boolean),
+                    // ag-Grid has no concept of a non-item entry - it registers every MenuItemDef
+                    // as navigable and auto-activates the first one on open. Flagging the heading
+                    // disabled is what keeps it out of that, and out of mouse activation. Its
+                    // `disabled` and `active` styling is suppressed in Grid.scss.
+                    disabled: true
+                });
+            }
+            return;
+        }
 
         const displaySpec = action.getDisplaySpec(actionParams);
         if (displaySpec.hidden) return;
@@ -99,14 +133,30 @@ function buildMenuItems(
         });
     });
 
-    return ret.filter(filterConsecutiveMenuSeparators());
+    return ret
+        .filter(filterMenuHeadings(it => it?.menuItem === MenuHeadingItem))
+        .filter(filterConsecutiveMenuSeparators());
 }
 
 /** Pre-process hoist tokens to RecordActions, leaving ag-Grid token in place. */
-function replaceHoistToken(token: string, gridModel: GridModel): Some<RecordAction | string> {
+function replaceHoistToken(
+    token: string,
+    gridModel: GridModel,
+    column: Column
+): Some<RecordAction | string> {
     switch (token) {
         case '-':
             return 'separator';
+        case 'autosizeColumn':
+            return new RecordAction({
+                text: 'Autosize Column',
+                icon: Icon.magic(),
+                displayFn: ({column}) => ({
+                    hidden: !gridModel.autosizeEnabled || !column?.autosizable || !!column.flex
+                }),
+                actionFn: ({column}) =>
+                    gridModel.autosizeAsync({columns: column.colId, showMask: true})
+            });
         case 'autosizeColumns':
             return new RecordAction({
                 text: 'Autosize Columns',
@@ -135,10 +185,23 @@ function replaceHoistToken(token: string, gridModel: GridModel): Some<RecordActi
             });
         case 'colChooser':
             return new RecordAction({
-                text: 'Columns...',
-                icon: Icon.gridPanel(),
-                hidden: !gridModel?.colChooserModel,
-                actionFn: () => gridModel.colChooserModel?.open()
+                hidden: !gridModel.colChooserModel,
+                displayFn: () => {
+                    const chooser = gridModel.colChooserModel;
+                    if (chooser?.mode !== 'docked') {
+                        return {icon: Icon.gridPanel(), text: 'Columns...'};
+                    }
+                    // The dock is toggled in place, so reflect its current state.
+                    const {isOpen} = chooser;
+                    return {
+                        icon: isOpen ? Icon.cross() : Icon.gridPanel(),
+                        text: `${isOpen ? 'Close' : 'Open'} Columns Panel`
+                    };
+                },
+                actionFn: () => {
+                    const chooser = gridModel.colChooserModel;
+                    chooser.mode === 'docked' ? chooser.toggle() : chooser.open();
+                }
             });
         case 'expandCollapseAll': // For backward compatibility
         case 'expandCollapse':
@@ -182,7 +245,7 @@ function replaceHoistToken(token: string, gridModel: GridModel): Some<RecordActi
                     const values = getValues(selectedRecords, field);
                     if (values.length > 1) return {text: `${values.length} values`};
 
-                    const renderer = fieldSpec.renderer ?? column.renderer,
+                    const renderer = fieldSpec.renderer ?? column.resolvedRenderer,
                         elem = renderer
                             ? renderer(values[0], {
                                   record,
@@ -247,54 +310,120 @@ function replaceHoistToken(token: string, gridModel: GridModel): Some<RecordActi
                 ]
             });
         }
+        case 'hideColumn':
+            return new RecordAction({
+                text: 'Hide Column',
+                icon: Icon.eyeSlash(),
+                displayFn: ({column}) => ({hidden: !column?.hideable}),
+                actionFn: ({column}) => gridModel.hideColumn(column.colId)
+            });
+        case 'pinColumn':
+            return createPinColumnItem(gridModel);
         case 'restoreDefaults':
             return new RecordAction({
                 text: 'Restore Grid Defaults',
                 icon: Icon.reset(),
                 actionFn: () => gridModel.restoreDefaultsAsync()
             });
+        case 'sort':
+            return createSortItems(gridModel, column);
         default:
             return token;
     }
 }
 
-function createExpandCollapseItem(gridModel: GridModel): RecordAction[] {
-    if (!gridModel || gridModel.maxDepth === 0) return null;
+function createPinColumnItem(gridModel: GridModel): RecordAction {
+    const pinItem = (text: string, side: HSide): RecordActionSpec => ({
+        text,
+        displayFn: ({column}) => {
+            const pinned = gridModel.getColumnPinned(column.colId) ?? null;
+            return side ? {icon: pinned === side ? Icon.check() : null} : {hidden: !pinned};
+        },
+        actionFn: ({column}) => gridModel.updateColumnState([{colId: column.colId, pinned: side}])
+    });
+
+    return new RecordAction({
+        text: 'Pin Column',
+        icon: Icon.pin(),
+        // Pinning relocates the column, so a column that cannot move cannot pin either.
+        displayFn: ({column}) => ({hidden: !column?.movable || !gridModel.enableColumnPinning}),
+        items: [pinItem('Left', 'left'), pinItem('Right', 'right'), pinItem('Unpin', null)]
+    });
+}
+
+function createSortItems(gridModel: GridModel, column: Column): RecordAction[] {
+    // One item per sort the column offers: ascending then descending, each abs variant after
+    // its standard sort.
+    const sorts = sortBy(column?.availableSorts ?? [], [it => it.sort !== 'asc', it => it.abs]);
+    return sorts.map(sorter => {
+        const asc = sorter.sort === 'asc',
+            icon = asc
+                ? sorter.abs
+                    ? Icon.sortAbsAsc()
+                    : Icon.sortAsc()
+                : sorter.abs
+                  ? Icon.sortAbsDesc()
+                  : Icon.sortDesc();
+        return new RecordAction({
+            text: `Sort ${asc ? 'Ascending' : 'Descending'}${sorter.abs ? ' (Abs)' : ''}`,
+            icon,
+            actionFn: () => gridModel.setSortBy(sorter)
+        });
+    });
+}
+
+/** Levels that expand and collapse together - the rows of a GridModel, or a pivot's columns. */
+export interface ExpandLevelTarget {
+    maxDepth: number;
+    /** Label per level, by index. A null label leaves its level out of "Expand to...". */
+    resolvedLevelLabels: string[];
+    isCurrentExpandLevel(idx: number): boolean;
+    expandToLevel(level: number): void;
+    expandAll(): void;
+    collapseAll(): void;
+}
+
+/** @internal - Expand All, Collapse All and Expand to... items for the target's levels. */
+export function createExpandCollapseItem(target: ExpandLevelTarget): RecordAction[] {
+    if (!target || target.maxDepth === 0) return null;
 
     return [
         new RecordAction({
             text: 'Expand All',
             icon: Icon.groupRowExpanded(),
-            actionFn: () => gridModel.expandAll()
+            actionFn: () => target.expandAll()
         }),
         new RecordAction({
             text: 'Collapse All',
             icon: Icon.groupRowCollapsed(),
-            actionFn: () => gridModel.collapseAll()
+            actionFn: () => target.collapseAll()
         }),
-        levelExpandAction(gridModel)
+        levelExpandAction(target)
     ];
 }
 
-function levelExpandAction(gridModel: GridModel): RecordAction {
+function levelExpandAction(target: ExpandLevelTarget): RecordAction {
     return new RecordAction({
         text: 'Expand to...',
         displayFn: () => {
-            const {maxDepth, resolvedLevelLabels} = gridModel;
-
-            // Don't show for flat grid models or if we don't have labels
+            const {maxDepth, resolvedLevelLabels} = target;
             if (!maxDepth || !resolvedLevelLabels) return {hidden: true};
 
-            const items = resolvedLevelLabels.map((label, idx) => {
-                const isCurrLevel = gridModel.isCurrentExpandLevel(idx);
+            const items = compact(
+                resolvedLevelLabels.map((label, idx) => {
+                    if (label == null) return null;
+                    const isCurrLevel = target.isCurrentExpandLevel(idx);
 
-                return {
-                    icon: isCurrLevel ? Icon.check() : null,
-                    text: label,
-                    actionFn: () => wait().then(() => gridModel.expandToLevel(idx))
-                };
-            });
-            return {items};
+                    return {
+                        icon: isCurrLevel ? Icon.check() : null,
+                        text: label,
+                        actionFn: () => wait().then(() => target.expandToLevel(idx))
+                    };
+                })
+            );
+
+            // A lone level adds nothing to Expand All.
+            return items.length < 2 ? {hidden: true} : {items};
         }
     });
 }
@@ -312,29 +441,81 @@ interface RecordActionMenuItemProps extends HoistProps, CustomMenuItemProps {
     displaySpec: RecordActionSpec;
 }
 
+interface MenuHeadingItemProps extends HoistProps, CustomMenuItemProps {
+    heading: RecordActionHeading;
+}
+
+/**
+ * A non-interactive heading within an ag-Grid context menu.
+ *
+ * This mirrors the four-part cell structure of {@link RecordActionMenuItem} for two reasons. The
+ * rule that each cell draws then spans the full menu width, the same approach ag-Grid takes for
+ * its own separators. The row also keeps the menu's column widths intact. The label sits in the
+ * text cell, but CSS shifts it left of the item text, so it reads as a heading and not an item.
+ *
+ * @internal
+ */
+const MenuHeadingItem = hoistCmp<MenuHeadingItemProps>({
+    render({heading}: MenuHeadingItemProps) {
+        useGridMenuItem({
+            configureDefaults: () => ({
+                suppressClick: true,
+                suppressMouseDown: true,
+                suppressMouseOver: true,
+                suppressKeyboardSelect: true,
+                suppressTabIndex: true,
+                suppressFocus: true,
+                suppressTooltip: true
+            })
+        });
+
+        return div(
+            span({className: 'ag-menu-option-part ag-menu-option-icon'}),
+            span({
+                className: 'ag-menu-option-part ag-menu-option-text',
+                children: span({
+                    className: 'xh-grid-menu-heading__label',
+                    children: heading.heading
+                })
+            }),
+            span({className: 'ag-menu-option-part ag-menu-option-shortcut'}),
+            span({className: 'ag-menu-option-part ag-menu-option-popup-pointer'})
+        );
+    }
+});
+
 const RecordActionMenuItem = hoistCmp<RecordActionMenuItemProps>({
     render({displaySpec, subMenu}: RecordActionMenuItemProps) {
         useGridMenuItem({
             configureDefaults: () => true
         });
 
-        return div(
-            span({className: 'ag-menu-option-part ag-menu-option-icon', item: displaySpec.icon}),
-            span({className: 'ag-menu-option-part ag-menu-option-text', item: displaySpec.text}),
-            span({
-                className: 'ag-menu-option-part ag-menu-option-shortcut',
-                item: displaySpec.secondaryText
-            }),
-            span({
-                className: 'ag-menu-option-part ag-menu-option-popup-pointer',
-                item: subMenu
-                    ? span({
-                          className: 'ag-icon ag-icon-small-right',
-                          unselectable: 'on',
-                          role: 'presentation'
-                      })
-                    : ''
-            })
-        );
+        return div({
+            [TEST_ID]: displaySpec.testId,
+            children: [
+                span({
+                    className: 'ag-menu-option-part ag-menu-option-icon',
+                    children: displaySpec.icon
+                }),
+                span({
+                    className: 'ag-menu-option-part ag-menu-option-text',
+                    children: displaySpec.text
+                }),
+                span({
+                    className: 'ag-menu-option-part ag-menu-option-shortcut',
+                    children: displaySpec.secondaryText
+                }),
+                span({
+                    className: 'ag-menu-option-part ag-menu-option-popup-pointer',
+                    children: subMenu
+                        ? span({
+                              className: 'ag-icon ag-icon-small-right',
+                              unselectable: 'on',
+                              role: 'presentation'
+                          })
+                        : ''
+                })
+            ]
+        });
     }
 });

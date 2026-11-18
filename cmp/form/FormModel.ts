@@ -4,17 +4,16 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
+import type {PersistOptions, PlainObject} from '@xh/hoist/core';
 import {
     HoistModel,
     managed,
     PersistableState,
     PersistenceProvider,
-    persistOptions,
-    PersistOptions,
-    PlainObject
+    persistOptions
 } from '@xh/hoist/core';
-import {ValidationState} from '@xh/hoist/data';
-import {action, bindable, computed, makeObservable, observable} from '@xh/hoist/mobx';
+import type {ValidationState} from '@xh/hoist/data';
+import {action, bindable, computed, observableRef} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
 import {
     flatMap,
@@ -32,9 +31,11 @@ import {
     values,
     without
 } from 'lodash';
-import {BaseFieldConfig, BaseFieldModel} from './field/BaseFieldModel';
+import type {BaseFieldConfig} from './field/BaseFieldModel';
+import {BaseFieldModel} from './field/BaseFieldModel';
 import {FieldModel} from './field/FieldModel';
-import {SubformsFieldConfig, SubformsFieldModel} from './field/SubformsFieldModel';
+import type {SubformsFieldConfig} from './field/SubformsFieldModel';
+import {SubformsFieldModel} from './field/SubformsFieldModel';
 import {isLocalDate, LocalDate} from '@xh/hoist/utils/datetime';
 
 /**
@@ -58,6 +59,9 @@ export interface FormConfig {
 
     disabled?: boolean;
     readonly?: boolean;
+
+    /** See {@link HoistBase.xhName}. */
+    xhName?: string;
 
     /** @internal */
     xhImpl?: boolean;
@@ -105,8 +109,7 @@ export interface FormValidateOptions {
  */
 export class FormModel extends HoistModel {
     /** Container object for FieldModel instances, keyed by field name.*/
-    @observable.ref
-    fields: Record<string, BaseFieldModel> = {};
+    @observableRef accessor fields: Record<string, BaseFieldModel> = {};
 
     /** All FieldModel instances. */
     @managed
@@ -115,8 +118,8 @@ export class FormModel extends HoistModel {
     }
 
     parent: FormModel = null;
-    @bindable disabled: boolean;
-    @bindable readonly: boolean;
+    @bindable accessor disabled: boolean;
+    @bindable accessor readonly: boolean;
 
     private valuesProxy = this.createValuesProxy();
 
@@ -140,11 +143,12 @@ export class FormModel extends HoistModel {
         disabled = false,
         persistWith = null,
         readonly = false,
+        xhName = null,
         xhImpl = false
     }: FormConfig = {}) {
         super();
-        makeObservable(this);
         this.xhImpl = xhImpl;
+        this.xhName = xhName;
 
         this.disabled = disabled;
         this.readonly = readonly;
@@ -171,6 +175,7 @@ export class FormModel extends HoistModel {
         forOwn(this.fields, f => {
             f.formModel = this;
             f.xhImpl = xhImpl;
+            f.xhName ??= this.childXhName(f.name);
         });
     }
 

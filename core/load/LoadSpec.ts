@@ -5,9 +5,9 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
-import {Span} from '../Span';
-import {PlainObject} from '../types/Types';
-import {LoadSupport} from './';
+import type {Span} from '../Span';
+import type {PlainObject} from '../types/Types';
+import type {LoadSupport} from './';
 
 /**
  * Configuration for a {@link LoadSpec} - the inputs callers may supply via

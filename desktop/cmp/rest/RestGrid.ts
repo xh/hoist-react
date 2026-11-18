@@ -7,14 +7,17 @@
 
 import {grid} from '@xh/hoist/cmp/grid';
 import {fragment} from '@xh/hoist/cmp/layout';
-import {hoistCmp, HoistProps, PlainObject, uses} from '@xh/hoist/core';
-import {MaskProps} from '@xh/hoist/cmp/mask';
-import {panel, PanelProps} from '@xh/hoist/desktop/cmp/panel';
+import type {HoistProps, PlainObject} from '@xh/hoist/core';
+import {hoistCmp, uses} from '@xh/hoist/core';
+import type {MaskProps} from '@xh/hoist/cmp/mask';
+import type {PanelProps} from '@xh/hoist/desktop/cmp/panel';
+import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import '@xh/hoist/desktop/register';
 import {getTestId} from '@xh/hoist/utils/js';
 import {isArray} from 'lodash';
-import {cloneElement, isValidElement, ReactElement, ReactNode} from 'react';
+import type {ReactElement, ReactNode} from 'react';
+import {cloneElement, isValidElement} from 'react';
 
 import {restForm} from './impl/RestForm';
 import {restGridToolbar} from './impl/RestGridToolbar';
@@ -37,6 +40,14 @@ export interface RestGridProps
 
     /** Classname to be passed to RestForm. */
     formClassName?: string;
+
+    /**
+     * A custom toolbar for the record editor form. Note that this supersedes the form's default
+     * toolbar, including its record actions and Cancel/Save buttons. Rendered within the form,
+     * so components created by element factories will resolve its `RestFormModel` from context.
+     * If specified as an array, will be passed as children to a Toolbar component.
+     */
+    formBbar?: ReactNode;
 
     /**
      * Mask to render on this Component. Defaults to true, which renders a standard Hoist mask.
@@ -76,6 +87,7 @@ export const [RestGrid, restGrid] = hoistCmp.withFactory<RestGridProps>({
                 mask = true,
                 agOptions,
                 formClassName,
+                formBbar,
                 testId,
                 ...restProps
             } = props,
@@ -86,12 +98,13 @@ export const [RestGrid, restGrid] = hoistCmp.withFactory<RestGridProps>({
                 ref,
                 ...restProps,
                 tbar: innerToolbar({model, tbar, extraToolbarItems, testId}),
-                item: grid({model: gridModel, agOptions, testId: getTestId(testId, 'grid')}),
+                children: grid({model: gridModel, agOptions, testId: getTestId(testId, 'grid')}),
                 mask: getMaskFromProp(model, mask)
             }),
             restForm({
                 model: formModel,
                 className: formClassName,
+                formBbar,
                 testId: getTestId(testId, 'form')
             })
         );

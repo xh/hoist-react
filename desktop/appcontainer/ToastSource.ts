@@ -4,11 +4,12 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {ToastModel} from '@xh/hoist/appcontainer/ToastModel';
+import type {ToastModel} from '@xh/hoist/appcontainer/ToastModel';
 import {ToastSourceModel} from '@xh/hoist/appcontainer/ToastSourceModel';
 import {div} from '@xh/hoist/cmp/layout';
 import {hoistCmp, HoistModel, lookup, useLocalModel, uses} from '@xh/hoist/core';
-import {OverlayToaster, ToasterPosition} from '@xh/hoist/kit/blueprint';
+import type {ToasterPosition} from '@xh/hoist/kit/blueprint';
+import {OverlayToaster} from '@xh/hoist/kit/blueprint';
 import {getOrCreate} from '@xh/hoist/utils/js';
 import classNames from 'classnames';
 import {isElement, map} from 'lodash';
@@ -61,7 +62,7 @@ class ToastSourceLocalModel extends HoistModel {
             if (!bpId) {
                 model['bpId'] = toaster.show({
                     className: classNames('xh-toast', `xh-bg-intent-${intent}`),
-                    icon: div({className: 'xh-toast__icon', item: icon}),
+                    icon: div({className: 'xh-toast__icon', children: icon}),
                     action: actionButtonProps,
                     onDismiss: () => wait(0).then(() => model.dismiss()),
                     intent,

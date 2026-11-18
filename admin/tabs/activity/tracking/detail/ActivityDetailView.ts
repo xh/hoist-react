@@ -4,7 +4,8 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {badgeRenderer} from '@xh/hoist/admin/columns';
+import {naSpan, valOrNa} from '@xh/hoist/admin/AdminUtils';
+import {badgeRenderer, elapsedRenderer} from '@xh/hoist/admin/columns';
 import {form} from '@xh/hoist/cmp/form';
 import {grid, gridCountLabel} from '@xh/hoist/cmp/grid';
 import {a, br, div, filler, h3, hframe, placeholder, span} from '@xh/hoist/cmp/layout';
@@ -15,7 +16,7 @@ import {gridFindField} from '@xh/hoist/desktop/cmp/grid';
 import {jsonInput, textInput} from '@xh/hoist/desktop/cmp/input';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
-import {dateTimeSecRenderer, numberRenderer} from '@xh/hoist/format';
+import {dateTimeSecRenderer} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon/Icon';
 import {tooltip} from '@xh/hoist/kit/blueprint';
 import {isNil} from 'lodash';
@@ -29,8 +30,8 @@ export const activityDetailView = hoistCmp.factory({
         return panel({
             className: 'xh-admin-activity-detail',
             tbar: tbar(),
-            items: [grid({flex: 1}), detailRecPanel()],
-            ...props
+            ...props,
+            children: [grid({flex: 1}), detailRecPanel()]
         });
     }
 });
@@ -38,7 +39,7 @@ export const activityDetailView = hoistCmp.factory({
 const tbar = hoistCmp.factory<ActivityDetailModel>(({model}) => {
     return toolbar({
         compact: true,
-        items: [
+        children: [
             filler(),
             gridCountLabel({unit: 'entry'}),
             '-',
@@ -64,7 +65,7 @@ const detailRecPanel = hoistCmp.factory<ActivityDetailModel>(({model}) => {
                 ? {...persistWith, path: `${persistWith.path}.singleActivityDetailPanel`}
                 : null
         },
-        item: detailRecForm()
+        children: detailRecForm()
     });
 });
 
@@ -73,11 +74,11 @@ const detailRecForm = hoistCmp.factory<ActivityDetailModel>(({model}) => {
     return hasSelection
         ? form({
               fieldDefaults: {inline: true, readonlyRenderer: valOrNa},
-              item: hframe(
+              children: hframe(
                   div({
                       className: 'xh-admin-activity-detail__form',
                       style: {flex: 1},
-                      items: [
+                      children: [
                           h3(Icon.info(), 'Activity'),
                           formField({field: 'severity', label: 'Severity'}),
                           formField({
@@ -88,7 +89,7 @@ const detailRecForm = hoistCmp.factory<ActivityDetailModel>(({model}) => {
                                       impSpan = impersonating
                                           ? span({
                                                 className: 'xh-text-color-accent',
-                                                item: ` (impersonating ${impersonating})`
+                                                children: ` (impersonating ${impersonating})`
                                             })
                                           : null;
                                   return span(username, impSpan);
@@ -99,11 +100,7 @@ const detailRecForm = hoistCmp.factory<ActivityDetailModel>(({model}) => {
                           formField({field: 'msg'}),
                           formField({
                               field: 'elapsed',
-                              readonlyRenderer: numberRenderer({
-                                  label: 'ms',
-                                  nullDisplay: '-',
-                                  formatConfig: {thousandSeparated: false, mantissa: 0}
-                              }),
+                              readonlyRenderer: elapsedRenderer,
                               omit: isNil(formModel.values.elapsed)
                           }),
                           formField({
@@ -167,7 +164,7 @@ const additionalDataPanel = hoistCmp.factory<ActivityDetailModel>(({model}) => {
               value: model.formattedData
           })
         : placeholder({
-              items: [
+              children: [
                   model.hasExtraTrackData ? Icon.filter() : null,
                   model.hasExtraTrackData
                       ? 'Additional data available, but hidden by path filter below.'
@@ -178,7 +175,7 @@ const additionalDataPanel = hoistCmp.factory<ActivityDetailModel>(({model}) => {
     return panel({
         flex: 1,
         className: 'xh-border-left',
-        items: [
+        children: [
             h3(Icon.json(), 'Additional Data'),
             item,
             toolbar(
@@ -193,7 +190,7 @@ const additionalDataPanel = hoistCmp.factory<ActivityDetailModel>(({model}) => {
                     bind: 'formattedDataFilterPath'
                 }),
                 tooltip({
-                    item: Icon.questionCircle({className: 'xh-margin-right'}),
+                    children: Icon.questionCircle({className: 'xh-margin-right'}),
                     content: span(
                         'Specify one or more dot-delimited paths to filter the JSON data displayed above.',
                         br(),
@@ -205,6 +202,4 @@ const additionalDataPanel = hoistCmp.factory<ActivityDetailModel>(({model}) => {
     });
 });
 
-const valOrNa = v => (v != null ? v : naSpan());
-const naSpan = () => span({item: 'N/A', className: 'xh-text-color-muted'});
-const hyperlinkVal = v => (v ? a({href: v, item: v, target: '_blank'}) : '-');
+const hyperlinkVal = v => (v ? a({href: v, children: v, target: '_blank'}) : '-');

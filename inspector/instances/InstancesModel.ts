@@ -4,19 +4,24 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {boolCheckCol, ColumnSpec, GridModel} from '@xh/hoist/cmp/grid';
+import type {ColumnSpec} from '@xh/hoist/cmp/grid';
+import {boolCheck, GridModel} from '@xh/hoist/cmp/grid';
 import {a} from '@xh/hoist/cmp/layout';
-import {HoistBase, hoistCmp, HoistModel, persist, XH} from '@xh/hoist/core';
-import {StoreRecord} from '@xh/hoist/data';
+import type {HoistBase} from '@xh/hoist/core';
+import {hoistCmp, HoistModel, managed, persist, XH} from '@xh/hoist/core';
+import type {StoreRecord} from '@xh/hoist/data';
+import {Cube, View} from '@xh/hoist/data';
 import {actionCol, calcActionColWidth} from '@xh/hoist/desktop/cmp/grid';
 import {PanelModel} from '@xh/hoist/desktop/cmp/panel';
 import {fmtDate} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
-import {action, bindable, isObservableProp, makeObservable, runInAction} from '@xh/hoist/mobx';
+import {action, bindable, isObservableProp, runInAction, bindableRef} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 import {trimToDepth} from '@xh/hoist/utils/js';
 import {compact, find, forIn, head, without} from 'lodash';
+import {instanceLabel} from '../impl/InspectorUtils';
 import {StatsModel} from '../stats/StatsModel';
+import {DiagnosticsModel} from './DiagnosticsModel';
 
 /**
  * Displays a list of current HoistModel, HoistService, and Store instances, with the ability to
@@ -30,6 +35,7 @@ export class InstancesModel extends HoistModel {
     instancesGridModel: GridModel;
     propertiesGridModel: GridModel;
     instancesPanelModel: PanelModel;
+    @managed diagnosticsModel: DiagnosticsModel;
 
     get statsModel(): StatsModel {
         return XH.getModels(StatsModel)[0] as StatsModel;
@@ -39,22 +45,28 @@ export class InstancesModel extends HoistModel {
         return this.statsModel?.selectedSyncRun;
     }
 
-    @bindable.ref propsWatchlist = [];
-    @bindable.ref loadedGetters = [];
+    @bindableRef accessor propsWatchlist = [];
+    @bindableRef accessor loadedGetters = [];
 
     // Persisted storeFilterFields (convenient across frequent page refreshes when developing)
-    @bindable @persist instancesStoreFilter;
-    @bindable @persist propertiesStoreFilter;
+    @bindable @persist accessor instancesStoreFilter;
+    @bindable @persist accessor propertiesStoreFilter;
 
-    @bindable @persist instQuickFilters = ['showInGroups'];
+    /** Keys of favorited instances (`{className}:{xhName}`) - requires an `xhName` to pin. */
+    @bindableRef @persist accessor favorites: string[] = [];
+
+    @bindable @persist accessor instQuickFilters = ['showInGroups'];
     get showInGroups() {
         return this.instQuickFilters?.includes('showInGroups');
     }
     get showXhImpl() {
         return this.instQuickFilters?.includes('showXhImpl');
     }
+    get favoritesOnly() {
+        return this.instQuickFilters?.includes('favoritesOnly');
+    }
 
-    @bindable @persist propQuickFilters = [];
+    @bindable @persist accessor propQuickFilters = [];
     get showUnderscoreProps() {
         return this.propQuickFilters?.includes('showUnderscoreProps');
     }
@@ -66,15 +78,17 @@ export class InstancesModel extends HoistModel {
     }
 
     get selectedInstances(): HoistBase[] {
-        return this.instancesGridModel.selectedIds.map((it: string) => this.getInstance(it));
+        return compact(
+            this.instancesGridModel.selectedIds.map((it: string) => this.getInstance(it))
+        );
     }
 
     constructor() {
         super();
-        makeObservable(this);
 
         this.instancesGridModel = this.createInstancesGridModel();
         this.propertiesGridModel = this.createPropertiesGridModel();
+        this.diagnosticsModel = new DiagnosticsModel(this);
         this.instancesPanelModel = new PanelModel({
             defaultSize: 575,
             side: 'left',
@@ -157,6 +171,13 @@ export class InstancesModel extends HoistModel {
         }
     }
 
+    toggleFavorite(record: StoreRecord) {
+        const key = favoriteKey(record?.data);
+        if (!key) return;
+        const {favorites} = this;
+        this.favorites = favorites.includes(key) ? without(favorites, key) : [...favorites, key];
+    }
+
     togglePropsWatchlistItem(record: StoreRecord) {
         const {instanceXhId, property, isGetter} = record.data,
             {propsWatchlist} = this,
@@ -172,7 +193,9 @@ export class InstancesModel extends HoistModel {
         return (
             head(XH.getModels(it => it.xhId === xhId)) ??
             XH.getServices().find(it => it.xhId === xhId) ??
-            XH.getStores().find(it => it.xhId === xhId)
+            XH.getStores().find(it => it.xhId === xhId) ??
+            XH.getCubes().find(it => it.xhId === xhId) ??
+            XH.getViews().find(it => it.xhId === xhId)
         );
     }
 
@@ -183,16 +206,24 @@ export class InstancesModel extends HoistModel {
         return new GridModel({
             persistWith: {...this.persistWith, path: 'instancesGrid', persistGrouping: false},
             autosizeOptions: {mode: 'managed'},
+            filterModel: true,
+            headerMenuDisplay: 'hover',
+            colDefaults: {filterable: true},
             emptyText: 'No matching (and alive) instances found.',
             store: {
                 fields: [
                     {name: 'className', type: 'string'},
+                    {name: 'xhName', type: 'string'},
+                    {name: 'isFavorite', type: 'bool'},
+                    {name: 'alive', type: 'bool'},
                     {name: 'displayGroup', type: 'string'},
                     {name: 'created', type: 'date'},
                     {name: 'syncRun', type: 'number'},
                     {name: 'isHoistService', type: 'bool'},
                     {name: 'isHoistModel', type: 'bool'},
                     {name: 'isStore', type: 'bool'},
+                    {name: 'isCube', type: 'bool'},
+                    {name: 'isView', type: 'bool'},
                     {name: 'isLinked', type: 'bool'},
                     {name: 'isXhImpl', type: 'bool'},
                     {name: 'hasLoadSupport', type: 'bool'},
@@ -202,17 +233,35 @@ export class InstancesModel extends HoistModel {
             },
             sortBy: ['created|desc'],
             groupBy: this.showInGroups ? 'displayGroup' : null,
+            groupSortFn: (a, b) => GROUP_SORT_ORDER.indexOf(a) - GROUP_SORT_ORDER.indexOf(b),
             selModel: {mode: 'multiple'},
             colChooserModel: true,
             columns: [
                 {
                     ...actionCol,
-                    width: calcActionColWidth(2),
+                    width: calcActionColWidth(3),
                     actions: [
                         {
                             icon: Icon.terminal(),
                             tooltip: 'Log to console',
-                            actionFn: ({record}) => this.logInstanceToConsole(record)
+                            actionFn: ({record}) => this.logInstanceToConsole(record),
+                            displayFn: ({record}) => ({hidden: !record.data.alive})
+                        },
+                        {
+                            icon: Icon.favorite(),
+                            actionFn: ({record}) => this.toggleFavorite(record),
+                            displayFn: ({record}) => {
+                                const {xhName, isFavorite} = record.data;
+                                return {
+                                    disabled: !xhName,
+                                    tooltip: xhName
+                                        ? 'Toggle Favorite'
+                                        : 'Set xhName to enable favorites',
+                                    icon: isFavorite
+                                        ? Icon.favorite({intent: 'warning', prefix: 'fas'})
+                                        : Icon.favorite({className: 'xh-text-color-muted'})
+                                };
+                            }
                         },
                         {
                             icon: Icon.refresh({intent: 'success'}),
@@ -223,18 +272,30 @@ export class InstancesModel extends HoistModel {
                         }
                     ]
                 },
-                {field: 'id', displayName: 'xhId'},
-                {field: 'syncRun', displayName: 'Sync', autosizeIncludeHeaderIcons: false},
+                {
+                    field: 'id',
+                    displayName: 'xhId',
+                    renderer: (v, {record}) => (record.data.alive ? v : null)
+                },
+                {
+                    field: 'syncRun',
+                    displayName: 'Sync',
+                    headerTooltip:
+                        'Sync run in which this instance first appeared. Inspector increments its sync run counter each time it detects newly-created instances, grouping instances that were created together.',
+                    autosizeIncludeHeaderIcons: false
+                },
                 {
                     field: 'isLinked',
                     headerName: Icon.link(),
                     headerTooltip: 'Linked model',
-                    ...boolCheckCol,
+                    ...boolCheck,
                     width: 40,
                     tooltip: v => (v ? 'Linked model' : ''),
                     renderer: v => (v ? Icon.link() : null)
                 },
                 {field: 'displayGroup', hidden: true},
+                {field: 'isFavorite', ...boolCheck, hidden: true},
+                {field: 'xhName', flex: 1, minWidth: 150},
                 {field: 'className', flex: 1, minWidth: 150},
                 {
                     field: 'lastLoadCompleted',
@@ -246,10 +307,8 @@ export class InstancesModel extends HoistModel {
                 },
                 {field: 'created', align: 'right', renderer: timestampRenderer}
             ],
-            rowClassFn: rec => {
-                return rec?.data.isXhImpl ? 'xh-impl-row' : null;
-            },
-            onRowDoubleClicked: ({data: rec}) => this.logInstanceToConsole(rec),
+            rowClassFn: rec => (rec?.data.isXhImpl || !rec?.data.alive ? 'xh-impl-row' : null),
+            onRowDoubleClicked: ({data: rec}) => rec?.data.alive && this.logInstanceToConsole(rec),
             xhImpl: true
         });
     }
@@ -259,6 +318,9 @@ export class InstancesModel extends HoistModel {
         return new GridModel({
             persistWith: {...this.persistWith, path: 'propertiesGrid'},
             autosizeOptions: {mode: 'managed'},
+            filterModel: true,
+            headerMenuDisplay: 'hover',
+            colDefaults: {filterable: true},
             sortBy: 'displayProperty',
             groupBy: 'displayGroup',
             showGroupRowCounts: false,
@@ -282,6 +344,8 @@ export class InstancesModel extends HoistModel {
                     {name: 'isHoistModel', type: 'bool'},
                     {name: 'isHoistService', type: 'bool'},
                     {name: 'isStore', type: 'bool'},
+                    {name: 'isCube', type: 'bool'},
+                    {name: 'isView', type: 'bool'},
                     {name: 'isGetter', type: 'bool'},
                     {name: 'isLoadedGetter', type: 'bool'}
                 ]
@@ -314,7 +378,7 @@ export class InstancesModel extends HoistModel {
                     renderer: (v, {record}) => {
                         return record.data.displayGroup === 'Watchlist'
                             ? a({
-                                  item: v,
+                                  children: v,
                                   onClick: () => this.selectInstanceAsync(record.data.instanceXhId)
                               })
                             : v;
@@ -337,10 +401,16 @@ export class InstancesModel extends HoistModel {
                     renderer: (v, {record}) => {
                         const {data} = record;
                         if (data.isGetter && !data.isLoadedGetter) {
-                            return a({item: '(...)', onClick: () => this.loadGetter(record)});
+                            return a({children: '(...)', onClick: () => this.loadGetter(record)});
                         }
-                        if (data.isHoistModel || data.isHoistService || data.isStore) {
-                            return a({item: v, onClick: () => this.selectInstanceAsync(v)});
+                        if (
+                            data.isHoistModel ||
+                            data.isHoistService ||
+                            data.isStore ||
+                            data.isCube ||
+                            data.isView
+                        ) {
+                            return a({children: v, onClick: () => this.selectInstanceAsync(v)});
                         }
                         return JSON.stringify(trimToDepth(v, 2));
                     }
@@ -359,20 +429,48 @@ export class InstancesModel extends HoistModel {
     private autoLoadInstancesGrid() {
         this.addAutorun({
             run: () => {
-                const {showXhImpl, instancesGridModel, selectedSyncRun} = this,
+                const {showXhImpl, favoritesOnly, favorites, instancesGridModel, selectedSyncRun} =
+                        this,
                     data = [];
 
                 XH.inspectorService.activeInstances.forEach(inst => {
-                    if (!showXhImpl && inst.isXhImpl) return;
+                    const isFavorite = favorites.includes(favoriteKey(inst));
+
+                    // A star is an explicit opt-in, so favorites show regardless of the xhImpl filter.
+                    if (favoritesOnly ? !isFavorite : !showXhImpl && inst.isXhImpl) return;
                     if (selectedSyncRun && inst.syncRun !== selectedSyncRun) return;
 
                     const displayGroup = inst.isHoistService
                         ? 'Services'
                         : inst.isStore
                           ? 'Stores'
-                          : 'Models';
-                    data.push({...inst, displayGroup});
+                          : inst.isCube
+                            ? 'Cubes'
+                            : inst.isView
+                              ? 'Views'
+                              : 'Models';
+                    data.push({...inst, displayGroup, isFavorite, alive: true});
                 });
+
+                // Favorites with no live instance - shown so they can be seen and un-starred.
+                if (favoritesOnly && !selectedSyncRun) {
+                    const aliveKeys = new Set(data.map(favoriteKey));
+                    favorites
+                        .filter(key => !aliveKeys.has(key))
+                        .forEach(key => {
+                            const sep = key.indexOf(':'),
+                                className = key.slice(0, sep),
+                                xhName = key.slice(sep + 1);
+                            data.push({
+                                id: key,
+                                className,
+                                xhName,
+                                displayGroup: 'Not Alive',
+                                isFavorite: true,
+                                alive: false
+                            });
+                        });
+                }
 
                 instancesGridModel.loadData(data);
             }
@@ -450,15 +548,16 @@ export class InstancesModel extends HoistModel {
             return null;
 
         const {xhId} = instance,
-            ctorName = instance.constructor.name,
-            instanceDisplayName = `${ctorName} [${xhId}]`,
+            instanceDisplayName = instanceLabel(instance),
             isLoadedGetter = isGetter && this.shouldLoadGetter(xhId, property),
             v = !isGetter || isLoadedGetter ? instance[property] : null,
             // Detect FormModel.values Proxy object - throws otherwise on attempt to render in grid.
             isProxy = !!v?._xhIsProxy,
             isHoistModel = v?.isHoistModel,
             isHoistService = v?.isHoistService,
-            isStore = v?.isStore;
+            isStore = v?.isStore,
+            isCube = Cube.isCube(v),
+            isView = View.isView(v);
 
         const valueType =
             isGetter && !isLoadedGetter
@@ -476,7 +575,7 @@ export class InstancesModel extends HoistModel {
             displayProperty: fromWatchlistItem ? `${instanceDisplayName}.${property}` : property,
             displayGroup: fromWatchlistItem ? 'Watchlist' : instanceDisplayName,
             value:
-                isHoistModel || isHoistService || isStore
+                isHoistModel || isHoistService || isStore || isCube || isView
                     ? v.xhId
                     : isProxy
                       ? '[cannot render]'
@@ -487,6 +586,8 @@ export class InstancesModel extends HoistModel {
             isHoistModel,
             isHoistService,
             isStore,
+            isCube,
+            isView,
             isGetter,
             isLoadedGetter,
             isWatchlistItem: !!this.getWatchlistItem(xhId, property)
@@ -518,6 +619,12 @@ export class InstancesModel extends HoistModel {
     }
 }
 
+const GROUP_SORT_ORDER = ['Models', 'Services', 'Cubes', 'Views', 'Stores', 'Not Alive'];
+
+/** Persistent identity for Favorites - null when the instance has no `xhName` to pin by. */
+const favoriteKey = (inst: {className?: string; xhName?: string}): string =>
+    inst?.xhName ? `${inst.className}:${inst.xhName}` : null;
+
 const timestampRenderer = v => fmtDate(v, {fmt: 'HH:mm:ss.SSS'});
 
 const propsGridGroupRenderer = hoistCmp.factory<InstancesModel>(({value, node, model}) => {
@@ -525,5 +632,8 @@ const propsGridGroupRenderer = hoistCmp.factory<InstancesModel>(({value, node, m
 
     const firstRecData = node.allLeafChildren[0]?.data.data ?? {},
         {instanceXhId, instanceDisplayName} = firstRecData;
-    return a({item: instanceDisplayName, onClick: () => model.selectInstanceAsync(instanceXhId)});
+    return a({
+        children: instanceDisplayName,
+        onClick: () => model.selectInstanceAsync(instanceXhId)
+    });
 });

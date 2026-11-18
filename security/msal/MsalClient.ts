@@ -5,23 +5,27 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import * as msal from '@azure/msal-browser';
-import {
+import type {
     AccountInfo,
-    BrowserPerformanceClient,
     Configuration,
-    InteractionRequiredAuthError,
     IPublicClientApplication,
-    LogLevel,
+    PopupRequest,
     SilentRequest
 } from '@azure/msal-browser';
-import {CommonAuthorizationUrlRequest} from '@azure/msal-common';
-import {AppState, PlainObject, ReactionSpec, XH} from '@xh/hoist/core';
+import {
+    BrowserPerformanceClient,
+    InteractionRequiredAuthError,
+    LogLevel
+} from '@azure/msal-browser';
+import type {PlainObject, ReactionSpec} from '@xh/hoist/core';
+import {AppState, XH} from '@xh/hoist/core';
 import {Token} from '@xh/hoist/security/Token';
 import {logDebug, logError, logInfo, logWarn, mergeDeep, throwIf} from '@xh/hoist/utils/js';
 import {withFormattedTimestamps} from '@xh/hoist/format';
 import {flatMap, union, uniq} from 'lodash';
-import {BaseOAuthClient, BaseOAuthClientConfig} from '../BaseOAuthClient';
-import {AccessTokenSpec, TokenMap} from '../Types';
+import type {BaseOAuthClientConfig} from '../BaseOAuthClient';
+import {BaseOAuthClient} from '../BaseOAuthClient';
+import type {AccessTokenSpec, AuthMethod, TokenMap} from '../Types';
 
 /**
  * Configuration for a {@link MsalClient} - the Microsoft Entra ID (Azure AD) OAuth client.
@@ -78,7 +82,7 @@ export interface MsalClientConfig extends BaseOAuthClientConfig<MsalTokenSpec> {
      *
      *  In practice, and according to documentation, this operation is likely to fail for a
      *  number of reasons, and can often do so as timeout.  Therefore, keeping the timeout limit
-     *  value -- `system.iframeHashTimeout` -- at a relatively low value is critical.  Hoist
+     *  value -- `system.iframeBridgeTimeout` -- at a relatively low value is critical.  Hoist
      *  defaults this value to 3000ms vs. the default 10000ms.
      */
     enableSsoSilent?: boolean;
@@ -120,7 +124,7 @@ export interface MsalTokenSpec extends AccessTokenSpec {
  * https://github.com/AzureAD/microsoft-authentication-library-for-js/blob/dev/lib/msal-browser/docs/login-user.md
  *
  * Also see this doc re. use of blankUrl as redirectUri for all "silent" token requests:
- * https://github.com/AzureAD/microsoft-authentication-library-for-js/blob/dev/lib/msal-browser/docs/errors.md#issues-caused-by-the-redirecturi-page
+ * https://github.com/AzureAD/microsoft-authentication-library-for-js/blob/dev/docs/errors.md#issues-caused-by-the-redirecturi-page
  *
  * Important note: The handling of `ssoSilent` and `initRefreshTokenExpirationOffsetSecs` in this
  *    library require 3rd party cookies to be enabled in the browser so that MSAL can load contact
@@ -218,7 +222,11 @@ export class MsalClient extends BaseOAuthClient<MsalClientConfig, MsalTokenSpec>
         // user involvement but will require at least a redirect or cursory auto-closing popup.
         this.logDebug('Attempting Login');
         await this.loginAsync();
-        return this.fetchAllTokensAsync({eagerOnly: true});
+
+        // 3a) ... and a redirect never returns above, so this was a popup.
+        const ret = await this.fetchAllTokensAsync({eagerOnly: true});
+        this.noteAuthComplete('loginPopup');
+        return ret;
     }
 
     protected override async doLoginPopupAsync(): Promise<void> {
@@ -228,7 +236,6 @@ export class MsalClient extends BaseOAuthClient<MsalClientConfig, MsalTokenSpec>
                 overrideInteractionInProgress: true
             });
             this.setAccount(ret.account);
-            this.noteAuthComplete('loginPopup');
         } catch (e) {
             if (e.errorCode === 'popup_window_error' || e.errorCode === 'empty_window_error') {
                 throw XH.exception({
@@ -411,7 +418,8 @@ export class MsalClient extends BaseOAuthClient<MsalClientConfig, MsalTokenSpec>
                 loggerOptions: {
                     loggerCallback: (level, message) => this.logFromMsal(level, message),
                     logLevel: msalLogLevel
-                }
+                },
+                iframeBridgeTimeout: 3000 // Prevent long pauses for sso failures.
             },
             cache: {
                 cacheLocation: 'localStorage' // allows sharing auth info across tabs.
@@ -466,9 +474,9 @@ export class MsalClient extends BaseOAuthClient<MsalClientConfig, MsalTokenSpec>
         this.logDebug('Target account identified:', account.username);
     }
 
-    private noteAuthComplete(authMethod: AuthMethod) {
+    protected override noteAuthComplete(authMethod: AuthMethod) {
+        super.noteAuthComplete(authMethod);
         if (this.telemetry) this.telemetry.authMethod = authMethod;
-        this.logInfo(`Authenticated user '${this.account.username}' via ${authMethod}`);
     }
 
     private authRequestCore(): AuthRequestCore {
@@ -490,11 +498,12 @@ export class MsalClient extends BaseOAuthClient<MsalClientConfig, MsalTokenSpec>
     }
 }
 
+// Fields shared by the popup, redirect and silent login requests. PopupRequest types them as strictly
+// as any of the three - it requires `scopes`, which SsoSilentRequest leaves optional.
 type AuthRequestCore = Pick<
-    CommonAuthorizationUrlRequest,
+    PopupRequest,
     'domainHint' | 'scopes' | 'extraScopesToConsent' | 'account' | 'loginHint' | 'redirectUri'
 >;
-type AuthMethod = 'acquireSilent' | 'ssoSilent' | 'loginPopup' | 'loginRedirect';
 
 /**
  * Telemetry produced by this client (if enabled) + included in {@link ClientHealthService}

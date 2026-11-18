@@ -4,13 +4,12 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {composeRefs} from '@xh/hoist/utils/react';
+import {useComposedRefs} from '@xh/hoist/utils/react';
 import {box, hbox, vbox} from '@xh/hoist/cmp/layout';
 import {hoistCmp, useContextModel} from '@xh/hoist/core';
 import {isString} from 'lodash';
 import {Children} from 'react';
 import {PanelModel} from '../PanelModel';
-import {dragger} from './dragger/Dragger';
 import {splitter} from './Splitter';
 
 export const resizeContainer = hoistCmp.factory({
@@ -18,24 +17,23 @@ export const resizeContainer = hoistCmp.factory({
     model: false,
     className: 'xh-resizable',
 
-    render({className, children, testId}, ref) {
+    render({className, children, testId, domAttrs}, ref) {
         const panelModel = useContextModel(PanelModel),
             {size, resizable, collapsed, vertical, contentFirst, showSplitter} = panelModel,
             dim = vertical ? 'height' : 'width',
             child = Children.only(children),
-            dragBarWidth = showSplitter ? '8px' : '0px',
+            splitterSize = showSplitter ? '1px' : '0px',
             sizeIsPct = isString(size) && size.endsWith('%');
 
-        const boxSize = sizeIsPct ? `calc(100% - ${dragBarWidth})` : size;
-        let items = [collapsed ? box(child) : box({item: child, [dim]: boxSize})];
+        const boxSize = sizeIsPct ? `calc(100% - ${splitterSize})` : size;
+        // Keyed so content is never remounted when a line-less splitter comes or goes.
+        let parts = [box({key: 'content', children: child, [dim]: collapsed ? null : boxSize})];
 
-        if (showSplitter) {
-            const splitterCmp = splitter();
-            items = contentFirst ? [...items, splitterCmp] : [splitterCmp, ...items];
-        }
-
-        if (!collapsed && resizable) {
-            items.push(dragger());
+        // Without a visible splitter, a resizable panel still gets a line-less splitter as its
+        // hit area for dragging and keyboard resizing.
+        if (showSplitter || (resizable && !collapsed)) {
+            const splitterCmp = splitter({key: 'splitter'});
+            parts = contentFirst ? [...parts, splitterCmp] : [splitterCmp, ...parts];
         }
 
         const cmp = vertical ? vbox : hbox,
@@ -43,19 +41,21 @@ export const resizeContainer = hoistCmp.factory({
             minDim = vertical ? 'minHeight' : 'minWidth',
             cmpSize = !collapsed && sizeIsPct ? size : undefined;
 
-        if (panelModel._resizeRef) {
-            ref = composeRefs(panelModel._resizeRef, ref);
-        }
+        ref = useComposedRefs(panelModel._resizeRef, ref);
 
         return cmp({
             ref,
             className,
             flex: 'none',
+            // Let the splitter's hit area and button extend over the neighbor. The content box
+            // still clips the panel itself.
+            overflow: 'visible',
             [dim]: cmpSize,
             [maxDim]: '100%',
-            [minDim]: dragBarWidth,
+            [minDim]: splitterSize,
             testId,
-            items
+            domAttrs,
+            children: parts
         });
     }
 });

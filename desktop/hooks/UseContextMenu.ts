@@ -4,12 +4,13 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {ContextMenuSpec} from '@xh/hoist/core';
+import type {ContextMenuSpec} from '@xh/hoist/core';
 import {contextMenu} from '@xh/hoist/desktop/cmp/contextmenu/ContextMenu';
 import {showContextMenu} from '@xh/hoist/kit/blueprint';
 import {logError} from '@xh/hoist/utils/js';
 import {isArray, isEmpty, isFunction, isUndefined} from 'lodash';
-import {cloneElement, isValidElement, MouseEvent, ReactElement} from 'react';
+import type {MouseEvent, ReactElement} from 'react';
+import {cloneElement, isValidElement} from 'react';
 
 /**
  * Hook to add a right-click context menu to a component.
@@ -19,7 +20,7 @@ import {cloneElement, isValidElement, MouseEvent, ReactElement} from 'react';
  * @param spec - spec the menu to be shown. If null, or the number of items is empty, no menu will
  *      be rendered and the event will be consumed.
  */
-export function useContextMenu(child?: ReactElement, spec?: ContextMenuSpec): ReactElement {
+export function useContextMenu(child?: ReactElement<any>, spec?: ContextMenuSpec): ReactElement {
     if (!child || isUndefined(spec)) return child;
 
     const onContextMenu = (e: MouseEvent | PointerEvent) => {

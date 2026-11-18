@@ -6,29 +6,28 @@
  */
 import {errorBoundary} from '@xh/hoist/cmp/error/ErrorBoundary';
 import {box, frame, vbox, vframe} from '@xh/hoist/cmp/layout';
+import type {BoxProps, HoistModel, HoistProps, Some, TaskObserver} from '@xh/hoist/core';
 import {
-    BoxProps,
     hoistCmp,
-    HoistModel,
-    HoistProps,
     refreshContextView,
-    Some,
-    TaskObserver,
     useContextModel,
     uses,
     type ContextMenuSpec
 } from '@xh/hoist/core';
 import {loadingIndicator} from '@xh/hoist/cmp/loadingindicator';
 import {mask} from '@xh/hoist/cmp/mask';
+import type {BannerProps} from '@xh/hoist/desktop/cmp/banner';
+import {banner} from '@xh/hoist/desktop/cmp/banner';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {useContextMenu, useHotkeys} from '@xh/hoist/desktop/hooks';
 import '@xh/hoist/desktop/register';
-import {HotkeyConfig} from '@xh/hoist/kit/blueprint';
+import type {HotkeyConfig} from '@xh/hoist/kit/blueprint';
 import {logWarn} from '@xh/hoist/utils/js';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
-import {omitBy} from 'lodash';
-import {Children, isValidElement, ReactElement, ReactNode, useLayoutEffect, useRef} from 'react';
+import {castArray, isString, omitBy} from 'lodash';
+import type {ReactElement, ReactNode} from 'react';
+import {Children, cloneElement, isValidElement, useLayoutEffect, useRef} from 'react';
 import {modalSupport} from '../modalsupport/ModalSupport';
 import {panelHeader} from './impl/PanelHeader';
 import {resizeContainer} from './impl/ResizeContainer';
@@ -80,6 +79,15 @@ export interface PanelProps<M extends PanelModel = PanelModel>
     mask?: Some<TaskObserver> | ReactElement | boolean | 'onLoad';
 
     /**
+     * One or more banners to show within the panel, for info, warning, or error states that
+     * apply to its contents. Set to a {@link PanelBannerSpec}, a message string for a default
+     * 'primary' banner, or a ReactElement. Banners render between the top toolbar and the
+     * panel's contents by default - set `position: 'bottom'` on a spec to show above the bottom
+     * toolbar instead. Null entries are ignored, supporting conditional banners.
+     */
+    banner?: Some<PanelBannerSpec | string | ReactElement>;
+
+    /**
      * A toolbar to be docked at the top of the panel.
      * If specified as an array, items will be passed as children to a Toolbar component.
      */
@@ -97,11 +105,17 @@ export interface PanelProps<M extends PanelModel = PanelModel>
     /** Title to be used when the panel is collapsed. Defaults to `title`. */
     collapsedTitle?: ReactNode;
 
-    /** Additional props to pass to the inner frame hosting child `items`. */
+    /** Additional props to pass to the inner frame hosting the panel's `children`. */
     contentBoxProps?: BoxProps;
 
     /** Allow the panel content area to scroll vertically. */
     scrollable?: boolean;
+}
+
+/** Config for a banner shown via {@link PanelProps.banner}. */
+export interface PanelBannerSpec extends BannerProps {
+    /** Where to show the banner - above (default) or below the panel's contents. */
+    position?: 'top' | 'bottom';
 }
 
 export interface PanelDefaults {
@@ -129,7 +143,7 @@ export const [Panel, panel] = hoistCmp.withFactory<PanelProps, PanelDefaults>({
         compactHeader: false
     },
 
-    render({model, className, testId, ...props}, ref) {
+    render({model, className, testId, domAttrs, ...props}, ref) {
         const contextModel = useContextModel('*');
 
         let wasDisplayed = useRef(false),
@@ -139,6 +153,7 @@ export const [Panel, panel] = hoistCmp.withFactory<PanelProps, PanelDefaults>({
             {
                 tbar,
                 bbar,
+                banner: bannerProp,
                 title,
                 icon,
                 compactHeader = defaults.compactHeader,
@@ -198,10 +213,12 @@ export const [Panel, panel] = hoistCmp.withFactory<PanelProps, PanelDefaults>({
                 return barSpec instanceof Array ? toolbar(barSpec) : barSpec || null;
             };
 
+            const banners = parseBanners(bannerProp);
             coreContents = vframe({
                 style: {display: isRenderedCollapsed ? 'none' : 'flex'},
-                items: Children.toArray([
+                children: Children.toArray([
                     parseToolbar(tbar),
+                    banners.top,
                     frame({
                         display: scrollable ? 'block' : 'flex',
                         ...contentBoxProps,
@@ -210,8 +227,9 @@ export const [Panel, panel] = hoistCmp.withFactory<PanelProps, PanelDefaults>({
                             ? undefined
                             : (contentBoxProps?.flexDirection ?? 'column'),
                         overflowY: scrollable ? 'auto' : contentBoxProps?.overflowY,
-                        items: children
+                        children
                     }),
+                    banners.bottom,
                     parseToolbar(bbar)
                 ])
             });
@@ -224,13 +242,13 @@ export const [Panel, panel] = hoistCmp.withFactory<PanelProps, PanelDefaults>({
 
         // Apply error boundary to content *excluding* header and affordances.
         if (errorBoundaryModel) {
-            coreContents = errorBoundary({model: errorBoundaryModel, item: coreContents});
+            coreContents = errorBoundary({model: errorBoundaryModel, children: coreContents});
         }
 
         // 3) Prepare core layout with header above core.  This is what layout props are trampolined to
         let item = vbox({
             className: 'xh-panel__inner',
-            items: [
+            children: [
                 panelHeader({
                     title,
                     icon,
@@ -249,7 +267,7 @@ export const [Panel, panel] = hoistCmp.withFactory<PanelProps, PanelDefaults>({
 
         // 4) Additional optional wrappers
         if (refreshContextModel) {
-            item = refreshContextView({model: refreshContextModel, item});
+            item = refreshContextView({model: refreshContextModel, children: item});
         }
 
         // 5) Return wrapped in resizable + modal affordances if needed, or equivalent layout box
@@ -261,21 +279,46 @@ export const [Panel, panel] = hoistCmp.withFactory<PanelProps, PanelDefaults>({
         if (modalSupportModel) {
             item = modalSupport({
                 model: modalSupportModel,
-                item: frame({
-                    item,
+                children: frame({
+                    children: item,
                     className: model.isModal ? className : undefined,
-                    testId: model.isModal ? testId : undefined
+                    testId: model.isModal ? testId : undefined,
+                    domAttrs: model.isModal ? domAttrs : undefined
                 })
             });
         }
 
-        testId = model.isModal ? undefined : testId; // Only apply testId once
+        // Only apply testId / domAttrs once - to the modal frame above, or here.
+        testId = model.isModal ? undefined : testId;
+        domAttrs = model.isModal ? undefined : domAttrs;
 
         return useResizeContainer
-            ? resizeContainer({ref, item, className, testId})
-            : box({ref, item, className, testId, ...layoutProps});
+            ? resizeContainer({ref, children: item, className, testId, domAttrs})
+            : box({ref, children: item, className, testId, domAttrs, ...layoutProps});
     }
 });
+
+function parseBanners(propVal: PanelProps['banner']) {
+    const ret = {top: [], bottom: []};
+    castArray(propVal).forEach(spec => {
+        if (!spec) return;
+        if (isValidElement<BannerProps>(spec)) {
+            ret.top.push(cloneElement(spec, {className: bannerClass(spec.props.className, 'top')}));
+            return;
+        }
+        const {
+            position = 'top',
+            className,
+            ...rest
+        }: PanelBannerSpec = isString(spec) ? {message: spec} : (spec as PanelBannerSpec);
+        ret[position].push(banner({...rest, className: bannerClass(className, position)}));
+    });
+    return ret;
+}
+
+function bannerClass(className: string, position: 'top' | 'bottom') {
+    return classNames(className, 'xh-panel__banner', `xh-panel__banner--${position}`);
+}
 
 function parseLoadDecorator(propVal: any, propName: string, ctxModel: HoistModel) {
     const cmp = (propName === 'mask' ? mask : loadingIndicator) as any;

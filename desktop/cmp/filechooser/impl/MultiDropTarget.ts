@@ -22,7 +22,10 @@ export const multiDropTarget = hoistCmp.factory({
             Icon.upload(),
             'Drop more files, or click to browse',
             maxFiles != null
-                ? div({className: 'xh-file-chooser__target-count', item: `${count} of ${maxFiles}`})
+                ? div({
+                      className: 'xh-file-chooser__target-count',
+                      children: `${count} of ${maxFiles}`
+                  })
                 : null
         );
     }

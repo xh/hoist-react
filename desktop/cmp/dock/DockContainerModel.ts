@@ -4,12 +4,14 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {HoistModel, managed, RefreshMode, RenderMode, XH} from '@xh/hoist/core';
+import type {RefreshMode, RenderMode} from '@xh/hoist/core';
+import {HoistModel, managed, XH} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
-import {action, makeObservable, observable} from '@xh/hoist/mobx';
+import {action, observableRef} from '@xh/hoist/mobx';
 import {ensureUniqueBy, throwIf} from '@xh/hoist/utils/js';
 import {isOmitted} from '@xh/hoist/utils/impl';
-import {DockViewModel, DockViewConfig} from './DockViewModel';
+import type {DockViewConfig} from './DockViewModel';
+import {DockViewModel} from './DockViewModel';
 
 interface DockContainerConfig {
     /** DockViewModel configs to be displayed. */
@@ -20,6 +22,9 @@ interface DockContainerConfig {
     renderMode?: RenderMode;
     /** Strategy for refreshing DockViews. Can also be set per-view via `DockViewModelConfig.refreshMode` */
     refreshMode?: RefreshMode;
+
+    /** See {@link HoistBase.xhName}. */
+    xhName?: string;
 }
 
 /**
@@ -29,7 +34,7 @@ interface DockContainerConfig {
  * and expanding / collapsing views programmatically.
  */
 export class DockContainerModel extends HoistModel {
-    @managed @observable.ref views: DockViewModel[] = [];
+    @managed @observableRef accessor views: DockViewModel[] = [];
     direction: DockViewDirection;
     renderMode: RenderMode;
     refreshMode: RefreshMode;
@@ -38,10 +43,11 @@ export class DockContainerModel extends HoistModel {
         views = [],
         direction = 'rtl',
         renderMode = 'lazy',
-        refreshMode = 'onShowLazy'
+        refreshMode = 'onShowLazy',
+        xhName = null
     }: DockContainerConfig = {}) {
         super();
-        makeObservable(this);
+        this.xhName = xhName;
         views = views.filter(v => !isOmitted(v));
 
         ensureUniqueBy(views as [], 'id', 'Multiple DockContainerModel views have the same id.');

@@ -14,9 +14,11 @@ import {select, textArea, textInput} from '@xh/hoist/desktop/cmp/input';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {dialog} from '@xh/hoist/kit/blueprint';
+import {getTestId} from '@xh/hoist/utils/js';
 import {startCase} from 'lodash';
+import {groupField} from './editpanels/GroupField';
 import {SaveAsDialogModel} from './SaveAsDialogModel';
-import {getGroupOptions, getVisibilityOptions, getVisibilityInfo} from './Utils';
+import {getVisibilityOptions, getVisibilityInfo} from './Utils';
 
 /**
  * Default Save As dialog used by ViewManager.
@@ -26,43 +28,45 @@ export const saveAsDialog = hoistCmp.factory<SaveAsDialogModel>({
     className: 'xh-view-manager__save-dialog',
     model: uses(SaveAsDialogModel),
 
-    render({model, className}) {
+    render({model, className, testId}) {
         if (!model.isOpen) return null;
 
         return dialog({
             title: `Save as...`,
             className,
             isOpen: true,
-            style: {width: 500},
+            style: {width: 550},
             canOutsideClickClose: false,
             onClose: () => model.close(),
-            item: formPanel()
+            children: formPanel({testId})
         });
     }
 });
 
 const formPanel = hoistCmp.factory<SaveAsDialogModel>({
-    render({model}) {
+    render({model, testId}) {
         const {parent, formModel} = model,
             {visibility} = formModel.values,
-            isGlobal = visibility === 'global',
-            groupOptions = getGroupOptions(parent, isGlobal),
             visOptions = getVisibilityOptions(parent),
             visInfo = getVisibilityInfo(parent, visibility);
 
+        // Blueprint's Dialog does not pass `data-testid` through, so tag the panel within it.
+        // The form takes the same testId to derive one for each field.
         return panel({
-            item: form({
+            testId,
+            children: form({
+                testId,
                 fieldDefaults: {
                     commitOnChange: true,
                     inline: true,
                     minimal: true
                 },
-                item: vframe({
+                children: vframe({
                     className: 'xh-view-manager__save-dialog__form',
-                    items: [
+                    children: [
                         formField({
                             field: 'name',
-                            item: textInput({
+                            children: textInput({
                                 autoFocus: true,
                                 selectOnFocus: true,
                                 onKeyDown: e => {
@@ -70,18 +74,10 @@ const formPanel = hoistCmp.factory<SaveAsDialogModel>({
                                 }
                             })
                         }),
-                        formField({
-                            field: 'group',
-                            item: select({
-                                enableCreate: true,
-                                enableClear: true,
-                                placeholder: 'Select optional group....',
-                                options: groupOptions
-                            })
-                        }),
+                        groupField({model: model.groupFieldModel}),
                         formField({
                             field: 'description',
-                            item: textArea({
+                            children: textArea({
                                 selectOnFocus: true,
                                 height: 70
                             })
@@ -89,25 +85,26 @@ const formPanel = hoistCmp.factory<SaveAsDialogModel>({
                         formField({
                             field: 'visibility',
                             omit: visOptions.length === 1,
-                            item: select({options: visOptions, enableFilter: false}),
+                            children: select({options: visOptions, enableFilter: false}),
                             info: visInfo
                         })
                     ]
                 })
             }),
-            bbar: bbar(),
+            bbar: bbar({testId}),
             mask: model.parent.saveTask
         });
     }
 });
 
 const bbar = hoistCmp.factory<SaveAsDialogModel>({
-    render({model}) {
+    render({model, testId}) {
         const {typeDisplayName} = model.parent;
         return toolbar(
             filler(),
             button({
                 text: 'Cancel',
+                testId: getTestId(testId, 'cancel-btn'),
                 onClick: () => model.close()
             }),
             button({
@@ -115,6 +112,7 @@ const bbar = hoistCmp.factory<SaveAsDialogModel>({
                 outlined: true,
                 intent: 'success',
                 disabled: !model.formModel.isValid,
+                testId: getTestId(testId, 'save-btn'),
                 onClick: () => model.saveAsAsync()
             })
         );

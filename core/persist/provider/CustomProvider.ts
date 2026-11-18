@@ -5,7 +5,8 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
-import {PersistenceProvider, PersistenceProviderConfig} from '../PersistenceProvider';
+import type {PersistenceProviderConfig} from '../PersistenceProvider';
+import {PersistenceProvider} from '../PersistenceProvider';
 import {throwIf} from '@xh/hoist/utils/js';
 
 /**

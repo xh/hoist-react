@@ -4,9 +4,9 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {Intent} from '@xh/hoist/core';
-import {LocalDate} from '@xh/hoist/utils/datetime';
-import {ReactElement} from 'react';
+import type {Intent} from '@xh/hoist/core';
+import type {LocalDate} from '@xh/hoist/utils/datetime';
+import type {ReactElement} from 'react';
 
 /** Primitive value types supported as a SegmentedControl option value/label. */
 export type OptionPrimitive = string | number | boolean | LocalDate;
@@ -33,6 +33,13 @@ export interface SegmentedControlOption {
      * `intent` default. Defaults to the control's `intent`.
      */
     intent?: Intent;
+
+    /**
+     * Optional stable identifier emitted on this option's rendered button as `data-testid`, for
+     * use by E2E tests. If omitted and the control itself has a `testId`, one is auto-derived as
+     * `${controlTestId}-${value}`. If neither is set, no attribute is emitted.
+     */
+    testId?: string;
 }
 
 /**
@@ -58,4 +65,11 @@ export interface SegmentedControlNullOption {
      * `intent` default. Defaults to the control's `intent`.
      */
     intent?: Intent;
+
+    /**
+     * Optional stable identifier emitted on this option's rendered button as `data-testid`, for
+     * use by E2E tests. If omitted and the control itself has a `testId`, one is auto-derived as
+     * `${controlTestId}-null`. If neither is set, no attribute is emitted.
+     */
+    testId?: string;
 }

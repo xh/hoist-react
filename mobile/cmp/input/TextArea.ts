@@ -4,15 +4,18 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {HoistInputModel, HoistInputProps, useHoistInputModel} from '@xh/hoist/cmp/input';
+import type {HoistInputProps, PasswordManagerSupportProps} from '@xh/hoist/cmp/input';
+import {getPasswordManagerAttrs, HoistInputModel, useHoistInputModel} from '@xh/hoist/cmp/input';
 import {div, textarea as textareaTag} from '@xh/hoist/cmp/layout';
-import {hoistCmp, HoistProps, LayoutProps, StyleProps} from '@xh/hoist/core';
+import type {HoistProps, LayoutProps, StyleProps} from '@xh/hoist/core';
+import {hoistCmp} from '@xh/hoist/core';
 import '@xh/hoist/mobile/register';
 import {TEST_ID, withDefault} from '@xh/hoist/utils/js';
 import {getLayoutProps} from '@xh/hoist/utils/react';
 import './TextArea.scss';
 
-export interface TextAreaProps extends HoistProps, HoistInputProps, StyleProps, LayoutProps {
+export interface TextAreaProps
+    extends HoistProps, HoistInputProps, PasswordManagerSupportProps, StyleProps, LayoutProps {
     value?: string;
 
     /** True to commit on every change/keystroke, default false. */
@@ -77,7 +80,7 @@ const cmp = hoistCmp.factory<TextAreaInputModel>(({model, className, ...props}, 
     const {width, height, ...layoutProps} = getLayoutProps(props);
 
     return div({
-        item: textareaTag({
+        children: textareaTag({
             value: model.renderValue || '',
 
             disabled: props.disabled,
@@ -85,6 +88,8 @@ const cmp = hoistCmp.factory<TextAreaInputModel>(({model, className, ...props}, 
             spellCheck: withDefault(props.spellCheck, false),
             tabIndex: props.tabIndex,
             [TEST_ID]: props.testId,
+            ...getPasswordManagerAttrs(props.enablePasswordManagers),
+            ...props.domAttrs,
 
             onChange: model.onChange,
             onKeyDown: model.onKeyDown,

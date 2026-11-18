@@ -107,8 +107,9 @@ export class Timer {
     }
 
     private async heartbeatAsync() {
-        const {cancelled, isRunning, intervalMs, lastRun} = this;
-        if (!cancelled && !isRunning && intervalMs > 0 && olderThan(lastRun, intervalMs)) {
+        if (this.cancelled) return;
+        const {isRunning, intervalMs, lastRun} = this;
+        if (!isRunning && intervalMs > 0 && olderThan(lastRun, intervalMs)) {
             await this.doRunAsync();
         }
         const heartBeatInterval = intervalMs > 0 && intervalMs < 2000 ? 250 : 1000;
@@ -136,8 +137,9 @@ export class Timer {
     }
 
     private parseDelay(val: number | boolean): number {
-        if (isBoolean(val)) return val ? this.intervalMs : 0;
-        return isFinite(val) ? val : 0;
+        // A paused timer's interval is <= 0, so `delay: true` can yield a negative value here.
+        const ret = isBoolean(val) ? (val ? this.intervalMs : 0) : val;
+        return isFinite(ret) && ret > 0 ? ret : 0;
     }
 
     private get intervalMs() {

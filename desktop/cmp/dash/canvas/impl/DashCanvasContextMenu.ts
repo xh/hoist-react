@@ -15,7 +15,7 @@ import {isEmpty} from 'lodash';
  * Context menu to add items to a DashCanvas
  *
  * Available view specs are listed in their defined order, optionally
- * grouped by their 'groupName' property
+ * grouped by their `groupName` property into (nested) submenus.
  * @internal
  */
 export const dashCanvasContextMenu = hoistCmp.factory({

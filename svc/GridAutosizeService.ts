@@ -5,9 +5,9 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
-import {GridAutosizeOptions, GridModel} from '@xh/hoist/cmp/grid';
+import type {GridAutosizeOptions, GridModel} from '@xh/hoist/cmp/grid';
 import {HoistService} from '@xh/hoist/core';
-import {StoreRecord} from '@xh/hoist/data';
+import type {StoreRecord} from '@xh/hoist/data';
 import {runInAction} from '@xh/hoist/mobx';
 import {compact, isEmpty, isFinite, map, sortBy, sum} from 'lodash';
 import {ColumnWidthCalculator} from '../cmp/grid/impl/ColumnWidthCalculator';
@@ -43,6 +43,8 @@ export class GridAutosizeService extends HoistService {
         colIds: string[],
         options: Omit<GridAutosizeOptions, 'columns'>
     ) {
+        const start = performance.now();
+
         await gridModel.whenReadyAsync();
         if (!gridModel.isReady) return;
 
@@ -54,7 +56,6 @@ export class GridAutosizeService extends HoistService {
 
         // Check columns exist.
         colIds = colIds.filter(id => gridModel.getColumn(id));
-        if (isEmpty(colIds)) return;
 
         // Ensure order of passed colIds matches the current GridModel.columnState.
         // This is to prevent changing the column order when applying column state changes
@@ -71,19 +72,13 @@ export class GridAutosizeService extends HoistService {
             );
 
         if (!requiredWidths) {
-            this.logDebug(
-                'Autosize aborted, grid data has changed since autosize operation began.'
-            );
+            this.logDebug('Autosize aborted - grid data changed, or grid unmounted or destroyed.');
             return;
         }
 
         runInAction(() => {
             // Apply calculated widths to grid.
             gridModel.updateColumnState(requiredWidths);
-            this.logDebug(
-                `Auto-sized ${requiredWidths.length} columns`,
-                `${records.length} records`
-            );
 
             // Optionally grow columns to fill any remaining space, if enabled.
             const {fillMode} = options;
@@ -95,8 +90,14 @@ export class GridAutosizeService extends HoistService {
                     asManuallySized
                 );
                 gridModel.updateColumnState(fillWidths);
-                this.logDebug(`Auto-sized ${fillWidths.length} columns using fillMode`);
             }
+
+            gridModel.diagnostics.noteAutosize(
+                !fillMode || fillMode == 'none' ? 'standard' : 'fillMode',
+                requiredWidths.length,
+                records.length,
+                start
+            );
         });
     }
 
@@ -111,9 +112,14 @@ export class GridAutosizeService extends HoistService {
         manuallySized: boolean
     ): Promise<ColWidthSpec[]> {
         const startRecords = gridModel.store._filtered,
+            isObsolete = () =>
+                gridModel.isDestroyed ||
+                !gridModel.isReady ||
+                startRecords !== gridModel.store._filtered,
             ret: ColWidthSpec[] = [];
 
         for (const colId of colIds) {
+            if (isObsolete()) return null;
             const width = await this._columnWidthCalculator.calcWidthAsync(
                 gridModel,
                 records,
@@ -121,12 +127,9 @@ export class GridAutosizeService extends HoistService {
                 options
             );
             if (isFinite(width)) ret.push({colId, width, manuallySized});
-
-            // Bail out if GridModel has moved on to new data.
-            if (startRecords !== gridModel.store._filtered) return null;
         }
 
-        return ret;
+        return isObsolete() ? null : ret;
     }
 
     private gatherRecordsToBeSized(

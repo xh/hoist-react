@@ -6,15 +6,17 @@
  */
 
 import {span} from '@xh/hoist/cmp/layout';
-import {hoistCmp, HoistProps, HSide, TestSupportProps, XH} from '@xh/hoist/core';
+import type {HoistProps, HSide, TestSupportProps} from '@xh/hoist/core';
+import {hoistCmp, XH} from '@xh/hoist/core';
 import {appBarSeparator} from '@xh/hoist/desktop/cmp/appbar';
-import {appMenuButton, AppMenuButtonProps, refreshButton} from '@xh/hoist/desktop/cmp/button';
+import type {AppMenuButtonProps} from '@xh/hoist/desktop/cmp/button';
+import {appMenuButton, refreshButton} from '@xh/hoist/desktop/cmp/button';
 import {whatsNewButton} from '@xh/hoist/desktop/cmp/button/WhatsNewButton';
 import '@xh/hoist/desktop/register';
 import {navbar, navbarGroup} from '@xh/hoist/kit/blueprint';
 import {TEST_ID, withDefault} from '@xh/hoist/utils/js';
 import {isEmpty} from 'lodash';
-import {ReactElement, ReactNode} from 'react';
+import type {ReactElement, ReactNode} from 'react';
 import './AppBar.scss';
 
 export interface AppBarProps extends HoistProps, TestSupportProps {
@@ -77,23 +79,23 @@ export const [AppBar, appBar] = hoistCmp.withFactory<AppBarProps>({
 
         return navbar({
             className,
-            items: [
+            children: [
                 navbarGroup({
                     align: 'left',
-                    items: [
+                    children: [
                         appMenuButton({
                             omit: hideAppMenuButton || appMenuButtonPosition != 'left',
                             ...appMenuButtonProps
                         }),
-                        icon ? span({className: 'xh-appbar-icon', item: icon}) : null,
-                        title ? span({className: 'xh-appbar-title', item: title}) : null,
+                        icon ? span({className: 'xh-appbar-icon', children: icon}) : null,
+                        title ? span({className: 'xh-appbar-title', children: title}) : null,
                         appBarSeparator({omit: isEmpty(leftItems)}),
                         ...(leftItems ?? [])
                     ]
                 }),
                 navbarGroup({
                     align: 'right',
-                    items: [
+                    children: [
                         ...(rightItems ?? []),
                         whatsNewButton({omit: hideWhatsNewButton}),
                         refreshButton({omit: hideRefreshButton}),

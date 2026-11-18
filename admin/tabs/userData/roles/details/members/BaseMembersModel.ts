@@ -4,16 +4,18 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {RowDoubleClickedEvent} from '@xh/hoist/kit/ag-grid';
-import {ColumnRenderer, GridModel} from '@xh/hoist/cmp/grid';
+import type {RowDoubleClickedEvent} from '@xh/hoist/kit/ag-grid';
+import type {ColumnRenderer, ColumnTooltipFn} from '@xh/hoist/cmp/grid';
+import {GridModel} from '@xh/hoist/cmp/grid';
 import {hbox} from '@xh/hoist/cmp/layout';
-import {HoistModel, lookup, managed, PlainObject} from '@xh/hoist/core';
+import type {PlainObject} from '@xh/hoist/core';
+import {HoistModel, lookup, managed} from '@xh/hoist/core';
 import {tag} from '@xh/hoist/kit/blueprint';
 import classNames from 'classnames';
 import {partition, sortBy, uniq} from 'lodash';
-import {ReactNode} from 'react';
+import type {ReactNode} from 'react';
 import {RoleModel} from '../../RoleModel';
-import {HoistRole, RoleModuleConfig} from '../../Types';
+import type {HoistRole, RoleModuleConfig} from '../../Types';
 import {RoleDetailsModel} from '../RoleDetailsModel';
 
 export abstract class BaseMembersModel extends HoistModel {
@@ -34,8 +36,8 @@ export abstract class BaseMembersModel extends HoistModel {
         this.gridModel = this.createGridModel();
         this.addReaction(
             {
-                track: () => this.selectedRole,
-                run: role => this.loadGridData(role),
+                track: () => [this.selectedRole, this.roleModel.directoryGroupInfo],
+                run: () => this.loadGridData(this.selectedRole),
                 fireImmediately: true
             },
             {
@@ -65,10 +67,13 @@ export abstract class BaseMembersModel extends HoistModel {
         return name;
     };
 
+    /** Optional tooltip for the name column - null for no tooltip. */
+    protected nameTooltip: ColumnTooltipFn = null;
+
     protected sourcesRenderer: ColumnRenderer = (sources: string[]) => {
         return hbox({
             className: 'roles-renderer',
-            items: sources.map(role => {
+            children: sources.map(role => {
                 const isThisRole = role === this.selectedRole.name;
                 return tag({
                     className: classNames(
@@ -76,7 +81,7 @@ export abstract class BaseMembersModel extends HoistModel {
                         !isThisRole && 'roles-renderer__role--effective'
                     ),
                     minimal: true,
-                    item: isThisRole ? '<Direct>' : role,
+                    children: isThisRole ? '<Direct>' : role,
                     onDoubleClick: isThisRole ? null : () => this.roleModel.selectRoleAsync(role)
                 });
             })
@@ -103,6 +108,7 @@ export abstract class BaseMembersModel extends HoistModel {
                 fields: [
                     {name: 'name', type: 'string'},
                     {name: 'sources', type: 'json'},
+                    {name: 'displayName', type: 'string'}, // For directory groups
                     {name: 'error', type: 'string'}, // For directory groups
                     {name: 'dateCreated', type: 'date'}, // For direct members
                     {name: 'createdBy', type: 'string'} // For direct members
@@ -116,7 +122,11 @@ export abstract class BaseMembersModel extends HoistModel {
             columns: [
                 {
                     field: 'name',
-                    autosizeMaxWidth: 300
+                    autosizeMaxWidth: 300,
+                    renderer: this.nameRenderer,
+                    tooltip: this.nameTooltip,
+                    sortValue: (v, {record}) => record.data.displayName ?? v,
+                    exportValue: (v, {record}) => record.data.displayName ?? v
                 },
                 {
                     field: 'sources',

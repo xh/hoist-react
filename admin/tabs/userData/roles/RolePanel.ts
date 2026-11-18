@@ -6,10 +6,9 @@
  */
 import {recategorizeDialog} from '@xh/hoist/admin/tabs/userData/roles/recategorize/RecategorizeDialog';
 import {grid} from '@xh/hoist/cmp/grid';
-import {fragment, hframe, vframe} from '@xh/hoist/cmp/layout';
+import {filler, fragment, hframe, vframe} from '@xh/hoist/cmp/layout';
 import {creates, hoistCmp} from '@xh/hoist/core';
 import {button, colChooserButton} from '@xh/hoist/desktop/cmp/button';
-import {errorMessage} from '@xh/hoist/cmp/error';
 import {filterChooser} from '@xh/hoist/desktop/cmp/filter';
 import {switchInput} from '@xh/hoist/desktop/cmp/input';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
@@ -25,12 +24,6 @@ export const rolePanel = hoistCmp.factory({
     model: creates(RoleModel),
 
     render({className, model}) {
-        const {moduleConfig} = model;
-        if (!moduleConfig) return null;
-        if (!moduleConfig.enabled) {
-            return errorMessage({error: 'Default Role Module not enabled.'});
-        }
-
         const {gridModel, readonly} = model;
         return fragment(
             panel({
@@ -54,7 +47,7 @@ export const rolePanel = hoistCmp.factory({
                     '-',
                     colChooserButton()
                 ],
-                item: hframe(vframe(grid(), roleGraph()), detailsPanel())
+                children: hframe(vframe(grid(), roleGraph()), detailsPanel())
             }),
             roleEditor(),
             recategorizeDialog()
@@ -63,20 +56,25 @@ export const rolePanel = hoistCmp.factory({
 });
 
 const detailsPanel = hoistCmp.factory<RoleModel>(({model}) => {
-    const {selectedRole} = model;
+    const {selectedRole, readonly} = model,
+        canEdit = selectedRole && !readonly;
     return panel({
         compactHeader: true,
         icon: Icon.idBadge(),
         title: selectedRole?.name ? `Details - ${selectedRole.name}` : 'Details',
-        item: roleDetails(),
-        headerItems: [
-            button({
-                icon: Icon.edit(),
-                minimal: true,
-                onClick: () => model.editAsync(selectedRole),
-                omit: !selectedRole || model.readonly
-            })
-        ],
+        children: roleDetails(),
+        bbar: canEdit
+            ? [
+                  filler(),
+                  button({
+                      text: 'Edit Role',
+                      icon: Icon.edit(),
+                      intent: 'primary',
+                      outlined: true,
+                      onClick: () => model.editAsync(selectedRole)
+                  })
+              ]
+            : null,
         modelConfig: {
             defaultSize: '30%',
             minSize: 550,

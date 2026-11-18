@@ -28,6 +28,7 @@ import {
     Menu,
     MenuDivider,
     MenuItem,
+    type MiddlewareConfig,
     Navbar,
     NavbarDivider,
     NavbarGroup,
@@ -35,8 +36,10 @@ import {
     NumericInput,
     OverflowList,
     Overlay2 as Overlay,
-    Popover as BpPopover,
+    PopoverNext as BpPopover,
+    popoverPropsToNextProps,
     type PopoverProps,
+    PortalProvider,
     Radio,
     RadioGroup,
     RangeSlider,
@@ -52,17 +55,47 @@ import {
     Tooltip,
     Tree
 } from '@blueprintjs/core';
-import {DatePicker} from '@blueprintjs/datetime';
 import {elementFactory} from '@xh/hoist/core';
-import React, {createElement as reactCreateElement} from 'react';
+import type React from 'react';
+import {createElement as reactCreateElement, useMemo} from 'react';
 
 // Wrap Dialog and Popover to disable fade/scale-in transitions by default.
 // See also popover & overlay related CSS overrides in ./styles.scss.
 const Dialog: React.FC<DialogProps> = props =>
     reactCreateElement(BpDialog, {transitionDuration: 0, transitionName: 'none', ...props});
 
-const Popover: React.FC<PopoverProps> = props =>
-    reactCreateElement(BpPopover, {transitionDuration: 0, ...props});
+// `Popover` renders Blueprint's `PopoverNext` (Floating UI based, React 19 compatible) while
+// preserving our legacy `PopoverProps` API: `popoverPropsToNextProps` maps `position`/`modifiers`/
+// `minimal`/`boundary` and retains the legacy `shouldReturnFocusOnClose` default of `false`.
+const Popover: React.FC<PopoverProps> = props => {
+    const nextProps = popoverPropsToNextProps(props),
+        {boundary, rootBoundary, placement} = nextProps,
+        middleware = useMemo(
+            () => withViewportPadding(nextProps.middleware, boundary, rootBoundary, placement),
+            [nextProps.middleware, boundary, rootBoundary, placement]
+        );
+    return reactCreateElement(BpPopover, {transitionDuration: 0, ...nextProps, middleware});
+};
+
+// Keep popovers a few pixels clear of the viewport edge. Their border ring and shadow draw outside
+// the popover box, so a popover flush with the edge loses its border on that side.
+const POPOVER_VIEWPORT_PADDING = 8;
+
+// Blueprint merges `middleware` over its defaults one key at a time, so restate the default
+// boundaries alongside the padding. Padding set by the caller, via `modifiers`, wins.
+function withViewportPadding(
+    middleware: MiddlewareConfig,
+    boundary: unknown,
+    rootBoundary: unknown,
+    placement: unknown
+): MiddlewareConfig {
+    const ret = {...middleware},
+        placer = ret.flip || placement !== undefined ? 'flip' : 'autoPlacement';
+    for (const key of [placer, 'shift']) {
+        ret[key] = {boundary, rootBoundary, padding: POPOVER_VIEWPORT_PADDING, ...ret[key]};
+    }
+    return ret;
+}
 
 //---------------------
 // Re-exports
@@ -76,7 +109,6 @@ export {
     BpCard,
     Checkbox,
     ControlGroup,
-    DatePicker,
     Dialog,
     Drawer,
     EditableText,
@@ -97,6 +129,7 @@ export {
     OverflowList,
     Overlay,
     Popover,
+    PortalProvider,
     Radio,
     RadioGroup,
     RangeSlider,
@@ -120,7 +153,6 @@ export const alert = elementFactory(Alert),
     button = elementFactory(Button),
     controlGroup = elementFactory(ControlGroup),
     checkbox = elementFactory(Checkbox),
-    datePicker = elementFactory(DatePicker),
     menuDivider = elementFactory(MenuDivider),
     menuItem = elementFactory(MenuItem),
     navbarDivider = elementFactory(NavbarDivider),
@@ -142,6 +174,7 @@ export const alert = elementFactory(Alert),
 // Container Components
 //-----------------------
 export const buttonGroup = elementFactory(ButtonGroup),
+    portalProvider = elementFactory(PortalProvider),
     callout = elementFactory(Callout),
     bpCard = elementFactory(BpCard),
     drawer = elementFactory(Drawer),

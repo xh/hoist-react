@@ -29,7 +29,7 @@ export const logViewer = hoistCmp.factory({
 
         return hframe({
             className,
-            items: [
+            children: [
                 panel({
                     collapsedTitle: 'Log Files',
                     collapsedIcon: Icon.fileText(),
@@ -52,7 +52,7 @@ export const logViewer = hoistCmp.factory({
                             ]
                         })
                     ],
-                    item: grid(),
+                    children: grid(),
                     bbar: [filler(), gridCountLabel({unit: 'log file'})],
                     mask: 'onLoad'
                 }),

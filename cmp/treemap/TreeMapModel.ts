@@ -4,15 +4,16 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {HoistModel, PlainObject, Theme} from '@xh/hoist/core';
-import {Store, StoreRecord, StoreRecordId} from '@xh/hoist/data';
-import {GridModel} from '@xh/hoist/cmp/grid';
-import {FilterLike} from '@xh/hoist/data/filter/Types';
+import type {PlainObject, Theme} from '@xh/hoist/core';
+import {HoistModel} from '@xh/hoist/core';
+import type {Store, StoreRecord, StoreRecordId} from '@xh/hoist/data';
+import type {GridModel} from '@xh/hoist/cmp/grid';
+import type {FilterLike} from '@xh/hoist/data/filter/Types';
 import {numberRenderer} from '@xh/hoist/format';
-import {action, bindable, computed, makeObservable, observable} from '@xh/hoist/mobx';
+import {action, bindable, computed, observableRef, bindableRef} from '@xh/hoist/mobx';
 import {throwIf, withDefault} from '@xh/hoist/utils/js';
-import {ReactNode} from 'react';
-import {cloneDeep, get, isEmpty, isFinite, max, set, sortBy, sumBy, unset} from 'lodash';
+import type {ReactNode} from 'react';
+import {cloneDeep, debounce, get, isEmpty, isFinite, max, set, sortBy, sumBy, unset} from 'lodash';
 
 export interface TreeMapConfig {
     /** A store containing records to be displayed. */
@@ -64,7 +65,10 @@ export interface TreeMapConfig {
     /** Layout algorithm to use. */
     algorithm?: TreeMapAlgorithm;
 
-    /** Heat color distribution mode. */
+    /**
+     * Heat color distribution mode. Every mode needs the Highcharts color axis, from
+     * `highcharts/modules/heatmap` or `highcharts/modules/coloraxis`.
+     */
     colorMode?: TreeMapColorMode;
 
     /** Theme to use. Leave undefined to use the global theme. */
@@ -90,6 +94,9 @@ export interface TreeMapConfig {
 
     /** Data filter to apply to records. */
     filter?: FilterLike;
+
+    /** See {@link HoistBase.xhName}. */
+    xhName?: string;
 }
 
 export interface TreeMapModelDefaults {
@@ -110,7 +117,12 @@ export interface TreeMapModelDefaults {
  * controls how:
  * - 'linear' - distributes values across the colorAxis according to the heatField.
  * - 'wash' - ignores heat intensity, applying a single positive/negative color.
- * - 'none' - ignores the colorAxis entirely, using the neutral color.
+ * - 'none' - ignores the heatField, giving every node the neutral color of the colorAxis.
+ *
+ * The colorAxis is not part of the Highcharts `treemap` module. Every mode takes its colors from
+ * it, so the app must import `highcharts/modules/heatmap` or `highcharts/modules/coloraxis` in
+ * its `Bootstrap.ts`, before `highcharts/modules/treemap`. Without one, Highcharts draws every
+ * node in one default color, and TreeMap logs a warning to the console.
  *
  * Color customization can be managed by setting colorAxis stops via `highchartsConfig`.
  * See {@link https://www.highcharts.com/docs/chart-and-series-types/treemap} for Highcharts
@@ -140,23 +152,22 @@ export class TreeMapModel extends HoistModel {
     //------------------------
     // Observable API
     //------------------------
-    @bindable.ref highchartsConfig: any = {};
-    @observable.ref data: TreeMapRecord[] = [];
-    @bindable labelField: string;
-    @bindable valueField: string;
-    @bindable heatField: string;
-    @bindable maxHeat: number;
-    @bindable maxDepth: number;
-    @bindable algorithm: TreeMapAlgorithm;
-    @bindable colorMode: TreeMapColorMode;
-    @bindable theme: Theme;
-    @bindable isMasking: boolean;
+    @bindableRef accessor highchartsConfig: any = {};
+    @observableRef accessor data: TreeMapRecord[] = [];
+    @bindable accessor labelField: string;
+    @bindable accessor valueField: string;
+    @bindable accessor heatField: string;
+    @bindable accessor maxHeat: number;
+    @bindable accessor maxDepth: number;
+    @bindable accessor algorithm: TreeMapAlgorithm;
+    @bindable accessor colorMode: TreeMapColorMode;
+    @bindable accessor theme: Theme;
+    @bindable accessor isMasking: boolean;
 
     _filter;
 
     constructor(config?: TreeMapConfig) {
         super();
-        makeObservable(this);
 
         const {
             store,
@@ -178,8 +189,10 @@ export class TreeMapModel extends HoistModel {
             onDoubleClick,
             tooltip = true,
             emptyText,
-            filter
+            filter,
+            xhName = null
         }: TreeMapConfig = config ?? {};
+        this.xhName = xhName;
 
         this.gridModel = gridModel;
         this.store = store ? store : gridModel ? gridModel.store : null;
@@ -232,12 +245,14 @@ export class TreeMapModel extends HoistModel {
                 this.maxDepth,
                 this.maxHeat
             ],
-            run: ([rawData]) => {
-                this.processAndSetData(rawData);
-            },
-            debounce: 100,
+            run: () => this.onSourceChange(),
             fireImmediately: true
         });
+    }
+
+    override destroy() {
+        this.debouncedProcessData.cancel();
+        super.destroy();
     }
 
     @computed
@@ -286,8 +301,33 @@ export class TreeMapModel extends HoistModel {
     //-------------------------
     // Data
     //-------------------------
+    private debouncedProcessData = debounce(
+        () => this.processAndSetData(this.store.rootRecords),
+        100
+    );
+
+    /** True if the store had no records when `data` was last built. */
+    private sourceWasEmpty = true;
+
+    /**
+     * Rebuild `data` after a change to the store or to a setting that shapes it. The work is
+     * debounced, as changes often come in bursts and each one reads every record. The exception
+     * is a store that gets its first records: the map reads them at once, so that its empty
+     * placeholder never shows over records that are ready.
+     */
+    private onSourceChange() {
+        const {rootRecords} = this.store;
+        if (this.sourceWasEmpty && !isEmpty(rootRecords)) {
+            this.debouncedProcessData.cancel();
+            this.processAndSetData(rootRecords);
+        } else {
+            this.debouncedProcessData();
+        }
+    }
+
     @action
     processAndSetData(sourceRecords) {
+        this.sourceWasEmpty = isEmpty(sourceRecords);
         let data = this.processRecordsRecursive(sourceRecords);
         data = this.limitLabels(data);
         this.data = this.normaliseColorValues(data);
@@ -367,7 +407,8 @@ export class TreeMapModel extends HoistModel {
      * the colorAxis provided to Highcharts.
      *
      * Takes the colorMode into account:
-     * a) 'linear' distributes normalized color values across the colorAxis.
+     * a) 'linear' distributes normalized color values across the colorAxis. Heats that are all
+     *      zero, or a `maxHeat` of zero, color all nodes with the neutral color.
      * b) 'wash' ignores the intensity of the heat value, applying a flat positive or negative color.
      * c) 'none' ignores the heat value altogether, coloring all nodes with the neutral color
      */
@@ -413,11 +454,13 @@ export class TreeMapModel extends HoistModel {
         });
 
         // 2) Transform heatValue into a normalized colorValue, according to the colorMode.
-        const maxHeat = isFinite(this.maxHeat) ? this.maxHeat : max(heatValues);
+        // A largest heat of zero gives no scale to place a heat on, so every node is neutral.
+        const maxHeat = isFinite(this.maxHeat) ? this.maxHeat : max(heatValues),
+            hasScale = maxHeat > 0;
         data.forEach(it => {
             const {heatValue, record} = it;
 
-            if (!this.valueIsValid(heatValue)) {
+            if (!hasScale || !this.valueIsValid(heatValue)) {
                 it.colorValue = 0.5;
                 return;
             }

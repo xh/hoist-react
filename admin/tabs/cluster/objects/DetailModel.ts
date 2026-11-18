@@ -5,10 +5,11 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {ClusterObjectsModel} from '@xh/hoist/admin/tabs/cluster/objects/ClusterObjectsModel';
-import {ColumnSpec, GridModel} from '@xh/hoist/cmp/grid';
+import type {ColumnSpec} from '@xh/hoist/cmp/grid';
+import {GridModel} from '@xh/hoist/cmp/grid';
 import {HoistModel, lookup, managed, XH} from '@xh/hoist/core';
-import {StoreRecord} from '@xh/hoist/data';
-import {action, makeObservable, observable} from '@xh/hoist/mobx';
+import type {StoreRecord} from '@xh/hoist/data';
+import {action, observableRef} from '@xh/hoist/mobx';
 import {isEmpty, isEqual, without} from 'lodash';
 import {withFormattedTimestamps} from '@xh/hoist/format';
 
@@ -17,8 +18,8 @@ export class DetailModel extends HoistModel {
     parent: ClusterObjectsModel;
 
     @managed
-    @observable.ref
-    gridModel: GridModel = null;
+    @observableRef
+    accessor gridModel: GridModel = null;
 
     //---------------------------------------------
     // Current cluster object and related.
@@ -49,7 +50,6 @@ export class DetailModel extends HoistModel {
 
     constructor() {
         super();
-        makeObservable(this);
         this.addReaction({
             track: () => this.selectedObject,
             run: record => this.updateGridModel(record)

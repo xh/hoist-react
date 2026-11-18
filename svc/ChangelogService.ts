@@ -4,10 +4,11 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {HoistService, InitContext, XH} from '@xh/hoist/core';
+import type {InitContext} from '@xh/hoist/core';
+import {HoistService, XH} from '@xh/hoist/core';
 // @ts-ignore
 import jsonFromMarkdown from '@xh/app-changelog.json';
-import {action, makeObservable, observable} from '@xh/hoist/mobx';
+import {action, observable} from '@xh/hoist/mobx';
 import {checkMinVersion} from '@xh/hoist/utils/js';
 import {isEmpty, forOwn, includes} from 'lodash';
 
@@ -55,8 +56,7 @@ export class ChangelogService extends HoistService {
      * True if an entry exists for the current app version which the user has
      * yet to view (and the required user preference has been created).
      */
-    @observable
-    currentVersionIsUnread: boolean;
+    @observable accessor currentVersionIsUnread: boolean;
 
     get enabled(): boolean {
         const {config, versions} = this,
@@ -75,11 +75,6 @@ export class ChangelogService extends HoistService {
     get latestNonEmptyVersion(): string {
         if (!this.enabled) return null;
         return this.versions.find(it => !isEmpty(it.categories))?.version;
-    }
-
-    constructor() {
-        super();
-        makeObservable(this);
     }
 
     override async initAsync(ctx: InitContext) {

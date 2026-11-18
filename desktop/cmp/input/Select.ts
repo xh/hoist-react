@@ -4,18 +4,11 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {HoistInputModel, HoistInputProps, useHoistInputModel} from '@xh/hoist/cmp/input';
+import type {HoistInputProps} from '@xh/hoist/cmp/input';
+import {HoistInputModel, useHoistInputModel} from '@xh/hoist/cmp/input';
 import {box, div, fragment, hbox, span} from '@xh/hoist/cmp/layout';
-import {
-    Awaitable,
-    createElement,
-    hoistCmp,
-    HoistProps,
-    LayoutProps,
-    PlainObject,
-    SelectOption,
-    XH
-} from '@xh/hoist/core';
+import type {Awaitable, HoistProps, LayoutProps, PlainObject, SelectOption} from '@xh/hoist/core';
+import {createElement, hoistCmp, XH} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
 import {tooltip} from '@xh/hoist/kit/blueprint';
@@ -23,18 +16,18 @@ import {
     reactAsyncCreatableSelect,
     reactAsyncSelect,
     reactCreatableSelect,
-    reactSelect,
-    reactWindowedSelect
+    reactSelect
 } from '@xh/hoist/kit/react-select';
-import {action, bindable, makeObservable, observable, override} from '@xh/hoist/mobx';
-import {debouncePromise, wait} from '@xh/hoist/promise';
+import {action, observable, bindableRef} from '@xh/hoist/mobx';
+import {debouncePromise, wait, waitFor} from '@xh/hoist/promise';
 import {elemWithin, getTestId, mergeDeep, TEST_ID, throwIf, withDefault} from '@xh/hoist/utils/js';
 import {createObservableRef, getLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
-import {castArray, escapeRegExp, isEmpty, isEqual, isNil, isPlainObject, unionWith} from 'lodash';
-import {ReactElement, ReactNode} from 'react';
+import {castArray, escapeRegExp, isEmpty, isEqual, isNil, isPlainObject, noop} from 'lodash';
+import type {ReactElement, ReactNode} from 'react';
 import {components} from 'react-select';
 import {calcWindowedMenuWidth} from './impl/CalcWindowedMenuWidth';
+import {countOptions, WindowedMenuList, WINDOWED_OPTION_THRESHOLD} from './impl/WindowedMenuList';
 import './Select.scss';
 
 export const MENU_PORTAL_ID = 'xh-select-input-portal';
@@ -80,16 +73,23 @@ export interface SelectProps extends HoistProps, HoistInputProps, LayoutProps {
     enableTooltips?: boolean;
 
     /**
-     * True to use react-windowed-select for improved performance on large option lists.
-     * See https://github.com/jacobworrel/react-windowed-select/.
+     * True to render only the visible options of a large option list, for improved performance.
+     * Takes effect once the list has 100 or more options - a shorter list renders as usual. The
+     * menu is sized to its widest option, as a windowed menu cannot auto-size via CSS.
      *
      * Currently only supported when the enableCreate and queryFn props are not specified.
-     * These options require the use of specialized 'Async' or 'Creatable' selects from the
-     * underlying react-select library which are not fully implemented in react-windowed-select.
      *
      * Applications should use this option with care.
      */
     enableWindowed?: boolean;
+
+    /**
+     * True to constrain the value to the current `options` - any selected value not found there is
+     * removed whenever the value or the list changes. Enforced only once `options` is non-null, so
+     * pass null (not `[]`) while options load - `[]` means "no valid choices" and clears the value.
+     * Throws if combined with `enableCreate` or `queryFn`.
+     */
+    enforceValueInOptions?: boolean;
 
     /**
      * Function called to filter available options for a given query string input.
@@ -148,6 +148,12 @@ export interface SelectProps extends HoistProps, HoistInputProps, LayoutProps {
     optionRenderer?: (opt: SelectOption) => ReactNode;
 
     /**
+     * Renderer for the selected value within the control itself, called with the option matching
+     * the current value. Defaults to displaying the option's `label`.
+     */
+    valueRenderer?: (opt: SelectOption) => ReactNode;
+
+    /**
      * Preset list of options for selection. Elements can be either a primitive or an object.
      * Primitives will be displayed via toString().
      * Objects must have either:
@@ -193,27 +199,32 @@ export interface SelectProps extends HoistProps, HoistInputProps, LayoutProps {
     valueField?: string;
 
     /**
-     * Function to generate a `SelectOption` for a (non-null) selected value not present in the
-     * current options list. Return null to fall back to the default value-as-label behavior.
+     * Fallback function to look up the `SelectOption` for a (non-null) selected value that is not
+     * present in the current options. Return null to accept the default value-as-label behavior.
      *
-     * Useful with queryFn-based selects, readonly forms, or any case where options may not be
-     * loaded when a value is set, ensuring the value renders with its proper label.
+     * Intended for values that already exist but whose option is simply out of view - e.g. an
+     * initial value on a `queryFn`-based select, where the control is bound to the value alone and
+     * no query has yet run to supply its label. Useful where value-as-label would never be
+     * meaningful to the user, such as an object select that should always render the object's name
+     * rather than its id value.
+     *
+     * Note this is not capable of "creating" new values via `enableCreate`.
      */
     generateOptionFn?: (value: any) => SelectOption;
 }
 
 /**
- * A managed wrapper around the React-Select combobox/dropdown component.
+ * A combobox for choosing one or more values from a dropdown list of options, with type-ahead
+ * filtering.
  *
  * Supports advanced options such as:
  *      + Asynchronous queries
  *      + Multiple selection
  *      + Custom dropdown option renderers
  *      + User-created ad-hoc entries
- *      + Use of the library react-windowed-select for improved performance on large option lists.
+ *      + Windowed rendering of large option lists, for improved performance.
  *
- * See {@link https://react-select.com|React}
- * See {@link https://github.com/jacobworrel/react-windowed-select}
+ * Built on {@link https://react-select.com|react-select}.
  */
 export const [Select, select] = hoistCmp.withFactory<SelectProps>({
     displayName: 'Select',
@@ -232,9 +243,9 @@ class SelectInputModel extends HoistInputModel {
 
     // Normalized collection of selectable options. Passed directly to synchronous select.
     // Maintained for (but not passed to) async select to resolve value string <> option objects.
-    @bindable.ref internalOptions = [];
+    @bindableRef accessor internalOptions = [];
 
-    @observable windowedMenuWidth: number = null;
+    @observable accessor windowedMenuWidth: number = null;
 
     // Prop-backed convenience getters
     get asyncMode(): boolean {
@@ -282,15 +293,10 @@ class SelectInputModel extends HoistInputModel {
 
     // Managed value for underlying text input under certain conditions
     // This is a workaround for rs-select issue described in hoist-react #880
-    @observable inputValue: string = null;
+    @observable accessor inputValue: string = null;
     inputValueChangedSinceSelect = false;
     get manageInputValue(): boolean {
         return this.filterMode && !this.multiMode;
-    }
-
-    constructor() {
-        super();
-        makeObservable(this);
     }
 
     override onLinked() {
@@ -312,6 +318,18 @@ class SelectInputModel extends HoistInputModel {
             },
             fireImmediately: true
         });
+
+        if (this.componentProps.enforceValueInOptions) {
+            throwIf(
+                this.creatableMode || this.asyncMode,
+                '`enforceValueInOptions` is not supported with `enableCreate` or `queryFn`.'
+            );
+            this.addReaction({
+                track: () => [this.externalValue, this.internalOptions],
+                run: () => this.pruneValueToOptions(),
+                fireImmediately: true
+            });
+        }
     }
 
     reactSelectRef = createObservableRef<any>();
@@ -337,7 +355,7 @@ class SelectInputModel extends HoistInputModel {
         if (windowedMode) {
             throwIf(creatableMode, 'Windowed mode not available when enableCreate is true');
             throwIf(asyncMode, 'Windowed mode not available when queryFn is set');
-            return reactWindowedSelect;
+            return reactSelect;
         }
         return asyncMode
             ? creatableMode
@@ -357,6 +375,22 @@ class SelectInputModel extends HoistInputModel {
         this.noteValueChange(opt);
     };
 
+    // Scroll selected option into view on open - react-select's own does not fire for portalled
+    // menus. Poll from the next tick (menuIsOpen not yet committed), stop if menu closes/unmounts.
+    onMenuOpen = () => {
+        let selected: Element;
+        wait()
+            .then(() =>
+                waitFor(() => {
+                    if (this.isDestroyed || !this.reactSelect?.props.menuIsOpen) return true;
+                    selected = document.getElementsByClassName('xh-select__option--is-selected')[0];
+                    return !!selected;
+                })
+            )
+            .then(() => selected?.scrollIntoView({block: 'end'}))
+            .catch(noop);
+    };
+
     //-------------------------
     // Text input handling
     //-------------------------
@@ -373,7 +407,7 @@ class SelectInputModel extends HoistInputModel {
         }
     };
 
-    @override
+    @action
     override noteFocused() {
         if (this.manageInputValue) {
             const {renderValue} = this;
@@ -388,24 +422,42 @@ class SelectInputModel extends HoistInputModel {
         super.noteFocused();
     }
 
-    private selectText() {
-        const {reactSelect} = this;
-        if (!reactSelect) return;
+    /**
+     * Enter text into the search input and open the menu, as if typed by the user.
+     * Ignored if the select is not searchable.
+     */
+    enterSearchText(text: string) {
+        // Delay to run after the text selection scheduled by `noteFocused()`.
+        wait().then(() => {
+            const selectComp = this.innerSelect;
+            if (!this.hasFocus || !selectComp?.props.isSearchable) return;
 
-        // Unwrap the HOCs added by AsyncSelect / Creatable / WindowedSelect (each exposes the
-        // inner Select via `.select`) to reach the underlying Select that owns the inputRef.
-        let selectComp = reactSelect;
+            selectComp.props.onInputChange(text, {
+                action: 'input-change',
+                prevInputValue: selectComp.props.inputValue ?? ''
+            });
+            selectComp.openMenu('first');
+        });
+    }
+
+    // Unwrap the HOCs added by AsyncSelect / Creatable (each exposes the inner Select via
+    // `.select`) to reach the underlying Select that owns the inputRef.
+    private get innerSelect() {
+        let selectComp = this.reactSelect;
         while (selectComp && !selectComp.inputRef) {
             selectComp = selectComp.select;
         }
-        const inputElem = selectComp?.inputRef;
+        return selectComp;
+    }
 
+    private selectText() {
+        const inputElem = this.innerSelect?.inputRef;
         if (this.hasFocus && inputElem && document.activeElement === inputElem) {
             inputElem.select();
         }
     }
 
-    @override
+    @action
     override setInternalValue(val) {
         const changed = !isEqual(val, this.internalValue);
         super.setInternalValue(val);
@@ -444,10 +496,7 @@ class SelectInputModel extends HoistInputModel {
         return regex.test(opt.label);
     };
 
-    // Convert external value into option object(s). Options created if missing - this takes the
-    // external value from the model, and we will respect that even if we don't know about it.
-    // (Exception for a null value, which is never synthesized - accepted only if provided via
-    // options.)
+    // Convert external value (which may be a primitive string or number) into option object(s).
     override toInternal(external) {
         if (this.multiMode) {
             if (external == null || isEqual(external, this.emptyValue)) external = []; // avoid [null]
@@ -469,8 +518,27 @@ class SelectInputModel extends HoistInputModel {
 
         if (!createIfNotFound) return null;
 
-        // Value not among options - let the app generate an option for it, else synthesize one.
-        return this.componentProps.generateOptionFn?.(value) ?? this.valueToOption(value);
+        return (
+            this.selectedOptions.find(it => isEqual(it.value, value)) ??
+            this.componentProps.generateOptionFn?.(value) ??
+            this.valueToOption(value)
+        );
+    }
+
+    // Enforce `enforceValueInOptions` - drop any current value not present in internalOptions.
+    // Null options signal that they have yet to load, and are not yet enforced against.
+    private pruneValueToOptions() {
+        const {externalValue, multiMode, emptyValue} = this;
+        if (isNil(this.componentProps.options)) return;
+        if (isNil(externalValue) || isEqual(externalValue, emptyValue)) return;
+
+        if (multiMode) {
+            const curr = castArray(externalValue),
+                keptOpts = curr.map(v => this.findOption(v, false)).filter(Boolean);
+            if (keptOpts.length !== curr.length) this.noteValueChange(keptOpts);
+        } else if (!this.findOption(externalValue, false)) {
+            this.noteValueChange(null);
+        }
     }
 
     override toExternal(internal) {
@@ -529,18 +597,15 @@ class SelectInputModel extends HoistInputModel {
     // Async
     //------------------------
     doQueryAsync = async query => {
-        const rawOpts = await this.componentProps.queryFn(query),
-            matchOpts = this.normalizeOptions(rawOpts);
-
-        // Carry forward and add to any existing internalOpts to allow our value
-        // converters to continue all selected values in multiMode.
-        this.internalOptions = unionWith(matchOpts, this.internalOptions, (a, b) =>
-            isEqual(a.value, b.value)
-        );
-
-        // But only return the matching options back to the combo.
-        return matchOpts;
+        const rawOpts = await this.componentProps.queryFn(query);
+        return this.normalizeOptions(rawOpts);
     };
+
+    // Option(s) backing the current selection, as produced by toInternal() above.
+    private get selectedOptions(): SelectOption[] {
+        const {internalValue} = this;
+        return isNil(internalValue) ? [] : castArray(internalValue).filter(it => !isNil(it));
+    }
 
     loadingMessageFn = params => {
         const {loadingMessageFn} = this.componentProps,
@@ -555,7 +620,8 @@ class SelectInputModel extends HoistInputModel {
     formatOptionLabel = (opt, params) => {
         // Display the standard label string in the value container (context == 'value').
         if (params.context !== 'menu') {
-            return opt.label;
+            const {valueRenderer} = this.componentProps;
+            return valueRenderer ? valueRenderer(opt) : opt.label;
         }
 
         // For rendering dropdown menu items, use an optionRenderer if provided - or use the
@@ -571,33 +637,36 @@ class SelectInputModel extends HoistInputModel {
 
         return castArray(this.externalValue).some(v => isEqual(v, opt.value))
             ? hbox({
-                  items: [
+                  children: [
                       div({
                           style: {minWidth: 25, textAlign: 'center'},
-                          item: Icon.check({size: 'sm'})
+                          children: Icon.check({size: 'sm'})
                       }),
                       span(opt.label)
                   ],
                   paddingLeft: 0
               })
-            : div({item: opt.label, style: {paddingLeft: 25}});
+            : div({children: opt.label, style: {paddingLeft: 25}});
     };
 
     //------------------------
     // Other Implementation
     //------------------------
-    // cache to avoid re-renders and focus issues, note this "freezes" leftIcon
+    // Cache to avoid re-renders and focus issues. Reads leftIcon from react-select's
+    // `selectProps` at render time, so the icon can change without replacing the component.
     _valueContainerCmp = null;
     getValueContainerCmp() {
         if (!this._valueContainerCmp) {
-            const {leftIcon} = this.componentProps;
-            this._valueContainerCmp = leftIcon
-                ? props =>
-                      fragment(
-                          span({className: 'xh-select__control__left-icon', item: leftIcon}),
-                          createElement(components.ValueContainer, props)
+            this._valueContainerCmp = props => {
+                const {leftIcon} = props.selectProps,
+                    valueContainer = createElement(components.ValueContainer, props);
+                return leftIcon
+                    ? fragment(
+                          span({className: 'xh-select__control__left-icon', children: leftIcon}),
+                          valueContainer
                       )
-                : components.ValueContainer;
+                    : valueContainer;
+            };
         }
 
         return this._valueContainerCmp;
@@ -652,7 +721,7 @@ class SelectInputModel extends HoistInputModel {
                 ...restInnerProps,
                 ref,
                 [TEST_ID]: getTestId(this.componentProps, 'clear-btn'),
-                item: Icon.x({className: 'xh-select__indicator'})
+                children: Icon.x({className: 'xh-select__indicator'})
             });
         };
     }
@@ -674,6 +743,13 @@ class SelectInputModel extends HoistInputModel {
                   return createElement(components.MultiValueLabel, props);
               }
             : components.MultiValueLabel;
+    }
+
+    // Windowed mode virtualizes the menu only once the list is long enough to need it.
+    getMenuListCmp() {
+        const windowed =
+            this.windowedMode && countOptions(this.internalOptions) >= WINDOWED_OPTION_THRESHOLD;
+        return windowed ? WindowedMenuList : components.MenuList;
     }
 
     getSingleValueCmp() {
@@ -716,7 +792,7 @@ class SelectInputModel extends HoistInputModel {
             children: tooltip({
                 className,
                 content: props.children,
-                item: props.children
+                children: props.children
             })
         };
     }
@@ -743,6 +819,9 @@ const cmp = hoistCmp.factory<SelectInputModel>(({model, className, ...props}, re
             placeholder: withDefault(props.placeholder, 'Select...'),
             tabIndex: props.tabIndex,
 
+            // Not a react-select prop - read by our custom ValueContainer via `selectProps`.
+            leftIcon: props.leftIcon,
+
             // Minimize (or hide) bulky dropdown
             components: {
                 DropdownIndicator: model.getDropdownIndicatorCmp(),
@@ -752,7 +831,8 @@ const cmp = hoistCmp.factory<SelectInputModel>(({model, className, ...props}, re
                 IndicatorSeparator: () => null,
                 ValueContainer: model.getValueContainerCmp(),
                 MultiValueLabel: model.getMultiValueLabelCmp(),
-                SingleValue: model.getSingleValueCmp()
+                SingleValue: model.getSingleValueCmp(),
+                MenuList: model.getMenuListCmp()
             },
 
             // A shared div is created lazily here as needed, appended to the body, and assigned
@@ -775,14 +855,10 @@ const cmp = hoistCmp.factory<SelectInputModel>(({model, className, ...props}, re
         rsProps.inputValue = model.inputValue || '';
         rsProps.onInputChange = model.onInputChange;
         rsProps.controlShouldRenderValue = !model.hasFocus;
-        rsProps.onMenuOpen = () => {
-            wait().then(() => {
-                const selectedEl = document.getElementsByClassName(
-                    'xh-select__option--is-selected'
-                )[0];
-                selectedEl?.scrollIntoView({block: 'end'});
-            });
-        };
+    }
+
+    if (!model.multiMode && model.renderValue) {
+        rsProps.onMenuOpen = model.onMenuOpen;
     }
 
     if (model.asyncMode) {
@@ -810,7 +886,7 @@ const cmp = hoistCmp.factory<SelectInputModel>(({model, className, ...props}, re
     mergeDeep(rsProps, props.rsOptions);
 
     return box({
-        item: factory(rsProps),
+        children: factory(rsProps),
         className: classNames(className, height ? 'xh-select--has-height' : null),
         onKeyDown: e => {
             // Esc. and Enter can be listened for by parents -- stop the keydown event
@@ -829,6 +905,7 @@ const cmp = hoistCmp.factory<SelectInputModel>(({model, className, ...props}, re
             }
         },
         testId: props.testId,
+        domAttrs: props.domAttrs,
         ...layoutProps,
         width: withDefault(width, 200),
         height: height,

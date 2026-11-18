@@ -4,10 +4,11 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {ExceptionHandlerOptions, HoistModel, XH} from '@xh/hoist/core';
-import {action, makeObservable, observable} from '@xh/hoist/mobx';
+import type {ExceptionHandlerOptions} from '@xh/hoist/core';
+import {HoistModel, XH} from '@xh/hoist/core';
+import {action, observableRef} from '@xh/hoist/mobx';
 import {isFunction} from 'lodash';
-import {ReactNode} from 'react';
+import type {ReactNode} from 'react';
 
 export interface ErrorBoundaryConfig {
     /**
@@ -43,11 +44,10 @@ export class ErrorBoundaryModel extends HoistModel {
      * Caught error being displayed instead of the content.
      * Null if content rendering normally.
      */
-    @observable.ref error: unknown;
+    @observableRef accessor error: unknown;
 
     constructor(config?: ErrorBoundaryConfig) {
         super();
-        makeObservable(this);
         this.errorHandler = config?.errorHandler ?? {showAlert: false};
         this.errorRenderer = config?.errorRenderer;
     }

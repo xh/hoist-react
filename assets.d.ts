@@ -2,7 +2,7 @@
  * Ambient type declarations for non-code asset imports (images, markdown).
  *
  * These allow TypeScript to understand `import img from './foo.png'` without `@ts-ignore`.
- * Webpack's asset loaders resolve these imports to string URLs at build time.
+ * The app build (Rsbuild, via hoist-dev-utils) resolves these imports at build time.
  *
  * Downstream apps compile hoist-react source via the `@xh/hoist/*` path mapping, but their
  * tsconfig `include` patterns typically do not reach this file. Any hoist-react source file

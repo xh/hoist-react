@@ -5,8 +5,9 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import type {HoistException} from '@xh/hoist/exception';
-import {ExceptionHandlerOptions, HoistModel, XH} from '@xh/hoist/core';
-import {action, observable, makeObservable, bindable} from '@xh/hoist/mobx';
+import type {ExceptionHandlerOptions} from '@xh/hoist/core';
+import {HoistModel, XH} from '@xh/hoist/core';
+import {action, observable, bindable, observableRef} from '@xh/hoist/mobx';
 
 /**
  * Manages the default display of exceptions.
@@ -18,12 +19,14 @@ import {action, observable, makeObservable, bindable} from '@xh/hoist/mobx';
  */
 export class ExceptionDialogModel extends HoistModel {
     override xhImpl = true;
+    override xhName = 'exceptionDialogModel';
 
-    @observable.ref
-    displayData: {exception: HoistException; options: ExceptionHandlerOptions};
+    @observableRef accessor displayData: {
+        exception: HoistException;
+        options: ExceptionHandlerOptions;
+    };
 
-    @observable
-    detailsIsOpen = false;
+    @observable accessor detailsIsOpen = false;
 
     /** Exception currently being displayed */
     get exception(): HoistException {
@@ -36,13 +39,7 @@ export class ExceptionDialogModel extends HoistModel {
     }
 
     /** Optional user supplied message */
-    @bindable
-    userMessage: string = '';
-
-    constructor() {
-        super();
-        makeObservable(this);
-    }
+    @bindable accessor userMessage: string = '';
 
     @action
     show(exception: HoistException, options: ExceptionHandlerOptions) {
