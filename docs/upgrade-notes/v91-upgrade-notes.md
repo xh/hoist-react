@@ -27,12 +27,12 @@ a fetch with `params` but no `method` as a GET.
     - **Overrides on `body.xh-app` always win**, in every theme and platform combination.
     - **Three variables that never had any effect were removed.**
 
-- **`FetchService` default method (review fetches that send `params`)** - see Step 7. A request
-  with `params` and no `method` is now a GET, not a POST.
 - **Element factory `children` (run the codemod)** - see Step 6. Element specs take child elements
   via `children`, as React does. A type-aware codemod converts app code and reports examples in
   docs. The legacy `item` and `items` keys still work as aliases in v91, but a future major version
   will remove them.
+- **`FetchService` default method (review fetches that send `params`)** - see Step 7. A request
+  with `params` and no `method` is now a GET, not a POST.
 
 The CSS changes also cover the variables added in v90 - the panel splitter (`--xh-panel-splitter-*`,
 `--xh-panel-collapsed-strip-*`), `PdfViewer` (`--xh-pdf-viewer-*`) and `StatCard`

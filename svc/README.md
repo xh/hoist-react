@@ -9,7 +9,7 @@
 | [User Preference Keys Reference](#user-preference-keys-reference) | Per-user preference keys used by services |
 | [Creating Custom Services](#creating-custom-services) | How to create and install application services |
 | [Common Patterns](#common-patterns) | FetchService in loads, tracking, debounced search, WebSockets |
-| [Common Pitfalls](#common-pitfalls) | Fetch errors, native fetch, missing loadSpec, and more |
+| [Common Pitfalls](#common-pitfalls) | Fetch errors, POST method, native fetch, missing loadSpec, and more |
 | [Related Packages](#related-packages) | Links to core, cmp, promise, and admin packages |
 
 ## Overview
@@ -662,6 +662,7 @@ const data = await XH.fetchJson({
 // Full form - with category and additional data
 const report = await XH.fetchJson({
     url: 'api/reports/generate',
+    method: 'POST',
     params: {reportId, format},
     track: {
         message: 'Generated report',
@@ -796,6 +797,20 @@ override async doLoadAsync(loadSpec: LoadSpec) {
         XH.handleException(e, {alertType: 'toast'});
     }
 }
+```
+
+### Omitting `method` on a Fetch That Should POST
+
+A request with no `method` is a GET, so its `params` go on the URL. Set `method: 'POST'` on a call
+that changes data, sends a password or other sensitive value, or sends large params. A POST sends
+`params` as a form-encoded body, which keeps them out of the URL and server logs.
+
+```typescript
+// ❌ Wrong: a GET that puts the password in the URL
+await XH.fetchJson({url: 'api/login', params: {username, password}});
+
+// ✅ Correct: a POST that sends the params in the body
+await XH.fetchJson({url: 'api/login', method: 'POST', params: {username, password}});
 ```
 
 ### Using Native `fetch` Instead of FetchService
