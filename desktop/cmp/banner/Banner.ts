@@ -84,7 +84,7 @@ export const [Banner, banner] = hoistCmp.withFactory<BannerProps>({
         onClick,
         onClose
     }) {
-        if (icon === undefined) icon = defaultIcon(intent);
+        if (icon === undefined) icon = Icon.forIntent(intent);
 
         return hbox({
             className: classNames(
@@ -134,21 +134,3 @@ export const [Banner, banner] = hoistCmp.withFactory<BannerProps>({
         });
     }
 });
-
-//------------------------
-// Implementation
-//------------------------
-function defaultIcon(intent: Intent): ReactElement {
-    switch (intent) {
-        case 'primary':
-            return Icon.info();
-        case 'success':
-            return Icon.success();
-        case 'warning':
-            return Icon.warning();
-        case 'danger':
-            return Icon.danger();
-        default:
-            return null;
-    }
-}
