@@ -31,7 +31,15 @@ import {TEST_ID} from '@xh/hoist/utils/js';
 import {usePortalContainer} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import {isEmpty, isNil, isString} from 'lodash';
-import type {FC, KeyboardEvent, MouseEvent, ReactElement, ReactNode, SyntheticEvent} from 'react';
+import type {
+    FC,
+    HTMLAttributes,
+    KeyboardEvent,
+    MouseEvent,
+    ReactElement,
+    ReactNode,
+    SyntheticEvent
+} from 'react';
 import {
     Children,
     cloneElement,
@@ -39,6 +47,7 @@ import {
     isValidElement,
     useCallback,
     useEffect,
+    useLayoutEffect,
     useMemo,
     useRef,
     useState
@@ -53,44 +62,61 @@ const VIEWPORT_PADDING = 8;
 const DISMISS_SELECTOR = '.xh-popover-dismiss, .bp6-popover-dismiss';
 
 /** Nests each popover in a Floating UI tree, so nested popovers dismiss in the right order. */
-export const PopoverImpl: FC<PopoverProps> = props => {
+/** Options for Hoist's own components built on the popover, beyond the public `PopoverProps`. */
+export interface PopoverImplProps extends PopoverProps {
+    /** Point on the page to open at, in place of a target element - e.g. for a context menu. */
+    anchorPoint?: {left: number; top: number};
+
+    /** Props for the backdrop, when `hasBackdrop` is set. */
+    backdropProps?: HTMLAttributes<HTMLDivElement>;
+
+    /** Distance from the target, overriding the default for the arrow. */
+    offset?: {mainAxis?: number; crossAxis?: number};
+}
+
+export const PopoverImpl: FC<PopoverImplProps> = props => {
     const parentId = useFloatingParentNodeId(),
         impl = h(PopoverInner, props);
     return parentId == null ? h(FloatingTree, null, impl) : impl;
 };
 
-const PopoverInner: FC<PopoverProps> = props => {
+const PopoverInner: FC<PopoverImplProps> = props => {
     const {
-        autoFocus,
-        boundary = 'clippingParents',
-        canEscapeKeyClose = true,
-        children,
-        className,
-        content,
-        defaultIsOpen = false,
-        disabled = false,
-        hasBackdrop = false,
-        hoverCloseDelay = 300,
-        hoverOpenDelay = 150,
-        interactionKind = 'click',
-        isOpen,
-        matchTargetWidth = false,
-        minimal = false,
-        onClose,
-        onClosed,
-        onClosing,
-        onInteraction,
-        onOpened,
-        onOpening,
-        openOnTargetFocus = true,
-        popoverClassName,
-        popoverRef,
-        position = 'auto',
-        shouldReturnFocusOnClose = false,
-        targetTagName = 'span',
-        testId,
-        usePortal = true
-    } = props;
+            anchorPoint,
+            backdropProps,
+            autoFocus,
+            boundary = 'clippingParents',
+            canEscapeKeyClose = true,
+            children,
+            className,
+            content,
+            defaultIsOpen = false,
+            disabled = false,
+            hasBackdrop = false,
+            hoverCloseDelay = 300,
+            hoverOpenDelay = 150,
+            interactionKind = 'click',
+            isOpen,
+            matchTargetWidth = false,
+            minimal = false,
+            onClose,
+            onClosed,
+            onClosing,
+            onInteraction,
+            onOpened,
+            onOpening,
+            openOnTargetFocus = true,
+            popoverClassName,
+            popoverRef,
+            position = 'auto',
+            shouldReturnFocusOnClose = false,
+            targetTagName = 'span',
+            testId,
+            usePortal = true
+        } = props,
+        hasOffset = !!props.offset,
+        offsetMain = props.offset?.mainAxis,
+        offsetCross = props.offset?.crossAxis;
 
     const contextContainer = usePortalContainer(),
         // Floating UI treats a null root as one not yet mounted, and renders nothing - so pass
@@ -148,8 +174,16 @@ const PopoverInner: FC<PopoverProps> = props => {
     const arrowRef = useRef<HTMLDivElement>(null),
         placement = toPlacement(position),
         middleware = useMemo(
-            () => buildMiddleware({placement, boundary, minimal, matchTargetWidth, arrowRef}),
-            [placement, boundary, minimal, matchTargetWidth]
+            () =>
+                buildMiddleware({
+                    placement,
+                    boundary,
+                    minimal,
+                    matchTargetWidth,
+                    arrowRef,
+                    offsetOpts: hasOffset ? {mainAxis: offsetMain, crossAxis: offsetCross} : null
+                }),
+            [placement, boundary, minimal, matchTargetWidth, hasOffset, offsetMain, offsetCross]
         );
 
     const nodeId = useFloatingNodeId(),
@@ -245,24 +279,44 @@ const PopoverInner: FC<PopoverProps> = props => {
     const mergedPanelRef = useMergeRefs([panelRef, popoverRef]),
         side = floating.placement.split('-')[0];
 
-    const target = renderTarget({
-        children,
-        className,
-        disabled,
-        isControlled,
-        isHover,
-        open,
-        targetTagName,
-        testId,
-        wrapperProps: {
-            ref: (el: HTMLElement) => {
-                targetEl.current = el;
-                refs.setReference(el);
-            },
-            ...hoverHandlers,
-            ...(isHover ? {} : getReferenceProps({onKeyDown: onTargetKeyDown}))
-        }
-    });
+    // Anchored at a point - position against a zero-size virtual element there.
+    useLayoutEffect(() => {
+        if (!anchorPoint) return;
+        const {left, top} = anchorPoint;
+        refs.setPositionReference({
+            getBoundingClientRect: () => ({
+                x: left,
+                y: top,
+                left,
+                top,
+                right: left,
+                bottom: top,
+                width: 0,
+                height: 0
+            })
+        });
+    }, [anchorPoint?.left, anchorPoint?.top]); // eslint-disable-line react-hooks/exhaustive-deps
+
+    const target = anchorPoint
+        ? null
+        : renderTarget({
+              children,
+              className,
+              disabled,
+              isControlled,
+              isHover,
+              open,
+              targetTagName,
+              testId,
+              wrapperProps: {
+                  ref: (el: HTMLElement) => {
+                      targetEl.current = el;
+                      refs.setReference(el);
+                  },
+                  ...hoverHandlers,
+                  ...(isHover ? {} : getReferenceProps({onKeyDown: onTargetKeyDown}))
+              }
+          });
 
     let popup: ReactNode = null;
     if (open) {
@@ -301,8 +355,11 @@ const PopoverInner: FC<PopoverProps> = props => {
             {className: 'xh-popover__layer'},
             hasBackdrop
                 ? h('div', {
-                      className:
-                          'xh-popover__content-overlay bp6-overlay-backdrop bp6-popover-backdrop'
+                      ...backdropProps,
+                      className: classNames(
+                          'xh-popover__content-overlay bp6-overlay-backdrop bp6-popover-backdrop',
+                          backdropProps?.className
+                      )
                   })
                 : null,
             h(FloatingFocusManager, {
@@ -396,10 +453,21 @@ export function toPlacement(position: PopoverPosition): Placement {
     return `${side}-${isStart ? 'start' : 'end'}` as Placement;
 }
 
-function buildMiddleware({placement, boundary, minimal, matchTargetWidth, arrowRef}): Middleware[] {
+function buildMiddleware({
+    placement,
+    boundary,
+    minimal,
+    matchTargetWidth,
+    arrowRef,
+    offsetOpts
+}): Middleware[] {
     const bounds = {boundary: toBoundary(boundary), padding: VIEWPORT_PADDING},
         ret: Middleware[] = [];
-    if (!minimal) ret.push(offset({mainAxis: POPOVER_ARROW_SIZE / 2}));
+    if (offsetOpts) {
+        ret.push(offset(offsetOpts));
+    } else if (!minimal) {
+        ret.push(offset({mainAxis: POPOVER_ARROW_SIZE / 2}));
+    }
     ret.push(placement ? flip(bounds) : autoPlacement(bounds));
     ret.push(shift(bounds));
     if (matchTargetWidth) {

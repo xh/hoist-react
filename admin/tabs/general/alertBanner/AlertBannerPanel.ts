@@ -38,7 +38,7 @@ import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {dateTimeRenderer} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
-import {menu, menuItem} from '@xh/hoist/kit/blueprint';
+import {menuItem, menuList} from '@xh/hoist/desktop/cmp/menu/impl/MenuImpl';
 import {LocalDate} from '@xh/hoist/utils/datetime';
 import {isEmpty} from 'lodash';
 import type {ReactNode} from 'react';
@@ -243,7 +243,7 @@ const presetMenu = hoistCmp.factory<AlertBannerModel>({
                 ? [menuItem({text: 'No presets saved...', disabled: true})]
                 : savedPresets.map(preset => presetMenuItem({preset}));
 
-        return menu({
+        return menuList({
             children: items,
             style: {maxHeight: '400px', overflowY: 'auto'},
             className: `${baseClassName}__preset-menu`

@@ -40,7 +40,7 @@ import {
     getViewModelId,
     goldenLayoutConfig
 } from './impl/DashContainerUtils';
-import {showContextMenu} from '@xh/hoist/kit/blueprint';
+import {showContextMenu} from '@xh/hoist/desktop/cmp/contextmenu/impl/ShowContextMenu';
 
 /**
  * Configuration for a {@link DashContainerModel} - a tab-and-stack based dashboard layout

@@ -18,7 +18,7 @@ import {toolbar, toolbarSeparator} from '@xh/hoist/desktop/cmp/toolbar';
 import {fmtDate} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
 import {isEmpty, isNil} from 'lodash';
-import {menu, menuItem} from '@xh/hoist/kit/blueprint';
+import {menuItem, menuList} from '@xh/hoist/desktop/cmp/menu/impl/MenuImpl';
 
 export const memoryMonitorPanel = hoistCmp.factory({
     model: creates(MemoryMonitorModel),
@@ -113,7 +113,7 @@ const instanceSelect = hoistCmp.factory<MemoryMonitorModel>({
                 icon: Icon.history(),
                 title: 'Past Instances',
                 compactHeader: true,
-                children: menu({
+                children: menuList({
                     children: pastInstances.map(it =>
                         menuItem({
                             text: instanceDisplay({instance: it}),

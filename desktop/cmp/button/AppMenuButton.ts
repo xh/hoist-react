@@ -12,7 +12,7 @@ import type {ButtonProps} from '@xh/hoist/desktop/cmp/button';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
-import {menu} from '@xh/hoist/kit/blueprint';
+import {menuList} from '@xh/hoist/desktop/cmp/menu/impl/MenuImpl';
 import {parseMenuItems} from '@xh/hoist/desktop/cmp/menu/impl/MenuItems';
 import {withDefault} from '@xh/hoist/utils/js';
 import {isFunction} from 'lodash';
@@ -106,7 +106,7 @@ export const [AppMenuButton, appMenuButton] = hoistCmp.withFactory<AppMenuButton
                 ...rest
             }),
             popoverClassName: 'xh-app-menu-popover',
-            content: menu({
+            content: menuList({
                 className: 'xh-app-menu',
                 children: buildMenuItems(props)
             })

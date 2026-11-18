@@ -12,10 +12,10 @@ import {
     type TestSupportProps
 } from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
-import {menu as bpMenu} from '@xh/hoist/kit/blueprint';
 import {TEST_ID} from '@xh/hoist/utils/js';
 import {isEmpty} from 'lodash';
 import type {MouseEvent} from 'react';
+import {menuList} from './impl/MenuImpl';
 import {MENU_DEFAULTS, type MenuDefaults, parseMenuItems} from './impl/MenuItems';
 
 export interface MenuProps extends HoistProps, TestSupportProps {
@@ -47,7 +47,7 @@ export const [Menu, menu] = hoistCmp.withFactory<MenuProps, MenuDefaults>({
         const items = parseMenuItems(menuItems, {context});
         return isEmpty(items)
             ? null
-            : bpMenu({
+            : menuList({
                   className,
                   children: items,
                   onContextMenu: swallowContextMenu,

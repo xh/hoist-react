@@ -15,7 +15,7 @@ import {button} from '@xh/hoist/desktop/cmp/button';
 import {select} from '@xh/hoist/desktop/cmp/input';
 import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
-import {menu, menuDivider, menuItem} from '@xh/hoist/kit/blueprint';
+import {menuDivider, menuItem, menuList} from '@xh/hoist/desktop/cmp/menu/impl/MenuImpl';
 import {elemWithin, withDefault} from '@xh/hoist/utils/js';
 import {getLayoutProps, splitLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
@@ -383,7 +383,7 @@ const favoritesMenu = hoistCmp.factory<FilterChooserModel>({
 
         return vbox(
             div({className: 'xh-popup__title', children: 'Favorites'}),
-            menu({children: items})
+            menuList({children: items})
         );
     }
 });

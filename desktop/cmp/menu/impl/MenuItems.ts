@@ -11,8 +11,6 @@ import {
     type MenuContext,
     type MenuItemLike
 } from '@xh/hoist/core';
-import {menuDivider, menuItem} from '@xh/hoist/kit/blueprint';
-import type {MenuItemProps} from '@blueprintjs/core';
 import {wait} from '@xh/hoist/promise';
 import {filterConsecutiveMenuSeparators} from '@xh/hoist/utils/impl';
 import {TEST_ID} from '@xh/hoist/utils/js';
@@ -23,6 +21,7 @@ import {
 } from '@xh/hoist/cmp/menu/impl/Menus';
 import {clone, isEmpty} from 'lodash';
 import type {ReactNode} from 'react';
+import {menuDivider, menuItem, type MenuItemImplProps} from './MenuImpl';
 
 export interface MenuDefaults {
     /**
@@ -37,6 +36,13 @@ export interface MenuDefaults {
      * deliberate move away. Set 0 to restore the Blueprint behavior.
      */
     submenuHoverCloseDelay?: number;
+
+    /**
+     * True to render desktop menus and context menus with Blueprint's components, as before Hoist
+     * had its own. For apps to fall back on while they adopt Hoist's menus - removed in the next
+     * major version.
+     */
+    useBlueprint?: boolean;
 }
 
 /**
@@ -45,7 +51,8 @@ export interface MenuDefaults {
  * @internal
  */
 export const MENU_DEFAULTS: MenuDefaults = {
-    submenuHoverCloseDelay: 300
+    submenuHoverCloseDelay: 300,
+    useBlueprint: false
 };
 
 export interface ParseMenuItemsOptions {
@@ -57,7 +64,7 @@ export interface ParseMenuItemsOptions {
      * anchored at the cursor adds `{usePortal: true}`, because its submenus mis-position without
      * a portal.
      */
-    submenuPopoverProps?: MenuItemProps['popoverProps'];
+    submenuPopoverProps?: MenuItemImplProps['popoverProps'];
 }
 
 /**
@@ -107,7 +114,7 @@ export function parseMenuItems(
             const {actionFn} = item;
 
             // Create menuItem from config
-            const cfg: ElementSpec<MenuItemProps> = {
+            const cfg: ElementSpec<MenuItemImplProps> = {
                 text: item.text,
                 icon: item.icon,
                 intent: item.intent,

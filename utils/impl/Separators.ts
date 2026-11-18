@@ -8,7 +8,8 @@ import {filterConsecutive} from '../js';
 
 /**
  * True if the given menu entry is a textless separator, in any of the forms produced along the
- * way - the '-' token, ag-Grid's 'separator' token, or a rendered Blueprint MenuDivider.
+ * way - the '-' token, ag-Grid's 'separator' token, or a rendered MenuDivider, Hoist's or
+ * Blueprint's.
  * @internal
  */
 export function isMenuSeparator(it: any): boolean {

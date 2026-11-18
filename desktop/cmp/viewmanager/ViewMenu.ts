@@ -10,7 +10,7 @@ import type {ViewGroupNode, ViewManagerModel, ViewInfo} from '@xh/hoist/cmp/view
 import {buildViewGroupTree} from '@xh/hoist/cmp/viewmanager';
 import {switchInput} from '@xh/hoist/desktop/cmp/input';
 import {Icon} from '@xh/hoist/icon';
-import {menu, menuDivider, menuItem} from '@xh/hoist/kit/blueprint';
+import {menuDivider, menuItem, menuList} from '@xh/hoist/desktop/cmp/menu/impl/MenuImpl';
 import {getTestId, pluralize, TEST_ID} from '@xh/hoist/utils/js';
 import {parseMenuItems} from '@xh/hoist/desktop/cmp/menu/impl/MenuItems';
 import {filterConsecutiveMenuSeparators} from '@xh/hoist/utils/impl';
@@ -23,7 +23,7 @@ import type {ViewManagerLocalModel} from './ViewManagerLocalModel';
  */
 export const viewMenu = hoistCmp.factory<ViewManagerLocalModel>({
     render({model, extraMenuItems, testId}) {
-        return menu({
+        return menuList({
             className: 'xh-view-manager__menu',
             [TEST_ID]: testId,
             children: [

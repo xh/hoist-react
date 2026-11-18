@@ -13,16 +13,10 @@ import {button} from '@xh/hoist/desktop/cmp/button';
 import '@xh/hoist/desktop/register';
 import {contextMenu} from '@xh/hoist/desktop/cmp/contextmenu';
 import {Icon} from '@xh/hoist/icon';
-import {
-    menu,
-    menuDivider,
-    menuItem,
-    popover,
-    showContextMenu,
-    tab as bpTab,
-    tabs as bpTabs,
-    tooltip as bpTooltip
-} from '@xh/hoist/kit/blueprint';
+import {tab as bpTab, tabs as bpTabs, tooltip as bpTooltip} from '@xh/hoist/kit/blueprint';
+import {menuDivider, menuItem, menuList} from '@xh/hoist/desktop/cmp/menu/impl/MenuImpl';
+import {popover} from '@xh/hoist/cmp/popover';
+import {showContextMenu} from '@xh/hoist/desktop/cmp/contextmenu/impl/ShowContextMenu';
 import {bindableRef} from '@xh/hoist/mobx';
 import {
     consumeEvent,
@@ -258,7 +252,7 @@ const overflowMenu = hoistCmp.factory<TabContainerModel>({
                 icon: vertical ? Icon.ellipsisHorizontal() : Icon.ellipsisVertical()
             }),
             minimal: true,
-            content: menu({
+            content: menuList({
                 className: 'xh-tab-switcher__overflow-menu',
                 children: items
             })

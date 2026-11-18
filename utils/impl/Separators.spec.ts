@@ -5,7 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {toolbarSep} from '@xh/hoist/desktop/cmp/toolbar';
-import {menuDivider} from '@xh/hoist/kit/blueprint';
+import {menuDivider} from '@xh/hoist/desktop/cmp/menu/impl/MenuImpl';
 import {
     filterConsecutiveMenuSeparators,
     filterConsecutiveToolbarSeparators

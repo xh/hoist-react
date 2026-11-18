@@ -41,6 +41,9 @@ detailed, step-by-step upgrade instructions with before/after code examples.
   DOM keeps Blueprint's `bp6-popover*` classes alongside new `xh-popover__*` ones, so app CSS still
   applies. Set `Popover.defaults.useBlueprint = true` at startup to fall back to Blueprint's
   popover for this release. `DateInputProps.popoverModifiers` no longer has any effect.
+* Desktop menus and context menus now render with Hoist's own components, not Blueprint's. The DOM
+  keeps Blueprint's `bp6-menu*` classes alongside new `xh-menu-*` ones, so app CSS still applies.
+  Set `Menu.defaults.useBlueprint = true` at startup to fall back to Blueprint's for this release.
 * `FetchService` now sends a request with no `method` as a GET, even when it sets `params`. Before,
   `params` made it a POST with a form-encoded body. Set `method: 'POST'` on calls that change data,
   send credentials, or send large params - see Step 7 of the upgrade notes.
@@ -53,6 +56,9 @@ detailed, step-by-step upgrade instructions with before/after code examples.
     * Escape now returns focus to the popover's target, so keyboard users keep their place.
     * Added `portalContainerProvider` to `@xh/hoist/utils/react`, to send popovers within it to a
       given container, e.g. a popped-out child window.
+* Desktop menus now support the keyboard: arrow keys, Home and End move between items, typing
+  jumps to an item by its first letters, and ArrowRight and ArrowLeft open and close submenus.
+  Escape in a submenu closes only that submenu.
 
 * Element factories and `createElement` now take child elements via the standard React `children`
   key. The `item` and `items` keys still work as aliases, but a future major version will remove
