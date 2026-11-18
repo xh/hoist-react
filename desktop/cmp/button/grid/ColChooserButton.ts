@@ -7,7 +7,7 @@
 import type {GridLikeModel} from '@xh/hoist/cmp/grid';
 import {isGridLikeModel} from '@xh/hoist/cmp/grid/impl/GridLikeModel';
 import {div, vbox} from '@xh/hoist/cmp/layout';
-import type {PopoverPosition} from '@xh/hoist/core';
+import type {PopoverPosition} from '@xh/hoist/cmp/popover';
 import {hoistCmp, useContextModel} from '@xh/hoist/core';
 import {colChooser} from '@xh/hoist/desktop/cmp/grid/impl/colchooser/ColChooser';
 import type {ModalColChooserModel} from '@xh/hoist/desktop/cmp/grid/impl/colchooser/ModalColChooserModel';

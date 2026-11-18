@@ -7,7 +7,8 @@
 import type {GridLikeModel} from '@xh/hoist/cmp/grid';
 import {isGridLikeModel} from '@xh/hoist/cmp/grid/impl/GridLikeModel';
 import {div, vbox} from '@xh/hoist/cmp/layout';
-import type {MenuItemLike, PopoverPosition} from '@xh/hoist/core';
+import type {PopoverPosition} from '@xh/hoist/cmp/popover';
+import type {MenuItemLike} from '@xh/hoist/core';
 import {hoistCmp, useContextModel} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';

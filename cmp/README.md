@@ -209,6 +209,7 @@ techniques.
 | `/markdown/` | Markdown rendering component |
 | `/pdfviewer/` | PDF document viewer built on pdf.js. [See README](./pdfviewer/README.md) |
 | `/pinpad/` | PIN entry interface |
+| `/popover/` | Types shared by popovers, menus and tooltips (PopoverPosition, PopoverBoundary) |
 | `/relativetimestamp/` | Human-readable relative time display |
 | `/websocket/` | WebSocket indicator component |
 

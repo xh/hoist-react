@@ -4,13 +4,12 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
+import type {PopoverBoundary, PopoverPosition} from '@xh/hoist/cmp/popover';
 import {
     hoistCmp,
     HoistModel,
     type MenuContext,
     type MenuItemLike,
-    type PopoverBoundary,
-    type PopoverPosition,
     type Thunkable,
     useLocalModel
 } from '@xh/hoist/core';

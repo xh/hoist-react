@@ -5,7 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import '@xh/hoist/desktop/register';
-import type {PopoverPosition} from '@xh/hoist/core';
+import type {PopoverPosition} from '@xh/hoist/cmp/popover';
 import {hoistCmp, useContextModel} from '@xh/hoist/core';
 import {div, vbox} from '@xh/hoist/cmp/layout';
 import {ZoneGridModel} from '@xh/hoist/cmp/zoneGrid';

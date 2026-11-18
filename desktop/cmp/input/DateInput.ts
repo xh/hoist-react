@@ -8,14 +8,8 @@ import type {HoistInputProps} from '@xh/hoist/cmp/input';
 import {HoistInputModel, useHoistInputModel} from '@xh/hoist/cmp/input';
 import {getDayPickerProps, resolveBoundDate} from '@xh/hoist/cmp/input/impl/DayPickerUtils';
 import {div, filler, hbox, vbox} from '@xh/hoist/cmp/layout';
-import type {
-    HoistProps,
-    LayoutProps,
-    PlainObject,
-    PopoverBoundary,
-    PopoverPosition,
-    Some
-} from '@xh/hoist/core';
+import type {PopoverBoundary, PopoverPosition} from '@xh/hoist/cmp/popover';
+import type {HoistProps, LayoutProps, PlainObject, Some} from '@xh/hoist/core';
 import {hoistCmp} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import type {TextInputModel} from '@xh/hoist/desktop/cmp/input';

@@ -11,7 +11,7 @@ import {
 } from './impl/DateRangePickerLocalModel';
 import {box, div, filler, fragment, hbox, span, vbox} from '@xh/hoist/cmp/layout';
 import {tabContainer} from '@xh/hoist/cmp/tab';
-import type {PopoverPosition} from '@xh/hoist/core';
+import type {PopoverPosition} from '@xh/hoist/cmp/popover';
 import {
     hoistCmp,
     type HoistProps,

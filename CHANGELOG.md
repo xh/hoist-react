@@ -114,9 +114,10 @@ detailed, step-by-step upgrade instructions with before/after code examples.
   (a missing prop, or a misspelled one with a suggested fix) instead of an error about `ReactNode`.
 * Replaced Blueprint types in Hoist's public desktop props with Hoist-owned types, as a first step
   toward removing Blueprint. Runtime behavior is unchanged.
-    * Added `PopoverPosition` and `PopoverBoundary` to `@xh/hoist/core`. They type `menuPosition`,
-      `popoverPosition`, `tooltipPosition`, `popoverBoundary` and `tooltipBoundary`, and take the
-      same values as before, so Blueprint `Position` constants still compile.
+    * Added `PopoverPosition` and `PopoverBoundary` to the new `@xh/hoist/cmp/popover` package.
+      They type `menuPosition`, `popoverPosition`, `tooltipPosition`, `popoverBoundary` and
+      `tooltipBoundary`, and take the same values as before, so Blueprint `Position` constants
+      still compile.
     * `ButtonProps` and `ButtonGroupProps` no longer extend Blueprint's props. They keep their
       declared props and all native `<button>` / `<div>` attributes, but drop Blueprint-only props
       such as `loading`, `alignText`, `large` and `small`. `ButtonGroupProps` keeps `fill`.
