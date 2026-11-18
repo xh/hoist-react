@@ -188,8 +188,9 @@ minor that changes a pairing. These are hard gates stated in the [hoist-dev-util
 
 | hoist-dev-utils | Min hoist-react | Min Node | Notes |
 |---|---|---|---|
-| 16.4.1 | -- | -- | Requires Rsbuild 2.3.3, which brings in the fixed `@rspack/core` 2.3.3. Take it and remove the `@rspack/core` override that 16.3 advised - see [Rspack 2.3.2 build failure](#rspack-232-build-failure). |
-| 16.3 | -- | -- | Builds and the dev server fail on `@rspack/core` 2.3.2. Take 16.4.1+ rather than pinning Rspack 2.3.0 - see [Rspack 2.3.2 build failure](#rspack-232-build-failure). |
+| 16.4.2 | -- | -- | Builds and the dev server fail on `@rspack/core` 2.3.2 and 2.3.3. Apps must pin `'@rspack/core': 2.3.1` with a pnpm override in `client-app/pnpm-workspace.yaml` - see [Rspack minifier bugs](#rspack-minifier-bugs). |
+| 16.4.1 | -- | -- | Superseded by 16.4.2 - do not use. It brings in `@rspack/core` 2.3.3, which leaves Highcharts charts blank in production builds. |
+| 16.3 | -- | -- | Builds and the dev server fail on `@rspack/core` 2.3.2. Take 16.4.2+ and pin Rspack 2.3.1 - see [Rspack minifier bugs](#rspack-minifier-bugs). |
 | 16.1 | -- | -- | Adds `configureVitest()`, the Vitest preset for app unit tests. The preset alone needs hoist-react 89, which ships the `@xh/hoist/test-support` kit. Builds keep the 88 floor. |
 | 16.0 | 88.0 | 22.15 | Rsbuild replaces webpack, and TC39 `2023-11` decorators replace `legacy`. Both require app changes. |
 | 15.0 | 87.1 | 22.15 | Take 15.0.1+ - 15.0.0 can crash app boot ([#4640](https://github.com/xh/hoist-react/issues/4640)). Apps must be TypeScript-only - `.jsx` files are no longer resolved or transpiled. Re-enables Terser name-mangling, ships ESLint v10 via `@xh/eslint-config` 8, and emits pre-compressed `.br` / `.gz` assets on prod builds. |
@@ -232,17 +233,29 @@ major sets its own minimum hoist-react. These are build-time dependencies, so fa
 starting the dev server or building rather than at runtime. See
 [hoist-react ↔ hoist-dev-utils](#hoist-react--hoist-dev-utils) above.
 
-### Rspack 2.3.2 build failure
+### Rspack minifier bugs
 
-The minifier in `@rspack/core` 2.3.2 breaks classes that reference themselves in a static
-initializer, so the built app crashes on load. hoist-dev-utils 16.3 and later refuse to build or
-start the dev server with that version.
+Two `@rspack/core` releases have minifier bugs that break production builds. Dev builds do not
+minify, so neither bug shows up before deploy.
 
-Take hoist-dev-utils 16.4.1 or later. It requires Rsbuild 2.3.3, which brings in the fixed
-`@rspack/core` 2.3.3. If the app added the `'@rspack/core': 2.3.0` pnpm override that 16.3
-advised, remove it from `client-app/pnpm-workspace.yaml`. Left in place, it runs Rspack 2.3.0
-under Rsbuild 2.3.3, which expects 2.3.3. See
-[xh/hoist-dev-utils#85](https://github.com/xh/hoist-dev-utils/issues/85).
+- **2.3.2** breaks classes that reference themselves in a static initializer, so the built app
+  crashes on load. See [xh/hoist-dev-utils#85](https://github.com/xh/hoist-dev-utils/issues/85).
+- **2.3.3** can give a local variable the same name as a kept class name, which leaves every
+  Highcharts chart blank with `Cannot access '...' before initialization`. See
+  [web-infra-dev/rspack#16695](https://github.com/web-infra-dev/rspack/issues/16695).
+
+Take hoist-dev-utils 16.4.2 or later. It refuses to build or start the dev server with either
+version, and pins Rsbuild to 2.3.1. Rsbuild's `~2.3.x` range for Rspack still resolves 2.3.3, so
+apps must also pin Rspack with a pnpm override in `client-app/pnpm-workspace.yaml`:
+
+```yaml
+overrides:
+  '@rspack/core': 2.3.1
+```
+
+Keep the override if the app already has one, but change it to 2.3.1. 16.3 advised 2.3.0. Restore
+it if 16.4.1 led you to remove it. Remove it once a fixed Rspack release ships and hoist-dev-utils
+raises its floor.
 
 ### Upgrading hoist-core without upgrading hoist-react
 
