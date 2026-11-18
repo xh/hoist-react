@@ -104,6 +104,8 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 * `ElementSpec.children` takes the type of the component's own `children` prop when it declares
   one, such as a render function.
 * `AppOptionSpec.formField` is now typed as a loose element spec instead of `any`.
+* `ElementFactory` now lists its spec signature last, so a malformed spec reports the real problem
+  (a missing prop, or a misspelled one with a suggested fix) instead of an error about `ReactNode`.
 
 ### ✨ Styles
 

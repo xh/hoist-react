@@ -85,9 +85,12 @@ export type ReactComponent = ComponentType | keyof JSX.IntrinsicElements;
 /**
  * Factory function that can create a ReactElement from an ElementSpec or children.
  * Hoist alternative to JSX.
+ *
+ * The spec signature is listed last on purpose: TypeScript reports a failed call against the last
+ * overload, so a bad spec gets an error about the spec rather than about `ReactNode`.
  */
-export type ElementFactory<P = any> = ((arg: ElementSpec<P>) => ReactElement<P, any>) &
-    ((...args: ReactNode[]) => ReactElement<P, any>);
+export type ElementFactory<P = any> = ((...args: ReactNode[]) => ReactElement<P, any>) &
+    ((arg: ElementSpec<P>) => ReactElement<P, any>);
 
 /**
  * Create a React Element from a Component type and an ElementSpec.
