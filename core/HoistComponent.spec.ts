@@ -88,6 +88,24 @@ describe('hoistCmp', () => {
             expect(texts('.test-card')).toEqual(['OpenClosed', 'Pending']);
         });
 
+        it('warns when passed directly as an array callback', () => {
+            const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+            onTestFinished(() => warn.mockRestore());
+
+            render(div(['Open', 'Closed'].map(span)));
+
+            expect(warn).toHaveBeenCalledOnce();
+        });
+
+        it('warns when given a spec that is not a plain object', () => {
+            const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+            onTestFinished(() => warn.mockRestore());
+
+            render(empty(new CardSpec()));
+
+            expect(warn).toHaveBeenCalledOnce();
+        });
+
         it('omits the element when omit is true or returns true', () => {
             render(
                 div(
@@ -365,6 +383,13 @@ const card = hoistCmp.factory<CardProps>({
     className: 'test-card',
     render: ({title, className, children}) => div({title, className, children})
 });
+
+/** Renders nothing, so a misread spec cannot fail the render. */
+const empty = hoistCmp.factory<CardProps>({model: false, render: () => null});
+
+class CardSpec {
+    title = 'Trades';
+}
 
 const tagList = hoistCmp.factory<HoistProps & {items: string[]}>({
     model: false,

@@ -5,7 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import type {TEST_ID} from '@xh/hoist/utils/js';
-import {castArray, isFunction, isNil, isPlainObject, isString} from 'lodash';
+import {castArray, isArray, isFunction, isNil, isNumber, isPlainObject, isString} from 'lodash';
 import type {ComponentType, JSX, Key, ReactElement, ReactNode} from 'react';
 import {createElement as reactCreateElement, isValidElement} from 'react';
 import type {PlainObject, Thunkable} from './types/Types';
@@ -85,9 +85,12 @@ export type ReactComponent = ComponentType | keyof JSX.IntrinsicElements;
 /**
  * Factory function that can create a ReactElement from an ElementSpec or children.
  * Hoist alternative to JSX.
+ *
+ * The spec signature is listed last on purpose: TypeScript reports a failed call against the last
+ * overload, so a bad spec gets an error about the spec rather than about `ReactNode`.
  */
-export type ElementFactory<P = any> = ((arg: ElementSpec<P>) => ReactElement<P, any>) &
-    ((...args: ReactNode[]) => ReactElement<P, any>);
+export type ElementFactory<P = any> = ((...args: ReactNode[]) => ReactElement<P, any>) &
+    ((arg: ElementSpec<P>) => ReactElement<P, any>);
 
 /**
  * Create a React Element from a Component type and an ElementSpec.
@@ -109,7 +112,12 @@ export function createElement<C extends ReactComponent>(
 
     // 2) Read children, accepting the legacy item[s] aliases.
     if (!isNil(children) && (!isNil(item) || !isNil(items))) {
-        warnMixedChildren(component);
+        warnOnce(
+            component,
+            'mixedChildren',
+            'spec sets both `children` and a legacy `item` / `items` key. Only `children` is ' +
+                'rendered - use `children` alone.'
+        );
     }
     const childSpec = (children ?? item ?? items) as ReactNode,
         childArgs = isNil(childSpec) ? [] : castArray(childSpec);
@@ -132,7 +140,7 @@ export function elementFactory<C extends ReactComponent>(component: C): ElementF
 export function elementFactory<P extends PlainObject>(component: ReactComponent): ElementFactory<P>;
 export function elementFactory(component: ReactComponent): ElementFactory {
     const ret = function (...args) {
-        return createElement(component, normalizeArgs(args));
+        return createElement(component, normalizeArgs(component, args));
     };
     ret.isElementFactory = true;
     return ret;
@@ -141,33 +149,61 @@ export function elementFactory(component: ReactComponent): ElementFactory {
 //------------------------
 // Implementation
 //------------------------
-const warnedMixedChildren = new Set<ReactComponent>();
+const warned = new Map<ReactComponent, Set<string>>();
 
-/**
- * Warn once per component when a spec sets `children` and a legacy `item` / `items` key. Only
- * `children` is rendered - typically a spread brought in a key the code did not expect.
- */
-function warnMixedChildren(component: ReactComponent) {
-    if (warnedMixedChildren.has(component)) return;
-    warnedMixedChildren.add(component);
+/** Warn about a likely mistake in a factory call, once per component and kind of mistake. */
+function warnOnce(component: ReactComponent, kind: string, msg: string) {
+    let kinds = warned.get(component);
+    if (!kinds) warned.set(component, (kinds = new Set()));
+    if (kinds.has(kind)) return;
+    kinds.add(kind);
     const name = isString(component)
         ? component
         : ((component as any).displayName ?? (component as any).name);
-    console.warn(
-        `Element spec for "${name}" sets both \`children\` and a legacy \`item\` / \`items\` key. ` +
-            'Only `children` is rendered - use `children` alone.'
-    );
+    console.warn(`Element "${name}": ${msg}`);
 }
-function normalizeArgs(args: any[]) {
+
+/**
+ * Read factory arguments as a spec, or as children in the shortcut form. A single plain object
+ * is a spec - anything else is children.
+ */
+function normalizeArgs(component: ReactComponent, args: any[]) {
     const len = args.length;
     if (len === 0) return {};
     if (len === 1) {
         const arg = args[0];
         if (isPlainObject(arg) && !isValidElement(arg)) return arg;
+        if (isNonNodeObject(arg)) {
+            warnOnce(
+                component,
+                'nonPlainSpec',
+                'factory received an object that is not a plain object and rendered it as a ' +
+                    'child. Pass the spec as a plain object literal.'
+            );
+        }
         return {children: arg};
     }
-    // Assume > 1 args are children.
+    // Detect `items.map(factory)`, which passes (item, index, array).
+    if (len === 3 && isNumber(args[1]) && isArray(args[2]) && args[2][args[1]] === args[0]) {
+        warnOnce(
+            component,
+            'arrayCallback',
+            'factory was passed directly as an array callback and rendered each item with its ' +
+                'index and the whole array. Use `items.map(it => factory(it))` instead.'
+        );
+    }
     return {children: args};
+}
+
+/** An object that is neither a spec nor a renderable node - e.g. a class instance. */
+function isNonNodeObject(arg: any): boolean {
+    return (
+        typeof arg === 'object' &&
+        arg !== null &&
+        !isValidElement(arg) &&
+        !(Symbol.iterator in arg) &&
+        !isFunction(arg.then)
+    );
 }
 
 type PropType<C> =

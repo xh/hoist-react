@@ -101,12 +101,17 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 * `TreeMap` now logs a console warning when Highcharts has no color axis, which leaves every node
   in one default color. Import `highcharts/modules/heatmap` or `highcharts/modules/coloraxis`
   before `highcharts/modules/treemap` in `Bootstrap.ts`.
+* Element factories now log a console warning when passed directly as an array callback
+  (`items.map(span)`), which renders each item's index and the whole array, or when given a spec
+  that is not a plain object, which renders as a child.
 
 ### ⚙️ Typescript API Adjustments
 
 * `ElementSpec.children` takes the type of the component's own `children` prop when it declares
   one, such as a render function.
 * `AppOptionSpec.formField` is now typed as a loose element spec instead of `any`.
+* `ElementFactory` now lists its spec signature last, so a malformed spec reports the real problem
+  (a missing prop, or a misspelled one with a suggested fix) instead of an error about `ReactNode`.
 
 ### ✨ Styles
 

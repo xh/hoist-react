@@ -602,12 +602,16 @@ panel({
     ]
 })
 
-// Shorthand form - children as arguments (when no other props needed)
+// Shortcut form - children as arguments
 div(
     span('Hello'),
     span('World')
 )
 ```
+
+Use the shortcut form when a call passes only children, and the config object form as soon as it
+passes any other prop. Do not pass a factory directly as an array callback - `items.map(span)` also
+renders each item's index and the whole array. Write `items.map(it => span(it))` instead.
 
 ### ElementSpec Properties
 
