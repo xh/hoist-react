@@ -155,6 +155,9 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 * Desktop `Select` now rounds its corners to match other inputs (4px, up from 3px). A desktop
   `TabSwitcher` placed at the bottom now marks its active tab in the active tab color, as one at
   the top does, rather than in the resting text color.
+* Desktop `SegmentedControl` now looks disabled when `disabled`, matching other disabled inputs
+  such as `DateInput`. Its tray takes the disabled input fill and its labels fade, while the
+  selected option keeps a hairline edge so the current value stays legible.
 
 ### 📚 Libraries
 
