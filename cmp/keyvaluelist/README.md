@@ -62,8 +62,8 @@ body.xh-app {
 
 - **Rows go in `entries`, not `children`.** A factory renders `children`, and the legacy `items`,
   as child elements. The list throws in development mode when it gets rows that way.
-- **Only null shows `nullDisplay`.** Other values render as React renders them, so a boolean or a
-  blank string shows nothing. Pass text such as `'Yes'` or `'No'` for a boolean.
+- **Only null or undefined shows `nullDisplay`.** Other values render as React renders them, so a
+  boolean or a blank string shows nothing. Pass text such as `'Yes'` or `'No'` for a boolean.
 - **The list never formats.** Format numbers and dates with `@xh/hoist/format` before you pass
   them.
 - **`columns` is a maximum.** The list drops columns while one would be narrower than
