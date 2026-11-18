@@ -362,6 +362,7 @@ export class DifferModel extends HoistModel {
                 await XH.fetchJson(
                     {
                         url: `${this.url}/applyRemoteValues`,
+                        method: 'POST',
                         params: {records: JSON.stringify(recsForPost)}
                     },
                     ctx

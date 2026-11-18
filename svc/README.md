@@ -133,7 +133,8 @@ override async doLoadAsync(loadSpec: LoadSpec) {
 |--------|------|---------------------------------------------------------------------------------------|
 | `url` | string | Request URL (relative URLs appended to `XH.baseUrl`)                                  |
 | `body` | any | Request body                                                                          |
-| `params` | object | Query string parameters                                                               |
+| `method` | string | HTTP method - defaults to `GET`, with or without `params`                             |
+| `params` | object | Query string parameters, or a form-encoded body for a `POST` or `PUT`                 |
 | `headers` | object | Additional headers                                                                    |
 | `timeout` | number | Timeout in ms (default 30000)                                                         |
 | `autoAbortKey` | string | Cancel previous requests with same key. For `fetchNdjson`, covers the whole stream    |
@@ -795,27 +796,6 @@ override async doLoadAsync(loadSpec: LoadSpec) {
         XH.handleException(e, {alertType: 'toast'});
     }
 }
-```
-
-### `params` Triggers a POST When Method Is Not Specified
-
-When `params` is passed without an explicit `method`, `FetchService` issues a **POST** and sends
-the params as `application/x-www-form-urlencoded` in the request body -- not as a URL query
-string on a GET. This is rarely what callers intend.
-
-**Always specify `method: 'GET'` (or use `XH.fetchService.getJson()`) when you intend a GET with
-query parameters.** Omitting the method changes the verb, the wire format, and the server-side
-route hit.
-
-```typescript
-// ❌ Surprising: sends POST with form-encoded params in the body
-await XH.fetchJson({url: 'api/users', params: {role: 'admin'}});
-
-// ✅ Explicit GET with query string ?role=admin
-await XH.fetchJson({url: 'api/users', params: {role: 'admin'}, method: 'GET'});
-
-// ✅ Or use the dedicated getJson() helper
-await XH.fetchService.getJson({url: 'api/users', params: {role: 'admin'}});
 ```
 
 ### Using Native `fetch` Instead of FetchService

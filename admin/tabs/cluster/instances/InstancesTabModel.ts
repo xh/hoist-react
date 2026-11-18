@@ -243,6 +243,7 @@ export class InstancesTabModel extends HoistModel {
             .span('shutdown')
             .fetchJson({
                 url: 'clusterAdmin/shutdownInstance',
+                method: 'POST',
                 params: {instance: instance.name}
             })
             .finally(() => this.loadAsync())

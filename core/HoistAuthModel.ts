@@ -78,6 +78,7 @@ export class HoistAuthModel extends HoistModel {
                 const {success, identity} = await XH.fetchJson(
                     {
                         url: 'xh/login',
+                        method: 'POST',
                         params: {username, password}
                     },
                     ctx

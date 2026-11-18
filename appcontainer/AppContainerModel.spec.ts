@@ -37,8 +37,8 @@ describe('AppContainerModel', () => {
     it('identifies the user to user-scoped endpoints', () => {
         // hoist-core rejects user-state calls whose clientUsername differs from the session user.
         const getPrefs = bootRequests.find(it => it.path === 'xh/getPrefs');
-        expect(getPrefs.method).toBe('POST');
-        expect(getPrefs.form).toEqual({clientUsername: 'jdoe'});
+        expect(getPrefs.method).toBe('GET');
+        expect(getPrefs.query).toEqual({clientUsername: 'jdoe'});
     });
 
     it('runs with the identity, configs and prefs the server returned', () => {

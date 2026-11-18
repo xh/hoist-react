@@ -43,15 +43,24 @@ describe('FetchService', () => {
     });
 
     describe('params', () => {
-        it('sends params as a form-encoded POST when no method is given', async () => {
-            // The way PrefService loads prefs - hoist-core reads clientUsername from the form.
+        it('sends params on the query string of a GET when no method is given', async () => {
+            // The way PrefService loads prefs - hoist-core reads clientUsername from its params.
             await XH.fetchJson({url: 'xh/getPrefs', params: {clientUsername: 'jdoe'}});
 
             const [req] = hoistCore.requestsTo('xh/getPrefs');
-            expect(req.method).toBe('POST');
-            expect(req.headers['content-type']).toBe('application/x-www-form-urlencoded');
-            expect(req.form).toEqual({clientUsername: 'jdoe'});
-            expect(req.query).toEqual({});
+            expect(req.method).toBe('GET');
+            expect(req.query).toEqual({clientUsername: 'jdoe'});
+            expect(req.form).toEqual({});
+        });
+
+        it('sends params for a POST as a form-encoded body', async () => {
+            const sent = serve(xhUrl('test/login'));
+            await XH.fetch({url: 'test/login', method: 'POST', params: {username: 'jdoe'}});
+
+            const [req] = sent;
+            expect(req.url.search).toBe('');
+            expect(req.headers.get('Content-Type')).toBe('application/x-www-form-urlencoded');
+            expect(req.body).toBe('username=jdoe');
         });
 
         it.each(['postJson', 'putJson'] as const)(

@@ -36,7 +36,7 @@ describe('ViewManagerModel', () => {
             const vmm = await createAsync({instance: 'blotter'});
 
             const [req] = hoistCore.requestsTo('xhView/allData');
-            expect(req.form).toEqual({type: 'portfolioGrid', viewInstance: 'blotter'});
+            expect(req.query).toEqual({type: 'portfolioGrid', viewInstance: 'blotter'});
             expect(vmm.views.map(it => it.token)).toEqual(['mine', 'bobs', 'firm']);
             expect(vmm.autoSave).toBe(true);
         });
@@ -119,7 +119,7 @@ describe('ViewManagerModel', () => {
             ['is false when neither the server nor config allows it', undefined, undefined, false]
         ])('%s', async (_, fromServer, config, expected) => {
             if (fromServer === undefined) {
-                hoistCore.route('POST', 'xhView/allData', () => ({
+                hoistCore.route('GET', 'xhView/allData', () => ({
                     state: {userPinned: {}, autoSave: false},
                     views: []
                 }));
@@ -175,7 +175,7 @@ describe('ViewManagerModel', () => {
             await vmm.selectViewAsync('firm');
             expect(vmm.view.token).toBe('firm');
             expect(vmm.getValue()).toEqual({sortBy: 'sector'});
-            expect(hoistCore.requestsTo('xhView/get').at(-1).form).toEqual({token: 'firm'});
+            expect(hoistCore.requestsTo('xhView/get').at(-1).query).toEqual({token: 'firm'});
         });
 
         // 90.0.0 - a slower, earlier view load replaced a later one.
@@ -770,7 +770,7 @@ function setState(state: PlainObject) {
 
 /** Answer every `xhView/allData` in this test with a server error. */
 function failLoads() {
-    hoistCore.route('POST', 'xhView/allData', () =>
+    hoistCore.route('GET', 'xhView/allData', () =>
         hoistError(500, {message: 'Database unavailable'})
     );
 }
@@ -804,7 +804,7 @@ function allowGlobalWrites(allow: boolean) {
  */
 function holdRequests(
     path: string,
-    {once = false, filter}: {once?: boolean; filter?: (req: Request) => Promise<boolean>} = {}
+    {once = false, filter}: {once?: boolean; filter?: (req: Request) => boolean} = {}
 ): {arrived: Promise<void>; release: () => void} {
     let onArrived: () => void,
         release: () => void,
@@ -812,9 +812,9 @@ function holdRequests(
     const arrived = new Promise<void>(resolve => (onArrived = resolve)),
         gate = new Promise<void>(resolve => (release = resolve));
     server.use(
-        http.post(xhUrl(path), async ({request}) => {
+        http.all(xhUrl(path), async ({request}) => {
             if (once && held) return;
-            if (filter && !(await filter(request))) return;
+            if (filter && !filter(request)) return;
             held = true;
             onArrived();
             await gate;
@@ -826,7 +826,7 @@ function holdRequests(
 
 /** Hold fetches of one view until released. Fetches of other views go through. */
 function holdView(token: string): {arrived: Promise<void>; release: () => void} {
-    return holdRequests('xhView/get', {filter: async req => (await viewToken(req)) === token});
+    return holdRequests('xhView/get', {filter: req => viewToken(req) === token});
 }
 
 /**
@@ -836,15 +836,15 @@ function holdView(token: string): {arrived: Promise<void>; release: () => void} 
 function failNextView(token: string) {
     let failed = false;
     server.use(
-        http.post(xhUrl('xhView/get'), async ({request}) => {
-            if (failed || (await viewToken(request)) !== token) return;
+        http.get(xhUrl('xhView/get'), ({request}) => {
+            if (failed || viewToken(request) !== token) return;
             failed = true;
             return hoistError(500, {message: 'Database unavailable'});
         })
     );
 }
 
-/** The token of a view fetch, read from a copy of its form-encoded body. */
-async function viewToken(req: Request): Promise<string> {
-    return (await req.clone().formData()).get('token') as string;
+/** The token of a view fetch, read from its query string. */
+function viewToken(req: Request): string {
+    return new URL(req.url).searchParams.get('token');
 }

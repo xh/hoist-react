@@ -98,10 +98,7 @@ const cases: GoldenCase[] = [
     },
     {
         query: 'fetchJson post body',
-        expect: [
-            T('svc/README.md', 'Built-in Services > Core Data Access'),
-            T('svc/README.md', 'Common Pitfalls > params Triggers a POST')
-        ],
+        expect: [T('svc/README.md', 'Built-in Services > Core Data Access')],
         source: 'experiment'
     },
     {

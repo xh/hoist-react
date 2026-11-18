@@ -55,7 +55,7 @@ describe('IdentityService', () => {
 
             // hoist-core checks user-state requests against the impersonated user.
             const getPrefs = bootRequests.find(it => it.path === 'xh/getPrefs');
-            expect(getPrefs.form.clientUsername).toBe('jdoe');
+            expect(getPrefs.query.clientUsername).toBe('jdoe');
         });
 
         it('keeps the right to impersonate with the admin, not the impersonated user', () => {
