@@ -47,7 +47,7 @@ callout({
 
 Each intent has its own icon - info, success, warning and danger - so color is never the only
 signal. The default icon also names the intent to screen readers, as "Info", "Success", "Warning"
-or "Error". Pass `icon` to show another, or `false` for none.
+or "Error". Pass `icon` to show another, or `null` for none.
 
 Set `size: 'compact'` for less padding and smaller text, to fit a dense form, dialog or side
 panel. A standard callout takes the font size of its container.

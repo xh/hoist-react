@@ -34,9 +34,9 @@ export interface CalloutProps extends HoistProps, LayoutProps, TestSupportProps,
     /**
      * Icon shown before the text. Default a standard icon for the `intent`: info, success,
      * warning or danger, titled to name the intent to screen readers. A callout with no intent
-     * has no default icon. False for no icon.
+     * has no default icon. Null for no icon, as with `Banner`.
      */
-    icon?: ReactElement | false;
+    icon?: ReactElement;
 
     /**
      * Size of the callout - `compact` for less padding and smaller text, to fit a dense form,
@@ -79,9 +79,7 @@ export const [Callout, callout] = hoistCmp.withFactory<CalloutProps>({
             hasTitle = !isBlankNode(title),
             hasBody = !isBlankNode(children),
             shownIcon =
-                icon === false
-                    ? null
-                    : (icon ?? Icon.forIntent(intent, {title: INTENT_LABELS[intent]}));
+                icon === undefined ? Icon.forIntent(intent, {title: INTENT_LABELS[intent]}) : icon;
 
         if (!hasTitle && !hasBody) return null;
 

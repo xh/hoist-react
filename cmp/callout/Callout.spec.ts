@@ -56,15 +56,16 @@ describe('Callout', () => {
         }
     });
 
-    it('shows a custom icon, the default for a null icon, and none for false', () => {
+    // Matches Banner: undefined takes the default icon, and null shows none.
+    it('shows a custom icon, the default for an undefined icon, and none for null', () => {
         const custom = renderCallout({intent: 'warning', icon: Icon.clock(), children: 'Text'});
         expect(iconName(custom)).toBe('clock');
 
-        const nullIcon = renderCallout({intent: 'warning', icon: null, children: 'Text'});
-        expect(iconName(nullIcon)).toBe('triangle-exclamation');
+        const undefinedIcon = renderCallout({intent: 'warning', icon: undefined, children: 'Text'});
+        expect(iconName(undefinedIcon)).toBe('triangle-exclamation');
 
-        const noIcon = renderCallout({intent: 'warning', icon: false, children: 'Text'});
-        expect(part(noIcon, 'icon')).toBeNull();
+        const nullIcon = renderCallout({intent: 'warning', icon: null, children: 'Text'});
+        expect(part(nullIcon, 'icon')).toBeNull();
     });
 
     // A title arrives before the body as content streams in.
