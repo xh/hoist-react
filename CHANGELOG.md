@@ -57,9 +57,9 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 * Added `Callout` to `@xh/hoist/cmp/callout`, a cross-platform note set off within content, with
   an `intent`, its icon, an optional `title` and a body. Use it inside content, and `Banner` for a
   status strip in panel chrome.
-* Added `Icon.forIntent()` to render the standard icon for an intent. `Banner` and `Callout` use
-  it, so an app that replaces the `info`, `success`, `warning` or `danger` icon via
-  `Icon.register()` with `replace: true` changes them all.
+* Added `Icon.forIntent()` and the `intentPrimary`, `intentSuccess`, `intentWarning` and
+  `intentDanger` icon aliases. `Banner` and `Callout` use them, so an app can replace an intent's
+  icon via `Icon.register()` with `replace: true`.
 * Added `Separator` to `@xh/hoist/cmp/layout`, a horizontal or `vertical` rule that divides
   content, with an optional `label` within the rule.
 * Added `scrollIntoViewWithin` to `@xh/hoist/utils/js`, to scroll a container just far enough to

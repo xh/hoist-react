@@ -290,9 +290,16 @@ Icon.register({name: 'refresh', defs: [faArrowRotateRight], replace: true});
 Hoist's ~40 semantic aliases (`refresh`, `add`, `delete`, `save`, ...) are the natural targets
 here. They exist to give apps one place to change the icon for a concept.
 
-The intent icons work the same way. `Icon.forIntent()` resolves `primary` to `info`, and the other
-intents to `success`, `warning` and `danger`, each by name when called. Replace one of these to
-change the icon that `Banner`, `Callout` and other intent-aware components show.
+The intent icons work the same way. `Icon.forIntent()` renders the `intentPrimary`,
+`intentSuccess`, `intentWarning` and `intentDanger` aliases, which `Banner`, `Callout` and other
+intent-aware components show. Each alias renders the general icon of its concept - `info`,
+`success`, `warning` and `danger`. Replace a general icon to change it everywhere, or an `intent*`
+alias to change it for the intent alone:
+
+```typescript
+// Banners and callouts with the warning intent show this glyph. Icon.warning() is unchanged.
+Icon.register({name: 'intentWarning', faName: 'exclamation-circle', replace: true});
+```
 
 Without `replace: true`, a registration under a name that already exists on `Icon` replaces nothing.
 Hoist keeps the existing icon and logs a console warning. The factory that the call returns still

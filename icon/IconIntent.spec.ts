@@ -34,10 +34,18 @@ describe('Icon.forIntent', () => {
         expect(container.querySelector('svg').getAttribute('aria-label')).toBe('Warning');
     });
 
-    it('renders an icon the app replaced via Icon.register', () => {
+    // The two replacements below build on each other, in order.
+    it('follows a replaced general icon, such as warning', () => {
         Icon.register({name: 'warning', faName: 'exclamation-circle', replace: true});
 
         expect(glyph(Icon.forIntent('warning'))).toBe('circle-exclamation');
+    });
+
+    it('renders a replaced intent alias in place of the general icon', () => {
+        Icon.register({name: 'intentWarning', faName: 'exclamation-square', replace: true});
+
+        expect(glyph(Icon.forIntent('warning'))).toBe('square-exclamation');
+        expect(glyph(Icon.warning())).toBe('circle-exclamation');
     });
 });
 
