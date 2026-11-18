@@ -376,8 +376,8 @@ body {
   //------------------------
   // Width of the bar along the left edge, in the callout's color. Zero for no bar.
   --xh-callout-accent-width: 3px;
-  // Background and color (of the icon, title and bar) for a callout with no intent.
-  --xh-callout-bg: var(--xh-intent-neutral-trans1);
+  // Background, and color of the icon and bar, for a callout with no intent.
+  --xh-callout-bg: color-mix(in srgb, var(--xh-callout-color) 12%, transparent);
   --xh-callout-color: var(--xh-blue-gray);
   --xh-callout-border-radius: var(--xh-border-radius);
   --xh-callout-danger-bg: var(--xh-intent-danger-trans1);
@@ -395,11 +395,16 @@ body {
   --xh-callout-title-font-weight: 600;
   // Gap between the title and the body.
   --xh-callout-title-gap: 2px;
+  --xh-callout-title-text-color: var(--xh-callout-text-color);
   --xh-callout-warning-bg: var(--xh-intent-warning-trans1);
-  --xh-callout-warning-color: var(--xh-intent-warning-text-color);
+  // The standard warning color is too light for an icon on the tinted background.
+  --xh-callout-warning-color: var(--xh-intent-warning-darker);
 
   &:where(.xh-dark) {
     --xh-callout-color: var(--xh-text-color-muted);
+    // The standard danger tint barely shows on a dark background.
+    --xh-callout-danger-bg: var(--xh-intent-danger-trans2);
+    --xh-callout-warning-color: var(--xh-intent-warning-text-color);
   }
 
 

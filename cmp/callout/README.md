@@ -59,8 +59,8 @@ that streams in can therefore show the title first and the body as it grows.
 
 Set the `--xh-callout-*` variables on `body.xh-app` to change the padding, radius and colors.
 The full set is in the `Callouts` block of [`styles/vars.scss`](../../styles/vars.scss). Each
-intent reads a `-bg` variable for its background and a `-color` variable for its icon, title and
-left bar:
+intent reads a `-bg` variable for its background and a `-color` variable for its icon and left bar.
+The title and body take the text color, so they read well on every tint:
 
 ```scss
 body.xh-app {
@@ -74,6 +74,8 @@ body.xh-app {
 
 - **A string body renders as plain text, not markdown.** Pass a `markdown()` element to format
   it. Hoist's `markdown` loads images, so do not pass it text from an untrusted source.
+- **`markdown()` keeps line breaks by default.** Source text wrapped over several lines renders
+  with hard breaks inside a paragraph. Pass `lineBreaks: false` to join the lines.
 - **A callout with no `intent` is neutral and has no icon.** Set `intent: 'primary'` for a note.
 - **The callout does not announce itself.** It has the `note` role, named by its title. To alert
   a screen reader to new content, put it in a live region of your own.

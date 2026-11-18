@@ -36,7 +36,7 @@ export interface CalloutProps extends HoistProps, LayoutProps, TestSupportProps,
      */
     icon?: ReactElement | false;
 
-    /** Short heading shown above the body, in the color of the `intent`. */
+    /** Short heading shown above the body. */
     title?: ReactNode;
 
     /**
