@@ -33,9 +33,9 @@ export interface KeyValueEntry {
     label: ReactNode;
 
     /**
-     * Content, pre-formatted by the caller. The list never formats a value. A value React renders
-     * as nothing - null, a boolean or a blank string - shows the list's `nullDisplay`. Pass a string
-     * such as `Yes` or `No` to show a boolean.
+     * Content, pre-formatted by the caller. The list never formats a value. A null or undefined
+     * value shows the list's `nullDisplay`. Any other value renders as React renders it, so a
+     * boolean shows nothing - pass a string such as `Yes` or `No` instead.
      */
     value?: ReactNode;
 
@@ -85,7 +85,7 @@ export interface KeyValueListProps
      */
     minColumnWidth?: number;
 
-    /** Shown in place of a null, undefined or blank string value. Default `-`. */
+    /** Shown in place of a null or undefined value. Default `-`. */
     nullDisplay?: ReactNode;
 
     /**
@@ -180,7 +180,7 @@ export const [KeyValueList, keyValueList] = hoistCmp.withFactory<KeyValueListPro
                 {'--xh-key-value-list-columns': columnCount}
             ),
             children: visibleEntries.map(({label, value, intent}, idx) => {
-                const empty = isBlankNode(value);
+                const isNull = value == null;
                 return div({
                     key: idx,
                     className: classNames(
@@ -193,9 +193,9 @@ export const [KeyValueList, keyValueList] = hoistCmp.withFactory<KeyValueListPro
                         dd({
                             className: classNames(
                                 'xh-key-value-list__value',
-                                empty && 'xh-key-value-list__value--empty'
+                                isNull && 'xh-key-value-list__value--null'
                             ),
-                            children: empty ? (nullDisplay ?? '-') : value
+                            children: isNull ? (nullDisplay ?? '-') : value
                         })
                     ]
                 });

@@ -71,7 +71,7 @@
   &__value {
     font-weight: var(--xh-key-value-list-value-font-weight);
 
-    &--empty {
+    &--null {
       color: var(--xh-key-value-list-null-text-color);
     }
   }
@@ -86,20 +86,20 @@
     font-variant-numeric: tabular-nums;
   }
 
-  // A blank value keeps its muted color, not the intent color.
-  &__entry--intent-primary &__value:not(.xh-key-value-list__value--empty) {
+  // A null value keeps its muted color, not the intent color.
+  &__entry--intent-primary &__value:not(.xh-key-value-list__value--null) {
     color: var(--xh-key-value-list-primary-color);
   }
 
-  &__entry--intent-success &__value:not(.xh-key-value-list__value--empty) {
+  &__entry--intent-success &__value:not(.xh-key-value-list__value--null) {
     color: var(--xh-key-value-list-success-color);
   }
 
-  &__entry--intent-warning &__value:not(.xh-key-value-list__value--empty) {
+  &__entry--intent-warning &__value:not(.xh-key-value-list__value--null) {
     color: var(--xh-key-value-list-warning-color);
   }
 
-  &__entry--intent-danger &__value:not(.xh-key-value-list__value--empty) {
+  &__entry--intent-danger &__value:not(.xh-key-value-list__value--null) {
     color: var(--xh-key-value-list-danger-color);
   }
 

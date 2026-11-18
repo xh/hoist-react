@@ -37,16 +37,26 @@ describe('KeyValueList', () => {
 
     it.each([
         ['null', null],
-        ['undefined', undefined],
-        ['an empty string', ''],
-        ['a blank string', '   '],
-        ['a boolean', true]
+        ['undefined', undefined]
     ])('shows the placeholder for a value that is %s', (_, value) => {
         const {container} = render(keyValueList({entries: [{label: 'Broker', value}]})),
             dd = container.querySelector('dd');
 
         expect(dd.textContent).toBe('-');
-        expect(dd.classList).toContain('xh-key-value-list__value--empty');
+        expect(dd.classList).toContain('xh-key-value-list__value--null');
+    });
+
+    it.each([
+        ['an empty string', '', ''],
+        ['a blank string', '   ', '   '],
+        ['true', true, ''],
+        ['false', false, '']
+    ])('renders a value that is %s as React does, not as the placeholder', (_, value, text) => {
+        const {container} = render(keyValueList({entries: [{label: 'Broker', value}]})),
+            dd = container.querySelector('dd');
+
+        expect(dd.textContent).toBe(text);
+        expect(dd.classList).not.toContain('xh-key-value-list__value--null');
     });
 
     it('shows zero as a value, not as the placeholder', () => {
@@ -54,7 +64,7 @@ describe('KeyValueList', () => {
             dd = container.querySelector('dd');
 
         expect(dd.textContent).toBe('0');
-        expect(dd.classList).not.toContain('xh-key-value-list__value--empty');
+        expect(dd.classList).not.toContain('xh-key-value-list__value--null');
     });
 
     it('shows the default placeholder when nullDisplay is null', () => {
