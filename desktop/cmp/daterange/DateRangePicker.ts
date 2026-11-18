@@ -11,6 +11,7 @@ import {
 } from './impl/DateRangePickerLocalModel';
 import {box, div, filler, fragment, hbox, span, vbox} from '@xh/hoist/cmp/layout';
 import {tabContainer} from '@xh/hoist/cmp/tab';
+import type {PopoverPosition} from '@xh/hoist/core';
 import {
     hoistCmp,
     type HoistProps,
@@ -24,7 +25,6 @@ import {button, type ButtonProps} from '@xh/hoist/desktop/cmp/button';
 import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
 import {popover} from '@xh/hoist/kit/blueprint';
-import type {PopoverPosition} from '@blueprintjs/core';
 import {elemWithin, getTestId} from '@xh/hoist/utils/js';
 import {composeRefs, splitLayoutProps, useOnResize} from '@xh/hoist/utils/react';
 import classNames from 'classnames';

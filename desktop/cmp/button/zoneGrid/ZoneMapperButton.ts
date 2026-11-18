@@ -5,13 +5,13 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import '@xh/hoist/desktop/register';
+import type {PopoverPosition} from '@xh/hoist/core';
 import {hoistCmp, useContextModel} from '@xh/hoist/core';
 import {div, vbox} from '@xh/hoist/cmp/layout';
 import {ZoneGridModel} from '@xh/hoist/cmp/zoneGrid';
 import type {ZoneMapperModel} from '@xh/hoist/cmp/zoneGrid/impl/ZoneMapperModel';
 import {zoneMapper} from '@xh/hoist/desktop/cmp/zoneGrid/impl/ZoneMapper';
 import {Icon} from '@xh/hoist/icon';
-import type {Position} from '@xh/hoist/kit/blueprint';
 import {popover} from '@xh/hoist/kit/blueprint';
 import {logError, stopPropagation, withDefault} from '@xh/hoist/utils/js';
 import type {ButtonProps} from '../Button';
@@ -21,8 +21,8 @@ export interface ZoneMapperButtonProps extends ButtonProps {
     /** ZoneGridModel to which this button should bind. Will find nearest in context if not provided. */
     zoneGridModel?: ZoneGridModel;
 
-    /** Position for chooser popover, as per Blueprint docs. */
-    popoverPosition?: Position;
+    /** Position for chooser popover, relative to the button. Default 'auto'. */
+    popoverPosition?: PopoverPosition;
 }
 
 /**

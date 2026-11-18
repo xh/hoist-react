@@ -112,6 +112,20 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 * `AppOptionSpec.formField` is now typed as a loose element spec instead of `any`.
 * `ElementFactory` now lists its spec signature last, so a malformed spec reports the real problem
   (a missing prop, or a misspelled one with a suggested fix) instead of an error about `ReactNode`.
+* Replaced Blueprint types in Hoist's public desktop props with Hoist-owned types, as a first step
+  toward removing Blueprint. Runtime behavior is unchanged.
+    * Added `PopoverPosition` and `PopoverBoundary` to `@xh/hoist/core`. They type `menuPosition`,
+      `popoverPosition`, `tooltipPosition`, `popoverBoundary` and `tooltipBoundary`, and take the
+      same values as before, so Blueprint `Position` constants still compile.
+    * `ButtonProps` and `ButtonGroupProps` no longer extend Blueprint's props. They keep their
+      declared props and all native `<button>` / `<div>` attributes, but drop Blueprint-only props
+      such as `loading`, `alignText`, `large` and `small`. `ButtonGroupProps` keeps `fill`.
+    * `MenuButtonProps.popoverProps` now takes the new `MenuButtonPopoverProps`, a subset of
+      Blueprint's popover props.
+    * Added a Hoist-owned `HotkeyConfig` to `@xh/hoist/desktop/hooks`, for `PanelProps.hotkeys`
+      and `useHotkeys`.
+    * Deprecated `DateInputProps.popoverModifiers`, which passes Popper.js modifiers to Blueprint.
+      Use `popoverPosition` and `popoverBoundary` instead.
 
 ### ✨ Styles
 

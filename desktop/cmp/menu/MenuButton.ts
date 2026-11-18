@@ -4,12 +4,13 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import type {PopoverProps} from '@blueprintjs/core';
 import {
     hoistCmp,
     HoistModel,
     type MenuContext,
     type MenuItemLike,
+    type PopoverBoundary,
+    type PopoverPosition,
     type Thunkable,
     useLocalModel
 } from '@xh/hoist/core';
@@ -39,10 +40,37 @@ export interface MenuButtonProps extends ButtonProps {
     menuClassName?: string;
 
     /** Position of the menu relative to the button. Defaults to 'bottom-left'. */
-    menuPosition?: PopoverProps['position'];
+    menuPosition?: PopoverPosition;
 
-    /** Props passed to the internal popover. */
-    popoverProps?: Partial<PopoverProps>;
+    /** Options for the popover that holds the menu. */
+    popoverProps?: MenuButtonPopoverProps;
+}
+
+/** Options for the popover that holds a {@link MenuButton}'s menu. */
+export interface MenuButtonPopoverProps {
+    /** Area the popover stays within. Default 'clippingParents'. */
+    boundary?: PopoverBoundary;
+
+    /** True to size the popover to the width of the button. */
+    matchTargetWidth?: boolean;
+
+    /** False to draw the popover with an arrow pointing at the button. Default true. */
+    minimal?: boolean;
+
+    /** Called when the popover has closed. */
+    onClosed?: (node: HTMLElement) => void;
+
+    /** Called when the popover has opened. */
+    onOpened?: (node: HTMLElement) => void;
+
+    /** CSS class name for the popover element. */
+    popoverClassName?: string;
+
+    /** Element to render the popover in, when `usePortal` is true. Default `document.body`. */
+    portalContainer?: HTMLElement;
+
+    /** False to render the popover inline, next to the button, rather than in a portal. */
+    usePortal?: boolean;
 }
 
 /**

@@ -4,7 +4,6 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import type {ButtonGroupProps as BpButtonGroupProps} from '@blueprintjs/core';
 import type {
     DomAttrsProps,
     HoistModel,
@@ -18,7 +17,7 @@ import '@xh/hoist/desktop/register';
 import {buttonGroup as bpButtonGroup} from '@xh/hoist/kit/blueprint';
 import {TEST_ID} from '@xh/hoist/utils/js';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
-import type {SetOptional} from 'type-fest';
+import type {HTMLAttributes} from 'react';
 
 export interface ButtonGroupProps<M extends HoistModel = null>
     extends
@@ -27,19 +26,23 @@ export interface ButtonGroupProps<M extends HoistModel = null>
         StyleProps,
         TestSupportProps,
         DomAttrsProps,
-        SetOptional<Omit<BpButtonGroupProps, 'ref'>, 'children'> {
+        HTMLAttributes<HTMLDivElement> {
     /** True to have all buttons fill available width equally. */
     fill?: boolean;
 
     /** True to render each button with minimal surrounding chrome (default false). */
     minimal?: boolean;
 
+    /** True to render each button with an outline (default false). */
+    outlined?: boolean;
+
     /** True to render in a vertical orientation. */
     vertical?: boolean;
 }
 
 /**
- * Wrapper around Blueprint's ButtonGroup component, with LayoutSupport.
+ * Joins adjacent buttons into a single control, with LayoutSupport. Relays any other native `<div>`
+ * attributes and event handlers to the underlying element.
  */
 export const [ButtonGroup, buttonGroup] = hoistCmp.withFactory<ButtonGroupProps>({
     displayName: 'ButtonGroup',
@@ -60,7 +63,7 @@ export const [ButtonGroup, buttonGroup] = hoistCmp.withFactory<ButtonGroupProps>
                 ...layoutProps
             },
             ref,
-            ...(rest as BpButtonGroupProps)
+            ...rest
         });
     }
 });

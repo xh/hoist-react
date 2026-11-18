@@ -4,12 +4,18 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import type {PopperBoundary, PopperModifierOverrides} from '@blueprintjs/core';
 import type {HoistInputProps} from '@xh/hoist/cmp/input';
 import {HoistInputModel, useHoistInputModel} from '@xh/hoist/cmp/input';
 import {getDayPickerProps, resolveBoundDate} from '@xh/hoist/cmp/input/impl/DayPickerUtils';
 import {div, filler, hbox, vbox} from '@xh/hoist/cmp/layout';
-import type {HoistProps, LayoutProps, Some} from '@xh/hoist/core';
+import type {
+    HoistProps,
+    LayoutProps,
+    PlainObject,
+    PopoverBoundary,
+    PopoverPosition,
+    Some
+} from '@xh/hoist/core';
 import {hoistCmp} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import type {TextInputModel} from '@xh/hoist/desktop/cmp/input';
@@ -17,7 +23,6 @@ import {textInput} from '@xh/hoist/desktop/cmp/input';
 import '@xh/hoist/desktop/register';
 import {fmtDate} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
-import type {Position} from '@xh/hoist/kit/blueprint';
 import {popover} from '@xh/hoist/kit/blueprint';
 import type {DayPickerProps} from '@xh/hoist/kit/react-day-picker';
 import {dayPicker} from '@xh/hoist/kit/react-day-picker';
@@ -110,17 +115,18 @@ export interface DateInputProps extends HoistProps, LayoutProps, HoistInputProps
     /** Text to display when control is empty. */
     placeholder?: string;
 
+    /** Position of the calendar popover, relative to the input. Default 'auto'. */
+    popoverPosition?: PopoverPosition;
+
+    /** Area the calendar popover stays within. Default 'clippingParents'. */
+    popoverBoundary?: PopoverBoundary;
+
     /**
-     * Position for calendar popover, as per Blueprint docs.
-     * @see https://blueprintjs.com/docs/#core/components/popover
+     * Popper.js modifiers for the calendar popover, passed through to Blueprint.
+     * @deprecated Hoist will stop passing these on when it replaces Blueprint's popover. Use
+     *      `popoverPosition` and `popoverBoundary` instead.
      */
-    popoverPosition?: Position;
-
-    /** Boundary for calendar popover, as per Popper.js docs. Defaults to viewport. */
-    popoverBoundary?: PopperBoundary;
-
-    /** Modifiers for calendar popover, as per Blueprint docs. Defaults to null */
-    popoverModifiers?: PopperModifierOverrides;
+    popoverModifiers?: PlainObject;
 
     /** Container DOM element to render the calendar popover inside. Defaults to document body. */
     portalContainer?: HTMLElement;

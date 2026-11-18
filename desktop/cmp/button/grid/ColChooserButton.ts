@@ -7,12 +7,12 @@
 import type {GridLikeModel} from '@xh/hoist/cmp/grid';
 import {isGridLikeModel} from '@xh/hoist/cmp/grid/impl/GridLikeModel';
 import {div, vbox} from '@xh/hoist/cmp/layout';
+import type {PopoverPosition} from '@xh/hoist/core';
 import {hoistCmp, useContextModel} from '@xh/hoist/core';
 import {colChooser} from '@xh/hoist/desktop/cmp/grid/impl/colchooser/ColChooser';
 import type {ModalColChooserModel} from '@xh/hoist/desktop/cmp/grid/impl/colchooser/ModalColChooserModel';
 import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
-import type {Position} from '@xh/hoist/kit/blueprint';
 import {popover} from '@xh/hoist/kit/blueprint';
 import {logError, stopPropagation, withDefault} from '@xh/hoist/utils/js';
 import type {ButtonProps} from '../Button';
@@ -33,10 +33,10 @@ export interface ColChooserButtonProps extends ButtonProps {
     modalTarget?: 'dialog' | 'popover';
 
     /**
-     * Position for chooser popover, as per Blueprint docs. Only applies when `modalTarget` is
-     * 'popover'.
+     * Position of the chooser popover, relative to the button. Default 'auto'. Only applies when
+     * `modalTarget` is 'popover'.
      */
-    popoverPosition?: Position;
+    popoverPosition?: PopoverPosition;
 }
 
 /**

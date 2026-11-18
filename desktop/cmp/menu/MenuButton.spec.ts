@@ -99,11 +99,11 @@ class HostModel extends HoistModel {}
 
 /**
  * Hosts a MenuButton under a model, as every app view is - MenuButton renders nothing without one
- * in context. Popover transitions are disabled so the menu mounts and unmounts synchronously.
+ * in context. Hoist's popover has transitions off, so the menu mounts and unmounts synchronously.
  */
 const host = hoistCmp.factory<Omit<MenuButtonProps, 'model'> & HoistProps<HostModel>>({
     model: creates(HostModel),
     render({model, ...props}) {
-        return menuButton({...props, popoverProps: {transitionDuration: 0}});
+        return menuButton(props);
     }
 });

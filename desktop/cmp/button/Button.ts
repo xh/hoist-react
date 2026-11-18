@@ -4,7 +4,6 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import type {ButtonProps as BpButtonProps} from '@blueprintjs/core';
 import type {
     DomAttrsProps,
     HoistModel,
@@ -20,7 +19,7 @@ import {button as bpButton} from '@xh/hoist/kit/blueprint';
 import {TEST_ID, withDefault} from '@xh/hoist/utils/js';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
-import type {ReactElement, ReactNode} from 'react';
+import type {ButtonHTMLAttributes, ReactElement, ReactNode} from 'react';
 import './Button.scss';
 
 export interface ButtonProps<M extends HoistModel = null>
@@ -30,7 +29,8 @@ export interface ButtonProps<M extends HoistModel = null>
         LayoutProps,
         TestSupportProps,
         DomAttrsProps,
-        Omit<BpButtonProps, 'ref'> {
+        Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'value'> {
+    /** True to draw the button pressed in, as for a toggle that is on. */
     active?: boolean;
     autoFocus?: boolean;
     disabled?: boolean;
@@ -43,8 +43,6 @@ export interface ButtonProps<M extends HoistModel = null>
     title?: string;
     value?: any;
 
-    tabIndex?: number; // TODO: where does this come from?
-
     /** Alias for title. */
     tooltip?: string;
 }
@@ -55,10 +53,10 @@ export interface ButtonDefaults {
 }
 
 /**
- * Wrapper around Blueprint's Button component. Defaults to the `minimal` style for reduced chrome
- * and adds layout support for top-level sizing and margin/padding props.
+ * A clickable button, with optional icons, intent and text. Defaults to the `minimal` style for
+ * reduced chrome and adds layout support for top-level sizing and margin/padding props.
  *
- * Relays all other props supported by Blueprint's button.
+ * Relays any other native `<button>` attributes and event handlers to the underlying element.
  */
 export const [Button, button] = hoistCmp.withFactory<ButtonProps, ButtonDefaults>({
     displayName: 'Button',

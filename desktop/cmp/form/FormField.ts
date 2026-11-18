@@ -4,11 +4,17 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import type {PopoverPosition, PopperBoundary} from '@blueprintjs/core';
 import type {BaseFormFieldProps, FormContextType} from '@xh/hoist/cmp/form';
 import {FieldModel, FormContext, FormFieldSetContext} from '@xh/hoist/cmp/form';
 import {box, div, label as labelEl, li, span, ul} from '@xh/hoist/cmp/layout';
-import type {DefaultHoistProps, HoistProps, HSide, TestSupportProps} from '@xh/hoist/core';
+import type {
+    DefaultHoistProps,
+    HoistProps,
+    HSide,
+    PopoverBoundary,
+    PopoverPosition,
+    TestSupportProps
+} from '@xh/hoist/core';
 import {hoistCmp, uses, XH} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {instanceManager} from '@xh/hoist/core/impl/InstanceManager';
@@ -74,15 +80,9 @@ export interface FormFieldProps extends BaseFormFieldProps {
      */
     minimal?: boolean;
 
-    /**
-     * Minimal validation tooltip will try to fit within the corresponding boundary.
-     * @see https://blueprintjs.com/docs/#core/components/popover
-     */
-    tooltipBoundary?: PopperBoundary;
-    /**
-     * Position for minimal validation tooltip.
-     * @see https://blueprintjs.com/docs/#core/components/popover
-     */
+    /** Area the minimal validation tooltip stays within. */
+    tooltipBoundary?: PopoverBoundary;
+    /** Position of the minimal validation tooltip, relative to the field. Default 'right'. */
     tooltipPosition?: PopoverPosition;
 }
 

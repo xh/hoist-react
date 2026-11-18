@@ -8,9 +8,41 @@ import type {HoistProps} from '@xh/hoist/core';
 import {hoistCmp} from '@xh/hoist/core';
 import {useHotkeys as useHotkeysBp} from '@xh/hoist/kit/blueprint';
 import {isEqualWith, isFunction} from 'lodash';
-import type {ReactElement} from 'react';
+import type {ReactElement, ReactNode} from 'react';
 import {cloneElement, useRef} from 'react';
-import type {HotkeyConfig} from '@blueprintjs/core/src/hooks/hotkeys/hotkeyConfig';
+
+/** A keyboard shortcut, installed via {@link useHotkeys} or `PanelProps.hotkeys`. */
+export interface HotkeyConfig {
+    /** Key combination that triggers the hotkey, e.g. `'shift + s'` or `'mod + enter'`. */
+    combo: string;
+
+    /** Description of the hotkey, shown in the hotkeys dialog (press `?`). */
+    label: ReactNode;
+
+    /** True to trigger the hotkey anywhere on the page, not only within the component. */
+    global?: boolean;
+
+    /** Group heading for the hotkey in the hotkeys dialog. */
+    group?: string;
+
+    /** True to trigger the hotkey while focus is in a text input. */
+    allowInInput?: boolean;
+
+    /** True to disable the hotkey. */
+    disabled?: boolean;
+
+    /** True to prevent the browser's default action for the key event. */
+    preventDefault?: boolean;
+
+    /** True to stop the key event propagating further. */
+    stopPropagation?: boolean;
+
+    /** Called on keydown of the combo. */
+    onKeyDown?: (e: KeyboardEvent) => any;
+
+    /** Called on keyup of the combo. */
+    onKeyUp?: (e: KeyboardEvent) => any;
+}
 
 /**
  * Hook to add Key handling support to a component.
@@ -22,7 +54,7 @@ import type {HotkeyConfig} from '@blueprintjs/core/src/hooks/hotkeys/hotkeyConfi
  *
  * @param child - element to be given hotkey support.  Must specify Component
  *      that takes react key events as props (e.g. boxes, panel, div, etc).
- * @param hotkeys - configs for the hotkeys to be installed, as prescribed by blueprint.
+ * @param hotkeys - configs for the hotkeys to be installed.
  */
 export function useHotkeys(child?: ReactElement<any>, hotkeys?: HotkeyConfig[]): ReactElement {
     return child && hotkeys ? hotkeysHost({child, hotkeys}) : child;

@@ -12,7 +12,7 @@ import {createViewMenuItems} from '@xh/hoist/desktop/cmp/dash/canvas/impl/utils'
 import {parseMenuItems} from '@xh/hoist/desktop/cmp/menu/impl/MenuItems';
 import {elementFromContent, useOnResize} from '@xh/hoist/utils/react';
 import {Icon} from '@xh/hoist/icon';
-import {popover, Position} from '@xh/hoist/kit/blueprint';
+import {popover} from '@xh/hoist/kit/blueprint';
 import {button} from '../../../button';
 import {panel} from '../../../panel';
 import {DashCanvasViewModel} from '../DashCanvasViewModel';
@@ -120,7 +120,7 @@ const headerMenu = hoistCmp.factory<DashCanvasViewModel>(({model}) => {
     if (isEmpty(parseMenuItems(menuItems))) return null;
 
     return popover({
-        position: Position.BOTTOM,
+        position: 'bottom',
         minimal: true,
         children: button({
             icon: Icon.ellipsisVertical()
