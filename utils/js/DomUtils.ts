@@ -101,6 +101,24 @@ export function elemWithin(target: HTMLElement, className: string): boolean {
 }
 
 /**
+ * Scroll `container` by the smallest distance that shows all of `elem`, one of its descendants.
+ * Unlike `Element.scrollIntoView()`, this never scrolls an ancestor of `container`, such as a
+ * scrolling panel or the page.
+ */
+export function scrollIntoViewWithin(
+    elem: HTMLElement,
+    container: HTMLElement,
+    behavior: ScrollBehavior = 'auto'
+) {
+    const inner = elem.getBoundingClientRect(),
+        outer = container.getBoundingClientRect(),
+        left = scrollDelta(inner.left - outer.left, inner.right - outer.right),
+        top = scrollDelta(inner.top - outer.top, inner.bottom - outer.bottom);
+
+    if (left || top) container.scrollBy({left, top, behavior});
+}
+
+/**
  * A convenience handler that will call 'stopPropagation'
  * and 'preventDefault' on an event.
  */
@@ -114,4 +132,15 @@ export function consumeEvent(e: Event | SyntheticEvent) {
  */
 export function stopPropagation(e: Event | SyntheticEvent) {
     e.stopPropagation();
+}
+
+//------------------------
+// Implementation
+//------------------------
+// Distance to scroll along one axis, given how far the element's start and end sit past the
+// container's. A negative start or positive end is cut off. Too big to fit, it shows its start.
+function scrollDelta(startOffset: number, endOffset: number): number {
+    if (startOffset < 0) return startOffset;
+    if (endOffset > 0) return Math.min(startOffset, endOffset);
+    return 0;
 }

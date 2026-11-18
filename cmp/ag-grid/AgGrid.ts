@@ -79,7 +79,7 @@ export const [AgGrid, agGrid] = hoistCmp.withFactory<AgGridProps>({
             ),
             ...layoutProps,
             testId,
-            item: createElement(AgGridReact, {
+            children: createElement(AgGridReact, {
                 ...AgGridCmp.DEFAULT_PROPS,
                 // Default some ag-grid props, but allow overriding.
                 theme: agTheme,

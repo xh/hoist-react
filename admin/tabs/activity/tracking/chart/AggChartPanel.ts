@@ -28,9 +28,8 @@ export const aggChartPanel = hoistCmp.factory({
                 persistWith: {...model.activityTrackingModel.persistWith, path: 'aggChartPanel'}
             },
             compactHeader: true,
-            item: chart({model: model.chartModel}),
             bbar: toolbar({
-                items: [
+                children: [
                     Icon.chartBar(),
                     metricSwitcher(),
                     incWeekendsCheckbox(),
@@ -38,7 +37,8 @@ export const aggChartPanel = hoistCmp.factory({
                     modalToggleButton()
                 ]
             }),
-            ...props
+            ...props,
+            children: chart({model: model.chartModel})
         });
     }
 });

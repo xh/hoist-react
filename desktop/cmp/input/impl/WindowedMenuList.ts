@@ -122,7 +122,7 @@ export function WindowedMenuList(props: MenuListProps) {
 }
 
 function windowedRow({index, style, rows}: any) {
-    return div({style, item: rows[index].node});
+    return div({style, children: rows[index].node});
 }
 
 /** Flatten react-select's rendered menu children into rows, with each group heading on its own. */

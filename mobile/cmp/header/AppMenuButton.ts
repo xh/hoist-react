@@ -101,7 +101,7 @@ const userProfile = hoistCmp.factory<
     render({renderWithUserProfile}) {
         return div({
             className: 'xh-app-menu-button__user-profile',
-            item: isFunction(renderWithUserProfile)
+            children: isFunction(renderWithUserProfile)
                 ? renderWithUserProfile(XH.getUser())
                 : XH.getUserInitials()
         });

@@ -10,8 +10,8 @@
 .xh-grid.xh-zone-grid {
   .xh-ag-grid {
     .ag-cell {
-      padding-left: var(--xh-zone-grid-cell-lr-pad-px);
-      padding-right: var(--xh-zone-grid-cell-lr-pad-px);
+      padding-left: var(--xh-zone-grid-cell-padding-inline);
+      padding-right: var(--xh-zone-grid-cell-padding-inline);
 
       // Allow right (primary metric) column to hit the left edge of the cell it it's filling the
       // entire width, to maximize chance that the user can see all of this important data.
@@ -38,22 +38,22 @@
 
     &--top {
       color: var(--xh-zone-grid-top-text-color);
-      font-size: var(--xh-zone-grid-top-font-size-px);
+      font-size: var(--xh-zone-grid-top-font-size);
     }
 
     &--bottom {
       color: var(--xh-zone-grid-bottom-text-color);
-      font-size: var(--xh-zone-grid-bottom-font-size-px);
+      font-size: var(--xh-zone-grid-bottom-font-size);
     }
   }
 
   &__delimiter {
     margin: 0 2px;
-    color: var(--xh-zone-grid-delimiter-color);
+    color: var(--xh-zone-grid-delimiter-text-color);
   }
 
   &__label {
-    color: var(--xh-zone-grid-label-color);
+    color: var(--xh-zone-grid-label-text-color);
     margin-right: 0.25em;
   }
 

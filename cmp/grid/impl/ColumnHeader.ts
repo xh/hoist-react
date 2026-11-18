@@ -62,7 +62,7 @@ export const columnHeader = hoistCmp.factory<ColumnHeaderProps>({
             } else if (sort === 'desc') {
                 icon = abs ? Icon.sortAbsDesc() : Icon.sortDesc();
             }
-            return div({className: 'xh-grid-header-sort-icon', item: icon});
+            return div({className: 'xh-grid-header-sort-icon', children: icon});
         };
 
         const menuIcon = () => {
@@ -70,7 +70,7 @@ export const columnHeader = hoistCmp.factory<ColumnHeaderProps>({
             if (!enableMenu) return null;
             return div({
                 className: 'xh-grid-header-menu-icon',
-                item: model.isAgFiltered ? model.activeFilterIcon : Icon.columnMenu(),
+                children: model.isAgFiltered ? model.activeFilterIcon : Icon.columnMenu(),
                 ref: model.agFilterButtonRef,
                 onClick: e => {
                     e.stopPropagation();
@@ -98,7 +98,7 @@ export const columnHeader = hoistCmp.factory<ColumnHeaderProps>({
 
             return div({
                 className: 'xh-grid-header-expand-collapse-icon',
-                item: icon,
+                children: icon,
                 onClick: model.onExpandOrCollapse,
                 onTouchStart: model.onExpandOrCollapse
             });
@@ -140,9 +140,9 @@ export const columnHeader = hoistCmp.factory<ColumnHeaderProps>({
             onTouchStart: model.onTouchStart,
             onTouchEnd: model.onTouchEnd,
 
-            items: [
+            children: [
                 expandCollapseIcon(),
-                span({onMouseEnter, item: headerElem}),
+                span({onMouseEnter, children: headerElem}),
                 sortIcon(),
                 menuIcon()
             ]

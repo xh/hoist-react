@@ -43,15 +43,24 @@ describe('FetchService', () => {
     });
 
     describe('params', () => {
-        it('sends params as a form-encoded POST when no method is given', async () => {
-            // The way PrefService loads prefs - hoist-core reads clientUsername from the form.
+        it('sends params on the query string of a GET when no method is given', async () => {
+            // The way PrefService loads prefs - hoist-core reads clientUsername from its params.
             await XH.fetchJson({url: 'xh/getPrefs', params: {clientUsername: 'jdoe'}});
 
             const [req] = hoistCore.requestsTo('xh/getPrefs');
-            expect(req.method).toBe('POST');
-            expect(req.headers['content-type']).toBe('application/x-www-form-urlencoded');
-            expect(req.form).toEqual({clientUsername: 'jdoe'});
-            expect(req.query).toEqual({});
+            expect(req.method).toBe('GET');
+            expect(req.query).toEqual({clientUsername: 'jdoe'});
+            expect(req.form).toEqual({});
+        });
+
+        it('sends params for a POST as a form-encoded body', async () => {
+            const sent = serve(xhUrl('test/login'));
+            await XH.fetch({url: 'test/login', method: 'POST', params: {username: 'jdoe'}});
+
+            const [req] = sent;
+            expect(req.url.search).toBe('');
+            expect(req.headers.get('Content-Type')).toBe('application/x-www-form-urlencoded');
+            expect(req.body).toBe('username=jdoe');
         });
 
         it.each(['postJson', 'putJson'] as const)(
@@ -348,14 +357,13 @@ describe('FetchService', () => {
 
     describe('fetchNdjson', () => {
         it('cancels the response body when the consumer stops reading early', async () => {
-            // MSW does not relay a cancel to the handler's stream, so check it on the client.
-            const cancel = vi.spyOn(ReadableStreamDefaultReader.prototype, 'cancel');
-            serve(xhUrl('test/stream'), () => openStream());
+            const cancel = vi.fn();
+            serve(xhUrl('test/stream'), () => openStream(cancel));
             const {lines} = XH.fetchNdjson({url: 'test/stream'});
             await lines.next();
 
             await lines.return(undefined);
-            expect(cancel).toHaveBeenCalledOnce();
+            await vi.waitFor(() => expect(cancel).toHaveBeenCalledOnce());
         });
     });
 });
@@ -413,9 +421,10 @@ function hang(): Promise<Response> {
 }
 
 /** An NDJSON response that sends one record, then stays open. */
-function openStream(): Response {
+function openStream(cancel?: () => void): Response {
     const body = new ReadableStream({
-        start: c => c.enqueue(new TextEncoder().encode('{"id":1}\n'))
+        start: c => c.enqueue(new TextEncoder().encode('{"id":1}\n')),
+        cancel
     });
     return new HttpResponse(body, {headers: {'Content-Type': 'application/x-ndjson'}});
 }

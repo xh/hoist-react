@@ -108,18 +108,18 @@ export const [TileFrame, tileFrame] = hoistCmp.withFactory({
             )
         );
 
-        const items = localModel.layout
-            ? childrenArr.map((item, idx) =>
+        const tiles = localModel.layout
+            ? childrenArr.map((child, idx) =>
                   box({
                       style: localModel.getTileStyle(idx),
                       className: 'xh-tile-frame__tile',
-                      item,
-                      key: item['key'] // trampoline any child key to prevent remounts
+                      children: child,
+                      key: child['key'] // trampoline any child key to prevent remounts
                   })
               )
             : null;
 
-        return frame({ref, ...props, items});
+        return frame({ref, ...props, children: tiles});
     }
 });
 

@@ -34,14 +34,14 @@ export const errorMessageImpl = hoistCmp.factory<
 
         return div({
             className: 'xh-error-message__inner',
-            items: [titleCmp({title}), messageCmp({message}), buttonBar]
+            children: [titleCmp({title}), messageCmp({message}), buttonBar]
         });
     }
 });
 
 const titleCmp = hoistCmp.factory(({title}) => {
     if (isValidElement(title)) return title;
-    if (isString(title)) return div({className: 'xh-error-message__title', item: title});
+    if (isString(title)) return div({className: 'xh-error-message__title', children: title});
     return null;
 });
 

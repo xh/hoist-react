@@ -8,7 +8,7 @@ import {div} from '@xh/hoist/cmp/layout';
 import type {KeyboardEvent} from 'react';
 
 export const sectionHeader = (text: string) =>
-    div({className: 'xh-date-range-picker-popover__section-hdr', item: text});
+    div({className: 'xh-date-range-picker-popover__section-hdr', children: text});
 
 /** Props making a styled div act as a keyboard-accessible button. Pass null to disable. */
 export const clickable = (onClick: () => void) =>

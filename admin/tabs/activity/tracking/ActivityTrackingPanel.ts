@@ -39,7 +39,7 @@ export const activityTrackingPanel = hoistCmp.factory({
         return panel({
             className: 'xh-admin-activity-panel',
             tbar: tbar(),
-            items: [filterBar(), hframe(aggregateView(), activityDetailView({flex: 1}))],
+            children: [filterBar(), hframe(aggregateView(), activityDetailView({flex: 1}))],
             mask: 'onLoad'
         });
     }
@@ -59,11 +59,11 @@ const tbar = hoistCmp.factory<ActivityTrackingModel>(({model}) =>
         dataFieldsEditor(),
         filler(),
         form({
-            item: formField({
+            children: formField({
                 field: 'maxRows',
                 label: 'Max rows',
                 width: 140,
-                item: select({
+                children: select({
                     enableFilter: false,
                     hideDropdownIndicator: true,
                     options: model.maxRowOptions
@@ -109,7 +109,7 @@ const aggregateView = hoistCmp.factory<ActivityTrackingModel>(({model}) => {
         },
         tbar: toolbar({
             compact: true,
-            items: [
+            children: [
                 groupingChooser({flex: 10, maxWidth: 300}),
                 select({
                     bind: 'pivotBy',
@@ -137,11 +137,11 @@ const aggregateView = hoistCmp.factory<ActivityTrackingModel>(({model}) => {
                 exportButton({gridModel: model.cubeGridModel})
             ]
         }),
-        items: [
+        children: [
             cubeGrid({flex: 1, model: model.cubeGridModel}),
             div({
                 className: 'xh-admin-activity-panel__max-rows-alert',
-                items: [
+                children: [
                     Icon.warning(),
                     `Entries truncated to most recent ${model.maxRows / 1000}k leaf rows.`
                 ],

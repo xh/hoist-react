@@ -41,7 +41,7 @@ export const dashContainerView = hoistCmp.factory({
         }
         return refreshContextView({
             model: refreshContextModel,
-            item: errorBoundary(elementFromContent(viewSpec.content, {flex: 1}))
+            children: errorBoundary(elementFromContent(viewSpec.content, {flex: 1}))
         });
     }
 });

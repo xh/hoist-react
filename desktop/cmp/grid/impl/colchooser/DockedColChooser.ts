@@ -24,7 +24,7 @@ export const dockedColChooser = hoistCmp.factory({
         return panel({
             className: 'xh-docked-col-chooser',
             model: model.panelModel,
-            item: colChooser({model})
+            children: colChooser({model})
         });
     }
 });

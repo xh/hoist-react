@@ -88,13 +88,13 @@ export const [ExpandToLevelButton, expandToLevelButton] =
             return popover({
                 popoverClassName: 'xh-expand-to-level-button__popover',
                 position: withDefault(popoverPosition, 'auto'),
-                item: button({
+                children: button({
                     icon,
                     className,
                     ...rest
                 }),
                 content: vbox(
-                    div({className: 'xh-popup__title', item: title, omit: !title}),
+                    div({className: 'xh-popup__title', children: title, omit: !title}),
                     menu(parseMenuItems(menuItems))
                 )
             });

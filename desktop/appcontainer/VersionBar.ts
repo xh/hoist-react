@@ -27,20 +27,20 @@ export const versionBar = hoistCmp.factory({
         return box({
             className: `xh-version-bar xh-version-bar--${env.toLowerCase()}`,
             testId: 'xh-version-bar',
-            items: [
+            children: [
                 [XH.appName, env, versionAndBuild].join(' • '),
                 span({
                     className: 'xh-version-bar__spacer',
-                    items: '|'
+                    children: '|'
                 }),
                 span({
                     className: 'xh-version-bar__tabid',
                     title: 'Tab ID',
-                    item: XH.tabId
+                    children: XH.tabId
                 }),
                 span({
                     className: 'xh-version-bar__spacer',
-                    items: '|'
+                    children: '|'
                 }),
                 Icon.info({
                     omit: !XH.appContainerModel.hasAboutDialog(),

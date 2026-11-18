@@ -66,7 +66,7 @@ export const [LoadingIndicator, loadingIndicator] = hoistCmp.withFactory<Loading
 
             if (!message) return [spinnerEl];
 
-            const msgBox = div({className: `xh-loading-indicator__message`, item: message});
+            const msgBox = div({className: `xh-loading-indicator__message`, children: message});
             if (!spinner) spinnerEl = null;
             return corner === 'tl' || corner === 'bl' ? [spinnerEl, msgBox] : [msgBox, spinnerEl];
         };
@@ -74,7 +74,7 @@ export const [LoadingIndicator, loadingIndicator] = hoistCmp.withFactory<Loading
         return div({
             ref,
             className: classNames(className, hasMessageCls, hasSpinnerCls, cornerCls),
-            item: hbox(innerItems())
+            children: hbox(innerItems())
         });
     }
 });

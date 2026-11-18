@@ -30,8 +30,8 @@ export const differDetail = hoistCmp.factory({
             isOpen: !!model.record,
             className: 'xh-admin-diff-detail',
             onClose: () => model.close(),
-            item: panel({
-                item: diffTable(),
+            children: panel({
+                children: diffTable(),
                 bbar: AppModel.readonly
                     ? []
                     : [
@@ -66,7 +66,7 @@ const diffTable = hoistCmp.factory<DifferDetailModel>(({model}) => {
     const rows = fields.map(field => {
         const cls = model.createDiffClass(field, local, remote),
             localCell = local ? fmtValue(local[field]) : '',
-            remoteCell = remote ? {className: cls, item: fmtValue(remote[field])} : null;
+            remoteCell = remote ? {className: cls, children: fmtValue(remote[field])} : null;
         return tr(td(field), td(localCell), td(remoteCell));
     });
 

@@ -36,10 +36,10 @@ export const periodTab = hoistCmp.factory<DateRangePickerLocalModel>(({model, te
 
     return vbox({
         className: 'xh-date-range-picker-popover__tab',
-        items: [
+        children: [
             hbox({
                 className: 'xh-date-range-picker-popover__month-hdr',
-                items: [
+                children: [
                     sectionHeader('Months & Years'),
                     filler(),
                     button({
@@ -52,7 +52,7 @@ export const periodTab = hoistCmp.factory<DateRangePickerLocalModel>(({model, te
                     }),
                     span({
                         className: 'xh-date-range-picker-popover__year-val',
-                        item: String(gridYear)
+                        children: String(gridYear)
                     }),
                     button({
                         className: 'xh-date-range-picker-popover__nav-btn',
@@ -68,7 +68,7 @@ export const periodTab = hoistCmp.factory<DateRangePickerLocalModel>(({model, te
                 // One row per quarter: its three months, then the quarter itself - so the quarter
                 // labels the months it contains, and both are a click away.
                 className: 'xh-date-range-picker-popover__month-grid',
-                items: [1, 2, 3, 4].flatMap(quarter => {
+                children: [1, 2, 3, 4].flatMap(quarter => {
                     const quarterActive =
                             value.kind === 'quarter' &&
                             value.quarter === quarter &&
@@ -108,17 +108,17 @@ export const periodTab = hoistCmp.factory<DateRangePickerLocalModel>(({model, te
                 disabled: !model.yearSelectable,
                 testId: getTestId(testId, 'year-row'),
                 onClick: () => model.commit({kind: 'year', year: gridYear}),
-                items: [
+                children: [
                     Icon.calendar(),
                     span({
                         className: 'xh-date-range-picker-popover__year-row-label',
-                        item: String(gridYear)
+                        children: String(gridYear)
                     }),
                     span({
                         // As on the Presets tab - the single-tab popover is too narrow for dates.
                         omit: model.singleTab,
                         className: 'xh-date-range-picker-popover__row-range',
-                        item: parentModel.fmtRange(yearRange)
+                        children: parentModel.fmtRange(yearRange)
                     })
                 ]
             })

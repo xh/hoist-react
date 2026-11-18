@@ -21,12 +21,12 @@ export const maskImpl = hoistCmp.factory<MaskProps>({
             ref,
             onClick,
             className,
-            item: vbox({
+            children: vbox({
                 className: 'xh-mask-body',
-                items: [
+                children: [
                     spinner ? spinnerCmp() : null,
                     spinner ? vspacer(10) : null,
-                    message ? box({className: 'xh-mask-text', item: message}) : null
+                    message ? box({className: 'xh-mask-text', children: message}) : null
                 ]
             })
         });

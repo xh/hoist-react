@@ -46,7 +46,7 @@ export function tabContainerImpl({
             className,
             testId,
             domAttrs,
-            item: div({className: 'xh-tab-wrapper', item: placeholder(model.emptyText)})
+            children: div({className: 'xh-tab-wrapper', children: placeholder(model.emptyText)})
         });
     }
 
@@ -59,14 +59,14 @@ export function tabContainerImpl({
         className: classNames(className, orientation ? `xh-tab-container--${orientation}` : null),
         testId,
         domAttrs,
-        items: [
+        children: [
             orientation === 'top' ? switcher : null,
             ...tabs.map(tabModel =>
                 div({
                     key: tabModel.id,
                     className: 'xh-tab-wrapper',
                     style: tabModel.id !== activeTabId ? hideStyle : undefined,
-                    item: tab({model: tabModel, testId: getTestId(testId, tabModel.id)})
+                    children: tab({model: tabModel, testId: getTestId(testId, tabModel.id)})
                 })
             ),
             orientation === 'bottom' ? switcher : null

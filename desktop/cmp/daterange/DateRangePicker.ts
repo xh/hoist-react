@@ -140,7 +140,7 @@ export const [DateRangePicker, dateRangePicker] = hoistCmp.withFactory<DateRange
             className: classNames(className, compact && 'xh-date-range-picker--compact'),
             ref: ref ? composeRefs(ref, viewRef) : viewRef,
             ...layoutProps,
-            items: [
+            children: [
                 stepButton({
                     omit: !showStepButtons,
                     model: impl,
@@ -157,7 +157,7 @@ export const [DateRangePicker, dateRangePicker] = hoistCmp.withFactory<DateRange
                         singleTab && 'xh-date-range-picker-popover--single',
                         intent && `xh-date-range-picker-popover--intent-${intent}`
                     ),
-                    item: trigger({
+                    children: trigger({
                         model: impl,
                         testId,
                         intent,
@@ -235,10 +235,10 @@ const trigger = hoistCmp.factory<DateRangePickerLocalModel>(
             ),
             active: model.isOpen,
             testId: getTestId(testId, 'trigger'),
-            items: [
-                span({className: `${base}-label`, item: text}),
-                span({omit: !showRange, className: `${base}-divider`, item: '|'}),
-                span({omit: !showRange, className: `${base}-range`, item: rangeLabel})
+            children: [
+                span({className: `${base}-label`, children: text}),
+                span({omit: !showRange, className: `${base}-divider`, children: '|'}),
+                span({omit: !showRange, className: `${base}-range`, children: rangeLabel})
             ],
             onClick: () => model.toggleOpen(),
             // Arrow keys step the period without opening the popover.
@@ -266,7 +266,7 @@ const popoverContent = hoistCmp.factory<DateRangePickerLocalModel>(
                 const onButton = !!(e.target as HTMLElement).closest('button');
                 if (e.key === 'Enter' && model.applyEnabled && !onButton) model.apply();
             },
-            items: [
+            children: [
                 tabContainer({
                     className: 'xh-date-range-picker-popover__body',
                     model: model.tabModel,
@@ -298,7 +298,7 @@ const footer = hoistCmp.factory<DateRangePickerLocalModel>(
         if (singleTab && !showControls) {
             return div({
                 className: 'xh-date-range-picker-popover__single-footer',
-                item: parentModel.rangeLabel
+                children: parentModel.rangeLabel
             });
         }
 
@@ -306,7 +306,7 @@ const footer = hoistCmp.factory<DateRangePickerLocalModel>(
 
         return hbox({
             className: 'xh-date-range-picker-popover__footer',
-            items: [
+            children: [
                 Icon.info({
                     omit: !showNote,
                     className: 'xh-date-range-picker-popover__footer-icon'
@@ -314,7 +314,7 @@ const footer = hoistCmp.factory<DateRangePickerLocalModel>(
                 div({
                     omit: !showNote,
                     className: 'xh-date-range-picker-popover__footer-note',
-                    item: note
+                    children: note
                 }),
                 filler(),
                 button({
@@ -341,7 +341,7 @@ const anchorNote = hoistCmp.factory<DateRangePickerLocalModel>(({model}) => {
     const {prefix, date} = model.anchorNote;
     return fragment(
         prefix,
-        span({className: 'xh-date-range-picker-popover__footer-date', item: date})
+        span({className: 'xh-date-range-picker-popover__footer-date', children: date})
     );
 });
 

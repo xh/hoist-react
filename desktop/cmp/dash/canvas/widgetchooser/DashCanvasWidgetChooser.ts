@@ -42,7 +42,7 @@ export const [DashCanvasWidgetChooser, dashCanvasWidgetChooser] =
                 className,
                 overflowY: 'auto',
                 flexWrap: 'nowrap',
-                items: createDraggableItems(dashCanvasModel),
+                children: createDraggableItems(dashCanvasModel),
                 testId
             });
         }
@@ -64,7 +64,7 @@ const draggableWidget = hoistCmp.factory<
             unselectable: 'on',
             onDragStart: e => model.onDragStart(e, viewSpec),
             onDragEnd: e => model.onDragEnd(e),
-            items: [icon, ' ', title]
+            children: [icon, ' ', title]
         });
     }
 });
@@ -91,7 +91,7 @@ function createGroupItems(nodes: ViewSpecNode<DashCanvasViewSpec>[]): ReactNode[
                   key: `group-${it.name}`,
                   icon: getSharedIcon(it.allViewSpecs),
                   title: it.name,
-                  items: createGroupItems(it.children),
+                  children: createGroupItems(it.children),
                   modelConfig: {collapsible: true}
               })
             : draggableWidget({key: it.id, viewSpec: it})

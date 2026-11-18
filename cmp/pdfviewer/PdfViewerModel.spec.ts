@@ -47,7 +47,9 @@ describe('PdfViewerModel', () => {
 
         it('sends a FetchOptions source as given', async () => {
             hoistCore.route('POST', 'docs/render', () => pdfResponse(2));
-            const model = create({source: {url: 'docs/render', params: {template: 'invoice'}}});
+            const model = create({
+                source: {url: 'docs/render', method: 'POST', params: {template: 'invoice'}}
+            });
             await loadedAsync(model);
 
             expect(model.pageCount).toBe(2);

@@ -149,7 +149,7 @@ const cmp = hoistCmp.factory<TextInputProps & {model: TextInputModel}>(
         const isClearable = !isEmpty(model.internalValue);
 
         return div({
-            item: inputGroup({
+            children: inputGroup({
                 value: model.renderValue || '',
 
                 autoComplete: withDefault(

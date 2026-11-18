@@ -85,7 +85,7 @@ export const [GridCountLabel, gridCountLabel] = hoistCmp.withFactory<GridCountLa
 
         return box({
             ...props,
-            item: `${recCountString()} ${selCountString()}`
+            children: `${recCountString()} ${selCountString()}`
         });
     }
 });

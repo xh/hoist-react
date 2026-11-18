@@ -50,7 +50,7 @@ focus state.
 
 ```typescript
 // Bound mode - connects to FieldModel via FormField
-formField({field: 'email', item: textInput()})
+formField({field: 'email', children: textInput()})
 
 // Also bound mode - direct binding to any HoistModel
 textInput({model: myModel, bind: 'searchQuery'})
@@ -192,6 +192,20 @@ reach attributes the component manages itself.
 Mobile inputs render native `<input>` and `<textarea>` elements, so `domAttrs` reach the element
 the user types into, as on desktop.
 
+### Accessible Names
+
+Use `domAttrs` to set `aria-label` or `aria-labelledby` on the primary element of an input.
+
+A desktop `Slider` puts these two attributes on its handles instead, because the handles hold the
+`slider` role. A range slider gives both handles the same name.
+
+```typescript
+slider({bind: 'risk', min: 0, max: 10, domAttrs: {'aria-label': 'Risk level'}})
+```
+
+In a `FormField`, a `Slider` with neither attribute takes the label of the field as the name of
+each handle.
+
 ### Password Managers
 
 Password manager extensions flag any field that *looks* like a username, email, or password and
@@ -222,10 +236,10 @@ HoistInputModel integrates with the form system:
 
 form({
     model: formModel,
-    items: [
+    children: [
         formField({
             field: 'email',          // Connects to formModel.fields.email
-            item: textInput()        // textInput gets model/bind props automatically
+            children: textInput()        // textInput gets model/bind props automatically
         })
     ]
 })
@@ -290,7 +304,7 @@ const cmp = hoistCmp.factory<MyInputModel>(({model, className, ...props}, ref) =
         ref,                                      // Outer ref on wrapper
         onFocus: model.onFocus,
         onBlur: model.onBlur,
-        item: input({
+        children: input({
             ref: model.inputRef,                  // inputRef on actual <input>
             value: model.renderValue ?? '',
             onChange: e => model.noteValueChange(e.target.value),

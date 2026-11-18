@@ -378,12 +378,12 @@ class PickerModel extends HoistInputModel {
             return hbox({
                 className: 'xh-picker__multi-text',
                 alignItems: 'center',
-                items: [
+                children: [
                     div({
                         className: 'xh-picker__count',
-                        item: selectedOpts.length.toString()
+                        children: selectedOpts.length.toString()
                     }),
-                    span({className: 'xh-picker__multi-text-label', item: text})
+                    span({className: 'xh-picker__multi-text-label', children: text})
                 ]
             });
         }
@@ -435,7 +435,7 @@ const cmp = hoistCmp.factory<PickerModel>(({model, className, ...props}, ref) =>
             compact && 'xh-picker__popover--compact'
         ),
         matchTargetWidth: !props.popoverWidth,
-        item: triggerButton({model, props, nothingSelected, ref}),
+        children: triggerButton({model, props, nothingSelected, ref}),
         content: optionsList({model, props}),
         [TEST_ID]: props.testId
     });
@@ -500,17 +500,17 @@ const optionsList = hoistCmp.factory<PickerModel>(({model, props}) => {
     return vbox({
         className: 'xh-picker__menu',
         style: widthStyle,
-        items: [
+        children: [
             enableFilter ? filterInput({model, props}) : null,
             useVirtual
                 ? virtualOptionsList({model, props, filteredOptions, maxMenuHeight, optionHeight})
                 : div({
                       className: 'xh-picker__options',
                       style: {maxHeight: maxMenuHeight, overflowY: 'auto'},
-                      items: isEmpty(filteredOptions)
+                      children: isEmpty(filteredOptions)
                           ? div({
                                 className: 'xh-picker__no-results',
-                                item: 'No matches found.'
+                                children: 'No matches found.'
                             })
                           : filteredOptions.map((opt, index) =>
                                 optionItem({model, opt, props, index})
@@ -527,7 +527,7 @@ const optionsList = hoistCmp.factory<PickerModel>(({model, props}) => {
 const filterInput = hoistCmp.factory<PickerModel>(({model, props}) => {
     return div({
         className: 'xh-picker__filter',
-        item: textInput({
+        children: textInput({
             model,
             bind: 'filterValue',
             commitOnChange: true,
@@ -588,7 +588,7 @@ const menuFooter = hoistCmp.factory<PickerModel>(({model, props}) => {
                     'xh-picker__footer-action',
                     allSelected && 'xh-picker__footer-action--disabled'
                 ),
-                item: 'All',
+                children: 'All',
                 [TEST_ID]: getTestId(props, 'select-all-btn'),
                 onClick: e => {
                     e.stopPropagation();
@@ -599,7 +599,7 @@ const menuFooter = hoistCmp.factory<PickerModel>(({model, props}) => {
     }
     if (enableClear) {
         if (actions.length > 0) {
-            actions.push(span({className: 'xh-picker__footer-separator', item: '\u00b7'}));
+            actions.push(span({className: 'xh-picker__footer-separator', children: '\u00b7'}));
         }
         actions.push(
             div({
@@ -607,7 +607,7 @@ const menuFooter = hoistCmp.factory<PickerModel>(({model, props}) => {
                     'xh-picker__footer-action',
                     noneSelected && 'xh-picker__footer-action--disabled'
                 ),
-                item: 'Clear',
+                children: 'Clear',
                 [TEST_ID]: getTestId(props, 'clear-btn'),
                 onClick: e => {
                     e.stopPropagation();
@@ -619,7 +619,11 @@ const menuFooter = hoistCmp.factory<PickerModel>(({model, props}) => {
 
     return hbox({
         className: 'xh-picker__footer',
-        items: [div({className: 'xh-picker__footer-count', item: countText}), filler(), ...actions]
+        children: [
+            div({className: 'xh-picker__footer-count', children: countText}),
+            filler(),
+            ...actions
+        ]
     });
 });
 
@@ -655,16 +659,16 @@ function renderOption(
             e.stopPropagation();
             model.onOptionClick(opt.value);
         },
-        items: optionRenderer
+        children: optionRenderer
             ? optionRenderer(opt, isSelected)
             : [
                   div({
                       className: 'xh-picker__option-check',
-                      item: isSelected ? Icon.check({size: 'sm'}) : null
+                      children: isSelected ? Icon.check({size: 'sm'}) : null
                   }),
                   div({
                       className: 'xh-picker__option-label',
-                      item: opt.label
+                      children: opt.label
                   })
               ]
     });

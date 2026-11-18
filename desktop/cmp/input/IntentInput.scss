@@ -8,7 +8,7 @@
 .xh-intent-input {
   display: inline-flex;
   align-items: center;
-  gap: var(--xh-intent-input-gap-px);
+  gap: var(--xh-intent-input-gap);
 
   // Selection ring geometry. Drawn as an outline on the swatch fill, so it takes no part in
   // layout - the container reserves room for it with matching padding, derived from these two
@@ -36,11 +36,11 @@
     margin: 0;
     display: inline-flex;
     align-items: center;
-    gap: var(--xh-pad-half-px);
+    gap: var(--xh-spacing-half);
     cursor: pointer;
     color: var(--xh-text-color);
     font-family: inherit;
-    font-size: var(--xh-font-size-px);
+    font-size: var(--xh-font-size);
     line-height: 1;
 
     // Focus ring - drawn in the primary intent so it reads as focus rather than as selection.
@@ -58,9 +58,9 @@
     // an option never shifts the row.
     &__fill {
       flex: none;
-      width: var(--xh-intent-input-swatch-size-px);
-      height: var(--xh-intent-input-swatch-size-px);
-      border-radius: var(--xh-intent-input-border-radius-px);
+      width: var(--xh-intent-input-swatch-size);
+      height: var(--xh-intent-input-swatch-size);
+      border-radius: var(--xh-intent-input-border-radius);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -78,7 +78,7 @@
     // aligns its row with `align-items: baseline`.
     &__check {
       color: var(--xh-white);
-      font-size: calc(var(--xh-intent-input-swatch-size-px) * 0.6);
+      font-size: calc(var(--xh-intent-input-swatch-size) * 0.6);
 
       &--hidden {
         visibility: hidden;
@@ -145,7 +145,7 @@
   // Names shown - label text returns to the standard text color, leaving the swatch to carry
   // the intent's color. Selected names are emphasized instead.
   &--with-names .xh-intent-input__swatch {
-    margin-right: var(--xh-pad-half-px);
+    margin-right: var(--xh-spacing-half);
 
     &__name {
       color: var(--xh-text-color);
@@ -165,18 +165,18 @@
   &--compact {
     --ring-offset: 1px;
 
-    gap: calc(var(--xh-intent-input-gap-px) / 2);
+    gap: calc(var(--xh-intent-input-gap) / 2);
 
     .xh-intent-input__swatch {
-      font-size: var(--xh-tbar-compact-font-size-px);
+      font-size: var(--xh-toolbar-compact-font-size);
 
       &__fill {
-        width: var(--xh-intent-input-compact-swatch-size-px);
-        height: var(--xh-intent-input-compact-swatch-size-px);
+        width: var(--xh-intent-input-compact-swatch-size);
+        height: var(--xh-intent-input-compact-swatch-size);
       }
 
       &__check {
-        font-size: calc(var(--xh-intent-input-compact-swatch-size-px) * 0.6);
+        font-size: calc(var(--xh-intent-input-compact-swatch-size) * 0.6);
       }
     }
   }
@@ -185,7 +185,7 @@
   &.xh-input--invalid,
   &.xh-input--warning,
   &.xh-input--info {
-    border-radius: var(--xh-intent-input-border-radius-px);
+    border-radius: var(--xh-intent-input-border-radius);
   }
 
   &.xh-input--invalid {

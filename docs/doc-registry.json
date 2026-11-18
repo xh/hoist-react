@@ -76,7 +76,7 @@
             "mcpCategory": "package",
             "viewerCategory": "components",
             "description": "Cross-platform component overview and catalog.",
-            "keywords": ["component categories", "factory pattern", "DataView", "DataViewModel", "Treemap", "ZoneGrid", "Badge", "Spinner", "LoadingIndicator", "RelativeTimestamp", "Markdown"],
+            "keywords": ["component categories", "factory pattern", "DataView", "DataViewModel", "Treemap", "ZoneGrid", "Badge", "Spinner", "LoadingIndicator", "RelativeTimestamp", "Markdown", "StatCard", "StatCardStrip"],
             "aliases": ["components"]
         },
         {
@@ -117,7 +117,7 @@
             "mcpCategory": "package",
             "viewerCategory": "components",
             "description": "Flexbox-based layout containers.",
-            "keywords": ["Box", "VBox", "HBox", "Frame", "Viewport", "LayoutProps", "pixel conversion"]
+            "keywords": ["Box", "VBox", "HBox", "Frame", "Viewport", "LayoutProps", "pixel conversion", "Separator", "divider"]
         },
         {
             "id": "cmp/tab/README.md",
@@ -150,6 +150,22 @@
             "viewerCategory": "components",
             "description": "PDF document viewer built on pdf.js, with a configurable toolbar and an observable model API for paging, zoom, find, and download.",
             "keywords": ["PdfViewerModel", "PdfViewer", "PdfSource", "PdfScale", "PdfViewerToolbarToken", "pdfjs-dist", "pdf.js", "PDF", "document preview"]
+        },
+        {
+            "id": "cmp/progressbar/README.md",
+            "title": "ProgressBar Package",
+            "mcpCategory": "package",
+            "viewerCategory": "components",
+            "description": "Bar that shows a value against a maximum, with an optional target marker, or an indeterminate fill for work of unknown length.",
+            "keywords": ["ProgressBar", "progress", "progress bar", "utilization", "quota", "indeterminate", "target", "valueRenderer"]
+        },
+        {
+            "id": "cmp/sparkline/README.md",
+            "title": "Sparkline Package",
+            "mcpCategory": "package",
+            "viewerCategory": "components",
+            "description": "Small inline trend chart in plain SVG for a StatCard or a grid cell, with shared scales across a grid column, its fixed scope, and when to use a Chart or the AG Grid sparkline instead.",
+            "keywords": ["Sparkline", "sparkline", "trend", "inline chart", "mini chart", "micro chart", "colorBy", "markers", "baseline", "grid column renderer", "shared scale", "scope", "tooltip", "AG Grid sparkline", "agSparklineCellRenderer"]
         },
         {
             "id": "desktop/cmp/dash/README.md",
@@ -260,8 +276,8 @@
             "title": "Styles & Theming",
             "mcpCategory": "package",
             "viewerCategory": "supporting",
-            "description": "CSS custom properties, BEM naming, dark/light theming, SCSS conventions, and utility classes.",
-            "keywords": ["CSS, SCSS, styles, theme, dark mode, CSS variables, custom properties, BEM, xh- prefix, vars.scss, intent colors, utility classes, ThemeModel"]
+            "description": "CSS custom properties - naming conventions, units, overrides - plus BEM naming, dark/light theming, SCSS conventions, and utility classes.",
+            "keywords": ["CSS, SCSS, styles, theme, dark mode, CSS variables, custom properties, naming conventions, spacing, units, BEM, xh- prefix, vars.scss, intent colors, utility classes, ThemeModel"]
         },
         {
             "id": "kit/README.md",
@@ -412,8 +428,8 @@
             "title": "Compilation Notes",
             "mcpCategory": "devops",
             "viewerCategory": "devops",
-            "description": "Notes on TypeScript/SWC compilation and build tooling internals.",
-            "keywords": ["compilation", "TypeScript", "SWC", "Rsbuild", "transpilation", "build tooling"]
+            "description": "Notes on TypeScript/SWC compilation, build tooling internals, and running an app against a local hoist-react checkout.",
+            "keywords": ["compilation", "TypeScript", "SWC", "Rsbuild", "transpilation", "build tooling", "inline Hoist", "inline packages", "startWithHoist", "testWithHoist", "XH_HOIST_REACT_PATH", "XH_INLINE_PACKAGES"]
         },
         {
             "id": "docs/changelog-format.md",
@@ -560,20 +576,20 @@
             "keywords": ["upgrade", "migration", "breaking changes", "v89", "v88"]
         },
         {
-            "id": "docs/upgrade-notes/v91-upgrade-notes.md",
-            "title": "v91 Upgrade Notes",
-            "mcpCategory": "devops",
-            "viewerCategory": "upgrade",
-            "description": "Upgrade guide from v90.x to v91.0.0. Trivial difficulty. Covers moving agent configs from the removed stdio MCP server and hoist-docs / hoist-ts CLIs to the Hoist Docs service.",
-            "keywords": ["upgrade", "migration", "breaking changes", "v91", "v90", "MCP", "hoist-mcp", "hoist-docs", "hoist-ts", "Hoist Docs", ".mcp.json"]
-        },
-        {
             "id": "docs/upgrade-notes/v90-upgrade-notes.md",
             "title": "v90 Upgrade Notes",
             "mcpCategory": "devops",
             "viewerCategory": "upgrade",
             "description": "Upgrade guide from v89.x to v90.0.0. Low difficulty. Covers the removal of numbro and formatConfig, DateInput on react-day-picker 10, the removal of Onsen UI from mobile, textRenderer on the built-in column specs, the panel splitter redesign, the move of the renderer factories out of FormatNumber and FormatDate, and the libraries Hoist no longer installs.",
             "keywords": ["upgrade", "migration", "breaking changes", "v90", "v89", "numbro", "formatConfig", "timePickerProps", "onsen", "modifier", "WindowedSelect", "react-windowed-select", "xh-resizable-splitter", "store2", "semver", "ua-parser-js", "short-unique-id", "lodash-inflection", "http-status-codes", "date-fns", "@blueprintjs/datetime", "datePicker"]
+        },
+        {
+            "id": "docs/upgrade-notes/v91-upgrade-notes.md",
+            "title": "v91 Upgrade Notes",
+            "mcpCategory": "devops",
+            "viewerCategory": "upgrade",
+            "description": "Upgrade guide from v90.x to v91.0.0. Medium difficulty. Covers the CSS custom property overhaul - codemod, removed override hooks, renamed variables, and units in size values. Also covers the element factory move from item/items to children, with its codemod, and moving agent configs from the removed stdio MCP server and hoist-docs / hoist-ts CLIs to Hoist Docs.",
+            "keywords": ["upgrade", "migration", "breaking changes", "v91", "v90", "css variables", "custom properties", "override hooks", "codemod", "renamed variables", "units", "--xh-", "MCP", "hoist-mcp", "hoist-docs", "hoist-ts", "Hoist Docs", ".mcp.json"]
         }
     ]
 }

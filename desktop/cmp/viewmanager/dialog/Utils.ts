@@ -46,7 +46,7 @@ export function groupValueDisplay(value: string): ReactNode {
 
 /** Italic-muted *Top Level*, signalling a value that is not a literal group name. */
 export function topLevelLabel(): ReactNode {
-    return span({className: 'xh-view-manager__group-path--sentinel', item: 'Top Level'});
+    return span({className: 'xh-view-manager__group-path--sentinel', children: 'Top Level'});
 }
 
 /**

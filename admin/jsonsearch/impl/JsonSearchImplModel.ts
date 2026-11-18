@@ -144,6 +144,8 @@ export class JsonSearchImplModel extends HoistModel {
                 let nodes = await XH.fetchJson(
                     {
                         url: this.matchingNodesUrl,
+                        // POST to send the full JSON document in the body, not the URL.
+                        method: 'POST',
                         params: {
                             path: this.path,
                             json

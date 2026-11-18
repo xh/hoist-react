@@ -11,7 +11,8 @@ import {isNil, isString} from 'lodash';
 import type {MouseEvent, ReactElement, ReactNode} from 'react';
 import {isValidElement} from 'react';
 import type {TestSupportProps} from '../HoistProps';
-import type {Intent, Thunkable} from './Types';
+import type {ElementSpec} from '../elem';
+import type {Intent, PlainObject, Thunkable} from './Types';
 
 //------------------------
 // Identity
@@ -68,8 +69,11 @@ export interface AppOptionSpec {
     name: string;
     prefName?: string;
 
-    /** Config for FormField for this option. */
-    formField: any;
+    /**
+     * Config for FormField for this option. Typed loosely, as FormField props differ by platform,
+     * but with the element spec keys declared so tools can identify its children.
+     */
+    formField: PlainObject & Pick<ElementSpec<PlainObject>, 'children' | 'item' | 'items' | 'omit'>;
 
     /** Config for FieldModel for the option. */
     fieldModel?: Omit<BaseFieldConfig, 'name'>;

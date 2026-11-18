@@ -34,7 +34,9 @@ export let errorMessageImpl = null;
 export let maskImpl = null;
 export let DynamicTabSwitcherModel = null;
 export let cardHeaderImpl = null;
+export let statCardInfoImpl = null;
 export let pdfViewerToolbarImpl = null;
+export let sparklineTooltipImpl = null;
 /**
  * Provide implementations of functions and classes exported in this file.
  *
@@ -60,5 +62,7 @@ export function installDesktopImpls(impls) {
     maskImpl = impls.maskImpl;
     DynamicTabSwitcherModel = impls.DynamicTabSwitcherModel;
     cardHeaderImpl = impls.cardHeaderImpl;
+    statCardInfoImpl = impls.statCardInfoImpl;
     pdfViewerToolbarImpl = impls.pdfViewerToolbarImpl;
+    sparklineTooltipImpl = impls.sparklineTooltipImpl;
 }

@@ -67,7 +67,7 @@ export class RestStore extends UrlStore {
             .run(ctx => {
                 const {url} = this,
                     ids = records.map(it => it.id);
-                return XH.fetchJson({url: `${url}/bulkDelete`, params: {ids}}, ctx);
+                return XH.fetchJson({url: `${url}/bulkDelete`, method: 'POST', params: {ids}}, ctx);
             })
             .linkTo(this.loadObserver)
             .tap(() => this.loadAsync());

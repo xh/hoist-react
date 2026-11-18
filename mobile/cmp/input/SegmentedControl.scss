@@ -17,9 +17,9 @@
     box-sizing: border-box;
     height: var(--xh-button-height);
     background-color: var(--xh-segmented-control-bg);
-    border-radius: var(--xh-segmented-control-border-radius-px);
-    padding: var(--xh-segmented-control-pad-px);
-    gap: var(--xh-segmented-control-pad-px);
+    border-radius: var(--xh-segmented-control-border-radius);
+    padding: var(--xh-segmented-control-padding);
+    gap: var(--xh-segmented-control-padding);
 
     // Options - buttons receding into the tray by default. Override the minimal Button base so
     // the tray background shows through and our segmented text color applies.
@@ -31,7 +31,7 @@
       // Allow the button to shrink below its content width so the label can ellipsis-truncate
       // (flex items default to min-width: auto, which forces overflow / hard clipping instead).
       min-width: 0;
-      border-radius: var(--xh-segmented-control-border-radius-px);
+      border-radius: var(--xh-segmented-control-border-radius);
       background-color: transparent;
       color: var(--xh-segmented-control-text-color);
 
@@ -121,7 +121,7 @@
       .xh-segmented-control-option + .xh-segmented-control-option::before {
         content: '';
         position: absolute;
-        left: calc(var(--xh-segmented-control-pad-px) / -2);
+        left: calc(var(--xh-segmented-control-padding) / -2);
         top: 20%;
         bottom: 20%;
         width: 1px;

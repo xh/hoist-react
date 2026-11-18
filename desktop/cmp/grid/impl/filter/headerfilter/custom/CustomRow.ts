@@ -25,13 +25,13 @@ export const customRow = hoistCmp.factory({
         const {options, op, hideInput} = model;
         return div({
             className: `xh-custom-filter-tab__row xh-custom-filter-tab__row--${kebabCase(op)}`,
-            items: [
+            children: [
                 vbox({
                     className: `xh-custom-filter-tab__row__body`,
-                    items: [
+                    children: [
                         div({
                             className: `xh-custom-filter-tab__row__top`,
-                            item: select({
+                            children: select({
                                 bind: 'op',
                                 enableFilter: false,
                                 hideSelectedOptionCheck: true,
@@ -43,13 +43,13 @@ export const customRow = hoistCmp.factory({
                         div({
                             omit: hideInput,
                             className: `xh-custom-filter-tab__row__bottom`,
-                            item: inputField()
+                            children: inputField()
                         })
                     ]
                 }),
                 div({
                     className: `xh-custom-filter-tab__row__right`,
-                    item: button({
+                    children: button({
                         icon: Icon.delete(),
                         intent: 'danger',
                         onClick: () => model.removeRow()
@@ -102,6 +102,6 @@ const inputField = hoistCmp.factory<CustomRowModel>(({model}) => {
 const operatorRenderer = hoistCmp.factory(({opt}) => {
     return div({
         className: 'xh-custom-filter-tab__operator-renderer',
-        item: opt.label
+        children: opt.label
     });
 });

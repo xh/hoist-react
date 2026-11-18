@@ -165,7 +165,7 @@ then further generates sub-testIds for its child input and readonly display:
 form({
     model: formModel,
     testId: 'order-form',
-    items: [
+    children: [
         formField({field: 'customer'}),
         // Generates:
         //   data-testid="order-form-customer"           on the FormField wrapper
@@ -341,7 +341,7 @@ panel({
         button({testId: 'refresh-btn', icon: Icon.refresh(), onClick: onRefresh}),
         button({testId: 'export-btn', text: 'Export', onClick: onExport})
     ],
-    item: grid({
+    children: grid({
         testId: 'positions-grid',
         model: gridModel
     })
@@ -357,10 +357,10 @@ import {numberInput, select, textArea} from '@xh/hoist/desktop/cmp/input';
 form({
     model: formModel,
     testId: 'trade-form',
-    items: [
-        formField({field: 'counterparty', item: select({options: counterparties})}),
-        formField({field: 'amount', item: numberInput()}),
-        formField({field: 'notes', item: textArea()})
+    children: [
+        formField({field: 'counterparty', children: select({options: counterparties})}),
+        formField({field: 'amount', children: numberInput()}),
+        formField({field: 'notes', children: textArea()})
     ]
 });
 // QA can now select:

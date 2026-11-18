@@ -38,6 +38,8 @@ See [`docs-roadmap.md`](./planning/docs-roadmap.md) for documentation coverage t
 | Save and restore named view configurations | [`/cmp/viewmanager/`](../cmp/viewmanager/README.md)                                                                 |
 | Select a period or date range (presets, lookbacks, months, custom) | [`/cmp/daterange/`](../cmp/daterange/README.md)                                                                   |
 | Display a PDF document (page nav, zoom, find, download) | [`/cmp/pdfviewer/`](../cmp/pdfviewer/README.md) |
+| Show progress or usage against a limit as a bar | [`/cmp/progressbar/`](../cmp/progressbar/README.md) |
+| Show a small inline trend chart beside a figure or in a grid cell | [`/cmp/sparkline/`](../cmp/sparkline/README.md) |
 | Use layout containers (Box, HBox, VBox, Frame) | [`/cmp/layout/`](../cmp/layout/README.md)                                                                           |
 | Work with Stores, Records, Fields, or Filters | [`/data/`](../data/README.md)                                                                                       |
 | Set up Cube aggregation with Views and Queries | [`/data/cube/`](../data/cube/README.md)                                                                             |
@@ -91,11 +93,13 @@ See [`docs-roadmap.md`](./planning/docs-roadmap.md) for documentation coverage t
 | [`/cmp/cubegrid/`](../cmp/cubegrid/README.md) | Cube View rendered as a tree grid with the app's columns, plus pivot paths as nested column groups and docked summaries | CubeGridModel, CubeGrid, CubeGridPivotModel, cube, pivot, PivotSpec, measures, cellFields, pivotConfig, PivotDimensionSpec, PivotMeasureSpec, measuresOutermost |
 | [`/cmp/form/`](../cmp/form/README.md) | Form infrastructure for data entry with validation | FormModel, FieldModel, SubformsFieldModel, validation rules, data binding |
 | [`/cmp/input/`](../cmp/input/README.md) | Base classes and interfaces for input components | HoistInputModel, change/commit lifecycle, value binding, focus management |
-| [`/cmp/layout/`](../cmp/layout/README.md) | Flexbox-based layout containers | Box, VBox, HBox, Frame, Viewport, LayoutProps, pixel conversion |
+| [`/cmp/layout/`](../cmp/layout/README.md) | Flexbox-based layout containers | Box, VBox, HBox, Frame, Viewport, Separator, LayoutProps, pixel conversion |
+| [`/cmp/progressbar/`](../cmp/progressbar/README.md) | Bar that shows a value against a maximum, or indeterminate progress | ProgressBar, value, min, max, label, valueRenderer, intent, target, indeterminate |
 | [`/cmp/tab/`](../cmp/tab/README.md) | Tabbed interface system | TabContainerModel, routing integration, render modes, refresh strategies |
 | [`/cmp/viewmanager/`](../cmp/viewmanager/README.md) | Save/load named bundles of component state | ViewManagerModel, views, sharing, pinning, auto-save, JsonBlob persistence |
 | [`/cmp/daterange/`](../cmp/daterange/README.md) | Period selection as presets, relative lookbacks, months/years, or custom ranges, resolved to dates and filters | DateRangePickerModel, DateRangePicker, DateRangeSelection, presets, anchorDate, LocalDateRange, currentRangeFilter, priorRange |
 | [`/cmp/pdfviewer/`](../cmp/pdfviewer/README.md) | PDF document viewer built on pdf.js, with a configurable toolbar and observable model API | PdfViewerModel, PdfViewer, PdfSource, toolbar tokens, find, zoom presets, pdfjs-dist |
+| [`/cmp/sparkline/`](../cmp/sparkline/README.md) | Small inline trend chart in plain SVG, for a stat card or a grid cell | Sparkline, line, area, bar, colorBy, markers, baseline, shared scale, grid column renderer, scope, Sparkline or Chart, AG Grid sparkline |
 | [`/desktop/`](../desktop/README.md) | Desktop-specific components and app container | Desktop components, Blueprint wrappers, desktop navigation |
 | [`/desktop/cmp/dash/`](../desktop/cmp/dash/README.md) | Configurable dashboard system with draggable, resizable widgets | DashContainerModel, DashCanvasModel, DashViewSpec, DashViewModel, widget persistence, ViewManager integration |
 | [`/desktop/cmp/panel/`](../desktop/cmp/panel/README.md) | Desktop panel container with toolbars, banners, masks, and collapsible behavior | Panel, PanelModel, Toolbar, Banner, mask, collapse/resize, persistence, modal support |
@@ -155,7 +159,7 @@ for planned coverage:
 | [App Build & Deploy](./build-and-deploy-app.md) | Building and deploying full-stack Hoist applications (Gradle, Rsbuild, Docker) |
 | [Development Environment](./development-environment.md) | Local development environment setup for Hoist and app developers |
 | [Unit Testing](./unit-testing.md) | Unit tests for apps and hoist-react: the `@xh/hoist/test-support` kit, the fake hoist-core server, writing tests, and CI reports |
-| [Compilation Notes](./compilation-notes.md) | Notes on TypeScript/SWC compilation and build tooling internals |
+| [Compilation Notes](./compilation-notes.md) | Notes on TypeScript/SWC compilation, build tooling internals, and running an app against a local hoist-react checkout |
 
 ## Developer Tools
 
@@ -176,7 +180,7 @@ breaking changes, before/after code examples, and verification checklists.
 
 | Version | Released | Difficulty | Key Changes |
 |---------|----------|------------|-------------|
-| [v91](./upgrade-notes/v91-upgrade-notes.md) | unreleased | 🎉 TRIVIAL | stdio MCP server and `hoist-docs` / `hoist-ts` CLIs removed in favor of the Hoist Docs service |
+| [v91](./upgrade-notes/v91-upgrade-notes.md) | TBD | 🟠 MEDIUM | CSS custom property overhaul (override hooks removed, units in values, renamed vars), element factory `children` key - both with codemods, MCP server and `hoist-docs` / `hoist-ts` CLIs moved to Hoist Docs |
 | [v90](./upgrade-notes/v90-upgrade-notes.md) | 2026-11-02 | 🟢 LOW | numbro removed (`formatConfig`), desktop `DateInput` on react-day-picker 10, Onsen UI removed from mobile, `Column.textRenderer` on built-in column specs, panel splitter redesign, renderer import paths, removed libraries |
 | [v89](./upgrade-notes/v89-upgrade-notes.md) | 2026-10-13 | 🟢 LOW | TypeScript 7 (strongly recommended), `GridFilterModelConfig.fieldSpecs` no longer an allow-list |
 | [v88](./upgrade-notes/v88-upgrade-notes.md) | 2026-09-28 | 🔴 HIGH | TC39 decorators (`accessor`, no `makeObservable`) + dev-utils 16 / Rsbuild, MobX 7 named exports, AG Grid 36 + Theming API, React 19.3, v86 scheduled removals |

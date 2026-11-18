@@ -220,7 +220,7 @@ keeps client side codebases anchored in standard TypeScript/JavaScript syntax:
 // Element factory style - strongly preferred
 panel({
     title: 'Users',
-    items: [grid({model: gridModel})],
+    children: [grid({model: gridModel})],
     bbar: toolbar(button({text: 'Save'}))
 })
 ```
@@ -235,18 +235,17 @@ panel({
 </Panel>
 ```
 
-Factories can take a config object for props, using the key `item`/`items` for children. A shortcut
-form also exists where factories are passed children directly as arguments, when no other props
-are required. Factories all support an `omit` prop for conditional rendering.
+Factories can take a config object for props, using the standard React `children` key for
+children. In the shortcut form, factories take children directly as arguments. Use the shortcut
+form when a call passes only children - `toolbar(a, b)`, `p('text')` - and the config object form
+as soon as it passes any other prop. Never pass a factory directly as a callback (`rows.map(span)`).
+Factories all support an `omit` prop for conditional rendering.
 
-**Important — `items` in, `children` out**: `item`/`items` are Hoist's *calling* API. Inside a
-render function, those values arrive as the standard React `children` prop (because the factory
-spreads them as rest args to `React.createElement`). The canonical pattern when authoring a
-container component is therefore to destructure `children` from props and pass them downstream as
-`items` to an inner factory. See
-[Authoring a Container Component](./core/README.md#authoring-a-container-component-items-in-children-out)
-in the core README for the full explanation, examples, and the `$item`/`$items` escape hatch for
-components whose underlying API genuinely has its own `items` prop.
+`item` and `items` are legacy aliases for `children`. They still work, but do not use them in new
+code. A container component destructures `children` from props and passes it on as `children` to
+an inner factory. See
+[Authoring a Container Component](./core/README.md#authoring-a-container-component) in the core
+README for examples and the `$items` escape hatch for components with their own `items` prop.
 
 See [`/core/README.md`](./core/README.md) for full element factory API including conditional
 rendering with `omit` and factory creation.
@@ -480,9 +479,15 @@ hoist-react as a dependency.
 To see a hoist-react change in a real browser, run Toolbox with this checkout compiled inline:
 
 - **Client** - `cd ../toolbox/client-app && pnpm startWithHoist` serves `http://localhost:3000`
-  and rebuilds when files here change. Reload the page after a rebuild.
+  and rebuilds when files here change. The page reloads after each rebuild.
 - **Server** - `cd ../toolbox && ./gradlew bootRun` serves the Grails API on port 8080, against
   the developer's MySQL and login by default.
+
+From a worktree of this repo, `../toolbox` does not resolve. Run both commands in the Toolbox
+checkout, and start the client with
+`XH_HOIST_REACT_PATH=<absolute path of this worktree> pnpm startWithHoist`. Without it, Toolbox
+builds the `hoist-react` checkout next to its own repo, not the worktree. The build banner shows
+the path and branch in use.
 
 Check first whether both are already running (`curl -s -o /dev/null -w '%{http_code}'
 http://localhost:3000/admin/` and the same for `:8080`). Leave servers you did not start running

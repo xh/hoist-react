@@ -36,8 +36,8 @@ export const [SplitTreeMap, splitTreeMap] = hoistCmp.withFactory<SplitTreeMapPro
             testId,
             ref,
             className,
-            items: errors.length ? errorPanel({errors}) : childMaps(),
-            ...props
+            ...props,
+            children: errors.length ? errorPanel({errors}) : childMaps()
         });
     }
 });
@@ -76,7 +76,7 @@ const childMaps = hoistCmp.factory<SplitTreeMapModel>(({model}) => {
             omit: !pTotal,
             flex: pFlex,
             className: 'xh-split-treemap__map-holder',
-            item: treeMap({model: primaryMapModel})
+            children: treeMap({model: primaryMapModel})
         }),
 
         splitter({omit: !!mapTitleFn || !showSplitter}),
@@ -87,14 +87,14 @@ const childMaps = hoistCmp.factory<SplitTreeMapModel>(({model}) => {
             omit: !sTotal,
             flex: sFlex,
             className: 'xh-split-treemap__map-holder',
-            item: treeMap({model: secondaryMapModel})
+            children: treeMap({model: secondaryMapModel})
         }),
 
         // Mask
         div({
             omit: !isMasking,
             className: 'xh-split-treemap__mask-holder',
-            item: mask({isDisplayed: true, spinner: true})
+            children: mask({isDisplayed: true, spinner: true})
         })
     ]);
 });
@@ -118,9 +118,9 @@ const mapTitle = hoistCmp.factory<SplitTreeMapModel>(({model, isPrimary}) => {
             'xh-split-treemap__header',
             'xh-split-treemap__header--' + titleOrientation
         ),
-        item: div({
+        children: div({
             className: 'xh-split-treemap__header__title',
-            item: mapTitleFn(treeMapModel, isPrimary)
+            children: mapTitleFn(treeMapModel, isPrimary)
         })
     });
 });

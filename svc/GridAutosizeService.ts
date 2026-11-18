@@ -72,9 +72,7 @@ export class GridAutosizeService extends HoistService {
             );
 
         if (!requiredWidths) {
-            this.logDebug(
-                'Autosize aborted, grid data has changed since autosize operation began.'
-            );
+            this.logDebug('Autosize aborted - grid data changed, or grid unmounted or destroyed.');
             return;
         }
 
@@ -114,9 +112,14 @@ export class GridAutosizeService extends HoistService {
         manuallySized: boolean
     ): Promise<ColWidthSpec[]> {
         const startRecords = gridModel.store._filtered,
+            isObsolete = () =>
+                gridModel.isDestroyed ||
+                !gridModel.isReady ||
+                startRecords !== gridModel.store._filtered,
             ret: ColWidthSpec[] = [];
 
         for (const colId of colIds) {
+            if (isObsolete()) return null;
             const width = await this._columnWidthCalculator.calcWidthAsync(
                 gridModel,
                 records,
@@ -124,12 +127,9 @@ export class GridAutosizeService extends HoistService {
                 options
             );
             if (isFinite(width)) ret.push({colId, width, manuallySized});
-
-            // Bail out if GridModel has moved on to new data.
-            if (startRecords !== gridModel.store._filtered) return null;
         }
 
-        return ret;
+        return isObsolete() ? null : ret;
     }
 
     private gatherRecordsToBeSized(

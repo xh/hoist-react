@@ -24,7 +24,7 @@ export const zoneMapperDialog = hoistCmp.factory({
             title: 'Customize Fields',
             isOpen: true,
             onClose: () => model.close(),
-            item: zoneMapper({model}),
+            children: zoneMapper({model}),
             // Size determined by inner component
             style: {
                 width: 'unset',
