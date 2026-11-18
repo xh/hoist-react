@@ -7,13 +7,16 @@
 import type {Offset} from '@blueprintjs/core/lib/esnext/components/context-menu/contextMenuShared';
 import {XH} from '@xh/hoist/core';
 import {Classes, showContextMenu as bpShowContextMenu} from '@blueprintjs/core';
+import {showFloatingContextMenu} from '@xh/hoist/desktop/cmp/contextmenu/impl/FloatingContextMenu';
 import type {ReactElement} from 'react';
+import {SPIKE_FLOATING_UI} from './Spike';
 
 /**
  * Wraps Blueprint's showContextMenu function to ensure that the context menu is rendered
  * with createRoot, which is necessary for proper rendering in a React 18 environment.
  */
 export function showContextMenu(menu: ReactElement, offset?: Offset) {
+    if (SPIKE_FLOATING_UI) return showFloatingContextMenu(menu, offset);
     installBackdropListener();
     bpShowContextMenu({content: menu, targetOffset: offset, isDarkTheme: XH.darkTheme});
 }

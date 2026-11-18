@@ -74,6 +74,7 @@ const PopoverImpl: FC<PopoverNextProps> = props => {
     const {
         arrow = true,
         autoFocus,
+        backdropProps,
         boundary = 'clippingAncestors',
         canEscapeKeyClose = true,
         captureDismiss = false,
@@ -214,6 +215,15 @@ const PopoverImpl: FC<PopoverNextProps> = props => {
         if (e.key === 'Escape' && canEscapeKeyClose && open) {
             e.stopPropagation();
             setOpen(false, e);
+        } else if ((e.key === 'ArrowDown' || e.key === 'ArrowUp') && e.target === e.currentTarget) {
+            // Focus is on the popover itself, as after opening. Arrow keys enter a menu within it.
+            const items = (e.currentTarget as HTMLElement).querySelectorAll<HTMLElement>(
+                '[role=menuitem]:not([aria-disabled=true])'
+            );
+            if (items.length) {
+                e.preventDefault();
+                items[e.key === 'ArrowDown' ? 0 : items.length - 1].focus();
+            }
         }
     };
 
@@ -339,7 +349,15 @@ const PopoverImpl: FC<PopoverNextProps> = props => {
         const layer = h(
             'div',
             {className: 'xh-floating-popover__layer'},
-            hasBackdrop ? h('div', {className: 'bp6-overlay-backdrop bp6-popover-backdrop'}) : null,
+            hasBackdrop
+                ? h('div', {
+                      ...backdropProps,
+                      className: classNames(
+                          'bp6-overlay-backdrop bp6-popover-backdrop',
+                          backdropProps?.className
+                      )
+                  })
+                : null,
             focusManaged
         );
 
@@ -385,7 +403,10 @@ function renderTargetElement({
             }
         )
     };
-    const ariaProps = {'aria-expanded': isHover ? undefined : open, 'aria-haspopup': 'menu'};
+    // Hover popovers leave `aria-expanded` to the target itself (e.g. a submenu item).
+    const ariaProps = isHover
+        ? {'aria-haspopup': 'menu'}
+        : {'aria-expanded': open, 'aria-haspopup': 'menu'};
 
     if (isFunction(renderTarget)) {
         return renderTarget({

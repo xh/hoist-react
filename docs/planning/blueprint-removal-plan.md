@@ -1,7 +1,7 @@
 # Plan: Removing BlueprintJS from hoist-react
 
-Status: draft for discussion. Baseline: `develop` at `5e18f21` (91.0.0-SNAPSHOT),
-`@blueprintjs/core` 6.23.
+Status: draft for discussion, Phase 0 spike done - see [Phase 0 results](#phase-0-results).
+Baseline: `develop` at `5e18f21` (91.0.0-SNAPSHOT), `@blueprintjs/core` 6.23.
 
 ## Goal
 
@@ -18,6 +18,10 @@ Expected gains:
   `bp6-` class renames, `Overlay` -> `Overlay2`).
 - One overlay stack shared by desktop and mobile. Mobile is already Blueprint-free and has its own
   Floating UI popover (`mobile/cmp/popover/Popover.ts`).
+- Overlays in the app font. Blueprint's portals set `font-family:
+  var(--bp-typography-family-default)` (Blueprint's system font stack), so popovers, menus and
+  dialogs ignore `--xh-font-family` today. Hoist-owned overlays inherit the app font.
+- Keyboard support Blueprint lacks - see [Phase 0 results](#phase-0-results).
 
 ## Current footprint
 
@@ -99,10 +103,9 @@ formatting, and the Blueprint control underneath does little:
   labels.
 
 So a headless library (React Aria Components, Base UI, Radix) would mostly pay off for one
-control, Slider, at the cost of a new dependency with its own upgrade churn. Not worth it unless
-the spike shows a hand-rolled range slider cannot reach keyboard and screen-reader parity at
-reasonable cost. Do not mix overlay systems in any case: two focus, dismiss and portal models
-conflict when nested.
+control, Slider, at the cost of a new dependency with its own upgrade churn. The Phase 0 spike
+built a hand-rolled range slider at parity in under 300 lines, so no headless library is needed.
+Do not mix overlay systems in any case: two focus, dismiss and portal models conflict when nested.
 
 "Identical behavior" here means the same Hoist props, look and keyboard behavior. DOM structure
 and CSS classes change regardless, which is the app-facing break covered under Release strategy.
@@ -123,17 +126,62 @@ release.
 
 ## Phases
 
-### Phase 0 - Spike and baselines (S)
+### Phase 0 - Spike and baselines (S, done)
 
 - Build a Floating UI `Popover` and `Menu` (with submenu, keyboard nav, typeahead) behind the
   existing `popover` / `menu` factories on a branch. Run Toolbox against it.
 - Build a hand-rolled range `Slider` and check keyboard and screen-reader parity with axe and a
   manual pass. This is the one case that could justify a headless library.
-- Capture Playwright screenshots of Toolbox desktop pages in light and dark themes as a visual
-  baseline. Unit tests here do not cover rendering, so this baseline is the main regression
-  check for every later phase.
+- Capture Playwright screenshots of Toolbox desktop pages as a visual baseline. Unit tests here do
+  not cover rendering, so this baseline is the main regression check for every later phase.
 - List the a11y behavior to match per component (focus trap and restore, Escape, arrow keys,
   ARIA roles), taken from Blueprint's current behavior.
+
+#### Phase 0 results
+
+The spike code is on this branch, off by default. Set `localStorage.xhSpikeFloatingUi = 'true'`
+and reload to switch the `popover`, `menu` / `menuItem` / `menuDivider`, `slider` / `rangeSlider`
+factories and `showContextMenu` from Blueprint to the spike versions (`kit/blueprint/Spike.ts`).
+
+| File | Lines | Replaces |
+|---|---|---|
+| `desktop/cmp/popover/impl/FloatingPopover.ts` | 530 | `PopoverNext` + `Overlay2` |
+| `desktop/cmp/menu/impl/FloatingMenu.ts` | 316 | `Menu`, `MenuItem`, `MenuDivider` |
+| `desktop/cmp/contextmenu/impl/FloatingContextMenu.ts` | 63 | `showContextMenu` |
+| `desktop/cmp/input/impl/SliderImpl.ts` | 281 | `Slider`, `RangeSlider` |
+
+Each emits Blueprint's DOM and `bp6-*` classes, so existing Hoist and app styles apply unchanged.
+Checked by Playwright against Toolbox, with and without the flag:
+
+- **Visual** - screenshots of the app menu, a DashContainer context menu and submenu, a column
+  filter, GroupingChooser, DateInput and the Slider page match. Remaining diffs are sub-pixel, plus
+  the font change below.
+- **Popover** - open, Escape, outside click, a select inside a popover, menu-item dismissal, date
+  picking and backdrop clicks all behave as Blueprint does. Position is identical.
+- **Menu** - mouse behavior matches, including a diagonal move into a submenu and clicking a
+  nested leaf. Blueprint's menu has no keyboard navigation at all: focus never leaves the popover.
+  The spike adds arrow keys, Home/End, typeahead, Enter to activate, and ArrowRight / ArrowLeft /
+  Escape for submenus, with Escape closing one level at a time.
+- **Slider** - arrow keys, track click, drag and range handles that cannot cross match. The spike
+  adds Home/End and PageUp/PageDown, `aria-valuetext` from the label renderer ("$62k", not
+  "62000"), and per-handle `aria-valuemin` / `aria-valuemax` on a range. axe reports the same
+  result in both modes: 10 handles with no accessible name, an existing gap where a slider is not
+  inside a labeled `FormField`.
+- **Focus** - Blueprint drops focus to `<body>` when Escape closes a popover. The spike returns it
+  to the target.
+
+Findings that shape the later phases:
+
+- **No headless library needed.** Floating UI covers overlays, and the hand-rolled slider reached
+  parity.
+- **Overlays can nest across systems.** A popover treats presses inside any body-level layer
+  mounted after its own (a submenu, a react-select menu, an AG Grid popup, a Blueprint overlay) as
+  inside. This lets Blueprint and Hoist overlays coexist during the migration.
+- **Blueprint's own class names can stay on Hoist markup** for a transition release, so app CSS
+  keeps working while apps move to `xh-*` classes. This shortens the release plan below.
+- **Not built in the spike:** `enforceFocus`, transitions, tooltips, dialogs, toasts, hotkeys and
+  the simple controls. The spike still takes Blueprint prop types and uses Blueprint's
+  `popoverPropsToNextProps`. Phase 2 code would use Hoist-owned types.
 
 ### Phase 1 - Decouple the public API (M, breaking)
 
@@ -197,34 +245,42 @@ Budget for them accordingly.
 
 ## Release strategy
 
+Two releases. The phases above are units of work and can merge to `develop` as they finish, behind
+a flag, so they do not each need a release.
+
 | Release | Contents | App impact |
 |---|---|---|
-| N | Phase 1. `kit/blueprint` marked deprecated for app use. | Type changes on button, menu and popover props. Hoist classes available. |
-| N+1 | Phase 2 | Overlay markup and classes change. App CSS on `bp6-popover`, `bp6-dialog`, `bp6-menu` breaks. |
-| N+2 | Phases 3-4 | Control markup changes. `blueprint.css` gone, so app styles relying on its globals may shift. |
-| N+3 | Phase 5 | Apps still importing `kit/blueprint` must add their own `@blueprintjs/core` or migrate. |
+| N | Phases 1-4, on by default. A flag falls back to Blueprint for this release. Hoist markup keeps the `bp6-*` class names alongside new `xh-*` ones. `kit/blueprint` deprecated. | Type changes on button, menu and popover props. App CSS keeps working. Overlays switch to the app font. |
+| N+1 | Phase 5. Flag, `bp6-*` aliases and the dependency removed. | App CSS on `bp6-*` must have moved to `xh-*`. Apps still importing `kit/blueprint` must migrate or add their own `@blueprintjs/core`. |
+
+Safety comes from the fallback flag and the class aliases rather than from spreading the work over
+more releases. Hoist ships a major every two to three weeks (88.0.0 on 2026-09-29, 89.0.0 on
+2026-10-13, 90.0.0 on 2026-11-02), so extra releases mostly add calendar time. Release N+1 can
+wait longer if open question 2 shows heavy direct use of `kit/blueprint` in apps.
 
 Each release needs upgrade notes listing every removed class and prop, with before/after examples
 (`xh-upgrade-notes` skill).
 
 ## Risks
 
-- **Accessibility and keyboard parity.** Blueprint's menus, tabs, sliders and dialogs carry years
-  of keyboard and ARIA fixes. Regressions are easy to ship and hard to notice. Mitigation: the
-  Phase 0 behavior checklist, and a headless library for the hardest controls if needed.
+- **Accessibility and keyboard parity.** Regressions are easy to ship and hard to notice.
+  Phase 0 found the bar lower than expected for menus and sliders, where Blueprint lacks keys the
+  spike adds. Dialogs (focus trap) and tabs are not yet checked. Mitigation: the Phase 0
+  Playwright checks, extended per component.
 - **Nested overlays.** Menu in popover in dialog, select dropdowns inside dialogs, grid filter
   popovers. Dismissal and focus across nesting levels are where custom overlay stacks usually
-  break.
+  break. The spike's layer-order rule handled every case tested; popovers inside dialogs remain
+  to check.
 - **App CSS breakage.** Every `bp6-` selector in app code breaks silently, with no build error.
-  Phase 1's parallel Hoist classes give apps a release to move.
+  Keeping `bp6-*` class names on Hoist markup for release N gives apps a release to move.
 - **Apps using `kit/blueprint` directly.** Size unknown until measured.
 - **Visual drift** from dropping `blueprint.css` globals.
 
 ## Open questions
 
-1. Floating UI plus hand-rolled controls is the default (see Foundation). Phase 0 confirms it,
-   or shows that Slider alone needs a headless library.
-2. How much do client apps import `kit/blueprint` or style `bp6-*` classes? A code search across
-   app repos would size the migration burden and the length of the deprecation window.
-3. Match Blueprint's current look exactly, or take the chance to restyle controls?
-4. Pace: one phase per major as above, or compress Phases 2-4 into one release?
+1. How much do client apps import `kit/blueprint` or style `bp6-*` classes? A code search across
+   app repos would size the migration burden and how long release N+1 should wait.
+2. Match Blueprint's current look exactly, or take the chance to restyle controls?
+
+Resolved by Phase 0: Floating UI plus hand-rolled controls, with no headless library. Release
+pace: two releases, as above.

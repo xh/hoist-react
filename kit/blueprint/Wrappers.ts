@@ -25,9 +25,9 @@ import {
     Hotkeys,
     InputGroup,
     Label,
-    Menu,
-    MenuDivider,
-    MenuItem,
+    Menu as BpMenu,
+    MenuDivider as BpMenuDivider,
+    MenuItem as BpMenuItem,
     type MiddlewareConfig,
     Navbar,
     NavbarDivider,
@@ -42,9 +42,9 @@ import {
     PortalProvider,
     Radio,
     RadioGroup,
-    RangeSlider,
+    RangeSlider as BpRangeSlider,
     SegmentedControl as BpSegmentedControl,
-    Slider,
+    Slider as BpSlider,
     Switch,
     Tab,
     Tabs,
@@ -56,9 +56,23 @@ import {
     Tree
 } from '@blueprintjs/core';
 import {elementFactory} from '@xh/hoist/core';
+import {
+    FloatingMenu,
+    FloatingMenuDivider,
+    FloatingMenuItem
+} from '@xh/hoist/desktop/cmp/menu/impl/FloatingMenu';
+import {SpikeRangeSlider, SpikeSlider} from '@xh/hoist/desktop/cmp/input/impl/SliderImpl';
 import {FloatingPopover} from '@xh/hoist/desktop/cmp/popover/impl/FloatingPopover';
 import type React from 'react';
 import {createElement as reactCreateElement, useMemo} from 'react';
+import {SPIKE_FLOATING_UI} from './Spike';
+
+// SPIKE - Blueprint removal, Phase 0 - see `./Spike`.
+const Menu = (SPIKE_FLOATING_UI ? FloatingMenu : BpMenu) as typeof BpMenu,
+    MenuItem = (SPIKE_FLOATING_UI ? FloatingMenuItem : BpMenuItem) as typeof BpMenuItem,
+    MenuDivider = (SPIKE_FLOATING_UI ? FloatingMenuDivider : BpMenuDivider) as typeof BpMenuDivider,
+    Slider = (SPIKE_FLOATING_UI ? SpikeSlider : BpSlider) as typeof BpSlider,
+    RangeSlider = (SPIKE_FLOATING_UI ? SpikeRangeSlider : BpRangeSlider) as typeof BpRangeSlider;
 
 // Wrap Dialog and Popover to disable fade/scale-in transitions by default.
 // See also popover & overlay related CSS overrides in ./styles.scss.
@@ -68,16 +82,6 @@ const Dialog: React.FC<DialogProps> = props =>
 // `Popover` renders Blueprint's `PopoverNext` (Floating UI based, React 19 compatible) while
 // preserving our legacy `PopoverProps` API: `popoverPropsToNextProps` maps `position`/`modifiers`/
 // `minimal`/`boundary` and retains the legacy `shouldReturnFocusOnClose` default of `false`.
-// SPIKE - Blueprint removal, Phase 0. Set `localStorage.xhSpikeFloatingUi = 'true'` and reload to
-// render popovers with the Floating UI implementation instead of Blueprint's.
-const SPIKE_FLOATING_UI = (() => {
-    try {
-        return window.localStorage.getItem('xhSpikeFloatingUi') === 'true';
-    } catch {
-        return false;
-    }
-})();
-
 const Popover: React.FC<PopoverProps> = props => {
     const nextProps = popoverPropsToNextProps(props),
         {boundary, rootBoundary, placement} = nextProps,
