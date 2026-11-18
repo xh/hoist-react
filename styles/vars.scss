@@ -684,13 +684,6 @@ body {
   --xh-segmented-control-border-radius: var(--xh-border-radius);
   --xh-segmented-control-padding: 3px;
 
-  // Disabled - matches other disabled inputs, with the selected option lifted to stay legible.
-  --xh-segmented-control-disabled-bg: var(--xh-input-disabled-bg);
-  --xh-segmented-control-disabled-text-color: var(--xh-input-disabled-text-color);
-  --xh-segmented-control-disabled-selected-bg: var(--xh-input-disabled-bg);
-  --xh-segmented-control-disabled-selected-text-color: var(--xh-segmented-control-text-color);
-  --xh-segmented-control-disabled-selected-border-color: color-mix(in srgb, var(--xh-border-color) 75%, var(--xh-text-color));
-
   &:where(.xh-dark) {
     // Tray bg follows --xh-bg-alt in both themes - no dark-mode override needed.
     --xh-segmented-control-selected-bg: #{mc('blue-grey', '700')};

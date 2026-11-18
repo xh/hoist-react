@@ -155,36 +155,36 @@
     border: var(--xh-form-field-info-border);
   }
 
-  // Disabled - matches other disabled inputs (e.g. DateInput), so it no longer reads as enabled.
-  // Placed last, with hover/active included, to override the selected and per-intent fills above.
-  // Applies to the whole control only - individually disabled options keep BP's styling.
+  // Disabled control, styled like other disabled inputs. Must follow the selected and intent rules
+  // above, which have equal specificity. Options disabled individually keep BP's styling.
   &.xh-input-disabled {
     &:not(.xh-segmented-control--no-tray-bg) .bp6-segmented-control {
-      background-color: var(--xh-segmented-control-disabled-bg);
+      background-color: var(--xh-input-disabled-bg);
     }
 
     .bp6-segmented-control > .bp6-button {
       cursor: not-allowed;
 
-      // Unselected options - faded labels. Keyed off .bp6-minimal to outrank the intent tint above.
+      // Unselected options - faded labels.
       &.bp6-minimal {
         &,
         &:hover,
         &:active {
           background-color: transparent;
           box-shadow: none;
-          color: var(--xh-segmented-control-disabled-text-color);
+          color: var(--xh-input-disabled-text-color);
         }
       }
 
-      // Selected option - a deeper well with a hairline edge, keeping the current value legible.
+      // Selected option - its translucent fill reads darker over the tray's, set off by a hairline.
       &:not(.bp6-minimal) {
         &,
         &:hover,
         &:active {
-          background-color: var(--xh-segmented-control-disabled-selected-bg);
-          box-shadow: inset 0 0 0 1px var(--xh-segmented-control-disabled-selected-border-color);
-          color: var(--xh-segmented-control-disabled-selected-text-color);
+          background-color: var(--xh-input-disabled-bg);
+          box-shadow: inset 0 0 0 1px
+            color-mix(in srgb, var(--xh-border-color) 75%, var(--xh-text-color));
+          color: var(--xh-segmented-control-text-color);
         }
       }
     }

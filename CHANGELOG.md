@@ -143,9 +143,7 @@ detailed, step-by-step upgrade instructions with before/after code examples.
   the top does, rather than in the resting text color.
 * Desktop `SegmentedControl` now looks disabled when `disabled`, matching other disabled inputs
   such as `DateInput`. Its tray takes the disabled input fill and its labels fade, while the
-  selected option keeps a hairline edge so the current value stays legible. Added
-  `--xh-segmented-control-disabled-bg`, `-text-color`, `-selected-bg`, `-selected-text-color` and
-  `-selected-border-color` to customize it.
+  selected option keeps a hairline edge so the current value stays legible.
 
 ### 📚 Libraries
 
