@@ -37,6 +37,12 @@ describe('MenuButton', () => {
         expect(screen.getByTestId('group-by-sector').textContent).toBe('Sector');
     });
 
+    // Guards against MenuButton passing the model it looked up in context on to the DOM button.
+    it('does not render its model as a DOM attribute', () => {
+        render(host({testId: 'actions', menuItems: [{text: 'Refresh'}]}));
+        expect(screen.getByTestId('actions').hasAttribute('model')).toBe(false);
+    });
+
     it('closes when an item is clicked, unless the item sets keepMenuOpen', async () => {
         const actionFn = vi.fn();
         render(

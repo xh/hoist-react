@@ -98,6 +98,8 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 * Fixed a component with a `uses()` model crashing with a React hooks error when its model went
   missing between renders, e.g. after a dev-server hot reload of the model class. The component
   now shows its "No model found" placeholder.
+* Fixed desktop and mobile `MenuButton`, `RecordActionBar` and `RecordActionButton` rendering
+  `model="[object Object]"` on their DOM elements.
 
 ### ⚙️ Technical
 

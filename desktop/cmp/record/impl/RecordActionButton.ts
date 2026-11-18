@@ -35,6 +35,7 @@ export const [RecordActionButton, recordActionButton] =
     hoistCmp.withFactory<RecordActionButtonProps>({
         displayName: 'RecordActionButton',
         className: 'xh-record-action-button',
+        model: false,
 
         render(props) {
             let {action, minimal, gridModel, selModel, column, record, className, testId, ...rest} =

@@ -74,7 +74,9 @@ export const [MenuButton, menuButton] = hoistCmp.withFactory<MenuButtonProps>({
     displayName: 'MenuButton',
     className: 'xh-menu-button',
 
+    // `useLocalModel()` needs a model spec, but the model is unused - keep it off the DOM button.
     render({
+        model,
         menuClassName,
         menuItems,
         context,
