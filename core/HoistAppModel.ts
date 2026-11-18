@@ -112,6 +112,7 @@ export class HoistAppModel extends HoistModel {
                 await XH.fetchJson(
                     {
                         url: 'xh/clearUserState',
+                        method: 'POST',
                         params: {clientUsername: XH.getUsername()}
                     },
                     ctx

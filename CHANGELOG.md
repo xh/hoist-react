@@ -37,6 +37,9 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 * `Mask` now renders inline desktop masks as a plain `div` with the class `xh-mask--inline`, not a
   Blueprint overlay. Showing a mask no longer forces a browser layout. Restyle any app CSS that
   targets `.bp6-overlay` classes within an inline mask, or use `--xh-mask-bg`.
+* `FetchService` now sends a request with no `method` as a GET, even when it sets `params`. Before,
+  `params` made it a POST with a form-encoded body. Set `method: 'POST'` on calls that change data,
+  send credentials, or send large params - see Step 7 of the upgrade notes.
 
 ### 🎁 New Features
 

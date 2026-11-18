@@ -6,7 +6,8 @@
 
 Hoist React v91 resets Hoist's CSS custom properties onto a simpler baseline, and moves element
 factories to the standard React `children` key. A codemod automates nearly all of each migration.
-v91 also requires AG Grid 36.3 and renders desktop inline masks without a Blueprint overlay.
+v91 also requires AG Grid 36.3, renders desktop inline masks without a Blueprint overlay, and sends
+a fetch with `params` but no `method` as a GET.
 
 - **AG Grid 36.3 (required)** - see Step 1.
 - **Inline masks (if your app styles them)** - see Step 5.
@@ -30,6 +31,8 @@ v91 also requires AG Grid 36.3 and renders desktop inline masks without a Bluepr
   via `children`, as React does. A type-aware codemod converts app code and reports examples in
   docs. The legacy `item` and `items` keys still work as aliases in v91, but a future major version
   will remove them.
+- **`FetchService` default method (review fetches that send `params`)** - see Step 7. A request
+  with `params` and no `method` is now a GET, not a POST.
 
 The CSS changes also cover the variables added in v90 - the panel splitter (`--xh-panel-splitter-*`,
 `--xh-panel-collapsed-strip-*`), `PdfViewer` (`--xh-pdf-viewer-*`) and `StatCard`
@@ -50,6 +53,8 @@ The most significant impacts are:
   legacy key won. The usual case is a container that spreads its props and adds `items`, as in
   `box({...props, items: [...]})`, where a `children` prop in the spread now hides the `items`.
   Hoist logs a console warning naming the component. The Step 6 codemod fixes these.
+- **A fetch with `params` and no `method` is now a GET.** Before v91 it was a POST. A server action
+  that accepts only POST rejects it, and a password or other sensitive param ends up in the URL.
 
 ## Prerequisites
 
@@ -364,7 +369,40 @@ own `children` prop when it declares one, such as a render function.
 Toolbox ran this codemod over its whole client - see
 [xh/toolbox#958](https://github.com/xh/toolbox/pull/958).
 
-### 7. Check the Console and the UI
+### 7. Set `method` on Fetches That Should POST
+
+`FetchService` now sends a request with no `method` as a GET, whatever its `params`. Before v91, a
+request with `params` and no `method` was a POST, with the params in a form-encoded body. This
+applies to `XH.fetch()`, `XH.fetchJson()` and `XH.fetchNdjson()`, the same calls on a `Runner`, and
+a `PdfViewer` source given as `FetchOptions`. `getJson`, `postJson`, `putJson`, `patchJson` and
+`deleteJson` set their own method and are unchanged.
+
+List the calls to check, then look at each one that sets `params` but not `method`:
+
+```bash
+grep -rnE '\.(fetch|fetchJson|fetchNdjson)\(' src
+```
+
+Grails binds controller `params` from the query string and a form body alike, so a read served by a
+Grails action works as a GET without change. Add `method: 'POST'` to a call that:
+
+- changes data on the server.
+- sends a password or other sensitive value, which a GET would put in the URL and server logs.
+- sends large params, such as serialized JSON, which can exceed URL length limits.
+- targets a server action that accepts only POST.
+
+```typescript
+// Before v91 - a POST, because it sets params
+await XH.fetchJson({url: 'api/orders/cancel', params: {orderId}});
+
+// v91 - set the method to keep it a POST
+await XH.fetchJson({url: 'api/orders/cancel', method: 'POST', params: {orderId}});
+```
+
+A unit test that serves one of these reads with `hoistCore.route('POST', ...)` and checks `req.form`
+now needs `route('GET', ...)` and `req.query`.
+
+### 8. Check the Console and the UI
 
 Start the app in development mode. Hoist logs a warning at startup if any size variable resolves to
 a bare number - almost always an override the codemod could not see, such as one set from
@@ -427,6 +465,8 @@ After completing all steps:
   spreads (Step 6).
 - [ ] The application loads without the console warning about a spec that sets both `children`
   and a legacy `item` / `items` key.
+- [ ] Each fetch that sets `params` and changes data, sends a sensitive value, or sends large params
+  also sets `method: 'POST'` (Step 7).
 - [ ] No references to retired CSS variable names remain:
   ```bash
   # Should return nothing
