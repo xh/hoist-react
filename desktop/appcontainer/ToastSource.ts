@@ -6,99 +6,103 @@
  */
 import type {ToastModel} from '@xh/hoist/appcontainer/ToastModel';
 import {ToastSourceModel} from '@xh/hoist/appcontainer/ToastSourceModel';
-import {div} from '@xh/hoist/cmp/layout';
-import {hoistCmp, HoistModel, lookup, useLocalModel, uses} from '@xh/hoist/core';
-import type {ToasterPosition} from '@xh/hoist/kit/blueprint';
-import {OverlayToaster} from '@xh/hoist/kit/blueprint';
-import {getOrCreate} from '@xh/hoist/utils/js';
+import {div, fragment} from '@xh/hoist/cmp/layout';
+import type {HoistProps} from '@xh/hoist/core';
+import {hoistCmp, uses} from '@xh/hoist/core';
+import {logWarn} from '@xh/hoist/utils/js';
 import classNames from 'classnames';
-import {isElement, map} from 'lodash';
-import {wait} from '../../promise';
-import './Toast.scss';
+import {isElement} from 'lodash';
+import type {KeyboardEvent} from 'react';
+import {createPortal} from 'react-dom';
+import {legacyToastSource} from './impl/LegacyToastSource';
+import {toast} from './Toast';
+
+export interface ToastSourceDefaults {
+    /**
+     * True to show desktop toasts with Blueprint's toaster, as before Hoist had its own.
+     * For apps to fall back on while they adopt Hoist's toasts - removed in the next major version.
+     */
+    useBlueprint?: boolean;
+}
 
 /**
- *  Support for showing Toasts in an application. This component does not render any content
- *  directly, but for technical reasons (primarily symmetry with mobile) it remains a component.
- *  @internal
+ * Renders the open toasts. Toasts sharing a container and position stack together, newest
+ * nearest the edge they are shown along. Escape with focus in a stack dismisses all its toasts.
+ * @internal
  */
-export const toastSource = hoistCmp.factory({
+export const [ToastSource, toastSource] = hoistCmp.withFactory<
+    HoistProps<ToastSourceModel>,
+    ToastSourceDefaults
+>({
     displayName: 'ToastSource',
     model: uses(ToastSourceModel),
+    defaults: {
+        useBlueprint: false
+    },
 
-    render() {
-        useLocalModel(ToastSourceLocalModel);
-        return null;
+    render({model}) {
+        if (ToastSource.defaults.useBlueprint) return legacyToastSource();
+
+        const stacks = new Map<HTMLElement, Map<string, ToastModel[]>>();
+        model.toastModels.forEach(it => {
+            if (!it.isOpen) return;
+            const container = containerFor(it),
+                byPosition = stacks.get(container) ?? new Map();
+            stacks.set(container, byPosition);
+            byPosition.set(it.position, [it, ...(byPosition.get(it.position) ?? [])]);
+        });
+
+        const portals = [];
+        stacks.forEach((byPosition, container) => {
+            byPosition.forEach((toasts, position) => {
+                const key = `${containerKey(container)}-${position}`;
+                portals.push(createPortal(toastStack(toasts, position, container), container, key));
+            });
+        });
+        return fragment(portals);
     }
 });
 
-class ToastSourceLocalModel extends HoistModel {
-    override xhImpl = true;
+//------------------------
+// Implementation
+//------------------------
+function toastStack(toasts: ToastModel[], position: string, container: HTMLElement) {
+    const isAnchored = container !== document.body,
+        edges = position.split('-');
 
-    @lookup(ToastSourceModel)
-    sourceModel: ToastSourceModel;
+    const onKeyDown = (e: KeyboardEvent) => {
+        if (e.key === 'Escape') toasts.forEach(it => it.dismiss());
+    };
 
-    _toasterMap = new Map();
+    return div({
+        className: classNames(
+            'xh-toast-container',
+            `xh-toast-container--${position}`,
+            'bp6-toast-container',
+            edges.map(it => `bp6-toast-container-${it}`),
+            isAnchored
+                ? ['xh-toast-container--anchored', 'bp6-toast-container-inline']
+                : 'bp6-toast-container-in-portal'
+        ),
+        onKeyDown,
+        children: toasts.map(model => toast({model, key: model.xhId}))
+    });
+}
 
-    override onLinked() {
-        const {sourceModel} = this;
-        this.addReaction({
-            track: () => [sourceModel.toastModels, map(sourceModel.toastModels, 'isOpen')] as const,
-            run: ([models]) => this.displayPendingToastsAsync(models)
-        });
+// Stable React keys for containers, so a stack keeps its DOM as toasts come and go.
+const containerKeys = new WeakMap<HTMLElement, number>();
+let nextContainerKey = 0;
+
+function containerKey(container: HTMLElement): number {
+    if (!containerKeys.has(container)) containerKeys.set(container, nextContainerKey++);
+    return containerKeys.get(container);
+}
+
+function containerFor(model: ToastModel): HTMLElement {
+    const {containerRef} = model;
+    if (containerRef && !isElement(containerRef)) {
+        logWarn('Ignoring invalid containerRef for Toast - must be a DOM element', 'ToastSource');
+        return document.body;
     }
-
-    async displayPendingToastsAsync(models: ToastModel[]) {
-        for (const model of models) {
-            const {isOpen, icon, intent, actionButtonProps, position, containerRef, ...rest} =
-                model;
-
-            const bpId = model['bpId'];
-
-            // 1) If toast is visible and sent to bp, or already obsolete -- nothing to do
-            if (!!bpId === isOpen) continue;
-
-            // 2) ...otherwise this toast needs to be shown or hidden with bp api
-            let toaster = await this.getToasterAsync(position as ToasterPosition, containerRef);
-            if (!bpId) {
-                model['bpId'] = toaster.show({
-                    className: classNames('xh-toast', `xh-bg-intent-${intent}`),
-                    icon: div({className: 'xh-toast__icon', children: icon}),
-                    action: actionButtonProps,
-                    onDismiss: () => wait(0).then(() => model.dismiss()),
-                    intent,
-                    ...rest
-                });
-            } else {
-                toaster.dismiss(bpId);
-            }
-        }
-    }
-
-    /**
-     * Get a toaster instance. If the instance doesn't exist, it will be made.
-     * This method lets you get/create toasters by their Position enum values.
-     * Other toaster options cannot be set via this method.
-
-     * If non-default values are needed for a toaster, a different method must be used.
-     *
-     * @param position - position on screen where toast should appear.
-     * @param container - DOM Element used to position (contain) the toast.
-     */
-    async getToasterAsync(position: ToasterPosition, container: HTMLElement) {
-        if (container && !isElement(container)) {
-            this.logWarn('Ignoring invalid containerRef for Toast - must be a DOM element');
-            container = null;
-        }
-        const className = `xh-toast-container ${container ? 'xh-toast-container--anchored' : ''}`;
-
-        container = container ?? document.body;
-
-        // We want to just memoize this by two args, one of which is an object?
-        const toasterMap = this._toasterMap,
-            toasters = getOrCreate(toasterMap, container, () => ({}));
-        if (!toasters[position]) {
-            toasters[position] = await OverlayToaster.create({position, className}, {container});
-        }
-        return toasters[position];
-    }
+    return containerRef ?? document.body;
 }

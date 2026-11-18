@@ -49,6 +49,10 @@ detailed, step-by-step upgrade instructions with before/after code examples.
   and its parts from there rather than `@xh/hoist/kit/blueprint`. The DOM keeps Blueprint's
   `bp6-dialog*` and `bp6-overlay*` classes alongside new `xh-dialog*` and `xh-overlay*` ones. Set
   `Dialog.defaults.useBlueprint = true` at startup to fall back to Blueprint's for this release.
+* Desktop toasts now render with Hoist's own components, not Blueprint's `OverlayToaster`. The DOM
+  keeps Blueprint's `bp6-toast*` classes alongside `xh-toast*` ones, so app CSS still applies. Set
+  `ToastSource.defaults.useBlueprint = true` at startup to fall back to Blueprint's for this
+  release. `ToastSource` is exported from `@xh/hoist/desktop/appcontainer` for this purpose.
 * Desktop menus and context menus now render with Hoist's own components, not Blueprint's. The DOM
   keeps Blueprint's `bp6-menu*` classes alongside new `xh-menu-*` ones, so app CSS still applies.
   Set `Menu.defaults.useBlueprint = true` at startup to fall back to Blueprint's for this release.
@@ -116,6 +120,8 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 * Fixed desktop `TabSwitcher` with `enableOverflow: true`, and `DynamicTabSwitcher` when its tabs
   overflow, moving a scrolling panel or page around them to show the active tab. Each now scrolls
   only its own tab strip.
+* Fixed desktop toasts shown together before the first toast appeared, such as at startup, each
+  showing more than once, in stacks drawn over one another.
 
 ### ⚙️ Technical
 
