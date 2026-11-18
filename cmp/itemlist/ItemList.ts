@@ -7,7 +7,7 @@
 import classNames from 'classnames';
 import {isEmpty} from 'lodash';
 import {useId} from 'react';
-import type {KeyboardEvent, MouseEvent, ReactElement, ReactNode} from 'react';
+import type {ReactElement, ReactNode} from 'react';
 
 import {div, li, ol, span, ul} from '@xh/hoist/cmp/layout';
 import {hoistCmp} from '@xh/hoist/core';
@@ -20,6 +20,7 @@ import type {
     TestSupportProps
 } from '@xh/hoist/core';
 import {clickableRowProps, throwIfRowsPassedAsChildren} from '@xh/hoist/utils/impl';
+import type {RowClickHandler} from '@xh/hoist/utils/impl';
 import {mergeDeep, TEST_ID} from '@xh/hoist/utils/js';
 import {isBlankNode, splitLayoutProps} from '@xh/hoist/utils/react';
 
@@ -64,7 +65,7 @@ export interface ItemListEntry {
      * and that screen readers announce, so a control in the `detail`, such as a button, is not
      * nested inside it. A click or keypress on such a control goes to that control only.
      */
-    onClick?: (e: MouseEvent<HTMLElement> | KeyboardEvent<HTMLElement>) => void;
+    onClick?: RowClickHandler;
 
     /**
      * True to show an entry that has an `onClick` dimmed and inert: it takes no focus and does
