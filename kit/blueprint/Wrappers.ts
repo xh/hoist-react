@@ -56,6 +56,7 @@ import {
     Tree
 } from '@blueprintjs/core';
 import {elementFactory} from '@xh/hoist/core';
+import {FloatingPopover} from '@xh/hoist/desktop/cmp/popover/impl/FloatingPopover';
 import type React from 'react';
 import {createElement as reactCreateElement, useMemo} from 'react';
 
@@ -67,6 +68,16 @@ const Dialog: React.FC<DialogProps> = props =>
 // `Popover` renders Blueprint's `PopoverNext` (Floating UI based, React 19 compatible) while
 // preserving our legacy `PopoverProps` API: `popoverPropsToNextProps` maps `position`/`modifiers`/
 // `minimal`/`boundary` and retains the legacy `shouldReturnFocusOnClose` default of `false`.
+// SPIKE - Blueprint removal, Phase 0. Set `localStorage.xhSpikeFloatingUi = 'true'` and reload to
+// render popovers with the Floating UI implementation instead of Blueprint's.
+const SPIKE_FLOATING_UI = (() => {
+    try {
+        return window.localStorage.getItem('xhSpikeFloatingUi') === 'true';
+    } catch {
+        return false;
+    }
+})();
+
 const Popover: React.FC<PopoverProps> = props => {
     const nextProps = popoverPropsToNextProps(props),
         {boundary, rootBoundary, placement} = nextProps,
@@ -74,7 +85,11 @@ const Popover: React.FC<PopoverProps> = props => {
             () => withViewportPadding(nextProps.middleware, boundary, rootBoundary, placement),
             [nextProps.middleware, boundary, rootBoundary, placement]
         );
-    return reactCreateElement(BpPopover, {transitionDuration: 0, ...nextProps, middleware});
+    return reactCreateElement(SPIKE_FLOATING_UI ? FloatingPopover : BpPopover, {
+        transitionDuration: 0,
+        ...nextProps,
+        middleware
+    });
 };
 
 // Keep popovers a few pixels clear of the viewport edge. Their border ring and shadow draw outside
