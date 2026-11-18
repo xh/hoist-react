@@ -49,6 +49,9 @@ Each intent has its own icon - info, success, warning and danger - so color is n
 signal. The default icon also names the intent to screen readers, as "Info", "Success", "Warning"
 or "Error". Pass `icon` to show another, or `false` for none.
 
+Set `size: 'compact'` for less padding and smaller text, to fit a dense form, dialog or side
+panel. A standard callout takes the font size of its container.
+
 The callout is a block with no outer margin, so it fills the width of a block or a column. Space
 it from its neighbors with a `gap` on its container or a `margin` layout prop. In a row such as an
 `hbox`, give it a `flex` or a `width`.
@@ -58,7 +61,8 @@ that streams in can therefore show the title first and the body as it grows.
 
 ## Styling
 
-Set the `--xh-callout-*` variables on `body.xh-app` to change the padding, radius and colors.
+Set the `--xh-callout-*` variables on `body.xh-app` to change the padding, radius and colors, and
+the `--xh-callout-compact-*` variables to tune the compact size.
 The full set is in the `Callouts` block of [`styles/vars.scss`](../../styles/vars.scss). Each
 intent reads a `-bg` variable for its background and a `-color` variable for its icon and left bar.
 The title and body take the text color, so they read well on every tint:

@@ -18,6 +18,13 @@
   border-left: var(--xh-callout-accent-width) solid var(--xh-callout-color);
   border-radius: var(--xh-callout-border-radius);
 
+  // Swaps in the compact-size variables, so the rules above draw both sizes.
+  &--compact {
+    --xh-callout-font-size: var(--xh-callout-compact-font-size);
+    --xh-callout-gap: var(--xh-callout-compact-gap);
+    --xh-callout-padding: var(--xh-callout-compact-padding);
+  }
+
   &--intent-primary {
     --xh-callout-bg: var(--xh-callout-primary-bg);
     --xh-callout-color: var(--xh-callout-primary-color);

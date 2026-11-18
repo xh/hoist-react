@@ -380,6 +380,9 @@ body {
   --xh-callout-bg: color-mix(in srgb, var(--xh-callout-color) 12%, transparent);
   --xh-callout-color: var(--xh-blue-gray);
   --xh-callout-border-radius: var(--xh-border-radius);
+  --xh-callout-compact-font-size: var(--xh-font-size-small-relative);
+  --xh-callout-compact-gap: 6px;
+  --xh-callout-compact-padding: var(--xh-spacing-half);
   --xh-callout-danger-bg: var(--xh-intent-danger-trans1);
   --xh-callout-danger-color: var(--xh-intent-danger-text-color);
   --xh-callout-font-size: inherit;

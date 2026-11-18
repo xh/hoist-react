@@ -105,6 +105,15 @@ describe('Callout', () => {
         expect(body.querySelector('img, strong')).toBeNull();
     });
 
+    it('marks a compact callout with a modifier class, and a standard or null size with none', () => {
+        expect(renderCallout({size: 'compact', children: 'Text'}).classList).toContain(
+            'xh-callout--compact'
+        );
+        for (const size of ['standard', null] as const) {
+            expect(renderCallout({size, children: 'Text'}).className).not.toMatch(/--compact/);
+        }
+    });
+
     it('applies layout props, a class name and a test ID to its root', () => {
         const el = renderCallout({
             className: 'my-callout',

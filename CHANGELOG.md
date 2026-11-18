@@ -55,8 +55,8 @@ detailed, step-by-step upgrade instructions with before/after code examples.
   against a maximum, with an optional label, figure, `intent` and `target` marker. Set
   `indeterminate` for work of unknown length.
 * Added `Callout` to `@xh/hoist/cmp/callout`, a cross-platform note set off within content, with
-  an `intent`, its icon, an optional `title` and a body. Use it inside content, and `Banner` for a
-  status strip in panel chrome.
+  an `intent`, its icon, an optional `title`, a body and a `compact` size. Use it inside content,
+  and `Banner` for a status strip in panel chrome.
 * Added `Icon.forIntent()` and the `intentPrimary`, `intentSuccess`, `intentWarning` and
   `intentDanger` icon aliases. `Banner` and `Callout` use them, so an app can replace an intent's
   icon via `Icon.register()` with `replace: true`.

@@ -11,6 +11,7 @@ import type {ReactElement, ReactNode} from 'react';
 import {div} from '@xh/hoist/cmp/layout';
 import {hoistCmp} from '@xh/hoist/core';
 import type {
+    ComponentSize,
     DomAttrsProps,
     HoistProps,
     Intent,
@@ -36,6 +37,13 @@ export interface CalloutProps extends HoistProps, LayoutProps, TestSupportProps,
      * has no default icon. False for no icon.
      */
     icon?: ReactElement | false;
+
+    /**
+     * Size of the callout - `compact` for less padding and smaller text, to fit a dense form,
+     * dialog or side panel. Default `standard`. Set the `--xh-callout-compact-*` CSS variables to
+     * tune the compact size.
+     */
+    size?: Extract<ComponentSize, 'compact' | 'standard'>;
 
     /** Short heading shown above the body. */
     title?: ReactNode;
@@ -65,7 +73,7 @@ export const [Callout, callout] = hoistCmp.withFactory<CalloutProps>({
     className: 'xh-callout',
 
     render(props, ref) {
-        const [layoutProps, {className, intent, icon, title, children, testId, domAttrs}] =
+        const [layoutProps, {className, intent, icon, size, title, children, testId, domAttrs}] =
                 splitLayoutProps(props),
             titleId = useId(),
             hasTitle = !isBlankNode(title),
@@ -82,7 +90,13 @@ export const [Callout, callout] = hoistCmp.withFactory<CalloutProps>({
             role: 'note',
             'aria-labelledby': hasTitle ? titleId : null,
             ...mergeDeep(
-                {className: classNames(className, intent && `xh-callout--intent-${intent}`)},
+                {
+                    className: classNames(
+                        className,
+                        intent && `xh-callout--intent-${intent}`,
+                        size === 'compact' && 'xh-callout--compact'
+                    )
+                },
                 {style: layoutProps},
                 {[TEST_ID]: testId, ...domAttrs}
             ),
