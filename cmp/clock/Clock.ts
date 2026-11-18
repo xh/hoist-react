@@ -45,6 +45,7 @@ export interface ClockProps extends HoistProps, BoxProps {
  */
 export const [Clock, clock] = hoistCmp.withFactory<ClockProps>({
     displayName: 'Clock',
+    model: false,
     className: 'xh-clock',
 
     render({className, testId, ...props}, ref) {

@@ -52,8 +52,8 @@ export interface RecordActionBarProps extends ButtonGroupProps {
  */
 export const [RecordActionBar, recordActionBar] = hoistCmp.withFactory<RecordActionBarProps>({
     displayName: 'RecordActionBar',
-    className: 'xh-record-action-bar',
     model: false,
+    className: 'xh-record-action-bar',
 
     render(props) {
         const {

@@ -21,8 +21,8 @@ import {
 import {bindable, bindableRef} from '@xh/hoist/mobx';
 import {initTestAppAsync} from '@xh/hoist/test-support';
 import {act, render} from '@testing-library/react';
-import {createRef} from 'react';
-import {beforeAll, describe, expect, it, onTestFinished} from 'vitest';
+import {createElement, createRef} from 'react';
+import {beforeAll, describe, expect, it, onTestFinished, vi} from 'vitest';
 
 /**
  * The hooks that tie models to components. Linked models - those a component creates and owns via
@@ -182,6 +182,40 @@ describe('useLocalModel', () => {
 
         unmount();
         expect(trades.isDestroyed).toBe(true);
+    });
+
+    it('works in a component with no model spec, linked beneath the model in context', () => {
+        const dashboardRef = createRef<DashboardModel>(),
+            localModels: TradesModel[] = [],
+            tradesTitle = hoistCmp.factory({
+                model: false,
+                render({title}) {
+                    localModels.push(useLocalModel(TradesModel));
+                    return span(title);
+                }
+            });
+
+        const {unmount} = render(
+            dashboardPanel({
+                modelRef: dashboardRef,
+                children: tradesTitle({title: 'Trades'})
+            })
+        );
+
+        const [trades] = localModels;
+        expect(trades.linkedWith.title).toBe('Trades');
+        expect(trades.dashboardModel).toBe(dashboardRef.current);
+        expect(trades.loadSpecs).toHaveLength(1);
+
+        unmount();
+        expect(trades.isDestroyed).toBe(true);
+    });
+
+    it('throws outside a HoistComponent', () => {
+        const PlainCmp = () => span(useLocalModel(ChartModel).title);
+        const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {});
+        onTestFinished(() => consoleError.mockRestore());
+        expect(() => render(createElement(PlainCmp))).toThrow(/HoistComponent/);
     });
 
     it('does not re-render when state read while creating the model changes', () => {

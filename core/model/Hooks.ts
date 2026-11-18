@@ -38,11 +38,12 @@ export function useLocalModel<T extends HoistModel>(spec?: HoistModelClass<T> | 
             return s.isHoistModel ? new s() : s.call();
         })
     );
-    const {modelLookup, props} = localModelContext;
+    const contextLookup = useContext(ModelLookupContext),
+        {props} = localModelContext,
+        modelLookup = localModelContext.modelLookup ?? contextLookup;
     throwIf(
-        !modelLookup || !props,
-        'Cannot use useLocalModel() in this render method. ' +
-            'Please ensure that this is a HoistComponent and that its `model` spec is not falsy.'
+        !props,
+        'Cannot use useLocalModel() in this render method. Please ensure that this is a HoistComponent.'
     );
     useModelLinker(ret, modelLookup, props);
     return ret;

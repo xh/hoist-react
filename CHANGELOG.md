@@ -73,6 +73,8 @@ detailed, step-by-step upgrade instructions with before/after code examples.
   `intent`, by its trend, or by the sign of each part, as for profit and loss. Optional
   `markers` dot the first, last, lowest and highest values. An optional `tooltip` for the whole
   sparkline shows on desktop and mounts only when first hovered.
+* `useLocalModel()` now works in a component with `model: false`. Before, it threw unless the
+  component had a model spec, even one it never used.
 * Added `XH.hasRoute()` to check if a route exists. Call it before `XH.router.buildPath()` or
   `buildUrl()` with a name that may not be registered, as both throw for an unknown route.
 
@@ -99,7 +101,8 @@ detailed, step-by-step upgrade instructions with before/after code examples.
   missing between renders, e.g. after a dev-server hot reload of the model class. The component
   now shows its "No model found" placeholder.
 * Fixed desktop and mobile `MenuButton`, `RecordActionBar` and `RecordActionButton` rendering
-  `model="[object Object]"` on their DOM elements.
+  `model="[object Object]"` on their buttons. These and other components that never use a model
+  now set `model: false`.
 
 ### ⚙️ Technical
 

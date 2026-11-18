@@ -173,9 +173,7 @@ export function hoistCmp<P extends HoistProps>(config: ComponentConfig<P>): FC<P
     );
 
     // 2) Wrap supplied render function with model and classname, support. Be sure to clone props.
-    if (cfg.modelSpec) {
-        render = wrapWithModel(render, cfg);
-    }
+    render = cfg.modelSpec ? wrapWithModel(render, cfg) : wrapWithLocalModelContext(render);
     if (cfg.className) {
         render = wrapWithClassName(render, cfg);
     }
@@ -268,6 +266,20 @@ function wrapWithClassName(render: RenderFn, cfg: Config): RenderFn {
     return (props, ref) => {
         props.className = classNames(cfg.className, props.className);
         return render(props, ref);
+    };
+}
+
+// Publish props for useLocalModel() in a component with no model spec. The hook reads the
+// model lookup from React context itself.
+function wrapWithLocalModelContext(render: RenderFn): RenderFn {
+    return (props, ref) => {
+        const ctx = localModelContext;
+        try {
+            ctx.props = props;
+            return render(props, ref);
+        } finally {
+            ctx.props = null;
+        }
     };
 }
 

@@ -29,6 +29,7 @@ export interface StoreCountLabelProps extends HoistProps, BoxProps {
  * Displays the number of (post-filtered) records loaded into a Store.
  */
 export const [StoreCountLabel, storeCountLabel] = hoistCmp.withFactory<StoreCountLabelProps>({
+    model: false,
     className: 'xh-store-count-label',
 
     render({store, unit = 'record', includeChildren = false, ...props}, ref) {
