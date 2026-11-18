@@ -372,6 +372,38 @@ body {
   }
 
   //------------------------
+  // Callouts
+  //------------------------
+  // Width of the bar along the left edge, in the callout's color. Zero for no bar.
+  --xh-callout-accent-width: 3px;
+  // Background and color (of the icon, title and bar) for a callout with no intent.
+  --xh-callout-bg: var(--xh-intent-neutral-trans1);
+  --xh-callout-color: var(--xh-blue-gray);
+  --xh-callout-border-radius: var(--xh-border-radius);
+  --xh-callout-danger-bg: var(--xh-intent-danger-trans1);
+  --xh-callout-danger-color: var(--xh-intent-danger-text-color);
+  --xh-callout-font-size: inherit;
+  // Gap between the icon and the text.
+  --xh-callout-gap: var(--xh-spacing);
+  --xh-callout-line-height: 1.4;
+  --xh-callout-padding: var(--xh-spacing);
+  --xh-callout-primary-bg: var(--xh-intent-primary-trans1);
+  --xh-callout-primary-color: var(--xh-intent-primary-text-color);
+  --xh-callout-success-bg: var(--xh-intent-success-trans1);
+  --xh-callout-success-color: var(--xh-intent-success-text-color);
+  --xh-callout-text-color: var(--xh-text-color);
+  --xh-callout-title-font-weight: 600;
+  // Gap between the title and the body.
+  --xh-callout-title-gap: 2px;
+  --xh-callout-warning-bg: var(--xh-intent-warning-trans1);
+  --xh-callout-warning-color: var(--xh-intent-warning-text-color);
+
+  &:where(.xh-dark) {
+    --xh-callout-color: var(--xh-text-color-muted);
+  }
+
+
+  //------------------------
   // Cards
   //------------------------
   --xh-card-bg: var(--xh-bg);

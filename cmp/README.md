@@ -194,6 +194,7 @@ techniques.
 | Sub-package | Description                                              |
 |-------------|----------------------------------------------------------|
 | `/badge/` | Badge component for counts and status indicators         |
+| `/callout/` | Short note set off within content, with an intent, icon and optional title (Callout). [See README](./callout/README.md) |
 | `/loadingindicator/` | Loading state display in a compact and non-blocking form |
 | `/mask/` | Overlay mask for blocking interactions                   |
 | `/progressbar/` | Bar that shows a value against a maximum, or indeterminate progress (ProgressBar). [See README](./progressbar/README.md) |
@@ -343,6 +344,12 @@ CardModel supports `collapsible` state with configurable `renderMode` (`'always'
 **FormFieldSet** (`/cmp/form/formfieldset/`) extends Card to group related `FormField` components,
 displaying their aggregate validation state as intent-colored borders and tooltips. See the
 [Form README](./form/README.md#formfieldset) for details.
+
+### Callout (`/callout/`)
+
+A short note set off within a body of content, with an intent, its icon, an optional title and a
+body. Use it for a caveat or a warning inside content, and a desktop `Banner` for a status strip in
+panel chrome. See the [Callout README](./callout/README.md).
 
 ### ProgressBar (`/progressbar/`)
 
