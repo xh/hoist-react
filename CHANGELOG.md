@@ -102,7 +102,7 @@ detailed, step-by-step upgrade instructions with before/after code examples.
   now shows its "No model found" placeholder.
 * Fixed desktop and mobile `MenuButton`, `RecordActionBar` and `RecordActionButton` rendering
   `model="[object Object]"` on their buttons. These and other components that never use a model
-  now set `model: false`.
+  now set `model: false`, so `XH.getModelByTestId()` no longer returns a model for their `testId`.
 
 ### ⚙️ Technical
 

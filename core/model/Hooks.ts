@@ -5,6 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
+import type {ReactNode} from 'react';
 import {use, useContext, useEffect, useState} from 'react';
 import {throwIf} from '@xh/hoist/utils/js';
 import type {HoistModel, HoistModelClass, ModelSelector, ModelLookup} from './';
@@ -38,14 +39,11 @@ export function useLocalModel<T extends HoistModel>(spec?: HoistModelClass<T> | 
             return s.isHoistModel ? new s() : s.call();
         })
     );
-    const {props} = localModelContext;
+    const {props, modelLookup} = localModelContext;
     throwIf(
         !props,
         'Cannot use useLocalModel() in this render method. Please ensure that this is a HoistComponent.'
     );
-    // A component with a model spec supplies its own lookup, which includes the model it publishes
-    // to its children. Otherwise read the inherited lookup - `use()` may be called conditionally.
-    const modelLookup = localModelContext.modelLookup ?? use(ModelLookupContext);
     useModelLinker(ret, modelLookup, props);
     return ret;
 }
@@ -116,8 +114,33 @@ export function useModelLinker(model: HoistModel, modelLookup: ModelLookup, prop
 }
 
 /**
- * Default Context for useLocalModel.
- * Set by HoistComponent during render to minimize app boilerplate required.
+ * Run a HoistComponent's render with the context for useLocalModel() set.
+ * @param modelLookup - the component's own lookup, or null to inherit one from context.
  * @internal
  */
-export const localModelContext = {modelLookup: null, props: null};
+export function withLocalModelContext(
+    props: object,
+    modelLookup: ModelLookup,
+    fn: () => ReactNode
+): ReactNode {
+    const ctx = localModelContext;
+    try {
+        ctx.props = props;
+        ctx.lookup = modelLookup;
+        return fn();
+    } finally {
+        ctx.props = null;
+        ctx.lookup = null;
+    }
+}
+
+// Context for useLocalModel(), set by withLocalModelContext() while a HoistComponent renders.
+const localModelContext = {
+    props: null as object,
+    lookup: null as ModelLookup,
+
+    // A provided lookup, or one lazily looked up
+    get modelLookup(): ModelLookup {
+        return (this.lookup ??= use(ModelLookupContext));
+    }
+};

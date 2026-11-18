@@ -16,7 +16,7 @@ import {CreatesSpec, UsesSpec, elementFactory} from './';
 import type {ModelSpec, HoistModel} from './model';
 import {
     useModelLinker,
-    localModelContext,
+    withLocalModelContext,
     ModelLookup,
     ModelLookupContext,
     modelLookupContextProvider,
@@ -173,7 +173,7 @@ export function hoistCmp<P extends HoistProps>(config: ComponentConfig<P>): FC<P
     );
 
     // 2) Wrap supplied render function with model and classname, support. Be sure to clone props.
-    render = cfg.modelSpec ? wrapWithModel(render, cfg) : wrapWithLocalModelContext(render);
+    render = cfg.modelSpec ? wrapWithModel(render, cfg) : wrapWithoutModel(render);
     if (cfg.className) {
         render = wrapWithClassName(render, cfg);
     }
@@ -269,25 +269,20 @@ function wrapWithClassName(render: RenderFn, cfg: Config): RenderFn {
     };
 }
 
-// Publish props for useLocalModel() in a component with no model spec. The hook reads the
-// model lookup from React context itself.
-function wrapWithLocalModelContext(render: RenderFn): RenderFn {
-    return (props, ref) => {
-        const ctx = localModelContext;
-        try {
-            ctx.props = props;
-            return render(props, ref);
-        } finally {
-            ctx.props = null;
-        }
-    };
-}
-
 function wrapWithClonedProps(render: RenderFn): RenderFn {
     return (props, ref) => render({...props}, ref);
 }
 
 //------------------------------------------------------------------------------------
+// Context support for components without their own models.
+//------------------------------------------------------------------------------------
+function wrapWithoutModel(render: RenderFn): RenderFn {
+    return (props, ref) => withLocalModelContext(props, null, () => render(props, ref));
+}
+
+//------------------------------------------------------------------------------------
+// Context support for components with their own models.
+//
 // Lookup/create model for this component using spec, *AND* potentially publish
 // explicitly to children, if needed.  This may require inserting a ContextProvider
 //------------------------------------------------------------------------------------
@@ -344,20 +339,14 @@ function wrapWithModel(render: RenderFn, cfg: Config): RenderFn {
         // 4) Get the rendering of the component with its model context
         // 4a) Create a generic render function, that can be called immediately, or in wrapped component.
         const managedRender = () => {
-            let ctx = localModelContext;
-            try {
-                props.model = model;
-                delete props.modelRef;
-                delete props.modelConfig;
-                ctx.props = props;
-                ctx.modelLookup = insertLookup.current ?? modelLookup;
-                useOnMount(() => instanceManager.registerModelWithTestId(props.testId, model));
-                useOnUnmount(() => instanceManager.unregisterModelWithTestId(props.testId));
-                return render(props, ref);
-            } finally {
-                ctx.props = null;
-                ctx.modelLookup = null;
-            }
+            props.model = model;
+            delete props.modelRef;
+            delete props.modelConfig;
+            useOnMount(() => instanceManager.registerModelWithTestId(props.testId, model));
+            useOnUnmount(() => instanceManager.unregisterModelWithTestId(props.testId));
+            return withLocalModelContext(props, insertLookup.current ?? modelLookup, () =>
+                render(props, ref)
+            );
         };
 
         // 4b) Get the element, either running the wrapped function directly, or in a wrapped component if needed
