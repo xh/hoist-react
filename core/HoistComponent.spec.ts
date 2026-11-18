@@ -327,6 +327,22 @@ describe('hoistCmp', () => {
 
             expect(texts('.chart')).toEqual(['Orders']);
         });
+
+        it('shows an error, not a crash, when its model goes missing between renders', () => {
+            // The failed lookup returned before later hooks ran, so React threw on the hook count.
+            // A dev-server hot reload of a model class leaves a component in this state.
+            const error = vi.spyOn(console, 'error').mockImplementation(() => {});
+            onTestFinished(() => error.mockRestore());
+            const positions = new ChartModel({title: 'Positions'});
+            onTestFinished(() => positions.destroy());
+
+            const {rerender} = render(chartView({model: positions}));
+            rerender(chartView({model: null}));
+            expect(document.body.textContent).toBe('No model found');
+
+            rerender(chartView({model: positions}));
+            expect(texts('.chart')).toEqual(['Positions']);
+        });
     });
 
     describe('observer', () => {
