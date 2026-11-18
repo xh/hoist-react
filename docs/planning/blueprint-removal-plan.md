@@ -86,11 +86,26 @@ vars.
 `FloatingFocusManager`, `FloatingPortal`, `FloatingTree` (nested menus) - see
 <https://floating-ui.com/docs/react>.
 
-Alternative: a headless library (React Aria Components, Base UI, Radix). These give tested
-keyboard and ARIA behavior for menus, sliders and number fields, at the cost of a new dependency
-that would bring its own upgrade churn. Phase 0 should decide this with a spike rather than by
-argument. A middle path is Floating UI for overlays plus a headless library only for slider and
-number field, the two controls hardest to make accessible by hand.
+Hoist inputs are already adapters. `HoistInputModel` owns value, commit, validation and
+formatting, and the Blueprint control underneath does little:
+
+- `NumberInput` renders `numericInput` with `buttonPosition: 'none'`. Hoist does its own parsing
+  (shorthand units, commas while editing), formatting and commit, and already clamps Blueprint's
+  arrow-key stepping to min/max (`desktop/cmp/input/NumberInput.ts:224`). A replacement is a
+  `role="spinbutton"` input with arrow-key stepping. A headless NumberField would bring its own
+  parsing and formatting, which would fight Hoist's.
+- `Slider` maps a Hoist scale onto Blueprint's label, track-fill and range-handle props. A
+  library would save pointer drag, per-thumb keyboard handling and ARIA, but likely not the tick
+  labels.
+
+So a headless library (React Aria Components, Base UI, Radix) would mostly pay off for one
+control, Slider, at the cost of a new dependency with its own upgrade churn. Not worth it unless
+the spike shows a hand-rolled range slider cannot reach keyboard and screen-reader parity at
+reasonable cost. Do not mix overlay systems in any case: two focus, dismiss and portal models
+conflict when nested.
+
+"Identical behavior" here means the same Hoist props, look and keyboard behavior. DOM structure
+and CSS classes change regardless, which is the app-facing break covered under Release strategy.
 
 ### Keep the seam, swap behind it
 
@@ -111,8 +126,9 @@ release.
 ### Phase 0 - Spike and baselines (S)
 
 - Build a Floating UI `Popover` and `Menu` (with submenu, keyboard nav, typeahead) behind the
-  existing `popover` / `menu` factories on a branch. Run Toolbox against it. Decide Floating UI
-  vs. headless library from this.
+  existing `popover` / `menu` factories on a branch. Run Toolbox against it.
+- Build a hand-rolled range `Slider` and check keyboard and screen-reader parity with axe and a
+  manual pass. This is the one case that could justify a headless library.
 - Capture Playwright screenshots of Toolbox desktop pages in light and dark themes as a visual
   baseline. Unit tests here do not cover rendering, so this baseline is the main regression
   check for every later phase.
@@ -206,7 +222,8 @@ Each release needs upgrade notes listing every removed class and prop, with befo
 
 ## Open questions
 
-1. Floating UI only, or a headless library for some or all of it? (Phase 0 decides.)
+1. Floating UI plus hand-rolled controls is the default (see Foundation). Phase 0 confirms it,
+   or shows that Slider alone needs a headless library.
 2. How much do client apps import `kit/blueprint` or style `bp6-*` classes? A code search across
    app repos would size the migration burden and the length of the deprecation window.
 3. Match Blueprint's current look exactly, or take the chance to restyle controls?
