@@ -638,14 +638,19 @@ for (const c of cases.filter(c => c.source === 'zero-result' || c.source === 'ba
         fail('hoist-get-symbol FieldType lost its object literal');
     }
 
-    const buttonProps = await describeMembers({name: 'ButtonProps'}, 'mcp');
+    const buttonProps = await describeMembers(
+        {name: 'ButtonProps', filePath: 'desktop/cmp/button/Button.ts', filter: 'onClick'},
+        'mcp'
+    );
     if (
         buttonProps.ok &&
         buttonProps.structured.externalMembers.some(
-            g => g.module === '@blueprintjs/core' && g.members.some(m => m.name === 'onClick')
+            g => g.module === '@types/react' && g.members.some(m => m.name === 'onClick')
         )
     ) {
-        pass('hoist-get-members ButtonProps lists onClick under external (Blueprint) members');
+        pass(
+            'hoist-get-members ButtonProps filter "onClick" lists it under external (React) members'
+        );
     } else {
         fail('hoist-get-members ButtonProps lacks onClick under external members');
     }
