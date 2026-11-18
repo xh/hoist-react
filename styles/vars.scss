@@ -382,7 +382,7 @@ body {
   --xh-callout-border-radius: var(--xh-border-radius);
   --xh-callout-compact-font-size: var(--xh-font-size-small-relative);
   --xh-callout-compact-gap: 6px;
-  --xh-callout-compact-padding: var(--xh-spacing-half);
+  --xh-callout-compact-padding: var(--xh-spacing-half) 8px;
   --xh-callout-danger-bg: var(--xh-intent-danger-trans1);
   --xh-callout-danger-color: var(--xh-intent-danger-text-color);
   --xh-callout-font-size: inherit;
