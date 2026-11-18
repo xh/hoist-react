@@ -7,7 +7,7 @@
 | [Relationship to /cmp/](#relationship-to-cmp) | Platform-specific vs. cross-platform components |
 | [AppContainer](#appcontainer) | Desktop app shell and lifecycle |
 | [Component Sub-Packages](#component-sub-packages) | Panel, Toolbar, Button, Grid, Dashboard, Tabs, Inputs, and more |
-| [Dialogs](#dialogs) | Custom modal dialogs via Blueprint Kit export |
+| [Dialogs](#dialogs) | Custom modal dialogs with `Dialog` |
 | [Desktop Hooks](#desktop-hooks) | useContextMenu |
 | [Common Patterns](#common-patterns) | Blueprint wrappers, Popover, ContextMenu |
 | [Related Packages](#related-packages) | Links to cross-platform and utility packages |
@@ -377,6 +377,7 @@ leftRightChooser({model})
 | `/appOption/` | App-wide configuration options UI |
 | `/clipboard/` | Clipboard operations (copy with feedback) |
 | `/contextmenu/` | Right-click context menu support |
+| `/dialog/` | Modal `Dialog` and its body and footer parts |
 | `/daterange/` | Date range picker - presets, relative lookbacks, months and years, custom ranges (see [Date Range README](../cmp/daterange/README.md)) |
 | `/filechooser/` | File selection input |
 | `/filter/` | Filter chooser and filter editor |
@@ -394,14 +395,15 @@ leftRightChooser({model})
 For simple alerts and confirmations, use the built-in `XH.message()` and `XH.confirm()` methods
 (see the [appcontainer README](../appcontainer/README.md#messages)).
 
-For custom dialogs with rich content (forms, grids, etc.), use the Blueprint `dialog` element
-factory from `@xh/hoist/kit/blueprint`. This is the standard Hoist pattern for modal dialogs -
-Blueprint's Dialog is re-exported through Kit with transitions disabled for snappy rendering.
+For custom dialogs with rich content (forms, grids, etc.), use the `dialog` element factory from
+`@xh/hoist/desktop/cmp/dialog`. A dialog holds keyboard focus while open, closes on Escape or a
+click outside it (unless `canOutsideClickClose` is false), and returns focus when it closes. Wrap
+padded content in `dialogBody`, and buttons in `dialogFooter` and `dialogFooterActions`.
 
 The typical pattern uses a dedicated model to manage the dialog's open/closed state and content,
 with the parent component always rendering the dialog component alongside its other children.
-The dialog renders as a Blueprint portal overlay when open and returns null when closed, so it
-can be included unconditionally in the parent's item list.
+The dialog renders in a portal over the app when open and returns null when closed, so it can be
+included unconditionally in the parent's children.
 
 ```typescript
 // TaskDialogModel.ts - manages dialog open/closed state and form data
@@ -473,17 +475,15 @@ export const todoPanel = hoistCmp.factory({
 ```
 
 Key points:
-- Import `dialog` from `@xh/hoist/kit/blueprint` (not from Blueprint directly) to get
-  Hoist's transition-disabled wrapper.
+- Import `dialog` from `@xh/hoist/desktop/cmp/dialog`.
 - The parent model owns the dialog model as a `@managed` property and calls `open()`/`close()`.
 - The parent component renders the dialog factory in its `children` alongside other children -
   the dialog shows/hides itself based on its model's `isOpen` state.
 - Use `onClose` to handle the dialog's close button and outside-click-to-close.
 - Wrap dialog content in a `panel()` when you need toolbars, masks, or standard layout.
 
-Note: Hoist does not yet provide its own first-class Dialog component wrapper
-([#861](https://github.com/xh/hoist-react/issues/861)) - the Blueprint Kit re-export is the
-established pattern used throughout the framework and applications.
+For this release only, `Dialog.defaults.useBlueprint = true`, set at startup, renders dialogs with
+Blueprint's instead.
 
 ## Desktop Hooks
 

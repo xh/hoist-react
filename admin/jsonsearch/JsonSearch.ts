@@ -18,7 +18,7 @@ import {buttonGroupInput, jsonInput, select, textInput} from '@xh/hoist/desktop/
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {toolbar, toolbarSep} from '@xh/hoist/desktop/cmp/toolbar';
 import {Icon} from '@xh/hoist/icon';
-import {dialog} from '@xh/hoist/kit/blueprint';
+import {dialog} from '@xh/hoist/desktop/cmp/dialog';
 import {pluralize} from '@xh/hoist/utils/js';
 import {startCase} from 'lodash';
 import {JsonSearchImplModel} from './impl/JsonSearchImplModel';

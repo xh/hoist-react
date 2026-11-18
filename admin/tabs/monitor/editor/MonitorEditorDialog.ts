@@ -16,7 +16,7 @@ import {panel} from '@xh/hoist/desktop/cmp/panel';
 import type {RestGridConfig} from '@xh/hoist/desktop/cmp/rest';
 import {restGrid} from '@xh/hoist/desktop/cmp/rest';
 import {Icon} from '@xh/hoist/icon';
-import {dialog} from '@xh/hoist/kit/blueprint';
+import {dialog} from '@xh/hoist/desktop/cmp/dialog';
 import {isEmpty} from 'lodash';
 import * as MCol from '../MonitorColumns';
 

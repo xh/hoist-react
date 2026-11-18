@@ -12,7 +12,7 @@ import {button, restoreDefaultsButton} from '@xh/hoist/desktop/cmp/button';
 import {formField} from '@xh/hoist/desktop/cmp/form';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {Icon} from '@xh/hoist/icon';
-import {dialog, dialogBody} from '@xh/hoist/kit/blueprint';
+import {dialog, dialogBody} from '@xh/hoist/desktop/cmp/dialog';
 import './OptionsDialog.scss';
 
 /**

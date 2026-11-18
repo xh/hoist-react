@@ -9,7 +9,7 @@ import type {HoistProps, TestSupportProps} from '@xh/hoist/core';
 import {hoistCmp, refreshContextView, uses} from '@xh/hoist/core';
 import {mask} from '@xh/hoist/cmp/mask';
 import {dashContainerView} from '@xh/hoist/desktop/cmp/dash/container/impl/DashContainerView';
-import {Classes, overlay} from '@xh/hoist/kit/blueprint';
+import {OVERLAY_SCROLL_CONTAINER, overlay} from '@xh/hoist/desktop/cmp/dialog/impl/Overlay';
 import {useComposedRefs, useOnResize} from '@xh/hoist/utils/react';
 import './DashContainer.scss';
 import {createPortal} from 'react-dom';
@@ -53,12 +53,11 @@ const emptyContainerOverlay = hoistCmp.factory<DashContainerModel>(({model}) => 
     if (!isEmpty || loadingStateTask.isPending) return null;
 
     return overlay({
-        className: `xh-dash-container--empty-overlay ${Classes.OVERLAY_SCROLL_CONTAINER}`,
+        className: `xh-dash-container--empty-overlay ${OVERLAY_SCROLL_CONTAINER}`,
         autoFocus: true,
         isOpen: true,
         canEscapeKeyClose: false,
         usePortal: false,
-        enforceFocus: false,
         children: vbox({
             alignItems: 'center',
             children: [div(emptyText), vspacer(10), dashContainerAddViewButton()]

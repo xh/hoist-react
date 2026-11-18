@@ -8,7 +8,7 @@ import {hoistCmp} from '@xh/hoist/core';
 import {box, div, vbox, vspacer} from '@xh/hoist/cmp/layout';
 import type {MaskProps} from '@xh/hoist/cmp/mask';
 import {spinner as spinnerCmp} from '@xh/hoist/cmp/spinner';
-import {Classes, overlay} from '@xh/hoist/kit/blueprint';
+import {OVERLAY_SCROLL_CONTAINER, overlay} from '@xh/hoist/desktop/cmp/dialog/impl/Overlay';
 import classNames from 'classnames';
 import '@xh/hoist/desktop/register';
 import './Mask.scss';
@@ -39,7 +39,7 @@ export const maskImpl = hoistCmp.factory<MaskProps>({
         }
 
         return overlay({
-            className: classNames(className, Classes.OVERLAY_SCROLL_CONTAINER),
+            className: classNames(className, OVERLAY_SCROLL_CONTAINER),
             autoFocus: false,
             isOpen: true,
             canEscapeKeyClose: false,

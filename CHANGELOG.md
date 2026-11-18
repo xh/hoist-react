@@ -44,6 +44,11 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 * Desktop tooltips now render with Hoist's new `Tooltip`, in `@xh/hoist/cmp/popover`, not
   Blueprint's. They keep Blueprint's `bp6-tooltip` class next to `xh-tooltip`. Set
   `Tooltip.defaults.useBlueprint = true` at startup to fall back to Blueprint's for this release.
+* Added `Dialog` to `@xh/hoist/desktop/cmp/dialog`, with `dialogBody`, `dialogFooter` and
+  `dialogFooterActions`, and moved all Hoist dialogs, masks and overlays onto it. Import `dialog`
+  and its parts from there rather than `@xh/hoist/kit/blueprint`. The DOM keeps Blueprint's
+  `bp6-dialog*` and `bp6-overlay*` classes alongside new `xh-dialog*` and `xh-overlay*` ones. Set
+  `Dialog.defaults.useBlueprint = true` at startup to fall back to Blueprint's for this release.
 * Desktop menus and context menus now render with Hoist's own components, not Blueprint's. The DOM
   keeps Blueprint's `bp6-menu*` classes alongside new `xh-menu-*` ones, so app CSS still applies.
   Set `Menu.defaults.useBlueprint = true` at startup to fall back to Blueprint's for this release.
@@ -59,6 +64,8 @@ detailed, step-by-step upgrade instructions with before/after code examples.
     * Escape now returns focus to the popover's target, so keyboard users keep their place.
     * Added `portalContainerProvider` to `@xh/hoist/utils/react`, to send popovers within it to a
       given container, e.g. a popped-out child window.
+* Dialogs now move keyboard focus inside when they open, and return it to where it was when they
+  close.
 * Desktop menus now support the keyboard: arrow keys, Home and End move between items, typing
   jumps to an item by its first letters, and ArrowRight and ArrowLeft open and close submenus.
   Escape in a submenu closes only that submenu.

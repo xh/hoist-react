@@ -1,0 +1,12 @@
+/*
+ * This file belongs to Hoist, an application development toolkit
+ * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
+ *
+ * Copyright © 2026 Extremely Heavy Industries Inc.
+ */
+
+// The close button sits on the header's background, so its icon takes the title color rather than
+// the default button text color. Set on the icon, which the button's own color rules do not reach.
+.xh-dialog__header .xh-dialog__close-button svg {
+  color: var(--xh-popup-title-text-color);
+}

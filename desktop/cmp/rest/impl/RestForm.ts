@@ -13,7 +13,7 @@ import {recordActionBar} from '@xh/hoist/desktop/cmp/record';
 import {RestFormModel} from '@xh/hoist/desktop/cmp/rest/impl/RestFormModel';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {Icon} from '@xh/hoist/icon';
-import {dialog} from '@xh/hoist/kit/blueprint';
+import {dialog} from '@xh/hoist/desktop/cmp/dialog';
 import './RestForm.scss';
 import {isArray, startCase} from 'lodash';
 import {restFormField} from './RestFormField';
