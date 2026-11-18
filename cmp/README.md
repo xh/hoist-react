@@ -68,8 +68,9 @@ panel({
 </Panel>
 ```
 
-Factories accept a config object with `children`, or children directly as arguments when no other
-props are needed.
+Factories accept a config object with `children`, or children directly as arguments. Use the
+shortcut form when a call passes only children - see
+[Choosing a Call Form](../docs/coding-conventions.md#choosing-an-element-factory-call-form).
 
 For details on creating components with `hoistCmp.factory()` and `hoistCmp.withFactory()`,
 see the [Core Package README](../core/README.md#element-factories).

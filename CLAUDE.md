@@ -268,8 +268,10 @@ panel({
 ```
 
 Factories can take a config object for props, using the standard React `children` key for
-children. A shortcut form also exists where factories are passed children directly as arguments,
-when no other props are required. Factories all support an `omit` prop for conditional rendering.
+children. In the shortcut form, factories take children directly as arguments. Use the shortcut
+form when a call passes only children - `toolbar(a, b)`, `p('text')` - and the config object form
+as soon as it passes any other prop. Never pass a factory directly as a callback (`rows.map(span)`).
+Factories all support an `omit` prop for conditional rendering.
 
 `item` and `items` are legacy aliases for `children`. They still work, but do not use them in new
 code. A container component destructures `children` from props and passes it on as `children` to
