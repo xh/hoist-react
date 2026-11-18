@@ -39,7 +39,8 @@ describe('KeyValueList', () => {
         ['null', null],
         ['undefined', undefined],
         ['an empty string', ''],
-        ['a blank string', '   ']
+        ['a blank string', '   '],
+        ['a boolean', true]
     ])('shows the placeholder for a value that is %s', (_, value) => {
         const {container} = render(keyValueList({entries: [{label: 'Broker', value}]})),
             dd = container.querySelector('dd');
@@ -53,17 +54,6 @@ describe('KeyValueList', () => {
             dd = container.querySelector('dd');
 
         expect(dd.textContent).toBe('0');
-        expect(dd.classList).not.toContain('xh-key-value-list__value--empty');
-    });
-
-    it.each([
-        [true, 'Yes'],
-        [false, 'No']
-    ])('shows the boolean %j as %s, not as the placeholder', (value, text) => {
-        const {container} = render(keyValueList({entries: [{label: 'Confirmed', value}]})),
-            dd = container.querySelector('dd');
-
-        expect(dd.textContent).toBe(text);
         expect(dd.classList).not.toContain('xh-key-value-list__value--empty');
     });
 

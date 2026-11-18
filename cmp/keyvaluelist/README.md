@@ -27,7 +27,7 @@ keyValueList({
         {label: 'Settles', value: fmtDate(trade.settleDate)},
         {label: 'Status', value: trade.status, intent: trade.isRejected ? 'danger' : null},
         {label: 'Broker', value: trade.broker, omit: !trade.isExternal},
-        {label: 'Confirmed', value: trade.confirmed}
+        {label: 'Confirmed', value: trade.confirmed ? 'Yes' : 'No'}
     ],
     emptyText: 'No trade selected'
 })
@@ -39,10 +39,10 @@ keyValueList({entries, labelSide: 'top', columns: 3, dividers: true, size: 'comp
 keyValueList({entries, valueAlign: 'right', dividers: true})
 ```
 
-A value can be any element, such as a `badge` or a link. A boolean shows as `Yes` or `No`, and a
-null, undefined or blank value shows the list's `nullDisplay`, `-` by default. The list fills the width of its
-container and fits as many columns as that width allows, down to one column in a narrow panel.
-Use it inside a `card` to give a group of values a title.
+A value can be any element, such as a `badge` or a link. A null, undefined or blank value shows
+the list's `nullDisplay`, `-` by default. The list fills the width of its container and fits as
+many columns as that width allows, down to one column in a narrow panel. Use it inside a `card` to
+give a group of values a title.
 
 ## Styling
 
@@ -62,10 +62,10 @@ body.xh-app {
 
 - **Rows go in `entries`, not `children`.** A factory renders `children`, and the legacy `items`,
   as child elements. The list throws in development mode when it gets rows that way.
-- **Pass `cond ? value : null` for a value that may be missing, not `cond && value`.** The list
-  shows a `false` value as `No`, not as `nullDisplay`.
-- **The list formats only booleans.** Format numbers and dates with `@xh/hoist/format` before you
-  pass them.
+- **A boolean value shows as blank.** React renders `true` and `false` as nothing, so the list
+  shows its `nullDisplay`. Pass text such as `'Yes'` or `'No'`.
+- **The list never formats.** Format numbers and dates with `@xh/hoist/format` before you pass
+  them.
 - **`columns` is a maximum.** The list drops columns while one would be narrower than
   `minColumnWidth`. Lower `minColumnWidth` to keep more columns in a narrow container.
 

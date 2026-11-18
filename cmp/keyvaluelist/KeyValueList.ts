@@ -5,7 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import classNames from 'classnames';
-import {isBoolean, isEmpty} from 'lodash';
+import {isEmpty} from 'lodash';
 import {useLayoutEffect, useRef, useState} from 'react';
 import type {ReactNode} from 'react';
 
@@ -33,9 +33,9 @@ export interface KeyValueEntry {
     label: ReactNode;
 
     /**
-     * Content, pre-formatted by the caller. A boolean shows as `Yes` or `No`. A null, undefined or
-     * blank string value shows the list's `nullDisplay`. For a value that may be missing, pass
-     * `cond ? value : null`, not `cond && value`, which shows `No` when `cond` is false.
+     * Content, pre-formatted by the caller. The list never formats a value. A value React renders
+     * as nothing - null, a boolean or a blank string - shows the list's `nullDisplay`. Pass a string
+     * such as `Yes` or `No` to show a boolean.
      */
     value?: ReactNode;
 
@@ -105,8 +105,7 @@ export interface KeyValueListProps
  * A display-only list of labeled values, such as the fields of a record in a detail panel. Renders
  * as an HTML description list.
  *
- * The list is presentation-only. Callers pass each `value` already formatted, except for booleans,
- * which show as `Yes` or `No`.
+ * The list is presentation-only. Callers pass each `value` already formatted.
  *
  * The list fills the width of its container and has no outer margin. Long labels and values wrap,
  * breaking within a word if needed, so the list never forces horizontal overflow. To truncate a
@@ -181,8 +180,7 @@ export const [KeyValueList, keyValueList] = hoistCmp.withFactory<KeyValueListPro
                 {'--xh-key-value-list-columns': columnCount}
             ),
             children: visibleEntries.map(({label, value, intent}, idx) => {
-                const shown = isBoolean(value) ? (value ? 'Yes' : 'No') : value,
-                    empty = isBlankNode(shown);
+                const empty = isBlankNode(value);
                 return div({
                     key: idx,
                     className: classNames(
@@ -197,7 +195,7 @@ export const [KeyValueList, keyValueList] = hoistCmp.withFactory<KeyValueListPro
                                 'xh-key-value-list__value',
                                 empty && 'xh-key-value-list__value--empty'
                             ),
-                            children: empty ? (nullDisplay ?? '-') : shown
+                            children: empty ? (nullDisplay ?? '-') : value
                         })
                     ]
                 });
