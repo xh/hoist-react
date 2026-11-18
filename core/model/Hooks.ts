@@ -5,7 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
-import {useContext, useEffect, useState} from 'react';
+import {use, useContext, useEffect, useState} from 'react';
 import {throwIf} from '@xh/hoist/utils/js';
 import type {HoistModel, HoistModelClass, ModelSelector, ModelLookup} from './';
 import {ModelLookupContext, formatSelector, RefreshContextModel} from './';
@@ -38,13 +38,14 @@ export function useLocalModel<T extends HoistModel>(spec?: HoistModelClass<T> | 
             return s.isHoistModel ? new s() : s.call();
         })
     );
-    const contextLookup = useContext(ModelLookupContext),
-        {props} = localModelContext,
-        modelLookup = localModelContext.modelLookup ?? contextLookup;
+    const {props} = localModelContext;
     throwIf(
         !props,
         'Cannot use useLocalModel() in this render method. Please ensure that this is a HoistComponent.'
     );
+    // A component with a model spec supplies its own lookup, which includes the model it publishes
+    // to its children. Otherwise read the inherited lookup - `use()` may be called conditionally.
+    const modelLookup = localModelContext.modelLookup ?? use(ModelLookupContext);
     useModelLinker(ret, modelLookup, props);
     return ret;
 }
