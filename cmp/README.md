@@ -209,7 +209,7 @@ techniques.
 | `/markdown/` | Markdown rendering component |
 | `/pdfviewer/` | PDF document viewer built on pdf.js. [See README](./pdfviewer/README.md) |
 | `/pinpad/` | PIN entry interface |
-| `/popover/` | Types shared by popovers, menus and tooltips (PopoverPosition, PopoverBoundary) |
+| `/popover/` | Content that floats beside a target, opened by click or hover (Popover). [See README](./popover/README.md) |
 | `/relativetimestamp/` | Human-readable relative time display |
 | `/websocket/` | WebSocket indicator component |
 
@@ -344,6 +344,11 @@ CardModel supports `collapsible` state with configurable `renderMode` (`'always'
 **FormFieldSet** (`/cmp/form/formfieldset/`) extends Card to group related `FormField` components,
 displaying their aggregate validation state as intent-colored borders and tooltips. See the
 [Form README](./form/README.md#formfieldset) for details.
+
+### Popover (`/popover/`)
+
+Content that floats beside a target element, opened by a click or hover on the target. Desktop
+menus, pickers and choosers open in it. See the [Popover README](./popover/README.md).
 
 ### ProgressBar (`/progressbar/`)
 

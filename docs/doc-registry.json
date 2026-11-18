@@ -152,6 +152,14 @@
             "keywords": ["PdfViewerModel", "PdfViewer", "PdfSource", "PdfScale", "PdfViewerToolbarToken", "pdfjs-dist", "pdf.js", "PDF", "document preview"]
         },
         {
+            "id": "cmp/popover/README.md",
+            "title": "Popover Package",
+            "mcpCategory": "package",
+            "viewerCategory": "components",
+            "description": "Floating content opened from a target by click or hover, built on Floating UI - how it closes and nests, portals, and the Blueprint fallback.",
+            "keywords": ["Popover", "popover", "PopoverProps", "interactionKind", "onInteraction", "xh-popover-dismiss", "portalContainerProvider", "useBlueprint", "Floating UI"]
+        },
+        {
             "id": "cmp/progressbar/README.md",
             "title": "ProgressBar Package",
             "mcpCategory": "package",

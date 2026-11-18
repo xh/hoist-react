@@ -9,6 +9,7 @@ import {errorMessage} from '@xh/hoist/cmp/error';
 import type {GridConfig} from '@xh/hoist/cmp/grid';
 import {grid, gridCountLabel} from '@xh/hoist/cmp/grid';
 import {a, box, filler, fragment, hframe, label, li, p, span, ul, vbox} from '@xh/hoist/cmp/layout';
+import {popover} from '@xh/hoist/cmp/popover';
 import type {HoistProps, SelectOption} from '@xh/hoist/core';
 import {hoistCmp, useLocalModel} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
@@ -17,7 +18,7 @@ import {buttonGroupInput, jsonInput, select, textInput} from '@xh/hoist/desktop/
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {toolbar, toolbarSep} from '@xh/hoist/desktop/cmp/toolbar';
 import {Icon} from '@xh/hoist/icon';
-import {dialog, popover} from '@xh/hoist/kit/blueprint';
+import {dialog} from '@xh/hoist/kit/blueprint';
 import {pluralize} from '@xh/hoist/utils/js';
 import {startCase} from 'lodash';
 import {JsonSearchImplModel} from './impl/JsonSearchImplModel';

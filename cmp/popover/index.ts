@@ -4,5 +4,5 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-
 export type * from './Types';
+export * from './Popover';

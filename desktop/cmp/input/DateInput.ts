@@ -9,6 +9,7 @@ import {HoistInputModel, useHoistInputModel} from '@xh/hoist/cmp/input';
 import {getDayPickerProps, resolveBoundDate} from '@xh/hoist/cmp/input/impl/DayPickerUtils';
 import {div, filler, hbox, vbox} from '@xh/hoist/cmp/layout';
 import type {PopoverBoundary, PopoverPosition} from '@xh/hoist/cmp/popover';
+import {popover} from '@xh/hoist/cmp/popover';
 import type {HoistProps, LayoutProps, PlainObject, Some} from '@xh/hoist/core';
 import {hoistCmp} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
@@ -17,7 +18,6 @@ import {textInput} from '@xh/hoist/desktop/cmp/input';
 import '@xh/hoist/desktop/register';
 import {fmtDate} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
-import {popover} from '@xh/hoist/kit/blueprint';
 import type {DayPickerProps} from '@xh/hoist/kit/react-day-picker';
 import {dayPicker} from '@xh/hoist/kit/react-day-picker';
 import {bindable} from '@xh/hoist/mobx';
@@ -116,9 +116,8 @@ export interface DateInputProps extends HoistProps, LayoutProps, HoistInputProps
     popoverBoundary?: PopoverBoundary;
 
     /**
-     * Popper.js modifiers for the calendar popover, passed through to Blueprint.
-     * @deprecated Hoist will stop passing these on when it replaces Blueprint's popover. Use
-     *      `popoverPosition` and `popoverBoundary` instead.
+     * Popper.js modifiers for the calendar popover. No longer has any effect.
+     * @deprecated Use `popoverPosition` and `popoverBoundary` instead.
      */
     popoverModifiers?: PlainObject;
 
@@ -423,8 +422,6 @@ const cmp = hoistCmp.factory<DateInputProps & {model: DateInputModel}>(
                 minimal: true,
                 usePortal: true,
                 autoFocus: false,
-                enforceFocus: false,
-                modifiers: props.popoverModifiers,
                 position: props.popoverPosition ?? 'auto',
                 boundary: props.popoverBoundary ?? 'clippingParents',
                 portalContainer: props.portalContainer ?? document.body,

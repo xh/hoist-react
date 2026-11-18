@@ -21,6 +21,7 @@ import {
     vbox
 } from '@xh/hoist/cmp/layout';
 import {getRelativeTimestamp, relativeTimestamp} from '@xh/hoist/cmp/relativetimestamp';
+import {popover} from '@xh/hoist/cmp/popover';
 import {creates, hoistCmp, XH} from '@xh/hoist/core';
 import {appBanner} from '@xh/hoist/desktop/appcontainer/AppBanner';
 import {button} from '@xh/hoist/desktop/cmp/button';
@@ -37,7 +38,7 @@ import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {dateTimeRenderer} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
-import {menu, menuItem, popover} from '@xh/hoist/kit/blueprint';
+import {menu, menuItem} from '@xh/hoist/kit/blueprint';
 import {LocalDate} from '@xh/hoist/utils/datetime';
 import {isEmpty} from 'lodash';
 import type {ReactNode} from 'react';

@@ -37,11 +37,22 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 * `Mask` now renders inline desktop masks as a plain `div` with the class `xh-mask--inline`, not a
   Blueprint overlay. Showing a mask no longer forces a browser layout. Restyle any app CSS that
   targets `.bp6-overlay` classes within an inline mask, or use `--xh-mask-bg`.
+* Desktop popovers now render with Hoist's own `Popover`, not Blueprint's - see New Features. The
+  DOM keeps Blueprint's `bp6-popover*` classes alongside new `xh-popover__*` ones, so app CSS still
+  applies. Set `Popover.defaults.useBlueprint = true` at startup to fall back to Blueprint's
+  popover for this release. `DateInputProps.popoverModifiers` no longer has any effect.
 * `FetchService` now sends a request with no `method` as a GET, even when it sets `params`. Before,
   `params` made it a POST with a form-encoded body. Set `method: 'POST'` on calls that change data,
   send credentials, or send large params - see Step 7 of the upgrade notes.
 
 ### 🎁 New Features
+
+* Added `Popover` to `@xh/hoist/cmp/popover`, Hoist's own popover, built on Floating UI. All
+  desktop components that open popovers now use it.
+    * Popovers, and the menus in them, use the app's font. Blueprint's used its own system font.
+    * Escape now returns focus to the popover's target, so keyboard users keep their place.
+    * Added `portalContainerProvider` to `@xh/hoist/utils/react`, to send popovers within it to a
+      given container, e.g. a popped-out child window.
 
 * Element factories and `createElement` now take child elements via the standard React `children`
   key. The `item` and `items` keys still work as aliases, but a future major version will remove

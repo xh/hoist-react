@@ -7,13 +7,13 @@
 
 import {box, fragment, hbox} from '@xh/hoist/cmp/layout';
 import {spinner} from '@xh/hoist/cmp/spinner';
+import {popover} from '@xh/hoist/cmp/popover';
 import type {HoistProps, MenuItemLike, TestSupportProps} from '@xh/hoist/core';
 import {hoistCmp, useLocalModel, uses} from '@xh/hoist/core';
 import {ViewManagerModel} from '@xh/hoist/cmp/viewmanager';
 import type {ButtonProps} from '@xh/hoist/desktop/cmp/button';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {Icon} from '@xh/hoist/icon';
-import {popover} from '@xh/hoist/kit/blueprint';
 import {getTestId} from '@xh/hoist/utils/js';
 import {useOnVisibleChange} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
@@ -133,7 +133,7 @@ export const [ViewManager, viewManager] = hoistCmp.withFactory<ViewManagerProps>
                           testId: getTestId(testId, 'menu')
                       }),
                 onOpening: () => model.refreshAsync(),
-                placement: 'bottom',
+                position: 'bottom',
                 popoverClassName: 'xh-view-manager__popover'
             });
         return fragment(

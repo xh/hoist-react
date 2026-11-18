@@ -18,6 +18,7 @@ import {
     vbox,
     vframe
 } from '@xh/hoist/cmp/layout';
+import {popover} from '@xh/hoist/cmp/popover';
 import type {Side} from '@xh/hoist/core';
 import {hoistCmp, useLocalModel, uses} from '@xh/hoist/core';
 import type {ButtonProps} from '@xh/hoist/desktop/cmp/button';
@@ -27,7 +28,7 @@ import {panel} from '@xh/hoist/desktop/cmp/panel';
 import '@xh/hoist/desktop/register';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {Icon} from '@xh/hoist/icon';
-import {menu, menuItem, popover} from '@xh/hoist/kit/blueprint';
+import {menu, menuItem} from '@xh/hoist/kit/blueprint';
 import {dragDropContext, draggable, droppable} from '@xh/hoist/kit/react-beautiful-dnd';
 import {elemWithin, getTestId} from '@xh/hoist/utils/js';
 import {splitLayoutProps} from '@xh/hoist/utils/react';

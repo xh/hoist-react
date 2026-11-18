@@ -32,6 +32,7 @@ interacts with Hoist.
 | `/cmp/daterange/` | 9 | DateRangePicker - period selection as presets, relative lookbacks, months/years, or custom ranges, resolved to dates and filters; desktop component in `/desktop/cmp/daterange/` | [Done](../../cmp/daterange/README.md) |
 | `/cmp/cubegrid/` | 3 | CubeGrid - Cube View as a tree grid with app columns, plus pivot paths as nested column groups, docked summaries, per-measure column config | [Done](../../cmp/cubegrid/README.md) |
 | `/cmp/pdfviewer/` | 6 | PdfViewer - PDF display built on pdf.js, with sources, toolbar tokens, model API, and styling; platform toolbars in `/desktop/cmp/pdfviewer/` and `/mobile/cmp/pdfviewer/` | [Done](../../cmp/pdfviewer/README.md) |
+| `/cmp/popover/` | 6 | Popover - floating content opened by click or hover, closing and nesting rules, portals, Blueprint fallback | 📝 [Draft](../../cmp/popover/README.md) |
 | `/cmp/progressbar/` | 4 | ProgressBar - value against a maximum or indeterminate progress, compared with masks and loading indicators | [Done](../../cmp/progressbar/README.md) |
 | `/cmp/sparkline/` | 6 | Sparkline - inline SVG trend chart, compared with Chart, in a StatCard and a grid column with a shared scale | 📝 [Draft](../../cmp/sparkline/README.md) |
 | `/mobile/` | 131 | Mobile-specific components and app container | [Done](../../mobile/README.md) |

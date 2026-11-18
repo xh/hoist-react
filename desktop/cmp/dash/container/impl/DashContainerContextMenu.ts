@@ -4,11 +4,11 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
+import {popover} from '@xh/hoist/cmp/popover';
 import {hoistCmp, type MenuItemLike} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {contextMenu} from '@xh/hoist/desktop/cmp/contextmenu/ContextMenu';
 import {Icon} from '@xh/hoist/icon';
-import {popover} from '@xh/hoist/kit/blueprint';
 import {isEmpty} from 'lodash';
 import {createViewSpecMenuItems} from '../../impl/DashUtils';
 import type {DashContainerModel} from '../DashContainerModel';

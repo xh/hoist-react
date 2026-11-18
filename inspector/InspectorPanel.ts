@@ -13,6 +13,7 @@ import {InspectorModel} from '@xh/hoist/inspector/InspectorModel';
 import {instancesPanel} from '@xh/hoist/inspector/instances/InstancesPanel';
 import {statsPanel} from '@xh/hoist/inspector/stats/StatsPanel';
 import {portalProvider} from '@xh/hoist/kit/blueprint';
+import {portalContainerProvider} from '@xh/hoist/utils/react';
 import {createPortal} from 'react-dom';
 import './Inspector.scss';
 
@@ -91,10 +92,13 @@ const inspectorView = hoistCmp.factory<InspectorModel>({
             children: hframe(statsPanel(), instancesPanel())
         });
 
-        // When popped out, redirect Blueprint portals (tooltips, popovers, dialogs) into the
-        // child window, alongside the Inspector itself.
+        // When popped out, redirect portals (popovers, and Blueprint's tooltips and dialogs) into
+        // the child window, alongside the Inspector itself.
         return windowContainer
-            ? portalProvider({portalContainer: windowContainer, children: ret})
+            ? portalProvider({
+                  portalContainer: windowContainer,
+                  children: portalContainerProvider({container: windowContainer, children: ret})
+              })
             : ret;
     }
 });

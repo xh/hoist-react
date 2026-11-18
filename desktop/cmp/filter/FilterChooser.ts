@@ -7,6 +7,7 @@
 import type {FilterChooserFilter} from '@xh/hoist/cmp/filter';
 import {FilterChooserModel} from '@xh/hoist/cmp/filter';
 import {box, div, hbox, hframe, vbox} from '@xh/hoist/cmp/layout';
+import {popover} from '@xh/hoist/cmp/popover';
 import type {HoistProps, LayoutProps} from '@xh/hoist/core';
 import {hoistCmp, HoistModel, lookup, useLocalModel, uses} from '@xh/hoist/core';
 import {bindable} from '@xh/hoist/mobx';
@@ -14,7 +15,7 @@ import {button} from '@xh/hoist/desktop/cmp/button';
 import {select} from '@xh/hoist/desktop/cmp/input';
 import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
-import {menu, menuDivider, menuItem, popover} from '@xh/hoist/kit/blueprint';
+import {menu, menuDivider, menuItem} from '@xh/hoist/kit/blueprint';
 import {elemWithin, withDefault} from '@xh/hoist/utils/js';
 import {getLayoutProps, splitLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';

@@ -5,6 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import type {PopoverBoundary, PopoverPosition} from '@xh/hoist/cmp/popover';
+import {popover} from '@xh/hoist/cmp/popover';
 import {
     hoistCmp,
     HoistModel,
@@ -16,7 +17,6 @@ import {
 import {button, type ButtonProps} from '@xh/hoist/desktop/cmp/button';
 import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
-import {popover} from '@xh/hoist/kit/blueprint';
 import {bindable, bindableRef} from '@xh/hoist/mobx';
 import {executeIfFunction, getTestId} from '@xh/hoist/utils/js';
 import {isFunction} from 'lodash';

@@ -8,6 +8,7 @@ import {grid, gridCountLabel} from '@xh/hoist/cmp/grid';
 import {a, div, filler, hframe, hspacer, p, span} from '@xh/hoist/cmp/layout';
 import {storeFilterField} from '@xh/hoist/cmp/store';
 import {tabContainer} from '@xh/hoist/cmp/tab';
+import {popover} from '@xh/hoist/cmp/popover';
 import {creates, hoistCmp, useContextModel} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {buttonGroupInput} from '@xh/hoist/desktop/cmp/input';
@@ -17,7 +18,6 @@ import {Icon} from '@xh/hoist/icon';
 import {InspectorModel} from '@xh/hoist/inspector/InspectorModel';
 import {diagnosticsPanel} from '@xh/hoist/inspector/instances/DiagnosticsPanel';
 import {InstancesModel} from '@xh/hoist/inspector/instances/InstancesModel';
-import {popover} from '@xh/hoist/kit/blueprint';
 
 export const instancesPanel = hoistCmp.factory({
     model: creates(InstancesModel),
