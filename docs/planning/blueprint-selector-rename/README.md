@@ -59,7 +59,7 @@ file is the working guide.
       `:not(.bp6-focus-style-manager-ignore *)` stays in it for the focus toggle step.
 - [x] `SegmentedControl`. No visual change. Options are `xh-segmented-control__option`, with
       `--selected` and `--disabled`, inside `xh-segmented-control__options`.
-- [ ] `Slider`.
+- [x] `Slider`. No visual change.
 - [ ] Tabs: `TabList`, `TabSwitcher`, `DynamicTabSwitcher`.
 - [ ] `Toolbar` overflow and `AppBar`.
 - [ ] Theme and focus style toggles.
@@ -200,6 +200,9 @@ Proposals are hints, not decisions:
   Hoist never had. Drop vendor placeholder variants when porting from the full file.
 - `styles.cjs` keys elements by their class context, so new `xh-*` modifiers on markup show as
   "missing after" and "new after" pairs. Strip them from the keys before comparing.
+- `translate.cjs` leaves a context class it has no mapping for as-is, so the rule silently stops
+  matching once markup drops it - Slider's `.bp6-disabled .bp6-slider-handle` did. After each
+  build, grep the new stylesheet for `bp6-` and map or drop every hit.
 - Verify each step on the routes and opened UI that render the component, with `styles.cjs` and
   `capture.cjs` route filters and `popups.cjs` scenarios. A full-route pass takes hours.
 - Start the Toolbox server and clients with `setsid nohup ... &`, not as background tasks, which
