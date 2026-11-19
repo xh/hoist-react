@@ -39,6 +39,23 @@ const SCENARIOS = [
         }
     })),
     {
+        name: 'toasts',
+        route: 'default.home',
+        open: async page => {
+            await page.evaluate(() => {
+                const t = (position, intent, extra) =>
+                    XH.toast({message: `${intent ?? 'none'} ${position}`, position, intent, timeout: 60000, ...extra});
+                t('top', 'success');
+                t('top-left', 'primary');
+                t('top-right', 'warning');
+                t('bottom', null);
+                t('bottom-left', 'danger', {actionButtonProps: {text: 'Undo'}});
+                t('bottom-right', 'primary', {actionButtonProps: {text: 'View'}});
+            });
+            await page.waitForSelector('.xh-toast');
+        }
+    },
+    {
         name: 'tooltip',
         route: 'default.home',
         open: async page => {
@@ -73,7 +90,7 @@ function collect(props) {
     };
     const out = {};
     const roots = [
-        ...document.querySelectorAll('.xh-popover__floating, .xh-popover__layer > :not(.xh-popover__floating), .xh-popover__target-wrapper--open, .xh-dialog__overlay, .xh-overlay')
+        ...document.querySelectorAll('.xh-popover__floating, .xh-popover__layer > :not(.xh-popover__floating), .xh-popover__target-wrapper--open, .xh-dialog__overlay, .xh-overlay, .xh-toast-container')
     ];
     roots.forEach((root, i) => {
         const walk = (node, p, depth) => {
@@ -116,7 +133,7 @@ function collect(props) {
             const id = `${sc.name}__${theme}`;
             try {
                 await sc.open(page);
-                await page.waitForSelector('.xh-popover__floating, .xh-dialog', {timeout: 5000});
+                await page.waitForSelector('.xh-popover__floating, .xh-dialog, .xh-toast', {timeout: 5000});
                 await page.waitForTimeout(500);
                 const rest = await page.evaluate(collect, PROPS);
                 fs.writeFileSync(path.join(outDir, id + '.json'), JSON.stringify({rest: {all: [rest]}, states: {}}));
