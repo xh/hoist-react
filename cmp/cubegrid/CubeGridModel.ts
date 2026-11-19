@@ -60,6 +60,14 @@ export interface CubeGridConfig {
     columns?: Array<ColumnSpec | ColumnGroupSpec>;
 
     /**
+     * Overrides for the default label column, merged over its spec - such as a `renderer` or
+     * `width`. Its `field` and `isTreeColumn` stay fixed. A renderer receives `cubeLabel`, the label
+     * as text - read `record.data.cubeLabelValue` for the typed value, and `cubeDimension` for the
+     * dimension it groups by. Ignored when `columns` include a tree column.
+     */
+    labelColumn?: Partial<ColumnSpec>;
+
+    /**
      * Config for the underlying GridModel. `store`, `treeMode` and `columns` are managed by this
      * model and cannot be set here; everything else is a default this config overrides. A
      * `showSummary` row needs `includeRoot` on the query, which is what produces it. `persistWith`
@@ -97,6 +105,7 @@ export class CubeGridModel extends HoistModel implements GridLikeModel {
     readonly view: View;
 
     @bindableRef accessor columns: Array<ColumnSpec | ColumnGroupSpec>;
+    @bindableRef accessor labelColumn: Partial<ColumnSpec>;
 
     //------------------------
     // Child Models
@@ -107,7 +116,15 @@ export class CubeGridModel extends HoistModel implements GridLikeModel {
     @managed readonly gridModel: GridModel;
     @managed readonly pivotModel: CubeGridPivotModel;
 
-    constructor({view, cube, query, columns = [], gridConfig, pivotConfig}: CubeGridConfig) {
+    constructor({
+        view,
+        cube,
+        query,
+        columns = [],
+        labelColumn = null,
+        gridConfig,
+        pivotConfig
+    }: CubeGridConfig) {
         super();
 
         throwIf(
@@ -118,6 +135,7 @@ export class CubeGridModel extends HoistModel implements GridLikeModel {
         this.view = view ?? this.markManaged(cube.createView({query, connect: true}));
 
         this.columns = columns;
+        this.labelColumn = labelColumn;
         this.pivotModel = new CubeGridPivotModel(pivotConfig ?? {}, this);
 
         this.store = this.view.createStore({connect: true});
@@ -204,6 +222,7 @@ export class CubeGridModel extends HoistModel implements GridLikeModel {
             track: () => [
                 this.view.result.paths,
                 this.columns,
+                this.labelColumn,
                 this.labelChooserName,
                 ...this.pivotModel.regionDeps
             ],
@@ -354,15 +373,16 @@ export class CubeGridModel extends HoistModel implements GridLikeModel {
 
     private buildLabelColumn(): ColumnSpec {
         return {
-            field: 'cubeLabel',
-            isTreeColumn: true,
             pinned: 'left',
             headerName: () => this.rowLevelLabels.join(' › '),
             chooserName: this.labelChooserName,
             // Sort on the raw value behind the stringified label. A field, not a function, so
             // `GridTransactionManager` can prove a tick leaves row order alone.
             sortValue: 'cubeLabelValue',
-            renderer: v => (isEmpty(v) || v === 'null' ? '(empty)' : v)
+            renderer: v => (isEmpty(v) || v === 'null' ? '(empty)' : v),
+            ...this.labelColumn,
+            field: 'cubeLabel',
+            isTreeColumn: true
         };
     }
 

@@ -84,6 +84,8 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 * Added the observable `GridModel.isRestoringDefaults`, true while `restoreDefaultsAsync()` runs,
   through any `restoreDefaultsFn`. Code that reacts to user changes to grid state can skip those
   the restore makes.
+* Added `CubeGridConfig.labelColumn`, also settable on `CubeGridModel`, to merge overrides such as a
+  `renderer` into the default label column - for example to format a typed dimension value.
 
 ### 🐞 Bug Fixes
 

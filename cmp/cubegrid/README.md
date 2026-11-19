@@ -131,7 +131,9 @@ The grid has two regions, always in this order:
 
 1. **Fixed columns** - `columns`, written by the app exactly as for a `GridModel`, in the order
    given. Unless one of them sets `isTreeColumn`, a label column for the row dimensions is placed
-   first, pinned left. Bind these to the View's fields: a row attribute carried by a `UNIQUE` or
+   first, pinned left. `labelColumn` merges overrides into that column, such as a `renderer` that
+   formats a typed dimension value - read `record.data.cubeLabelValue` and `cubeDimension`. Bind
+   the fixed columns to the View's fields: a row attribute carried by a `UNIQUE` or
    `SINGLE` aggregator, a leaf field, or a measure. A measure's bare field name is its row summary,
    so `{field: 'mktVal'}` shows market value once even when the query pivots P&L by region.
 2. **Pivot columns** - derived from `result.paths` when the query pivots, one group per path with a

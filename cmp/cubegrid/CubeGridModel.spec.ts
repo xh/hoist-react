@@ -86,6 +86,36 @@ describe('CubeGridModel', () => {
             expect(chooserName()).toBe('Group');
         });
 
+        it('merges labelColumn over the default label column, and follows a change to it', () => {
+            const model = createModel({
+                    query: PLAIN_QUERY,
+                    labelColumn: {
+                        renderer: (v, {record}) => `${record.data.cubeDimension}: ${v}`,
+                        width: 200
+                    }
+                }),
+                {gridModel} = model,
+                record = gridModel.store.records.find(it => it.data.cubeLabel === 'US'),
+                render = () => {
+                    const column = gridModel.getColumn('cubeLabel');
+                    return column.renderer('US', {record, column, gridModel});
+                };
+            expect(gridModel.getColumn('cubeLabel')).toMatchObject({
+                width: 200,
+                isTreeColumn: true,
+                pinned: 'left'
+            });
+            expect(render()).toBe('region: US');
+
+            model.labelColumn = {field: 'other', isTreeColumn: false, headerName: 'Group'};
+
+            expect(gridModel.getColumn('cubeLabel')).toMatchObject({
+                isTreeColumn: true,
+                headerName: 'Group'
+            });
+            expect(render()).toBe('US');
+        });
+
         it('lets a fixed tree column replace the default label column', () => {
             const model = createModel({
                 query: PLAIN_QUERY,
