@@ -137,7 +137,19 @@ export const [Button, button] = hoistCmp.withFactory<ButtonProps, ButtonDefaults
         };
 
         // Blueprint's class names are kept, so its styles and app CSS keyed to them apply.
-        const hasText = !isEmptyNode(text) || !isEmptyNode(children);
+        const hasText = !isEmptyNode(text) || !isEmptyNode(children),
+            tooltipConfig = isString(tooltip) ? {content: tooltip} : tooltip;
+
+        // Name an icon-only button for assistive tech from its tooltip text, if it has no other.
+        if (
+            !hasText &&
+            !title &&
+            nativeProps['aria-label'] == null &&
+            isString(tooltipConfig?.content)
+        ) {
+            nativeProps['aria-label'] = tooltipConfig.content;
+        }
+
         const renderButton = (targetProps?: PopoverTargetProps) =>
             createElement(
                 'button',
@@ -172,7 +184,6 @@ export const [Button, button] = hoistCmp.withFactory<ButtonProps, ButtonDefaults
                 rightIcon ?? null
             );
 
-        const tooltipConfig = isString(tooltip) ? {content: tooltip} : tooltip;
         if (isEmptyNode(tooltipConfig?.content as ReactNode)) return renderButton();
 
         return tooltipCmp({

@@ -62,6 +62,29 @@ describe('Button', () => {
         expect(el.getAttribute('title')).toBe('Run it');
     });
 
+    it('names an icon-only button from its string tooltip', () => {
+        render(button({icon: Icon.refresh(), tooltip: 'Refresh', testId: 'a'}));
+        render(button({icon: Icon.refresh(), tooltip: {content: 'Reload'}, testId: 'b'}));
+        expect(screen.getByTestId('a').getAttribute('aria-label')).toBe('Refresh');
+        expect(screen.getByTestId('b').getAttribute('aria-label')).toBe('Reload');
+    });
+
+    it('takes no name from its tooltip when it has text, a title, a label or rich content', () => {
+        const tooltip = 'Refresh',
+            icon = Icon.refresh();
+        render(button({icon, text: 'Go', tooltip, testId: 'text'}));
+        render(button({icon, title: 'Native', tooltip, testId: 'title'}));
+        render(button({icon, domAttrs: {'aria-label': 'Own'}, tooltip, testId: 'label'}));
+        render(
+            button({icon, tooltip: {content: createElement('b', null, 'Rich')}, testId: 'rich'})
+        );
+
+        expect(screen.getByTestId('text').hasAttribute('aria-label')).toBe(false);
+        expect(screen.getByTestId('title').hasAttribute('aria-label')).toBe(false);
+        expect(screen.getByTestId('label').getAttribute('aria-label')).toBe('Own');
+        expect(screen.getByTestId('rich').hasAttribute('aria-label')).toBe(false);
+    });
+
     it('shows a string tooltip in a Hoist tooltip after a delay, with no wrapper', () => {
         vi.useFakeTimers();
         onTestFinished(() => {
