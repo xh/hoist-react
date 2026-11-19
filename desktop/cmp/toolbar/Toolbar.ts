@@ -16,7 +16,8 @@ import {filterConsecutiveToolbarSeparators} from '@xh/hoist/utils/impl';
 import {throwIf} from '@xh/hoist/utils/js';
 import classNames from 'classnames';
 import {isEmpty} from 'lodash';
-import {Children} from 'react';
+import {Children, createElement} from 'react';
+import {OverflowList} from './impl/OverflowList';
 import './Toolbar.scss';
 import {toolbarSeparator} from './ToolbarSep';
 
@@ -49,6 +50,13 @@ export interface ToolbarProps extends HoistProps, BoxProps {
 
 export interface ToolbarDefaults {
     compact?: boolean;
+
+    /**
+     * True to collapse overflowing toolbar items with Blueprint's `OverflowList`, as before Hoist
+     * had its own. For apps to fall back on while they adopt Hoist's - removed in the next major
+     * version.
+     */
+    useBlueprint?: boolean;
 }
 
 /**
@@ -62,7 +70,8 @@ export const [Toolbar, toolbar] = hoistCmp.withFactory<ToolbarProps, ToolbarDefa
     observer: false,
     className: 'xh-toolbar',
     defaults: {
-        compact: false
+        compact: false,
+        useBlueprint: false
     },
 
     render(
@@ -116,6 +125,14 @@ const overflowBox = hoistCmp.factory({
     observer: false,
     memo: false,
     render({children, minVisibleItems, collapseFrom}) {
+        if (!Toolbar.defaults.useBlueprint) {
+            return createElement(OverflowList, {
+                items: Children.toArray(children),
+                minVisibleItems,
+                collapseFrom,
+                overflowRenderer: items => overflowButton(items)
+            });
+        }
         return overflowList({
             $items: Children.toArray(children),
             minVisibleItems,

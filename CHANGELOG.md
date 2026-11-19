@@ -81,6 +81,9 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 * Desktop `TabSwitcher` now renders its own tab strip, not Blueprint's `Tabs`, with the same
   roles, ids, keyboard handling and `bp6-tab*` classes. Set `TabSwitcher.defaults.useBlueprint =
   true` at startup to fall back to Blueprint's for this release.
+* Desktop `Toolbar` with `enableOverflowMenu` now moves overflowing items into its menu itself,
+  not with Blueprint's `OverflowList`, keeping the `bp6-overflow-list` classes. Set
+  `Toolbar.defaults.useBlueprint = true` at startup to fall back to Blueprint's for this release.
 * Desktop `AppBar`, `AppBarSeparator`, the `LeftRightChooser` description, the `DateRangePicker`
   relative-tab stepper and the admin role tags now render their own elements, not Blueprint's
   components. The markup and `bp6-*` classes are unchanged, so there is no fallback setting.
