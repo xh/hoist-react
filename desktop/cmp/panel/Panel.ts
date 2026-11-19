@@ -54,7 +54,7 @@ export interface PanelProps<M extends PanelModel = PanelModel>
     contextMenu?: ContextMenuSpec;
 
     /**
-     * Specification of hotkeys as prescribed by blueprint.
+     * Keyboard shortcuts for the panel, listed in the hotkeys dialog (press `?`).
      * @see useHotkeys() for more information on accepted values for this prop.
      */
     hotkeys?: HotkeyConfig[];

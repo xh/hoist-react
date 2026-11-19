@@ -53,6 +53,10 @@ detailed, step-by-step upgrade instructions with before/after code examples.
   keeps Blueprint's `bp6-toast*` classes alongside `xh-toast*` ones, so app CSS still applies. Set
   `ToastSource.defaults.useBlueprint = true` at startup to fall back to Blueprint's for this
   release. `ToastSource` is exported from `@xh/hoist/desktop/appcontainer` for this purpose.
+* Desktop hotkeys, from `useHotkeys` and `PanelProps.hotkeys`, and the hotkeys dialog opened by `?`
+  now use Hoist's own implementation, not Blueprint's. Combos keep the same syntax. Set
+  `HOTKEYS_DEFAULTS.useBlueprint = true`, from `@xh/hoist/desktop/hooks`, at startup to fall back
+  to Blueprint's for this release.
 * Desktop menus and context menus now render with Hoist's own components, not Blueprint's. The DOM
   keeps Blueprint's `bp6-menu*` classes alongside new `xh-menu-*` ones, so app CSS still applies.
   Set `Menu.defaults.useBlueprint = true` at startup to fall back to Blueprint's for this release.

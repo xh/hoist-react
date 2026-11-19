@@ -42,6 +42,7 @@ import {aboutDialog} from './AboutDialog';
 import {appBanner} from './AppBanner';
 import {exceptionDialog} from './ExceptionDialog';
 import {feedbackDialog} from './FeedbackDialog';
+import {hotkeysDialog} from './HotkeysDialog';
 import {impersonationBar} from './ImpersonationBar';
 import {lockoutPanel} from './LockoutPanel';
 import {loginPanel} from './LoginPanel';
@@ -170,6 +171,7 @@ const appContainerView = hoistCmp.factory({
             aboutDialog(),
             changelogDialog(),
             feedbackDialog(),
+            hotkeysDialog(),
             optionsDialog()
         );
 
