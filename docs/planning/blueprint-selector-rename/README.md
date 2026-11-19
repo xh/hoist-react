@@ -21,7 +21,7 @@ file is the working guide.
 1. **No visual change.** Before and after screenshots of every Toolbox desktop and Admin route, in
    light and dark, must match apart from regenerated data. Visual cleanups wait for a separate,
    later step, with expected differences: the Blueprint blue of checked controls, the submenu
-   caret glyph, the checkbox marks and the hotkeys dialog.
+   caret glyph and the checkbox marks. The hotkeys dialog is already a Hoist dialog, on #4995.
 2. **Write each component's rules from what it needs, not from `BlueprintBase.css`.** That file
    holds only the Blueprint rules a coverage recording saw, and it missed states: open submenus,
    vertical sliders, toasts at top or left positions, inline overlays, popover arrows, the dark
@@ -47,7 +47,7 @@ file is the working guide.
 - [ ] Popover and tooltip.
 - [ ] Dialog, overlay and mask.
 - [ ] Toasts.
-- [ ] Hotkeys dialog.
+- [x] Hotkeys dialog - done on #4995 (`675e3e1e0`), as a Hoist dialog with only `xh-*` classes.
 - [ ] Inputs: `InputGroup`, `NumericInput`, `TextArea`, and the checkbox, switch and radio
       `Control`.
 - [ ] `SegmentedControl`.
