@@ -39,10 +39,12 @@ file is the working guide.
 
 ## Checklist
 
-- [ ] Rebuild the screenshot tooling (see the plan's Handoff section) and capture the baseline at
+- [x] Rebuild the screenshot tooling (see the plan's Handoff section) and capture the baseline at
       this branch's starting commit.
 - [x] Settle the names for the `decide` and `per component` rows in `class-map.md` - see [Names](#names).
-- [ ] Pilot one component end to end - `Button` and `ButtonGroup` - and check the screenshots.
+- [x] Pilot one component end to end - `Button` and `ButtonGroup` - and check the screenshots.
+      Done in `66bb6b763` and `2da1c1d7a`: computed styles and screenshots of every route match the
+      baseline apart from data.
 - [ ] Menus, submenus and context menus.
 - [ ] Popover and tooltip.
 - [ ] Dialog, overlay and mask.
