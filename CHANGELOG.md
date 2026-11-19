@@ -55,6 +55,8 @@ detailed, step-by-step upgrade instructions with before/after code examples.
     * `Button`, `ButtonGroup`, `Checkbox`, `SwitchInput`, `RadioInput`, `TextInput`, `TextArea`,
       `NumberInput`, `SegmentedControl`, `Slider`, `TabSwitcher`, `Toolbar` overflow and `AppBar`
       render native elements. Button text is now also in an `xh-button__text` span.
+    * Desktop `ButtonProps.tooltip` now shows a Hoist `Tooltip` rather than setting the native
+      `title` attribute. Tests that find buttons by title should set `title` instead.
 * Mobile `Popover` and `MenuButton` now use the cross-platform `Popover` from
   `@xh/hoist/cmp/popover`. Removed `@xh/hoist/mobile/cmp/popover` - import `popover` from
   `@xh/hoist/cmp/popover` instead. Popover content now renders in an `xh-popover__floating`
@@ -76,6 +78,9 @@ detailed, step-by-step upgrade instructions with before/after code examples.
     * `content` also takes a component or a function that returns an element.
 * Added `Tooltip` to `@xh/hoist/cmp/tooltip`, a hover `Popover` with tooltip defaults, on desktop
   and mobile. It takes an `intent` and `compact`, and opens on keyboard focus as well as hover.
+* Desktop `ButtonProps.tooltip` now takes a `ButtonTooltipConfig` as well as a string, for rich
+  content, an `intent` or a `position`. Button tooltips open after 500ms, including on disabled
+  buttons. Set `title` for the browser's native tooltip.
 * Dialogs now move keyboard focus inside when they open, and return it to where it was when they
   close.
 * Desktop `Slider` handles now also take Home and End, to jump to either end, and PageUp and

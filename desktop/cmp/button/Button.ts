@@ -13,13 +13,15 @@ import type {
     StyleProps,
     TestSupportProps
 } from '@xh/hoist/core';
+import type {PopoverTargetProps} from '@xh/hoist/cmp/popover';
+import {tooltip as tooltipCmp, type TooltipProps} from '@xh/hoist/cmp/tooltip';
 import {hoistCmp} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
-import {TEST_ID, withDefault} from '@xh/hoist/utils/js';
-import {splitLayoutProps} from '@xh/hoist/utils/react';
+import {TEST_ID} from '@xh/hoist/utils/js';
+import {composeRefs, splitLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
-import {isArray} from 'lodash';
-import type {ButtonHTMLAttributes, ReactElement, ReactNode} from 'react';
+import {forEach, isArray, isString} from 'lodash';
+import type {ButtonHTMLAttributes, ReactElement, ReactNode, Ref, SyntheticEvent} from 'react';
 import {createElement} from 'react';
 import './Button.scss';
 
@@ -41,12 +43,19 @@ export interface ButtonProps<M extends HoistModel = null>
     outlined?: boolean;
     rightIcon?: ReactElement;
     text?: ReactNode;
+    /** Native browser tooltip, set as the button's `title` attribute. */
     title?: string;
     value?: any;
 
-    /** Alias for title. */
-    tooltip?: string;
+    /**
+     * Tooltip shown on hover or keyboard focus - its text, or a config for richer content and
+     * options such as `intent` and `position`. Use `title` instead for the browser's own tooltip.
+     */
+    tooltip?: string | ButtonTooltipConfig;
 }
+
+/** Config for a button's `tooltip` - `TooltipProps`, less the props for its target. */
+export type ButtonTooltipConfig = Omit<TooltipProps, 'children' | 'renderTarget' | 'targetTagName'>;
 
 export interface ButtonDefaults {
     minimal?: boolean;
@@ -123,49 +132,89 @@ export const [Button, button] = hoistCmp.withFactory<ButtonProps, ButtonDefaults
                 ...style,
                 ...layoutProps
             },
-            title: withDefault(title, tooltip),
+            title,
             ...rest
         };
 
         // Blueprint's class names are kept, so its styles and app CSS keyed to them apply.
         const hasText = !isEmptyNode(text) || !isEmptyNode(children);
-        return createElement(
-            'button',
-            {
-                type: 'button',
-                ...nativeProps,
-                tabIndex: disabled ? -1 : nativeProps.tabIndex,
-                ref,
-                className: classNames(
-                    'bp6-button',
-                    {
-                        'bp6-active': active,
-                        'bp6-disabled': disabled,
-                        [`bp6-intent-${intent}`]: intent,
-                        'bp6-minimal': minimal,
-                        'bp6-outlined': outlined
-                    },
-                    className,
-                    classes
-                )
-            },
-            icon ?? null,
-            hasText
-                ? createElement(
-                      'span',
-                      {className: 'xh-button__text bp6-button-text'},
-                      text,
-                      children
-                  )
-                : null,
-            rightIcon ?? null
-        );
+        const renderButton = (targetProps?: PopoverTargetProps) =>
+            createElement(
+                'button',
+                {
+                    type: 'button',
+                    ...nativeProps,
+                    ...(targetProps ? targetHandlers(targetProps, nativeProps) : null),
+                    tabIndex: disabled ? -1 : nativeProps.tabIndex,
+                    ref: targetProps ? composeRefs(ref as Ref<HTMLElement>, targetProps.ref) : ref,
+                    className: classNames(
+                        'bp6-button',
+                        {
+                            'bp6-active': active,
+                            'bp6-disabled': disabled,
+                            [`bp6-intent-${intent}`]: intent,
+                            'bp6-minimal': minimal,
+                            'bp6-outlined': outlined
+                        },
+                        className,
+                        classes
+                    )
+                },
+                icon ?? null,
+                hasText
+                    ? createElement(
+                          'span',
+                          {className: 'xh-button__text bp6-button-text'},
+                          text,
+                          children
+                      )
+                    : null,
+                rightIcon ?? null
+            );
+
+        const tooltipConfig = isString(tooltip) ? {content: tooltip} : tooltip;
+        if (isEmptyNode(tooltipConfig?.content as ReactNode)) return renderButton();
+
+        return tooltipCmp({
+            hoverOpenDelay: TOOLTIP_OPEN_DELAY,
+            ...tooltipConfig,
+            renderTarget: renderButton
+        });
     }
 });
 
 //------------------------
 // Implementation
 //------------------------
+// Longer than a standalone tooltip's, so tooltips do not flash up as the pointer crosses a toolbar.
+const TOOLTIP_OPEN_DELAY = 500;
+
+// Tooltip handlers for the button, keyed by the button prop that runs each. Pointer rather than
+// mouse enter and leave, which React drops for a disabled button - so its tooltip still shows.
+const TOOLTIP_HANDLERS = {
+    onPointerEnter: 'onMouseEnter',
+    onPointerLeave: 'onMouseLeave',
+    onFocus: 'onFocus',
+    onBlur: 'onBlur'
+};
+
+// The tooltip's hover and focus handlers, each run after any the app set on the button.
+function targetHandlers(targetProps: PopoverTargetProps, buttonProps: Record<string, any>) {
+    const ret = {};
+    forEach(TOOLTIP_HANDLERS, (tooltipName, name) => {
+        const tooltipFn = targetProps[tooltipName],
+            buttonFn = buttonProps[name];
+        if (!tooltipFn) return;
+        ret[name] = buttonFn
+            ? (e: SyntheticEvent) => {
+                  buttonFn(e);
+                  tooltipFn(e);
+              }
+            : tooltipFn;
+    });
+    return ret;
+}
+
 function isEmptyNode(node: ReactNode): boolean {
     return (
         node == null ||

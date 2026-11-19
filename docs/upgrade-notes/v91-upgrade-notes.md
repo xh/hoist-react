@@ -462,7 +462,14 @@ import {dialog} from '@xh/hoist/desktop/cmp/dialog';
 
 dialog({title: 'Edit', isOpen: model.isOpen, onClose: () => model.close(), children: form()});
 tooltip({content: 'Refresh now', position: 'bottom', children: button({icon: Icon.refresh()})});
+
+// Or, for a desktop button, pass the tooltip to the button itself
+button({icon: Icon.refresh(), tooltip: {content: 'Refresh now', position: 'bottom'}});
 ```
+
+Desktop `ButtonProps.tooltip` now shows a Hoist `Tooltip` rather than setting the native `title`.
+Test automation that finds buttons by title (e.g. Playwright's `getByTitle`) no longer matches
+buttons that set `tooltip` - set `title` on those buttons, or find them by `testId`.
 
 The props carry over, except Blueprint-only ones. Hoist's `Dialog` always renders in a portal, so
 drop `usePortal`. A `Tooltip` takes `position`, not `placement`, and has no `targetProps` - set

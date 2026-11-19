@@ -36,9 +36,21 @@ Pass exactly one target as the child. Nothing opens while `content` is null or e
 The target renders inside a `span`. Set `targetTagName: 'div'` for a block-level target, or
 `renderTarget` to render the target with no wrapper.
 
+Desktop buttons take a tooltip directly, as text or a config:
+
+```typescript
+button({icon: Icon.refresh(), tooltip: 'Refresh'})
+
+button({
+    icon: Icon.warning(),
+    tooltip: {content: staleDataSummary(), intent: 'warning', position: 'bottom'}
+})
+```
+
 ## Common Pitfalls
 
-- **A button's `tooltip` prop is a native `title`, not this component.** That is often enough for
-  a plain-text label. Use `Tooltip` for styled or richer content, or to show the label sooner.
+- **Prefer a desktop button's `tooltip` prop to wrapping it.** `ButtonProps.tooltip` takes a string
+  or a config with these props, renders this component with no wrapper element, and opens it on
+  disabled buttons too. Set the button's `title` instead for the browser's native tooltip.
 - **Style tooltips with the `--xh-tooltip-*` CSS variables.** App CSS on `bp6-tooltip` classes works
   for one release only.

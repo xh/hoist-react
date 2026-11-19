@@ -7,9 +7,9 @@
 import {button, buttonGroup} from '@xh/hoist/desktop/cmp/button';
 import {Icon} from '@xh/hoist/icon';
 import {initTestAppAsync} from '@xh/hoist/test-support';
-import {fireEvent, render, screen} from '@testing-library/react';
-import {createRef} from 'react';
-import {beforeAll, describe, expect, it, vi} from 'vitest';
+import {act, fireEvent, render, screen} from '@testing-library/react';
+import {createElement, createRef} from 'react';
+import {beforeAll, describe, expect, it, onTestFinished, vi} from 'vitest';
 
 /**
  * How the desktop Button and ButtonGroup render and respond. Toolbars, dialogs, forms and app
@@ -55,11 +55,82 @@ describe('Button', () => {
         expect(classList).not.toContain('bp6-minimal');
     });
 
-    it('defaults to minimal, and takes tooltip as its title', () => {
-        render(button({text: 'Go', tooltip: 'Run it'}));
+    it('defaults to minimal, and sets title as its native tooltip', () => {
+        render(button({text: 'Go', title: 'Run it'}));
         const el = screen.getByRole('button');
         expect(el.classList).toContain('bp6-minimal');
         expect(el.getAttribute('title')).toBe('Run it');
+    });
+
+    it('shows a string tooltip in a Hoist tooltip after a delay, with no wrapper', () => {
+        vi.useFakeTimers();
+        onTestFinished(() => {
+            vi.useRealTimers();
+        });
+        const {container} = render(button({text: 'Go', tooltip: 'Run it', testId: 'go'}));
+        const el = screen.getByTestId('go');
+        expect(container.firstElementChild).toBe(el);
+        expect(el.hasAttribute('title')).toBe(false);
+
+        fireEvent.pointerEnter(el);
+        act(() => vi.advanceTimersByTime(400));
+        expect(screen.queryByRole('tooltip')).toBeNull();
+        act(() => vi.advanceTimersByTime(100));
+        expect(screen.getByRole('tooltip').textContent).toBe('Run it');
+
+        fireEvent.pointerLeave(el);
+        expect(screen.queryByRole('tooltip')).toBeNull();
+    });
+
+    it('takes a tooltip config for rich content and options, opening on focus', async () => {
+        render(
+            button({
+                icon: Icon.warning(),
+                testId: 'warn',
+                tooltip: {
+                    content: createElement('b', null, 'Stale data'),
+                    intent: 'warning',
+                    hoverOpenDelay: 0
+                }
+            })
+        );
+        fireEvent.focus(screen.getByTestId('warn'));
+        const tip = await screen.findByRole('tooltip');
+        expect(tip.querySelector('b').textContent).toBe('Stale data');
+        expect(tip.classList).toContain('xh-tooltip--intent-warning');
+    });
+
+    it('shows its tooltip while disabled, and keeps app handlers and its ref', async () => {
+        const onPointerEnter = vi.fn(),
+            ref = createRef<HTMLButtonElement>();
+        render(
+            button({
+                text: 'Go',
+                disabled: true,
+                testId: 'go',
+                ref,
+                onPointerEnter,
+                tooltip: {content: 'Not now', hoverOpenDelay: 0}
+            })
+        );
+        const el = screen.getByTestId('go');
+        expect(ref.current).toBe(el);
+        expect(el.tabIndex).toBe(-1);
+
+        fireEvent.pointerEnter(el);
+        expect(onPointerEnter).toHaveBeenCalledOnce();
+        expect((await screen.findByRole('tooltip')).textContent).toBe('Not now');
+    });
+
+    it('renders no tooltip for empty tooltip content', () => {
+        vi.useFakeTimers();
+        onTestFinished(() => {
+            vi.useRealTimers();
+        });
+        render(button({text: 'Go', tooltip: '', testId: 'go'}));
+        fireEvent.pointerEnter(screen.getByTestId('go'));
+        act(() => vi.advanceTimersByTime(1000));
+        expect(screen.queryByRole('tooltip')).toBeNull();
     });
 
     it('calls onClick, but not while disabled', () => {
