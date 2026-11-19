@@ -12,7 +12,10 @@ import '@xh/hoist/desktop/register';
 import {radio, radioGroup} from '@xh/hoist/kit/blueprint';
 import {computed} from '@xh/hoist/mobx';
 import {getTestId, TEST_ID, withDefault} from '@xh/hoist/utils/js';
+import classNames from 'classnames';
 import {filter, isObject} from 'lodash';
+import {createElement, useId} from 'react';
+import {control} from './impl/Control';
 import './RadioInput.scss';
 
 export interface RadioInputProps extends HoistProps, HoistInputProps {
@@ -34,9 +37,20 @@ export interface RadioOption {
 /**
  * An input for managing Radio Buttons.
  */
-export const [RadioInput, radioInput] = hoistCmp.withFactory<RadioInputProps>({
+export interface RadioInputDefaults {
+    /**
+     * True to render desktop radio buttons with Blueprint's, as before Hoist had its own.
+     * For apps to fall back on while they adopt Hoist's - removed in the next major version.
+     */
+    useBlueprint?: boolean;
+}
+
+export const [RadioInput, radioInput] = hoistCmp.withFactory<RadioInputProps, RadioInputDefaults>({
     displayName: 'RadioInput',
     className: 'xh-radio-input',
+    defaults: {
+        useBlueprint: false
+    },
     render(props, ref) {
         return useHoistInputModel(cmp, props, ref, RadioInputModel);
     }
@@ -87,30 +101,62 @@ class RadioInputModel extends HoistInputModel {
 
 // Note: we don't use the `ref` here, but the presence of a second argument is required.
 const cmp = hoistCmp.factory<RadioInputModel>(({model, className, ...props}, ref) => {
-    const {normalizedOptions} = model,
-        labelSide = withDefault(props.labelSide, 'right');
+    const {normalizedOptions, renderValue} = model,
+        labelSide = withDefault(props.labelSide, 'right'),
+        alignIndicator = labelSide === 'left' ? 'right' : 'left',
+        name = useId();
 
-    const radios = normalizedOptions.map(opt => {
-        return radio({
-            alignIndicator: labelSide === 'left' ? 'right' : 'left',
-            disabled: opt.disabled,
-            label: opt.label,
-            value: opt.value,
-            className: 'xh-radio-input-option',
-            [TEST_ID]: getTestId(props.testId, `${opt.value}`),
-            onFocus: model.onFocus,
-            onBlur: model.onBlur
+    if (RadioInput.defaults.useBlueprint) {
+        return radioGroup({
+            className,
+            disabled: props.disabled,
+            inline: props.inline,
+            selectedValue: renderValue,
+            onChange: model.onChange,
+            [TEST_ID]: props.testId,
+            ...props.domAttrs,
+            children: normalizedOptions.map(opt =>
+                radio({
+                    alignIndicator,
+                    disabled: opt.disabled,
+                    label: opt.label,
+                    value: opt.value,
+                    className: 'xh-radio-input-option',
+                    [TEST_ID]: getTestId(props.testId, `${opt.value}`),
+                    onFocus: model.onFocus,
+                    onBlur: model.onBlur
+                })
+            )
         });
-    });
+    }
 
-    return radioGroup({
-        className,
-        disabled: props.disabled,
-        inline: props.inline,
-        selectedValue: model.renderValue,
-        onChange: model.onChange,
-        [TEST_ID]: props.testId,
-        ...props.domAttrs,
-        children: radios
-    });
+    // Blueprint's class names are kept, so its styles and any app CSS keyed to them still apply.
+    return createElement(
+        'div',
+        {
+            role: 'radiogroup',
+            [TEST_ID]: props.testId,
+            ...props.domAttrs,
+            className: classNames('bp6-radio-group', className)
+        },
+        ...normalizedOptions.map(opt =>
+            control({
+                kind: 'radio',
+                alignIndicator,
+                inline: props.inline,
+                label: opt.label,
+                className: 'xh-radio-input-option',
+                inputProps: {
+                    name,
+                    value: opt.value,
+                    checked: opt.value === renderValue,
+                    disabled: opt.disabled || props.disabled,
+                    [TEST_ID]: getTestId(props.testId, `${opt.value}`),
+                    onChange: model.onChange,
+                    onFocus: model.onFocus,
+                    onBlur: model.onBlur
+                }
+            })
+        )
+    );
 });

@@ -13,6 +13,8 @@ import {checkbox as bpCheckbox} from '@xh/hoist/kit/blueprint';
 import {TEST_ID, withDefault} from '@xh/hoist/utils/js';
 import {isNil} from 'lodash';
 import type {ReactNode} from 'react';
+import {useEffect} from 'react';
+import {control} from './impl/Control';
 
 import './Checkbox.scss';
 
@@ -45,9 +47,20 @@ export interface CheckboxProps extends HoistProps, HoistInputProps, StyleProps {
  * Checkbox control for boolean values.
  * Renders null with an "indeterminate" [-] display.
  */
-export const [Checkbox, checkbox] = hoistCmp.withFactory<CheckboxProps>({
+export interface CheckboxDefaults {
+    /**
+     * True to render desktop checkboxes with Blueprint's, as before Hoist had its own.
+     * For apps to fall back on while they adopt Hoist's - removed in the next major version.
+     */
+    useBlueprint?: boolean;
+}
+
+export const [Checkbox, checkbox] = hoistCmp.withFactory<CheckboxProps, CheckboxDefaults>({
     displayName: 'Checkbox',
     className: 'xh-check-box',
+    defaults: {
+        useBlueprint: false
+    },
     render(props, ref) {
         return useHoistInputModel(cmp, props, ref, CheckboxInputModel);
     }
@@ -66,25 +79,51 @@ const cmp = hoistCmp.factory<CheckboxInputModel>(({model, className, ...props}, 
         displayUnsetState = withDefault(props.displayUnsetState, false),
         valueIsUnset = isNil(renderValue);
 
-    return bpCheckbox({
-        autoFocus: props.autoFocus,
-        checked: !!renderValue,
-        indeterminate: valueIsUnset && displayUnsetState,
-        alignIndicator: labelSide === 'left' ? 'right' : 'left',
-        disabled: props.disabled,
-        inline: withDefault(props.inline, true),
+    const indeterminate = valueIsUnset && displayUnsetState,
+        alignIndicator = labelSide === 'left' ? 'right' : 'left',
+        inline = withDefault(props.inline, true),
+        inputProps = {
+            autoFocus: props.autoFocus,
+            checked: !!renderValue,
+            disabled: props.disabled,
+            tabIndex: props.tabIndex,
+            id: props.id,
+            [TEST_ID]: props.testId,
+            ...props.domAttrs,
+            onBlur: model.onBlur,
+            onFocus: model.onFocus,
+            onChange: e => model.noteValueChange(e.target.checked)
+        };
+
+    // The indeterminate state has no HTML attribute - set it on the element.
+    useEffect(() => {
+        const input = model.inputRef.current as HTMLInputElement;
+        if (input && !Checkbox.defaults.useBlueprint) input.indeterminate = indeterminate;
+    }, [indeterminate, model]);
+
+    if (Checkbox.defaults.useBlueprint) {
+        return bpCheckbox({
+            ...inputProps,
+            indeterminate,
+            alignIndicator,
+            inline,
+            label: props.label,
+            className,
+            style: props.style,
+            inputRef: model.inputRef,
+            ref
+        });
+    }
+
+    return control({
+        kind: 'checkbox',
+        alignIndicator,
+        inline,
         label: props.label,
-        tabIndex: props.tabIndex,
-        id: props.id,
-        [TEST_ID]: props.testId,
-        ...props.domAttrs,
         className,
         style: props.style,
-
-        onBlur: model.onBlur,
-        onFocus: model.onFocus,
-        onChange: e => model.noteValueChange(e.target.checked),
-        inputRef: model.inputRef,
-        ref
+        ref,
+        inputRef: model.inputRef as any,
+        inputProps
     });
 });
