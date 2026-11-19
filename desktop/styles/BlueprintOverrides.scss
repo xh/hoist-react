@@ -259,6 +259,11 @@
   .bp6-submenu {
     padding: 0;
   }
+
+  // The popover target around a parent item fills the row, so the item does too.
+  .xh-menu-item--submenu > .xh-popover__target-wrapper {
+    display: block;
+  }
 }
 
 .bp6-dark .bp6-menu-divider {
