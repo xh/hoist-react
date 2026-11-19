@@ -29,12 +29,7 @@ export const [ContextMenu, contextMenu] = hoistCmp.withFactory<ContextMenuProps>
     model: false,
 
     render({menuItems, context}) {
-        // Anchored at the cursor rather than a target element, where submenus mis-position
-        // without a portal - see hoist-react #3724.
-        const items = parseMenuItems(menuItems, {
-            context,
-            submenuPopoverProps: {usePortal: true}
-        });
+        const items = parseMenuItems(menuItems, {context});
         return isEmpty(items) ? null : bpMenu(items);
     }
 });
