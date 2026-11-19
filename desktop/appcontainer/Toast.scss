@@ -74,9 +74,6 @@
 .xh-toast.xh-toast--intent-primary .xh-button:focus {
   outline-color: rgba(255, 255, 255, 0.75);
 }
-.xh-toast.xh-toast--intent-primary .xh-button:last-child > .bp6-icon-x {
-  color: rgba(255, 255, 255, 0.7) !important;
-}
 .xh-toast.xh-toast--intent-success {
   background-color: #238551;
   color: #ffffff;
@@ -95,9 +92,6 @@
 }
 .xh-toast.xh-toast--intent-success .xh-button:focus {
   outline-color: rgba(255, 255, 255, 0.75);
-}
-.xh-toast.xh-toast--intent-success .xh-button:last-child > .bp6-icon-x {
-  color: rgba(255, 255, 255, 0.7) !important;
 }
 .xh-toast.xh-toast--intent-warning {
   background-color: #fbb360;
@@ -118,9 +112,6 @@
 .xh-toast.xh-toast--intent-warning .xh-button:focus {
   outline-color: rgba(28, 33, 39, 0.75);
 }
-.xh-toast.xh-toast--intent-warning .xh-button:last-child > .bp6-icon-x {
-  color: rgba(28, 33, 39, 0.7) !important;
-}
 .xh-toast.xh-toast--intent-danger {
   background-color: #cd4246;
   color: #ffffff;
@@ -139,9 +130,6 @@
 }
 .xh-toast.xh-toast--intent-danger .xh-button:focus {
   outline-color: rgba(255, 255, 255, 0.75);
-}
-.xh-toast.xh-toast--intent-danger .xh-button:last-child > .bp6-icon-x {
-  color: rgba(255, 255, 255, 0.7) !important;
 }
 .xh-toast__message {
   flex: 1 1 auto;

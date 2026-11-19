@@ -70,12 +70,6 @@ body.xh-overlay-open {
   position: absolute;
 }
 
-.bp6-popover-target
-  + :is(.xh-dialog__overlay, .xh-overlay)
-  .bp6-popover.bp6-popover-content-sizing {
-  width: 350px;
-}
-
 //-----------------------------------------------
 // Hoist overlay styles
 //-----------------------------------------------

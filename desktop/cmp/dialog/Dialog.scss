@@ -123,45 +123,6 @@ h2.xh-dialog__title {
 .xh-dialog__footer-actions .xh-button {
   margin-left: 8px;
 }
-.bp6-multistep-dialog-nav-right .bp6-multistep-dialog-panels .xh-dialog__footer {
-  border-bottom-left-radius: 0;
-}
-.bp6-drawer-header .xh-dialog__title {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  overflow-wrap: normal;
-  flex: 1 1 auto;
-  line-height: inherit;
-  margin: 0;
-}
-.bp6-drawer-header .xh-dialog__title:last-child {
-  margin-right: 20px;
-}
-.bp6-hotkey-dialog .xh-dialog__body {
-  margin: 0;
-  padding: 0;
-}
-.bp6-hotkey-column .xh-dialog__title {
-  margin-bottom: 20px;
-}
-.bp6-hotkey-column .xh-dialog__title:not(:first-child) {
-  margin-top: 40px;
-}
-.bp6-non-ideal-state .xh-dialog__title {
-  color: #5f6b7c;
-  line-height: 20px;
-  margin-bottom: 8px;
-}
-.bp6-non-ideal-state .xh-dialog__title:only-child {
-  margin-bottom: 0;
-}
-.xh-dark .bp6-non-ideal-state .xh-dialog__title {
-  color: #abb3bf;
-}
-.bp6-panel-stack2-header .xh-dialog__title {
-  margin: 0 4px;
-}
 
 //-----------------------------------------------
 // Hoist dialog styles
