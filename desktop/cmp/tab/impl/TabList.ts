@@ -102,7 +102,7 @@ export const tabList = hoistCmp.factory<TabListProps>({
                           h('div', {className: 'bp6-tab-indicator'})
                       )
                     : null,
-                ...children
+                children
             )
         );
     }

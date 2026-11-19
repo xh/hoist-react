@@ -11,13 +11,14 @@ import {hoistCmp, uses} from '@xh/hoist/core';
 import {logWarn} from '@xh/hoist/utils/js';
 import classNames from 'classnames';
 import {isElement} from 'lodash';
-import type {KeyboardEvent} from 'react';
+import {useEffect} from 'react';
 import {createPortal} from 'react-dom';
 import {toast} from './Toast';
 
 /**
  * Renders the open toasts. Toasts sharing a container and position stack together, newest
- * nearest the edge they are shown along. Escape with focus in a stack dismisses all its toasts.
+ * nearest the edge they are shown along. Escape dismisses all open toasts, unless a dialog, popover
+ * or other layer consumed it.
  * @internal
  */
 export const toastSource = hoistCmp.factory<ToastSourceModel>({
@@ -25,6 +26,17 @@ export const toastSource = hoistCmp.factory<ToastSourceModel>({
     model: uses(ToastSourceModel),
 
     render({model}) {
+        useEffect(() => {
+            const onKeyDown = (e: KeyboardEvent) => {
+                if (e.key !== 'Escape' || e.defaultPrevented) return;
+                model.toastModels.forEach(it => {
+                    if (it.isOpen) it.dismiss();
+                });
+            };
+            window.addEventListener('keydown', onKeyDown);
+            return () => window.removeEventListener('keydown', onKeyDown);
+        }, [model]);
+
         const stacks = new Map<HTMLElement, Map<string, ToastModel[]>>();
         model.toastModels.forEach(it => {
             if (!it.isOpen) return;
@@ -52,10 +64,6 @@ function toastStack(toasts: ToastModel[], position: string, container: HTMLEleme
     const isAnchored = container !== document.body,
         edges = position.split('-');
 
-    const onKeyDown = (e: KeyboardEvent) => {
-        if (e.key === 'Escape') toasts.forEach(it => it.dismiss());
-    };
-
     return div({
         className: classNames(
             'xh-toast-container',
@@ -66,7 +74,6 @@ function toastStack(toasts: ToastModel[], position: string, container: HTMLEleme
                 ? ['xh-toast-container--anchored', 'bp6-toast-container-inline']
                 : 'bp6-toast-container-in-portal'
         ),
-        onKeyDown,
         children: toasts.map(model => toast({model, key: model.xhId}))
     });
 }
