@@ -53,6 +53,10 @@ detailed, step-by-step upgrade instructions with before/after code examples.
   keeps Blueprint's `bp6-toast*` classes alongside `xh-toast*` ones, so app CSS still applies. Set
   `ToastSource.defaults.useBlueprint = true` at startup to fall back to Blueprint's for this
   release. `ToastSource` is exported from `@xh/hoist/desktop/appcontainer` for this purpose.
+* Desktop `Button` and `ButtonGroup` now render native `<button>` and `<div>` elements, not
+  Blueprint's components. They keep Blueprint's `bp6-button*` classes, so app CSS still applies,
+  and button text is now also in an `xh-button__text` span. Set `Button.defaults.useBlueprint = true`
+  at startup to fall back to Blueprint's button for this release.
 * Mobile `Popover` and `MenuButton` now use the cross-platform `Popover` from
   `@xh/hoist/cmp/popover`. `@xh/hoist/mobile/cmp/popover` re-exports it for one release - import
   from `@xh/hoist/cmp/popover` instead. Popover content now renders in an `xh-popover__floating`

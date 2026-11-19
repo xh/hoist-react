@@ -19,7 +19,9 @@ import {button as bpButton} from '@xh/hoist/kit/blueprint';
 import {TEST_ID, withDefault} from '@xh/hoist/utils/js';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
+import {isArray} from 'lodash';
 import type {ButtonHTMLAttributes, ReactElement, ReactNode} from 'react';
+import {createElement} from 'react';
 import './Button.scss';
 
 export interface ButtonProps<M extends HoistModel = null>
@@ -50,6 +52,12 @@ export interface ButtonProps<M extends HoistModel = null>
 export interface ButtonDefaults {
     minimal?: boolean;
     outlined?: boolean;
+
+    /**
+     * True to render desktop buttons with Blueprint's, as before Hoist had its own.
+     * For apps to fall back on while they adopt Hoist's button - removed in the next major version.
+     */
+    useBlueprint?: boolean;
 }
 
 /**
@@ -64,7 +72,8 @@ export const [Button, button] = hoistCmp.withFactory<ButtonProps, ButtonDefaults
     className: 'xh-button',
     defaults: {
         minimal: true,
-        outlined: false
+        outlined: false,
+        useBlueprint: false
     },
 
     render(props, ref) {
@@ -89,6 +98,7 @@ export const [Button, button] = hoistCmp.withFactory<ButtonProps, ButtonDefaults
             active,
             testId,
             domAttrs,
+            children,
             ...rest
         } = nonLayoutProps;
 
@@ -111,27 +121,79 @@ export const [Button, button] = hoistCmp.withFactory<ButtonProps, ButtonDefaults
         if (!minimal && !outlined) classes.push('xh-button--standard');
         if (active) classes.push('xh-button--active');
 
-        return bpButton({
-            active,
+        const sharedProps = {
             autoFocus,
-            className: classNames(className, classes),
-            ref,
             [TEST_ID]: testId,
             ...domAttrs,
             disabled,
-            icon,
-            intent,
-            minimal,
             onClick,
-            outlined,
-            rightIcon,
             style: {
                 ...style,
                 ...layoutProps
             },
-            text,
             title: withDefault(title, tooltip),
             ...rest
-        });
+        };
+
+        if (defaults.useBlueprint) {
+            return bpButton({
+                ...sharedProps,
+                active,
+                className: classNames(className, classes),
+                icon,
+                intent,
+                minimal,
+                outlined,
+                ref,
+                rightIcon,
+                text,
+                children
+            });
+        }
+
+        // Blueprint's class names are kept, so its styles and any app CSS keyed to them still apply.
+        const hasText = !isEmptyNode(text) || !isEmptyNode(children);
+        return createElement(
+            'button',
+            {
+                type: 'button',
+                ...sharedProps,
+                ref,
+                className: classNames(
+                    'bp6-button',
+                    {
+                        'bp6-active': active,
+                        'bp6-disabled': disabled,
+                        [`bp6-intent-${intent}`]: intent,
+                        'bp6-minimal': minimal,
+                        'bp6-outlined': outlined
+                    },
+                    className,
+                    classes
+                )
+            },
+            icon ?? null,
+            hasText
+                ? createElement(
+                      'span',
+                      {className: 'xh-button__text bp6-button-text'},
+                      text,
+                      children
+                  )
+                : null,
+            rightIcon ?? null
+        );
     }
 });
+
+//------------------------
+// Implementation
+//------------------------
+function isEmptyNode(node: ReactNode): boolean {
+    return (
+        node == null ||
+        node === '' ||
+        node === false ||
+        (isArray(node) && node.every(it => isEmptyNode(it)))
+    );
+}
