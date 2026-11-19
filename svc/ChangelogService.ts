@@ -4,7 +4,8 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {HoistService, InitContext, XH} from '@xh/hoist/core';
+import type {InitContext} from '@xh/hoist/core';
+import {HoistService, XH} from '@xh/hoist/core';
 // @ts-ignore
 import jsonFromMarkdown from '@xh/app-changelog.json';
 import {action, observable} from '@xh/hoist/mobx';

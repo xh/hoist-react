@@ -18,8 +18,10 @@ import {
     vbox,
     vframe
 } from '@xh/hoist/cmp/layout';
-import {hoistCmp, Side, useLocalModel, uses} from '@xh/hoist/core';
-import {button, ButtonProps} from '@xh/hoist/desktop/cmp/button';
+import type {Side} from '@xh/hoist/core';
+import {hoistCmp, useLocalModel, uses} from '@xh/hoist/core';
+import type {ButtonProps} from '@xh/hoist/desktop/cmp/button';
+import {button} from '@xh/hoist/desktop/cmp/button';
 import {select} from '@xh/hoist/desktop/cmp/input';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import '@xh/hoist/desktop/register';
@@ -32,7 +34,7 @@ import {splitLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import {isEmpty, isNil} from 'lodash';
 import './GroupingChooser.scss';
-import {ReactNode} from 'react';
+import type {ReactNode} from 'react';
 
 export interface GroupingChooserProps extends ButtonProps<GroupingChooserModel> {
     /** Title for value-editing portion of popover, or null to suppress. */
@@ -112,14 +114,14 @@ export const [GroupingChooser, groupingChooser] = hoistCmp.withFactory<GroupingC
             ref,
             className,
             ...layoutProps,
-            item: popover({
+            children: popover({
                 isOpen,
                 popoverRef: impl.popoverRef,
                 popoverClassName: `xh-grouping-chooser-popover xh-grouping-chooser-popover--${favesClassNameMod}`,
                 // Left align editor to keep in place when button changing size when commitOnChange: true
                 position: `${popoverPosition}-left`,
                 minimal: false,
-                item: fragment(
+                children: fragment(
                     button({
                         text: label,
                         title: label,
@@ -206,11 +208,11 @@ const popoverCmp = hoistCmp.factory<GroupingChooserLocalModel>({
             className: 'xh-grouping-chooser-popover__inner',
             width: popoverWidth,
             minHeight: popoverMinHeight,
-            items: itemsContainer({items}),
+            children: itemsContainer({children: items}),
             bbar: toolbar({
                 compact: true,
                 omit: !parentModel.persistFavorites,
-                items: [filler(), favoritesAddBtn({testId})]
+                children: [filler(), favoritesAddBtn({testId})]
             })
         });
     }
@@ -221,8 +223,12 @@ const editor = hoistCmp.factory<GroupingChooserLocalModel>({
         return vbox({
             className: 'xh-grouping-chooser__editor',
             testId,
-            items: [
-                div({className: 'xh-popup__title', item: editorTitle, omit: isNil(editorTitle)}),
+            children: [
+                div({
+                    className: 'xh-popup__title',
+                    children: editorTitle,
+                    omit: isNil(editorTitle)
+                }),
                 dimensionList({emptyText}),
                 addDimensionControl()
             ]
@@ -236,20 +242,20 @@ const dimensionList = hoistCmp.factory<GroupingChooserLocalModel>({
             return model.parentModel.allowEmpty
                 ? hbox({
                       className: 'xh-grouping-chooser__row',
-                      items: [filler(), emptyText, filler()]
+                      children: [filler(), emptyText, filler()]
                   })
                 : null;
         }
 
         return dragDropContext({
             onDragEnd: result => model.onDragEnd(result),
-            item: droppable({
+            children: droppable({
                 droppableId: 'dimension-list',
                 children: dndProps =>
                     div({
                         ref: dndProps.innerRef,
                         className: 'xh-grouping-chooser__list',
-                        items: [
+                        children: [
                             ...model.pendingValue.map((dimension, idx) =>
                                 dimensionRow({dimension, idx})
                             ),
@@ -305,16 +311,16 @@ const dimensionRow = hoistCmp.factory<GroupingChooserLocalModel>({
                         'xh-grouping-chooser__row',
                         dndState.isDragging ? 'xh-grouping-chooser__row--dragging' : null
                     ),
-                    items: [
+                    children: [
                         div({
                             className: 'xh-grouping-chooser__row__grabber',
-                            item: Icon.grip({prefix: 'fal'}),
+                            children: Icon.grip({prefix: 'fal'}),
                             ...dndProps.dragHandleProps,
                             tabIndex: -1
                         }),
                         div({
                             className: 'xh-grouping-chooser__row__select',
-                            item: select({
+                            children: select({
                                 options,
                                 value: dimension,
                                 flex: 1,
@@ -350,10 +356,10 @@ const addDimensionControl = hoistCmp.factory<GroupingChooserLocalModel>({
         const options = model.getDimSelectOpts();
         return div({
             className: 'xh-grouping-chooser__add-control',
-            items: [
+            children: [
                 div({
                     className: 'xh-grouping-chooser__add-control__icon',
-                    item: Icon.grip({prefix: 'fal'})
+                    children: Icon.grip({prefix: 'fal'})
                 }),
                 select({
                     // By changing the key each time the options change, we can
@@ -394,15 +400,15 @@ const favoritesChooser = hoistCmp.factory<GroupingChooserLocalModel>({
         return vbox({
             className: `xh-grouping-chooser__favorites xh-grouping-chooser__favorites--${favoritesSide}`,
             testId,
-            items: [
+            children: [
                 div({
                     className: 'xh-popup__title',
-                    item: favoritesTitle,
+                    children: favoritesTitle,
                     omit: isNil(favoritesTitle)
                 }),
                 hasFavorites
                     ? menu({
-                          items: options.map(it => favoriteMenuItem(it))
+                          children: options.map(it => favoriteMenuItem(it))
                       })
                     : placeholder('No favorites saved.')
             ]

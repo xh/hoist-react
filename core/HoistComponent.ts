@@ -5,45 +5,31 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {instanceManager} from '@xh/hoist/core/impl/InstanceManager';
-import {
-    CreatesSpec,
-    UsesSpec,
+import type {
     HoistProps,
     DefaultHoistProps,
-    elementFactory,
     ElementFactory,
     TestSupportProps,
     PlainObject
 } from './';
+import {CreatesSpec, UsesSpec, elementFactory} from './';
+import type {ModelSpec, HoistModel} from './model';
 import {
     useModelLinker,
     localModelContext,
     ModelLookup,
     ModelLookupContext,
     modelLookupContextProvider,
-    ModelSpec,
     uses,
-    formatSelector,
-    HoistModel
+    formatSelector
 } from './model';
 import {logError, throwIf, warnIf, withDefault} from '@xh/hoist/utils/js';
 import {getLayoutProps, useOnMount, useOnUnmount} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import {isFunction, isPlainObject, isObject} from 'lodash';
 import {observer, untracked} from '../mobx';
-import {
-    ForwardedRef,
-    forwardRef,
-    FC,
-    memo,
-    ReactNode,
-    useContext,
-    useEffect,
-    useRef,
-    createElement,
-    FunctionComponent,
-    useDebugValue
-} from 'react';
+import type {ForwardedRef, FC, ReactNode, FunctionComponent} from 'react';
+import {forwardRef, memo, useContext, useEffect, useRef, createElement, useDebugValue} from 'react';
 
 /**
  * Type representing props passed to a HoistComponent's render function.
@@ -306,16 +292,6 @@ function wrapWithModel(render: RenderFn, cfg: Config): RenderFn {
             resolvedModel = useResolvedModel(props, modelLookup, cfg),
             {isLinked, model, fromContext} = resolvedModel;
 
-        // 2) Validate
-        if (!model && !spec.optional && spec instanceof UsesSpec) {
-            logError(
-                `Failed to find model with selector '${formatSelector(spec.selector)}'. Ensure the
-                proper model is available via context, or specify using the 'model' prop.`,
-                cfg.displayName
-            );
-            return cmpErrDisplay({...getLayoutProps(props), item: 'No model found'});
-        }
-
         useDebugValue(model, m => {
             if (!m) return 'null';
             return [
@@ -325,7 +301,7 @@ function wrapWithModel(render: RenderFn, cfg: Config): RenderFn {
             ].join(' | ');
         });
 
-        // 3) insert any new lookup context that needs to be established.  Avoid adding if default
+        // 2) insert any new lookup context that needs to be established.  Avoid adding if default
         // model not changing; cache object to avoid triggering re-renders in context children
         const insertLookup = useRef<ModelLookup>(null);
         if (
@@ -341,6 +317,16 @@ function wrapWithModel(render: RenderFn, cfg: Config): RenderFn {
             }
         } else {
             insertLookup.current = null;
+        }
+
+        // 3) Validate - only after the hooks above, so a failed lookup keeps the hook count stable.
+        if (!model && !spec.optional && spec instanceof UsesSpec) {
+            logError(
+                `Failed to find model with selector '${formatSelector(spec.selector)}'. Ensure the
+                proper model is available via context, or specify using the 'model' prop.`,
+                cfg.displayName
+            );
+            return cmpErrDisplay({...getLayoutProps(props), children: 'No model found'});
         }
 
         // 4) Get the rendering of the component with its model context
@@ -368,7 +354,7 @@ function wrapWithModel(render: RenderFn, cfg: Config): RenderFn {
             : createElement(HostCmp, {managedRender, key: model?.xhId});
 
         return insertLookup.current
-            ? modelLookupContextProvider({value: insertLookup.current, item: ret})
+            ? modelLookupContextProvider({value: insertLookup.current, children: ret})
             : ret;
     };
 }

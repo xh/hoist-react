@@ -26,7 +26,7 @@ export const instancesTab = hoistCmp.factory({
                     collapsible: false,
                     persistWith: model.persistWith
                 },
-                item: grid()
+                children: grid()
             }),
             detailPanel(),
             failedConnectionMask()
@@ -39,7 +39,7 @@ export const detailPanel = hoistCmp.factory<InstancesTabModel>({
         const {instance, lastLoadException} = model;
         if (!instance?.isReady) {
             return placeholder({
-                items: [Icon.server(), 'Select a running instance above.'],
+                children: [Icon.server(), 'Select a running instance above.'],
                 omit: lastLoadException
             });
         }
@@ -48,12 +48,12 @@ export const detailPanel = hoistCmp.factory<InstancesTabModel>({
             compactHeader: true,
             tbar: [
                 Icon.server(),
-                box({width: 150, item: model.formatInstance(instance)}),
+                box({width: 150, children: model.formatInstance(instance)}),
                 hspacer(25),
                 tabSwitcher()
             ],
             flex: 1,
-            item: tabContainer({switcher: false})
+            children: tabContainer({switcher: false})
         });
     }
 });

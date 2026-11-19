@@ -4,16 +4,16 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {
-    HoistInputModel,
+import type {
     HoistInputProps,
     OptionPrimitive,
     SegmentedControlNullOption,
-    SegmentedControlOption,
-    useHoistInputModel
+    SegmentedControlOption
 } from '@xh/hoist/cmp/input';
+import {HoistInputModel, useHoistInputModel} from '@xh/hoist/cmp/input';
 import {div, span} from '@xh/hoist/cmp/layout';
-import {hoistCmp, HoistProps, Intent, LayoutProps} from '@xh/hoist/core';
+import type {HoistProps, Intent, LayoutProps} from '@xh/hoist/core';
+import {hoistCmp} from '@xh/hoist/core';
 import {button} from '@xh/hoist/mobile/cmp/button';
 import '@xh/hoist/mobile/register';
 import {computed} from '@xh/hoist/mobx';
@@ -188,7 +188,7 @@ const cmp = hoistCmp.factory<SegmentedControlModel>(({model, className, ...props
         // rather than hard-clipping mid-character. Pass null for icon-only options so the Button
         // renders the icon alone (an empty span would suppress that).
         const label = opt.label
-            ? span({className: 'xh-segmented-control-option__label', item: opt.label})
+            ? span({className: 'xh-segmented-control-option__label', children: opt.label})
             : null;
 
         return button({
@@ -225,6 +225,6 @@ const cmp = hoistCmp.factory<SegmentedControlModel>(({model, className, ...props
         style: {...getLayoutProps(props), ...rest.style},
         [TEST_ID]: testId,
         ...domAttrs,
-        items: buttons
+        children: buttons
     });
 });

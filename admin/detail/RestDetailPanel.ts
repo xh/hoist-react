@@ -5,16 +5,18 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {valOrNa} from '@xh/hoist/admin/AdminUtils';
-import {form, FormModel} from '@xh/hoist/cmp/form';
+import type {FormModel} from '@xh/hoist/cmp/form';
+import {form} from '@xh/hoist/cmp/form';
 import {filler, placeholder, vframe} from '@xh/hoist/cmp/layout';
-import {creates, hoistCmp, HoistProps, PersistOptions} from '@xh/hoist/core';
-import {StoreRecord} from '@xh/hoist/data';
+import type {HoistProps, PersistOptions} from '@xh/hoist/core';
+import {creates, hoistCmp} from '@xh/hoist/core';
+import type {StoreRecord} from '@xh/hoist/data';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {Icon} from '@xh/hoist/icon';
 import {startCase} from 'lodash';
-import {ReactElement, ReactNode} from 'react';
+import type {ReactElement, ReactNode} from 'react';
 import {RestDetailModel} from './RestDetailModel';
 
 export interface RestDetailPanelProps extends HoistProps<RestDetailModel> {
@@ -43,8 +45,8 @@ export interface RestDetailPanelProps extends HoistProps<RestDetailModel> {
  * grid's selection, refreshes when the grid reloads, and offers an Edit button to open the grid's
  * editor dialog for the selected record.
  *
- * Render as a sibling of `restGrid()` within an `hframe`. The host RestGridModel is resolved via
- * `@lookup`, so the model of an enclosing component must expose it as a public property.
+ * Pass to `restGrid()` via its `detailPanel` prop, which renders it beside the grid and below the
+ * grid's toolbar. The host RestGridModel is resolved via `@lookup` from that context.
  */
 export const restDetailPanel = hoistCmp.factory<RestDetailPanelProps>({
     displayName: 'RestDetailPanel',
@@ -75,22 +77,22 @@ export const restDetailPanel = hoistCmp.factory<RestDetailPanelProps>({
                 // Skip per-selection form work while collapsed.
                 renderMode: 'unmountOnHide'
             },
-            item: hasSelection
+            children: hasSelection
                 ? form({
                       model: formModel,
                       fieldDefaults: {readonlyRenderer: valOrNa},
-                      item: vframe({
+                      children: vframe({
                           className: 'xh-admin-rest-detail__form xh-admin-readonly-form',
                           // Scroll when content outgrows the panel - inline to beat the frame's
                           // own overflow: hidden.
                           overflowY: 'auto',
-                          items: renderForm(record, formModel)
+                          children: renderForm(record, formModel)
                       })
                   })
                 : placeholder(icon, emptyText),
             bbar: toolbar({
                 omit: !hasSelection || readonly,
-                items: [
+                children: [
                     filler(),
                     button({
                         text: 'Edit',

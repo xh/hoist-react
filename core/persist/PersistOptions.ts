@@ -6,8 +6,8 @@
  */
 
 import {compact, omit} from 'lodash';
-import {Class} from 'type-fest';
-import {DebounceSpec, PersistenceProvider, PersistenceProviderConfig} from '../';
+import type {Class} from 'type-fest';
+import type {DebounceSpec, PersistenceProvider, PersistenceProviderConfig} from '../';
 import type {DashViewModel} from '@xh/hoist/desktop/cmp/dash'; // Import type only
 import type {ViewManagerModel} from '@xh/hoist/cmp/viewmanager'; // Import type only
 

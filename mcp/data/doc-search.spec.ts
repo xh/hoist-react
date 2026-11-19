@@ -100,7 +100,7 @@ const cases: GoldenCase[] = [
         query: 'fetchJson post body',
         expect: [
             T('svc/README.md', 'Built-in Services > Core Data Access'),
-            T('svc/README.md', 'Common Pitfalls > params Triggers a POST')
+            T('svc/README.md', 'Common Pitfalls > Omitting method on a Fetch That Should POST')
         ],
         source: 'experiment'
     },
@@ -411,6 +411,16 @@ const cases: GoldenCase[] = [
             T('docs/lifecycle-models-and-services.md', 'HoistModel Lifecycle > Destruction'),
             T('core/README.md', 'HoistBase')
         ],
+        source: 'topic'
+    },
+    {
+        query: 'serve docs from my own Hoist library',
+        expect: [T('docs/companion-library-docs.md')],
+        source: 'topic'
+    },
+    {
+        query: 'docRegistry package.json',
+        expect: [T('docs/companion-library-docs.md')],
         source: 'topic'
     }
 ];

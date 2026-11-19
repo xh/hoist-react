@@ -5,12 +5,13 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {ClientsModel} from '../ClientsModel';
-import {ColumnSpec} from '@xh/hoist/cmp/grid';
-import {HoistModel, LoadSpec, lookup, persistOptions, PlainObject, XH} from '@xh/hoist/core';
-import {StoreRecord} from '@xh/hoist/data';
+import type {ColumnSpec} from '@xh/hoist/cmp/grid';
+import type {LoadSpec, PlainObject} from '@xh/hoist/core';
+import {HoistModel, lookup, persistOptions, XH} from '@xh/hoist/core';
+import type {StoreRecord} from '@xh/hoist/data';
 import {bindable, computed, bindableRef} from '@xh/hoist/mobx';
-import {ReactNode} from 'react';
-import {ActivityDetailProvider} from '../../activity/tracking/detail/ActivityDetailModel';
+import type {ReactNode} from 'react';
+import type {ActivityDetailProvider} from '../../activity/tracking/detail/ActivityDetailModel';
 
 export class ClientDetailModel extends HoistModel implements ActivityDetailProvider {
     override telemetryPrefix = 'xh.client.admin.clients';

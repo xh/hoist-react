@@ -4,9 +4,10 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {HoistBase, managed, Some} from '@xh/hoist/core';
-import {StoreRecord, StoreRecordId} from '@xh/hoist/data';
-import {RecordSet, RecordSetDelta} from '@xh/hoist/data/impl/RecordSet';
+import type {Some} from '@xh/hoist/core';
+import {HoistBase, managed} from '@xh/hoist/core';
+import type {StoreRecord, StoreRecordId} from '@xh/hoist/data';
+import type {RecordSet, RecordSetDelta} from '@xh/hoist/data/impl/RecordSet';
 import {DeferredWorkScheduler} from '@xh/hoist/cmp/grid/impl/DeferredWorkScheduler';
 import {get, isArray, isEmpty, isEqual, isFunction} from 'lodash';
 import {GridModel} from '../GridModel';

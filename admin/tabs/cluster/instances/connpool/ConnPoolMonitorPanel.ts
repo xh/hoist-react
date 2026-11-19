@@ -28,7 +28,7 @@ export const connPoolMonitorPanel = hoistCmp.factory({
         }
 
         return panel({
-            item: hframe(
+            children: hframe(
                 vframe(
                     grid(),
                     panel({
@@ -36,7 +36,7 @@ export const connPoolMonitorPanel = hoistCmp.factory({
                             side: 'bottom',
                             defaultSize: '50%'
                         },
-                        item: chart()
+                        children: chart()
                     })
                 ),
                 poolConfigPanel()
@@ -65,6 +65,21 @@ const bbar = hoistCmp.factory<ConnPoolMonitorModel>({
                 omit: readonly,
                 onClick: () => model.resetStatsAsync()
             }),
+            '-',
+            button({
+                text: 'Purge Connections',
+                icon: Icon.database(),
+                intent: 'warning',
+                omit: readonly,
+                onClick: () => model.purgeConnectionsAsync(false)
+            }),
+            button({
+                text: 'Purge Connections (Cluster)',
+                icon: Icon.database(),
+                intent: 'warning',
+                omit: readonly,
+                onClick: () => model.purgeConnectionsAsync(true)
+            }),
             filler(),
             gridCountLabel({unit: 'snapshot'}),
             '-',
@@ -84,7 +99,7 @@ const poolConfigPanel = hoistCmp.factory<ConnPoolMonitorModel>({
                 defaultSize: 450,
                 defaultCollapsed: true
             },
-            item: adminJsonDisplay({enableSearch: true, bind: 'poolConfiguration'})
+            children: adminJsonDisplay({enableSearch: true, bind: 'poolConfiguration'})
         });
     }
 });

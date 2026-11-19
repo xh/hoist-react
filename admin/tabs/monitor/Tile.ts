@@ -4,12 +4,14 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {MonitorResult, MonitorResults, MonitorStatus} from './Types';
+import type {MonitorResult, MonitorResults, MonitorStatus} from './Types';
 import {div, hbox, hspacer, span, vbox, vspacer} from '@xh/hoist/cmp/layout';
 import {getRelativeTimestamp} from '@xh/hoist/cmp/relativetimestamp';
-import {hoistCmp, PlainObject} from '@xh/hoist/core';
+import type {PlainObject} from '@xh/hoist/core';
+import {hoistCmp} from '@xh/hoist/core';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
-import {Icon, IconProps} from '@xh/hoist/icon';
+import type {IconProps} from '@xh/hoist/icon';
+import {Icon} from '@xh/hoist/icon';
 import './Tile.scss';
 import {sortBy} from 'lodash';
 
@@ -35,9 +37,9 @@ export const tile = hoistCmp.factory(props => {
             collapsible: false,
             resizable: false
         },
-        item: div({
+        children: div({
             className: 'xh-status-tile__content',
-            item: vbox(
+            children: vbox(
                 statusText,
                 vspacer(5),
                 ...instanceResults.map(result => instanceRow({result, metricUnit}))
@@ -53,12 +55,12 @@ const instanceRow = hoistCmp.factory(({result, metricUnit}) => {
     return hbox({
         className: 'xh-status-tile__instance-row xh-status-tile-' + status.toLowerCase(),
         alignItems: 'start',
-        items: [
+        children: [
             icon,
             hspacer(5),
             span({
                 className: 'xh-status-tile__instance-name',
-                item: instance
+                children: instance
             }),
             hspacer(10),
             div(div(metricText), div(message))

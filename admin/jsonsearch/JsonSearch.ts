@@ -6,9 +6,11 @@
  */
 
 import {errorMessage} from '@xh/hoist/cmp/error';
-import {grid, GridConfig, gridCountLabel} from '@xh/hoist/cmp/grid';
+import type {GridConfig} from '@xh/hoist/cmp/grid';
+import {grid, gridCountLabel} from '@xh/hoist/cmp/grid';
 import {a, box, filler, fragment, hframe, label, li, p, span, ul, vbox} from '@xh/hoist/cmp/layout';
-import {hoistCmp, HoistProps, SelectOption, useLocalModel} from '@xh/hoist/core';
+import type {HoistProps, SelectOption} from '@xh/hoist/core';
+import {hoistCmp, useLocalModel} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {clipboardButton} from '@xh/hoist/desktop/cmp/clipboard';
 import {buttonGroupInput, jsonInput, select, textInput} from '@xh/hoist/desktop/cmp/input';
@@ -74,20 +76,20 @@ const jsonSearchDialog = hoistCmp.factory<JsonSearchImplModel>({
             isOpen: true,
             className: 'xh-admin-diff-detail',
             onClose: () => model.toggleSearchIsOpen(),
-            item: panel({
+            children: panel({
                 tbar: searchTbar(),
-                item: panel({
+                children: panel({
                     mask: model.docLoadTask,
-                    items: [
+                    children: [
                         errorMessage({
                             error,
                             title: error?.name ? startCase(error.name) : undefined
                         }),
                         hframe({
                             omit: error,
-                            items: [
+                            children: [
                                 panel({
-                                    item: grid({model: model.gridModel}),
+                                    children: grid({model: model.gridModel}),
                                     modelConfig: {
                                         side: 'left',
                                         defaultSize: '30%',
@@ -99,7 +101,7 @@ const jsonSearchDialog = hoistCmp.factory<JsonSearchImplModel>({
                                 panel({
                                     mask: model.nodeLoadTask,
                                     tbar: readerTbar(),
-                                    item: jsonInput({
+                                    children: jsonInput({
                                         model,
                                         bind: 'readerContent',
                                         flex: 1,
@@ -174,13 +176,13 @@ const pathField = hoistCmp.factory<JsonSearchImplModel>({
 const helpButton = hoistCmp.factory<JsonSearchImplModel>({
     render({model}) {
         return popover({
-            item: button({
+            children: button({
                 icon: Icon.questionCircle(),
                 outlined: true
             }),
             content: vbox({
                 className: 'xh-pad',
-                items: [
+                children: [
                     p(
                         `JSON Path expressions allow you to recursively query JSON documents, matching nodes based on their path, properties, and values.`
                     ),
@@ -188,14 +190,14 @@ const helpButton = hoistCmp.factory<JsonSearchImplModel>({
                         `Enter a path and press [Enter] to search for matches within the JSON content of ${model.subjectName}.`
                     ),
                     ul({
-                        items: queryExamples.map(({query, explanation}) =>
+                        children: queryExamples.map(({query, explanation}) =>
                             li({
                                 key: query,
-                                items: [
+                                children: [
                                     span({
                                         className:
                                             'xh-border xh-pad-half xh-bg-alt xh-font-family-mono',
-                                        item: query
+                                        children: query
                                     }),
                                     ' ',
                                     clipboardButton({
@@ -214,7 +216,7 @@ const helpButton = hoistCmp.factory<JsonSearchImplModel>({
                     a({
                         href: 'https://github.com/json-path/JsonPath?tab=readme-ov-file#operators',
                         target: '_blank',
-                        item: 'Path Syntax Docs & More Examples'
+                        children: 'Path Syntax Docs & More Examples'
                     })
                 ]
             })
@@ -224,14 +226,14 @@ const helpButton = hoistCmp.factory<JsonSearchImplModel>({
 
 const readerTbar = hoistCmp.factory<JsonSearchImplModel>(({model}) => {
     return toolbar({
-        items: [
+        children: [
             buttonGroupInput({
                 model,
                 bind: 'readerContentType',
                 minimal: true,
                 outlined: true,
                 disabled: !model.selectedRecord,
-                items: [
+                children: [
                     button({
                         text: 'Document',
                         value: 'document'
@@ -244,7 +246,7 @@ const readerTbar = hoistCmp.factory<JsonSearchImplModel>(({model}) => {
             }),
             fragment({
                 omit: model.readerContentType !== 'matches' || !model.selectedRecord,
-                items: [
+                children: [
                     toolbarSep(),
                     label('View path as'),
                     buttonGroupInput({
@@ -252,7 +254,7 @@ const readerTbar = hoistCmp.factory<JsonSearchImplModel>(({model}) => {
                         bind: 'pathFormat',
                         minimal: true,
                         outlined: true,
-                        items: [
+                        children: [
                             button({
                                 text: 'XPath',
                                 value: 'XPath'
@@ -268,7 +270,7 @@ const readerTbar = hoistCmp.factory<JsonSearchImplModel>(({model}) => {
             filler(),
             box({
                 omit: !model.matchingNodeCount,
-                item: `${pluralize('match', model.matchingNodeCount, true)} within this document`
+                children: `${pluralize('match', model.matchingNodeCount, true)} within this document`
             })
         ]
     });

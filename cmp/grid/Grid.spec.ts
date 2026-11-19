@@ -6,9 +6,12 @@
  */
 import {AgGrid} from '@xh/hoist/cmp/ag-grid';
 import {grid, type GridConfig, GridModel} from '@xh/hoist/cmp/grid';
+import type {PlainObject} from '@xh/hoist/core';
+import {numberTextRenderer} from '@xh/hoist/format';
 import {initTestAppAsync} from '@xh/hoist/test-support';
 import {installAgGridForTests} from '@xh/hoist/test-support/agGrid';
-import {render, waitFor} from '@testing-library/react';
+import {act, render, waitFor} from '@testing-library/react';
+import type {GridApi} from 'ag-grid-community';
 import {beforeAll, describe, expect, it, onTestFinished, vi} from 'vitest';
 
 /**
@@ -101,6 +104,32 @@ describe('Grid', () => {
         await waitFor(() => expect(pinned()).toEqual([[], ['summary']]));
     });
 
+    it('leaves the visibility of a grouped column to ag-Grid', async () => {
+        const {gridModel} = await renderGridAsync({
+                columns: [{field: 'name'}, {field: 'qty'}, {field: 'region'}]
+            }),
+            {agApi} = gridModel,
+            agState = (colId: string) => agApi.getColumnState().find(it => it.colId === colId),
+            agHidden = (colId: string) => agState(colId).hide;
+        stubAgGrouping(agApi);
+
+        act(() => gridModel.setGroupBy('name'));
+        await waitFor(() => expect(agHidden('name')).toBe(true));
+
+        // Column state changes must not show the grouped column, or record it as hidden.
+        act(() => {
+            gridModel.setColumns([{field: 'name'}, {field: 'qty'}, {field: 'region'}]);
+            gridModel.updateColumnState([{colId: 'qty', width: 150}]);
+            gridModel.noteAgColumnStateChanged(agApi.getColumnState());
+        });
+        await waitFor(() => expect(agState('qty').width).toBe(150));
+        expect(agHidden('name')).toBe(true);
+        expect(gridModel.isColumnVisible('name')).toBe(true);
+
+        act(() => gridModel.setGroupBy(null));
+        await waitFor(() => expect(agHidden('name')).toBe(false));
+    });
+
     it('renders columns without a renderer as plain text, and others through the wrapper', async () => {
         const {container} = await renderGridAsync({
                 columns: [{field: 'name'}, {field: 'qty', renderer: v => `${v}!`}]
@@ -114,15 +143,95 @@ describe('Grid', () => {
         expect(qty.classList.contains('xh-cell--plain')).toBe(false);
         expect(qty.querySelector('.xh-cell-inner-wrapper').textContent).toBe('1!');
     });
+
+    it("writes a text renderer's text into a plain cell, styled by its cellClassRules", async () => {
+        const {container} = await renderGridAsync({
+                columns: [
+                    {field: 'name'},
+                    {field: 'qty', textRenderer: numberTextRenderer({colorSpec: true})}
+                ]
+            }),
+            [, qty] = container.querySelectorAll('.ag-row[row-id="ag_1"] .ag-cell');
+
+        expect(qty.classList.contains('xh-cell--plain')).toBe(true);
+        expect(qty.querySelector('.xh-cell-inner-wrapper')).toBeNull();
+        expect(qty.textContent).toBe('1');
+        expect(qty.classList.contains('xh-pos-val')).toBe(true);
+    });
+
+    it("shows '#ERROR' in the cell of a text renderer that throws, and renders the other cells", async () => {
+        const {container} = await renderGridAsync({
+                columns: [
+                    {field: 'name'},
+                    {
+                        field: 'qty',
+                        textRenderer: v => {
+                            if (v === 1) throw new Error('bad value');
+                            return `${v}!`;
+                        }
+                    }
+                ]
+            }),
+            cells = (rowId: string) =>
+                Array.from(container.querySelectorAll(`.ag-row[row-id="${rowId}"] .ag-cell`)).map(
+                    it => it.textContent
+                );
+
+        expect(cells('ag_1')).toEqual(['Alpha', '#ERROR']);
+        expect(cells('ag_2')).toEqual(['Beta', '2!']);
+    });
+
+    // The cell class rules of a `strictZero: false` text renderer format the value too, to test for a
+    // rounded zero. A string such as 'N/A' formats as NaN, which is neither zero nor signed.
+    it('shows NaN, with no sign class, for a string a strictZero: false text renderer cannot parse', async () => {
+        const {container} = await renderGridAsync(
+                {
+                    columns: [
+                        {field: 'name'},
+                        {
+                            field: 'qty',
+                            textRenderer: numberTextRenderer({strictZero: false, colorSpec: true})
+                        }
+                    ]
+                },
+                [
+                    {id: 1, name: 'Alpha', qty: 'N/A'},
+                    {id: 2, name: 'Beta', qty: -2}
+                ]
+            ),
+            qtyCell = (rowId: string) =>
+                container.querySelectorAll(`.ag-row[row-id="${rowId}"] .ag-cell`)[1];
+
+        expect(qtyCell('ag_1').textContent).toBe('NaN');
+        expect(qtyCell('ag_1').className).not.toMatch(/xh-(pos|neg|neutral)-val/);
+        expect(qtyCell('ag_2').textContent).toBe('-2');
+        expect(qtyCell('ag_2').classList.contains('xh-neg-val')).toBe(true);
+    });
 });
 
-async function renderGridAsync(config: GridConfig = {}) {
-    const gridModel = new GridModel({columns: [{field: 'name'}, {field: 'qty'}], ...config});
-    onTestFinished(() => gridModel.destroy());
-    gridModel.loadData([
+// Stands in for ag-Grid Enterprise row grouping: hide each grouped column, re-show each ungrouped.
+function stubAgGrouping(agApi: GridApi) {
+    let grouped: string[] = [];
+    vi.spyOn(agApi, 'setRowGroupColumns').mockImplementation((colIds: string[]) => {
+        const state = [
+            ...grouped.filter(it => !colIds.includes(it)).map(colId => ({colId, hide: false})),
+            ...colIds.map(colId => ({colId, hide: true}))
+        ];
+        grouped = colIds;
+        agApi.applyColumnState({state});
+    });
+}
+
+async function renderGridAsync(
+    config: GridConfig = {},
+    data: PlainObject[] = [
         {id: 1, name: 'Alpha', qty: 1},
         {id: 2, name: 'Beta', qty: 2}
-    ]);
+    ]
+) {
+    const gridModel = new GridModel({columns: [{field: 'name'}, {field: 'qty'}], ...config});
+    onTestFinished(() => gridModel.destroy());
+    gridModel.loadData(data);
 
     const {container} = render(grid({model: gridModel, width: 600, height: 400}));
     await waitFor(() => expect(container.querySelectorAll('.ag-row')).toHaveLength(2));

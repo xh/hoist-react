@@ -4,7 +4,9 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
+import {span} from '@xh/hoist/cmp/layout';
 import {
+    type ColorClassSpec,
     fmtBillions,
     fmtMillions,
     fmtNumber,
@@ -13,9 +15,16 @@ import {
     fmtPrice,
     fmtQuantity,
     fmtThousands,
+    millionsTextRenderer,
     millionsRenderer,
     type NumberFormatOptions,
-    parseNumber
+    numberTextRenderer,
+    numberRenderer,
+    parseNumber,
+    percentTextRenderer,
+    percentRenderer,
+    quantityTextRenderer,
+    quantityRenderer
 } from '@xh/hoist/format';
 import {isValidElement, type ReactNode} from 'react';
 import {renderToStaticMarkup} from 'react-dom/server';
@@ -23,8 +32,9 @@ import {describe, expect, it, vi} from 'vitest';
 
 /**
  * Number formatters render the numbers in nearly every Hoist grid and display. These tests pin the
- * logic Hoist adds on top of numbro: precision and zero padding, signs and ledger format, colors by
- * sign, unit scaling and tooltips, the string-or-element return contract, and shorthand parsing.
+ * logic Hoist adds on top of `Intl.NumberFormat`: precision, rounding and zero padding, signs and
+ * ledger format, colors by sign, unit scaling and tooltips, the string-or-element return contract,
+ * shorthand parsing, and the string formatters that grid columns use.
  */
 
 /** Markup of a rendered element, or a string as-is. */
@@ -71,7 +81,10 @@ describe('fmtNumber', () => {
             [1.2, {precision: 4, zeroPad: 2}, '1.20'],
             [1.234, {precision: 4, zeroPad: 2}, '1.234'],
             [1.23456, {precision: 4, zeroPad: 2}, '1.2346'],
-            [5, {zeroPad: 2}, '5.00']
+            [5, {zeroPad: 2}, '5.00'],
+            [12345.678, {zeroPad: 2}, '12,346'],
+            [Math.PI, {precision: 2, zeroPad: 4}, '3.14'],
+            [1234.5, {precision: 0, zeroPad: 2}, '1,235']
         ] as const)('formats %s with %o as "%s"', (v, opts, expected) => {
             expect(fmtNumber(v, opts)).toBe(expected);
         });
@@ -84,6 +97,100 @@ describe('fmtNumber', () => {
         it('keeps the trailing zeros of whole numbers when trimming', () => {
             expect(fmtNumber(123450, {precision: 0, zeroPad: false})).toBe('123,450');
             expect(fmtNumber(100, {precision: null})).toBe('100');
+        });
+
+        // A computed zeroPad can be fractional. Its call must not change how other calls format.
+        it('formats a fractional zeroPad without affecting other calls', () => {
+            const v = 1.23456789012;
+            expect(fmtNumber(v, {precision: 4, zeroPad: 1.5 as any})).toBe('1.2346');
+            expect(fmtNumber(v, {precision: 12, zeroPad: 1})).toBe('1.23456789012');
+        });
+
+        it('treats a zeroPad of 0 as false', () => {
+            const opts: NumberFormatOptions = {precision: 2, omitFourDigitComma: true};
+            expect(fmtNumber(1234, {...opts, zeroPad: 0})).toBe('1234');
+            expect(fmtNumber(1234.0001, {...opts, zeroPad: 0})).toBe('1,234');
+            expect(fmtNumber(1234.0001, {...opts, zeroPad: false})).toBe('1,234');
+        });
+    });
+
+    describe('withCommas and omitFourDigitComma', () => {
+        it.each([
+            [1234.5, {withCommas: false, precision: 2}, '1234.50'],
+            [1500, {omitFourDigitComma: true}, '1500'],
+            [10000, {omitFourDigitComma: true}, '10,000'],
+            [1234.5, {omitFourDigitComma: true, precision: 0}, '1235'],
+            [1500, {omitFourDigitComma: true, precision: 2}, '1,500.00'],
+            [1500, {omitFourDigitComma: true, precision: 2, zeroPad: false}, '1500']
+        ] as const)('formats %s with %o as "%s"', (v, opts, expected) => {
+            expect(fmtNumber(v, opts)).toBe(expected);
+        });
+    });
+
+    describe('rounding', () => {
+        // A tie rounds half away from zero on its decimal digits, though 1.005 is stored as
+        // 1.00499999999999989...
+        it.each([
+            [1.005, 2, '1.01'],
+            [2.675, 2, '2.68'],
+            [0.285, 2, '0.29'],
+            [99.995, 2, '100.00'],
+            [1.45, 1, '1.5'],
+            [9999.5, 0, '10,000'],
+            [-2.5, 0, '-3'],
+            [-1.005, 2, '-1.01']
+        ] as const)('rounds the tie %s with precision %s to "%s"', (v, precision, expected) => {
+            expect(fmtNumber(v, {precision})).toBe(expected);
+        });
+
+        // Arithmetic can leave a value one float step from a tie: 1.15 * 3 is 3.4499999999999997.
+        it.each([
+            [1.15 * 3, 1, '3.5'],
+            [-(1.15 * 3), 1, '-3.5'],
+            [1.7954999999999999, 3, '1.796'],
+            [224845.94999999998, 1, '224,846.0'],
+            [(512345678901.21 + 512345678901.22) / 2, 2, '512,345,678,901.22']
+        ] as const)(
+            'rounds %s with precision %s to "%s", as the arithmetic intended',
+            (v, p, expected) => {
+                expect(fmtNumber(v, {precision: p})).toBe(expected);
+            }
+        );
+
+        it('rounds a percent that scaling by 100 left one float step from a tie', () => {
+            expect(fmtPercent(0.0045, {precision: 1})).toBe('0.5%');
+            expect(fmtPercent(-0.0045, {precision: 1})).toBe('-0.5%');
+        });
+
+        it('shows values below 1e-6 as zero at auto precision', () => {
+            expect(fmtNumber(5e-7)).toBe('0');
+            expect(fmtNumber(1e-6)).toBe('0.000001');
+            expect(fmtMillions(0.5, {label: true, labelCls: null})).toBe('0m');
+            expect(fmtMillions(1.5, {label: true, labelCls: null})).toBe('0.000002m');
+        });
+
+        it('rounds values below 1e-6 like any other at fixed precision', () => {
+            expect(fmtNumber(9.9999999e-7, {precision: 6})).toBe('0.000001');
+        });
+
+        it('keeps the sign of a value below 1e-6 at auto precision', () => {
+            expect(fmtNumber(-5e-7)).toBe('-0');
+            expect(fmtNumber(5e-7, {withPlusSign: true})).toBe('+0');
+            expect(fmtNumber(-5e-7, {ledger: true, forceLedgerAlign: false})).toBe('(0)');
+            expect(html(fmtNumber(-5e-7, {colorSpec: true}))).toBe(
+                '<span class="xh-neg-val">-0</span>'
+            );
+        });
+
+        it('shows a value past 15 significant digits as stored, without float noise', () => {
+            expect(fmtNumber(2390421244, {precision: 12})).toBe('2,390,421,244.000000000000');
+            expect(fmtNumber(-307720365289.33826, {precision: 4})).toBe('-307,720,365,289.3383');
+            expect(fmtNumber(486868540.05791247, {precision: 8})).toBe('486,868,540.05791247');
+        });
+
+        it('clamps precision to 0-12', () => {
+            expect(fmtNumber(5.5, {precision: -1 as any})).toBe('6');
+            expect(fmtNumber(1 / 3, {precision: 20 as any})).toBe('0.333333333333');
         });
     });
 
@@ -104,7 +211,7 @@ describe('fmtNumber', () => {
         it('pads positive ledger values to align with the parentheses of negatives', () => {
             const opts: NumberFormatOptions = {precision: 2, ledger: true, asHtml: true};
             expect(fmtNumber(1234.56, opts)).toBe(
-                '1,234.56<span style="visibility:hidden">)</span>'
+                '1,234.56<span class="xh-ledger-align" style="visibility:hidden">)</span>'
             );
             expect(fmtNumber(-1234.56, opts)).toBe('(1,234.56)');
         });
@@ -124,6 +231,11 @@ describe('fmtNumber', () => {
             );
         });
 
+        it('returns zeroDisplay for a value below 1e-6 at auto precision only when strictZero is false', () => {
+            expect(fmtNumber(5e-7, {zeroDisplay: '-'})).toBe('0');
+            expect(fmtNumber(-5e-7, {zeroDisplay: '-', strictZero: false})).toBe('-');
+        });
+
         it('returns zeroDisplay for zero', () => {
             expect(fmtNumber(0, {zeroDisplay: '-'})).toBe('-');
         });
@@ -134,6 +246,36 @@ describe('fmtNumber', () => {
         expect(fmtNumber(null, {nullDisplay: '-'})).toBe('-');
         expect(fmtNumber(undefined, {nullDisplay: '-'})).toBe('-');
         expect(fmtNumber('' as any, {nullDisplay: '-'})).toBe('-');
+    });
+
+    it('renders Infinity as ∞, with the sign and ledger format of other values', () => {
+        expect(fmtNumber(Infinity)).toBe('∞');
+        expect(fmtNumber(-Infinity, {ledger: true, forceLedgerAlign: false})).toBe('(∞)');
+    });
+
+    it('renders NaN as NaN and -0 as zero', () => {
+        expect(fmtNumber(NaN)).toBe('NaN');
+        expect(fmtNumber(-0, {precision: 2})).toBe('0.00');
+    });
+
+    // Apps should parse formatted text with parseNumber() first.
+    it('reads a string as Number() does', () => {
+        expect(fmtNumber('-1234.5' as any, {precision: 2})).toBe('-1,234.50');
+        expect(fmtNumber('1,234.5' as any, {precision: 2})).toBe('NaN');
+        expect(fmtNumber('N/A' as any)).toBe('NaN');
+    });
+
+    it('rejects the removed formatConfig option, at compile time and when called', () => {
+        // Each call is a compile error - `pnpm typecheck` fails if one stops being one.
+        const msg = "Use 'precision', 'zeroPad' and 'withCommas'",
+            formatConfig = {thousandSeparated: false, mantissa: 0},
+            opts = {formatConfig};
+        // @ts-expect-error - formatConfig
+        expect(() => fmtNumber(1234, {formatConfig})).toThrow(msg);
+        // @ts-expect-error - formatConfig, by variable
+        expect(() => fmtNumber(1234, opts)).toThrow(msg);
+        // @ts-expect-error - formatConfig, by spread, for a null value
+        expect(() => fmtNumber(null, {...opts, ledger: true})).toThrow('formatConfig');
     });
 
     // Apps interpolate formatter output into strings, e.g. chart tooltips and labels. Output must
@@ -393,5 +535,120 @@ describe('parseNumber', () => {
     it('parses decimal shorthand to the exact value', () => {
         expect(parseNumber('8.2m')).toBe(8200000);
         expect(parseNumber('1.005k')).toBe(1005);
+    });
+});
+
+/**
+ * The text renderers, for `Column.textRenderer`. A text cell must look like the rendered one,
+ * and must never receive markup, which it would show as "[object Object]".
+ */
+describe('numberTextRenderer and friends', () => {
+    it('reject options that need markup at compile time', () => {
+        // Each line is a compile error - `pnpm typecheck` fails if one stops being one.
+        // @ts-expect-error - tooltip
+        numberTextRenderer({tooltip: true});
+        // @ts-expect-error - withSignGlyph
+        numberTextRenderer({withSignGlyph: true});
+        // @ts-expect-error - labelCls
+        millionsTextRenderer({label: true, labelCls: 'x'});
+        // @ts-expect-error - asHtml
+        percentTextRenderer({asHtml: true});
+        // @ts-expect-error - an element for nullDisplay
+        numberTextRenderer({nullDisplay: span('-')});
+        // @ts-expect-error - an element for zeroDisplay
+        quantityTextRenderer({zeroDisplay: span('-')});
+
+        // Options shared with a renderer, passed by variable or spread, fail to compile too.
+        const rendererOpts = {precision: 2 as const, withSignGlyph: true};
+        // @ts-expect-error - withSignGlyph, by variable
+        numberTextRenderer(rendererOpts);
+        // @ts-expect-error - withSignGlyph, by spread
+        numberTextRenderer({...rendererOpts, ledger: true});
+    });
+
+    it('reject a colorSpec with inline styles', () => {
+        // @ts-expect-error - colorSpec with inline styles
+        expect(() => numberTextRenderer({colorSpec: {pos: {color: 'green'}}})).toThrow('colorSpec');
+    });
+
+    it('share a class-only colorSpec with renderers', () => {
+        const colorSpec: ColorClassSpec = {pos: 'my-pos', neg: 'my-neg'},
+            {cellClassRules} = numberTextRenderer({colorSpec});
+
+        expect(html(numberRenderer({colorSpec})(-5))).toBe('<span class="my-neg">-5</span>');
+        expect(cellClassRules['my-neg']({value: -5})).toBe(true);
+        expect(cellClassRules['my-pos']({value: -5})).toBe(false);
+    });
+
+    it('accept the unit options of quantityTextRenderer', () => {
+        expect(quantityTextRenderer()(7100100)).toBe('7.10m');
+        expect(quantityTextRenderer({lossless: true})(7100100)).toBe('7,100,100');
+        expect(quantityTextRenderer({useMillions: false})(7100100)).toBe('7,100,100');
+    });
+
+    describe('match their renderers', () => {
+        // Same text, sign color and ledger placeholder as the renderer; only the `xh-units-label`
+        // span is gone. NaN and Infinity align too. Numeric strings are checked for `number` only -
+        // the other renderers do arithmetic on them first, which gives a number its sign color.
+        const values = [
+                ...[1234567.891, -1234567.891, 0, 0.004, -0.004, 12.5, -12.5, null],
+                ...[NaN, Infinity, -Infinity]
+            ],
+            numericStrings: any[] = ['1234567.891', '-12.5', '0', '0.004', '-0.004', ''],
+            twins = {
+                number: [numberRenderer, numberTextRenderer],
+                millions: [millionsRenderer, millionsTextRenderer],
+                quantity: [quantityRenderer, quantityTextRenderer],
+                percent: [percentRenderer, percentTextRenderer]
+            };
+
+        // The renderer cell's text, markup classes, and whether it ends in the ledger placeholder.
+        function rendered(node: ReactNode) {
+            const body = new DOMParser().parseFromString(html(node) ?? '', 'text/html').body,
+                placeholder = body.querySelector('[style*="hidden"]');
+            placeholder?.remove();
+            const classes = Array.from(body.querySelectorAll('[class]'))
+                .flatMap(it => Array.from(it.classList))
+                .filter(it => it !== 'xh-units-label');
+            return {text: body.textContent, classes, ledgerAlign: !!placeholder};
+        }
+
+        // The text renderer cell's text and the classes its rules give the cell.
+        function formatted(textRenderer, v: number) {
+            const rules = textRenderer.cellClassRules ?? {},
+                classes = Object.keys(rules).filter(it => rules[it]({value: v}));
+            return {
+                text: textRenderer(v),
+                classes: classes.filter(it => it !== 'xh-cell--ledger-align'),
+                ledgerAlign: classes.includes('xh-cell--ledger-align')
+            };
+        }
+
+        it.each<[keyof typeof twins, Parameters<typeof quantityTextRenderer>[0]]>([
+            ['number', {}],
+            ['number', {precision: 4, zeroPad: 2}],
+            ['number', {ledger: true, precision: 0}],
+            ['number', {ledger: true, forceLedgerAlign: false}],
+            ['number', {colorSpec: {neg: 'my-neg'}, precision: 1}],
+            ['number', {colorSpec: {pos: 'my-up', neg: 'my-down', neutral: 'my-up'}}],
+            ['number', {ledger: true, colorSpec: true, precision: 0}],
+            ['number', {ledger: true, colorSpec: true, zeroDisplay: '-', nullDisplay: 'n/a'}],
+            ['number', {ledger: true, colorSpec: true, strictZero: false, precision: 0}],
+            [
+                'number',
+                {prefix: '$', label: 'k', withPlusSign: true, withCommas: false, precision: 1}
+            ],
+            ['millions', {label: true, ledger: true}],
+            ['quantity', {}],
+            ['quantity', {ledger: false, colorSpec: true}],
+            ['percent', {colorSpec: true}]
+        ])('%sTextRenderer with %o', (kind, opts) => {
+            const [renderer, textRenderer] = twins[kind],
+                render = renderer(opts),
+                format = textRenderer(opts);
+            [...values, ...(kind === 'number' ? numericStrings : [])].forEach(v =>
+                expect(formatted(format, v), `value ${v}`).toEqual(rendered(render(v)))
+            );
+        });
     });
 });

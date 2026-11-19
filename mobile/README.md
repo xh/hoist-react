@@ -2,9 +2,9 @@
 
 ## Overview
 
-The `/mobile/` package provides Hoist's mobile-specific UI components, built on [Onsen UI](https://onsen.io/).
-These components extend the cross-platform foundation from `/cmp/` with touch-optimized styling,
-gestures, and navigation patterns designed for mobile devices.
+The `/mobile/` package provides Hoist's mobile-specific UI components. They render native
+elements, styled for touch, and extend the cross-platform foundation from `/cmp/` with gestures
+and navigation patterns designed for mobile devices.
 
 Mobile applications use components from both `/mobile/` and `/cmp/` - the mobile package adds
 platform-specific wrappers, inputs, and navigation while leveraging shared models and logic from
@@ -158,11 +158,11 @@ import {textInput, select, searchInput} from '@xh/hoist/mobile/cmp/input';
 
 formField({
     field: 'name',
-    item: textInput({placeholder: 'Enter name...'})
+    children: textInput({placeholder: 'Enter name...'})
 }),
 formField({
     field: 'category',
-    item: select({options: categories})
+    children: select({options: categories})
 })
 
 // Search input for filtering
@@ -183,7 +183,7 @@ panel({
     title: 'User Details',
     icon: Icon.user(),
     headerItems: [refreshButton()],
-    items: [userForm()],
+    children: [userForm()],
     bbar: toolbar(saveButton()),
     scrollable: true,
     mask: 'onLoad'
@@ -240,7 +240,8 @@ toolbar(
 
 ### Tab Container (`/cmp/tab/`)
 
-Tabbed interface with swipeable content:
+Tabbed interface with a switcher of buttons docked above or below the content (`switcher:
+{orientation: 'top' | 'bottom'}`, default `'bottom'`):
 
 ```typescript
 import {tabContainer} from '@xh/hoist/mobile/cmp/tab';
@@ -300,7 +301,7 @@ Touch-triggered popover for additional content:
 import {popover} from '@xh/hoist/mobile/cmp/popover';
 
 popover({
-    item: button({icon: Icon.info()}),
+    children: button({icon: Icon.info()}),
     content: detailCard(),
     position: 'auto'
 })
@@ -385,7 +386,7 @@ const userListPage = hoistCmp.factory({
             headerItems: [
                 button({icon: Icon.add(), onClick: () => model.addUser()})
             ],
-            items: [
+            children: [
                 searchInput({
                     bind: 'searchQuery',
                     placeholder: 'Search users...'
@@ -424,28 +425,28 @@ import {textInput, select, switchInput, numberInput} from '@xh/hoist/mobile/cmp/
 
 form({
     model: formModel,
-    items: [
+    children: [
         formFieldSet({
             title: 'Basic Info',
             modelConfig: {collapsible: true},
-            items: [
-                formField({field: 'name', item: textInput({enableClear: true})}),
+            children: [
+                formField({field: 'name', children: textInput({enableClear: true})}),
                 formField({
                     field: 'customer',
-                    item: select({
+                    children: select({
                         enableFullscreen: true,
                         queryFn: q => model.queryCustomersAsync(q)
                     })
                 }),
-                formField({field: 'active', item: switchInput()})
+                formField({field: 'active', children: switchInput()})
             ]
         }),
         formFieldSet({
             title: 'Financials',
-            items: [
+            children: [
                 formField({
                     field: 'salary',
-                    item: numberInput({displayWithCommas: true})
+                    children: numberInput({displayWithCommas: true})
                 })
             ]
         })
@@ -481,4 +482,3 @@ import {formField} from '@xh/hoist/desktop/cmp/form';
 - [`/cmp/`](../cmp/README.md) - Cross-platform components and models
 - [`/desktop/`](../desktop/README.md) - Desktop platform components
 - [`/core/`](../core/README.md) - HoistModel, hoistCmp, XH singleton
-- `/kit/onsen/` - Onsen UI library wrappers

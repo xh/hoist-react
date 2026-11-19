@@ -5,7 +5,8 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {InstancesTabModel} from '@xh/hoist/admin/tabs/cluster/instances/InstancesTabModel';
-import {LoadSpec, lookup, XH} from '@xh/hoist/core';
+import type {LoadSpec} from '@xh/hoist/core';
+import {lookup, XH} from '@xh/hoist/core';
 import {BaseAdminTabModel} from '@xh/hoist/admin/tabs/BaseAdminTabModel';
 
 export class BaseInstanceModel extends BaseAdminTabModel {

@@ -6,14 +6,16 @@
  */
 import {div, hbox, hframe} from '@xh/hoist/cmp/layout';
 import {markdown} from '@xh/hoist/cmp/markdown';
-import {hoistCmp, HoistProps, Intent, StyleProps, TestSupportProps} from '@xh/hoist/core';
-import {button, ButtonProps} from '@xh/hoist/desktop/cmp/button';
+import type {HoistProps, Intent, StyleProps, TestSupportProps} from '@xh/hoist/core';
+import {hoistCmp} from '@xh/hoist/core';
+import type {ButtonProps} from '@xh/hoist/desktop/cmp/button';
+import {button} from '@xh/hoist/desktop/cmp/button';
 import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
 import {getTestId} from '@xh/hoist/utils/js';
 import classNames from 'classnames';
 import {isEmpty, isString} from 'lodash';
-import {ReactElement, ReactNode} from 'react';
+import type {ReactElement, ReactNode} from 'react';
 import './Banner.scss';
 
 export interface BannerProps extends HoistProps<null>, StyleProps, TestSupportProps {
@@ -82,7 +84,7 @@ export const [Banner, banner] = hoistCmp.withFactory<BannerProps>({
         onClick,
         onClose
     }) {
-        if (icon === undefined) icon = defaultIcon(intent);
+        if (icon === undefined) icon = Icon.forIntent(intent);
 
         return hbox({
             className: classNames(
@@ -95,16 +97,16 @@ export const [Banner, banner] = hoistCmp.withFactory<BannerProps>({
             ),
             style,
             testId,
-            items: [
+            children: [
                 hframe({
                     className: 'xh-banner__content',
                     onClick,
-                    items: [
+                    children: [
                         icon,
                         div({
                             className: 'xh-banner__message',
                             title: isString(message) && !wrap ? message : undefined,
-                            item: isString(message) ? markdown({content: message}) : message
+                            children: isString(message) ? markdown({content: message}) : message
                         })
                     ]
                 }),
@@ -132,21 +134,3 @@ export const [Banner, banner] = hoistCmp.withFactory<BannerProps>({
         });
     }
 });
-
-//------------------------
-// Implementation
-//------------------------
-function defaultIcon(intent: Intent): ReactElement {
-    switch (intent) {
-        case 'primary':
-            return Icon.info();
-        case 'success':
-            return Icon.success();
-        case 'warning':
-            return Icon.warning();
-        case 'danger':
-            return Icon.danger();
-        default:
-            return null;
-    }
-}

@@ -12,7 +12,10 @@ import type {
     FilterMatchMode,
     FilterValueSource,
     Store,
-    StoreRecord
+    StoreRecord,
+    StoreRecordId,
+    StoreRecordOrId,
+    StoreSelectionModel
 } from '@xh/hoist/data';
 import type {
     CellClassParams,
@@ -86,6 +89,60 @@ export type GridGroupSortFn = (
 
 /** Position of a row in the viewport when scrolled into view - default null scrolls minimally. */
 export type GridScrollPosition = 'top' | 'middle' | 'bottom';
+
+/** Options for {@link GridModel.selectAsync}. */
+export interface GridSelectOptions {
+    /**
+     * True (default) to scroll the grid or expand nodes as needed to make selection visible if it
+     * is within a collapsed node or outside of the visible scroll window.
+     */
+    ensureVisible?: boolean;
+    /** Position of the selection in the viewport - default null scrolls minimally. */
+    ensureVisiblePosition?: GridScrollPosition;
+    /** True (default) to clear previous selection (rather than add to it). */
+    clearSelection?: boolean;
+}
+
+/** Options for {@link GridModel.selectFirstAsync}. */
+export interface GridSelectFirstOptions {
+    /**
+     * True (default) to expand nodes as needed to allow selection when the first selectable node
+     * is in a collapsed group.
+     */
+    expandParentGroups?: boolean;
+    /**
+     * True (default) to scroll the grid or expand nodes as needed to make selection visible if it
+     * is outside of the visible scroll window.
+     */
+    ensureVisible?: boolean;
+}
+
+/** Options for {@link GridModel.ensureSelectionVisibleAsync} and `ensureRecordsVisibleAsync`. */
+export interface GridEnsureVisibleOptions {
+    /** Position of the record(s) in the viewport - default null scrolls minimally. */
+    position?: GridScrollPosition;
+}
+
+/**
+ * A GridModel, or a model wrapping one that exposes its store and selection - what grid-bound
+ * fields and buttons accept. Implemented by {@link GridModel}, `ZoneGridModel`, `DataViewModel`
+ * and `CubeGridModel`.
+ */
+export interface GridLikeModel extends HoistModel {
+    /** The GridModel behind this model - itself, for a GridModel. */
+    readonly innerGridModel: GridModel;
+    readonly store: Store;
+    readonly empty: boolean;
+    readonly selModel: StoreSelectionModel;
+    readonly hasSelection: boolean;
+    readonly selectedRecords: StoreRecord[];
+    readonly selectedRecord: StoreRecord;
+    readonly selectedId: StoreRecordId;
+    selectAsync(records: Some<StoreRecordOrId>, opts?: GridSelectOptions): Promise<void>;
+    preSelectFirstAsync(): Promise<void>;
+    selectFirstAsync(opts?: GridSelectFirstOptions): Promise<void>;
+    ensureSelectionVisibleAsync(opts?: GridEnsureVisibleOptions): Promise<void>;
+}
 
 /**
  * Closure to generate CSS class names for a row.
@@ -366,15 +423,25 @@ export interface CellContext {
 }
 
 /**
- * Renderer function for a grid cell.
+ * Renderer for a grid cell - produces the cell's content from its value, as a React component.
+ * May carry `cellClassRules`, which the column applies beneath its own.
+ *
+ * Set `rendererIsComplex` on the column if it reads record fields other than its own. A throw
+ * shows '#ERROR' in the cell, and on a row with no record (e.g. an ag-Grid total row) `record`
+ * is undefined.
  * @param value - cell data value (column + row).
  * @param context - additional data about the column, row and GridModel.
- *      Note that columns with renderers that access/rely on record fields other than the primary
- *      value should also have their `rendererIsComplex` flag set to true to ensure they are
- *      re-run whenever the record (and not just the primary value) changes.
- * @returns the formatted value for display.
+ * @returns the content for display, or null for an empty cell.
  */
-export type ColumnRenderer<T = any> = (value: T, context: CellContext) => ReactNode;
+export type ColumnRenderer<T = any, R = ReactNode> = ((value: T, context: CellContext) => R) & {
+    cellClassRules?: Record<string, ColumnCellClassRuleFn>;
+};
+
+/**
+ * Renderer for a grid cell that returns the cell's display text, written into the cell with no
+ * component. Prefer it over a `renderer` wherever a string will do.
+ */
+export type ColumnTextRenderer<T = any> = ColumnRenderer<T, string>;
 
 /**
  * Function to return a value to export for a grid cell.

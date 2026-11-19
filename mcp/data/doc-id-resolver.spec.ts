@@ -232,6 +232,8 @@ console.log(`Alias index size: ${idx.aliases.size} entries`);
 function mockEntry(id: string, aliases: string[] = []): DocEntry {
     return {
         id,
+        path: id,
+        library: null,
         title: id,
         filePath: `/dev/null/${id}`,
         mcpCategory: 'package',

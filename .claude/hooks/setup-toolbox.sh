@@ -67,7 +67,7 @@ APP_TOOLBOX_DB_PASSWORD=toolbox
 
 # Form-based login with a local-only bootstrap admin - no OAuth provider required.
 APP_TOOLBOX_OAUTH_PROVIDER=NONE
-APP_TOOLBOX_BOOTSTRAP_ADMIN_USER=toolbox-admin@xh.io
+APP_TOOLBOX_BOOTSTRAP_ADMIN_USER=agent@xh.io
 APP_TOOLBOX_BOOTSTRAP_ADMIN_PASSWORD=localDevOnly
 EOF
 fi
@@ -117,5 +117,5 @@ cat << EOF
 setup-toolbox: done. To run Toolbox:
   1. Server: (cd $TOOLBOX_DIR && ./gradlew bootRun)
   2. Client: (cd $TOOLBOX_DIR/client-app && pnpm startWithHoist)
-  3. Open http://localhost:3000/app - log in as toolbox-admin@xh.io / localDevOnly
+  3. Open http://localhost:3000/app - log in as agent@xh.io / localDevOnly
 EOF

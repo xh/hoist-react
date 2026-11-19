@@ -4,16 +4,16 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {
-    HoistInputModel,
+import type {
     HoistInputProps,
     OptionPrimitive,
     SegmentedControlNullOption,
-    SegmentedControlOption,
-    useHoistInputModel
+    SegmentedControlOption
 } from '@xh/hoist/cmp/input';
+import {HoistInputModel, useHoistInputModel} from '@xh/hoist/cmp/input';
 import {div} from '@xh/hoist/cmp/layout';
-import {hoistCmp, HoistProps, Intent, LayoutProps} from '@xh/hoist/core';
+import type {HoistProps, Intent, LayoutProps} from '@xh/hoist/core';
+import {hoistCmp} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {bpSegmentedControl} from '@xh/hoist/kit/blueprint';
 import {computed} from '@xh/hoist/mobx';
@@ -230,7 +230,7 @@ const cmp = hoistCmp.factory<SegmentedControlModel>(({model, className, ...props
         style: getLayoutProps(props),
         [TEST_ID]: props.testId,
         ...domAttrs,
-        item: bpSegmentedControl({
+        children: bpSegmentedControl({
             ...bpProps,
             // The tray always fills this component's root element, which takes the control's
             // size - from its content by default, or from any layout props.

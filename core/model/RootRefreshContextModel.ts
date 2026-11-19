@@ -5,7 +5,8 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {XH} from '../';
-import {LoadSpec, loadAllAsync} from '../load';
+import type {LoadSpec} from '../load';
+import {loadAllAsync} from '../load';
 import {RefreshContextModel} from './';
 
 /**

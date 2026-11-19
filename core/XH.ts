@@ -4,13 +4,13 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {RouterModel} from '@xh/hoist/appcontainer/RouterModel';
-import {HoistAuthModel} from '@xh/hoist/core/HoistAuthModel';
-import {Cube, Store, View} from '@xh/hoist/data';
+import type {RouterModel} from '@xh/hoist/appcontainer/RouterModel';
+import type {HoistAuthModel} from '@xh/hoist/core/HoistAuthModel';
+import type {Cube, Store, View} from '@xh/hoist/data';
 import {Icon} from '@xh/hoist/icon';
 import {action} from '@xh/hoist/mobx';
 import {never} from '@xh/hoist/promise';
-import {
+import type {
     AlertBannerService,
     AutoRefreshService,
     ChangelogService,
@@ -35,24 +35,23 @@ import {
     TraceService,
     WebSocketService
 } from '@xh/hoist/svc';
-import {getLogLevel, LogLevel, setLogLevel} from '@xh/hoist/utils/js';
+import type {LogLevel} from '@xh/hoist/utils/js';
+import {genRandomId, getLogLevel, logError, setLogLevel} from '@xh/hoist/utils/js';
 import {camelCase, flatten, isString, uniqueId} from 'lodash';
-import {Router, State} from 'router5';
-import {CancelFn} from 'router5/types/types/base';
-import ShortUniqueId from 'short-unique-id';
-import {SetOptional} from 'type-fest';
+import type {Router, State} from 'router5';
+import type {SetOptional} from 'type-fest';
 import {AppContainerModel} from '../appcontainer/AppContainerModel';
-import {BannerModel} from '../appcontainer/BannerModel';
-import {ToastModel} from '../appcontainer/ToastModel';
+import type {BannerModel} from '../appcontainer/BannerModel';
+import type {ToastModel} from '../appcontainer/ToastModel';
 import '../styles/XH.scss';
-import {Exception, HoistException} from '../exception';
+import type {HoistException} from '../exception';
+import {Exception} from '../exception';
 
-import {
+import type {
     AppSpec,
     AppState,
     AppSuspendData,
     BannerSpec,
-    ExceptionHandler,
     ExceptionHandlerOptions,
     CallContextLike,
     HoistAppModel,
@@ -71,9 +70,10 @@ import {
     ToastSpec,
     TrackOptions
 } from './';
+import {ExceptionHandler} from './';
 import {installServicesAsync} from './impl/InstallServices';
 import {instanceManager} from './impl/InstanceManager';
-import {HoistModel, ModelSelector, RefreshContextModel} from './model';
+import type {HoistModel, ModelSelector, RefreshContextModel} from './model';
 
 export const MIN_HOIST_CORE_VERSION = '40.5.0';
 
@@ -84,6 +84,9 @@ declare const xhAppBuild: string;
 declare const xhBaseUrl: string;
 declare const xhClientApps: string[];
 declare const xhIsDevelopmentMode: boolean;
+
+/** Returned by `navigate` and its siblings to cancel a transition in progress. */
+type CancelFn = ReturnType<Router['navigate']>;
 
 /**
  * Top-level Singleton model for Hoist. This is the main entry point for the API.
@@ -657,6 +660,15 @@ export class XHApi {
         return this.routerModel.popRoute();
     }
 
+    /**
+     * Does a route exist with the given fully qualified name?
+     * Check before calling `XH.router.buildPath()` or `buildUrl()` with a name that may not be
+     * registered, as both throw for an unknown route.
+     */
+    hasRoute(routeName: string): boolean {
+        return this.routerModel.hasRoute(routeName);
+    }
+
     //------------------------------
     // Message Support
     //------------------------------
@@ -915,7 +927,8 @@ export class XHApi {
 
     /**
      * Helper method to destroy resources safely (e.g. child HoistModels). Will quietly skip args
-     * that are null / undefined or that do not implement destroy().
+     * that are null / undefined or that do not implement destroy(). Logs, rather than throws, an
+     * error from any destroy(), so the remaining args are still destroyed.
      *
      * @param args - objects to be destroyed. If any argument is an array, each top-level element
      *      in the array will be destroyed. (Note this is *not* done recursively.)
@@ -924,7 +937,11 @@ export class XHApi {
         if (args) {
             args = flatten(args);
             args.forEach(it => {
-                it?.destroy?.();
+                try {
+                    it?.destroy?.();
+                } catch (e) {
+                    logError(['Error destroying object', e], it);
+                }
             });
         }
     }
@@ -947,13 +964,13 @@ export class XHApi {
     }
 
     private genLoadId(): string {
-        return new ShortUniqueId({length: 8}).rnd();
+        return genRandomId();
     }
 
     private genTabId(): string {
         let ret = window.sessionStorage?.getItem('xhTabId');
         if (!ret) {
-            ret = new ShortUniqueId({length: 8}).rnd();
+            ret = genRandomId();
             window.sessionStorage?.setItem('xhTabId', ret);
         }
         return ret;

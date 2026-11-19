@@ -4,18 +4,18 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {TabContainerModel, TabModel} from '@xh/hoist/cmp/tab';
-import {
+import type {TabContainerModel} from '@xh/hoist/cmp/tab';
+import {TabModel} from '@xh/hoist/cmp/tab';
+import type {
     IDynamicTabSwitcherModel,
     TabSwitcherConfig,
     TabSwitcherMenuContext
 } from '@xh/hoist/cmp/tab/Types';
-import {HoistModel, MenuItemLike, MenuToken, ReactionSpec, XH} from '@xh/hoist/core';
-import {getContextMenuItem} from '@xh/hoist/desktop/cmp/tab/impl/TabContextMenuItems';
+import type {MenuItemLike, MenuToken, ReactionSpec} from '@xh/hoist/core';
+import {HoistModel, XH} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {compact, find} from 'lodash';
 import {action, computed, when, observableRef} from '@xh/hoist/mobx';
-import React from 'react';
 
 /**
  * State management for the DynamicTabSwitcher component.
@@ -99,10 +99,7 @@ export class DynamicTabSwitcherModel extends HoistModel implements IDynamicTabSw
         this.visibleTabState = this.visibleTabState.filter(it => it.tabId !== tabId);
     }
 
-    getContextMenuItems(
-        e: React.MouseEvent<HTMLDivElement, MouseEvent>,
-        tab: TabModel
-    ): Array<MenuItemLike<MenuToken, TabSwitcherMenuContext>> {
+    getContextMenuItems(tab: TabModel): Array<MenuItemLike<MenuToken, TabSwitcherMenuContext>> {
         const isFavorite = this.isTabFavorite(tab.id);
         return [
             {
@@ -110,7 +107,7 @@ export class DynamicTabSwitcherModel extends HoistModel implements IDynamicTabSw
                 text: isFavorite ? 'Remove from Favorites' : 'Add to Favorites',
                 actionFn: () => this.toggleTabFavorite(tab.id)
             },
-            ...this.extraMenuItems.map(item => getContextMenuItem(item, {contextMenuEvent: e, tab}))
+            ...this.extraMenuItems
         ];
     }
 

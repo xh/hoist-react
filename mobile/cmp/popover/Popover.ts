@@ -13,13 +13,14 @@ import {
     useFloating
 } from '@floating-ui/react';
 import {div, fragment} from '@xh/hoist/cmp/layout';
-import {Content, hoistCmp, HoistModel, HoistProps, useLocalModel, XH} from '@xh/hoist/core';
+import type {Content, HoistProps} from '@xh/hoist/core';
+import {hoistCmp, HoistModel, useLocalModel, XH} from '@xh/hoist/core';
 import '@xh/hoist/mobile/register';
 import {action, observable} from '@xh/hoist/mobx';
 import {elementFromContent} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import {isFunction, isNil} from 'lodash';
-import {ReactPortal} from 'react';
+import type {ReactPortal} from 'react';
 import ReactDom from 'react-dom';
 
 import './Popover.scss';
@@ -101,11 +102,11 @@ export const [Popover, popover] = hoistCmp.withFactory<PopoverProps>({
 
         return div({
             className,
-            items: [
+            children: [
                 div({
                     ref: refs.setReference,
                     className: 'xh-popover__target-wrapper',
-                    items: children,
+                    children,
                     onClick: () => {
                         if (disabled) return;
                         impl.toggleOpen();
@@ -114,7 +115,7 @@ export const [Popover, popover] = hoistCmp.withFactory<PopoverProps>({
                 ReactDom.createPortal(
                     fragment({
                         omit: !impl.isOpen,
-                        items: [
+                        children: [
                             div({
                                 ref: refs.setFloating,
                                 style: floatingStyles,
@@ -122,7 +123,7 @@ export const [Popover, popover] = hoistCmp.withFactory<PopoverProps>({
                                     'xh-popover__content-wrapper',
                                     popoverClassName
                                 ),
-                                items: elementFromContent(content)
+                                children: elementFromContent(content)
                             }),
                             div({
                                 className: classNames(

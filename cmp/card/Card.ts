@@ -6,17 +6,15 @@
  */
 
 import {box, fieldset} from '@xh/hoist/cmp/layout';
-import {
+import type {
     BoxProps,
     DomAttrsProps,
-    hoistCmp,
     HoistProps,
     Intent,
     LayoutProps,
-    TestSupportProps,
-    uses,
-    XH
+    TestSupportProps
 } from '@xh/hoist/core';
+import {hoistCmp, uses, XH} from '@xh/hoist/core';
 import {cardHeaderImpl as desktopCardHeaderImpl} from '@xh/hoist/dynamics/desktop';
 import {cardHeaderImpl as mobileCardHeaderImpl} from '@xh/hoist/dynamics/mobile';
 import {mergeDeep, TEST_ID, warnIf} from '@xh/hoist/utils/js';
@@ -97,7 +95,7 @@ export const [Card, card] = hoistCmp.withFactory<CardProps>({
 
         const cardHeader = XH.isMobileApp ? mobileCardHeaderImpl : desktopCardHeaderImpl;
 
-        const items: ReactNode = (() => {
+        const content: ReactNode = (() => {
             switch (renderMode) {
                 case 'always':
                     return children;
@@ -110,7 +108,7 @@ export const [Card, card] = hoistCmp.withFactory<CardProps>({
 
         return fieldset({
             className: classNames(className, classes),
-            items: [
+            children: [
                 cardHeader({
                     icon,
                     intent,
@@ -121,7 +119,7 @@ export const [Card, card] = hoistCmp.withFactory<CardProps>({
                 box({
                     ...contentBoxProps,
                     className: classNames('xh-card__content', contentBoxProps?.className),
-                    items,
+                    children: content,
                     display: collapsed ? 'none' : 'flex'
                 })
             ],

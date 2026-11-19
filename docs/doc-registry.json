@@ -58,8 +58,8 @@
             "title": "Cube Aggregation",
             "mcpCategory": "package",
             "viewerCategory": "core",
-            "description": "Client-side OLAP-style aggregation with dimensions, measures, Views, and Queries.",
-            "keywords": ["Cube", "CubeField", "View", "Query", "QueryConfig", "aggregator", "dimension", "measure", "SUM", "AVG", "includeRoot", "includeLeaves", "createView"]
+            "description": "Client-side OLAP-style aggregation with dimensions, measures, Views, Queries, and pivoting.",
+            "keywords": ["Cube", "CubeField", "View", "Query", "QueryConfig", "aggregator", "dimension", "measure", "SUM", "AVG", "includeRoot", "includeLeaves", "createView", "pivot", "PivotSpec", "cubeLabelValue"]
         },
         {
             "id": "svc/README.md",
@@ -76,7 +76,7 @@
             "mcpCategory": "package",
             "viewerCategory": "components",
             "description": "Cross-platform component overview and catalog.",
-            "keywords": ["component categories", "factory pattern", "DataView", "DataViewModel", "Treemap", "ZoneGrid", "Badge", "Spinner", "LoadingIndicator", "RelativeTimestamp", "Markdown"],
+            "keywords": ["component categories", "factory pattern", "DataView", "DataViewModel", "Treemap", "ZoneGrid", "Badge", "Spinner", "LoadingIndicator", "RelativeTimestamp", "Markdown", "StatCard", "StatCardStrip"],
             "aliases": ["components"]
         },
         {
@@ -86,6 +86,14 @@
             "viewerCategory": "components",
             "description": "Primary data grid built on ag-Grid.",
             "keywords": ["GridModel", "Column", "ColumnGroup", "sorting", "grouping", "filtering", "selection", "inline editing", "export", "tree grid", "GridFilterModel", "ag-Grid", "column chooser", "context menu"]
+        },
+        {
+            "id": "cmp/cubegrid/README.md",
+            "title": "CubeGrid Package",
+            "mcpCategory": "package",
+            "viewerCategory": "components",
+            "description": "Cube View rendered as a tree grid with the app's columns, plus pivot paths as nested column groups, docked summaries, and per-measure column config when the query pivots.",
+            "keywords": ["CubeGridModel", "CubeGrid", "CubeGridConfig", "CubeGridPivotModel", "CubeGridPivotConfig", "pivotConfig", "cube grid", "pivot", "PivotSpec", "measures", "cellFields", "PivotPath", "PivotDimensionSpec", "PivotMeasureSpec", "measuresOutermost", "summaryLabel", "valueRenderer", "emptyLabel", "valueClass", "summaryClass", "showSummary"]
         },
         {
             "id": "cmp/form/README.md",
@@ -109,7 +117,7 @@
             "mcpCategory": "package",
             "viewerCategory": "components",
             "description": "Flexbox-based layout containers.",
-            "keywords": ["Box", "VBox", "HBox", "Frame", "Viewport", "LayoutProps", "pixel conversion"]
+            "keywords": ["Box", "VBox", "HBox", "Frame", "Viewport", "LayoutProps", "pixel conversion", "Separator", "divider"]
         },
         {
             "id": "cmp/tab/README.md",
@@ -134,6 +142,38 @@
             "viewerCategory": "components",
             "description": "Period selection as presets, relative lookbacks, months/years, or custom ranges, resolved to dates and filters.",
             "keywords": ["DateRangePickerModel", "DateRangePicker", "DateRangeSelection", "dateRangePresets", "DateRangePreset", "LocalDateRange", "anchorDate", "currentRangeFilter", "priorRange", "business days"]
+        },
+        {
+            "id": "cmp/pdfviewer/README.md",
+            "title": "PDF Viewer Package",
+            "mcpCategory": "package",
+            "viewerCategory": "components",
+            "description": "PDF document viewer built on pdf.js, with a configurable toolbar and an observable model API for paging, zoom, find, and download.",
+            "keywords": ["PdfViewerModel", "PdfViewer", "PdfSource", "PdfScale", "PdfViewerToolbarToken", "pdfjs-dist", "pdf.js", "PDF", "document preview"]
+        },
+        {
+            "id": "cmp/callout/README.md",
+            "title": "Callout Package",
+            "mcpCategory": "package",
+            "viewerCategory": "components",
+            "description": "Short note set off within content, with an intent, its icon, an optional title and a body, and when to use it rather than a Banner or a Card.",
+            "keywords": ["Callout", "callout", "admonition", "note", "caveat", "warning", "alert", "intent", "Banner", "Card"]
+        },
+        {
+            "id": "cmp/progressbar/README.md",
+            "title": "ProgressBar Package",
+            "mcpCategory": "package",
+            "viewerCategory": "components",
+            "description": "Bar that shows a value against a maximum, with an optional target marker, or an indeterminate fill for work of unknown length.",
+            "keywords": ["ProgressBar", "progress", "progress bar", "utilization", "quota", "indeterminate", "target", "valueRenderer"]
+        },
+        {
+            "id": "cmp/sparkline/README.md",
+            "title": "Sparkline Package",
+            "mcpCategory": "package",
+            "viewerCategory": "components",
+            "description": "Small inline trend chart in plain SVG for a StatCard or a grid cell, with shared scales across a grid column, its fixed scope, and when to use a Chart or the AG Grid sparkline instead.",
+            "keywords": ["Sparkline", "sparkline", "trend", "inline chart", "mini chart", "micro chart", "colorBy", "markers", "baseline", "grid column renderer", "shared scale", "scope", "tooltip", "AG Grid sparkline", "agSparklineCellRenderer"]
         },
         {
             "id": "desktop/cmp/dash/README.md",
@@ -164,8 +204,8 @@
             "title": "Mobile Components",
             "mcpCategory": "package",
             "viewerCategory": "mobile",
-            "description": "Mobile-specific components built on Onsen UI.",
-            "keywords": ["AppContainer", "NavigatorModel", "Panel", "AppBar", "mobile inputs", "touch navigation", "swipeable tabs", "DialogPanel", "pull to refresh"]
+            "description": "Mobile-specific components for touch devices.",
+            "keywords": ["AppContainer", "NavigatorModel", "Panel", "AppBar", "mobile inputs", "touch navigation", "tabs", "DialogPanel", "pull to refresh"]
         },
         {
             "id": "format/README.md",
@@ -173,7 +213,7 @@
             "mcpCategory": "package",
             "viewerCategory": "utilities",
             "description": "Number, date, and miscellaneous formatting for grids and display.",
-            "keywords": ["fmtNumber", "fmtPercent", "fmtMillions", "fmtDate", "fmtThousands", "numberRenderer", "dateRenderer", "ledger", "colorSpec", "column renderer", "currency", "auto-precision", "localization", "locale", "i18n"]
+            "keywords": ["fmtNumber", "fmtPercent", "fmtMillions", "fmtDate", "fmtThousands", "numberRenderer", "dateRenderer", "numberTextRenderer", "dateTextRenderer", "ledger", "colorSpec", "column renderer", "column text renderer", "currency", "auto-precision", "localization", "locale", "i18n"]
         },
         {
             "id": "appcontainer/README.md",
@@ -244,8 +284,8 @@
             "title": "Styles & Theming",
             "mcpCategory": "package",
             "viewerCategory": "supporting",
-            "description": "CSS custom properties, BEM naming, dark/light theming, SCSS conventions, and utility classes.",
-            "keywords": ["CSS, SCSS, styles, theme, dark mode, CSS variables, custom properties, BEM, xh- prefix, vars.scss, intent colors, utility classes, ThemeModel"]
+            "description": "CSS custom properties - naming conventions, units, overrides - plus BEM naming, dark/light theming, SCSS conventions, and utility classes.",
+            "keywords": ["CSS, SCSS, styles, theme, dark mode, CSS variables, custom properties, naming conventions, spacing, units, BEM, xh- prefix, vars.scss, intent colors, utility classes, ThemeModel"]
         },
         {
             "id": "kit/README.md",
@@ -253,7 +293,7 @@
             "mcpCategory": "package",
             "viewerCategory": "components",
             "description": "Centralized wrappers for third-party libraries used by Hoist.",
-            "keywords": ["installAgGrid", "installHighcharts", "Blueprint", "Onsen", "GoldenLayout", "react-select"]
+            "keywords": ["installAgGrid", "installHighcharts", "Blueprint", "GoldenLayout", "react-select"]
         },
         {
             "id": "kit/blueprint/README.md",
@@ -278,6 +318,14 @@
             "viewerCategory": "devops",
             "description": "Model Context Protocol server providing AI assistants with documentation search, TypeScript type exploration, and code generation prompts.",
             "keywords": ["MCP", "Model Context Protocol", "AI assistant", "Claude Code", "tools", "resources", "prompts", "search", "symbols", "documentation"]
+        },
+        {
+            "id": "docs/companion-library-docs.md",
+            "title": "Companion Library Docs",
+            "mcpCategory": "devops",
+            "viewerCategory": "devops",
+            "description": "How a library that builds on Hoist, such as hoist-chat-kit or a client firm's shared package, serves its docs through the hoist-react MCP server and hoist-docs CLI.",
+            "keywords": ["companion library", "hoist.docRegistry", "docRegistry", "package.json", "client package", "overrides", "sidecar", "HOIST_MCP_APP_ROOT", "package-prefixed doc ids", "library docs"]
         },
         {
             "id": "docs/lifecycle-app.md",
@@ -365,7 +413,7 @@
             "mcpCategory": "devops",
             "viewerCategory": "devops",
             "description": "GitHub Actions workflows for linting, CodeQL analysis, and npm publishing of hoist-react.",
-            "keywords": ["CI", "CD", "GitHub Actions", "lint", "CodeQL", "npm", "publish", "snapshot", "release"]
+            "keywords": ["CI", "CD", "GitHub Actions", "lint", "CodeQL", "npm", "publish", "snapshot", "release", "dist-tag", "experimental"]
         },
         {
             "id": "docs/build-and-deploy-app.md",
@@ -396,8 +444,8 @@
             "title": "Compilation Notes",
             "mcpCategory": "devops",
             "viewerCategory": "devops",
-            "description": "Notes on TypeScript/SWC compilation and build tooling internals.",
-            "keywords": ["compilation", "TypeScript", "SWC", "Rsbuild", "transpilation", "build tooling"]
+            "description": "Notes on TypeScript/SWC compilation, build tooling internals, and running an app against a local hoist-react checkout.",
+            "keywords": ["compilation", "TypeScript", "SWC", "Rsbuild", "transpilation", "build tooling", "inline Hoist", "inline packages", "startWithHoist", "testWithHoist", "XH_HOIST_REACT_PATH", "XH_INLINE_PACKAGES"]
         },
         {
             "id": "docs/changelog-format.md",
@@ -548,8 +596,16 @@
             "title": "v90 Upgrade Notes",
             "mcpCategory": "devops",
             "viewerCategory": "upgrade",
-            "description": "Upgrade guide from v89.x to v90.0.0. Low difficulty. Covers SegmentedControl sizing with layout props.",
-            "keywords": ["upgrade", "migration", "breaking changes", "v90", "v89", "SegmentedControl fill", "equalSegmentWidths"]
+            "description": "Upgrade guide from v89.x to v90.0.0. Low difficulty. Covers the removal of numbro and formatConfig, DateInput on react-day-picker 10, the removal of Onsen UI from mobile, textRenderer on the built-in column specs, the panel splitter redesign, the move of the renderer factories out of FormatNumber and FormatDate, and the libraries Hoist no longer installs.",
+            "keywords": ["upgrade", "migration", "breaking changes", "v90", "v89", "numbro", "formatConfig", "timePickerProps", "onsen", "modifier", "WindowedSelect", "react-windowed-select", "xh-resizable-splitter", "store2", "semver", "ua-parser-js", "short-unique-id", "lodash-inflection", "http-status-codes", "date-fns", "@blueprintjs/datetime", "datePicker"]
+        },
+        {
+            "id": "docs/upgrade-notes/v91-upgrade-notes.md",
+            "title": "v91 Upgrade Notes",
+            "mcpCategory": "devops",
+            "viewerCategory": "upgrade",
+            "description": "Upgrade guide from v90.x to v91.0.0. Medium difficulty. Covers the CSS custom property overhaul - codemod, removed override hooks, renamed variables, and units in size values. Also covers the element factory move from item/items to children, with its codemod, and SegmentedControl sizing with layout props in place of `fill`.",
+            "keywords": ["upgrade", "migration", "breaking changes", "v91", "v90", "css variables", "custom properties", "override hooks", "codemod", "renamed variables", "units", "--xh-", "SegmentedControl fill", "equalSegmentWidths"]
         }
     ]
 }

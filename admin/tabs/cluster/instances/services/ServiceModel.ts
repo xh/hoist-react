@@ -10,8 +10,9 @@ import {timestampNoYear} from '@xh/hoist/admin/columns';
 import {BaseInstanceModel} from '@xh/hoist/admin/tabs/cluster/instances/BaseInstanceModel';
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {br, fragment} from '@xh/hoist/cmp/layout';
-import {LoadSpec, managed, PlainObject, XH} from '@xh/hoist/core';
-import {FilterLike, FilterTestFn, RecordActionSpec} from '@xh/hoist/data';
+import type {LoadSpec, PlainObject} from '@xh/hoist/core';
+import {managed, XH} from '@xh/hoist/core';
+import type {FilterLike, FilterTestFn, RecordActionSpec} from '@xh/hoist/data';
 import {Icon} from '@xh/hoist/icon';
 import {bindable, bindableRef} from '@xh/hoist/mobx';
 import {pluralize} from '@xh/hoist/utils/js';
@@ -121,6 +122,7 @@ export class ServiceModel extends BaseInstanceModel {
             .span('clearCaches')
             .fetchJson({
                 url: 'serviceManagerAdmin/clearCaches',
+                method: 'POST',
                 params: {
                     instance: entireCluster ? null : instanceName,
                     names: selectedRecords.map(it => it.data.name)

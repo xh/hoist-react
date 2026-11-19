@@ -5,9 +5,13 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
-import {GridAutosizeOptions} from '@xh/hoist/cmp/grid/GridAutosizeOptions';
+import type {GridAutosizeOptions} from '@xh/hoist/cmp/grid/GridAutosizeOptions';
+import type {SizingMode} from '@xh/hoist/core';
 import {XH} from '@xh/hoist/core';
-import {CompoundFilter, FieldFilter, Filter, StoreRecord} from '@xh/hoist/data';
+import {Icon} from '@xh/hoist/icon';
+import type {CellClassParams} from '@xh/hoist/kit/ag-grid';
+import type {Filter, StoreRecord} from '@xh/hoist/data';
+import {CompoundFilter, FieldFilter} from '@xh/hoist/data';
 import {forEachAsync} from '@xh/hoist/utils/async';
 import {logWarn, stripTags} from '@xh/hoist/utils/js';
 import {
@@ -26,8 +30,8 @@ import {
 } from 'lodash';
 import {isValidElement} from 'react';
 import {renderToStaticMarkup} from '@xh/hoist/utils/react';
-import {Column} from '../columns';
-import {GridModel} from '../GridModel';
+import type {Column} from '../columns';
+import type {GridModel} from '../GridModel';
 import {CanvasTextMeasurer} from './CanvasTextMeasurer';
 
 /**
@@ -124,14 +128,19 @@ export class ColumnWidthCalculator {
         options: Omit<GridAutosizeOptions, 'columns'>,
         indentationPx = 0
     ): Promise<number> {
-        const {field, getValueFn, renderer, rendererIsComplex, cellClassRules} = column,
+        const {field, getValueFn, renderer, resolvedRenderer, rendererIsComplex, cellClassRules} =
+                column,
             {store, sizingMode, rowClassFn, rowClassRules} = gridModel,
             bufferPx = column.autosizeBufferPx ?? options.bufferPx;
 
         // 1) Get map of rendered values to data about it
         const measurer = this.getMeasurer(),
             estimatesByValue = new Map<any, ValueEstimate>(),
-            renderMemo = renderer && !rendererIsComplex ? new Map() : null;
+            // A text renderer's text is measured as text, and a renderer's markup as HTML.
+            renderMemo = resolvedRenderer && !rendererIsComplex ? new Map() : null,
+            // Ledger alignment from a cell class rule is a hidden `::after`, not part of the
+            // text. Count it in the estimate so the widest positives make the sample.
+            ledgerRule = resolvedRenderer?.cellClassRules?.['xh-cell--ledger-align'];
 
         await forEachAsync(records, record => {
             if (!record) return;
@@ -141,21 +150,26 @@ export class ColumnWidthCalculator {
 
             // 1a) Get rendered markup value from raw.  Use memoization if appropriate
             let value = rawValue;
-            if (renderer) {
+            if (resolvedRenderer) {
                 if (renderMemo?.has(rawValue)) {
                     value = renderMemo.get(rawValue);
                 } else {
-                    value = renderer(rawValue, ctx);
+                    value = resolvedRenderer(rawValue, ctx);
                     if (isValidElement(value)) value = renderToStaticMarkup(value);
                     renderMemo?.set(rawValue, value);
                 }
             }
 
             // 1b) Estimate the pixel width of new markup from cached per-character widths.
-            // Strip html tags but include parentheses / units etc. for renderers that may return elements.
+            // Strip html tags from a renderer's markup, keeping parentheses / units etc. A text
+            // renderer's text is shown as-is.
             const est = estimatesByValue.get(value);
             if (!est) {
-                const text = isNil(value) ? null : stripTags(value.toString());
+                let text = isNil(value) ? null : value.toString();
+                if (renderer) text = stripTags(text);
+                if (text && ledgerRule?.({value: rawValue, data: record} as CellClassParams)) {
+                    text += ')';
+                }
                 estimatesByValue.set(value, {
                     value,
                     text,
@@ -231,6 +245,22 @@ export class ColumnWidthCalculator {
         return Math.ceil(headerEl.clientWidth) + bufferPx;
     }
 
+    /**
+     * Width of a plain-text header label, with the header font and padding of a sizing mode, and
+     * optionally the expand icon of a collapsible column group.
+     */
+    calcHeaderTextWidth(sizingMode: SizingMode, text: string, withExpandIcon = false): number {
+        try {
+            const headerEl = this.getHeaderEl();
+            this.setHeaderClassNames(sizingMode, false, false, '');
+            if (withExpandIcon) headerEl.classList.add('xh-grid-autosize-header--expand');
+            headerEl.firstChild.textContent = text;
+            return Math.ceil(headerEl.clientWidth);
+        } finally {
+            this.resetHeaderClassNames();
+        }
+    }
+
     isColumnFiltered(filter: Filter, column: Column): boolean {
         if (filter instanceof FieldFilter) {
             return filter.field === column.field;
@@ -286,6 +316,12 @@ export class ColumnWidthCalculator {
             const menuIcon = document.createElement('div');
             menuIcon.classList.add('xh-grid-header-menu-icon');
             headerEl.appendChild(menuIcon);
+
+            // As ColumnGroupHeader renders it.
+            const expandIcon = document.createElement('div');
+            expandIcon.classList.add('xh-grid-header-expand-icon');
+            expandIcon.innerHTML = Icon.chevronRight({size: 'sm', asHtml: true});
+            headerEl.appendChild(expandIcon);
 
             document.body.appendChild(headerEl);
             this._headerEl = headerEl;

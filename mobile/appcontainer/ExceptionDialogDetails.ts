@@ -26,7 +26,7 @@ export const exceptionDialogDetails = hoistCmp.factory({
         const {detailsIsOpen, exception, options} = model,
             {requireReload} = options,
             row = (label, data) =>
-                tr(th({item: `${label}:`, style: {textAlign: 'left'}}), td(data));
+                tr(th({children: `${label}:`, style: {textAlign: 'left'}}), td(data));
 
         if (!detailsIsOpen || !exception) return null;
 

@@ -4,10 +4,11 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {XH, hoistCmp, HoistModel, creates, managed, HoistProps} from '@xh/hoist/core';
+import type {HoistProps} from '@xh/hoist/core';
+import {XH, hoistCmp, HoistModel, creates, managed} from '@xh/hoist/core';
 import {div, span} from '@xh/hoist/cmp/layout';
 import {computed, bindable} from '@xh/hoist/mobx';
-import {Column, GridModel} from '@xh/hoist/cmp/grid';
+import type {Column, GridModel} from '@xh/hoist/cmp/grid';
 import {Icon} from '@xh/hoist/icon';
 import {columnHeaderFilter, ColumnHeaderFilterModel} from '@xh/hoist/dynamics/desktop';
 import {createObservableRef} from '@xh/hoist/utils/react';
@@ -25,8 +26,7 @@ import {
 } from 'lodash';
 import classNames from 'classnames';
 
-import {GridSorter} from '../GridSorter';
-import {ReactNode} from 'react';
+import type {ReactNode} from 'react';
 
 import type {IHeaderParams, AgColumn} from '@xh/hoist/kit/ag-grid';
 
@@ -62,7 +62,7 @@ export const columnHeader = hoistCmp.factory<ColumnHeaderProps>({
             } else if (sort === 'desc') {
                 icon = abs ? Icon.sortAbsDesc() : Icon.sortDesc();
             }
-            return div({className: 'xh-grid-header-sort-icon', item: icon});
+            return div({className: 'xh-grid-header-sort-icon', children: icon});
         };
 
         const menuIcon = () => {
@@ -70,7 +70,7 @@ export const columnHeader = hoistCmp.factory<ColumnHeaderProps>({
             if (!enableMenu) return null;
             return div({
                 className: 'xh-grid-header-menu-icon',
-                item: model.isAgFiltered ? model.activeFilterIcon : Icon.columnMenu(),
+                children: model.isAgFiltered ? model.activeFilterIcon : Icon.columnMenu(),
                 ref: model.agFilterButtonRef,
                 onClick: e => {
                     e.stopPropagation();
@@ -98,7 +98,7 @@ export const columnHeader = hoistCmp.factory<ColumnHeaderProps>({
 
             return div({
                 className: 'xh-grid-header-expand-collapse-icon',
-                item: icon,
+                children: icon,
                 onClick: model.onExpandOrCollapse,
                 onTouchStart: model.onExpandOrCollapse
             });
@@ -140,9 +140,9 @@ export const columnHeader = hoistCmp.factory<ColumnHeaderProps>({
             onTouchStart: model.onTouchStart,
             onTouchEnd: model.onTouchEnd,
 
-            items: [
+            children: [
                 expandCollapseIcon(),
-                span({onMouseEnter, item: headerElem}),
+                span({onMouseEnter, children: headerElem}),
                 sortIcon(),
                 menuIcon()
             ]
@@ -193,7 +193,7 @@ class ColumnHeaderModel extends HoistModel {
         const {xhColumn, agColumn} = this,
             {filterModel} = this.gridModel;
 
-        this.availableSorts = this.parseAvailableSorts();
+        this.availableSorts = xhColumn?.availableSorts ?? [];
 
         if (!XH.isMobileApp && xhColumn?.filterable && filterModel?.getFieldSpec(xhColumn.field)) {
             this.columnHeaderFilterModel = new ColumnHeaderFilterModel(filterModel, xhColumn);
@@ -336,16 +336,5 @@ class ColumnHeaderModel extends HoistModel {
         if (gridModel?.autosizeEnabled) {
             gridModel.autosizeAsync({columns: this.colId, showMask: true});
         }
-    }
-
-    parseAvailableSorts() {
-        const {
-            absSort = false,
-            sortingOrder = absSort ? Column.ABS_DESC_FIRST : Column.ASC_FIRST,
-            colId = this.colId
-        } = this.xhColumn ?? {}; // Note xhColumn may be null for ag-Grid dynamic columns
-
-        const ret = sortingOrder.map(spec => new GridSorter({...spec, colId}));
-        return absSort ? ret : ret.filter(it => !it.abs);
     }
 }

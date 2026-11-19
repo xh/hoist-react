@@ -6,12 +6,8 @@
  */
 
 import {hoistCmp} from '@xh/hoist/core';
-import {
-    buildViewGroupTree,
-    ViewGroupNode,
-    ViewManagerModel,
-    ViewInfo
-} from '@xh/hoist/cmp/viewmanager';
+import type {ViewGroupNode, ViewManagerModel, ViewInfo} from '@xh/hoist/cmp/viewmanager';
+import {buildViewGroupTree} from '@xh/hoist/cmp/viewmanager';
 import {switchInput} from '@xh/hoist/desktop/cmp/input';
 import {Icon} from '@xh/hoist/icon';
 import {menu, menuDivider, menuItem} from '@xh/hoist/kit/blueprint';
@@ -19,8 +15,8 @@ import {getTestId, pluralize, TEST_ID} from '@xh/hoist/utils/js';
 import {parseMenuItems} from '@xh/hoist/desktop/cmp/menu/impl/MenuItems';
 import {filterConsecutiveMenuSeparators} from '@xh/hoist/utils/impl';
 import {filter, groupBy, isEmpty, isFunction, keys, some, startCase} from 'lodash';
-import {ReactNode} from 'react';
-import {ViewManagerLocalModel} from './ViewManagerLocalModel';
+import type {ReactNode} from 'react';
+import type {ViewManagerLocalModel} from './ViewManagerLocalModel';
 
 /**
  * Default Menu used by ViewManager.
@@ -30,7 +26,7 @@ export const viewMenu = hoistCmp.factory<ViewManagerLocalModel>({
         return menu({
             className: 'xh-view-manager__menu',
             [TEST_ID]: testId,
-            items: [
+            children: [
                 ...getNavMenuItems(model.parent, testId),
                 menuDivider(),
                 ...parseMenuItems(extraMenuItems),
@@ -75,7 +71,7 @@ function getNavMenuItems(model: ViewManagerModel, testId: string): ReactNode[] {
                             ? Icon.check()
                             : Icon.placeholder(),
                         shouldDismissPopover: false,
-                        items: getGroupedMenuItems(sharedViews[owner], model, testId)
+                        children: getGroupedMenuItems(sharedViews[owner], model, testId)
                     })
                 )
         );
@@ -174,7 +170,7 @@ function groupMenuItem(node: ViewGroupNode, model: ViewManagerModel, testId: str
         text: node.name,
         icon: containsSelected(node, model) ? Icon.check() : Icon.placeholder(),
         shouldDismissPopover: false,
-        items: [
+        children: [
             ...node.children.map(child => groupMenuItem(child, model, testId)),
             ...node.views.map(v => viewMenuItem(v, model, testId))
         ]

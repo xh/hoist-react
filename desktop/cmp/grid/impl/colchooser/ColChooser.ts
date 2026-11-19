@@ -4,22 +4,24 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {ColChooserOptionsModel} from '@xh/hoist/appcontainer/ColChooserOptionsModel';
+import type {ColChooserOptionsModel} from '@xh/hoist/appcontainer/ColChooserOptionsModel';
 import {grid} from '@xh/hoist/cmp/grid';
 import {div, filler, fragment, hframe, span, vbox, vframe} from '@xh/hoist/cmp/layout';
 import {storeFilterField} from '@xh/hoist/cmp/store';
-import {hoistCmp, HoistProps, LayoutProps, uses} from '@xh/hoist/core';
+import type {HoistProps, LayoutProps} from '@xh/hoist/core';
+import {hoistCmp, uses} from '@xh/hoist/core';
 import type {FilterTestFn} from '@xh/hoist/data';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
-import {Icon, IconProps} from '@xh/hoist/icon';
+import type {IconProps} from '@xh/hoist/icon';
+import {Icon} from '@xh/hoist/icon';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
-import {ReactElement} from 'react';
+import type {ReactElement} from 'react';
 
 import {ColChooserModel} from './ColChooserModel';
 import './ColChooser.scss';
-import {ColChooserBucketModel} from './ColChooserBucketModel';
+import type {ColChooserBucketModel} from './ColChooserBucketModel';
 
 export interface ColChooserProps extends HoistProps<ColChooserModel>, LayoutProps {}
 
@@ -38,7 +40,7 @@ export const [ColChooser, colChooser] = hoistCmp.withFactory<ColChooserProps>({
             className,
             height: model.sizeToContent ? model.height : null,
             ...layoutProps,
-            items: [tbar(), contents(), bbar()]
+            children: [tbar(), contents(), bbar()]
         });
     }
 });
@@ -48,7 +50,7 @@ type ChooserSectionProps = HoistProps<ColChooserModel>;
 const tbar = hoistCmp.factory<ChooserSectionProps>(({model}) =>
     toolbar({
         className: 'xh-col-chooser__tbar',
-        items: [
+        children: [
             storeFilterField({
                 flex: 1,
                 model,
@@ -103,7 +105,7 @@ const chooserBuckets = hoistCmp.factory<ChooserSectionProps>(({model}) =>
     vbox({
         flex: model.sizeToContent ? null : 1,
         width: model.sizeToContent ? model.width : null,
-        items: [
+        children: [
             pinnedBucket({bucketModel: model.leftBucketModel, bucket: 'left'}),
             columnsSeparator(),
             bucketGrid({bucketModel: model.unpinnedBucketModel, bucket: 'unpinned'}),
@@ -213,11 +215,12 @@ const bucketSeparator = hoistCmp.factory<BucketSeparatorProps>(({bucketModel, bu
 
     return div({
         className: classNames('xh-col-chooser__separator', `xh-col-chooser__separator--${bucket}`),
-        items: [
+        children: [
             div({className: 'xh-col-chooser__separator__line'}),
             span({
                 className: 'xh-col-chooser__separator__label',
-                items: bucket === 'right' ? [bucketModel.title, arrow] : [arrow, bucketModel.title]
+                children:
+                    bucket === 'right' ? [bucketModel.title, arrow] : [arrow, bucketModel.title]
             }),
             div({className: 'xh-col-chooser__separator__line'}),
             bucketVisibilityToggle({bucketModel})
@@ -254,7 +257,7 @@ const colLibraryPanel = hoistCmp.factory<ChooserSectionProps>(({model}) => {
         className: 'xh-col-chooser__library',
         flex: 'none',
         width: model.libraryWidth,
-        item: grid({
+        children: grid({
             className: 'xh-col-chooser__bucket xh-col-chooser__library-grid',
             flex: 1,
             model: model.libraryModel.chooserGridModel,

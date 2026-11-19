@@ -13,7 +13,6 @@ import {Icon} from '@xh/hoist/icon';
 import {button} from '@xh/hoist/mobile/cmp/button';
 import {checkbox, select} from '@xh/hoist/mobile/cmp/input';
 import {dialogPanel, panel} from '@xh/hoist/mobile/cmp/panel';
-import {wait} from '@xh/hoist/promise';
 import {intersperse} from '@xh/hoist/utils/js';
 import classNames from 'classnames';
 import './ZoneMapper.scss';
@@ -44,7 +43,7 @@ export const [ZoneMapper, zoneMapper] = hoistCmp.withFactory<ZoneMapperModel>({
             title: 'Customize Fields',
             icon: Icon.gridLarge(),
             className,
-            items: [
+            children: [
                 introText({omit: XH.isLandscape}),
                 zonePicker(),
                 grid({model: impl.gridModel}),
@@ -82,7 +81,7 @@ const introText = hoistCmp.factory({
     render() {
         return div({
             className: 'xh-zone-mapper__intro-text',
-            items: [
+            children: [
                 'Tap any of the four quadrants in the sample row below to customize the fields displayed within. Fields will be shown in the order they are selected. The first field within the top zones will always be labelled by the column headers.'
             ]
         });
@@ -96,17 +95,17 @@ const zonePicker = hoistCmp.factory<ZoneMapperModel>({
 
         return vbox({
             className,
-            items: [
+            children: [
                 hbox({
                     className: `${className}__top`,
-                    items: [
+                    children: [
                         zoneCell({zone: 'tl', flex: leftFlex}),
                         zoneCell({zone: 'tr', flex: rightFlex})
                     ]
                 }),
                 hbox({
                     className: `${className}__bottom`,
-                    items: [
+                    children: [
                         zoneCell({zone: 'bl', flex: leftFlex}),
                         zoneCell({zone: 'br', flex: rightFlex})
                     ]
@@ -130,7 +129,7 @@ const zoneCell = hoistCmp.factory<ZoneMapperModel>({
             ),
             style: {flex},
             onClick: () => (model.selectedZone = zone),
-            items: intersperse(samples, span(delimiter))
+            children: intersperse(samples, span(delimiter))
         });
     }
 });
@@ -141,7 +140,7 @@ const sortPicker = hoistCmp.factory<ZoneMapperModel>({
             title: 'Sorting',
             icon: Icon.list(),
             className: 'xh-zone-mapper__sort-picker',
-            items: hframe(
+            children: hframe(
                 select({
                     bind: 'sortByColId',
                     enableFilter: true,
@@ -246,11 +245,5 @@ class ZoneMapperLocalModel extends HoistModel {
 
         // 2) Load into display grid
         this.gridModel.loadData(data);
-
-        // 3) Blur checkboxes. This is a workaround for an Onsen issue on mobile, where the checkbox
-        // will not re-render as long as it has focus.
-        await wait(1);
-        const checkboxes = document.querySelectorAll<HTMLInputElement>('ons-checkbox');
-        checkboxes.forEach(it => it.blur());
     }
 }

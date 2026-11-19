@@ -4,7 +4,8 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {HoistModel, PlainObject, SizingMode, Some} from '@xh/hoist/core';
+import type {PlainObject, SizingMode, Some} from '@xh/hoist/core';
+import {HoistModel} from '@xh/hoist/core';
 import type {
     GridApi,
     IRowNode,
@@ -29,8 +30,10 @@ import {
     setWith,
     startCase
 } from 'lodash';
-import {GridSorter, GridSorterLike} from '../grid/GridSorter';
-import {AgGridThemeParams, createAgGridTheme} from './AgGridTheme';
+import type {GridSorterLike} from '../grid/GridSorter';
+import {GridSorter} from '../grid/GridSorter';
+import type {AgGridThemeParams} from './AgGridTheme';
+import {createAgGridTheme} from './AgGridTheme';
 
 /** App-level defaults for {@link AgGridModel} - see {@link AgGridModel.defaults}. */
 export interface AgGridModelDefaults {

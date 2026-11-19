@@ -7,9 +7,10 @@
 import {SECONDS} from '@xh/hoist/utils/datetime';
 import {throwIf} from '@xh/hoist/utils/js';
 import {normalizeGroupPath} from './GroupUtils';
-import {ViewManagerModel} from './ViewManagerModel';
-import {JsonBlob} from '@xh/hoist/svc';
-import {PlainObject, XH} from '@xh/hoist/core';
+import type {ViewManagerModel} from './ViewManagerModel';
+import type {JsonBlob} from '@xh/hoist/svc';
+import type {PlainObject} from '@xh/hoist/core';
+import {XH} from '@xh/hoist/core';
 
 /**
  * Metadata describing {@link View} managed by {@link ViewManagerModel}.

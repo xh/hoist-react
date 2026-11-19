@@ -5,11 +5,11 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
-import {PlainObject} from '@xh/hoist/core';
+import type {PlainObject} from '@xh/hoist/core';
 import {Exception} from '@xh/hoist/exception';
 import {noop} from 'lodash';
 import type {FetchException, NdjsonFetchOptions, NdjsonResult} from '../FetchService';
-import {StringInterner} from './StringInterner';
+import type {StringInterner} from './StringInterner';
 
 /**
  * Decodes a streamed NDJSON Response body into parsed records - implementation helper
@@ -119,19 +119,24 @@ export class NdjsonResultImpl implements NdjsonResult {
             decoder = new TextDecoder();
         let buffer = '';
 
-        while (true) {
-            const {done, value} = await reader.read();
-            if (done) break;
+        try {
+            while (true) {
+                const {done, value} = await reader.read();
+                if (done) break;
 
-            buffer += decoder.decode(value, {stream: true});
-            const lines = buffer.split('\n');
-            buffer = lines.pop(); // retain any partial trailing line for the next chunk
-            for (const line of lines) {
-                if (!line) continue;
-                const record = JSON.parse(line);
-                interner?.intern(record);
-                yield record;
+                buffer += decoder.decode(value, {stream: true});
+                const lines = buffer.split('\n');
+                buffer = lines.pop(); // retain any partial trailing line for the next chunk
+                for (const line of lines) {
+                    if (!line) continue;
+                    const record = JSON.parse(line);
+                    interner?.intern(record);
+                    yield record;
+                }
             }
+        } finally {
+            // Close the connection if the consumer exits early or a line fails to parse.
+            reader.cancel().catch(noop);
         }
 
         buffer += decoder.decode();

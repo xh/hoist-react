@@ -38,14 +38,14 @@ export const optionsDialog = hoistCmp.factory({
             isOpen: true,
             onClose: () => model.hide(),
             canOutsideClickClose: false,
-            item: [
+            children: [
                 panel({
                     mask: loadTask,
-                    item: dialogBody(
+                    children: dialogBody(
                         form({
                             model: formModel,
                             fieldDefaults: {minimal: true, inline: true},
-                            items: model.options.map(option => {
+                            children: model.options.map(option => {
                                 return formField({field: option.name, ...option.formField});
                             })
                         })

@@ -6,9 +6,11 @@
  */
 import {wait} from '@xh/hoist/promise';
 import type {LayoutItem} from 'react-grid-layout';
-import {Persistable, PersistableState, PersistenceProvider, XH} from '@xh/hoist/core';
+import type {Persistable} from '@xh/hoist/core';
+import {PersistableState, PersistenceProvider, XH} from '@xh/hoist/core';
 import {required} from '@xh/hoist/data';
-import {DashCanvasViewModel, DashCanvasViewSpec, DashConfig, DashViewState, DashModel} from '../';
+import type {DashCanvasViewSpec, DashConfig, DashViewState} from '../';
+import {DashCanvasViewModel, DashModel} from '../';
 import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
 import {action, bindable, observableRef, computedStruct, bindableRef} from '@xh/hoist/mobx';
@@ -60,6 +62,14 @@ export interface DashCanvasConfig extends DashConfig<DashCanvasViewSpec, DashCan
      * works well if all items are 1 row high. Default `'vertical'`.
      */
     compact?: boolean | 'vertical' | 'horizontal' | 'wrap';
+
+    /**
+     * True to block a drag or resize that would move a view into space taken by another view.
+     * The view snaps back instead of pushing the other view aside. Compaction still applies.
+     * Combine with `compact: false` for a free-form canvas where views stay where users put them.
+     * Default `false`.
+     */
+    preventCollision?: boolean;
 
     /** Gap between items [x, y] in pixels. Default `[10, 10]`. */
     margin?: [number, number];
@@ -150,6 +160,7 @@ export class DashCanvasModel
     @bindable accessor columns: number;
     @bindable accessor rowHeight: number;
     @bindable accessor compact: 'vertical' | 'horizontal' | 'wrap';
+    @bindable accessor preventCollision: boolean;
     @bindableRef accessor margin: [number, number]; // [x, y]
     @bindableRef accessor containerPadding: [number, number]; // [x, y]
     @bindable accessor showGridBackground: boolean;
@@ -221,6 +232,7 @@ export class DashCanvasModel
         columns = DashCanvasModel.defaults.columns,
         rowHeight = DashCanvasModel.defaults.rowHeight,
         compact = 'vertical',
+        preventCollision = false,
         margin = DashCanvasModel.defaults.margin,
         maxRows = DashCanvasModel.defaults.maxRows,
         containerPadding = DashCanvasModel.defaults.containerPadding ?? margin,
@@ -261,6 +273,7 @@ export class DashCanvasModel
             columns,
             rowHeight,
             compact,
+            preventCollision,
             margin,
             maxRows,
             containerPadding
@@ -274,6 +287,7 @@ export class DashCanvasModel
         this.containerPadding = containerPadding;
         this.margin = margin;
         this.compact = compact === true ? 'vertical' : compact === false ? null : compact;
+        this.preventCollision = preventCollision;
         this.emptyText = emptyText;
         this.addViewButtonText = addViewButtonText;
         this.extraMenuItems = extraMenuItems;

@@ -5,18 +5,18 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
-import {Column, GridFilterFieldSpec, GridFilterModel, GridModel} from '@xh/hoist/cmp/grid';
+import type {Column, GridFilterFieldSpec, GridFilterModel, GridModel} from '@xh/hoist/cmp/grid';
 import {TabContainerModel} from '@xh/hoist/cmp/tab';
 import {HoistModel, lookup, managed} from '@xh/hoist/core';
-import {
+import type {
     CompoundFilter,
     FieldFilter,
     FieldType,
     Filter,
     FilterLike,
-    parseFilter,
     Store
 } from '@xh/hoist/data';
+import {parseFilter} from '@xh/hoist/data';
 import {action, computed} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 import {isEmpty} from 'lodash';

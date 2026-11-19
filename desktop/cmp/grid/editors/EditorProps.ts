@@ -4,11 +4,11 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {CustomCellEditorProps} from '@xh/hoist/kit/ag-grid';
-import {Column, GridModel} from '@xh/hoist/cmp/grid';
-import {HoistInputProps} from '@xh/hoist/cmp/input';
-import {HoistProps} from '@xh/hoist/core';
-import {StoreRecord} from '@xh/hoist/data';
+import type {CustomCellEditorProps} from '@xh/hoist/kit/ag-grid';
+import type {Column, GridModel} from '@xh/hoist/cmp/grid';
+import type {HoistInputProps} from '@xh/hoist/cmp/input';
+import type {HoistProps} from '@xh/hoist/core';
+import type {StoreRecord} from '@xh/hoist/data';
 import '@xh/hoist/desktop/register';
 
 export interface EditorProps<InputPropsT extends HoistInputProps> extends HoistProps {

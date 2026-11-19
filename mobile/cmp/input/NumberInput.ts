@@ -4,22 +4,26 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
+import type {HoistInputProps, PasswordManagerSupportProps} from '@xh/hoist/cmp/input';
+import {getPasswordManagerAttrs, HoistInputModel, useHoistInputModel} from '@xh/hoist/cmp/input';
 import {
-    getPasswordManagerAttrs,
-    HoistInputModel,
-    HoistInputProps,
-    PasswordManagerSupportProps,
-    useHoistInputModel
-} from '@xh/hoist/cmp/input';
-import {hoistCmp, HoistProps, LayoutProps, StyleProps} from '@xh/hoist/core';
-import {fmtNumber, NumericPrecision, Precision, ZeroPad} from '@xh/hoist/format';
-import {input} from '@xh/hoist/kit/onsen';
+    addCommasWhileEditing,
+    getCaretSkippingCommas,
+    setCaretSkippingCommas,
+    skipCommaOnDelete
+} from '@xh/hoist/cmp/input/impl/LiveCommas';
+import {hbox, input} from '@xh/hoist/cmp/layout';
+import type {HoistProps, LayoutProps, StyleProps} from '@xh/hoist/core';
+import {hoistCmp} from '@xh/hoist/core';
+import type {NumericPrecision, Precision, ZeroPad} from '@xh/hoist/format';
+import {fmtNumber} from '@xh/hoist/format';
 import '@xh/hoist/mobile/register';
 import {wait} from '@xh/hoist/promise';
 import {TEST_ID, throwIf, withDefault} from '@xh/hoist/utils/js';
-import {getLayoutProps} from '@xh/hoist/utils/react';
+import {getLayoutProps, useOnMount} from '@xh/hoist/utils/react';
 import type {Property} from 'csstype';
 import {debounce, isNaN, isNil, isNumber, round} from 'lodash';
+import {useEffect} from 'react';
 import './NumberInput.scss';
 
 export interface NumberInputProps
@@ -29,8 +33,11 @@ export interface NumberInputProps
     /** True to commit on every change/keystroke, default false. */
     commitOnChange?: boolean;
 
-    /** True to insert commas in displayed value. */
-    displayWithCommas?: boolean;
+    /**
+     * Insert commas in displayed value - 'whenBlurred' (or true) to show them only when the input
+     * does not have focus, 'always' to also show them while the user types.
+     */
+    displayWithCommas?: boolean | 'always' | 'whenBlurred';
 
     /** True to convert entries suffixed with k/m/b to thousands/millions/billions. */
     enableShorthandUnits?: boolean;
@@ -46,9 +53,6 @@ export interface NumberInputProps
      * via user input. Larger values passed to it via props or a bound model will still be displayed.
      */
     max?: number;
-
-    /** Onsen modifier string. */
-    modifier?: string;
 
     /** Text to display when control is empty. */
     placeholder?: string;
@@ -120,6 +124,13 @@ class NumberInputModel extends HoistInputModel {
         return withDefault(this.componentProps.enableShorthandUnits, false);
     }
 
+    get commasWhileEditing(): boolean {
+        return this.componentProps.displayWithCommas === 'always';
+    }
+
+    // Caret position to restore after a reformat while editing, as a count of non-comma chars.
+    caretPos: number = null;
+
     override select() {
         // first focus, and then wait one tick for value to be put into input element
         this.focus();
@@ -127,6 +138,8 @@ class NumberInputModel extends HoistInputModel {
     }
 
     onValueChange = ev => {
+        if (this.commasWhileEditing)
+            this.caretPos = getCaretSkippingCommas(this.inputEl as HTMLInputElement);
         this.noteValueChange(ev.target.value);
     };
 
@@ -179,6 +192,10 @@ class NumberInputModel extends HoistInputModel {
         this.componentProps.onKeyDown?.(ev);
     };
 
+    onBeforeInput = (ev: InputEvent) => {
+        if (this.commasWhileEditing) skipCommaOnDelete(ev);
+    };
+
     override onFocus = ev => {
         this.noteFocused();
 
@@ -196,7 +213,9 @@ class NumberInputModel extends HoistInputModel {
 
         if (this.hasFocus) {
             if (isNumber(value) && !isNil(precision)) value = round(value, precision);
-            return value.toString();
+            return this.commasWhileEditing
+                ? addCommasWhileEditing(value.toString())
+                : value.toString();
         }
 
         const {valueLabel, displayWithCommas} = componentProps,
@@ -245,33 +264,50 @@ const cmp = hoistCmp.factory<NumberInputModel>(
             renderValue = model.formatRenderValue(model.renderValue),
             inputMode = enableShorthandUnits ? 'text' : 'decimal';
 
+        // Restore the caret after a reformat while editing moved it. Runs after React writes the
+        // value into the input.
+        useEffect(() => {
+            const input = model.inputEl as HTMLInputElement;
+            if (input && model.caretPos != null) {
+                setCaretSkippingCommas(input, model.caretPos);
+                model.caretPos = null;
+            }
+        });
+
+        // Native listener, as React's onBeforeInput does not fire for deletes.
+        useOnMount(() => model.inputEl?.addEventListener('beforeinput', model.onBeforeInput));
+
         // Using type=text rather than type=number, to support shorthand units and rich
         // rendering but also because of issues with typing in decimal point (see #3450)
         // Rely on inputMode, and Hoist's parsing to enforce numbers only.
-        return input({
-            inputMode,
+        return hbox({
+            ref,
             className,
-            value: renderValue,
-            disabled: props.disabled,
-            placeholder: props.placeholder,
-            modifier: props.modifier,
-            tabIndex: props.tabIndex,
+            display: 'inline-flex',
             style: {
                 ...props.style,
                 ...layoutProps,
-                width: withDefault(width, null),
-                textAlign: withDefault(props.textAlign, 'right')
+                width: withDefault(width, null)
             },
-            spellCheck: false,
-            [TEST_ID]: props.testId,
-            ...getPasswordManagerAttrs(props.enablePasswordManagers),
-            ...props.domAttrs,
+            children: input({
+                className: 'xh-number-input__input',
+                type: 'text',
+                inputMode,
+                value: renderValue,
+                disabled: props.disabled,
+                placeholder: props.placeholder,
+                tabIndex: props.tabIndex,
+                style: {textAlign: withDefault(props.textAlign, 'right')},
+                spellCheck: false,
+                [TEST_ID]: props.testId,
+                ...getPasswordManagerAttrs(props.enablePasswordManagers),
+                ...props.domAttrs,
 
-            onInput: model.onValueChange,
-            onKeyDown: model.onKeyDown,
-            onBlur: model.onBlur,
-            onFocus: model.onFocus,
-            ref
+                onChange: model.onValueChange,
+                onKeyDown: model.onKeyDown,
+                onBlur: model.onBlur,
+                onFocus: model.onFocus
+            })
         });
     }
 );

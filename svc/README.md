@@ -9,7 +9,7 @@
 | [User Preference Keys Reference](#user-preference-keys-reference) | Per-user preference keys used by services |
 | [Creating Custom Services](#creating-custom-services) | How to create and install application services |
 | [Common Patterns](#common-patterns) | FetchService in loads, tracking, debounced search, WebSockets |
-| [Common Pitfalls](#common-pitfalls) | Fetch errors, native fetch, missing loadSpec, and more |
+| [Common Pitfalls](#common-pitfalls) | Fetch errors, POST method, native fetch, missing loadSpec, and more |
 | [Related Packages](#related-packages) | Links to core, cmp, promise, and admin packages |
 
 ## Overview
@@ -100,6 +100,7 @@ Managed HTTP requests with enhancements over the native Fetch API.
 
 **Key Features:**
 - Automatic correlation IDs for request tracking
+- W3C `traceparent` headers on requests to the app's own server, when tracing is enabled
 - Configurable timeouts (default 30 seconds)
 - Auto-abort of duplicate requests via `autoAbortKey`
 - Request/response interceptors
@@ -132,23 +133,28 @@ override async doLoadAsync(loadSpec: LoadSpec) {
 |--------|------|---------------------------------------------------------------------------------------|
 | `url` | string | Request URL (relative URLs appended to `XH.baseUrl`)                                  |
 | `body` | any | Request body                                                                          |
-| `params` | object | Query string parameters                                                               |
+| `method` | string | HTTP method - defaults to `GET`, with or without `params`                             |
+| `params` | object | Query string parameters, or a form-encoded body for a `POST` or `PUT`                 |
 | `headers` | object | Additional headers                                                                    |
 | `timeout` | number | Timeout in ms (default 30000)                                                         |
-| `autoAbortKey` | string | Cancel previous requests with same key                                                |
+| `autoAbortKey` | string | Cancel previous requests with same key. For `fetchNdjson`, covers the whole stream    |
+| `fetchOpts` | object | Options for the native `fetch()`. A `signal` here also aborts the request, alongside Hoist's own |
+| `propagateTrace` | boolean | Send a `traceparent` header when tracing is enabled. Overrides `FetchService.defaults.propagateTrace` |
 | `loadSpec` | LoadSpec | Metadata for tracking                                                                 |
 | `span` | Span | Parent span for tracing. Typically supplied via a `Runner` chain (`runner.fetchJson(...)`) rather than set directly |
 
 **App-Level Defaults (`FetchService.defaults`):**
 
-FetchService exposes a `static defaults` object for correlation ID configuration. Best configured
-in the app's `Bootstrap` module to ensure settings are active from the very first request.
+FetchService exposes a `static defaults` object for correlation ID and trace header configuration.
+Best configured in the app's `Bootstrap` module to ensure settings are active from the very first
+request.
 
 | Property | Type | Default | Description |
 |----------|------|---------|-------------|
 | `autoGenCorrelationIds` | `boolean \| function` | `false` | Auto-generate correlation IDs. Set `true` or a `(opts) => boolean` function for per-request control |
 | `genCorrelationId` | `() => string` | 16-char random string | Custom ID generator function |
 | `correlationIdHeaderKey` | `string` | `'X-Correlation-ID'` | HTTP header name for correlation IDs |
+| `propagateTrace` | `boolean \| function` | App's own server only | Send a `traceparent` header when tracing is enabled. Set `true` for all requests, or a `(opts) => boolean` function. See [Trace headers on fetch requests](../docs/telemetry.md#trace-headers-on-fetch-requests) |
 
 ```typescript
 // In Bootstrap module
@@ -321,7 +327,7 @@ category while all other entries continue to require INFO or above.
 > tracing, metrics, and activity tracking.
 
 Client-side distributed tracing — creates spans for user actions and fetch calls, injects
-`traceparent` headers on outgoing requests, and batches completed spans for export to the
+`traceparent` headers on requests to the app's own server, and batches completed spans for export to the
 Hoist server. Exceptions thrown during traced operations include a `traceId` for correlation
 with server-side traces. Controlled by the `xhTraceConfig` soft config. Requires hoist-core 37+.
 
@@ -656,6 +662,7 @@ const data = await XH.fetchJson({
 // Full form - with category and additional data
 const report = await XH.fetchJson({
     url: 'api/reports/generate',
+    method: 'POST',
     params: {reportId, format},
     track: {
         message: 'Generated report',
@@ -792,25 +799,18 @@ override async doLoadAsync(loadSpec: LoadSpec) {
 }
 ```
 
-### `params` Triggers a POST When Method Is Not Specified
+### Omitting `method` on a Fetch That Should POST
 
-When `params` is passed without an explicit `method`, `FetchService` issues a **POST** and sends
-the params as `application/x-www-form-urlencoded` in the request body -- not as a URL query
-string on a GET. This is rarely what callers intend.
-
-**Always specify `method: 'GET'` (or use `XH.fetchService.getJson()`) when you intend a GET with
-query parameters.** Omitting the method changes the verb, the wire format, and the server-side
-route hit.
+A request with no `method` is a GET, so its `params` go on the URL. Set `method: 'POST'` on a call
+that changes data, sends a password or other sensitive value, or sends large params. A POST sends
+`params` as a form-encoded body, which keeps them out of the URL and server logs.
 
 ```typescript
-// ❌ Surprising: sends POST with form-encoded params in the body
-await XH.fetchJson({url: 'api/users', params: {role: 'admin'}});
+// ❌ Wrong: a GET that puts the password in the URL
+await XH.fetchJson({url: 'api/login', params: {username, password}});
 
-// ✅ Explicit GET with query string ?role=admin
-await XH.fetchJson({url: 'api/users', params: {role: 'admin'}, method: 'GET'});
-
-// ✅ Or use the dedicated getJson() helper
-await XH.fetchService.getJson({url: 'api/users', params: {role: 'admin'}});
+// ✅ Correct: a POST that sends the params in the body
+await XH.fetchJson({url: 'api/login', method: 'POST', params: {username, password}});
 ```
 
 ### Using Native `fetch` Instead of FetchService

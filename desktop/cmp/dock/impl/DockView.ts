@@ -6,7 +6,8 @@
  */
 import {DockViewModel} from '@xh/hoist/desktop/cmp/dock';
 import {div, filler, hbox, span, vbox} from '@xh/hoist/cmp/layout';
-import {hoistCmp, HoistProps, refreshContextView, uses} from '@xh/hoist/core';
+import type {HoistProps} from '@xh/hoist/core';
+import {hoistCmp, refreshContextView, uses} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {modalSupport} from '@xh/hoist/desktop/cmp/modalsupport/ModalSupport';
 import '@xh/hoist/desktop/register';
@@ -58,9 +59,9 @@ export const dockView = hoistCmp.factory<DockViewProps>({
                     ? null
                     : refreshContextView({
                           model: refreshContextModel,
-                          item: div({
+                          children: div({
                               className: 'xh-dock-view__body',
-                              item: errorBoundary(elementFromContent(model.content))
+                              children: errorBoundary(elementFromContent(model.content))
                           })
                       });
 
@@ -68,11 +69,11 @@ export const dockView = hoistCmp.factory<DockViewProps>({
 
         return modalSupport({
             model: model.modalSupportModel,
-            item: vbox({
+            children: vbox({
                 width: collapsed ? collapsedWidth : docked ? width : dialogWidth,
                 height: collapsed ? undefined : docked ? height : dialogHeight,
                 className: classNames(className, `xh-dock-view--${suffix}`),
-                items: [header, body]
+                children: [header, body]
             })
         });
     }
@@ -85,18 +86,18 @@ const headerCmp = hoistCmp.factory<DockViewModel>(({model, compactHeaders}) => {
     const {icon, title, collapsed, docked, allowClose, allowDialog} = model;
     return div({
         className: `xh-dock-view__header ${compactHeaders ? 'xh-dock-view__header--compact' : ''}`,
-        item: hbox({
+        children: hbox({
             className: `xh-dock-view__header__inner`,
-            items: [
+            children: [
                 span({
                     omit: !icon,
-                    item: icon,
+                    children: icon,
                     className: 'xh-dock-view__header__icon',
                     onDoubleClick: () => model.toggleCollapsed()
                 }),
                 span({
                     omit: !title,
-                    item: title,
+                    children: title,
                     className: 'xh-dock-view__header__title',
                     onDoubleClick: () => model.toggleCollapsed()
                 }),

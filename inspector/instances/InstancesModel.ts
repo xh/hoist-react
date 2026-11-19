@@ -4,10 +4,13 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {boolCheck, ColumnSpec, GridModel} from '@xh/hoist/cmp/grid';
+import type {ColumnSpec} from '@xh/hoist/cmp/grid';
+import {boolCheck, GridModel} from '@xh/hoist/cmp/grid';
 import {a} from '@xh/hoist/cmp/layout';
-import {HoistBase, hoistCmp, HoistModel, managed, persist, XH} from '@xh/hoist/core';
-import {Cube, StoreRecord, View} from '@xh/hoist/data';
+import type {HoistBase} from '@xh/hoist/core';
+import {hoistCmp, HoistModel, managed, persist, XH} from '@xh/hoist/core';
+import type {StoreRecord} from '@xh/hoist/data';
+import {Cube, View} from '@xh/hoist/data';
 import {actionCol, calcActionColWidth} from '@xh/hoist/desktop/cmp/grid';
 import {PanelModel} from '@xh/hoist/desktop/cmp/panel';
 import {fmtDate} from '@xh/hoist/format';
@@ -375,7 +378,7 @@ export class InstancesModel extends HoistModel {
                     renderer: (v, {record}) => {
                         return record.data.displayGroup === 'Watchlist'
                             ? a({
-                                  item: v,
+                                  children: v,
                                   onClick: () => this.selectInstanceAsync(record.data.instanceXhId)
                               })
                             : v;
@@ -398,7 +401,7 @@ export class InstancesModel extends HoistModel {
                     renderer: (v, {record}) => {
                         const {data} = record;
                         if (data.isGetter && !data.isLoadedGetter) {
-                            return a({item: '(...)', onClick: () => this.loadGetter(record)});
+                            return a({children: '(...)', onClick: () => this.loadGetter(record)});
                         }
                         if (
                             data.isHoistModel ||
@@ -407,7 +410,7 @@ export class InstancesModel extends HoistModel {
                             data.isCube ||
                             data.isView
                         ) {
-                            return a({item: v, onClick: () => this.selectInstanceAsync(v)});
+                            return a({children: v, onClick: () => this.selectInstanceAsync(v)});
                         }
                         return JSON.stringify(trimToDepth(v, 2));
                     }
@@ -629,5 +632,8 @@ const propsGridGroupRenderer = hoistCmp.factory<InstancesModel>(({value, node, m
 
     const firstRecData = node.allLeafChildren[0]?.data.data ?? {},
         {instanceXhId, instanceDisplayName} = firstRecData;
-    return a({item: instanceDisplayName, onClick: () => model.selectInstanceAsync(instanceXhId)});
+    return a({
+        children: instanceDisplayName,
+        onClick: () => model.selectInstanceAsync(instanceXhId)
+    });
 });

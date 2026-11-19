@@ -4,12 +4,16 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {HoistInputModel, HoistInputProps, useHoistInputModel} from '@xh/hoist/cmp/input';
-import {div, filler, hbox, span} from '@xh/hoist/cmp/layout';
-import {elementFactory, hoistCmp, HoistProps, LayoutProps, StyleProps} from '@xh/hoist/core';
+import type {HoistInputProps} from '@xh/hoist/cmp/input';
+import {HoistInputModel, useHoistInputModel} from '@xh/hoist/cmp/input';
+import {div, filler, hbox, htmlButton, span} from '@xh/hoist/cmp/layout';
+import type {HoistProps, LayoutProps, StyleProps} from '@xh/hoist/core';
+import {elementFactory, hoistCmp} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
-import {button, ButtonProps} from '@xh/hoist/desktop/cmp/button';
-import {HoistIconPrefix, Icon, IconCatalogEntry, IconFactory} from '@xh/hoist/icon';
+import type {ButtonProps} from '@xh/hoist/desktop/cmp/button';
+import {button} from '@xh/hoist/desktop/cmp/button';
+import type {HoistIconPrefix, IconCatalogEntry, IconFactory} from '@xh/hoist/icon';
+import {Icon} from '@xh/hoist/icon';
 import {popover} from '@xh/hoist/kit/blueprint';
 import {action, bindable, computed, observable, observableRef} from '@xh/hoist/mobx';
 import {getTestId, TEST_ID, withDefault} from '@xh/hoist/utils/js';
@@ -113,7 +117,6 @@ export const [IconPicker, iconPicker] = hoistCmp.withFactory<IconPickerProps>({
 //-----------------------
 // Implementation
 //-----------------------
-const buttonEl = elementFactory('button');
 const reactWindowList = elementFactory(List);
 
 // Cell sizes in px, set here rather than in CSS as the windowed grid needs exact row heights.
@@ -411,7 +414,7 @@ const cmp = hoistCmp.factory<IconPickerModel>(({model, className, ...props}, ref
             'xh-icon-picker__popover',
             compact && 'xh-icon-picker__popover--compact'
         ),
-        item: triggerButton({model, props, ref}),
+        children: triggerButton({model, props, ref}),
         content: iconMenu({model, props}),
         [TEST_ID]: props.testId
     });
@@ -478,11 +481,11 @@ const iconMenu = hoistCmp.factory<IconPickerModel>(({model, props}) => {
         // Keyboard nav is driven from whatever holds focus within the popover - the filter input
         // when present, otherwise this container itself (focused on open - see `onOpened`).
         tabIndex: enableFilter ? null : 0,
-        items: [
+        children: [
             div({
                 omit: !enableFilter,
                 className: 'xh-icon-picker__filter',
-                item: textInput({
+                children: textInput({
                     model,
                     bind: 'filterValue',
                     commitOnChange: true,
@@ -512,7 +515,7 @@ const iconGrid = hoistCmp.factory<IconPickerModel>(({model, props}) => {
     useEffect(() => model.scrollToActive('auto'), [model, activeIdx, filteredOptions]);
 
     if (isEmpty(filteredOptions)) {
-        return div({className: 'xh-icon-picker__no-results', item: 'No matching icons found.'});
+        return div({className: 'xh-icon-picker__no-results', children: 'No matching icons found.'});
     }
 
     // Size the list to its columns, plus room for a scrollbar so one never covers the last column.
@@ -520,7 +523,7 @@ const iconGrid = hoistCmp.factory<IconPickerModel>(({model, props}) => {
 
     return div({
         className: 'xh-icon-picker__grid',
-        item: reactWindowList({
+        children: reactWindowList({
             className: 'xh-icon-picker__grid-list',
             listRef: model.listRef,
             rowComponent: iconRow,
@@ -575,7 +578,7 @@ function iconRow({
             gridTemplateColumns: `repeat(${columns}, var(--xh-icon-picker-cell-size))`,
             columnGap: CELL_GAP
         },
-        items: filteredOptions.slice(start, start + columns).map((option, i) =>
+        children: filteredOptions.slice(start, start + columns).map((option, i) =>
             iconCell({
                 key: option.value,
                 model,
@@ -591,7 +594,7 @@ function iconRow({
 
 const iconCell = hoistCmp.factory<IconPickerModel>(
     ({model, option, idx, prefix, isActive, isSelected}) =>
-        buttonEl({
+        htmlButton({
             type: 'button',
             tabIndex: -1,
             className: classNames(
@@ -606,7 +609,7 @@ const iconCell = hoistCmp.factory<IconPickerModel>(
                 e.stopPropagation();
                 model.onIconClick(option);
             },
-            item: option.factory({prefix})
+            children: option.factory({prefix})
         })
 );
 
@@ -616,10 +619,10 @@ const menuFooter = hoistCmp.factory<IconPickerModel>(({model, props}) => {
 
     return hbox({
         className: 'xh-icon-picker__footer',
-        items: [
+        children: [
             span({
                 className: 'xh-icon-picker__footer-name',
-                item: activeOption?.displayName ?? ''
+                children: activeOption?.displayName ?? ''
             }),
             filler(),
             div({
@@ -628,7 +631,7 @@ const menuFooter = hoistCmp.factory<IconPickerModel>(({model, props}) => {
                     'xh-icon-picker__footer-action',
                     !hasSelection && 'xh-icon-picker__footer-action--disabled'
                 ),
-                item: 'Clear',
+                children: 'Clear',
                 [TEST_ID]: getTestId(props, 'clear-btn'),
                 onClick: e => {
                     e.stopPropagation();

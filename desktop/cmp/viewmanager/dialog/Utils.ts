@@ -6,17 +6,17 @@
  */
 
 import {fragment, p, span, strong} from '@xh/hoist/cmp/layout';
+import type {ViewInfo, ViewManagerModel} from '@xh/hoist/cmp/viewmanager';
 import {
     getAllGroupPaths,
     isGroupSameOrDescendant,
-    normalizeGroupPath,
-    ViewInfo,
-    ViewManagerModel
+    normalizeGroupPath
 } from '@xh/hoist/cmp/viewmanager';
-import {SelectOption, XH} from '@xh/hoist/core';
+import type {SelectOption} from '@xh/hoist/core';
+import {XH} from '@xh/hoist/core';
 import {pluralize} from '@xh/hoist/utils/js';
 import {capitalize, every, partition, startCase} from 'lodash';
-import {ReactNode} from 'react';
+import type {ReactNode} from 'react';
 import {groupPathBreadcrumb} from './GroupPathBreadcrumb';
 
 /**
@@ -46,7 +46,7 @@ export function groupValueDisplay(value: string): ReactNode {
 
 /** Italic-muted *Top Level*, signalling a value that is not a literal group name. */
 export function topLevelLabel(): ReactNode {
-    return span({className: 'xh-view-manager__group-path--sentinel', item: 'Top Level'});
+    return span({className: 'xh-view-manager__group-path--sentinel', children: 'Top Level'});
 }
 
 /**

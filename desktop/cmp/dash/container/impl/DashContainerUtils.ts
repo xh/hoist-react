@@ -4,12 +4,12 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {PlainObject} from '@xh/hoist/core';
-import {DashContainerModel} from '@xh/hoist/desktop/cmp/dash';
+import type {PlainObject} from '@xh/hoist/core';
+import type {DashContainerModel} from '@xh/hoist/desktop/cmp/dash';
 import {logWarn, throwIf} from '@xh/hoist/utils/js';
 import {isArray, isEmpty, isFinite, isNil, isPlainObject, isString, round} from 'lodash';
-import {GoldenLayout} from '@xh/hoist/kit/golden-layout';
-import {DashContainerViewSpec} from '../DashContainerViewSpec';
+import type {GoldenLayout} from '@xh/hoist/kit/golden-layout';
+import type {DashContainerViewSpec} from '../DashContainerViewSpec';
 
 /**
  * Lookup the DashViewModel id of a rendered view

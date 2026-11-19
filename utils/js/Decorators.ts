@@ -15,7 +15,8 @@ type AnyFn = (...args: any[]) => any;
 
 /**
  * Decorates a class method so that it is debounced by the specified duration. Per-instance
- * (not per-class) — each instance gets its own lodash `debounce` wrapper on first call.
+ * (not per-class) — each instance gets its own lodash `debounce` wrapper on first call. On a
+ * `HoistBase` instance, a call does nothing once the instance is destroyed.
  * Based on https://github.com/bvaughn/debounce-decorator.
  *
  * @param duration - milliseconds to debounce.
@@ -24,7 +25,11 @@ export function debounced(duration: number) {
     return function <T extends AnyFn>(baseFn: T, context: ClassMethodDecoratorContext): T {
         const key = '_xh_' + (context.name as string);
         return function () {
-            const fn = getOrCreate(this, key, () => debounce(baseFn as any, duration));
+            const fn = getOrCreate(this, key, () =>
+                debounce(function () {
+                    if (!this.isDestroyed) baseFn.apply(this, arguments);
+                }, duration)
+            );
             fn.apply(this, arguments);
         } as any as T;
     };

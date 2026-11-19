@@ -30,8 +30,8 @@ svg.highcharts-root {
 
   &__title {
     border-bottom: var(--xh-border-solid);
-    margin-bottom: var(--xh-pad-half-px);
-    padding-bottom: var(--xh-pad-half-px);
+    margin-bottom: var(--xh-spacing-half);
+    padding-bottom: var(--xh-spacing-half);
   }
 
   table {

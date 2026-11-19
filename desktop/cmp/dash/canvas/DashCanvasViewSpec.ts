@@ -4,7 +4,7 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {DashViewSpec} from '@xh/hoist/desktop/cmp/dash/DashViewSpec';
+import type {DashViewSpec} from '@xh/hoist/desktop/cmp/dash/DashViewSpec';
 import '@xh/hoist/desktop/register';
 
 /**

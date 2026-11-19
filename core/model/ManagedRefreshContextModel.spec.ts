@@ -4,7 +4,8 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {HoistModel, LoadSpec, ManagedRefreshContextModel, RefreshMode} from '@xh/hoist/core';
+import type {LoadSpec, RefreshMode} from '@xh/hoist/core';
+import {HoistModel, ManagedRefreshContextModel} from '@xh/hoist/core';
 import {bindable} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 import {describe, expect, it, onTestFinished} from 'vitest';
@@ -65,6 +66,30 @@ describe('ManagedRefreshContextModel', () => {
             container.isActive = false;
             await showAsync(container);
             expect(content.loadSpecs).toHaveLength(1);
+        });
+
+        it('replays a missed auto-refresh as an auto-refresh in "onShowLazy" mode', async () => {
+            const {container, context, content} = setup('onShowLazy');
+
+            await context.autoRefreshAsync();
+            await context.autoRefreshAsync();
+            await showAsync(container);
+
+            expect(content.loadSpecs).toHaveLength(1);
+            expect(content.loadSpecs[0].isAutoRefresh).toBe(true);
+        });
+
+        it('replays as a manual refresh if any missed refresh was manual in "onShowLazy" mode', async () => {
+            const {container, context, content} = setup('onShowLazy');
+
+            await context.autoRefreshAsync();
+            await context.refreshAsync();
+            await context.autoRefreshAsync();
+            await showAsync(container);
+
+            expect(content.loadSpecs).toHaveLength(1);
+            expect(content.loadSpecs[0].isRefresh).toBe(true);
+            expect(content.loadSpecs[0].isAutoRefresh).toBe(false);
         });
 
         it('refreshes each time it is shown in "onShowAlways" mode', async () => {

@@ -255,6 +255,8 @@ console.log('Reference links:');
     const dir = mkdtempSync(join(tmpdir(), 'hoist-doc-sections-')),
         fixture: DocEntry = {
             id: 'fixture/ref-links.md',
+            path: 'fixture/ref-links.md',
+            library: null,
             title: 'Reference Links',
             filePath: join(dir, 'ref-links.md'),
             mcpCategory: 'concept',

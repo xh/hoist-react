@@ -7,15 +7,8 @@
 
 import {useContext, useEffect, useState} from 'react';
 import {throwIf} from '@xh/hoist/utils/js';
-import {
-    HoistModel,
-    HoistModelClass,
-    ModelSelector,
-    ModelLookupContext,
-    ModelLookup,
-    formatSelector,
-    RefreshContextModel
-} from './';
+import type {HoistModel, HoistModelClass, ModelSelector, ModelLookup} from './';
+import {ModelLookupContext, formatSelector, RefreshContextModel} from './';
 
 import {XH} from '../';
 import {untracked} from '@xh/hoist/mobx';
@@ -67,6 +60,7 @@ export function useModelLinker(model: HoistModel, modelLookup: ModelLookup, prop
 
     // 1) Linking synchronous work: resolve lookups, initialize props, and call onLinked()
     if (isLinking) {
+        model._linked = true;
         model._modelLookup = modelLookup;
         each(model['_xhInjectedParentProperties'], (selector, name) => {
             const parentModel = modelLookup?.lookupModel(selector);

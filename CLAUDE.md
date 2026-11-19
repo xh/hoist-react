@@ -252,7 +252,7 @@ keeps client side codebases anchored in standard TypeScript/JavaScript syntax:
 // Element factory style - strongly preferred
 panel({
     title: 'Users',
-    items: [grid({model: gridModel})],
+    children: [grid({model: gridModel})],
     bbar: toolbar(button({text: 'Save'}))
 })
 ```
@@ -267,18 +267,17 @@ panel({
 </Panel>
 ```
 
-Factories can take a config object for props, using the key `item`/`items` for children. A shortcut
-form also exists where factories are passed children directly as arguments, when no other props
-are required. Factories all support an `omit` prop for conditional rendering.
+Factories can take a config object for props, using the standard React `children` key for
+children. In the shortcut form, factories take children directly as arguments. Use the shortcut
+form when a call passes only children - `toolbar(a, b)`, `p('text')` - and the config object form
+as soon as it passes any other prop. Never pass a factory directly as a callback (`rows.map(span)`).
+Factories all support an `omit` prop for conditional rendering.
 
-**Important — `items` in, `children` out**: `item`/`items` are Hoist's *calling* API. Inside a
-render function, those values arrive as the standard React `children` prop (because the factory
-spreads them as rest args to `React.createElement`). The canonical pattern when authoring a
-container component is therefore to destructure `children` from props and pass them downstream as
-`items` to an inner factory. See
-[Authoring a Container Component](./core/README.md#authoring-a-container-component-items-in-children-out)
-in the core README for the full explanation, examples, and the `$item`/`$items` escape hatch for
-components whose underlying API genuinely has its own `items` prop.
+`item` and `items` are legacy aliases for `children`. They still work, but do not use them in new
+code. A container component destructures `children` from props and passes it on as `children` to
+an inner factory. See
+[Authoring a Container Component](./core/README.md#authoring-a-container-component) in the core
+README for examples and the `$items` escape hatch for components with their own `items` prop.
 
 See [`/core/README.md`](./core/README.md) for full element factory API including conditional
 rendering with `omit` and factory creation.
@@ -365,7 +364,8 @@ important guidelines to internalize:
 - **Named exports only** — No default exports. Components export `[Component, factory]` pairs
   from library code, factory only from application/impl code.
 - **`null` over `undefined`** — Use `null` as the "no value" sentinel. Check with `== null`
-  (loose equality) for concise null-or-undefined testing.
+  (loose equality) for concise null-or-undefined testing. Never write `| null` or `| undefined`
+  in a type; any value may be null.
 - **Comments describe the code as it is, not how it got here** - Write for a reader who never
   saw the previous version. Mention a library version, upgrade, or prior behavior only when it
   tells that reader something they need, such as a workaround to remove once an upstream bug is
@@ -471,6 +471,10 @@ when explicitly requested or when it points to extensive context that doesn't fi
 scope (issue/PR references belong in the commit message and PR description). Hard-wrap changelog
 entries at 100 characters (unlike commit messages and PR descriptions, which should not be wrapped).
 
+**Versioning:** `develop` always holds the next major version as a snapshot, for example
+`90.0.0-SNAPSHOT` while 89.x releases ship. Minor and patch releases never move it. See
+[Versioning](docs/build-and-publish.md#versioning) for the release steps.
+
 **Declaring a new hoist-core minimum:** a `Requires hoist-core >= X` changelog entry is not
 self-enforcing. Also update `MIN_HOIST_CORE_VERSION` in `core/XH.ts` (checked at startup by
 `EnvironmentService`) and the matching row in
@@ -507,9 +511,15 @@ hoist-react as a dependency.
 To see a hoist-react change in a real browser, run Toolbox with this checkout compiled inline:
 
 - **Client** - `cd ../toolbox/client-app && pnpm startWithHoist` serves `http://localhost:3000`
-  and rebuilds when files here change. Reload the page after a rebuild.
+  and rebuilds when files here change. The page reloads after each rebuild.
 - **Server** - `cd ../toolbox && ./gradlew bootRun` serves the Grails API on port 8080, against
   the developer's MySQL and login by default.
+
+From a worktree of this repo, `../toolbox` does not resolve. Run both commands in the Toolbox
+checkout, and start the client with
+`XH_HOIST_REACT_PATH=<absolute path of this worktree> pnpm startWithHoist`. Without it, Toolbox
+builds the `hoist-react` checkout next to its own repo, not the worktree. The build banner shows
+the path and branch in use.
 
 Check first whether both are already running (`curl -s -o /dev/null -w '%{http_code}'
 http://localhost:3000/admin/` and the same for `:8080`). Leave servers you did not start running
@@ -520,11 +530,14 @@ credentials. Start the server on a throwaway in-memory H2 database with a tempor
 
 ```bash
 cd ../toolbox
-export AGENT_PASSWORD=$(openssl rand -hex 12)
 APP_TOOLBOX_USE_H2=true APP_TOOLBOX_OAUTH_PROVIDER=NONE \
 APP_TOOLBOX_BOOTSTRAP_ADMIN_USER=agent@xh.io \
-APP_TOOLBOX_BOOTSTRAP_ADMIN_PASSWORD=$AGENT_PASSWORD ./gradlew bootRun
+APP_TOOLBOX_BOOTSTRAP_ADMIN_PASSWORD=localDevOnly ./gradlew bootRun
 ```
+
+Always use exactly `agent@xh.io` / `localDevOnly`, never a generated password. Then the developer
+and other agents can sign in to any throwaway server they find. The user exists only in a local
+in-memory database, so the password protects nothing.
 
 Startup logs `Local admin user available as per instanceConfig`. Then log in by POSTing the
 credentials to `/api/xh/login` from a page on `localhost:3000` (a form fill can be blocked by

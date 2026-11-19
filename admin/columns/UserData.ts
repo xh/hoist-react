@@ -6,11 +6,11 @@
  */
 import {badge} from '@xh/hoist/cmp/badge';
 import * as Col from '@xh/hoist/cmp/grid/columns';
-import {ColumnSpec} from '@xh/hoist/cmp/grid/columns';
-import {Intent} from '@xh/hoist/core';
+import type {ColumnSpec} from '@xh/hoist/cmp/grid/columns';
+import type {Intent} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {truncate} from 'lodash';
-import {ReactElement} from 'react';
+import type {ReactElement} from 'react';
 
 export const value: ColumnSpec = {
     field: {name: 'value', type: 'auto'},
@@ -49,7 +49,7 @@ export function valueTypeRenderer(valueType: string): ReactElement {
     if (!valueType) return null;
     const {icon, intent} = VALUE_TYPE_BADGES[valueType] ?? {};
     return badge({
-        item: valueType,
+        children: valueType,
         icon: icon?.(),
         intent,
         className: 'xh-value-type-badge'

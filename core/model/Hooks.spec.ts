@@ -5,11 +5,11 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {div, span} from '@xh/hoist/cmp/layout';
+import type {LoadSpec} from '@xh/hoist/core';
 import {
     creates,
     hoistCmp,
     HoistModel,
-    LoadSpec,
     lookup,
     RefreshContextModel,
     refreshContextView,
@@ -56,7 +56,7 @@ describe('useModelLinker', () => {
         render(
             dashboardPanel({
                 modelRef: dashboardRef,
-                item: tradesPanel({title: 'Trades', modelRef: tradesRef})
+                children: tradesPanel({title: 'Trades', modelRef: tradesRef})
             })
         );
 
@@ -77,7 +77,7 @@ describe('useModelLinker', () => {
         const {unmount} = render(
             refreshContextView({
                 model: context,
-                item: dashboardPanel(
+                children: dashboardPanel(
                     tradesPanel({modelRef: ownedRef}),
                     tradesView({model: passedIn})
                 )
@@ -117,6 +117,21 @@ describe('useModelLinker', () => {
 
         rerender(dashboardPanel(tradesPanel({title: 'Open trades', modelRef: tradesRef})));
         expect(titles).toEqual(['Open trades']);
+    });
+
+    it('links a model created at the root once, however often it renders', () => {
+        // Without an ancestor model, every render re-ran onLinked and re-added its reactions.
+        const ordersRef = createRef<OrdersModel>(),
+            {rerender} = render(ordersPanel({title: 'Orders', modelRef: ordersRef}));
+        rerender(ordersPanel({title: 'Open orders', modelRef: ordersRef}));
+        rerender(ordersPanel({title: 'Closed orders', modelRef: ordersRef}));
+
+        const orders = ordersRef.current;
+        act(() => {
+            orders.status = 'Loaded';
+        });
+        expect(orders.log).toEqual(['onLinked', 'Loaded']);
+        expect(orders.componentProps.title).toBe('Closed orders');
     });
 
     it('does not re-render when state read by onLinked changes', () => {
@@ -208,7 +223,7 @@ describe('useContextModel', () => {
             chart = new ChartModel();
         onTestFinished(() => XH.safeDestroy(report, chart));
 
-        const {container} = render(reportPanel({model: report, item: chartTitle()}));
+        const {container} = render(reportPanel({model: report, children: chartTitle()}));
         expect(container.textContent).toBe('None');
 
         act(() => {
@@ -251,6 +266,17 @@ class TradesModel extends HoistModel {
     }
 }
 
+/** Adds a reaction to its own status when linked. */
+class OrdersModel extends HoistModel {
+    @bindable accessor status = 'Pending';
+    log: string[] = [];
+
+    override onLinked() {
+        this.log.push('onLinked');
+        this.addReaction({track: () => this.status, run: status => this.log.push(status)});
+    }
+}
+
 /** Copies the status of another model when linked. */
 class StatusModel extends HoistModel {
     status: string = null;
@@ -274,7 +300,7 @@ class ReportModel extends HoistModel {
 
 const dashboardPanel = hoistCmp.factory<DashboardModel>({
     model: creates(DashboardModel),
-    render: ({children}) => div({items: children})
+    render: ({children}) => div({children})
 });
 
 const tradesPanel = hoistCmp.factory<TradesModel>({
@@ -285,6 +311,11 @@ const tradesPanel = hoistCmp.factory<TradesModel>({
     }
 });
 
+const ordersPanel = hoistCmp.factory<OrdersModel>({
+    model: creates(OrdersModel),
+    render: ({title}) => span(title)
+});
+
 const tradesView = hoistCmp.factory<TradesModel>({
     model: uses(TradesModel),
     render: ({model}) => span(model.status)
@@ -292,5 +323,5 @@ const tradesView = hoistCmp.factory<TradesModel>({
 
 const reportPanel = hoistCmp.factory<ReportModel>({
     model: uses(ReportModel),
-    render: ({children}) => div({items: children})
+    render: ({children}) => div({children})
 });

@@ -6,8 +6,9 @@
  */
 import {hoistCmp} from '@xh/hoist/core';
 import {div, p, vbox} from '@xh/hoist/cmp/layout';
-import {ErrorMessageProps} from '@xh/hoist/cmp/error';
-import {button, ButtonProps} from '@xh/hoist/mobile/cmp/button';
+import type {ErrorMessageProps} from '@xh/hoist/cmp/error';
+import type {ButtonProps} from '@xh/hoist/mobile/cmp/button';
+import {button} from '@xh/hoist/mobile/cmp/button';
 import {Icon} from '@xh/hoist/icon';
 import {isString} from 'lodash';
 import {isValidElement} from 'react';
@@ -25,18 +26,18 @@ export const errorMessageImpl = hoistCmp.factory<
         const buttons = [];
         if (detailsButtonProps) buttons.push(detailsButton(detailsButtonProps as ButtonProps));
         if (actionButtonProps) buttons.push(actionButton(actionButtonProps as ButtonProps));
-        const buttonBar = buttons.length ? vbox({gap: true, items: buttons}) : null;
+        const buttonBar = buttons.length ? vbox({gap: true, children: buttons}) : null;
 
         return div({
             className: 'xh-error-message__inner',
-            items: [titleCmp({title}), messageCmp({message}), buttonBar]
+            children: [titleCmp({title}), messageCmp({message}), buttonBar]
         });
     }
 });
 
 const titleCmp = hoistCmp.factory(({title}) => {
     if (isValidElement(title)) return title;
-    if (isString(title)) return div({className: 'xh-error-message__title', item: title});
+    if (isString(title)) return div({className: 'xh-error-message__title', children: title});
     return null;
 });
 

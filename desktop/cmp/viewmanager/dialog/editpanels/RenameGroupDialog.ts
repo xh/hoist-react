@@ -43,17 +43,17 @@ export const renameGroupDialog = hoistCmp.factory({
             style: {width: 400},
             canOutsideClickClose: false,
             onClose: () => cancel(),
-            item: panel({
-                item: form({
+            children: panel({
+                children: form({
                     fieldDefaults: {
                         commitOnChange: true,
                         minimal: true
                     },
-                    item: vframe({
+                    children: vframe({
                         className: 'xh-view-manager__manage-dialog__form',
-                        item: formField({
+                        children: formField({
                             field: 'name',
-                            item: textInput({
+                            children: textInput({
                                 autoFocus: true,
                                 selectOnFocus: true,
                                 onKeyDown: e => {

@@ -2,16 +2,22 @@
   &__content-wrapper {
     position: fixed;
     z-index: 21;
-    background-color: var(--xh-bg);
-    box-shadow: var(--xh-popover-box-shadow);
+    background-color: var(--xh-popover-bg);
+    border-radius: var(--xh-popover-border-radius);
+    // Clip content to the rounded corners, so a menu title or other square-cornered child does
+    // not cover the inner curve of the border ring.
+    overflow: hidden;
+    box-shadow:
+      0 0 0 var(--xh-popover-border-width) var(--xh-popover-border-color),
+      var(--xh-popover-box-shadow);
   }
 
   &__content-overlay {
     position: fixed;
-    top: var(--xh-pad-safe-top);
-    bottom: var(--xh-pad-safe-bottom);
-    left: var(--xh-pad-safe-left);
-    right: var(--xh-pad-safe-right);
+    top: var(--xh-safe-area-inset-top);
+    bottom: var(--xh-safe-area-inset-bottom);
+    left: var(--xh-safe-area-inset-left);
+    right: var(--xh-safe-area-inset-right);
     width: 100svw;
     display: flex;
     flex-direction: column;

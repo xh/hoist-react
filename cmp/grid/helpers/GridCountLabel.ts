@@ -5,14 +5,19 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {box} from '@xh/hoist/cmp/layout';
-import {BoxProps, hoistCmp, HoistProps, useContextModel} from '@xh/hoist/core';
+import type {BoxProps, HoistProps} from '@xh/hoist/core';
+import {hoistCmp, useContextModel} from '@xh/hoist/core';
 import {fmtNumber} from '@xh/hoist/format';
 import {logError, pluralize, singularize, withDefault} from '@xh/hoist/utils/js';
-import {GridModel} from '../GridModel';
+import {isGridLikeModel} from '../impl/GridLikeModel';
+import type {GridLikeModel} from '../Types';
 
 export interface GridCountLabelProps extends HoistProps, BoxProps {
-    /** GridModel to which this component should bind. */
-    gridModel?: GridModel;
+    /**
+     * GridModel, or a model wrapping one, to which this component should bind. Will find the
+     * nearest in context if not provided.
+     */
+    gridModel?: GridLikeModel;
 
     /**
      * True to count nested child records.
@@ -40,13 +45,16 @@ export const [GridCountLabel, gridCountLabel] = hoistCmp.withFactory<GridCountLa
     className: 'xh-grid-count-label',
 
     render({
-        gridModel,
+        gridModel: boundModel,
         includeChildren = false,
         showSelectionCount = 'auto',
         unit = 'record',
         ...props
     }) {
-        gridModel = withDefault(gridModel, useContextModel(GridModel));
+        const gridModel = withDefault(
+            boundModel,
+            useContextModel<GridLikeModel>(isGridLikeModel)
+        )?.innerGridModel;
 
         if (!gridModel) {
             logError(
@@ -77,7 +85,7 @@ export const [GridCountLabel, gridCountLabel] = hoistCmp.withFactory<GridCountLa
 
         return box({
             ...props,
-            item: `${recCountString()} ${selCountString()}`
+            children: `${recCountString()} ${selCountString()}`
         });
     }
 });

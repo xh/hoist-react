@@ -20,14 +20,14 @@ export const relativeTab = hoistCmp.factory<DateRangePickerLocalModel>(({model, 
 
     return vbox({
         className: 'xh-date-range-picker-popover__tab',
-        items: [
+        children: [
             sectionHeader('Relative Lookback'),
             hbox({
                 className: 'xh-date-range-picker-popover__rel-row',
-                items: [
-                    span({className: 'xh-date-range-picker-popover__rel-prefix', item: 'Prev'}),
+                children: [
+                    span({className: 'xh-date-range-picker-popover__rel-prefix', children: 'Prev'}),
                     controlGroup({
-                        items: [
+                        children: [
                             button({
                                 text: '−',
                                 minWidth: 20,
@@ -66,7 +66,7 @@ export const relativeTab = hoistCmp.factory<DateRangePickerLocalModel>(({model, 
             }),
             div({
                 className: 'xh-date-range-picker-popover__snap-box',
-                items: [
+                children: [
                     // Two ways of counting, named as peers rather than as a checkbox modifier.
                     // Days have nothing to round out, so no choice at that grain.
                     segmentedControl({
@@ -82,24 +82,24 @@ export const relativeTab = hoistCmp.factory<DateRangePickerLocalModel>(({model, 
                     div({
                         className: 'xh-date-range-picker-popover__snap-help',
                         [TEST_ID]: getTestId(testId, 'snap-help'),
-                        item: model.relativeModeHelpText
+                        children: model.relativeModeHelpText
                     })
                 ]
             }),
             div({
                 className: 'xh-date-range-picker-popover__preview',
-                items: [
+                children: [
                     div({
                         className: 'xh-date-range-picker-popover__preview-label',
-                        item: 'Resolves To'
+                        children: 'Resolves To'
                     }),
                     div({
                         className: 'xh-date-range-picker-popover__preview-range',
-                        item: parentModel.fmtRange(relativeRange)
+                        children: parentModel.fmtRange(relativeRange)
                     }),
                     div({
                         className: 'xh-date-range-picker-popover__preview-days',
-                        item: model.relativePreviewCountText
+                        children: model.relativePreviewCountText
                     })
                 ]
             })

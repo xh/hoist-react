@@ -4,16 +4,15 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
+import type {PersistOptions, PlainObject} from '@xh/hoist/core';
 import {
     HoistModel,
     managed,
     PersistableState,
     PersistenceProvider,
-    persistOptions,
-    PersistOptions,
-    PlainObject
+    persistOptions
 } from '@xh/hoist/core';
-import {ValidationState} from '@xh/hoist/data';
+import type {ValidationState} from '@xh/hoist/data';
 import {action, bindable, computed, observableRef} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
 import {
@@ -32,9 +31,11 @@ import {
     values,
     without
 } from 'lodash';
-import {BaseFieldConfig, BaseFieldModel} from './field/BaseFieldModel';
+import type {BaseFieldConfig} from './field/BaseFieldModel';
+import {BaseFieldModel} from './field/BaseFieldModel';
 import {FieldModel} from './field/FieldModel';
-import {SubformsFieldConfig, SubformsFieldModel} from './field/SubformsFieldModel';
+import type {SubformsFieldConfig} from './field/SubformsFieldModel';
+import {SubformsFieldModel} from './field/SubformsFieldModel';
 import {isLocalDate, LocalDate} from '@xh/hoist/utils/datetime';
 
 /**

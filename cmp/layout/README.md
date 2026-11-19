@@ -20,12 +20,12 @@ import {vbox, hbox} from '@xh/hoist/cmp/layout';
 // Vertical layout (column direction)
 vbox({
     padding: 10,
-    items: [header(), content(), footer()]
+    children: [header(), content(), footer()]
 })
 
 // Horizontal layout (row direction)
 hbox({
-    items: [sidebar(), mainContent()]
+    children: [sidebar(), mainContent()]
 })
 ```
 
@@ -46,12 +46,12 @@ import {vframe, hframe} from '@xh/hoist/cmp/layout';
 
 // Vertical frame (stretches and arranges children vertically)
 vframe({
-    items: [toolbar(), grid()]
+    children: [toolbar(), grid()]
 })
 
 // Horizontal frame (stretches and arranges children horizontally)
 hframe({
-    items: [leftPanel(), rightPanel()]
+    children: [leftPanel(), rightPanel()]
 })
 ```
 
@@ -70,8 +70,8 @@ Full-screen container for the application root.
 import {viewport} from '@xh/hoist/cmp/layout';
 
 viewport({
-    item: vframe({
-        items: [appHeader(), appContent(), appFooter()]
+    children: vframe({
+        children: [appHeader(), appContent(), appFooter()]
     })
 })
 ```
@@ -89,7 +89,7 @@ import {spacer, filler, hspacer, vspacer} from '@xh/hoist/cmp/layout';
 
 // Fixed spacer (flex: none)
 hbox({
-    items: [
+    children: [
         leftButton(),
         hspacer(20),    // 20px horizontal space
         rightButton()
@@ -98,7 +98,7 @@ hbox({
 
 // Flexible filler (flex: auto) - pushes items apart
 toolbar({
-    items: [
+    children: [
         saveButton(),
         filler(),       // Stretches to push cancelButton to the right
         cancelButton()
@@ -107,7 +107,7 @@ toolbar({
 
 // Vertical spacer
 vbox({
-    items: [
+    children: [
         header(),
         vspacer(10),    // 10px vertical space
         content()
@@ -140,6 +140,45 @@ model.selectedRecord
 - Conditional content areas before data loads
 - Empty states with muted, standard styling
 
+### Separator
+
+A rule that divides content, with an optional label. The props are documented in
+`Separator.ts`.
+
+```typescript
+import {separator, hbox, vbox} from '@xh/hoist/cmp/layout';
+
+// A rule between the sections of a column
+vbox({
+    gap: 10,
+    children: [summary(), separator(), details()]
+})
+
+// A labeled rule that introduces the section after it
+separator({label: 'Settlement', labelPosition: 'start'})
+
+// A vertical rule between the items of a row
+hbox({
+    gap: 10,
+    children: [positionCount(), separator({vertical: true}), orderCount()]
+})
+
+// A vertical rule with a short label between two choices
+hbox({
+    gap: 10,
+    children: [loginForm(), separator({vertical: true, label: 'or'}), ssoButton()]
+})
+```
+
+A horizontal separator takes the width of its container, or in a flex row the width the other
+items leave free. A vertical one takes the height of its row, so use it in an `hbox` or another
+flex row. It has `role="separator"`, named by its label when it has one. The separator has no outer
+margin. Space it with a `gap` on its container, a `margin` layout prop, or the
+`--xh-separator-margin` CSS variable. The other `--xh-separator-*` variables set its color,
+thickness and label style.
+
+For a divider between toolbar items, use `toolbarSep` from `@xh/hoist/desktop/cmp/toolbar`.
+
 ### TileFrame
 
 Auto-arranging tile container that positions children as equally-sized tiles.
@@ -155,7 +194,7 @@ tileFrame({
     minTileHeight: 150,       // Minimum tile height
     maxTileHeight: 300,       // Maximum tile height
     onLayoutChange: (layout) => console.log(layout),
-    items: [
+    children: [
         chartTile(),
         gridTile(),
         summaryTile(),
@@ -180,16 +219,16 @@ import {div, span, img, a, p, h1, h2, h3, h4} from '@xh/hoist/cmp/layout';
 
 div({
     className: 'my-container',
-    items: [
+    children: [
         h1('Title'),
         p('Description text...'),
-        a({href: '/details', item: 'View details'})
+        a({href: '/details', children: 'View details'})
     ]
 })
 ```
 
 These factories provide Hoist-style element creation for standard HTML elements, accepting
-config objects with `item`/`items` for children.
+config objects with `children`.
 
 ## Layout Props (BoxProps)
 
@@ -205,7 +244,7 @@ vbox({
     width: 300,
     padding: 10,
     gap: 8,
-    items: [...]
+    children: [...]
 })
 
 // Equivalent React style object - more verbose
@@ -265,7 +304,7 @@ padding: '10 20 10 20'  // becomes '10px 20px 10px 20px'
 | `display` | display | Display type |
 
 `margin`, `padding`, and `gap` also accept `true` for the standard app padding
-(`var(--xh-pad-px)`). A `false` value is treated as unset.
+(`var(--xh-spacing)`). A `false` value is treated as unset.
 
 ### Supporting Layout Props in a Custom Component
 
@@ -322,13 +361,13 @@ import {viewport, vframe, hframe, frame} from '@xh/hoist/cmp/layout';
 import {appBar} from '@xh/hoist/desktop/cmp/appbar';
 
 viewport({
-    item: vframe({
-        items: [
+    children: vframe({
+        children: [
             appBar(),                         // Desktop navigation bar
             hframe({
-                items: [
+                children: [
                     navPanel({width: 250}),   // Fixed-width sidebar
-                    frame({item: mainContent()})  // Flexible main area
+                    frame({children: mainContent()})  // Flexible main area
                 ]
             })
         ]

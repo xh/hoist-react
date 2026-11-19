@@ -1,4 +1,4 @@
-import {CardModel} from '@xh/hoist/cmp/card/CardModel';
+import type {CardModel} from '@xh/hoist/cmp/card/CardModel';
 import {div, legend} from '@xh/hoist/cmp/layout';
 import {hoistCmp} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
@@ -12,10 +12,10 @@ import type {ReactNode} from 'react';
  */
 export const cardHeaderImpl = hoistCmp.factory<CardModel>({
     render({icon, intent, title, tooltip, model}, ref) {
-        let item: ReactNode = null;
+        let header: ReactNode = null;
 
         if (model.collapsible) {
-            item = button({
+            header = button({
                 className: `xh-card__collapsible-header xh-card__collapsible-header--intent-${intent ?? 'none'}`,
                 icon,
                 intent,
@@ -25,22 +25,22 @@ export const cardHeaderImpl = hoistCmp.factory<CardModel>({
                 ref
             });
         } else if (icon || title) {
-            item = div({
+            header = div({
                 className: `xh-card__header xh-card__header--intent-${intent ?? 'none'}`,
-                items: [icon, title]
+                children: [icon, title]
             });
         }
 
         return (
-            item &&
+            header &&
             legend(
                 tooltip
                     ? bpTooltip({
-                          item,
+                          children: header,
                           content: tooltip,
                           intent
                       })
-                    : item
+                    : header
             )
         );
     }

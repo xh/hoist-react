@@ -6,16 +6,14 @@
  */
 
 import type {GridFilterBindTarget} from '@xh/hoist/cmp/grid';
-import {AnyIterable, HoistBase, managed, PlainObject, Some, XH} from '@xh/hoist/core';
-import {
-    Field,
+import type {AnyIterable, PlainObject, Some} from '@xh/hoist/core';
+import {HoistBase, managed, XH} from '@xh/hoist/core';
+import type {
     FieldSpec,
     Filter,
     FilterBindTarget,
     FilterLike,
     FilterValueSource,
-    parseFilter,
-    StoreRecord,
     StoreRecordDigest,
     StoreRecordId,
     StoreRecordOrId,
@@ -23,6 +21,7 @@ import {
     StoreValidationResultsMap,
     ValidationResult
 } from '@xh/hoist/data';
+import {Field, parseFilter, StoreRecord} from '@xh/hoist/data';
 import {StoreValidator} from '@xh/hoist/data/impl/StoreValidator';
 import {action, computed, observable, runInAction, observableRef} from '@xh/hoist/mobx';
 import {throwIf, warnIf} from '@xh/hoist/utils/js';
@@ -288,6 +287,10 @@ export interface StoreTransaction {
      * supply them cheaply. Providing this asserts that updates change record values only - no
      * structural/parent changes - and that no field outside the set changed. Enables downstream
      * consumers (e.g. Grid) to prove a change cannot affect sort order and skip re-sorting.
+     *
+     * Cube Views rely on it too: a set naming no dimension or bucket field lets a View skip its
+     * per-record structural check, so a set that omits a changed dimension leaves the View's row
+     * hierarchy stale.
      */
     changedFields?: Set<string>;
 }
@@ -406,8 +409,10 @@ export class Store
     @observableRef private accessor _current: RecordSet;
     @observableRef accessor _filtered: RecordSet;
 
+    private _fieldDefaults: Omit<FieldSpec, 'name'>;
     private _dataTemplate: PlainObject = null;
     private _dataDefaults: PlainObject = null;
+    private _valuesTemplate: PlainObject = null;
     private _denseRecordThreshold: number;
     private _digestSpec: StoreRecordDigestSpec;
     private _digestFn: (raw: PlainObject) => StoreRecordDigest;
@@ -457,7 +462,10 @@ export class Store
 
         this.xhName = xhName;
         this.experimental = this.parseExperimental(experimental);
+        this._fieldDefaults = fieldDefaults;
         this.fields = this.parseFields(fields, fieldDefaults);
+        // Before anything below that may call `getField()`.
+        this._fieldMap = this.createFieldMap();
         this.idSpec = this.parseIdSpec(idSpec);
         this.processRawData = processRawData;
         this.filter = parseFilter(filter);
@@ -476,9 +484,7 @@ export class Store
         this.resetRecords();
 
         this.validator = new StoreValidator({store: this});
-        this._fieldMap = this.createFieldMap();
-        this._dataDefaults = this.createDataDefaults();
-        this._dataTemplate = {...this._dataDefaults}; // Clone for fast-props mode.
+        this.initDataTemplates();
         this._denseRecordThreshold =
             this.experimental.denseRecordThreshold ?? DENSE_RECORD_THRESHOLD;
         if (data) this.loadData(data);
@@ -987,9 +993,24 @@ export class Store
         this.incrementalRefilter();
     }
 
+    /**
+     * Replace this Store's fields wholesale, re-applying `fieldDefaults` and rebuilding the derived
+     * field map and data defaults. Drops all records, which were built against the outgoing
+     * defaults - callers reload immediately.
+     * @internal - supports pivoted Views, whose cell fields are discovered from data.
+     */
+    @action
+    setFields(fields: Array<string | FieldSpec | Field>) {
+        this.fields = this.parseFields(fields, this._fieldDefaults);
+        this._fieldMap = this.createFieldMap();
+        this.initDataTemplates();
+
+        this.resetRecords();
+    }
+
     /** Get a specific Field by name.*/
     getField(name: string): Field {
-        return this.fields.find(it => it.name === name);
+        return this._fieldMap.get(name);
     }
 
     get fieldNames(): string[] {
@@ -1602,11 +1623,29 @@ export class Store
     }
 
     /**
-     * Shared template for record `data` objects - an own property for every Field, holding its
-     * defaultValue. `parseOrRescue()` clones it per record, so all records in a Store share one
-     * identical, fixed shape. That keeps them in V8's compact fast-properties mode: objects built
-     * instead by per-field property adds are demoted to a per-object hashtable ("dictionary mode")
-     * past ~20 adds, costing several times more memory per record.
+     * @internal - a new object with `id` and every Field, in a fixed fast-properties shape - see
+     * `createDataDefaults()`. Backs `StoreRecord.getValues()`.
+     */
+    cloneValuesTemplate(): PlainObject {
+        return {...this._valuesTemplate};
+    }
+
+    private initDataTemplates() {
+        this._dataDefaults = this.createDataDefaults();
+        // Clone for fast-props mode - see createDataDefaults().
+        this._dataTemplate = {...this._dataDefaults};
+        this._valuesTemplate = {id: null, ...this._dataDefaults};
+    }
+
+    /**
+     * Defaults for record `data` objects - an own property for every Field, holding its
+     * defaultValue. Sparse records use it as their prototype.
+     *
+     * Built by per-field adds, it is demoted past ~20 Fields to V8's per-object hashtable
+     * ("dictionary mode"), which costs several times more memory and slows reads and copies.
+     * `initDataTemplates()` clones it into templates in compact fast-properties mode, and
+     * `buildData()` and `cloneValuesTemplate()` clone those per object, so their results share
+     * one fixed shape.
      */
     private createDataDefaults() {
         const ret = {};

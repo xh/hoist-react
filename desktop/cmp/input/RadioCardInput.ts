@@ -4,9 +4,11 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {HoistInputModel, HoistInputProps, useHoistInputModel} from '@xh/hoist/cmp/input';
+import type {HoistInputProps} from '@xh/hoist/cmp/input';
+import {HoistInputModel, useHoistInputModel} from '@xh/hoist/cmp/input';
 import {div} from '@xh/hoist/cmp/layout';
-import {hoistCmp, HoistProps, LayoutProps} from '@xh/hoist/core';
+import type {HoistProps, LayoutProps} from '@xh/hoist/core';
+import {hoistCmp} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {computed} from '@xh/hoist/mobx';
 import {getTestId, TEST_ID, throwIf} from '@xh/hoist/utils/js';
@@ -19,7 +21,7 @@ import './RadioCardInput.scss';
 export interface RadioCardInputProps extends HoistProps, HoistInputProps, LayoutProps {
     /**
      * Width of every card, in pixels or any CSS width. Cards in a group always share one width
-     * and wrap onto new rows as needed. Defaults to the `--radio-card-input-card-width` CSS var
+     * and wrap onto new rows as needed. Defaults to the `--xh-radio-card-input-card-width` CSS var
      * (88px), which suits short labels under a small preview. Set a wider value for longer labels
      * or descriptions - text wraps within the card.
      */
@@ -223,7 +225,7 @@ const cmp = hoistCmp.factory<RadioCardInputModel>(({model, className, ...props},
         },
         [TEST_ID]: testId,
         ...domAttrs,
-        items: normalizedOptions.map((opt, idx) => {
+        children: normalizedOptions.map((opt, idx) => {
             const isActive = opt.value === renderValue,
                 cardDisabled = isDisabled || opt.disabled;
 
@@ -242,15 +244,15 @@ const cmp = hoistCmp.factory<RadioCardInputModel>(({model, className, ...props},
                 tabIndex: cardDisabled ? null : opt === tabStopOption ? tabIndex : -1,
                 onClick: () => model.selectOption(opt),
                 [TEST_ID]: getTestId(testId, String(opt.value)),
-                items: [
+                children: [
                     opt.preview != null
-                        ? div({className: 'xh-radio-card-input__preview', item: opt.preview})
+                        ? div({className: 'xh-radio-card-input__preview', children: opt.preview})
                         : null,
-                    div({className: 'xh-radio-card-input__label', item: opt.label}),
+                    div({className: 'xh-radio-card-input__label', children: opt.label}),
                     opt.description != null
                         ? div({
                               className: 'xh-radio-card-input__description',
-                              item: opt.description
+                              children: opt.description
                           })
                         : null
                 ]

@@ -29,10 +29,10 @@ export const roleGraph = hoistCmp.factory({
             compactHeader: true,
             icon: Icon.treeGraph(),
             title: role ? `${role.name} Relationships` : 'Relationships',
-            item: div({
-                item: div({
+            children: div({
+                children: div({
                     style: {margin: 'auto'},
-                    item: errorBoundary(content())
+                    children: errorBoundary(content())
                 }),
                 style: {
                     display: 'flex',
@@ -41,7 +41,7 @@ export const roleGraph = hoistCmp.factory({
                 }
             }),
             bbar: toolbar({
-                items: [
+                children: [
                     segmentedControl({
                         bind: 'relationship',
                         options: [

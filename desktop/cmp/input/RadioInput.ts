@@ -4,8 +4,10 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {HoistInputModel, HoistInputProps, useHoistInputModel} from '@xh/hoist/cmp/input';
-import {hoistCmp, HoistProps, HSide} from '@xh/hoist/core';
+import type {HoistInputProps} from '@xh/hoist/cmp/input';
+import {HoistInputModel, useHoistInputModel} from '@xh/hoist/cmp/input';
+import type {HoistProps, HSide} from '@xh/hoist/core';
+import {hoistCmp} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {radio, radioGroup} from '@xh/hoist/kit/blueprint';
 import {computed} from '@xh/hoist/mobx';
@@ -88,7 +90,7 @@ const cmp = hoistCmp.factory<RadioInputModel>(({model, className, ...props}, ref
     const {normalizedOptions} = model,
         labelSide = withDefault(props.labelSide, 'right');
 
-    const items = normalizedOptions.map(opt => {
+    const radios = normalizedOptions.map(opt => {
         return radio({
             alignIndicator: labelSide === 'left' ? 'right' : 'left',
             disabled: opt.disabled,
@@ -103,12 +105,12 @@ const cmp = hoistCmp.factory<RadioInputModel>(({model, className, ...props}, ref
 
     return radioGroup({
         className,
-        items,
         disabled: props.disabled,
         inline: props.inline,
         selectedValue: model.renderValue,
         onChange: model.onChange,
         [TEST_ID]: props.testId,
-        ...props.domAttrs
+        ...props.domAttrs,
+        children: radios
     });
 });

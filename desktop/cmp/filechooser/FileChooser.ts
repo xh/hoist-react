@@ -6,11 +6,12 @@
  */
 import {box, frame, hframe, input, vframe} from '@xh/hoist/cmp/layout';
 import {mask} from '@xh/hoist/cmp/mask';
-import {BoxProps, Content, hoistCmp, HoistProps, uses} from '@xh/hoist/core';
+import type {BoxProps, Content, HoistProps} from '@xh/hoist/core';
+import {hoistCmp, uses} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {dropzone} from '@xh/hoist/kit/react-dropzone';
 import {elementFromContent, getLayoutProps} from '@xh/hoist/utils/react';
-import {FileRejection} from 'react-dropzone';
+import type {FileRejection} from 'react-dropzone';
 import {FileChooserModel} from './FileChooserModel';
 import {isEmpty} from 'lodash';
 import classNames from 'classnames';
@@ -114,7 +115,7 @@ export const [FileChooser, fileChooser] = hoistCmp.withFactory<FileChooserProps>
                         className,
                         testId: props.testId,
                         domAttrs: props.domAttrs,
-                        items: [
+                        children: [
                             // `box` (flex: none) so the rail keeps a fixed size beside the grid;
                             // `frame` would grow and crowd it out.
                             box({
@@ -129,10 +130,14 @@ export const [FileChooser, fileChooser] = hoistCmp.withFactory<FileChooserProps>
                                     atLimit ? 'xh-file-chooser__target--disabled' : null
                                 ),
                                 width: isTop ? null : 200,
-                                items: [multiDropTarget(), targetMask, input({...getInputProps()})],
-                                ...getRootProps()
+                                ...getRootProps(),
+                                children: [
+                                    multiDropTarget(),
+                                    targetMask,
+                                    input({...getInputProps()})
+                                ]
                             }),
-                            frame({flex: 1, item: elementFromContent(resolvedFileDisplay)})
+                            frame({flex: 1, children: elementFromContent(resolvedFileDisplay)})
                         ],
                         ...getLayoutProps(props)
                     });
@@ -153,8 +158,8 @@ export const [FileChooser, fileChooser] = hoistCmp.withFactory<FileChooserProps>
                     ),
                     testId: props.testId,
                     domAttrs: props.domAttrs,
-                    items: [dropzoneItem, targetMask, input({...getInputProps()})],
                     ...getRootProps(),
+                    children: [dropzoneItem, targetMask, input({...getInputProps()})],
                     ...getLayoutProps(props)
                 });
             },

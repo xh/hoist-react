@@ -4,10 +4,10 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {Thunkable} from './../types/Types';
+import type {Thunkable} from './../types/Types';
 import {throwIf} from '@xh/hoist/utils/js';
 import {isFunction} from 'lodash';
-import {HoistModel, HoistModelClass, ModelPublishMode} from './';
+import type {HoistModel, HoistModelClass, ModelPublishMode} from './';
 
 /**
  * Returns a ModelSpec to define how a functional HoistComponent should create its primary backing

@@ -4,18 +4,12 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {
-    DefaultHoistProps,
-    elementFactory,
-    hoistCmp,
-    HoistProps,
-    TestSupportProps,
-    uses
-} from '@xh/hoist/core';
+import type {DefaultHoistProps, HoistProps, TestSupportProps} from '@xh/hoist/core';
+import {elementFactory, hoistCmp, uses} from '@xh/hoist/core';
 import {useCached} from '@xh/hoist/utils/react';
 import equal from 'fast-deep-equal';
 import {createContext, useContext} from 'react';
-import {BaseFormFieldProps} from './BaseFormFieldProps';
+import type {BaseFormFieldProps} from './BaseFormFieldProps';
 import {FormModel} from './FormModel';
 
 /** @internal */
@@ -81,6 +75,6 @@ export const [Form, form] = hoistCmp.withFactory<FormProps>({
             },
             (a, b) => a.model === b.model && equal(a.fieldDefaults, b.fieldDefaults)
         );
-        return formContextProvider({value: formContext, items: children});
+        return formContextProvider({value: formContext, children});
     }
 });

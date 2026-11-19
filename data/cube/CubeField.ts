@@ -5,17 +5,17 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
-import {PlainObject} from '@xh/hoist/core';
+import type {PlainObject} from '@xh/hoist/core';
+import type {AggregationContext, FieldSpec} from '@xh/hoist/data';
 import {
-    AggregationContext,
     Aggregator,
     AverageAggregator,
     AverageStrictAggregator,
     ChildCountAggregator,
     Field,
-    FieldSpec,
     LeafCountAggregator,
     MaxAggregator,
+    MedianAggregator,
     MinAggregator,
     NullAggregator,
     SingleAggregator,
@@ -67,6 +67,7 @@ export type AggregatorToken =
     | 'CHILD_COUNT'
     | 'LEAF_COUNT'
     | 'MAX'
+    | 'MEDIAN'
     | 'MIN'
     | 'NULL'
     | 'SINGLE'
@@ -105,6 +106,7 @@ export class CubeField extends Field {
     static childCountAggregator = new ChildCountAggregator();
     static leafCountAggregator = new LeafCountAggregator();
     static maxAggregator = new MaxAggregator();
+    static medianAggregator = new MedianAggregator();
     static minAggregator = new MinAggregator();
     static nullAggregator = new NullAggregator();
     static singleAggregator = new SingleAggregator();
@@ -146,6 +148,8 @@ export class CubeField extends Field {
                     return CubeField.leafCountAggregator;
                 case 'MAX':
                     return CubeField.maxAggregator;
+                case 'MEDIAN':
+                    return CubeField.medianAggregator;
                 case 'MIN':
                     return CubeField.minAggregator;
                 case 'NULL':

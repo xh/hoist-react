@@ -4,7 +4,7 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {HotkeyConfig} from '@blueprintjs/core/src/hooks/hotkeys/hotkeyConfig';
+import type {HotkeyConfig} from '@blueprintjs/core/src/hooks/hotkeys/hotkeyConfig';
 import {AppContainerModel} from '@xh/hoist/appcontainer/AppContainerModel';
 import {errorBoundary} from '@xh/hoist/cmp/error/ErrorBoundary';
 import {fragment, frame, vframe, viewport} from '@xh/hoist/cmp/layout';
@@ -12,6 +12,7 @@ import {mask} from '@xh/hoist/cmp/mask';
 import {createElement, hoistCmp, refreshContextView, uses, XH} from '@xh/hoist/core';
 import {changelogDialog} from '@xh/hoist/desktop/appcontainer/ChangelogDialog';
 import {cardHeaderImpl} from '@xh/hoist/desktop/cmp/card/impl/CardHeaderImpl';
+import {statCardInfoImpl} from '@xh/hoist/desktop/cmp/statcard/impl/StatCardInfoImpl';
 import {dockContainerImpl} from '@xh/hoist/desktop/cmp/dock/impl/DockContainer';
 import {errorMessageImpl} from '@xh/hoist/desktop/cmp/error/impl/ErrorMessage';
 import {colChooserDialog as colChooser} from '@xh/hoist/desktop/cmp/grid/impl/colchooser/ColChooserDialog';
@@ -24,6 +25,8 @@ import {gridFilterDialog} from '@xh/hoist/desktop/cmp/grid/impl/filter/GridFilte
 import {maskImpl} from '@xh/hoist/desktop/cmp/mask/impl/Mask';
 import {ModalSupportModel} from '@xh/hoist/desktop/cmp/modalsupport';
 import {DashContainerViewModel} from '@xh/hoist/desktop/cmp/dash/container/DashContainerViewModel';
+import {pdfViewerToolbarImpl} from '@xh/hoist/desktop/cmp/pdfviewer/impl/PdfViewerToolbar';
+import {sparklineTooltipImpl} from '@xh/hoist/desktop/cmp/sparkline/impl/SparklineTooltipImpl';
 import {pinPadImpl} from '@xh/hoist/desktop/cmp/pinpad/impl/PinPad';
 import {storeFilterFieldImpl} from '@xh/hoist/desktop/cmp/store/impl/StoreFilterField';
 import {tabContainerImpl} from '@xh/hoist/desktop/cmp/tab/impl/TabContainer';
@@ -35,7 +38,7 @@ import {blueprintProvider} from '@xh/hoist/kit/blueprint';
 import {consumeEvent} from '@xh/hoist/utils/js';
 import {elementFromContent, useOnMount} from '@xh/hoist/utils/react';
 import {isEmpty} from 'lodash';
-import {ReactElement} from 'react';
+import type {ReactElement} from 'react';
 import {aboutDialog} from './AboutDialog';
 import {appBanner} from './AppBanner';
 import {exceptionDialog} from './ExceptionDialog';
@@ -68,7 +71,10 @@ installDesktopImpls({
     errorMessageImpl,
     maskImpl,
     DynamicTabSwitcherModel,
-    cardHeaderImpl
+    cardHeaderImpl,
+    statCardInfoImpl,
+    pdfViewerToolbarImpl,
+    sparklineTooltipImpl
 });
 /**
  * Top-level wrapper for Desktop applications.
@@ -99,7 +105,7 @@ export const AppContainer = hoistCmp({
                     },
                     errorRenderer: () => null
                 },
-                item: viewForState({model})
+                children: viewForState({model})
             }),
             // Modal component helpers rendered here at top-level to support display of messages
             // and exceptions at any point during the app lifecycle.
@@ -156,7 +162,7 @@ const appContainerView = hoistCmp.factory({
                 bannerList(),
                 refreshContextView({
                     model: model.refreshContextModel,
-                    item: frame(createElement(appSpec.componentClass, {model: appModel}))
+                    children: frame(createElement(appSpec.componentClass, {model: appModel}))
                 }),
                 inspectorPanel(),
                 versionBar()
@@ -189,7 +195,7 @@ const bannerList = hoistCmp.factory<AppContainerModel>({
         const {bannerModels} = model.bannerSourceModel;
         if (isEmpty(bannerModels)) return null;
         return fragment({
-            items: bannerModels.map(model => appBanner({model}))
+            children: bannerModels.map(model => appBanner({model}))
         });
     }
 });

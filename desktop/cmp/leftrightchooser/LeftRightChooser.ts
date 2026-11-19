@@ -6,7 +6,8 @@
  */
 import {grid} from '@xh/hoist/cmp/grid';
 import {hframe, vbox} from '@xh/hoist/cmp/layout';
-import {BoxProps, hoistCmp, HoistProps, uses} from '@xh/hoist/core';
+import type {BoxProps, HoistProps} from '@xh/hoist/core';
+import {hoistCmp, uses} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {chooserToolbar} from './impl/ChooserToolbar';
 import {description} from './impl/Description';
@@ -29,18 +30,18 @@ export const [LeftRightChooser, leftRightChooser] = hoistCmp.withFactory<LeftRig
     render({model, ...props}, ref) {
         return vbox({
             ref,
-            items: [
+            ...props,
+            children: [
                 hframe({
                     className: 'xh-lr-chooser__grid-frame',
-                    items: [
+                    children: [
                         grid({model: model.leftModel}),
                         chooserToolbar(),
                         grid({model: model.rightModel})
                     ]
                 }),
                 description()
-            ],
-            ...props
+            ]
         });
     }
 });

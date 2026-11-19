@@ -53,6 +53,11 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 * {Library} `{old} → {new}`
 ```
 
+On `develop`, the top entry is the next major version as a snapshot:
+`## {N}.0.0-SNAPSHOT - unreleased`. New entries go under that heading. A minor or patch release
+changes the heading to the release version for the release, then the snapshot heading goes back on
+top. See [Versioning](./build-and-publish.md#versioning) for the full policy.
+
 ## Section Headers
 
 Use these emoji-prefixed headers consistently:

@@ -5,13 +5,34 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
-import {PlainObject, Some} from '@xh/hoist/core';
-import {ViewRowData} from '@xh/hoist/data/cube/ViewRowData';
+import type {PlainObject, Some} from '@xh/hoist/core';
+import type {ViewRowData} from '@xh/hoist/data/cube/ViewRowData';
 import {shallowEqualObjects} from '@xh/hoist/utils/impl';
 import {isArray, isEmpty} from 'lodash';
-import {View} from '../View';
+import type {View} from '../View';
 import type {ViewRow} from '../ViewRow';
 import type {ParentRow} from './ParentRow';
+import type {RowUpdate} from './RowUpdate';
+
+/**
+ * Send updates up both aggregation routes. `applyDataUpdate` rewrites each {@link RowUpdate} in
+ * place, so the second route receives clones.
+ * @internal
+ */
+export function propagateUpdate(
+    parent: ParentRow,
+    pivotParent: ParentRow,
+    updates: RowUpdate[],
+    updatedRows: Set<BaseRow>
+) {
+    if (parent && pivotParent) {
+        const forPivot = updates.map(u => u.clone());
+        parent.applyDataUpdate(updates, updatedRows);
+        pivotParent.applyDataUpdate(forPivot, updatedRows);
+    } else {
+        (parent ?? pivotParent)?.applyDataUpdate(updates, updatedRows);
+    }
+}
 
 /**
  * Base class for a row within a dataset produced by a Cube / View.
@@ -19,6 +40,19 @@ import type {ParentRow} from './ParentRow';
  * @internal
  */
 export abstract class BaseRow implements ViewRow {
+    // Shared by all Views, so stamps never repeat across Views on the same Store.
+    private static lastDigest = 0;
+
+    /** The latest cubeRowDigest stamp given out by any View. */
+    static get currentDigest(): number {
+        return BaseRow.lastDigest;
+    }
+
+    /** Stamp row data with a new cubeRowDigest, marking it changed. */
+    static assignDigest(data: ViewRowData) {
+        data.cubeRowDigest = ++BaseRow.lastDigest;
+    }
+
     readonly view: View = null;
     readonly id: string = null;
 
@@ -26,6 +60,11 @@ export abstract class BaseRow implements ViewRow {
     // which adopt their cube record's plain data object - see LeafRow and subclasses.
     data: PlainObject;
     parent: ParentRow = null;
+    /**
+     * Second aggregation parent, used by pivot views to propagate up the pivot axis. Null in a
+     * plain View. The two routes must reach disjoint ancestors - see {@link PivotStructure}.
+     */
+    pivotParent: ParentRow = null;
     children: BaseRow[] = null;
 
     get isLeaf() {
@@ -53,7 +92,7 @@ export abstract class BaseRow implements ViewRow {
 
         if (!shallowEqualObjects(data.cubeBuckets, buckets)) {
             data.cubeBuckets = buckets;
-            this.view.assignDigest(data as ViewRowData);
+            BaseRow.assignDigest(data as ViewRowData);
         }
 
         this.children?.forEach(it => it.syncBuckets(buckets));

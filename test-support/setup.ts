@@ -9,10 +9,9 @@
 // resolve in that order - e.g. importing @xh/hoist/format before core fails at load.
 import {XH} from '@xh/hoist/core';
 
-import {wait} from '@xh/hoist/promise';
 import {Timer} from '@xh/hoist/utils/async';
 import {cleanup} from '@testing-library/react';
-import {onReactionError, when} from 'mobx';
+import {onReactionError} from 'mobx';
 import {afterAll, beforeAll, beforeEach, vi} from 'vitest';
 import {hoistCore, server} from './hoistCore';
 
@@ -56,15 +55,16 @@ globalThis.ResizeObserver ??= class {
     disconnect() {}
 };
 
-// Onsen UI, loaded by the mobile platform, throws "Invalid state" at import unless the root
-// element's computed style lists a transition property. jsdom lists only the properties set on it.
-document.documentElement.style.transitionDuration = '0s';
-
 //------------------------------------------------------------------
 // Guards - problems are collected as they happen, then fail the
 // test when it finishes, with a message naming the cause.
 //------------------------------------------------------------------
 const problems: string[] = [];
+
+// Every guard reports through hoistCore.onProblem(), so that initTestAppAsync() can collect the
+// problems raised during boot and fail the boot instead. The fake also reports an error thrown by a
+// route added with hoistCore.route() - the client sees a 500.
+hoistCore.onProblem = msg => problems.push(msg);
 
 // A request or WebSocket with no handler. Hoist services often catch and log network errors, so a
 // failed request alone would not fail the test. Throwing makes MSW fail the request - a callback
@@ -75,7 +75,7 @@ function onUnhandledFrame({frame}: {frame: {data: unknown}}): never {
             ? `${request.method} ${request.url}`
             : `WebSocket ${connection.client.url}`,
         msg = `Not handled by fake hoist-core: ${target}`;
-    problems.push(msg);
+    hoistCore.onProblem(msg);
     throw new Error(msg);
 }
 
@@ -85,17 +85,14 @@ interface FrameData {
     connection?: {client: {url: URL}};
 }
 
-// An error thrown by a route added with hoistCore.route(). The client sees a 500.
-hoistCore.onProblem = msg => problems.push(msg);
-
 // An error thrown inside a MobX reaction or autorun. MobX catches and logs these.
-onReactionError(e => problems.push(`Error in MobX reaction: ${e}`));
+onReactionError(e => hoistCore.onProblem(`Error in MobX reaction: ${e}`));
 
 // A MobX strict-mode warning - Hoist sets `enforceActions: 'observed'`, so this flags observable
 // state changed outside an action.
 const consoleWarn = console.warn;
 console.warn = (...args: any[]) => {
-    if (String(args[0]).startsWith('[MobX]')) problems.push(String(args[0]));
+    if (String(args[0]).startsWith('[MobX]')) hoistCore.onProblem(String(args[0]));
     consoleWarn(...args);
 };
 
@@ -139,17 +136,26 @@ async function endTestAsync() {
     }
 }
 
-// XH builds its AppContainerModel on load, and the model's ViewportSizeModel measures the window
-// on debounced timers of up to 300ms. Let those run before Vitest tears down jsdom at the end of a
-// file - firing afterwards, with no `window`, they would throw. Costs nothing for files that run
-// longer than that, which is most of them. The wait is capped because a test that switches to fake
-// timers early can stall those timers for good - and then nothing is left to fire.
-const viewportSettled = when(() => !!XH.appContainerModel.viewportSizeModel.size).then(() =>
-    wait(400)
-);
-
 afterAll(async () => {
-    await Promise.race([viewportSettled, wait(1000)]);
+    // XH builds its AppContainerModel on load, and the model's ViewportSizeModel measures the
+    // window on debounced timers after every resize. Destroy it to cancel those timers, which would
+    // otherwise throw if they fired after Vitest tears down jsdom at the end of the file.
+    XH.safeDestroy(XH.appContainerModel.viewportSizeModel);
+    await flushPendingPushesAsync();
     Timer.cancelAll();
     server.close();
 });
+
+// Send what services hold for a debounced push - prefs, activity, metrics and spans - while the
+// fake can still serve it. Otherwise a file that ends soon after boot leaves the push to fire after
+// server.close(), as an unhandled error. Spans go last, as the other pushes record spans of their
+// own. Services exist only once a test has booted the app.
+async function flushPendingPushesAsync() {
+    const {prefService, trackService, metricsService, traceService} = XH;
+    await Promise.all([
+        prefService?.pushPendingAsync(),
+        trackService?.pushPendingAsync(),
+        metricsService?.pushPendingAsync()
+    ]);
+    await traceService?.pushPendingAsync();
+}

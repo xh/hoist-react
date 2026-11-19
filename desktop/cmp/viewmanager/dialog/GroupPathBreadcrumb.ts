@@ -7,7 +7,8 @@
 
 import {span} from '@xh/hoist/cmp/layout';
 import {splitGroupPath} from '@xh/hoist/cmp/viewmanager';
-import {hoistCmp, HoistProps} from '@xh/hoist/core';
+import type {HoistProps} from '@xh/hoist/core';
+import {hoistCmp} from '@xh/hoist/core';
 import classNames from 'classnames';
 import {isEmpty, last} from 'lodash';
 
@@ -46,25 +47,25 @@ export const groupPathBreadcrumb = hoistCmp.factory<GroupPathBreadcrumbProps>({
             collapse = segments.length > 2 && fullText.length > maxChars,
             shown = collapse ? [segments[0], ELLIPSIS, last(segments)] : segments;
 
-        const items = [];
+        const children = [];
         shown.forEach((segment, idx) => {
             if (idx) {
-                items.push(
+                children.push(
                     span({
                         key: `sep-${idx}`,
                         className: 'xh-view-manager__group-path__separator',
-                        item: SEPARATOR
+                        children: SEPARATOR
                     })
                 );
             }
-            items.push(
+            children.push(
                 span({
                     key: idx,
                     className: classNames(
                         'xh-view-manager__group-path__segment',
                         collapse && idx === 1 && 'xh-view-manager__group-path__segment--collapsed'
                     ),
-                    item: segment
+                    children: segment
                 })
             );
         });
@@ -75,7 +76,7 @@ export const groupPathBreadcrumb = hoistCmp.factory<GroupPathBreadcrumbProps>({
                 inheritColor && 'xh-view-manager__group-path--inherit'
             ),
             title: collapse ? fullText : null,
-            items
+            children
         });
     }
 });

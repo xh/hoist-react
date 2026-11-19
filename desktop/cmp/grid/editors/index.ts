@@ -6,7 +6,7 @@
  */
 export * from './BooleanEditor';
 export * from './DateEditor';
-export * from './EditorProps';
+export type * from './EditorProps';
 export * from './NumberEditor';
 export * from './SelectEditor';
 export * from './TextEditor';

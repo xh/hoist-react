@@ -6,7 +6,7 @@
  */
 import {hoistCmp} from '@xh/hoist/core';
 import {callout} from '@xh/hoist/kit/blueprint';
-import {LeftRightChooserModel} from '../LeftRightChooserModel';
+import type {LeftRightChooserModel} from '../LeftRightChooserModel';
 
 /** @internal */
 export const description = hoistCmp.factory<LeftRightChooserModel>(({model}) => {
@@ -22,6 +22,6 @@ export const description = hoistCmp.factory<LeftRightChooserModel>(({model}) => 
         className: 'xh-lr-chooser__description',
         intent: 'primary',
         icon: null,
-        item: selDescription
+        children: selDescription
     });
 });

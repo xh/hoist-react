@@ -5,14 +5,17 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
-import {Column, GridModel} from '@xh/hoist/cmp/grid';
+import type {Column, GridModel} from '@xh/hoist/cmp/grid';
 import {hoistCmp} from '@xh/hoist/core';
-import {RecordAction, RecordActionLike, StoreRecord, StoreSelectionModel} from '@xh/hoist/data';
-import {buttonGroup, ButtonGroupProps} from '@xh/hoist/desktop/cmp/button';
+import type {RecordActionLike, StoreRecord, StoreSelectionModel} from '@xh/hoist/data';
+import {RecordAction} from '@xh/hoist/data';
+import type {ButtonGroupProps} from '@xh/hoist/desktop/cmp/button';
+import {buttonGroup} from '@xh/hoist/desktop/cmp/button';
 import '@xh/hoist/desktop/register';
 import {getTestId, throwIf} from '@xh/hoist/utils/js';
 import {isEmpty} from 'lodash';
-import {recordActionButton, RecordActionButtonProps} from './impl/RecordActionButton';
+import type {RecordActionButtonProps} from './impl/RecordActionButton';
+import {recordActionButton} from './impl/RecordActionButton';
 
 export interface RecordActionBarProps extends ButtonGroupProps {
     /** Actions to include. */
@@ -73,7 +76,8 @@ export const [RecordActionBar, recordActionBar] = hoistCmp.withFactory<RecordAct
 
         return buttonGroup({
             vertical,
-            items: actions.filter(Boolean).map(action => {
+            ...rest,
+            children: actions.filter(Boolean).map(action => {
                 const recordAction =
                     action instanceof RecordAction ? action : new RecordAction(action);
                 const scopedTestId =
@@ -89,8 +93,7 @@ export const [RecordActionBar, recordActionBar] = hoistCmp.withFactory<RecordAct
                     ...buttonProps,
                     testId: scopedTestId
                 });
-            }),
-            ...rest
+            })
         });
     }
 });

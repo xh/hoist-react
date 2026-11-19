@@ -46,6 +46,8 @@ When persisted state changes:
   observable changes that are not actually user-driven and should not be written back.
 - Writes are **debounced** (default 250ms) to avoid excessive storage operations during rapid
   changes like column resizing.
+- Destroying a provider writes any pending change at once. Pushing stored state back to the
+  target drops a pending write, as when a `ViewManagerModel` loads another view.
 
 ## Backing Stores
 

@@ -4,7 +4,8 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {HoistService, HoistUser, IdentityInfo, XH} from '@xh/hoist/core';
+import type {HoistUser, IdentityInfo} from '@xh/hoist/core';
+import {HoistService, XH} from '@xh/hoist/core';
 import {throwIf} from '@xh/hoist/utils/js';
 
 /**
@@ -101,6 +102,7 @@ export class IdentityService extends HoistService {
         await this.pushPendingUserStateAsync();
         await this.runner().span('impersonate').fetchJson({
             url: 'xh/impersonate',
+            method: 'POST',
             params: {username}
         });
 

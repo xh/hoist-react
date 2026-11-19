@@ -1,0 +1,113 @@
+/*
+ * This file belongs to Hoist, an application development toolkit
+ * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
+ *
+ * Copyright © 2026 Extremely Heavy Industries Inc.
+ */
+
+.xh-sparkline {
+  // Inline with no outer margin - spaced and aligned by surrounding text and its container.
+  display: inline-block;
+  position: relative;
+  vertical-align: middle;
+  width: var(--xh-sparkline-width);
+  height: var(--xh-sparkline-height);
+  // Every shape draws in the current color, so an app can also set `color` on the component.
+  color: var(--xh-sparkline-color);
+
+  &--intent-primary {
+    color: var(--xh-sparkline-primary-color);
+  }
+
+  &--intent-success {
+    color: var(--xh-sparkline-success-color);
+  }
+
+  &--intent-warning {
+    color: var(--xh-sparkline-warning-color);
+  }
+
+  &--intent-danger {
+    color: var(--xh-sparkline-danger-color);
+  }
+
+  // Set by `colorBy`, for the whole series or, with `sign`, the shapes above the origin.
+  &--positive {
+    color: var(--xh-sparkline-positive-color);
+  }
+
+  &--negative {
+    color: var(--xh-sparkline-negative-color);
+  }
+
+  // Inset from the box, so a stroke or dot on the edge of the scale is not cut off. Dots are
+  // placed by percentage of this element.
+  &__plot {
+    position: absolute;
+    inset: var(--xh-sparkline-padding);
+  }
+
+  &__svg {
+    display: block;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+  }
+
+  &__line {
+    fill: none;
+    stroke: currentColor;
+    stroke-width: var(--xh-sparkline-line-width);
+    stroke-linecap: round;
+    stroke-linejoin: round;
+
+    &--negative {
+      stroke: var(--xh-sparkline-negative-color);
+    }
+  }
+
+  &__area {
+    fill: var(--xh-sparkline-area-color);
+    fill-opacity: var(--xh-sparkline-area-opacity);
+    stroke: none;
+
+    &--negative {
+      fill: var(--xh-sparkline-negative-color);
+    }
+  }
+
+  &__bars {
+    fill: currentColor;
+    stroke: none;
+
+    &--negative {
+      fill: var(--xh-sparkline-negative-color);
+    }
+  }
+
+  &__baseline {
+    fill: none;
+    stroke: var(--xh-sparkline-baseline-color);
+    stroke-width: 1px;
+    stroke-dasharray: 2 2;
+  }
+
+  &__dot {
+    position: absolute;
+    width: var(--xh-sparkline-dot-size);
+    height: var(--xh-sparkline-dot-size);
+    // Center the dot on its point.
+    margin: calc(var(--xh-sparkline-dot-size) / -2);
+    border-radius: 50%;
+    background-color: currentColor;
+    pointer-events: none;
+
+    &--min {
+      background-color: var(--xh-sparkline-negative-color);
+    }
+
+    &--max {
+      background-color: var(--xh-sparkline-positive-color);
+    }
+  }
+}

@@ -10,4 +10,5 @@
  * See docs/unit-testing.md.
  */
 export * from './hoistCore';
+export {type FakeJsonBlob, FakeJsonBlobStore, type JsonBlobSpec, type ViewSpec} from './jsonBlobs';
 export * from './testApp';

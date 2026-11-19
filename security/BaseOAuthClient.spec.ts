@@ -5,13 +5,8 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {XH} from '@xh/hoist/core';
-import {
-    AccessTokenSpec,
-    BaseOAuthClient,
-    BaseOAuthClientConfig,
-    Token,
-    TokenMap
-} from '@xh/hoist/security';
+import type {AccessTokenSpec, BaseOAuthClientConfig, TokenMap} from '@xh/hoist/security';
+import {BaseOAuthClient, Token} from '@xh/hoist/security';
 import {MINUTES, SECONDS} from '@xh/hoist/utils/datetime';
 import {afterEach, describe, expect, it, onTestFinished, vi} from 'vitest';
 

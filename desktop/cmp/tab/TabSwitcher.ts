@@ -5,13 +5,13 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {box, div, hframe, span} from '@xh/hoist/cmp/layout';
-import {TabContainerModel, TabModel} from '@xh/hoist/cmp/tab';
-import {TabSwitcherProps} from '@xh/hoist/cmp/tab/Types';
+import type {TabModel} from '@xh/hoist/cmp/tab';
+import {TabContainerModel} from '@xh/hoist/cmp/tab';
+import type {TabSwitcherMenuContext, TabSwitcherProps} from '@xh/hoist/cmp/tab/Types';
 import {hoistCmp, HoistModel, useLocalModel, uses} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import '@xh/hoist/desktop/register';
 import {contextMenu} from '@xh/hoist/desktop/cmp/contextmenu';
-import {getContextMenuItem} from '@xh/hoist/desktop/cmp/tab/impl/TabContextMenuItems';
 import {Icon} from '@xh/hoist/icon';
 import {
     menu,
@@ -29,6 +29,7 @@ import {
     debounced,
     getTestId,
     isDisplayed,
+    scrollIntoViewWithin,
     TEST_ID,
     throwIf
 } from '@xh/hoist/utils/js';
@@ -42,7 +43,7 @@ import {
 } from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import {compact, find, isEmpty, isFinite} from 'lodash';
-import {CSSProperties, ReactElement, ReactNode, KeyboardEvent} from 'react';
+import type {CSSProperties, ReactElement, ReactNode, KeyboardEvent} from 'react';
 
 /**
  * Component to indicate and control the active tab of a TabContainer.
@@ -113,16 +114,16 @@ export const [TabSwitcher, tabSwitcher] = hoistCmp.withFactory<TabSwitcherProps>
                 id,
                 disabled,
                 style: tabStyle,
-                item: bpTooltip({
+                children: bpTooltip({
                     content: tooltip as ReactElement,
                     disabled: !tooltip,
                     hoverOpenDelay: 1000,
                     position: flipOrientation(orientation),
-                    item: hframe({
+                    children: hframe({
                         className: 'xh-tab-switcher__tab',
                         tabIndex: -1,
                         testId,
-                        items: [
+                        children: [
                             icon,
                             span(title),
                             button({
@@ -137,11 +138,10 @@ export const [TabSwitcher, tabSwitcher] = hoistCmp.withFactory<TabSwitcherProps>
                 }),
                 onContextMenu: e => {
                     const domRect = e.currentTarget.getBoundingClientRect(),
-                        menuItems = (switcherConfig.extraMenuItems ?? []).map(it =>
-                            getContextMenuItem(it, {contextMenuEvent: e, tab})
-                        );
+                        menuItems = switcherConfig.extraMenuItems ?? [];
                     if (isEmpty(menuItems)) return;
-                    showContextMenu(contextMenu({menuItems}), {
+                    const context: TabSwitcherMenuContext = {contextMenuEvent: e, tab};
+                    showContextMenu(contextMenu({menuItems, context}), {
                         left: orientation === 'left' ? domRect.right : domRect.left,
                         top: orientation === 'top' ? domRect.bottom : domRect.top
                     });
@@ -175,15 +175,15 @@ export const [TabSwitcher, tabSwitcher] = hoistCmp.withFactory<TabSwitcherProps>
                 `xh-tab-switcher--${orientation}`,
                 enableOverflow ? `xh-tab-switcher--overflow-enabled` : null
             ),
-            items: [
+            children: [
                 div({
                     ref,
                     className: `xh-tab-switcher__scroll`,
-                    item: bpTabs({
+                    children: bpTabs({
                         id: model.xhId,
                         vertical,
                         animate,
-                        items,
+                        children: items,
                         selectedTabId: activeTabId,
                         onChange: tabId => model.setActiveTabId(tabId as string)
                     }),
@@ -211,7 +211,7 @@ const groupHeader = hoistCmp.factory({
             ),
             role: 'presentation',
             [TEST_ID]: testId,
-            items: [spec?.icon, span(spec?.title ?? group)]
+            children: [spec?.icon, span(spec?.title ?? group)]
         });
     }
 });
@@ -254,13 +254,13 @@ const overflowMenu = hoistCmp.factory<TabContainerModel>({
         return popover({
             popoverClassName: 'xh-tab-switcher__overflow-popover',
             position: 'bottom-right',
-            item: button({
+            children: button({
                 icon: vertical ? Icon.ellipsisHorizontal() : Icon.ellipsisVertical()
             }),
             minimal: true,
             content: menu({
                 className: 'xh-tab-switcher__overflow-menu',
-                items
+                children: items
             })
         });
     }
@@ -325,7 +325,7 @@ class TabSwitcherLocalModel extends HoistModel {
         const tab = this.tabEls.find(
             (tab: HTMLElement) => tab.dataset.tabId === this.model.activeTabId
         );
-        if (tab) tab.scrollIntoView();
+        if (tab) scrollIntoViewWithin(tab as HTMLElement, this.el);
     }
 
     getOverflowIds() {

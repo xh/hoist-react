@@ -95,6 +95,10 @@ Icon.check({intent: 'success'})
 Icon.warning({intent: 'danger'})
 Icon.infoCircle({intent: 'primary'})
 
+// The standard icon for an intent - info, success, warning or danger. Null for no intent.
+Icon.forIntent('warning')
+Icon.forIntent(intent, {title: 'Warning'})
+
 // Size uses FA's size scale
 Icon.spinner({size: 'lg'})
 Icon.gear({size: '2x'})
@@ -231,7 +235,10 @@ instead. Runtime installation matters when you replace a built-in (see below), b
 calls to that factory then render the app's icon.
 
 Registration is a one-time task at app startup. Import your `Icons.ts` from `Bootstrap.ts`, or any
-module that runs before the first render, so the factories exist before use.
+module that runs before the first render, so the factories exist before use. Put that import below
+the import of `@xh/hoist/core` - an app crashes at startup if `@xh/hoist/icon` is the first Hoist
+module it loads. See
+[Import `@xh/hoist/core` First](../docs/lifecycle-app.md#import-xhhoistcore-first).
 
 ### Registering Multiple Weights
 
@@ -282,6 +289,17 @@ Icon.register({name: 'refresh', defs: [faArrowRotateRight], replace: true});
 
 Hoist's ~40 semantic aliases (`refresh`, `add`, `delete`, `save`, ...) are the natural targets
 here. They exist to give apps one place to change the icon for a concept.
+
+The intent icons work the same way. `Icon.forIntent()` renders the `intentPrimary`,
+`intentSuccess`, `intentWarning` and `intentDanger` aliases, which `Banner`, `Callout` and other
+intent-aware components show. Each alias renders the general icon of its concept - `info`,
+`success`, `warning` and `danger`. Replace a general icon to change it everywhere, or an `intent*`
+alias to change it for the intent alone:
+
+```typescript
+// Banners and callouts with the warning intent show this glyph. Icon.warning() is unchanged.
+Icon.register({name: 'intentWarning', faName: 'exclamation-circle', replace: true});
+```
 
 Without `replace: true`, a registration under a name that already exists on `Icon` replaces nothing.
 Hoist keeps the existing icon and logs a console warning. The factory that the call returns still
@@ -367,7 +385,7 @@ import {iconPicker} from '@xh/hoist/desktop/cmp/input';
 
 formField({
     field: 'icon',
-    item: iconPicker()
+    children: iconPicker()
 })
 ```
 

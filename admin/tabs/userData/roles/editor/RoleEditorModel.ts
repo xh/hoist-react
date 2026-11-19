@@ -7,8 +7,8 @@
 import {HoistModel, managed, TaskObserver, XH} from '@xh/hoist/core';
 import {action, computed, observable} from '@xh/hoist/mobx';
 import {omit} from 'lodash';
-import {RoleModel} from '../RoleModel';
-import {HoistRole} from '../Types';
+import type {RoleModel} from '../RoleModel';
+import type {HoistRole} from '../Types';
 import {RoleFormModel} from './form/RoleFormModel';
 
 export class RoleEditorModel extends HoistModel {

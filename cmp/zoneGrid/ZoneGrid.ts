@@ -6,10 +6,11 @@
  */
 import {grid} from '@xh/hoist/cmp/grid';
 import {fragment} from '@xh/hoist/cmp/layout';
-import {hoistCmp, HoistProps, LayoutProps, TestSupportProps, uses, XH} from '@xh/hoist/core';
+import type {HoistProps, LayoutProps, TestSupportProps} from '@xh/hoist/core';
+import {hoistCmp, uses, XH} from '@xh/hoist/core';
 import {zoneMapper as desktopZoneMapper} from '@xh/hoist/dynamics/desktop';
 import {zoneMapper as mobileZoneMapper} from '@xh/hoist/dynamics/mobile';
-import {GridOptions} from '@xh/hoist/kit/ag-grid';
+import type {GridOptions} from '@xh/hoist/kit/ag-grid';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
 import {ZoneGridModel} from './ZoneGridModel';
 import './ZoneGrid.scss';

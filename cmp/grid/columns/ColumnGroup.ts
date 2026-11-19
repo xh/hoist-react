@@ -5,22 +5,24 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {getAgHeaderClassFn} from '@xh/hoist/cmp/grid/impl/Utils';
-import {HAlign, PlainObject, Some, Thunkable, XH} from '@xh/hoist/core';
+import type {HAlign, PlainObject, Some, Thunkable} from '@xh/hoist/core';
+import {XH} from '@xh/hoist/core';
 import {genDisplayName} from '@xh/hoist/data';
 
 import type {ColGroupDef} from '@xh/hoist/kit/ag-grid';
 import {throwIf, warnIf, withDefault} from '@xh/hoist/utils/js';
 import {clone, isEmpty, isFunction, isString, keysIn} from 'lodash';
-import {ReactNode} from 'react';
-import {GridModel} from '../GridModel';
-import {
+import type {ReactNode} from 'react';
+import type {GridModel} from '../GridModel';
+import type {
     ColumnGroupShowMode,
     ColumnHeaderClassFn,
     ColumnHeaderNameFn,
-    ColumnOrGroup,
-    toAgColumnGroupShow
+    ColumnOrGroup
 } from '../Types';
-import {Column, ColumnSpec} from './Column';
+import {toAgColumnGroupShow} from '../Types';
+import type {ColumnSpec} from './Column';
+import {Column} from './Column';
 
 /**
  * Configuration for a {@link ColumnGroup} - a hierarchical grouping of columns that renders
@@ -45,6 +47,11 @@ export interface ColumnGroupSpec {
     headerAlign?: HAlign;
     /** Tooltip text for grid header. */
     headerTooltip?: string;
+    /**
+     * Name to display within the column chooser. Defaults to `headerName` when that is a string,
+     * otherwise derived from `groupId`. Specify when `headerName` is a function or element.
+     */
+    chooserName?: string;
     /** True to render borders on column group edges. */
     borders?: boolean;
 
@@ -90,6 +97,7 @@ export class ColumnGroup {
     readonly headerClass: Some<string> | ColumnHeaderClassFn;
     readonly headerAlign: HAlign;
     readonly headerTooltip: string;
+    readonly chooserName: string;
     readonly borders: boolean;
     readonly groupShowMode: ColumnGroupShowMode;
     readonly collapsed: boolean;
@@ -121,6 +129,7 @@ export class ColumnGroup {
             headerClass,
             headerAlign,
             headerTooltip,
+            chooserName,
             agOptions,
             borders,
             groupShowMode,
@@ -141,6 +150,9 @@ export class ColumnGroup {
         this.headerClass = headerClass;
         this.headerAlign = headerAlign;
         this.headerTooltip = headerTooltip;
+        this.chooserName =
+            chooserName ??
+            (isString(this.headerName) ? this.headerName : genDisplayName(this.groupId));
         this.borders = withDefault(borders, true);
         this.groupShowMode = groupShowMode;
         this.collapsed = withDefault(collapsed, false);

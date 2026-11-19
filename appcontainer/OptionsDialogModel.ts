@@ -5,7 +5,8 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {FormModel} from '@xh/hoist/cmp/form';
-import {AppOptionSpec, HoistModel, managed, TaskObserver, XH} from '@xh/hoist/core';
+import type {AppOptionSpec} from '@xh/hoist/core';
+import {HoistModel, managed, TaskObserver, XH} from '@xh/hoist/core';
 import {action, computed, observable, observableRef} from '@xh/hoist/mobx';
 import {resolve} from '@xh/hoist/promise';
 import {isOmitted} from '@xh/hoist/utils/impl';

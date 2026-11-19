@@ -6,21 +6,18 @@
  */
 import {createObservableRef} from '@xh/hoist/utils/react';
 import {isNil, remove} from 'lodash';
-import {ReactElement} from 'react';
+import type {ReactElement} from 'react';
+import type {MenuItemLike, PlainObject, RefreshMode, RenderMode} from '@xh/hoist/core';
 import {
     type DashViewProvider,
     HoistModel,
     managed,
-    ManagedRefreshContextModel,
-    MenuItemLike,
-    PlainObject,
-    RefreshMode,
-    RenderMode
+    ManagedRefreshContextModel
 } from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {action, bindable, bindableRef} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
-import {DashViewSpec} from './DashViewSpec';
+import type {DashViewSpec} from './DashViewSpec';
 
 export type DashViewState = PlainObject;
 

@@ -6,7 +6,7 @@
  */
 
 import {checkVersion, logError} from '@xh/hoist/utils/js';
-import {Component} from 'react';
+import type {Component} from 'react';
 
 /**
  * The exports below are ag-Grid components provided at runtime by applications.
@@ -32,6 +32,7 @@ export type {
     ColDef,
     ColGroupDef,
     GetContextMenuItemsParams,
+    GetMainMenuItemsParams,
     GridReadyEvent,
     IHeaderGroupParams,
     IHeaderParams,
@@ -43,6 +44,7 @@ export type {
     ITooltipParams,
     IRowNode,
     RowClassParams,
+    ValueFormatterParams,
     ValueGetterParams,
     ValueSetterParams,
     MenuItemDef,
@@ -82,7 +84,7 @@ export type {
 export {useGridCellEditor, useGridMenuItem} from 'ag-grid-react';
 export {themeBalham} from 'ag-grid-community';
 
-const MIN_VERSION = '36.2.0';
+const MIN_VERSION = '36.3.0';
 const MAX_VERSION = '36.*.*';
 
 /**

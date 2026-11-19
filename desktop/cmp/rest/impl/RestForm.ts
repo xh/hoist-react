@@ -37,8 +37,8 @@ export const restForm = hoistCmp.factory({
             className,
             isOpen: true,
             isCloseButtonShown: false,
-            item: panel({
-                item: formDisplay({testId}),
+            children: panel({
+                children: formDisplay({testId}),
                 bbar: isArray(formBbar) ? toolbar(formBbar) : (formBbar ?? tbar()),
                 ref: dialogRef,
                 mask: 'onLoad'
@@ -58,9 +58,9 @@ const formDisplay = hoistCmp.factory<RestFormModel>(({model, testId}) => {
             labelWidth: 120,
             labelTextAlign: 'right'
         },
-        item: div({
+        children: div({
             className: 'xh-rest-form__body',
-            items: formFields
+            children: formFields
         }),
         testId
     });

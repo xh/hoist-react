@@ -4,15 +4,16 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
+import type * as MsalBrowser from '@azure/msal-browser';
+import type {AccountInfo, IPublicClientApplication} from '@azure/msal-browser';
 import {
-    AccountInfo,
     BrowserAuthError,
     createStandardPublicClientApplication,
     InteractionRequiredAuthError,
-    IPublicClientApplication,
     LogLevel
 } from '@azure/msal-browser';
-import {MsalClient, MsalClientConfig} from '@xh/hoist/security/msal';
+import type {MsalClientConfig} from '@xh/hoist/security/msal';
+import {MsalClient} from '@xh/hoist/security/msal';
 import {initTestAppAsync} from '@xh/hoist/test-support';
 import {MINUTES, SECONDS} from '@xh/hoist/utils/datetime';
 import {afterEach, beforeAll, describe, expect, it, onTestFinished, vi} from 'vitest';
@@ -20,7 +21,7 @@ import {afterEach, beforeAll, describe, expect, it, onTestFinished, vi} from 'vi
 // Replace only the factory for MSAL's client - MsalClient's decisions depend on MSAL's real error
 // classes, which are kept.
 vi.mock('@azure/msal-browser', async importOriginal => ({
-    ...(await importOriginal<typeof import('@azure/msal-browser')>()),
+    ...(await importOriginal<typeof MsalBrowser>()),
     createStandardPublicClientApplication: vi.fn()
 }));
 

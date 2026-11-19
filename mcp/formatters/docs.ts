@@ -13,7 +13,13 @@
  */
 import {z} from 'zod';
 
-import {loadDocContent, type DocEntry, type McpCategory} from '../data/doc-registry.js';
+import {
+    HOIST_PACKAGE,
+    loadDocContent,
+    type DocEntry,
+    type DocLibrary,
+    type RegistryData
+} from '../data/doc-registry.js';
 import {resolveDocId} from '../data/doc-id-resolver.js';
 import type {DocSearchResult} from '../data/doc-search.js';
 import {
@@ -32,6 +38,10 @@ export type Surface = 'mcp' | 'cli';
 
 /** Full reads above this size carry a note pointing to `section` and `outline`. */
 export const LARGE_DOC_TOKENS = 3000;
+
+/** Describes doc ids in output schemas. */
+const ID_FORMAT =
+    'For hoist-react docs, the path relative to the repo root. For companion library docs, that path prefixed with the package name (e.g. "@xh/hoist-chat-kit/core/README.md").';
 
 //------------------------------------------------------------------
 // Search: text
@@ -85,7 +95,7 @@ export const searchDocsOutputSchema = z.object({
                 id: z
                     .string()
                     .describe(
-                        'Document ID, also its path relative to the repo root. Pass to `hoist-read-doc` with `section` to read this result.'
+                        `Document ID. ${ID_FORMAT} Pass to \`hoist-read-doc\` with \`section\` to read this result.`
                     ),
                 section: z
                     .string()
@@ -153,15 +163,22 @@ export const listDocsOutputSchema = z.object({
     categoryFilter: z
         .string()
         .describe('Applied category filter: "all" or a specific MCP category ID.'),
+    libraryFilter: z
+        .string()
+        .optional()
+        .describe('Applied library filter, a package name. Absent when not filtered.'),
     totalCount: z.number().int().describe('Number of entries in the response (after filtering).'),
     entries: z.array(
         z.object({
             id: z
                 .string()
                 .describe(
-                    'Document ID, also its path relative to the repo root. Pass to `hoist-docs read <id>` or fetch `hoist://docs/{id}`.'
+                    `Document ID. ${ID_FORMAT} Pass to \`hoist-read-doc\` or fetch \`hoist://docs/{id}\`.`
                 ),
             title: z.string(),
+            library: z
+                .string()
+                .describe('Package that owns the doc: "@xh/hoist" or a companion library.'),
             category: z.string().describe('MCP category ID (e.g. "package", "concept").'),
             description: z.string()
         })
@@ -173,35 +190,68 @@ export const listDocsOutputSchema = z.object({
                 title: z.string()
             })
         )
-        .describe('Full set of MCP categories available in the registry.')
+        .describe('Full set of MCP categories available in the registry.'),
+    libraries: z
+        .array(
+            z.object({
+                name: z.string(),
+                version: z.string(),
+                docCount: z.number().int(),
+                indexId: z.string().optional().describe("Id of the library's index doc.")
+            })
+        )
+        .describe('Libraries whose docs are loaded: "@xh/hoist" first, then companion libraries.')
 });
 
 /** Structured output type for `hoist-list-docs`, derived from the zod schema. */
 export type ListDocsOutput = z.infer<typeof listDocsOutputSchema>;
 
+/** Filters shared by `hoist-list-docs` and `hoist-docs list`. */
+export interface ListDocsFilter {
+    /** MCP category ID, or `all`. */
+    category?: string;
+    /** Package name of one library. */
+    library?: string;
+}
+
 /** Project the internal registry into the public structured shape. */
-export function toListDocsOutput(
-    registry: DocEntry[],
-    mcpCategories: McpCategory[],
-    categoryFilter?: string
-): ListDocsOutput {
-    const effectiveFilter = categoryFilter ?? 'all';
-    const entries =
-        effectiveFilter === 'all'
-            ? registry
-            : registry.filter(e => e.mcpCategory === effectiveFilter);
+export function toListDocsOutput(data: RegistryData, filter: ListDocsFilter = {}): ListDocsOutput {
+    const categoryFilter = filter.category ?? 'all',
+        entries = filterEntries(data.entries, filter);
 
     return {
-        categoryFilter: effectiveFilter,
+        categoryFilter,
+        ...(filter.library ? {libraryFilter: filter.library} : {}),
         totalCount: entries.length,
         entries: entries.map(e => ({
             id: e.id,
             title: e.title,
+            library: libraryOf(e),
             category: e.mcpCategory,
             description: e.description
         })),
-        categories: mcpCategories.map(c => ({id: c.id, title: c.title}))
+        categories: data.mcpCategories.map(c => ({id: c.id, title: c.title})),
+        libraries: data.libraries.map(l => ({
+            name: l.name,
+            version: l.version,
+            docCount: l.docCount,
+            ...(l.indexId ? {indexId: l.indexId} : {})
+        }))
     };
+}
+
+/** Entries matching a category and library filter. */
+function filterEntries(entries: DocEntry[], {category, library}: ListDocsFilter): DocEntry[] {
+    return entries.filter(
+        e =>
+            (!category || category === 'all' || e.mcpCategory === category) &&
+            (!library || libraryOf(e) === library)
+    );
+}
+
+/** Package name of the library that owns a doc. */
+export function libraryOf(entry: DocEntry): string {
+    return entry.library ?? HOIST_PACKAGE;
 }
 
 //------------------------------------------------------------------
@@ -215,7 +265,7 @@ export function toListDocsOutput(
  * `outline` and omits `content`.
  */
 export const readDocOutputSchema = z.object({
-    id: z.string().describe('Canonical document ID, also its path relative to the repo root.'),
+    id: z.string().describe(`Canonical document ID. ${ID_FORMAT}`),
     title: z.string(),
     category: z.string().describe('MCP category ID (e.g. "package", "concept").'),
     tokens: z
@@ -436,29 +486,79 @@ function formatSectionMiss(
 // List: text
 //------------------------------------------------------------------
 
-/** Format a document listing grouped by category. */
-export function formatDocList(
-    registry: DocEntry[],
-    mcpCategories: McpCategory[],
-    mcpCategory?: string
-): string {
-    const filtered =
-        mcpCategory && mcpCategory !== 'all'
-            ? registry.filter(e => e.mcpCategory === mcpCategory)
-            : registry;
+/**
+ * Format a document listing grouped by category. With companion libraries loaded, hoist-react's
+ * docs come first and each companion library follows under its own heading.
+ */
+export function formatDocList(data: RegistryData, filter: ListDocsFilter = {}): string {
+    const filtered = filterEntries(data.entries, filter),
+        lines: string[] = [];
 
-    const lines: string[] = [`Hoist Documentation (${filtered.length} documents):\n`];
-
-    for (const cat of mcpCategories) {
-        const entries = filtered.filter(e => e.mcpCategory === cat.id);
-        if (entries.length === 0) continue;
-
-        lines.push(`## ${cat.title} (${entries.length} doc${entries.length > 1 ? 's' : ''})`);
-        for (const entry of entries) {
-            lines.push(`- ${entry.id}: ${entry.description}`);
+    for (const lib of data.libraries) {
+        const entries = filtered.filter(e => libraryOf(e) === lib.name);
+        if (lib.primary) {
+            // Keep the header, even when empty, so a hoist-only listing reads as before.
+            if (entries.length === 0 && filter.library) continue;
+            lines.push(`Hoist Documentation (${entries.length} documents):\n`);
+        } else {
+            if (entries.length === 0) continue;
+            lines.push(`${formatLibrary(lib)} (${entries.length} documents):\n`);
         }
-        lines.push('');
+
+        for (const cat of data.mcpCategories) {
+            const inCat = entries.filter(e => e.mcpCategory === cat.id);
+            if (inCat.length === 0) continue;
+
+            lines.push(`## ${cat.title} (${inCat.length} doc${inCat.length > 1 ? 's' : ''})`);
+            for (const entry of inCat) {
+                lines.push(`- ${entry.id}: ${entry.description}`);
+            }
+            lines.push('');
+        }
     }
 
     return lines.join('\n');
+}
+
+//------------------------------------------------------------------
+// Libraries: ping, index footer
+//------------------------------------------------------------------
+
+/** One library as `name version`, e.g. `@xh/hoist-chat-kit 1.0.0`. */
+export function formatLibrary(lib: DocLibrary): string {
+    return `${lib.name} ${lib.version}`;
+}
+
+/** Companion libraries, i.e. every loaded library but hoist-react. */
+export function companionLibraries(data: RegistryData): DocLibrary[] {
+    return data.libraries.filter(l => !l.primary);
+}
+
+/**
+ * Lines naming the loaded companion libraries, their guidance, and any load problems, for the
+ * ping surfaces. CLI agents see no server instructions, so ping is where they find guidance.
+ * Empty when there are none.
+ */
+export function formatCompanionStatus(data: RegistryData): string[] {
+    const lines = companionLibraries(data).flatMap(l => [
+        `- ${formatLibrary(l)}: ${l.docCount} docs${l.indexId ? `, index ${l.indexId}` : ''}, source ${l.sourcePath}`,
+        ...(l.instructions
+            ? ['  Guidance:', ...l.instructions.split('\n').map(line => `    ${line}`)]
+            : [])
+    ]);
+    if (lines.length) lines.unshift('Companion library docs:');
+    if (data.warnings.length) {
+        lines.push('Companion library problems:', ...data.warnings.map(w => `- ${w}`));
+    }
+    return lines;
+}
+
+/** Footer for the hoist-react index naming the other loaded indexes, or null if none. */
+export function formatIndexFooter(data: RegistryData): string | null {
+    const others = companionLibraries(data).filter(l => l.indexId);
+    if (!others.length) return null;
+    return [
+        'Companion library indexes are also loaded:',
+        ...others.map(l => `- ${formatLibrary(l)}: ${l.indexId}`)
+    ].join('\n');
 }
