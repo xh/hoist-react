@@ -13,6 +13,7 @@ const add = (where, msg) => (byMsg[msg] ??= []).push(where);
 const diffSub = (where, sig, x, y) => {
     for (const el of new Set([...Object.keys(x), ...Object.keys(y)])) {
         const p = x[el], q = y[el];
+        if (!p && !q) continue;
         if (!p || !q) {
             add(where, `${sig} :: ${el} ${p ? 'missing after' : 'new after'}`);
             continue;
@@ -22,7 +23,7 @@ const diffSub = (where, sig, x, y) => {
     }
 };
 let compared = 0;
-for (const f of fs.readdirSync(da)) {
+for (const f of fs.readdirSync(da).filter(f => f.endsWith('.json'))) {
     const id = f.replace(/\.json$/, ''), x = load(da, f), y = load(db, f);
     if (!y || x.error || y.error) continue;
     compared++;

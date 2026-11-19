@@ -5,7 +5,8 @@
 // The spec names "anchor" classes (e.g. bp6-button) and, per anchor, a map from each bp6 class that
 // can sit on that same element to its xh-* replacement. Every compound selector holding an anchor
 // class is rewritten through its map; any other compound is "context" and goes through
-// spec.contextMap (unmapped context classes are left as-is). A selector is dropped, and reported,
+// spec.contextMap (unmapped context classes are left as-is). A map value may be a function of the
+// compound's class names, for a class that Blueprint puts on more than one element. A selector is dropped, and reported,
 // when it holds a class on an anchored element that the component never renders.
 //
 // Rules are split three ways:
@@ -71,7 +72,9 @@ function translate(selector) {
         for (const n of compound) {
             const rewrite = node => {
                 if (node.type === 'class') {
-                    const to = map[node.value];
+                    let to = map[node.value];
+                    // A function maps a class by the other classes in its compound.
+                    if (typeof to === 'function') to = to(classes.map(c => c.value));
                     if (to === undefined) {
                         if (anchor && node.value.startsWith('bp6-')) ok = false;
                         return;
@@ -146,6 +149,10 @@ root.walkRules(rule => {
 const out = postcss.root();
 for (const {rule, translated, keep} of own) {
     const clone = rule.clone({selector: translated.join(',\n')});
+    // spec.dropDecls leaves out named properties of a rule, keyed by its translated selector.
+    const drop = spec.dropDecls?.[clone.selector];
+    if (drop) clone.nodes.filter(d => d.type === 'decl' && drop.includes(d.prop)).forEach(d => d.remove());
+    if (!clone.nodes.length) continue;
     let node = clone;
     for (let p = rule.parent; p && p.type === 'atrule'; p = p.parent) {
         const at = p.clone({nodes: []});
