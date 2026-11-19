@@ -52,7 +52,7 @@ file is the working guide.
       4px 8px padding, as Hoist's override comment intended. List it in the CHANGELOG entry.
       `PopoverImpl` still accepts `.bp6-disabled` on a target - drop it once no input renders it.
 - [x] Dialog, overlay and mask. No visual change.
-- [ ] Toasts.
+- [x] Toasts. No visual change.
 - [x] Hotkeys dialog - done on #4995 (`675e3e1e0`), as a Hoist dialog with only `xh-*` classes.
 - [ ] Inputs: `InputGroup`, `NumericInput`, `TextArea`, and the checkbox, switch and radio
       `Control`.
@@ -243,8 +243,8 @@ see the same server data.
   two runs with `stylediff.cjs`.
 - `popups.cjs <dir> [scenarioRegex]` - computed styles and screenshots of open popovers and
   dialogs: Picker, IconPicker, GroupingChooser, DateRangePicker, a menu button, an app bar tooltip
-  with cloned intent and compact variants, and `XH.alert`, `confirm`, `prompt` and an exception
-  dialog. About a minute and a half for both servers. Compare two runs with `stylediff.cjs`.
+  with cloned intent and compact variants, `XH.alert`, `confirm`, `prompt`, an exception dialog,
+  and six toasts across intents and positions. About a minute and a half for both servers. Compare two runs with `stylediff.cjs`.
 - `translate.cjs <spec> <css> <outDir>` - translates the Blueprint rules a spec names onto `xh-*`
   classes, class for class, so specificity is unchanged. `specs/button.cjs` is the Button spec and
   `specs/menu.cjs` the Menu spec. A `contextMap` value can be a function of the compound's

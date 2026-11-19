@@ -38,12 +38,7 @@ export const toast = hoistCmp.factory({
         return div({
             className: classNames(
                 'xh-toast',
-                'bp6-toast',
-                intent && [
-                    `xh-toast--intent-${intent}`,
-                    `xh-bg-intent-${intent}`,
-                    `bp6-intent-${intent}`
-                ]
+                intent && [`xh-toast--intent-${intent}`, `xh-bg-intent-${intent}`]
             ),
             tabIndex: 0,
             onMouseEnter: pause,
@@ -53,7 +48,7 @@ export const toast = hoistCmp.factory({
             children: [
                 div({className: 'xh-toast__icon', children: icon}),
                 span({
-                    className: 'xh-toast__message bp6-toast-message',
+                    className: 'xh-toast__message',
                     role: 'alert',
                     children: message
                 }),

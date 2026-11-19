@@ -68,11 +68,8 @@ function toastStack(toasts: ToastModel[], position: string, container: HTMLEleme
         className: classNames(
             'xh-toast-container',
             `xh-toast-container--${position}`,
-            'bp6-toast-container',
-            edges.map(it => `bp6-toast-container-${it}`),
-            isAnchored
-                ? ['xh-toast-container--anchored', 'bp6-toast-container-inline']
-                : 'bp6-toast-container-in-portal'
+            edges.filter(it => it !== position).map(it => `xh-toast-container--${it}`),
+            isAnchored ? 'xh-toast-container--anchored' : 'xh-toast-container--portal'
         ),
         children: toasts.map(model => toast({model, key: model.xhId}))
     });
