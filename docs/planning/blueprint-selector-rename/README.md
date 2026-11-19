@@ -26,7 +26,7 @@ file is the working guide.
    holds only the Blueprint rules a coverage recording saw, and it missed states: open submenus,
    vertical sliders, toasts at top or left positions, inline overlays, popover arrows, the dark
    submenu caret, dialog footers and match-target-width popovers all needed fixes. For each
-   component, read Blueprint 6.21's full `lib/css/blueprint.css` (in Toolbox's `node_modules`, or
+   component, read Blueprint 6.23.0's full `lib/css/blueprint.css` (in Toolbox's `node_modules`, or
    npm) and port every rule for states the component can reach, including `.bp6-dark` variants.
 3. **Name with BEM**: `xh-<component>`, `xh-<component>__<part>`, `xh-<component>--<modifier>`.
    Many `xh-*` classes already sit beside the `bp6-*` ones - reuse them. Blueprint's generic
@@ -41,7 +41,7 @@ file is the working guide.
 
 - [ ] Rebuild the screenshot tooling (see the plan's Handoff section) and capture the baseline at
       this branch's starting commit.
-- [ ] Settle the names for the `decide` and `per component` rows in `class-map.md`.
+- [x] Settle the names for the `decide` and `per component` rows in `class-map.md` - see [Names](#names).
 - [ ] Pilot one component end to end - `Button` and `ButtonGroup` - and check the screenshots.
 - [ ] Menus, submenus and context menus.
 - [ ] Popover and tooltip.
@@ -75,6 +75,49 @@ file is the working guide.
       codemod.
 - [ ] Update the PR description and the plan's Handoff section as items land.
 
+## Names
+
+Settled names for the `decide` and `per component` rows in `class-map.md`. A `-` means the
+element already carries the `xh-*` class, so the `bp6-*` class is only dropped.
+
+**Generic modifiers** become modifiers of the component they sit on:
+
+| Blueprint | Hoist |
+|---|---|
+| `bp6-active` | `xh-button--active`, `xh-menu-item--active`, `xh-slider__handle--active` |
+| `bp6-active` set by a popover on its target | `xh-popover__target--active` |
+| `bp6-disabled` | `xh-button--disabled`, `xh-menu-item--disabled`, `xh-control--disabled`, `xh-input-group--disabled`, `xh-slider__body--disabled`, `xh-segmented-control__option--disabled` |
+| `bp6-intent-*` | `xh-<component>--intent-*`, as `xh-button--intent-*` and `xh-menu-item--intent-*` already are |
+| `bp6-minimal`, `bp6-outlined`, `bp6-fill`, `bp6-vertical` | `xh-button--*`, `xh-button-group--*`, `xh-tab-list--vertical`, `xh-slider__body--vertical` |
+| `bp6-small` | `xh-segmented-control--small`, and `.xh-action-col-cell .xh-record-action-button` for grid action buttons - `xh-record-action-button` alone also marks `RecordActionBar` buttons, which are not small |
+| `bp6-inline` | `xh-control--inline`, `xh-segmented-control--inline` |
+| `bp6-start`, `bp6-end` | `xh-slider__handle--start`, `xh-slider__handle--end` |
+| `bp6-heading` | `xh-dialog__title` (-), `xh-menu-header__title`, `xh-hotkeys-dialog__group-title` |
+| `bp6-icon` | `xh-menu-item__submenu-icon` (-) |
+| `bp6-fill`, `bp6-text-overflow-ellipsis` on a menu item | `xh-menu-item__text` (-) |
+| `bp6-align-left`, `bp6-align-right` | `xh-appbar__group--left`, `xh-appbar__group--right` |
+| `bp6-compact` | `xh-tooltip--compact` |
+| `bp6-read-only`, `bp6-round` | `xh-input-group--read-only`, `xh-input-group--round` (-) |
+
+**Component parts:**
+
+| Blueprint | Hoist |
+|---|---|
+| `bp6-navbar` | `xh-appbar` (-) |
+| `bp6-control-group` | `xh-control-group`, a shared layout class |
+| `bp6-numeric-input` | `xh-numeric-input` |
+| `bp6-hotkey-label` | `xh-hotkeys-dialog__hotkey-label` |
+| `bp6-modifier-key` | `xh-key--modifier` |
+| `bp6-input-left-container`, `bp6-input-action` | `xh-input-group__left-element`, `xh-input-group__right-element`, after the `leftElement` and `rightElement` props |
+| `bp6-menu` | `xh-menu-list` (-) |
+| `bp6-overlay-backdrop`, `bp6-overlay-content`, `bp6-overlay-scroll-container` | the `xh-dialog__*`, `xh-overlay__*` and `xh-popover__content-overlay` classes already beside them (-) |
+| `bp6-popover` | `xh-popover__content-wrapper` (-) |
+| `bp6-popover-open`, `bp6-popover-target` | `xh-popover__target-wrapper--open`, `xh-popover__target-wrapper` (-) |
+| `bp6-radio-group` | `xh-radio-input` (-) |
+| `bp6-slider` and its parts | `xh-slider__body` for the inner element, with `xh-slider__track`, `__progress`, `__handle`, `__label`, `__axis`, and `xh-slider__body--unlabeled` |
+| `bp6-tabs` and its parts | `xh-tab-list`, with `xh-tab-list__tabs`, `__tab`, `__indicator`, `__indicator-wrapper` |
+| `bp6-toast-container-in-portal`, `-inline`, `-top` and the other edges | `xh-toast-container--portal`, `xh-toast-container--anchored` (-), `xh-toast-container--top` and so on |
+
 ## Inventory
 
 `inventory.mjs` writes `class-map.md`: every `bp6-*` class Hoist renders or styles, a proposed
@@ -107,6 +150,62 @@ Proposals are hints, not decisions:
   disables its validation tooltip while a field is valid.
 - Tooltips use a doubled `.bp6-tooltip.bp6-popover` selector in `BlueprintOverrides.scss` to beat
   Blueprint's dark rules. Check the reason for any such specificity trick before dropping it.
+- `BlueprintBase.css` lacks about 200 button rules for states Toolbox never showed: intents in
+  minimal and outlined groups, vertical and fill groups, menu buttons inside groups. Port from
+  Blueprint's own file with `tools/translate.cjs`, which keeps each selector's specificity.
+- Blueprint writes `[class*=bp6-intent-]` and `[class*=bp6-intent]` unquoted, and its rules on a
+  component often share a selector list with rules on Blueprint markup Hoist never renders
+  (`bp6-icon`, spinners, `bp6-large`). Map those context classes to `null` in the spec, so the
+  shared rule is not mistaken for another component's.
+- A rule that styles one component inside another - a button in an input group, toast or control
+  group - stays in `BlueprintBase.css` with the moved component's `xh-*` selectors added beside its
+  `bp6-*` ones. It keeps its place in the cascade, and moves when the outer component does. The
+  Dialog and NumericInput commits must also port their button rules that `BlueprintBase.css`
+  lacks: `.bp6-dialog-footer-actions .bp6-button` and the numeric input's vertical button group.
+- Hoist's rules often pair classes, as in `.xh-button.bp6-button`. Dropping the `bp6-*` half lowers
+  each by one class, so translated Blueprint rules wrap the root class in `:where()` - `.bp6-button`
+  becomes `:where(.xh-button)` - and lose the same class. Every rule then keeps its rank against
+  every other. Keep `.bp6-dark` in Hoist's dark selectors until the theme toggle step, for the same
+  reason.
+- Check that a `bp6-*` class and the `xh-*` class you map it to are on the same elements. Grid
+  action buttons carry `bp6-small`, but `xh-record-action-button` is also on `RecordActionBar`
+  buttons, which are not small.
+
+## Tools
+
+`tools/` holds the scripts that verify each step. Install their dependencies once with
+`npm install` in that folder. They use the Playwright and Chromium already installed in a cloud
+session. All of them expect Toolbox at `localhost:3000` against this checkout, on a throwaway
+server with the `agent@xh.io` login. Set `BASE` to point one at another client.
+
+For before and after runs, serve a second Toolbox client against a worktree at the starting commit
+(symlink its `node_modules` to this checkout's), on its own port:
+
+```bash
+cd ../toolbox/client-app
+XH_DEV_PORT=3001 XH_HOIST_REACT_PATH=<baseline worktree> ./node_modules/.bin/rsbuild dev --env-mode inlineHoist
+```
+
+Then run `styles.cjs` with `BASE=http://localhost:3001` and without, at the same time, so both
+see the same server data.
+
+- `capture.cjs <dir> [routeRegex]` - screenshots of every Toolbox desktop and Admin route, light
+  and dark, with `Math.random` seeded, the clock fixed and the version bar's tab id pinned.
+- `diff.cjs <before> <after> <diffDir>` - pixel diff of two captures. Two captures of the same
+  commit differ only on data-driven pages - treemaps, Activity, Memory, Logs, the cube grids - so
+  check those by eye.
+- `styles.cjs <dir> '<selectors>' [routeRegex]` - computed styles of the matching elements, their
+  descendants and pseudo-elements on every route, at rest and with `:hover`, `:active` and
+  `:focus` forced through the DevTools protocol on each distinct context. Screenshots only show
+  the rest state. A full run takes about 40 minutes and 1 GB.
+- `stylediff.cjs <before> <after>` - compares two `styles.cjs` runs, grouped by difference.
+  Elements are matched by their class context, not document order, which shifts with data.
+- `why.cjs <app> <route> <theme> <selector> <props> [states]` - lists the rules that set the given
+  properties on the first matching element, most specific first, with their specificity.
+- `translate.cjs <spec> <css> <outDir>` - translates the Blueprint rules a spec names onto `xh-*`
+  classes, class for class, so specificity is unchanged. `specs/button.cjs` is the Button spec.
+  Run it on Blueprint's full `blueprint.css` for the component's own rules (`own.css`), and on
+  `BlueprintBase.css` for the rules shared with other components (`base.css`, edited in place).
 
 ## Running and checking
 
