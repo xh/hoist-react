@@ -7,11 +7,11 @@
 import {div, fragment} from '@xh/hoist/cmp/layout';
 import {hoistCmp, type HoistProps} from '@xh/hoist/core';
 import {hotkeysDialog} from '@xh/hoist/desktop/appcontainer/HotkeysDialog';
-import {HOTKEYS_DEFAULTS, type HotkeyConfig, useHotkeys} from '@xh/hoist/desktop/hooks';
+import {type HotkeyConfig, useHotkeys} from '@xh/hoist/desktop/hooks';
 import {hotkeysRegistry} from '@xh/hoist/desktop/hooks/impl/HotkeysRegistry';
 import {initTestAppAsync} from '@xh/hoist/test-support';
 import {TEST_ID} from '@xh/hoist/utils/js';
-import {act, fireEvent, render, screen, waitFor} from '@testing-library/react';
+import {act, fireEvent, render, screen} from '@testing-library/react';
 import {createElement} from 'react';
 import {afterEach, beforeAll, describe, expect, it, vi} from 'vitest';
 
@@ -23,7 +23,6 @@ describe('useHotkeys', () => {
     beforeAll(() => initTestAppAsync());
 
     afterEach(() => {
-        HOTKEYS_DEFAULTS.useBlueprint = false;
         act(() => hotkeysRegistry.closeDialog());
     });
 
@@ -173,16 +172,5 @@ describe('useHotkeys', () => {
         );
         fireEvent.keyDown(screen.getByTestId('input'), {key: '?', code: 'Slash', shiftKey: true});
         expect(screen.queryByRole('dialog')).toBeNull();
-    });
-
-    it('handles hotkeys with Blueprint when useBlueprint is set', async () => {
-        HOTKEYS_DEFAULTS.useBlueprint = true;
-        vi.spyOn(console, 'warn').mockImplementation(() => {});
-        const onKeyDown = vi.fn();
-        render(target({hotkeys: [{combo: 'shift + s', label: 'Save', group: 'Edit', onKeyDown}]}));
-
-        fireEvent.keyDown(screen.getByTestId('target'), {key: 'S', code: 'KeyS', shiftKey: true});
-        await waitFor(() => expect(onKeyDown).toHaveBeenCalledOnce());
-        expect(hotkeysRegistry.hotkeys).toEqual([]);
     });
 });

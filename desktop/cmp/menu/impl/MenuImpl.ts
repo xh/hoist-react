@@ -8,15 +8,9 @@ import type {PopoverProps} from '@xh/hoist/cmp/popover';
 import {PopoverImpl} from '@xh/hoist/cmp/popover/impl/PopoverImpl';
 import type {Intent} from '@xh/hoist/core';
 import {elementFactory} from '@xh/hoist/core';
-import {
-    menu as bpMenuFactory,
-    MenuDivider as BpMenuDivider,
-    MenuItem as BpMenuItem
-} from '@xh/hoist/kit/blueprint';
 import classNames from 'classnames';
 import type {AnchorHTMLAttributes, FC, HTMLAttributes, KeyboardEvent, ReactNode, Ref} from 'react';
 import {createContext, createElement as h, useContext, useEffect, useRef, useState} from 'react';
-import {MENU_DEFAULTS} from './MenuItems';
 
 /** A list of menu items, as rendered within a popover or a context menu. */
 export interface MenuListProps extends HTMLAttributes<HTMLUListElement> {
@@ -64,7 +58,7 @@ const SubmenuContext = createContext<{close: () => void}>(null);
 //------------------------
 // Menu list
 //------------------------
-const MenuListImpl: FC<MenuListProps> = ({className, children, ulRef, onKeyDown, ...rest}) => {
+const MenuList: FC<MenuListProps> = ({className, children, ulRef, onKeyDown, ...rest}) => {
     const submenu = useContext(SubmenuContext),
         typeahead = useRef({buffer: '', timer: 0});
 
@@ -129,7 +123,7 @@ const MenuListImpl: FC<MenuListProps> = ({className, children, ulRef, onKeyDown,
 //------------------------
 // Menu item
 //------------------------
-const MenuItemImpl: FC<MenuItemImplProps> = props => {
+const MenuItem: FC<MenuItemImplProps> = props => {
     const {
         active = false,
         children,
@@ -212,8 +206,6 @@ const MenuItemImpl: FC<MenuItemImplProps> = props => {
                 {
                     'xh-menu-item--active bp6-active': active,
                     'xh-menu-item--disabled bp6-disabled': disabled,
-                    // Blueprint's class too, so an item also closes Blueprint's popover when
-                    // only `Popover.defaults.useBlueprint` is set.
                     'xh-popover-dismiss bp6-popover-dismiss':
                         shouldDismissPopover && !disabled && !hasSubmenu
                 },
@@ -276,7 +268,7 @@ const MenuItemImpl: FC<MenuItemImplProps> = props => {
                         }
                     }
                 },
-                h(MenuListImpl, null, children)
+                h(MenuList, null, children)
             ),
             children: anchor
         })
@@ -286,7 +278,7 @@ const MenuItemImpl: FC<MenuItemImplProps> = props => {
 //------------------------
 // Divider
 //------------------------
-const MenuDividerImpl: FC<MenuDividerImplProps> = ({className, title}) =>
+const MenuDivider: FC<MenuDividerImplProps> = ({className, title}) =>
     h(
         'li',
         {
@@ -300,17 +292,8 @@ const MenuDividerImpl: FC<MenuDividerImplProps> = ({className, title}) =>
     );
 
 //------------------------
-// Factories - Hoist's components, or Blueprint's with `Menu.defaults.useBlueprint`.
+// Factories
 //------------------------
-const MenuList: FC<MenuListProps> = props =>
-    MENU_DEFAULTS.useBlueprint ? bpMenuFactory(props as any) : h(MenuListImpl, props);
-
-const MenuItem: FC<MenuItemImplProps> = props =>
-    h((MENU_DEFAULTS.useBlueprint ? BpMenuItem : MenuItemImpl) as FC<any>, props);
-
-const MenuDivider: FC<MenuDividerImplProps> = props =>
-    h((MENU_DEFAULTS.useBlueprint ? BpMenuDivider : MenuDividerImpl) as FC<any>, props);
-
 export const menuList = elementFactory(MenuList),
     menuItem = elementFactory(MenuItem),
     menuDivider = elementFactory(MenuDivider);

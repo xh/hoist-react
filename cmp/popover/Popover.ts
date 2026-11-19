@@ -6,9 +6,8 @@
  */
 import {hoistCmp, XH} from '@xh/hoist/core';
 import {createElement} from 'react';
-import {getLegacyPopover} from './impl/LegacyPopover';
 import {PopoverImpl, type PopoverImplProps} from './impl/PopoverImpl';
-import type {PopoverDefaults, PopoverProps} from './Types';
+import type {PopoverProps} from './Types';
 import './Popover.scss';
 
 /**
@@ -39,17 +38,12 @@ const MOBILE_DEFAULTS: Partial<PopoverImplProps> = {
  * Works on desktop and mobile. On mobile it has no arrow, and a tap outside it closes it without
  * reaching the element beneath.
  */
-export const [Popover, popover] = hoistCmp.withFactory<PopoverProps, PopoverDefaults>({
+export const [Popover, popover] = hoistCmp.withFactory<PopoverProps>({
     displayName: 'Popover',
     className: 'xh-popover',
     model: false,
-    defaults: {
-        useBlueprint: false
-    },
 
     render(props) {
-        const legacy = Popover.defaults.useBlueprint ? getLegacyPopover() : null;
-        if (legacy) return createElement(legacy, props);
         if (!XH.appSpec?.isMobileApp) return createElement(PopoverImpl, props);
 
         // Mobile keeps an outer element carrying the class names around the target wrapper, as

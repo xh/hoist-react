@@ -7,42 +7,24 @@
 import type {ToastModel} from '@xh/hoist/appcontainer/ToastModel';
 import {ToastSourceModel} from '@xh/hoist/appcontainer/ToastSourceModel';
 import {div, fragment} from '@xh/hoist/cmp/layout';
-import type {HoistProps} from '@xh/hoist/core';
 import {hoistCmp, uses} from '@xh/hoist/core';
 import {logWarn} from '@xh/hoist/utils/js';
 import classNames from 'classnames';
 import {isElement} from 'lodash';
 import type {KeyboardEvent} from 'react';
 import {createPortal} from 'react-dom';
-import {legacyToastSource} from './impl/LegacyToastSource';
 import {toast} from './Toast';
-
-export interface ToastSourceDefaults {
-    /**
-     * True to show desktop toasts with Blueprint's toaster, as before Hoist had its own.
-     * For apps to fall back on while they adopt Hoist's toasts - removed in the next major version.
-     */
-    useBlueprint?: boolean;
-}
 
 /**
  * Renders the open toasts. Toasts sharing a container and position stack together, newest
  * nearest the edge they are shown along. Escape with focus in a stack dismisses all its toasts.
  * @internal
  */
-export const [ToastSource, toastSource] = hoistCmp.withFactory<
-    HoistProps<ToastSourceModel>,
-    ToastSourceDefaults
->({
+export const toastSource = hoistCmp.factory<ToastSourceModel>({
     displayName: 'ToastSource',
     model: uses(ToastSourceModel),
-    defaults: {
-        useBlueprint: false
-    },
 
     render({model}) {
-        if (ToastSource.defaults.useBlueprint) return legacyToastSource();
-
         const stacks = new Map<HTMLElement, Map<string, ToastModel[]>>();
         model.toastModels.forEach(it => {
             if (!it.isOpen) return;

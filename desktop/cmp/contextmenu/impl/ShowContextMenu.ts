@@ -5,8 +5,6 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {PopoverImpl} from '@xh/hoist/cmp/popover/impl/PopoverImpl';
-import {MENU_DEFAULTS} from '@xh/hoist/desktop/cmp/menu/impl/MenuItems';
-import {showContextMenu as bpShowContextMenu} from '@xh/hoist/kit/blueprint';
 import type {ReactElement} from 'react';
 import {createElement} from 'react';
 import {createRoot, type Root} from 'react-dom/client';
@@ -26,11 +24,6 @@ let root: Root = null,
  * an item is chosen.
  */
 export function showContextMenu(menu: ReactElement, offset?: ContextMenuOffset) {
-    if (MENU_DEFAULTS.useBlueprint) {
-        bpShowContextMenu(menu, offset);
-        return;
-    }
-
     if (!root) {
         const container = document.createElement('div');
         container.className = 'xh-context-menu-root';

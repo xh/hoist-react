@@ -5,12 +5,12 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {HoistModel} from '@xh/hoist/core';
-import {TextArea, textArea, TextInput, textInput} from '@xh/hoist/desktop/cmp/input';
+import {textArea, textInput} from '@xh/hoist/desktop/cmp/input';
 import {Icon} from '@xh/hoist/icon';
 import {bindable} from '@xh/hoist/mobx';
 import {initTestAppAsync} from '@xh/hoist/test-support';
 import {fireEvent, render, screen} from '@testing-library/react';
-import {afterEach, beforeAll, describe, expect, it, onTestFinished} from 'vitest';
+import {beforeAll, describe, expect, it, onTestFinished} from 'vitest';
 
 /**
  * How the desktop TextInput and TextArea render and commit values. Forms, filters and dialogs
@@ -18,11 +18,6 @@ import {afterEach, beforeAll, describe, expect, it, onTestFinished} from 'vitest
  */
 describe('TextInput and TextArea (desktop)', () => {
     beforeAll(() => initTestAppAsync());
-
-    afterEach(() => {
-        TextInput.defaults.useBlueprint = false;
-        TextArea.defaults.useBlueprint = false;
-    });
 
     it('renders a native text input in a Blueprint-styled input group', () => {
         const {input} = renderBound(textInput, 'Hello', {placeholder: 'Name'});
@@ -73,16 +68,6 @@ describe('TextInput and TextArea (desktop)', () => {
         fireEvent.change(input, {target: {value: 'two'}});
         fireEvent.keyDown(input, {key: 'Enter'});
         expect(model.value).toBe('two');
-    });
-
-    it('renders Blueprint inputs when useBlueprint is set', () => {
-        TextInput.defaults.useBlueprint = true;
-        TextArea.defaults.useBlueprint = true;
-        const {input, model} = renderBound(textInput, 'a');
-        expect(input.classList).not.toContain('xh-input-group__input');
-        fireEvent.change(input, {target: {value: 'b'}});
-        fireEvent.keyDown(input, {key: 'Enter'});
-        expect(model.value).toBe('b');
     });
 });
 

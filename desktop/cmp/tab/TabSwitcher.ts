@@ -13,7 +13,6 @@ import {button} from '@xh/hoist/desktop/cmp/button';
 import '@xh/hoist/desktop/register';
 import {contextMenu} from '@xh/hoist/desktop/cmp/contextmenu';
 import {Icon} from '@xh/hoist/icon';
-import {tab as bpTab, tabs as bpTabs} from '@xh/hoist/kit/blueprint';
 import {menuDivider, menuItem, menuList} from '@xh/hoist/desktop/cmp/menu/impl/MenuImpl';
 import {popover, tooltip as tooltipCmp} from '@xh/hoist/cmp/popover';
 import {showContextMenu} from '@xh/hoist/desktop/cmp/contextmenu/impl/ShowContextMenu';
@@ -52,22 +51,8 @@ import {TabList, TabTitle} from './impl/TabList';
  * Note that in order for tabs to overflow, the TabSwitcher or it's wrapper must have a
  * maximum width.
  */
-export interface TabSwitcherDefaults {
-    /**
-     * True to render tab switchers with Blueprint's tabs, as before Hoist had its own.
-     * For apps to fall back on while they adopt Hoist's - removed in the next major version.
-     */
-    useBlueprint?: boolean;
-}
-
-export const [TabSwitcher, tabSwitcher] = hoistCmp.withFactory<
-    TabSwitcherProps,
-    TabSwitcherDefaults
->({
+export const [TabSwitcher, tabSwitcher] = hoistCmp.withFactory<TabSwitcherProps>({
     displayName: 'TabSwitcher',
-    defaults: {
-        useBlueprint: false
-    },
     model: uses(TabContainerModel),
     className: 'xh-tab-switcher',
 
@@ -158,18 +143,15 @@ export const [TabSwitcher, tabSwitcher] = hoistCmp.withFactory<
                     });
                 }
             };
-            return TabSwitcher.defaults.useBlueprint
-                ? bpTab(tabProps)
-                : createElement(TabTitle, {
-                      ...tabProps,
-                      parentId: model.xhId,
-                      selected: id === activeTabId,
-                      onSelect: tabId => model.setActiveTabId(tabId)
-                  });
+            return createElement(TabTitle, {
+                ...tabProps,
+                parentId: model.xhId,
+                selected: id === activeTabId,
+                onSelect: tabId => model.setActiveTabId(tabId)
+            });
         });
 
-        // Headers and spacers are non-Tab children, which Blueprint passes through to its tab
-        // list in order.
+        // Headers and spacers sit between the tabs in the tab list.
         const items = vertical
             ? withGroupHeaders(
                   tabs,
@@ -198,22 +180,13 @@ export const [TabSwitcher, tabSwitcher] = hoistCmp.withFactory<
                 div({
                     ref,
                     className: `xh-tab-switcher__scroll`,
-                    children: TabSwitcher.defaults.useBlueprint
-                        ? bpTabs({
-                              id: model.xhId,
-                              vertical,
-                              animate,
-                              children: items,
-                              selectedTabId: activeTabId,
-                              onChange: tabId => model.setActiveTabId(tabId as string)
-                          })
-                        : createElement(TabList, {
-                              id: model.xhId,
-                              vertical,
-                              animate,
-                              children: items,
-                              selectedTabId: activeTabId
-                          }),
+                    children: createElement(TabList, {
+                        id: model.xhId,
+                        vertical,
+                        animate,
+                        children: items,
+                        selectedTabId: activeTabId
+                    }),
                     onKeyDown: e => impl.onKeyDown(e)
                 }),
                 overflowMenu({

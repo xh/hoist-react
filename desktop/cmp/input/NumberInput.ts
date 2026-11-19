@@ -17,15 +17,14 @@ import {hoistCmp} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import type {NumericPrecision, Precision, ZeroPad} from '@xh/hoist/format';
 import {fmtNumber, parseNumber} from '@xh/hoist/format';
-import {numericInput as bpNumericInput} from '@xh/hoist/kit/blueprint';
 import {wait} from '@xh/hoist/promise';
 import {TEST_ID, throwIf, withDefault} from '@xh/hoist/utils/js';
 import {getLayoutProps, useComposedRefs, useOnMount} from '@xh/hoist/utils/react';
 import type {Property} from 'csstype';
 import {clamp, debounce, isNaN, isNil, isNumber, round} from 'lodash';
 import type {KeyboardEventHandler, ReactElement, ReactNode, Ref} from 'react';
-import {createElement, useLayoutEffect} from 'react';
-import {NumericInput} from './impl/NumericInput';
+import {useLayoutEffect} from 'react';
+import {numericInput} from './impl/NumericInput';
 
 export interface NumberInputProps
     extends HoistProps, LayoutProps, StyleProps, HoistInputProps, PasswordManagerSupportProps {
@@ -124,23 +123,9 @@ export interface NumberInputProps
  *
  * Set the corresponding stepSize prop(s) to null to disable this feature.
  */
-export interface NumberInputDefaults {
-    /**
-     * True to render desktop number inputs with Blueprint's numeric input, as before Hoist had its
-     * own. For apps to fall back on while they adopt Hoist's - removed in the next major version.
-     */
-    useBlueprint?: boolean;
-}
-
-export const [NumberInput, numberInput] = hoistCmp.withFactory<
-    NumberInputProps,
-    NumberInputDefaults
->({
+export const [NumberInput, numberInput] = hoistCmp.withFactory<NumberInputProps>({
     displayName: 'NumberInput',
     className: 'xh-number-input',
-    defaults: {
-        useBlueprint: false
-    },
     render(props, ref) {
         return useHoistInputModel(cmp, props, ref, NumberInputModel);
     }
@@ -308,10 +293,6 @@ const cmp = hoistCmp.factory<NumberInputModel>(({model, className, ...props}, re
         minorStepSize = precision
             ? withDefault(props.minorStepSize, round(Math.pow(10, -precision), precision))
             : null;
-
-    const numericInput = NumberInput.defaults.useBlueprint
-        ? bpNumericInput
-        : (inputProps: any) => createElement(NumericInput, inputProps);
 
     return numericInput({
         value: renderValue,

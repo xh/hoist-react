@@ -5,4 +5,3 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 export * from './AppContainer';
-export {ToastSource, type ToastSourceDefaults} from './ToastSource';

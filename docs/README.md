@@ -98,7 +98,7 @@ See [`docs-roadmap.md`](./planning/docs-roadmap.md) for documentation coverage t
 | [`/cmp/input/`](../cmp/input/README.md) | Base classes and interfaces for input components | HoistInputModel, change/commit lifecycle, value binding, focus management |
 | [`/cmp/callout/`](../cmp/callout/README.md) | Short note set off within content, tinted by its intent | Callout, intent, icon, title, Callout or Banner or Card, untrusted text |
 | [`/cmp/layout/`](../cmp/layout/README.md) | Flexbox-based layout containers | Box, VBox, HBox, Frame, Viewport, Separator, LayoutProps, pixel conversion |
-| [`/cmp/popover/`](../cmp/popover/README.md) | Content that floats beside a target, opened by click or hover, built on Floating UI | Popover, PopoverProps, position, interactionKind, isOpen, onInteraction, xh-popover-dismiss, portalContainerProvider, useBlueprint |
+| [`/cmp/popover/`](../cmp/popover/README.md) | Content that floats beside a target, opened by click or hover, built on Floating UI | Popover, PopoverProps, position, interactionKind, isOpen, onInteraction, xh-popover-dismiss, portalContainerProvider |
 | [`/cmp/progressbar/`](../cmp/progressbar/README.md) | Bar that shows a value against a maximum, or indeterminate progress | ProgressBar, value, min, max, label, valueRenderer, intent, target, indeterminate |
 | [`/cmp/tab/`](../cmp/tab/README.md) | Tabbed interface system | TabContainerModel, routing integration, render modes, refresh strategies |
 | [`/cmp/viewmanager/`](../cmp/viewmanager/README.md) | Save/load named bundles of component state | ViewManagerModel, views, sharing, pinning, auto-save, JsonBlob persistence |

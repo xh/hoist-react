@@ -4,23 +4,18 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import type {
-    RangeSliderProps as BpRangeSliderProps,
-    SliderProps as BpSliderProps
-} from '@blueprintjs/core';
 import type {HoistInputProps} from '@xh/hoist/cmp/input';
 import {HoistInputModel, useHoistInputModel} from '@xh/hoist/cmp/input';
 import {box} from '@xh/hoist/cmp/layout';
 import type {HoistProps, Intent, LayoutProps, Some} from '@xh/hoist/core';
 import {hoistCmp, XH} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
-import {rangeSlider as bpRangeSlider, slider as bpSlider} from '@xh/hoist/kit/blueprint';
 import {logWarn, withDefault} from '@xh/hoist/utils/js';
 import {composeRefs, getLayoutProps, useOnResize} from '@xh/hoist/utils/react';
 import {isArray, isEmpty, omit, pick} from 'lodash';
 import type {ReactNode} from 'react';
 import {createElement, useLayoutEffect, useRef} from 'react';
-import {SliderImpl} from './impl/SliderImpl';
+import {SliderImpl, type SliderImplProps} from './impl/SliderImpl';
 import './Slider.scss';
 
 export interface SliderProps extends HoistProps, HoistInputProps, LayoutProps {
@@ -66,20 +61,9 @@ export interface SliderProps extends HoistProps, HoistInputProps, LayoutProps {
  * only for a `labelStepSize` of zero or less, or one that gives over 1,000 labels. With a `max` not
  * above `min`, it renders disabled. It logs a warning for each change in development mode.
  */
-export interface SliderDefaults {
-    /**
-     * True to render desktop sliders with Blueprint's, as before Hoist had its own.
-     * For apps to fall back on while they adopt Hoist's - removed in the next major version.
-     */
-    useBlueprint?: boolean;
-}
-
-export const [Slider, slider] = hoistCmp.withFactory<SliderProps, SliderDefaults>({
+export const [Slider, slider] = hoistCmp.withFactory<SliderProps>({
     displayName: 'Slider',
     className: 'xh-slider',
-    defaults: {
-        useBlueprint: false
-    },
     render(props, ref) {
         return useHoistInputModel(cmp, props, ref, SliderInputModel);
     }
@@ -138,7 +122,7 @@ const cmp = hoistCmp.factory<SliderInputModel>(({model, className, ...props}, re
             ? {'aria-labelledby': props.id ? `${props.id}-label` : null}
             : nameAttrs;
 
-    const sliderProps: BpRangeSliderProps | BpSliderProps = {
+    const sliderProps: SliderImplProps = {
         value: model.renderValue,
 
         disabled: props.disabled || scale.disabled,
@@ -156,26 +140,11 @@ const cmp = hoistCmp.factory<SliderInputModel>(({model, className, ...props}, re
         onChange: val => model.noteValueChange(val)
     };
 
-    let sliderEl;
-    if (!Slider.defaults.useBlueprint) {
-        sliderEl = createElement(SliderImpl, {
-            ...(sliderProps as any),
-            handleHtmlProps: isRange ? {start: handleAttrs, end: handleAttrs} : handleAttrs
-        });
-    } else {
-        sliderEl = isRange
-            ? bpRangeSlider({
-                  ...(sliderProps as BpRangeSliderProps),
-                  handleHtmlProps: {start: handleAttrs, end: handleAttrs}
-              })
-            : bpSlider({
-                  ...(sliderProps as BpSliderProps),
-                  handleHtmlProps: handleAttrs
-              });
-    }
-
     return box({
-        children: sliderEl,
+        children: createElement(SliderImpl, {
+            ...sliderProps,
+            handleHtmlProps: isRange ? {start: handleAttrs, end: handleAttrs} : handleAttrs
+        }),
 
         ...layoutProps,
         width: withDefault(width, 200),

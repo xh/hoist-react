@@ -7,7 +7,6 @@
 import type {HoistProps, StyleProps, TestSupportProps} from '@xh/hoist/core';
 import {hoistCmp} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
-import {dialog as bpDialog} from '@xh/hoist/kit/blueprint';
 import type {ReactElement, ReactNode, SyntheticEvent} from 'react';
 import {createElement} from 'react';
 import {DialogImpl} from './impl/DialogImpl';
@@ -54,30 +53,17 @@ export interface DialogProps extends HoistProps, StyleProps, TestSupportProps {
     portalContainer?: HTMLElement;
 }
 
-export interface DialogDefaults {
-    /**
-     * True to render desktop dialogs and overlays with Blueprint's, as before Hoist had its own.
-     * For apps to fall back on while they adopt Hoist's dialog - removed in the next major version.
-     */
-    useBlueprint?: boolean;
-}
-
 /**
  * A modal dialog, shown over the app with a backdrop. While open it holds keyboard focus, closes
  * on Escape or a click outside it, and stops the page behind it from scrolling.
  *
  * For alerts and confirmations, use `XH.message()` and `XH.confirm()` instead.
  */
-export const [Dialog, dialog] = hoistCmp.withFactory<DialogProps, DialogDefaults>({
+export const [Dialog, dialog] = hoistCmp.withFactory<DialogProps>({
     displayName: 'Dialog',
     model: false,
-    defaults: {
-        useBlueprint: false
-    },
 
     render(props) {
-        return Dialog.defaults.useBlueprint
-            ? bpDialog(props as any)
-            : createElement(DialogImpl, props);
+        return createElement(DialogImpl, props);
     }
 });

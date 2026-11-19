@@ -7,9 +7,8 @@
 import {hoistCmp} from '@xh/hoist/core';
 import classNames from 'classnames';
 import {createElement} from 'react';
-import {getLegacyTooltip} from './impl/LegacyPopover';
 import {PopoverImpl} from './impl/PopoverImpl';
-import type {TooltipDefaults, TooltipProps} from './Types';
+import type {TooltipProps} from './Types';
 
 /** Gap between a tooltip and its target, which leaves room for its smaller arrow. */
 const TOOLTIP_OFFSET = 11;
@@ -21,18 +20,12 @@ const TOOLTIP_OFFSET = 11;
  * For a plain-text label on a button, its `tooltip` prop - a native `title` - is often enough.
  * Use this component for styled or richer content, or to show the label sooner.
  */
-export const [Tooltip, tooltip] = hoistCmp.withFactory<TooltipProps, TooltipDefaults>({
+export const [Tooltip, tooltip] = hoistCmp.withFactory<TooltipProps>({
     displayName: 'Tooltip',
     className: 'xh-tooltip-target',
     model: false,
-    defaults: {
-        useBlueprint: false
-    },
 
     render(props) {
-        const legacy = Tooltip.defaults.useBlueprint ? getLegacyTooltip() : null;
-        if (legacy) return createElement(legacy, props);
-
         const {intent, compact, popoverClassName, ...rest} = props;
         return createElement(PopoverImpl, {
             hoverOpenDelay: 100,

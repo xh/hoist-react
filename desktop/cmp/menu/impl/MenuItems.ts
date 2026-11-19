@@ -36,13 +36,6 @@ export interface MenuDefaults {
      * deliberate move away. Set 0 to restore the Blueprint behavior.
      */
     submenuHoverCloseDelay?: number;
-
-    /**
-     * True to render desktop menus and context menus with Blueprint's components, as before Hoist
-     * had its own. For apps to fall back on while they adopt Hoist's menus - removed in the next
-     * major version.
-     */
-    useBlueprint?: boolean;
 }
 
 /**
@@ -51,8 +44,7 @@ export interface MenuDefaults {
  * @internal
  */
 export const MENU_DEFAULTS: MenuDefaults = {
-    submenuHoverCloseDelay: 300,
-    useBlueprint: false
+    submenuHoverCloseDelay: 300
 };
 
 export interface ParseMenuItemsOptions {

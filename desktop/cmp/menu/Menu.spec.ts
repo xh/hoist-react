@@ -4,10 +4,10 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {Menu, menu} from '@xh/hoist/desktop/cmp/menu';
+import {menu} from '@xh/hoist/desktop/cmp/menu';
 import {initTestAppAsync} from '@xh/hoist/test-support';
 import {fireEvent, render, screen, waitFor} from '@testing-library/react';
-import {afterEach, beforeAll, describe, expect, it, vi} from 'vitest';
+import {beforeAll, describe, expect, it, vi} from 'vitest';
 
 /**
  * Keyboard and submenu behavior of the desktop Menu. Every desktop menu - MenuButton, the app
@@ -15,10 +15,6 @@ import {afterEach, beforeAll, describe, expect, it, vi} from 'vitest';
  */
 describe('Menu', () => {
     beforeAll(() => initTestAppAsync());
-
-    afterEach(() => {
-        Menu.defaults.useBlueprint = false;
-    });
 
     const items = () => [
         {text: 'Apple', testId: 'apple'},
@@ -84,12 +80,5 @@ describe('Menu', () => {
         key('ArrowLeft');
         await waitFor(() => expect(screen.queryByTestId('csv')).toBeNull());
         expect(document.activeElement).toBe(parent);
-    });
-
-    it('renders Blueprint menu items when useBlueprint is set', () => {
-        Menu.defaults.useBlueprint = true;
-        render(menu({menuItems: items()}));
-        expect(screen.getByTestId('apple').classList.contains('xh-menu-item')).toBe(false);
-        expect(screen.getByTestId('apple').classList.contains('bp6-menu-item')).toBe(true);
     });
 });

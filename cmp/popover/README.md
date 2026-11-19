@@ -88,18 +88,6 @@ that carries the popover's `className`, as with mobile's earlier popover.
 `@xh/hoist/mobile/cmp/popover` re-exports this `Popover` for one release. Import it from
 `@xh/hoist/cmp/popover` instead.
 
-## Falling Back to Blueprint
-
-For one release, an app can render desktop popovers and tooltips with Blueprint's, as before Hoist
-had its own. Set this before the app renders:
-
-```typescript
-import {Popover, Tooltip} from '@xh/hoist/cmp/popover';
-
-Popover.defaults.useBlueprint = true;
-Tooltip.defaults.useBlueprint = true;
-```
-
 ## Common Pitfalls
 
 - **App CSS on `bp6-popover*` classes works for one release only.** The popover keeps Blueprint's

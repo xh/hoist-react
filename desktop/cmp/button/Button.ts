@@ -15,7 +15,6 @@ import type {
 } from '@xh/hoist/core';
 import {hoistCmp} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
-import {button as bpButton} from '@xh/hoist/kit/blueprint';
 import {TEST_ID, withDefault} from '@xh/hoist/utils/js';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
@@ -52,12 +51,6 @@ export interface ButtonProps<M extends HoistModel = null>
 export interface ButtonDefaults {
     minimal?: boolean;
     outlined?: boolean;
-
-    /**
-     * True to render desktop buttons with Blueprint's, as before Hoist had its own.
-     * For apps to fall back on while they adopt Hoist's button - removed in the next major version.
-     */
-    useBlueprint?: boolean;
 }
 
 /**
@@ -72,8 +65,7 @@ export const [Button, button] = hoistCmp.withFactory<ButtonProps, ButtonDefaults
     className: 'xh-button',
     defaults: {
         minimal: true,
-        outlined: false,
-        useBlueprint: false
+        outlined: false
     },
 
     render(props, ref) {
@@ -121,7 +113,7 @@ export const [Button, button] = hoistCmp.withFactory<ButtonProps, ButtonDefaults
         if (!minimal && !outlined) classes.push('xh-button--standard');
         if (active) classes.push('xh-button--active');
 
-        const sharedProps = {
+        const nativeProps = {
             autoFocus,
             [TEST_ID]: testId,
             ...domAttrs,
@@ -135,31 +127,15 @@ export const [Button, button] = hoistCmp.withFactory<ButtonProps, ButtonDefaults
             ...rest
         };
 
-        if (defaults.useBlueprint) {
-            return bpButton({
-                ...sharedProps,
-                active,
-                className: classNames(className, classes),
-                icon,
-                intent,
-                minimal,
-                outlined,
-                ref,
-                rightIcon,
-                text,
-                children
-            });
-        }
-
         // Blueprint's class names are kept, so its styles and any app CSS keyed to them still apply.
         const hasText = !isEmptyNode(text) || !isEmptyNode(children);
         return createElement(
             'button',
             {
                 type: 'button',
-                ...sharedProps,
+                ...nativeProps,
                 // As Blueprint's button, a disabled button is taken out of the tab order.
-                tabIndex: disabled ? -1 : sharedProps.tabIndex,
+                tabIndex: disabled ? -1 : nativeProps.tabIndex,
                 ref,
                 className: classNames(
                     'bp6-button',

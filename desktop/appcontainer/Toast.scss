@@ -53,9 +53,8 @@
   }
 }
 
-// New toasts slide in from the edge they are shown along. Blueprint's toaster, used when
-// `ToastSource.defaults.useBlueprint` is set, renders an overlay with its own transitions.
-.xh-toast-container:not(.bp6-overlay) {
+// New toasts slide in from the edge they are shown along.
+.xh-toast-container {
   --xh-toast-enter-offset: -40px;
 
   .xh-toast {

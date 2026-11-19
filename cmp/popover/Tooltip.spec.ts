@@ -4,12 +4,11 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {Tooltip, tooltip, type TooltipProps} from '@xh/hoist/cmp/popover';
-import {registerLegacyTooltip} from '@xh/hoist/cmp/popover/impl/LegacyPopover';
+import {tooltip, type TooltipProps} from '@xh/hoist/cmp/popover';
 import {initTestAppAsync} from '@xh/hoist/test-support';
 import {fireEvent, render, screen, waitFor} from '@testing-library/react';
 import {createElement} from 'react';
-import {afterEach, beforeAll, describe, expect, it} from 'vitest';
+import {beforeAll, describe, expect, it} from 'vitest';
 
 /**
  * How Hoist's Tooltip opens and how assistive tech sees it. Form validation messages, tab and card
@@ -17,10 +16,6 @@ import {afterEach, beforeAll, describe, expect, it} from 'vitest';
  */
 describe('Tooltip', () => {
     beforeAll(() => initTestAppAsync());
-
-    afterEach(() => {
-        Tooltip.defaults.useBlueprint = false;
-    });
 
     const withTooltip = (props: TooltipProps = {}) =>
         tooltip({
@@ -76,15 +71,5 @@ describe('Tooltip', () => {
         fireEvent.mouseEnter(screen.getByText('Drawn'));
         await screen.findByText('Hint');
         expect(screen.getByText('Drawn').getAttribute('data-open')).toBe('true');
-    });
-
-    it('renders the registered Blueprint tooltip when useBlueprint is set', () => {
-        registerLegacyTooltip(({children}) =>
-            createElement('div', {'data-testid': 'legacy'}, children)
-        );
-        Tooltip.defaults.useBlueprint = true;
-
-        render(withTooltip());
-        expect(screen.getByTestId('legacy').textContent).toBe('Target');
     });
 });

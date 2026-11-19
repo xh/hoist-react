@@ -6,7 +6,7 @@
  */
 import {tabContainer, TabContainerModel, type TabSwitcherMenuContext} from '@xh/hoist/cmp/tab';
 import type {MenuItem, MenuItemLike, MenuToken} from '@xh/hoist/core';
-import {TabSwitcher, tabSwitcher} from '@xh/hoist/desktop/cmp/tab';
+import {tabSwitcher} from '@xh/hoist/desktop/cmp/tab';
 import '@xh/hoist/desktop/register';
 import {wait} from '@xh/hoist/promise';
 import {initTestAppAsync} from '@xh/hoist/test-support';
@@ -21,15 +21,8 @@ import {beforeAll, describe, expect, it, onTestFinished, vi} from 'vitest';
 describe('TabSwitcher', () => {
     beforeAll(() => initTestAppAsync());
 
-    describe.each([
-        ['Hoist', false],
-        ['Blueprint', true]
-    ])('tab strip (%s)', (_name, useBlueprint) => {
+    describe('tab strip', () => {
         const renderStrip = () => {
-            TabSwitcher.defaults.useBlueprint = useBlueprint;
-            onTestFinished(() => {
-                TabSwitcher.defaults.useBlueprint = false;
-            });
             const model = new TabContainerModel({
                 tabs: [
                     {id: 'alpha', title: 'Alpha', content: () => null},

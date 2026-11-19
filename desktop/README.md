@@ -482,9 +482,6 @@ Key points:
 - Use `onClose` to handle the dialog's close button and outside-click-to-close.
 - Wrap dialog content in a `panel()` when you need toolbars, masks, or standard layout.
 
-For this release only, `Dialog.defaults.useBlueprint = true`, set at startup, renders dialogs with
-Blueprint's instead.
-
 ## Desktop Hooks
 
 ### useContextMenu

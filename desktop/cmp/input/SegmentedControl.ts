@@ -15,7 +15,6 @@ import {div} from '@xh/hoist/cmp/layout';
 import type {HoistProps, Intent} from '@xh/hoist/core';
 import {hoistCmp} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
-import {bpSegmentedControl} from '@xh/hoist/kit/blueprint';
 import {computed} from '@xh/hoist/mobx';
 import {getLayoutProps, getNonLayoutProps} from '@xh/hoist/utils/react';
 import {TEST_ID} from '@xh/hoist/utils/js';
@@ -91,23 +90,9 @@ export interface SegmentedControlProps extends HoistProps, HoistInputProps {
  *
  * Built on Blueprint's SegmentedControl component.
  */
-export interface SegmentedControlDefaults {
-    /**
-     * True to render desktop segmented controls with Blueprint's, as before Hoist had its own.
-     * For apps to fall back on while they adopt Hoist's - removed in the next major version.
-     */
-    useBlueprint?: boolean;
-}
-
-export const [SegmentedControl, segmentedControl] = hoistCmp.withFactory<
-    SegmentedControlProps,
-    SegmentedControlDefaults
->({
+export const [SegmentedControl, segmentedControl] = hoistCmp.withFactory<SegmentedControlProps>({
     displayName: 'SegmentedControl',
     className: 'xh-segmented-control',
-    defaults: {
-        useBlueprint: false
-    },
     render(props, ref) {
         return useHoistInputModel(cmp, props, ref, SegmentedControlModel);
     }
@@ -249,9 +234,7 @@ const cmp = hoistCmp.factory<SegmentedControlModel>(({model, className, ...props
         ...getLayoutProps(props),
         [TEST_ID]: props.testId,
         ...domAttrs,
-        children: (SegmentedControl.defaults.useBlueprint
-            ? bpSegmentedControl
-            : (p: SegmentedControlImplProps) => h(SegmentedControlImpl, p))({
+        children: h(SegmentedControlImpl, {
             ...bpProps,
             fill,
             size: compact ? 'small' : undefined,

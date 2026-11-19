@@ -9,7 +9,6 @@ import {HoistInputModel, useHoistInputModel} from '@xh/hoist/cmp/input';
 import type {HoistProps, HSide} from '@xh/hoist/core';
 import {hoistCmp} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
-import {radio, radioGroup} from '@xh/hoist/kit/blueprint';
 import {computed} from '@xh/hoist/mobx';
 import {getTestId, TEST_ID, withDefault} from '@xh/hoist/utils/js';
 import classNames from 'classnames';
@@ -37,20 +36,9 @@ export interface RadioOption {
 /**
  * An input for managing Radio Buttons.
  */
-export interface RadioInputDefaults {
-    /**
-     * True to render desktop radio buttons with Blueprint's, as before Hoist had its own.
-     * For apps to fall back on while they adopt Hoist's - removed in the next major version.
-     */
-    useBlueprint?: boolean;
-}
-
-export const [RadioInput, radioInput] = hoistCmp.withFactory<RadioInputProps, RadioInputDefaults>({
+export const [RadioInput, radioInput] = hoistCmp.withFactory<RadioInputProps>({
     displayName: 'RadioInput',
     className: 'xh-radio-input',
-    defaults: {
-        useBlueprint: false
-    },
     render(props, ref) {
         return useHoistInputModel(cmp, props, ref, RadioInputModel);
     }
@@ -105,30 +93,6 @@ const cmp = hoistCmp.factory<RadioInputModel>(({model, className, ...props}, ref
         labelSide = withDefault(props.labelSide, 'right'),
         alignIndicator = labelSide === 'left' ? 'right' : 'left',
         name = useId();
-
-    if (RadioInput.defaults.useBlueprint) {
-        return radioGroup({
-            className,
-            disabled: props.disabled,
-            inline: props.inline,
-            selectedValue: renderValue,
-            onChange: model.onChange,
-            [TEST_ID]: props.testId,
-            ...props.domAttrs,
-            children: normalizedOptions.map(opt =>
-                radio({
-                    alignIndicator,
-                    disabled: opt.disabled,
-                    label: opt.label,
-                    value: opt.value,
-                    className: 'xh-radio-input-option',
-                    [TEST_ID]: getTestId(props.testId, `${opt.value}`),
-                    onFocus: model.onFocus,
-                    onBlur: model.onBlur
-                })
-            )
-        });
-    }
 
     // Blueprint's class names are kept, so its styles and any app CSS keyed to them still apply.
     return createElement(

@@ -4,12 +4,12 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {Button, button, buttonGroup} from '@xh/hoist/desktop/cmp/button';
+import {button, buttonGroup} from '@xh/hoist/desktop/cmp/button';
 import {Icon} from '@xh/hoist/icon';
 import {initTestAppAsync} from '@xh/hoist/test-support';
 import {fireEvent, render, screen} from '@testing-library/react';
 import {createRef} from 'react';
-import {afterEach, beforeAll, describe, expect, it, vi} from 'vitest';
+import {beforeAll, describe, expect, it, vi} from 'vitest';
 
 /**
  * How the desktop Button and ButtonGroup render and respond. Toolbars, dialogs, forms and app
@@ -17,10 +17,6 @@ import {afterEach, beforeAll, describe, expect, it, vi} from 'vitest';
  */
 describe('Button', () => {
     beforeAll(() => initTestAppAsync());
-
-    afterEach(() => {
-        Button.defaults.useBlueprint = false;
-    });
 
     it('renders a native button with its icon, text and right icon in order', () => {
         render(
@@ -87,15 +83,6 @@ describe('Button', () => {
         expect(el.style.width).toBe('120px');
         expect(el.getAttribute('aria-label')).toBe('Go now');
         expect(ref.current).toBe(el);
-    });
-
-    it('renders Blueprint button when useBlueprint is set', () => {
-        Button.defaults.useBlueprint = true;
-        render(button({text: 'Go'}));
-        const el = screen.getByRole('button');
-        expect(el.classList).toContain('bp6-button');
-        expect(el.querySelector('.xh-button__text')).toBeNull();
-        expect(el.querySelector('.bp6-button-text').textContent).toBe('Go');
     });
 
     it('groups buttons in a div with Blueprint group classes', () => {

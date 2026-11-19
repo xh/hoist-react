@@ -5,11 +5,11 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {popover} from '@xh/hoist/cmp/popover';
-import {Dialog, dialog, type DialogProps} from '@xh/hoist/desktop/cmp/dialog';
+import {dialog, type DialogProps} from '@xh/hoist/desktop/cmp/dialog';
 import {initTestAppAsync} from '@xh/hoist/test-support';
 import {fireEvent, render, screen, waitFor} from '@testing-library/react';
 import {createElement} from 'react';
-import {afterEach, beforeAll, describe, expect, it, vi} from 'vitest';
+import {beforeAll, describe, expect, it, vi} from 'vitest';
 
 /**
  * How the desktop Dialog opens, closes and holds focus. Hoist's own dialogs - messages, options,
@@ -17,10 +17,6 @@ import {afterEach, beforeAll, describe, expect, it, vi} from 'vitest';
  */
 describe('Dialog', () => {
     beforeAll(() => initTestAppAsync());
-
-    afterEach(() => {
-        Dialog.defaults.useBlueprint = false;
-    });
 
     const open = (props: DialogProps = {}) =>
         dialog({
@@ -110,13 +106,5 @@ describe('Dialog', () => {
             expect(document.querySelectorAll('[data-floating-ui-portal]').length).toBe(before + 1)
         );
         expect(screen.queryByRole('dialog')).toBeNull();
-    });
-
-    it('renders Blueprint dialog when useBlueprint is set', async () => {
-        Dialog.defaults.useBlueprint = true;
-        render(open());
-        const el = await screen.findByRole('dialog');
-        expect(el.classList.contains('bp6-dialog')).toBe(true);
-        expect(el.classList.contains('xh-dialog')).toBe(false);
     });
 });

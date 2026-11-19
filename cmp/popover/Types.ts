@@ -155,14 +155,6 @@ export type PopoverTargetProps = HTMLAttributes<HTMLElement> & {
     isOpen: boolean;
 };
 
-export interface PopoverDefaults {
-    /**
-     * True to render desktop popovers with Blueprint's popover, as before Hoist had its own. For
-     * apps to fall back on while they adopt Hoist's popover - removed in the next major version.
-     */
-    useBlueprint?: boolean;
-}
-
 export interface TooltipProps extends Pick<
     PopoverProps,
     | 'boundary'
@@ -190,12 +182,4 @@ export interface TooltipProps extends Pick<
 
     /** True to draw the tooltip with less padding. */
     compact?: boolean;
-}
-
-export interface TooltipDefaults {
-    /**
-     * True to render desktop tooltips with Blueprint's tooltip, as before Hoist had its own. For
-     * apps to fall back on while they adopt Hoist's tooltip - removed in the next major version.
-     */
-    useBlueprint?: boolean;
 }

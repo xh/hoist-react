@@ -5,31 +5,23 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {HoistModel} from '@xh/hoist/core';
-import {SegmentedControl, segmentedControl} from '@xh/hoist/desktop/cmp/input';
+import {segmentedControl} from '@xh/hoist/desktop/cmp/input';
 import {Icon} from '@xh/hoist/icon';
 import {bindable} from '@xh/hoist/mobx';
 import {initTestAppAsync} from '@xh/hoist/test-support';
 import {fireEvent, render, screen} from '@testing-library/react';
-import {afterEach, beforeAll, describe, expect, it, onTestFinished} from 'vitest';
+import {beforeAll, describe, expect, it, onTestFinished} from 'vitest';
 
 /**
- * How the desktop SegmentedControl shows and selects its options. Each test runs against Hoist's
- * own segments and the Blueprint fallback, which should behave the same.
+ * How the desktop SegmentedControl shows and selects its options.
  */
-describe.each([
-    ['Hoist', false],
-    ['Blueprint', true]
-])('SegmentedControl (desktop, %s)', (_name, useBlueprint) => {
+describe('SegmentedControl (desktop)', () => {
     beforeAll(() => initTestAppAsync());
-
-    afterEach(() => {
-        SegmentedControl.defaults.useBlueprint = false;
-    });
 
     const options = ['day', 'week', {value: 'month', label: 'Month', disabled: true}];
 
     it('renders a radio group of buttons, with only the selected one pressed in', () => {
-        renderBound('week', {options}, useBlueprint);
+        renderBound('week', {options});
         const radios = screen.getAllByRole('radio');
         expect(radios.map(it => it.textContent)).toEqual(['day', 'week', 'Month']);
         expect(radios.map(it => it.getAttribute('aria-checked'))).toEqual([
@@ -44,13 +36,13 @@ describe.each([
     });
 
     it('selects an option on click', () => {
-        const {model} = renderBound('week', {options}, useBlueprint);
+        const {model} = renderBound('week', {options});
         fireEvent.click(screen.getByText('day'));
         expect(model.value).toBe('day');
     });
 
     it('moves the selection with the arrow keys, skipping disabled options and wrapping', () => {
-        const {model} = renderBound('week', {options}, useBlueprint);
+        const {model} = renderBound('week', {options});
         const week = screen.getByText('week').closest('button');
         week.focus();
         fireEvent.keyDown(week, {key: 'ArrowRight'});
@@ -59,12 +51,12 @@ describe.each([
     });
 
     it('makes the first option tabbable when nothing is selected', () => {
-        renderBound(null, {options}, useBlueprint);
+        renderBound(null, {options});
         expect(screen.getAllByRole('radio').map(it => it.tabIndex)).toEqual([0, -1, -1]);
     });
 
     it('renders an icon-only option without a text element', () => {
-        renderBound(null, {options: [{value: 'a', icon: Icon.add()}]}, useBlueprint);
+        renderBound(null, {options: [{value: 'a', icon: Icon.add()}]});
         const radio = screen.getByRole('radio');
         expect(radio.querySelector('svg')).not.toBeNull();
         expect(radio.querySelector('.bp6-button-text')).toBeNull();
@@ -83,8 +75,7 @@ class FormModel extends HoistModel {
     }
 }
 
-function renderBound(value: string, props: any, useBlueprint: boolean) {
-    SegmentedControl.defaults.useBlueprint = useBlueprint;
+function renderBound(value: string, props: any) {
     const model = new FormModel(value);
     onTestFinished(() => model.destroy());
     render(segmentedControl({model, bind: 'value', ...props}));

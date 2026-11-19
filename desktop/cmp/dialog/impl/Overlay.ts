@@ -6,12 +6,10 @@
  */
 import {FloatingPortal} from '@floating-ui/react';
 import {elementFactory} from '@xh/hoist/core';
-import {overlay as bpOverlay} from '@xh/hoist/kit/blueprint';
 import {usePortalContainer} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import type {FC, KeyboardEvent, ReactElement, ReactNode} from 'react';
 import {Children, cloneElement, createElement as h, isValidElement, useEffect, useRef} from 'react';
-import {Dialog} from '../Dialog';
 import {useBodyScrollLock} from './BodyScrollLock';
 
 export interface OverlayProps {
@@ -89,11 +87,7 @@ const OverlayImpl: FC<OverlayProps> = ({
     return usePortal ? h(FloatingPortal, {root: contextContainer ?? undefined}, layer) : layer;
 };
 
-/** Hoist's overlay, or Blueprint's with `Dialog.defaults.useBlueprint`. */
-const Overlay: FC<OverlayProps> = props =>
-    Dialog.defaults.useBlueprint ? bpOverlay(props as any) : h(OverlayImpl, props);
-
-export const overlay = elementFactory(Overlay);
+export const overlay = elementFactory(OverlayImpl);
 
 /** Class for an overlay that scrolls its content, as Blueprint's `Classes.OVERLAY_SCROLL_CONTAINER`. */
 export const OVERLAY_SCROLL_CONTAINER = 'xh-overlay--scroll-container bp6-overlay-scroll-container';

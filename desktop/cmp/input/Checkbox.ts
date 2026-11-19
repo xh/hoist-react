@@ -9,7 +9,6 @@ import {HoistInputModel, useHoistInputModel} from '@xh/hoist/cmp/input';
 import type {HoistProps, HSide, StyleProps} from '@xh/hoist/core';
 import {hoistCmp} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
-import {checkbox as bpCheckbox} from '@xh/hoist/kit/blueprint';
 import {TEST_ID, withDefault} from '@xh/hoist/utils/js';
 import {isNil} from 'lodash';
 import type {ReactNode} from 'react';
@@ -47,20 +46,9 @@ export interface CheckboxProps extends HoistProps, HoistInputProps, StyleProps {
  * Checkbox control for boolean values.
  * Renders null with an "indeterminate" [-] display.
  */
-export interface CheckboxDefaults {
-    /**
-     * True to render desktop checkboxes with Blueprint's, as before Hoist had its own.
-     * For apps to fall back on while they adopt Hoist's - removed in the next major version.
-     */
-    useBlueprint?: boolean;
-}
-
-export const [Checkbox, checkbox] = hoistCmp.withFactory<CheckboxProps, CheckboxDefaults>({
+export const [Checkbox, checkbox] = hoistCmp.withFactory<CheckboxProps>({
     displayName: 'Checkbox',
     className: 'xh-check-box',
-    defaults: {
-        useBlueprint: false
-    },
     render(props, ref) {
         return useHoistInputModel(cmp, props, ref, CheckboxInputModel);
     }
@@ -98,22 +86,8 @@ const cmp = hoistCmp.factory<CheckboxInputModel>(({model, className, ...props}, 
     // The indeterminate state has no HTML attribute - set it on the element.
     useEffect(() => {
         const input = model.inputRef.current as HTMLInputElement;
-        if (input && !Checkbox.defaults.useBlueprint) input.indeterminate = indeterminate;
+        if (input) input.indeterminate = indeterminate;
     }, [indeterminate, model]);
-
-    if (Checkbox.defaults.useBlueprint) {
-        return bpCheckbox({
-            ...inputProps,
-            indeterminate,
-            alignIndicator,
-            inline,
-            label: props.label,
-            className,
-            style: props.style,
-            inputRef: model.inputRef,
-            ref
-        });
-    }
 
     return control({
         kind: 'checkbox',

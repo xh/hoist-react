@@ -4,6 +4,7 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
+import {elementFactory} from '@xh/hoist/core';
 import classNames from 'classnames';
 import type {CSSProperties, FC, InputHTMLAttributes, ReactElement, ReactNode, Ref} from 'react';
 import {createElement as h, useLayoutEffect, useRef, useState} from 'react';
@@ -101,6 +102,8 @@ export const InputGroup: FC<InputGroupProps> = props => {
             : null
     );
 };
+
+export const inputGroup = elementFactory(InputGroup);
 
 function changed(prev: number, next: number): boolean {
     if (prev == null || next == null) return prev !== next;

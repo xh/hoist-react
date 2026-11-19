@@ -5,7 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {button} from '@xh/hoist/desktop/cmp/button';
-import {Toolbar, toolbar} from '@xh/hoist/desktop/cmp/toolbar';
+import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {initTestAppAsync} from '@xh/hoist/test-support';
 import {fireEvent, render, screen, waitFor} from '@testing-library/react';
 import type {ReactNode} from 'react';
@@ -39,16 +39,13 @@ describe('Toolbar', () => {
     });
 });
 
-describe.each([
-    ['Hoist', false],
-    ['Blueprint', true]
-])('Toolbar overflow with simulated layout (%s)', (_name, useBlueprint) => {
+describe('Toolbar overflow with simulated layout', () => {
     beforeAll(() => initTestAppAsync());
 
     const items = ['A', 'B', 'C', 'D', 'E', 'F'].map(text => button({text}));
 
     it('shows every item, with no menu, when all fit', () => {
-        renderWithRoom(6, {}, useBlueprint);
+        renderWithRoom(6, {});
         expect(visibleItems()).toEqual(['A', 'B', 'C', 'D', 'E', 'F']);
         expect(
             document.querySelector('.xh-toolbar-overflow-popover, .bp6-popover-target')
@@ -56,19 +53,19 @@ describe.each([
     });
 
     it('moves items from the end into the menu when there is room for some', async () => {
-        renderWithRoom(3, {}, useBlueprint);
+        renderWithRoom(3, {});
         expect(visibleItems()).toEqual(['A', 'B', 'C']);
         expect(await menuItems()).toEqual(['D', 'E', 'F']);
     });
 
     it('moves items from the start when collapseFrom is start', async () => {
-        renderWithRoom(4, {collapseFrom: 'start'}, useBlueprint);
+        renderWithRoom(4, {collapseFrom: 'start'});
         expect(visibleItems()).toEqual(['C', 'D', 'E', 'F']);
         expect(await menuItems()).toEqual(['A', 'B']);
     });
 
     it('keeps minVisibleItems visible, however little room there is', () => {
-        renderWithRoom(1, {minVisibleItems: 4}, useBlueprint);
+        renderWithRoom(1, {minVisibleItems: 4});
         expect(visibleItems()).toEqual(['A', 'B', 'C', 'D']);
     });
 
@@ -76,8 +73,7 @@ describe.each([
      * Render the toolbar with room for `room` items. The spacer that ends the overflow list
      * reports a width only while no more than that many items are visible beside it.
      */
-    function renderWithRoom(room: number, props: object, useBlueprint: boolean) {
-        Toolbar.defaults.useBlueprint = useBlueprint;
+    function renderWithRoom(room: number, props: object) {
         const spy = vi
             .spyOn(HTMLElement.prototype, 'offsetWidth', 'get')
             .mockImplementation(function (this: HTMLElement) {
@@ -85,10 +81,7 @@ describe.each([
                 const count = this.parentElement.querySelectorAll(':scope > .xh-button').length;
                 return count <= room ? 10 : 0;
             });
-        onTestFinished(() => {
-            spy.mockRestore();
-            Toolbar.defaults.useBlueprint = false;
-        });
+        onTestFinished(() => spy.mockRestore());
         render(toolbar({enableOverflowMenu: true, children: items, ...props}));
     }
 

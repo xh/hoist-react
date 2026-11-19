@@ -6,7 +6,6 @@
  */
 import type {HoistProps} from '@xh/hoist/core';
 import {hoistCmp} from '@xh/hoist/core';
-import {useHotkeys as useHotkeysBp} from '@xh/hoist/kit/blueprint';
 import {isEqualWith, isFunction, partition} from 'lodash';
 import type {KeyboardEvent as ReactKeyboardEvent, ReactElement, ReactNode} from 'react';
 import {cloneElement, useEffect, useMemo, useRef} from 'react';
@@ -52,19 +51,6 @@ export interface HotkeyConfig {
     onKeyUp?: (e: KeyboardEvent) => any;
 }
 
-export interface HotkeysDefaults {
-    /**
-     * True to handle hotkeys and show the hotkeys dialog with Blueprint's, as before Hoist had its
-     * own. For apps to fall back on while they adopt Hoist's - removed in the next major version.
-     */
-    useBlueprint?: boolean;
-}
-
-/** App-wide defaults for hotkeys. Set at startup, before the app renders. */
-export const HOTKEYS_DEFAULTS: HotkeysDefaults = {
-    useBlueprint: false
-};
-
 /**
  * Hook to add Key handling support to a component.
  *
@@ -81,9 +67,7 @@ export const HOTKEYS_DEFAULTS: HotkeysDefaults = {
  */
 export function useHotkeys(child?: ReactElement<any>, hotkeys?: HotkeyConfig[]): ReactElement {
     if (!child || !hotkeys) return child;
-    return HOTKEYS_DEFAULTS.useBlueprint
-        ? bpHotkeysHost({child, hotkeys})
-        : hotkeysHost({child, hotkeys});
+    return hotkeysHost({child, hotkeys});
 }
 
 //------------------------
@@ -104,18 +88,6 @@ const hotkeysHost = hoistCmp.factory<HotkeysHostProps>({
 
     render({child, hotkeys}) {
         const {handleKeyDown, handleKeyUp} = useHoistHotkeys(useStableHotkeys(hotkeys));
-        return cloneElement(child, {onKeyDown: handleKeyDown, onKeyUp: handleKeyUp});
-    }
-});
-
-const bpHotkeysHost = hoistCmp.factory<HotkeysHostProps>({
-    displayName: 'BpHotkeysHost',
-    model: false,
-    memo: false,
-    observer: false,
-
-    render({child, hotkeys}) {
-        const {handleKeyDown, handleKeyUp} = useHotkeysBp(useStableHotkeys(hotkeys));
         return cloneElement(child, {onKeyDown: handleKeyDown, onKeyUp: handleKeyUp});
     }
 });

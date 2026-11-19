@@ -7,9 +7,9 @@
 import type {ToastModel} from '@xh/hoist/appcontainer/ToastModel';
 import {ToastSourceModel} from '@xh/hoist/appcontainer/ToastSourceModel';
 import type {ToastSpec} from '@xh/hoist/core';
-import {ToastSource, toastSource} from '@xh/hoist/desktop/appcontainer/ToastSource';
+import {toastSource} from '@xh/hoist/desktop/appcontainer/ToastSource';
 import {initTestAppAsync} from '@xh/hoist/test-support';
-import {act, fireEvent, render, screen, waitFor} from '@testing-library/react';
+import {act, fireEvent, render, screen} from '@testing-library/react';
 import {afterEach, beforeAll, describe, expect, it, onTestFinished, vi} from 'vitest';
 
 /**
@@ -20,7 +20,6 @@ describe('Toast (desktop)', () => {
 
     afterEach(() => {
         vi.useRealTimers();
-        ToastSource.defaults.useBlueprint = false;
     });
 
     it('shows the message as an alert, styled for its intent', () => {
@@ -101,15 +100,6 @@ describe('Toast (desktop)', () => {
         fireEvent.keyDown(screen.getByText('One'), {key: 'Escape'});
         expect(one.isOpen).toBe(false);
         expect(two.isOpen).toBe(false);
-    });
-
-    it('shows toasts with Blueprint when useBlueprint is set', async () => {
-        ToastSource.defaults.useBlueprint = true;
-        const {show} = renderSource();
-        show({message: 'Legacy'});
-
-        await waitFor(() => expect(screen.getByText('Legacy')).not.toBeNull());
-        expect(screen.getByText('Legacy').closest('.bp6-overlay')).not.toBeNull();
     });
 });
 

@@ -4,14 +4,13 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {Popover, popover, type PopoverProps} from '@xh/hoist/cmp/popover';
-import {registerLegacyPopover} from '@xh/hoist/cmp/popover/impl/LegacyPopover';
+import {popover, type PopoverProps} from '@xh/hoist/cmp/popover';
 import {XH} from '@xh/hoist/core';
 import {portalContainerProvider} from '@xh/hoist/utils/react';
 import {initTestAppAsync} from '@xh/hoist/test-support';
 import {act, fireEvent, render, screen, waitFor} from '@testing-library/react';
 import {createElement} from 'react';
-import {afterEach, beforeAll, describe, expect, it, vi} from 'vitest';
+import {beforeAll, describe, expect, it, vi} from 'vitest';
 
 /**
  * How Hoist's Popover opens, closes and nests. Menus, pickers and choosers across desktop build on
@@ -19,10 +18,6 @@ import {afterEach, beforeAll, describe, expect, it, vi} from 'vitest';
  */
 describe('Popover', () => {
     beforeAll(() => initTestAppAsync());
-
-    afterEach(() => {
-        Popover.defaults.useBlueprint = false;
-    });
 
     const target = (text = 'Open') => createElement('button', {type: 'button'}, text);
 
@@ -187,15 +182,5 @@ describe('Popover', () => {
     it('puts its testId on the target wrapper', () => {
         render(withPopover({testId: 'my-popover'}));
         expect(screen.getByTestId('my-popover').contains(screen.getByText('Open'))).toBe(true);
-    });
-
-    it('renders the registered Blueprint popover when useBlueprint is set', () => {
-        registerLegacyPopover(({children}) =>
-            createElement('div', {'data-testid': 'legacy'}, children)
-        );
-        Popover.defaults.useBlueprint = true;
-
-        render(withPopover());
-        expect(screen.getByTestId('legacy').textContent).toBe('Open');
     });
 });

@@ -4,6 +4,7 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
+import {elementFactory} from '@xh/hoist/core';
 import classNames from 'classnames';
 import type {
     ChangeEvent,
@@ -125,6 +126,8 @@ export const NumericInput: FC<NumericInputProps> = props => {
         })
     );
 };
+
+export const numericInput = elementFactory(NumericInput);
 
 //------------------------
 // Implementation

@@ -5,18 +5,11 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {HoistModel} from '@xh/hoist/core';
-import {
-    Checkbox,
-    checkbox,
-    RadioInput,
-    radioInput,
-    SwitchInput,
-    switchInput
-} from '@xh/hoist/desktop/cmp/input';
+import {checkbox, radioInput, switchInput} from '@xh/hoist/desktop/cmp/input';
 import {bindable} from '@xh/hoist/mobx';
 import {initTestAppAsync} from '@xh/hoist/test-support';
 import {fireEvent, render, screen} from '@testing-library/react';
-import {afterEach, beforeAll, describe, expect, it, onTestFinished} from 'vitest';
+import {beforeAll, describe, expect, it, onTestFinished} from 'vitest';
 
 /**
  * How the desktop Checkbox, SwitchInput and RadioInput render and commit values. Forms, grid
@@ -24,12 +17,6 @@ import {afterEach, beforeAll, describe, expect, it, onTestFinished} from 'vitest
  */
 describe('Checkbox, SwitchInput and RadioInput (desktop)', () => {
     beforeAll(() => initTestAppAsync());
-
-    afterEach(() => {
-        Checkbox.defaults.useBlueprint = false;
-        SwitchInput.defaults.useBlueprint = false;
-        RadioInput.defaults.useBlueprint = false;
-    });
 
     it('renders a checkbox as a native input in a label, with Blueprint class names', () => {
         const {input} = renderBound(checkbox, true, {label: 'Active'});
@@ -94,14 +81,6 @@ describe('Checkbox, SwitchInput and RadioInput (desktop)', () => {
 
         fireEvent.click(a);
         expect(model.value).toBe('a');
-    });
-
-    it('renders Blueprint controls when useBlueprint is set', () => {
-        Checkbox.defaults.useBlueprint = true;
-        const {input, model} = renderBound(checkbox, false);
-        expect(input.closest('label').classList).not.toContain('xh-control');
-        fireEvent.click(input);
-        expect(model.value).toBe(true);
     });
 });
 

@@ -37,72 +37,26 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 * `Mask` now renders inline desktop masks as a plain `div` with the class `xh-mask--inline`, not a
   Blueprint overlay. Showing a mask no longer forces a browser layout. Restyle any app CSS that
   targets `.bp6-overlay` classes within an inline mask, or use `--xh-mask-bg`.
-* Desktop popovers now render with Hoist's own `Popover`, not Blueprint's - see New Features. The
-  DOM keeps Blueprint's `bp6-popover*` classes alongside new `xh-popover__*` ones, so app CSS still
-  applies. Set `Popover.defaults.useBlueprint = true` at startup to fall back to Blueprint's
-  popover for this release. `DateInputProps.popoverModifiers` no longer has any effect.
-* Desktop tooltips now render with Hoist's new `Tooltip`, in `@xh/hoist/cmp/popover`, not
-  Blueprint's. They keep Blueprint's `bp6-tooltip` class next to `xh-tooltip`. Set
-  `Tooltip.defaults.useBlueprint = true` at startup to fall back to Blueprint's for this release.
-* Added `Dialog` to `@xh/hoist/desktop/cmp/dialog`, with `dialogBody`, `dialogFooter` and
-  `dialogFooterActions`, and moved all Hoist dialogs, masks and overlays onto it. Import `dialog`
-  and its parts from there rather than `@xh/hoist/kit/blueprint`. The DOM keeps Blueprint's
-  `bp6-dialog*` and `bp6-overlay*` classes alongside new `xh-dialog*` and `xh-overlay*` ones. Set
-  `Dialog.defaults.useBlueprint = true` at startup to fall back to Blueprint's for this release.
-* Desktop toasts now render with Hoist's own components, not Blueprint's `OverlayToaster`. The DOM
-  keeps Blueprint's `bp6-toast*` classes alongside `xh-toast*` ones, so app CSS still applies. Set
-  `ToastSource.defaults.useBlueprint = true` at startup to fall back to Blueprint's for this
-  release. `ToastSource` is exported from `@xh/hoist/desktop/appcontainer` for this purpose.
-* Desktop `Button` and `ButtonGroup` now render native `<button>` and `<div>` elements, not
-  Blueprint's components. They keep Blueprint's `bp6-button*` classes, so app CSS still applies,
-  and button text is now also in an `xh-button__text` span. Set
-  `Button.defaults.useBlueprint = true` at startup to fall back to Blueprint's button and button
-  group for this release.
-* Desktop `Checkbox`, `SwitchInput` and `RadioInput` now render their own native inputs, not
-  Blueprint's controls. They keep Blueprint's `bp6-control`, `bp6-checkbox`, `bp6-switch`,
-  `bp6-radio` and `bp6-radio-group` classes alongside new `xh-control*` ones. Set
-  `useBlueprint = true` in each component's `defaults` at startup to fall back to Blueprint's for
-  this release.
-* Desktop `TextInput` and `TextArea` now render their own native `<input>` and `<textarea>`, not
-  Blueprint's components, keeping Blueprint's `bp6-input`, `bp6-input-group` and `bp6-text-area`
-  classes. Set `useBlueprint = true` in each component's `defaults` at startup to fall back to
-  Blueprint's for this release.
-* Desktop `NumberInput` now renders its own input, not Blueprint's `NumericInput`. Arrow-key
-  stepping, the numeric-character filter and paste cleanup work as before, and it keeps Blueprint's
-  `bp6-numeric-input` and `bp6-input` classes. Set `NumberInput.defaults.useBlueprint = true` at
-  startup to fall back to Blueprint's for this release.
-* Desktop `SegmentedControl` now renders its own radio group of buttons, not Blueprint's, with the
-  same arrow-key selection and `bp6-segmented-control` classes. Set
-  `SegmentedControl.defaults.useBlueprint = true` at startup to fall back to Blueprint's for this
-  release.
-* Desktop `Slider` now renders its own single and range slider, not Blueprint's, keeping its
-  `bp6-slider*` classes. Set `Slider.defaults.useBlueprint = true` at startup to fall back to
-  Blueprint's for this release.
-* Desktop `TabSwitcher` now renders its own tab strip, not Blueprint's `Tabs`, with the same
-  roles, ids, keyboard handling and `bp6-tab*` classes. Set `TabSwitcher.defaults.useBlueprint =
-  true` at startup to fall back to Blueprint's for this release.
-* Desktop `Toolbar` with `enableOverflowMenu` now moves overflowing items into its menu itself,
-  not with Blueprint's `OverflowList`, keeping the `bp6-overflow-list` classes. Set
-  `Toolbar.defaults.useBlueprint = true` at startup to fall back to Blueprint's for this release.
-* Desktop apps no longer load Blueprint's stylesheet. Hoist now ships the Blueprint rules its
-  components use, so they look the same, but app markup that relies on other Blueprint classes -
-  such as Blueprint components rendered directly, or with a `useBlueprint` fallback - loses its
-  Blueprint styling.
-* Desktop `AppBar`, `AppBarSeparator`, the `LeftRightChooser` description, the `DateRangePicker`
-  relative-tab stepper and the admin role tags now render their own elements, not Blueprint's
-  components. The markup and `bp6-*` classes are unchanged, so there is no fallback setting.
+* Desktop components now render Hoist's own markup and behavior, not Blueprint's components, and
+  desktop apps no longer load Blueprint's stylesheet. Hoist ships the Blueprint rules its components
+  use, so they look the same. The DOM keeps Blueprint's `bp6-*` classes alongside new `xh-*` ones,
+  so app CSS keyed to them still applies for this release. Markup that relies on other Blueprint
+  classes, such as Blueprint components an app renders itself, loses its Blueprint styling.
+    * Popovers and tooltips use the new `Popover` and `Tooltip` in `@xh/hoist/cmp/popover` - see
+      New Features. `DateInputProps.popoverModifiers` no longer has any effect.
+    * Added `Dialog` to `@xh/hoist/desktop/cmp/dialog`, with `dialogBody`, `dialogFooter` and
+      `dialogFooterActions`, and moved all Hoist dialogs, masks and overlays onto it. Import
+      `dialog` and its parts from there rather than `@xh/hoist/kit/blueprint`.
+    * Menus, context menus, toasts, hotkeys and the hotkeys dialog opened by `?` are Hoist's own.
+      Hotkey combos keep the same syntax.
+    * `Button`, `ButtonGroup`, `Checkbox`, `SwitchInput`, `RadioInput`, `TextInput`, `TextArea`,
+      `NumberInput`, `SegmentedControl`, `Slider`, `TabSwitcher`, `Toolbar` overflow and `AppBar`
+      render native elements. Button text is now also in an `xh-button__text` span.
 * Mobile `Popover` and `MenuButton` now use the cross-platform `Popover` from
   `@xh/hoist/cmp/popover`. `@xh/hoist/mobile/cmp/popover` re-exports it for one release - import
   from `@xh/hoist/cmp/popover` instead. Popover content now renders in an `xh-popover__floating`
   element in a Floating UI portal, not in a `#xh-popover-portal` div. Restyle any app CSS that
   positions `.xh-popover__content-wrapper`.
-* Desktop hotkeys, from `useHotkeys` and `PanelProps.hotkeys`, and the hotkeys dialog opened by `?`
-  now use Hoist's own implementation, not Blueprint's. Combos keep the same syntax. Set
-  `HOTKEYS_DEFAULTS.useBlueprint = true`, from `@xh/hoist/desktop/hooks`, at startup to fall back
-  to Blueprint's for this release.
-* Desktop menus and context menus now render with Hoist's own components, not Blueprint's. The DOM
-  keeps Blueprint's `bp6-menu*` classes alongside new `xh-menu-*` ones, so app CSS still applies.
-  Set `Menu.defaults.useBlueprint = true` at startup to fall back to Blueprint's for this release.
 * `FetchService` now sends a request with no `method` as a GET, even when it sets `params`. Before,
   `params` made it a POST with a form-encoded body. Set `method: 'POST'` on calls that change data,
   send credentials, or send large params - see Step 7 of the upgrade notes.

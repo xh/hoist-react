@@ -9,7 +9,6 @@ import {HoistInputModel, useHoistInputModel} from '@xh/hoist/cmp/input';
 import type {HoistProps, HSide, StyleProps} from '@xh/hoist/core';
 import {hoistCmp} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
-import {switchControl} from '@xh/hoist/kit/blueprint';
 import {TEST_ID, withDefault} from '@xh/hoist/utils/js';
 import type {ReactNode} from 'react';
 import {control} from './impl/Control';
@@ -34,23 +33,9 @@ export interface SwitchInputProps extends HoistProps, HoistInputProps, StyleProp
 /**
  * Switch (toggle) control for non-nullable boolean values.
  */
-export interface SwitchInputDefaults {
-    /**
-     * True to render desktop switches with Blueprint's, as before Hoist had its own.
-     * For apps to fall back on while they adopt Hoist's - removed in the next major version.
-     */
-    useBlueprint?: boolean;
-}
-
-export const [SwitchInput, switchInput] = hoistCmp.withFactory<
-    SwitchInputProps,
-    SwitchInputDefaults
->({
+export const [SwitchInput, switchInput] = hoistCmp.withFactory<SwitchInputProps>({
     displayName: 'SwitchInput',
     className: 'xh-switch-input',
-    defaults: {
-        useBlueprint: false
-    },
     render(props, ref) {
         return useHoistInputModel(cmp, props, ref, SwitchInputModel);
     }
@@ -79,19 +64,6 @@ const cmp = hoistCmp.factory<SwitchInputModel>(({model, className, ...props}, re
             onFocus: model.onFocus,
             onChange: e => model.noteValueChange(e.target.checked)
         };
-
-    if (SwitchInput.defaults.useBlueprint) {
-        return switchControl({
-            ...inputProps,
-            alignIndicator,
-            inline,
-            label: props.label,
-            style: props.style,
-            className,
-            inputRef: model.inputRef,
-            ref
-        });
-    }
 
     return control({
         kind: 'switch',

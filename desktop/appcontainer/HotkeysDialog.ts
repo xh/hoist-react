@@ -7,7 +7,7 @@
 import {div, h4, span} from '@xh/hoist/cmp/layout';
 import {hoistCmp} from '@xh/hoist/core';
 import {dialog, dialogBody} from '@xh/hoist/desktop/cmp/dialog';
-import {HOTKEYS_DEFAULTS, type HotkeyConfig} from '@xh/hoist/desktop/hooks';
+import type {HotkeyConfig} from '@xh/hoist/desktop/hooks';
 import {hotkeysRegistry} from '@xh/hoist/desktop/hooks/impl/HotkeysRegistry';
 import {
     comboKeysForDisplay,
@@ -33,10 +33,7 @@ export const hotkeysDialog = hoistCmp.factory({
     model: false,
 
     render() {
-        const useBlueprint = HOTKEYS_DEFAULTS.useBlueprint;
-
         useEffect(() => {
-            if (useBlueprint) return;
             const onKeyDown = (e: KeyboardEvent) => {
                 if (!isTextInput(e.target) && comboMatches(DIALOG_COMBO, getKeyCombo(e))) {
                     hotkeysRegistry.openDialog();
@@ -44,9 +41,7 @@ export const hotkeysDialog = hoistCmp.factory({
             };
             document.addEventListener('keydown', onKeyDown);
             return () => document.removeEventListener('keydown', onKeyDown);
-        }, [useBlueprint]);
-
-        if (useBlueprint) return null;
+        }, []);
 
         const {isDialogOpen} = hotkeysRegistry;
         return dialog({

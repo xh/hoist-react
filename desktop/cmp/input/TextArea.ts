@@ -9,7 +9,6 @@ import {getPasswordManagerAttrs, HoistInputModel, useHoistInputModel} from '@xh/
 import type {HoistProps, LayoutProps, StyleProps} from '@xh/hoist/core';
 import {hoistCmp} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
-import {textArea as bpTextarea} from '@xh/hoist/kit/blueprint';
 import {TEST_ID, withDefault} from '@xh/hoist/utils/js';
 import {useComposedRefs, getLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
@@ -46,20 +45,9 @@ export interface TextAreaProps
 /**
  * A multi-line text input.
  */
-export interface TextAreaDefaults {
-    /**
-     * True to render desktop text areas with Blueprint's, as before Hoist had its own.
-     * For apps to fall back on while they adopt Hoist's - removed in the next major version.
-     */
-    useBlueprint?: boolean;
-}
-
-export const [TextArea, textArea] = hoistCmp.withFactory<TextAreaProps, TextAreaDefaults>({
+export const [TextArea, textArea] = hoistCmp.withFactory<TextAreaProps>({
     displayName: 'TextArea',
     className: 'xh-text-area',
-    defaults: {
-        useBlueprint: false
-    },
     render(props, ref) {
         return useHoistInputModel(cmp, props, ref, TextAreaInputModel);
     }
@@ -123,8 +111,6 @@ const cmp = hoistCmp.factory<TextAreaInputModel>(({model, className, ...props}, 
         onFocus: model.onFocus,
         onKeyDown: model.onKeyDown
     };
-
-    if (TextArea.defaults.useBlueprint) return bpTextarea(textareaProps);
 
     // Blueprint's class names are kept, so its styles and any app CSS keyed to them still apply.
     const {inputRef, ...rest} = textareaProps;

@@ -8,7 +8,7 @@ import {form, FormModel} from '@xh/hoist/cmp/form';
 import {HoistModel, XH} from '@xh/hoist/core';
 import type {Some} from '@xh/hoist/core';
 import {formField} from '@xh/hoist/desktop/cmp/form';
-import {Slider, slider} from '@xh/hoist/desktop/cmp/input';
+import {slider} from '@xh/hoist/desktop/cmp/input';
 import type {SliderProps} from '@xh/hoist/desktop/cmp/input';
 import {bindableRef} from '@xh/hoist/mobx';
 import {initTestAppAsync} from '@xh/hoist/test-support';
@@ -187,16 +187,6 @@ describe('Slider', () => {
             fireEvent.keyDown(screen.getByRole('slider'), {key: 'ArrowRight'});
             expect(model.value).toBe(5);
         });
-    });
-
-    it('renders Blueprint slider when useBlueprint is set', () => {
-        Slider.defaults.useBlueprint = true;
-        onTestFinished(() => {
-            Slider.defaults.useBlueprint = false;
-        });
-        renderSlider(5, {min: 0, max: 10});
-        expect(screen.getByRole('slider').getAttribute('aria-valuenow')).toBe('5');
-        expect(document.querySelector('.bp6-slider')).not.toBeNull();
     });
 });
 
