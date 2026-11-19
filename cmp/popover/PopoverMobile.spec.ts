@@ -4,15 +4,14 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {popover} from '@xh/hoist/mobile/cmp/popover';
+import {popover} from '@xh/hoist/cmp/popover';
 import {initTestAppAsync} from '@xh/hoist/test-support';
 import {fireEvent, render, screen, waitFor} from '@testing-library/react';
 import {createElement} from 'react';
 import {beforeAll, describe, expect, it} from 'vitest';
 
 /**
- * How the shared Popover behaves in a mobile app, imported from its mobile path. Mobile's
- * MenuButton opens its menu in it.
+ * How the shared Popover behaves in a mobile app. Mobile's MenuButton opens its menu in it.
  */
 describe('Popover (mobile)', () => {
     beforeAll(() => initTestAppAsync({isMobileApp: true}));

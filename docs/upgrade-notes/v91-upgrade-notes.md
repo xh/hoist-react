@@ -415,10 +415,12 @@ Hoist no longer uses Blueprint. Its desktop components render their own markup a
 the imports to change:
 
 ```bash
-grep -rn "@xh/hoist/kit/blueprint\|@blueprintjs" src
+grep -rn "@xh/hoist/kit/blueprint\|@blueprintjs\|@xh/hoist/mobile/cmp/popover" src
 ```
 
-Replace each import from `@xh/hoist/kit/blueprint` with Hoist's equivalent:
+Mobile apps import `popover` from `@xh/hoist/cmp/popover` in place of the removed
+`@xh/hoist/mobile/cmp/popover`. Replace each import from `@xh/hoist/kit/blueprint` with Hoist's
+equivalent:
 
 | Was (`@xh/hoist/kit/blueprint`) | Now |
 |---|---|

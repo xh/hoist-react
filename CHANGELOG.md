@@ -56,8 +56,8 @@ detailed, step-by-step upgrade instructions with before/after code examples.
       `NumberInput`, `SegmentedControl`, `Slider`, `TabSwitcher`, `Toolbar` overflow and `AppBar`
       render native elements. Button text is now also in an `xh-button__text` span.
 * Mobile `Popover` and `MenuButton` now use the cross-platform `Popover` from
-  `@xh/hoist/cmp/popover`. `@xh/hoist/mobile/cmp/popover` re-exports it for one release - import
-  from `@xh/hoist/cmp/popover` instead. Popover content now renders in an `xh-popover__floating`
+  `@xh/hoist/cmp/popover`. Removed `@xh/hoist/mobile/cmp/popover` - import `popover` from
+  `@xh/hoist/cmp/popover` instead. Popover content now renders in an `xh-popover__floating`
   element in a Floating UI portal, not in a `#xh-popover-portal` div. Restyle any app CSS that
   positions `.xh-popover__content-wrapper`.
 * `FetchService` now sends a request with no `method` as a GET, even when it sets `params`. Before,

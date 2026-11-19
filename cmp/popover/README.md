@@ -84,9 +84,6 @@ while open. A tap outside it closes it without reaching the element beneath. Set
 to dim the page behind it, as mobile's `MenuButton` does. The target sits inside an outer `div`
 that carries the popover's `className`, as with mobile's earlier popover.
 
-`@xh/hoist/mobile/cmp/popover` re-exports this `Popover` for one release. Import it from
-`@xh/hoist/cmp/popover` instead.
-
 ## Common Pitfalls
 
 - **App CSS on `bp6-popover*` classes works for one release only.** The popover keeps Blueprint's

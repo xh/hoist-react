@@ -296,8 +296,7 @@ Menu items are `MenuItemLike` objects with `text`, `icon`, and `actionFn` proper
 ### Popover
 
 Mobile uses the cross-platform `Popover` from `@xh/hoist/cmp/popover` - see the
-[Popover README](../cmp/popover/README.md#on-mobile). `@xh/hoist/mobile/cmp/popover` re-exports it
-for one release.
+[Popover README](../cmp/popover/README.md#on-mobile).
 
 ```typescript
 import {popover} from '@xh/hoist/cmp/popover';
