@@ -94,7 +94,7 @@ Examples:
   hoist-ts symbol View --file data/cube/View.ts Disambiguate by file path
   hoist-ts members GridModel --filter col       Members whose name contains "col"
   hoist-ts members PanelModel --include own --kind method
-  hoist-ts members ButtonProps --filter click   Finds onClick among external (Blueprint) members`
+  hoist-ts members ButtonProps --filter click   Finds onClick among external (React) members`
     );
 
     //----------------------------------------------------------------------

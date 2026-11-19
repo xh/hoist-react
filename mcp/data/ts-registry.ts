@@ -175,7 +175,7 @@ export interface MemberFilter {
     memberKind?: 'property' | 'method' | 'accessor';
 }
 
-/** A member inherited from a type outside the index (React, Blueprint, ...), found via the type checker. */
+/** A member inherited from a type outside the index, such as React's, found via the type checker. */
 export interface ExternalMember {
     name: string;
     kind: 'property' | 'method';
@@ -1102,8 +1102,8 @@ function findCompanionEntries(baseName: string, filePath: string): SymbolEntry[]
  *
  * For classes, walks the inheritance chain and includes inherited members tagged
  * with their declaring class. Filters out `_`-prefixed and `private` members to
- * match the member index behavior. Members inherited from types outside the index
- * (React, Blueprint) are listed separately via the type checker - see
+ * match the member index behavior. Members inherited from types outside the index,
+ * such as React's, are listed separately via the type checker - see
  * {@link extractExternalMembers}.
  *
  * A name that resolves to something other than a class or interface is reported
@@ -1192,8 +1192,8 @@ const MAX_EXTERNAL_TYPE_LENGTH = 80;
 
 /**
  * Members the type checker sees on a class or interface that the declaration walkers did
- * not reach - inherited from types outside the index such as React's `HTMLAttributes` or
- * Blueprint's `ButtonProps` (also through `Omit<...>` and other type operators). Grouped by
+ * not reach - inherited from types outside the index such as React's `HTMLAttributes`, also
+ * through `Omit<...>` and other type operators. Grouped by
  * declaring type. Types come from the declaration's annotation, which is cheap; nothing is
  * resolved through the checker beyond the property list itself.
  */

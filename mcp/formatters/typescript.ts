@@ -843,7 +843,7 @@ const externalGroupSchema = z.object({
     module: z
         .union([z.string(), z.null()])
         .describe(
-            'npm package of the declaring type (e.g. "@blueprintjs/core"), or null for a hoist-react type reached through a type operator.'
+            'npm package of the declaring type (e.g. "@types/react"), or null for a hoist-react type reached through a type operator.'
         ),
     total: z.number().int().describe('Members in this group after filtering.'),
     members: z
@@ -862,7 +862,7 @@ const externalGroupSchema = z.object({
 /**
  * Zod schema for the structured output of `hoist-get-members` and the CLI's
  * `hoist-ts members --json`. Members are a flat array; inherited members carry `inheritedFrom`.
- * Members inherited from types outside hoist-react (React, Blueprint) are grouped in
+ * Members inherited from types outside hoist-react, such as React's, are grouped in
  * `externalMembers`.
  */
 export const getMembersOutputSchema = z.object({
