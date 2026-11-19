@@ -475,6 +475,17 @@ The props carry over, except Blueprint-only ones. Hoist's `Dialog` always render
 drop `usePortal`. A `Tooltip` takes `position`, not `placement`, and has no `targetProps` - set
 handlers and classes on its child instead.
 
+A popover no longer takes Popper.js `modifiers`, including in `MenuButtonProps.popoverProps`. Set
+`offset` for the distance from the target:
+
+```typescript
+// Before
+menuButton({popoverProps: {modifiers: {offset: {enabled: true, options: {offset: [0, 4]}}}}});
+
+// After
+menuButton({popoverProps: {offset: {mainAxis: 4}}});
+```
+
 Do not add `@blueprintjs/core` to an app to keep a Blueprint component. Move it onto Hoist's
 nearest component, such as a tree-mode `Grid` for a `Tree` or a `textInput` for `EditableText`.
 

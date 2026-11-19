@@ -87,6 +87,13 @@ export interface PopoverProps extends HoistProps, TestSupportProps {
     /** True to draw without an arrow pointing at the target. */
     minimal?: boolean;
 
+    /**
+     * Distance in pixels from the target. `mainAxis` moves the popover away from the target, and
+     * `crossAxis` slides it along the target's edge. Default 0 for a minimal popover, else room
+     * for the arrow.
+     */
+    offset?: {mainAxis?: number; crossAxis?: number};
+
     /** True to size the popover to the width of its target. */
     matchTargetWidth?: boolean;
 

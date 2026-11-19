@@ -76,3 +76,5 @@ that carries the popover's `className`, as with mobile's earlier popover.
   the change. Keep route changes out of popover content that should stay open.
 - **`popoverModifiers` on `DateInput` has no effect.** It passed Popper.js options to Blueprint.
   Use `popoverPosition` and `popoverBoundary` instead.
+- **Popper.js `modifiers` in `popoverProps` have no effect.** Set `offset` for the distance from
+  the target, as in `menuButton({popoverProps: {offset: {mainAxis: 4}}})`.
