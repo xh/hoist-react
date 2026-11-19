@@ -157,9 +157,10 @@ describe('useHotkeys', () => {
 
         fireEvent.keyDown(screen.getByTestId('outside'), {key: '?', code: 'Slash', shiftKey: true});
         const el = await screen.findByRole('dialog');
-        const text = Array.from(el.querySelectorAll('h4, .bp6-hotkey-label')).map(
-            it => it.textContent
-        );
+        const text = Array.from(
+            el.querySelectorAll('.xh-hotkeys-dialog__group, .xh-hotkeys-dialog__label')
+        ).map(it => it.textContent);
+        expect(el.textContent).toContain('Keyboard Shortcuts');
         expect(text).toEqual(['Global', 'Refresh', 'Edit', 'Save']);
 
         unmount();

@@ -17,9 +17,10 @@ import {
     isTextInput,
     parseKeyCombo
 } from '@xh/hoist/desktop/hooks/impl/KeyCombo';
+import {Icon} from '@xh/hoist/icon';
 import {createElement, type ReactNode, useEffect} from 'react';
 import {sortBy, uniqWith} from 'lodash';
-import classNames from 'classnames';
+import './HotkeysDialog.scss';
 
 const DIALOG_COMBO = parseKeyCombo('?');
 
@@ -45,7 +46,9 @@ export const hotkeysDialog = hoistCmp.factory({
 
         const {isDialogOpen} = hotkeysRegistry;
         return dialog({
-            className: 'xh-hotkeys-dialog bp6-hotkey-dialog',
+            title: 'Keyboard Shortcuts',
+            icon: Icon.questionCircle(),
+            className: 'xh-hotkeys-dialog',
             isOpen: isDialogOpen,
             onClose: () => hotkeysRegistry.closeDialog(),
             children: isDialogOpen ? dialogBody(hotkeyList(hotkeysRegistry.hotkeys)) : null
@@ -67,34 +70,33 @@ function hotkeyList(hotkeys: HotkeyConfig[]) {
     entries.forEach((hotkey, idx) => {
         const group = groupOf(hotkey);
         if (group !== lastGroup) {
-            children.push(h4({className: 'bp6-heading', key: `group-${idx}`, children: group}));
+            children.push(
+                h4({className: 'xh-hotkeys-dialog__group', key: `group-${idx}`, children: group})
+            );
             lastGroup = group;
         }
         children.push(
             div({
-                className: 'xh-hotkeys-dialog__hotkey bp6-hotkey',
+                className: 'xh-hotkeys-dialog__hotkey',
                 key: idx,
                 children: [
-                    div({className: 'bp6-hotkey-label', children: hotkey.label}),
+                    div({className: 'xh-hotkeys-dialog__label', children: hotkey.label}),
                     keyComboTag(hotkey.combo)
                 ]
             })
         );
     });
-    return div({className: 'xh-hotkeys-dialog__list bp6-hotkey-column', children});
+    return div({className: 'xh-hotkeys-dialog__list', children});
 }
 
 function keyComboTag(combo: string) {
     return span({
-        className: 'xh-key-combo bp6-key-combo',
+        className: 'xh-key-combo',
         children: comboKeysForDisplay(combo).map((key, idx) => {
             const glyph = glyphFor(key.toLowerCase());
             return createElement(
                 'kbd',
-                {
-                    key: idx,
-                    className: classNames('xh-key', 'bp6-key', glyph && 'bp6-modifier-key')
-                },
+                {key: idx, className: 'xh-key'},
                 glyph ? span({title: glyph.title, children: glyph.char}) : null,
                 DISPLAY_NAMES[key.toLowerCase()] ?? key
             );

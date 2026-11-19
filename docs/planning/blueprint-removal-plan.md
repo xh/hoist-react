@@ -352,9 +352,10 @@ once:
 - Rewrite `BlueprintBase.css` and the SCSS and TS that reference `bp6-*` classes against `xh-*`
   classes, moving rules into each component's stylesheet. Write each component's rules from what it
   needs, not from the coverage recording, which missed states such as open submenus.
-- Replace the `--bp-*` custom properties with `--xh-*` variables or values. Settle the remaining
-  Blueprint looks along the way: the hotkeys dialog, the submenu caret glyph, the checkbox marks
-  and the Blueprint blue of checked controls.
+- Replace the `--bp-*` custom properties with `--xh-*` variables or values. The rename changes no
+  pixels. A separate, later step settles the remaining Blueprint looks, with expected screenshot
+  differences: the submenu caret glyph, the checkbox marks and the Blueprint blue of checked
+  controls. The hotkeys dialog is already a Hoist dialog.
 - Remove the `bp6-*` classes from Hoist's markup in the same PR, with no aliases, along with the
   `bp6-dark` and `bp6-focus-disabled` toggles. Delete `BlueprintBase.css` and
   `BlueprintOverrides.scss`.
