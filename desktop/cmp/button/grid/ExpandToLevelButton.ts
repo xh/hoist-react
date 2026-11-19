@@ -13,8 +13,7 @@ import type {MenuItemLike} from '@xh/hoist/core';
 import {hoistCmp, useContextModel} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
-import {menuList} from '@xh/hoist/desktop/cmp/menu/impl/MenuImpl';
-import {parseMenuItems} from '@xh/hoist/desktop/cmp/menu/impl/MenuItems';
+import {menu} from '@xh/hoist/desktop/cmp/menu';
 import {logError, withDefault} from '@xh/hoist/utils/js';
 import type {ReactNode} from 'react';
 import type {ButtonProps} from '../Button';
@@ -96,7 +95,7 @@ export const [ExpandToLevelButton, expandToLevelButton] =
                 }),
                 content: vbox(
                     div({className: 'xh-popup__title', children: title, omit: !title}),
-                    menuList(parseMenuItems(menuItems))
+                    menu({menuItems})
                 )
             });
         }

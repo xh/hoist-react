@@ -49,8 +49,9 @@ detailed, step-by-step upgrade instructions with before/after code examples.
       `dialogFooterActions`, and moved all Hoist dialogs, masks and overlays onto it. Import
       `dialog` and its parts from there rather than `@xh/hoist/kit/blueprint`.
     * Menus, context menus, toasts, hotkeys and the hotkeys dialog opened by `?` are Hoist's own.
-      Hotkey combos keep the same syntax. `menuItem` and `menuDivider` element factories are now
-      exported from `@xh/hoist/desktop/cmp/menu`, e.g. for `ViewManagerModel.viewMenuItemFn`.
+      Hotkey combos keep the same syntax. Replace Blueprint `menuItem` and `menuDivider` elements
+      with `MenuItem` configs and `'-'` tokens, e.g. in `AppMenuButton.extraItems` or from
+      `ViewManagerModel.viewMenuItemFn`.
     * `Button`, `ButtonGroup`, `Checkbox`, `SwitchInput`, `RadioInput`, `TextInput`, `TextArea`,
       `NumberInput`, `SegmentedControl`, `Slider`, `TabSwitcher`, `Toolbar` overflow and `AppBar`
       render native elements. Button text is now also in an `xh-button__text` span.
@@ -80,6 +81,11 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 * Desktop menus now support the keyboard: arrow keys, Home and End move between items, typing
   jumps to an item by its first letters, and ArrowRight and ArrowLeft open and close submenus.
   Escape in a submenu closes only that submenu.
+* Added `MenuItem.rightElement`, an element shown at the right edge of a menu item, such as a
+  button that acts on the item. A click on a control within it does not run the item's `actionFn`
+  or close the menu, so its handler need not stop the event. Desktop and mobile menus both render
+  it. Use it in place of Blueprint's `menuItem` with a `labelElement`.
+* `ViewManagerConfig.viewMenuItemFn` now also takes a `MenuItem` config.
 
 * Element factories and `createElement` now take child elements via the standard React `children`
   key. The `item` and `items` keys still work as aliases, but a future major version will remove

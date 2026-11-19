@@ -72,3 +72,21 @@ export function filterMenuHeadings(isHeading: (it: any) => boolean) {
         return true;
     };
 }
+
+/** Elements within a menu item's `rightElement` that handle their own clicks. */
+const RIGHT_ELEMENT_CONTROLS = 'button, a[href], input, select, textarea, label, [role=button]';
+
+/**
+ * Event handler for the wrapper around a menu item's `rightElement`. It keeps a click or touch on
+ * a control within the wrapper from reaching the item, where it would run the item's `actionFn`
+ * and close the menu. A click elsewhere in the wrapper still acts on the item.
+ * @internal
+ */
+export function stopRightElementControlEvent(e: {
+    target: EventTarget;
+    currentTarget: EventTarget;
+    stopPropagation: () => void;
+}) {
+    const control = (e.target as Element).closest?.(RIGHT_ELEMENT_CONTROLS);
+    if (control && (e.currentTarget as Element).contains(control)) e.stopPropagation();
+}

@@ -7,6 +7,7 @@
 import {menu} from '@xh/hoist/desktop/cmp/menu';
 import {initTestAppAsync} from '@xh/hoist/test-support';
 import {fireEvent, render, screen, waitFor} from '@testing-library/react';
+import {createElement} from 'react';
 import {beforeAll, describe, expect, it, vi} from 'vitest';
 
 /**
@@ -59,6 +60,51 @@ describe('Menu', () => {
         screen.getByTestId('run').focus();
 
         key('Enter');
+        await waitFor(() => expect(actionFn).toHaveBeenCalledTimes(1));
+    });
+
+    it('leaves keys on a control in rightElement to that control', async () => {
+        const actionFn = vi.fn(),
+            onKeyDown = vi.fn();
+        render(
+            menu({
+                menuItems: [
+                    {
+                        text: 'Favorite',
+                        testId: 'fav',
+                        actionFn,
+                        rightElement: createElement(
+                            'button',
+                            {'data-testid': 'fav-delete', onKeyDown},
+                            'x'
+                        )
+                    }
+                ]
+            })
+        );
+        screen.getByTestId('fav-delete').focus();
+
+        key('Enter');
+        expect(onKeyDown).toHaveBeenCalledTimes(1);
+        await new Promise(resolve => setTimeout(resolve, 10));
+        expect(actionFn).not.toHaveBeenCalled();
+    });
+
+    it('treats a click on non-control content in rightElement as a click on the item', async () => {
+        const actionFn = vi.fn();
+        render(
+            menu({
+                menuItems: [
+                    {
+                        text: 'Copy',
+                        actionFn,
+                        rightElement: createElement('span', {'data-testid': 'shortcut'}, 'Ctrl+C')
+                    }
+                ]
+            })
+        );
+
+        fireEvent.click(screen.getByTestId('shortcut'));
         await waitFor(() => expect(actionFn).toHaveBeenCalledTimes(1));
     });
 

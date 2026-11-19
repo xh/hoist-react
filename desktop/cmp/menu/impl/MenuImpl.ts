@@ -9,6 +9,7 @@ import {popoverImpl} from '@xh/hoist/cmp/popover/impl/PopoverImpl';
 import type {Intent} from '@xh/hoist/core';
 import {hoistCmp} from '@xh/hoist/core';
 import classNames from 'classnames';
+import {stopRightElementControlEvent} from '@xh/hoist/cmp/menu/impl/Menus';
 import type {AnchorHTMLAttributes, HTMLAttributes, KeyboardEvent, ReactNode, Ref} from 'react';
 import {createContext, createElement as h, useContext, useEffect, useRef, useState} from 'react';
 
@@ -18,8 +19,8 @@ export interface MenuListProps extends HTMLAttributes<HTMLUListElement> {
 }
 
 /**
- * A single item within a menu, optionally holding a submenu of further items as `children`. Most
- * menus are better built from `MenuItem` configs, which `Menu` and `MenuButton` render with this.
+ * A single item within a menu, optionally holding a submenu of further items as `children`. Apps
+ * describe items with `MenuItem` configs, which `parseMenuItems` renders with this.
  */
 export interface MenuItemElementProps extends Omit<AnchorHTMLAttributes<HTMLElement>, 'children'> {
     text?: ReactNode;
@@ -27,10 +28,11 @@ export interface MenuItemElementProps extends Omit<AnchorHTMLAttributes<HTMLElem
     intent?: Intent;
     active?: boolean;
     disabled?: boolean;
-    /** Element shown at the right edge of the item, e.g. a keyboard shortcut. */
-    labelElement?: ReactNode;
-    /** True to wrap long text rather than truncate it. */
-    multiline?: boolean;
+    /**
+     * Element shown at the right edge of the item, e.g. a keyboard shortcut. A click on a control
+     * within it does not reach the item.
+     */
+    rightElement?: ReactNode;
     /** False to keep the enclosing popover open when the item is clicked. Default true. */
     shouldDismissPopover?: boolean;
     /** Options for the popover that holds this item's submenu. */
@@ -145,8 +147,7 @@ export const menuItem = hoistCmp.factory<MenuItemElementProps>({
             disabled = false,
             icon,
             intent,
-            labelElement,
-            multiline = false,
+            rightElement,
             popoverProps,
             shouldDismissPopover = true,
             text,
@@ -181,7 +182,8 @@ export const menuItem = hoistCmp.factory<MenuItemElementProps>({
 
         const onKeyDown = (e: KeyboardEvent<HTMLElement>) => {
             htmlProps.onKeyDown?.(e);
-            if (disabled) return;
+            // A key on a control within the right element belongs to that control.
+            if (disabled || e.target !== e.currentTarget) return;
             if (e.key === 'Enter' || e.key === ' ') {
                 e.preventDefault();
                 (e.currentTarget as HTMLElement).click();
@@ -233,17 +235,16 @@ export const menuItem = hoistCmp.factory<MenuItemElementProps>({
                       icon
                   )
                 : null,
-            h(
-                'div',
-                {
-                    className: classNames('xh-menu-item__text', 'bp6-fill', {
-                        'bp6-text-overflow-ellipsis': !multiline
-                    })
-                },
-                text
-            ),
-            labelElement != null
-                ? h('span', {className: 'xh-menu-item__label bp6-menu-item-label'}, labelElement)
+            h('div', {className: 'xh-menu-item__text bp6-fill bp6-text-overflow-ellipsis'}, text),
+            rightElement != null
+                ? h(
+                      'span',
+                      {
+                          className: 'xh-menu-item__label bp6-menu-item-label',
+                          onClick: stopRightElementControlEvent
+                      },
+                      rightElement
+                  )
                 : null,
             hasSubmenu ? caretIcon() : null
         );

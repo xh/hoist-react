@@ -6,9 +6,3 @@
  */
 export * from './Menu';
 export * from './MenuButton';
-export {
-    menuDivider,
-    type MenuDividerElementProps,
-    menuItem,
-    type MenuItemElementProps
-} from './impl/MenuImpl';

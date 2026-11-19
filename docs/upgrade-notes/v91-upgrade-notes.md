@@ -425,7 +425,7 @@ Replace each import from `@xh/hoist/kit/blueprint` with Hoist's equivalent:
 | `dialog`, `Dialog` | `dialog` from `@xh/hoist/desktop/cmp/dialog` |
 | `dialogBody`, `dialogFooter`, `dialogFooterActions` | The same names from `@xh/hoist/desktop/cmp/dialog` |
 | `popover`, `Popover`, `tooltip`, `Tooltip` | The same names from `@xh/hoist/cmp/popover` |
-| `menuItem`, `menuDivider` | The same names from `@xh/hoist/desktop/cmp/menu` |
+| `menuItem`, `menuDivider` | A `MenuItem` config, and `'-'` or `{heading}` for a divider. Map `onClick` to `actionFn`, `labelElement` to `rightElement`, and `shouldDismissPopover: false` to `keepMenuOpen: true` |
 | `menu` | `menu` or `menuButton` from `@xh/hoist/desktop/cmp/menu`, with `MenuItem` configs |
 | `showContextMenu` | `useContextMenu` from `@xh/hoist/desktop/hooks`, or `PanelProps.contextMenu` |
 | `useHotkeys`, `HotkeyConfig` | The same names from `@xh/hoist/desktop/hooks` |

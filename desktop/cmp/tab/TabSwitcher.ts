@@ -8,12 +8,12 @@ import {box, div, hframe, span} from '@xh/hoist/cmp/layout';
 import type {TabModel} from '@xh/hoist/cmp/tab';
 import {TabContainerModel} from '@xh/hoist/cmp/tab';
 import type {TabSwitcherMenuContext, TabSwitcherProps} from '@xh/hoist/cmp/tab/Types';
-import {hoistCmp, HoistModel, useLocalModel, uses} from '@xh/hoist/core';
+import {hoistCmp, HoistModel, type MenuItemLike, useLocalModel, uses} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import '@xh/hoist/desktop/register';
 import {contextMenu} from '@xh/hoist/desktop/cmp/contextmenu';
 import {Icon} from '@xh/hoist/icon';
-import {menuDivider, menuItem, menuList} from '@xh/hoist/desktop/cmp/menu/impl/MenuImpl';
+import {menu} from '@xh/hoist/desktop/cmp/menu';
 import {popover, tooltip as tooltipCmp} from '@xh/hoist/cmp/popover';
 import {showContextMenu} from '@xh/hoist/desktop/cmp/contextmenu/impl/ShowContextMenu';
 import {bindableRef} from '@xh/hoist/mobx';
@@ -152,7 +152,7 @@ export const [TabSwitcher, tabSwitcher] = hoistCmp.withFactory<TabSwitcherProps>
 
         // Headers and spacers sit between the tabs in the tab list.
         const items = vertical
-            ? withGroupHeaders(
+            ? withGroupHeaders<ReactNode>(
                   tabs,
                   tabItems,
                   (group, key, isFirst) =>
@@ -219,34 +219,27 @@ const overflowMenu = hoistCmp.factory<TabContainerModel>({
     render({model, tabs, vertical}) {
         if (isEmpty(tabs)) return null;
 
-        const menuItems = tabs.map(tab => {
+        const menuItems: MenuItemLike[] = tabs.map(tab => {
             const {id, title: text, icon, disabled, showRemoveAction} = tab;
-            return menuItem({
+            return {
                 icon,
                 text,
                 disabled,
-                onClick: () => model.setActiveTabId(id),
-                labelElement: button({
-                    omit: !showRemoveAction,
-                    icon: Icon.x(),
-                    onClick: e => {
-                        model.removeTab(id);
-                        e.stopPropagation();
-                    }
-                })
-            });
+                actionFn: () => model.setActiveTabId(id),
+                rightElement: showRemoveAction
+                    ? button({icon: Icon.x(), onClick: () => model.removeTab(id)})
+                    : null
+            };
         });
 
         const items = vertical
-            ? withGroupHeaders(
+            ? withGroupHeaders<MenuItemLike>(
                   tabs,
                   menuItems,
-                  (group, key) =>
-                      menuDivider({
-                          key,
-                          title: find(model.switcherConfig?.groups, {key: group})?.title ?? group
-                      }),
-                  key => menuDivider({key})
+                  group => ({
+                      heading: find(model.switcherConfig?.groups, {key: group})?.title ?? group
+                  }),
+                  () => '-'
               )
             : menuItems;
 
@@ -257,9 +250,9 @@ const overflowMenu = hoistCmp.factory<TabContainerModel>({
                 icon: vertical ? Icon.ellipsisHorizontal() : Icon.ellipsisVertical()
             }),
             minimal: true,
-            content: menuList({
+            content: menu({
                 className: 'xh-tab-switcher__overflow-menu',
-                children: items
+                menuItems: items
             })
         });
     }
@@ -385,13 +378,13 @@ class TabSwitcherLocalModel extends HoistModel {
  * before each contiguous run of tabs sharing a non-null group, and a spacer before an ungrouped tab
  * that follows such a run. Null items are skipped. `headerFn` is told if its header leads the list.
  */
-function withGroupHeaders(
+function withGroupHeaders<T>(
     tabs: TabModel[],
-    items: ReactNode[],
-    headerFn: (group: string, key: string, isFirst: boolean) => ReactNode,
-    spacerFn: (key: string) => ReactNode
-): ReactNode[] {
-    const ret = [];
+    items: T[],
+    headerFn: (group: string, key: string, isFirst: boolean) => T,
+    spacerFn: (key: string) => T
+): T[] {
+    const ret: T[] = [];
     let prevGroup: string = null;
     items.forEach((item, idx) => {
         if (!item) return;

@@ -195,8 +195,10 @@ Use `Icon.placeholder()` to create an empty element that uses the same space as 
 align items in menus or lists where only some items have icons:
 
 ```typescript
-menuItem({icon: Icon.check(), text: 'Option A'}),
-menuItem({icon: Icon.placeholder(), text: 'Option B'})  // aligned with A
+menuItems: [
+    {icon: Icon.check(), text: 'Option A'},
+    {icon: Icon.placeholder(), text: 'Option B'} // aligned with A
+]
 ```
 
 ## Registering Custom Icons

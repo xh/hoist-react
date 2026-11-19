@@ -112,6 +112,7 @@ export function parseMenuItems(
                 onClick: actionFn ? e => wait().then(() => actionFn(e, context)) : null, // do async to allow menu to close
                 disabled: item.disabled,
                 active: item.active,
+                rightElement: item.rightElement,
                 shouldDismissPopover: !item.keepMenuOpen,
                 [TEST_ID]: item.testId
             };
