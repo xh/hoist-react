@@ -27,8 +27,6 @@ export const toastSource = hoistCmp.factory<ToastSourceModel>({
 
     render({model}) {
         useEffect(() => {
-            // Escape that reaches the window was not consumed by a dialog, popover or other layer
-            // closing on it - those stop its propagation or prevent its default.
             const onKeyDown = (e: KeyboardEvent) => {
                 if (e.key !== 'Escape' || e.defaultPrevented) return;
                 model.toastModels.forEach(it => {
