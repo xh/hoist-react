@@ -106,6 +106,31 @@ describe('DashCanvasModel', () => {
         });
     });
 
+    describe('setViewSpecs', () => {
+        it('lets the next load add views of new specs, with the default spec settings', () => {
+            const model = createCanvas({viewSpecDefaults: {hidePanelHeader: true}});
+
+            model.setViewSpecs([...VIEW_SPECS, {id: 'pnlChart', content: () => null}]);
+            model.loadState([item('chart', 0, 0), item('pnlChart', 6, 0)]);
+
+            const pnlChart = model.viewModels[1];
+            expect(pnlChart.id).toBe('pnlChart_0');
+            expect(pnlChart.title).toBe('Pnl Chart');
+            expect(pnlChart.viewSpec).toMatchObject({hidePanelHeader: true, allowRemove: true});
+        });
+
+        it('removes views whose spec is gone, and keeps the others running', () => {
+            const model = createCanvas({initialState: [item('chart', 0, 0), item('grid', 6, 0)]}),
+                [chart, grid] = model.viewModels;
+
+            model.setViewSpecs(VIEW_SPECS.filter(it => it.id !== 'grid'));
+
+            expect(model.viewModels).toEqual([chart]);
+            expect(grid.isDestroyed).toBe(true);
+            expect(model.state).toEqual([item('chart', 0, 0)]);
+        });
+    });
+
     describe('state', () => {
         it('publishes changes to view titles and state', () => {
             const model = createCanvas({initialState: [item('chart', 0, 0)]}),

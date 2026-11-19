@@ -75,6 +75,8 @@ detailed, step-by-step upgrade instructions with before/after code examples.
   sparkline shows on desktop and mounts only when first hovered.
 * Added `XH.hasRoute()` to check if a route exists. Call it before `XH.router.buildPath()` or
   `buildUrl()` with a name that may not be registered, as both throw for an unknown route.
+* Added `DashCanvasModel.setViewSpecs()` to replace a canvas's view specs at any time. It removes
+  views whose spec is gone. Call `loadState()` next to place views of new specs.
 
 ### 🐞 Bug Fixes
 

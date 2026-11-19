@@ -32,7 +32,8 @@ import {
     map,
     partition,
     keyBy,
-    compact
+    compact,
+    isEmpty
 } from 'lodash';
 
 /**
@@ -194,6 +195,7 @@ export class DashCanvasModel
     ref = createObservableRef<HTMLElement>();
     isResizing: boolean;
     private _onDropDragOverFn: DashCanvasConfig['onDropDragOver'];
+    private viewSpecDefaults: Partial<DashCanvasViewSpec>;
 
     get rglLayout() {
         return this.layout
@@ -246,24 +248,8 @@ export class DashCanvasModel
     }: DashCanvasConfig) {
         super();
         this.xhName = xhName;
-        viewSpecs = viewSpecs.filter(it => !isOmitted(it));
-        ensureUniqueBy(viewSpecs, 'id');
-        this.viewSpecs = viewSpecs.map(cfg => {
-            return defaultsDeep({}, cfg, viewSpecDefaults, {
-                title: startCase(cfg.id),
-                omit: false,
-                unique: false,
-                allowAdd: true,
-                allowDuplicate: true,
-                allowRemove: true,
-                allowRename: true,
-                height: 5,
-                width: 5,
-                hidePanelHeader: false,
-                hideMenuButton: false,
-                autoHeight: false
-            });
-        });
+        this.viewSpecDefaults = viewSpecDefaults;
+        this.setViewSpecs(viewSpecs);
 
         this.restoreState = {
             initialState,
@@ -398,6 +384,39 @@ export class DashCanvasModel
         const layout = this.getViewLayout(id);
         this.removeView(id);
         this.addViewInternal(newSpecId, {layout});
+    }
+
+    /**
+     * Replace the specs of the views this canvas can hold, applying the `viewSpecDefaults` given
+     * at construction. Views of a spec no longer present are removed. Views of a spec still
+     * present keep running on the spec they were created with.
+     */
+    @action
+    setViewSpecs(viewSpecs: DashCanvasViewSpec[]) {
+        viewSpecs = viewSpecs.filter(it => !isOmitted(it));
+        ensureUniqueBy(viewSpecs, 'id');
+        this.viewSpecs = viewSpecs.map(cfg =>
+            defaultsDeep({}, cfg, this.viewSpecDefaults, {
+                title: startCase(cfg.id),
+                omit: false,
+                unique: false,
+                allowAdd: true,
+                allowDuplicate: true,
+                allowRemove: true,
+                allowRename: true,
+                height: 5,
+                width: 5,
+                hidePanelHeader: false,
+                hideMenuButton: false,
+                autoHeight: false
+            })
+        );
+
+        const [keep, remove] = partition(this.viewModels, it => this.hasSpec(it.viewSpec.id));
+        if (isEmpty(remove)) return;
+        this.viewModels = keep;
+        this.setLayout(this.layout.filter(it => some(keep, {id: it.i})));
+        XH.safeDestroy(remove);
     }
 
     /** Prompt the user to rename a view. No-op if renaming is locked or disallowed by the spec. */
