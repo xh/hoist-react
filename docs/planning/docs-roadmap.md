@@ -34,6 +34,7 @@ interacts with Hoist.
 | `/cmp/pdfviewer/` | 6 | PdfViewer - PDF display built on pdf.js, with sources, toolbar tokens, model API, and styling; platform toolbars in `/desktop/cmp/pdfviewer/` and `/mobile/cmp/pdfviewer/` | [Done](../../cmp/pdfviewer/README.md) |
 | `/cmp/keyvaluelist/` | 4 | KeyValueList - display-only labeled values, compared with a read-only Form, with styling and pitfalls | [Done](../../cmp/keyvaluelist/README.md) |
 | `/cmp/itemlist/` | 4 | ItemList - short static list of entries, compared with DataView and Grid, with clickable entries and pitfalls | [Done](../../cmp/itemlist/README.md) |
+| `/cmp/callout/` | 4 | Callout - note set off within content, compared with Banner and Card | [Done](../../cmp/callout/README.md) |
 | `/cmp/progressbar/` | 4 | ProgressBar - value against a maximum or indeterminate progress, compared with masks and loading indicators | [Done](../../cmp/progressbar/README.md) |
 | `/cmp/sparkline/` | 6 | Sparkline - inline SVG trend chart, compared with Chart, in a StatCard and a grid column with a shared scale | 📝 [Draft](../../cmp/sparkline/README.md) |
 | `/mobile/` | 131 | Mobile-specific components and app container | [Done](../../mobile/README.md) |

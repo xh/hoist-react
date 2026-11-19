@@ -407,6 +407,7 @@ const favoriteMenuItem = hoistCmp.factory<
 });
 
 const favoriteTag = hoistCmp.factory({
+    model: false,
     render({label}) {
         return div({
             className: 'xh-filter-chooser-favorite__tag',

@@ -42,6 +42,7 @@ export interface LoadingIndicatorProps extends HoistProps {
  */
 export const [LoadingIndicator, loadingIndicator] = hoistCmp.withFactory<LoadingIndicatorProps>({
     displayName: 'LoadingIndicator',
+    model: false,
     className: 'xh-loading-indicator',
 
     render(

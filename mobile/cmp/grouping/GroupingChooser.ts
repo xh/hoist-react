@@ -98,6 +98,7 @@ const dialogCmp = hoistCmp.factory<GroupingChooserLocalModel>({
 // Editor
 //------------------
 const editor = hoistCmp.factory({
+    model: false,
     render({emptyText}) {
         return panel({
             className: 'xh-grouping-chooser__editor',

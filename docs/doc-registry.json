@@ -168,6 +168,14 @@
             "keywords": ["ItemList", "ItemListEntry", "list of items", "alerts", "recent activity", "search results", "numbered list", "ranking", "clickable entries"]
         },
         {
+            "id": "cmp/callout/README.md",
+            "title": "Callout Package",
+            "mcpCategory": "package",
+            "viewerCategory": "components",
+            "description": "Short note set off within content, with an intent, its icon, an optional title and a body, and when to use it rather than a Banner or a Card.",
+            "keywords": ["Callout", "callout", "admonition", "note", "caveat", "warning", "alert", "intent", "Banner", "Card"]
+        },
+        {
             "id": "cmp/progressbar/README.md",
             "title": "ProgressBar Package",
             "mcpCategory": "package",

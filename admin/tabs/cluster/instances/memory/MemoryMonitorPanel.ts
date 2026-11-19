@@ -125,7 +125,8 @@ const instanceSelect = hoistCmp.factory<MemoryMonitorModel>({
     }
 });
 
-const instanceDisplay = hoistCmp.factory<MemoryMonitorModel>({
+const instanceDisplay = hoistCmp.factory({
+    model: false,
     render({instance}) {
         if (!instance) return null;
         return hbox(

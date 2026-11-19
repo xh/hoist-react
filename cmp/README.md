@@ -196,6 +196,7 @@ techniques.
 | Sub-package | Description                                              |
 |-------------|----------------------------------------------------------|
 | `/badge/` | Badge component for counts and status indicators         |
+| `/callout/` | Short note set off within content, with an intent, icon and optional title (Callout). [See README](./callout/README.md) |
 | `/loadingindicator/` | Loading state display in a compact and non-blocking form |
 | `/mask/` | Overlay mask for blocking interactions                   |
 | `/progressbar/` | Bar that shows a value against a maximum, or indeterminate progress (ProgressBar). [See README](./progressbar/README.md) |
@@ -355,6 +356,12 @@ displaying their aggregate validation state as intent-colored borders and toolti
 
 A display-only list of labeled values, such as the fields of a record in a detail panel, laid out
 in as many columns as the width allows. See the [KeyValueList README](./keyvaluelist/README.md).
+
+### Callout (`/callout/`)
+
+A short note set off within a body of content, with an intent, its icon, an optional title and a
+body. Use it for a caveat or a warning inside content, and a `Banner` for a status strip in panel
+chrome. See the [Callout README](./callout/README.md).
 
 ### ProgressBar (`/progressbar/`)
 

@@ -456,6 +456,7 @@ interface MenuHeadingItemProps extends HoistProps, CustomMenuItemProps {
  * @internal
  */
 const MenuHeadingItem = hoistCmp<MenuHeadingItemProps>({
+    model: false,
     render({heading}: MenuHeadingItemProps) {
         useGridMenuItem({
             configureDefaults: () => ({
@@ -485,6 +486,7 @@ const MenuHeadingItem = hoistCmp<MenuHeadingItemProps>({
 });
 
 const RecordActionMenuItem = hoistCmp<RecordActionMenuItemProps>({
+    model: false,
     render({displaySpec, subMenu}: RecordActionMenuItemProps) {
         useGridMenuItem({
             configureDefaults: () => true
