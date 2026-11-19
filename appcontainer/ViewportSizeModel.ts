@@ -5,7 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {HoistModel} from '@xh/hoist/core';
-import {action, observable, runInAction, observableRef} from '@xh/hoist/mobx';
+import {action, observable, observableRef} from '@xh/hoist/mobx';
 import {debounced} from '@xh/hoist/utils/js';
 import {isFinite, isString} from 'lodash';
 
@@ -29,8 +29,8 @@ export class ViewportSizeModel extends HoistModel {
 
     constructor() {
         super();
-        window.addEventListener('resize', () => this.setViewportSize());
-        this.setViewportSize();
+        window.addEventListener('resize', () => this.onResize());
+        this.measure();
 
         // iOS browsers - specifically iOS WebKit components, i.e. *not* Safari itself, but
         // mobile Chrome, Airwatch, BB Access - have very strange / laggy resize reporting.
@@ -61,14 +61,13 @@ export class ViewportSizeModel extends HoistModel {
     // Debounced to account for slow inner window resize on mobile. A single 100ms debounce does
     // appear to reliably catch resize events even on problematic mobile browsers (see above).
     @debounced(100)
-    private setViewportSize() {
-        runInAction(
-            () =>
-                (this.size = {
-                    width: window.innerWidth,
-                    height: window.innerHeight
-                })
-        );
+    private onResize() {
+        this.measure();
+    }
+
+    @action
+    private measure() {
+        this.size = {width: window.innerWidth, height: window.innerHeight};
     }
 
     @action
