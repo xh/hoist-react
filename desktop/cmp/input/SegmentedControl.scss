@@ -5,8 +5,284 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
+//-----------------------------------------------
+// Base segmented control styles
+//-----------------------------------------------
+.xh-segmented-control__option {
+  flex-direction: row;
+  display: inline-flex;
+}
+
+.xh-segmented-control__option > * {
+  flex-grow: 0;
+  flex-shrink: 0;
+}
+
+.xh-segmented-control__option:before,
+.xh-segmented-control__option > * {
+  margin-right: calc(var(--bp-surface-spacing) * 2);
+}
+
+.xh-segmented-control__option:empty:before,
+.xh-segmented-control__option > :last-child {
+  margin-right: 0;
+}
+
+.xh-segmented-control__option {
+  border-radius: var(--bp-surface-border-radius);
+  cursor: pointer;
+  font-size: var(--bp-typography-size-body-medium);
+  padding: var(--bp-surface-spacing) calc(var(--bp-surface-spacing) * 2);
+  text-align: left;
+  vertical-align: middle;
+  min-height: calc(var(--bp-surface-spacing) * 7.5);
+  min-width: calc(var(--bp-surface-spacing) * 7.5);
+  border: none;
+  justify-content: center;
+  align-items: center;
+}
+
+.xh-segmented-control__option:empty {
+  padding: 0 !important;
+}
+
+.xh-segmented-control__option:disabled,
+.xh-segmented-control__option.xh-segmented-control__option--disabled {
+  cursor: not-allowed;
+}
+
+.xh-segmented-control__option.xh-segmented-control__option {
+  background-color: color-mix(in srgb, var(--bp-intent-default-rest) 5%, var(--bp-palette-white));
+  box-shadow:
+    inset 0 0 0 var(--bp-surface-border-width)
+      color-mix(in oklch, var(--bp-surface-border-color-strong) 90%, var(--bp-palette-black)),
+    0 1px 2px color-mix(in oklch, var(--bp-palette-black) 10%, transparent);
+  color: var(--bp-typography-color-default-rest);
+}
+
+.xh-segmented-control__option.xh-segmented-control__option:hover {
+  background-clip: padding-box;
+  background-color: color-mix(in srgb, var(--bp-intent-default-hover) 9%, var(--bp-palette-white));
+  box-shadow:
+    inset 0 0 0 var(--bp-surface-border-width)
+      color-mix(in oklch, var(--bp-surface-border-color-strong) 90%, var(--bp-palette-black)),
+    0 1px 2px color-mix(in oklch, var(--bp-palette-black) 20%, transparent);
+}
+
+.xh-segmented-control__option.xh-segmented-control__option:active {
+  background-color: color-mix(
+    in srgb,
+    var(--bp-intent-default-active) 16%,
+    var(--bp-palette-white)
+  );
+  box-shadow:
+    inset 0 0 0 var(--bp-surface-border-width)
+      color-mix(in oklch, var(--bp-surface-border-color-strong) 90%, var(--bp-palette-black)),
+    0 1px 2px color-mix(in oklch, var(--bp-palette-black) 20%, transparent);
+}
+
+@media (forced-colors: active) and (prefers-color-scheme: dark) {
+  .xh-segmented-control__option.xh-segmented-control__option:active {
+    background: highlight;
+  }
+}
+
+.xh-segmented-control__option.xh-segmented-control__option:disabled,
+.xh-segmented-control__option.xh-segmented-control__option.xh-segmented-control__option--disabled {
+  background-color: color-mix(in srgb, var(--bp-intent-default-disabled) 20%, transparent);
+  box-shadow: none;
+  color: var(--bp-typography-color-default-disabled);
+  cursor: not-allowed;
+  outline: none;
+}
+
+@media (forced-colors: active) and (prefers-color-scheme: dark) {
+  .xh-segmented-control__option.xh-segmented-control__option {
+    border: 1px solid buttonborder;
+  }
+}
+
+.xh-segmented-control__option:is(.xh-segmented-control--compact *) {
+  min-height: calc(var(--bp-surface-spacing) * 6);
+  min-width: calc(var(--bp-surface-spacing) * 6);
+  padding: 0 calc(var(--bp-surface-spacing) * 2);
+}
+
+.xh-dark .xh-segmented-control__option.xh-segmented-control__option {
+  background-color: color-mix(in srgb, var(--bp-intent-default-rest) 40%, var(--bp-palette-black));
+  box-shadow:
+    inset 0 0 0 var(--bp-surface-border-width)
+      color-mix(in oklch, var(--bp-surface-border-color-default) 50%, transparent),
+    0 1px 2px color-mix(in oklch, var(--bp-palette-black) 20%, transparent);
+  color: var(--bp-intent-default-foreground);
+}
+
+.xh-dark .xh-segmented-control__option.xh-segmented-control__option:hover,
+.xh-dark .xh-segmented-control__option.xh-segmented-control__option:active {
+  color: color-mix(in srgb, var(--bp-intent-default-hover) 4%, var(--bp-palette-white));
+}
+
+.xh-dark .xh-segmented-control__option.xh-segmented-control__option:hover {
+  background-color: color-mix(in srgb, var(--bp-intent-default-hover) 42%, var(--bp-palette-black));
+  box-shadow:
+    inset 0 0 0 var(--bp-surface-border-width)
+      color-mix(in oklch, var(--bp-surface-border-color-default) 50%, transparent),
+    0 1px 2px color-mix(in oklch, var(--bp-palette-black) 40%, transparent);
+}
+
+.xh-dark .xh-segmented-control__option.xh-segmented-control__option:active {
+  background-color: color-mix(
+    in srgb,
+    var(--bp-intent-default-active) 30%,
+    var(--bp-palette-black)
+  );
+  box-shadow:
+    inset 0 0 0 var(--bp-surface-border-width)
+      color-mix(in oklch, var(--bp-surface-border-color-default) 50%, transparent),
+    0 1px 2px color-mix(in oklch, var(--bp-palette-black) 40%, transparent);
+}
+
+.xh-dark .xh-segmented-control__option.xh-segmented-control__option:disabled,
+.xh-dark
+  .xh-segmented-control__option.xh-segmented-control__option.xh-segmented-control__option--disabled {
+  background-color: color-mix(in srgb, var(--bp-intent-default-disabled) 4%, transparent);
+  box-shadow: none;
+  color: var(--bp-typography-color-default-disabled);
+}
+
+.xh-segmented-control__option:disabled:before,
+.xh-segmented-control__option.xh-segmented-control__option--disabled:before {
+  color: inherit !important;
+}
+
+.xh-segmented-control__option:not(.xh-segmented-control__option--selected) {
+  box-shadow: none;
+  background: none;
+}
+
+.xh-segmented-control__option:not(.xh-segmented-control__option--selected):hover {
+  background-color: color-mix(in srgb, var(--bp-intent-default-hover) 8%, transparent);
+  box-shadow: none;
+  color: var(--bp-typography-color-default-rest);
+  text-decoration: none;
+}
+
+.xh-segmented-control__option:not(.xh-segmented-control__option--selected):active {
+  background-color: color-mix(in srgb, var(--bp-intent-default-active) 16%, transparent);
+  box-shadow: none;
+  color: var(--bp-typography-color-default-rest);
+}
+
+.xh-segmented-control__option:not(.xh-segmented-control__option--selected):disabled,
+.xh-segmented-control__option:not(.xh-segmented-control__option--selected):disabled:hover,
+.xh-segmented-control__option:not(
+    .xh-segmented-control__option--selected
+  ).xh-segmented-control__option--disabled,
+.xh-segmented-control__option:not(
+    .xh-segmented-control__option--selected
+  ).xh-segmented-control__option--disabled:hover {
+  color: var(--bp-typography-color-default-disabled);
+  cursor: not-allowed;
+  background: none;
+}
+
+.xh-dark .xh-segmented-control__option:not(.xh-segmented-control__option--selected),
+.xh-dark .xh-segmented-control__option:not(.xh-segmented-control__option--selected):hover,
+.xh-dark .xh-segmented-control__option:not(.xh-segmented-control__option--selected):active {
+  box-shadow: none;
+  color: var(--bp-intent-default-foreground);
+  background: none;
+}
+
+.xh-dark .xh-segmented-control__option:not(.xh-segmented-control__option--selected):hover {
+  background-color: color-mix(in srgb, var(--bp-intent-default-rest) 24%, transparent);
+}
+
+.xh-dark .xh-segmented-control__option:not(.xh-segmented-control__option--selected):active {
+  background-color: color-mix(in srgb, var(--bp-intent-default-rest) 49%, transparent);
+}
+
+.xh-dark .xh-segmented-control__option:not(.xh-segmented-control__option--selected):disabled,
+.xh-dark .xh-segmented-control__option:not(.xh-segmented-control__option--selected):disabled:hover,
+.xh-dark
+  .xh-segmented-control__option:not(
+    .xh-segmented-control__option--selected
+  ).xh-segmented-control__option--disabled,
+.xh-dark
+  .xh-segmented-control__option:not(
+    .xh-segmented-control__option--selected
+  ).xh-segmented-control__option--disabled:hover {
+  color: var(--bp-typography-color-default-disabled);
+  cursor: not-allowed;
+  background: none;
+}
+
+.xh-segmented-control__option-text {
+  flex: 0 auto;
+}
+
+.xh-segmented-control__options {
+  border-radius: var(--bp-surface-border-radius);
+  background-color: #f6f7f9;
+  gap: 2px;
+  padding: 2px;
+  display: flex;
+}
+
+.xh-segmented-control__options:is(.xh-segmented-control--fill > *) {
+  width: 100%;
+}
+
+.xh-segmented-control__options:is(.xh-segmented-control--fill > *) > .xh-segmented-control__option {
+  flex-grow: 1;
+}
+
+.xh-segmented-control__options
+  > .xh-segmented-control__option:not(
+    :not(.xh-segmented-control__option--selected)
+  ).xh-segmented-control__option {
+  background-color: #fff;
+}
+
+.xh-dark
+  .xh-segmented-control__options
+  > .xh-segmented-control__option:not(
+    :not(.xh-segmented-control__option--selected)
+  ).xh-segmented-control__option {
+  background-color: #404854;
+}
+
+.xh-segmented-control__options
+  > .xh-segmented-control__option:not(.xh-segmented-control__option--selected) {
+  color: #5f6b7c;
+}
+
+.xh-dark
+  .xh-segmented-control__options
+  > .xh-segmented-control__option:not(.xh-segmented-control__option--selected) {
+  color: #abb3bf;
+}
+
+.xh-segmented-control__options
+  > .xh-segmented-control__option:not(.xh-segmented-control__option--selected):disabled {
+  color: #5f6b7c99;
+}
+
+.xh-dark
+  .xh-segmented-control__options
+  > .xh-segmented-control__option:not(.xh-segmented-control__option--selected):disabled {
+  color: #abb3bf99;
+}
+
+.xh-dark .xh-segmented-control__options {
+  background-color: #252a31;
+}
+
+//-----------------------------------------------
+// Hoist segmented control styles
+//-----------------------------------------------
 .xh-segmented-control {
-  .bp6-segmented-control {
+  .xh-segmented-control__options {
     background-color: var(--xh-segmented-control-bg);
     border-radius: var(--xh-segmented-control-border-radius);
     padding: var(--xh-segmented-control-padding);
@@ -19,20 +295,20 @@
     height: calc(var(--xh-toolbar-min-size) - var(--xh-spacing-half) * 2 - 1px);
 
     // Labels never wrap - buttons have a fixed height, so a second line would spill out.
-    > .bp6-button {
+    > .xh-segmented-control__option {
       min-height: 0;
       white-space: nowrap;
     }
 
     // Selected option - solid button standing out from the tray.
-    > .bp6-button:not(.bp6-minimal) {
+    > .xh-segmented-control__option.xh-segmented-control__option--selected {
       border-radius: var(--xh-segmented-control-border-radius);
       background-color: var(--xh-segmented-control-selected-bg);
       color: var(--xh-segmented-control-selected-text-color);
     }
 
     // Unselected options - minimal buttons receding into the tray.
-    > .bp6-button.bp6-minimal {
+    > .xh-segmented-control__option:not(.xh-segmented-control__option--selected) {
       color: var(--xh-segmented-control-text-color);
     }
 
@@ -40,12 +316,12 @@
     // selected option as a solid fill in the intent color, and tints unselected options' text
     // so an intent (e.g. danger) reads as such even before it is chosen.
     @each $intent in (primary, success, warning, danger) {
-      > .bp6-button.xh-segmented-control-option--#{$intent} {
-        &.bp6-minimal {
+      > .xh-segmented-control__option.xh-segmented-control-option--#{$intent} {
+        &:not(.xh-segmented-control__option--selected) {
           color: var(--xh-intent-#{$intent}-text-color);
         }
 
-        &:not(.bp6-minimal) {
+        &.xh-segmented-control__option--selected {
           background-color: var(--xh-intent-#{$intent});
           color: var(--xh-white);
 
@@ -63,14 +339,14 @@
 
   // Outlined mode (default) - a border around the control tray. Independent of the tray fill,
   // which is governed by --no-tray-bg below.
-  &--outlined .bp6-segmented-control {
+  &--outlined .xh-segmented-control__options {
     border: 1px solid var(--xh-border-color);
   }
 
   // Not filling - shrink the tray to its options. The tray is a block-level flex container, so it
   // spans its parent regardless; BP's fill class governs only whether the options themselves grow.
   // Without this, an unfilled control leaves an empty run of tray to the right of its options.
-  &:not(#{&}--fill) .bp6-segmented-control {
+  &:not(#{&}--fill) .xh-segmented-control__options {
     width: fit-content;
   }
 
@@ -83,13 +359,13 @@
   // min-content is the full label width, not just its longest word. Options only stop sharing
   // equally once there is genuinely not enough room, and then only the ones that need the space
   // keep it.
-  &--fill#{&}--equal-widths .bp6-segmented-control > .bp6-button {
+  &--fill#{&}--equal-widths .xh-segmented-control__options > .xh-segmented-control__option {
     flex-basis: 0;
     min-width: min-content;
   }
 
   // Tray background suppressed - a lighter presentation, with no fill behind the options.
-  &--no-tray-bg .bp6-segmented-control {
+  &--no-tray-bg .xh-segmented-control__options {
     background-color: transparent;
   }
 
@@ -97,12 +373,12 @@
   // most notably in the empty state where no selected option breaks up the row. Drawn in the gap
   // to the left of each option after the first, and suppressed on either side of the selected
   // option so they never crowd it.
-  &--dividers .bp6-segmented-control {
-    > .bp6-button {
+  &--dividers .xh-segmented-control__options {
+    > .xh-segmented-control__option {
       position: relative;
     }
 
-    > .bp6-button + .bp6-button::before {
+    > .xh-segmented-control__option + .xh-segmented-control__option::before {
       content: '';
       position: absolute;
       left: calc(var(--xh-segmented-control-padding) / -2);
@@ -112,27 +388,28 @@
       background-color: var(--xh-border-color);
     }
 
-    > .bp6-button:not(.bp6-minimal)::before,
-    > .bp6-button:not(.bp6-minimal) + .bp6-button::before {
+    > .xh-segmented-control__option.xh-segmented-control__option--selected::before,
+    > .xh-segmented-control__option.xh-segmented-control__option--selected
+      + .xh-segmented-control__option::before {
       display: none;
     }
   }
 
   @each $intent in (primary, success, warning, danger) {
-    &--outlined#{&}--#{$intent} .bp6-segmented-control {
+    &--outlined#{&}--#{$intent} .xh-segmented-control__options {
       border-color: var(--xh-intent-#{$intent});
     }
   }
 
   // Compact mode - via the `compact` prop, or implicitly within a compact Toolbar, whose
   // item height the standard sizing above would overflow.
-  &--compact .bp6-segmented-control,
-  .xh-toolbar--compact & .bp6-segmented-control {
+  &--compact .xh-segmented-control__options,
+  .xh-toolbar--compact & .xh-segmented-control__options {
     padding: 0;
     gap: 0;
     height: var(--xh-toolbar-compact-item-height);
 
-    > .bp6-button {
+    > .xh-segmented-control__option {
       font-size: var(--xh-toolbar-compact-font-size);
       padding: 0 var(--xh-spacing-half);
 
@@ -143,30 +420,30 @@
   }
 
   // Validation borders
-  &.xh-input--invalid .bp6-segmented-control {
+  &.xh-input--invalid .xh-segmented-control__options {
     border: var(--xh-form-field-invalid-border);
   }
 
-  &.xh-input--warning .bp6-segmented-control {
+  &.xh-input--warning .xh-segmented-control__options {
     border: var(--xh-form-field-warning-border);
   }
 
-  &.xh-input--info .bp6-segmented-control {
+  &.xh-input--info .xh-segmented-control__options {
     border: var(--xh-form-field-info-border);
   }
 
   // Disabled control, styled like other disabled inputs. Must follow the selected and intent rules
   // above, which have equal specificity. Options disabled individually keep BP's styling.
   &.xh-input-disabled {
-    &:not(.xh-segmented-control--no-tray-bg) .bp6-segmented-control {
+    &:not(.xh-segmented-control--no-tray-bg) .xh-segmented-control__options {
       background-color: var(--xh-input-disabled-bg);
     }
 
-    .bp6-segmented-control > .bp6-button {
+    .xh-segmented-control__options > .xh-segmented-control__option {
       cursor: not-allowed;
 
       // Unselected options - faded labels.
-      &.bp6-minimal {
+      &:not(.xh-segmented-control__option--selected) {
         &,
         &:hover,
         &:active {
@@ -177,7 +454,7 @@
       }
 
       // Selected option - its translucent fill reads darker over the tray's, set off by a hairline.
-      &:not(.bp6-minimal) {
+      &.xh-segmented-control__option--selected {
         &,
         &:hover,
         &:active {

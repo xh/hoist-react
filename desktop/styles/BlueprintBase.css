@@ -628,49 +628,6 @@ a:hover {
     }
 }
 
-.bp6-button {
-    flex-direction: row;
-    display: inline-flex;
-}
-
-.bp6-button > * {
-    flex-grow: 0;
-    flex-shrink: 0;
-}
-
-.bp6-button:before,
-.bp6-button > * {
-    margin-right: calc(var(--bp-surface-spacing) * 2);
-}
-
-.bp6-button:empty:before,
-.bp6-button > :last-child {
-    margin-right: 0;
-}
-
-.bp6-button {
-    border-radius: var(--bp-surface-border-radius);
-    cursor: pointer;
-    font-size: var(--bp-typography-size-body-medium);
-    padding: var(--bp-surface-spacing) calc(var(--bp-surface-spacing) * 2);
-    text-align: left;
-    vertical-align: middle;
-    min-height: calc(var(--bp-surface-spacing) * 7.5);
-    min-width: calc(var(--bp-surface-spacing) * 7.5);
-    border: none;
-    justify-content: center;
-    align-items: center;
-}
-
-.bp6-button:empty {
-    padding: 0 !important;
-}
-
-.bp6-button:disabled,
-.bp6-button.bp6-disabled {
-    cursor: not-allowed;
-}
-
 .bp6-button.bp6-align-right,
 .bp6-align-right .bp6-button,
 .bp6-align-right .xh-button {
@@ -683,68 +640,11 @@ a:hover {
     text-align: left;
 }
 
-.bp6-button:not([class*='bp6-intent-']) {
-    background-color: color-mix(in srgb, var(--bp-intent-default-rest) 5%, var(--bp-palette-white));
-    box-shadow:
-        inset 0 0 0 var(--bp-surface-border-width)
-            color-mix(in oklch, var(--bp-surface-border-color-strong) 90%, var(--bp-palette-black)),
-        0 1px 2px color-mix(in oklch, var(--bp-palette-black) 10%, transparent);
-    color: var(--bp-typography-color-default-rest);
-}
-
-.bp6-button:not([class*='bp6-intent-']):hover {
-    background-clip: padding-box;
-    background-color: color-mix(
-        in srgb,
-        var(--bp-intent-default-hover) 9%,
-        var(--bp-palette-white)
-    );
-    box-shadow:
-        inset 0 0 0 var(--bp-surface-border-width)
-            color-mix(in oklch, var(--bp-surface-border-color-strong) 90%, var(--bp-palette-black)),
-        0 1px 2px color-mix(in oklch, var(--bp-palette-black) 20%, transparent);
-}
-
-.bp6-button:not([class*='bp6-intent-']):active,
-.bp6-button:not([class*='bp6-intent-']).bp6-active {
-    background-color: color-mix(
-        in srgb,
-        var(--bp-intent-default-active) 16%,
-        var(--bp-palette-white)
-    );
-    box-shadow:
-        inset 0 0 0 var(--bp-surface-border-width)
-            color-mix(in oklch, var(--bp-surface-border-color-strong) 90%, var(--bp-palette-black)),
-        0 1px 2px color-mix(in oklch, var(--bp-palette-black) 20%, transparent);
-}
-
-@media (forced-colors: active) and (prefers-color-scheme: dark) {
-    .bp6-button:not([class*='bp6-intent-']):active,
-    .bp6-button:not([class*='bp6-intent-']).bp6-active {
-        background: highlight;
-    }
-}
-
-.bp6-button:not([class*='bp6-intent-']):disabled,
-.bp6-button:not([class*='bp6-intent-']).bp6-disabled {
-    background-color: color-mix(in srgb, var(--bp-intent-default-disabled) 20%, transparent);
-    box-shadow: none;
-    color: var(--bp-typography-color-default-disabled);
-    cursor: not-allowed;
-    outline: none;
-}
-
 .bp6-button:not([class*='bp6-intent-']):disabled.bp6-active,
 .bp6-button:not([class*='bp6-intent-']):disabled.bp6-active:hover,
 .bp6-button:not([class*='bp6-intent-']).bp6-disabled.bp6-active,
 .bp6-button:not([class*='bp6-intent-']).bp6-disabled.bp6-active:hover {
     background-color: color-mix(in srgb, var(--bp-intent-default-disabled) 28%, transparent);
-}
-
-@media (forced-colors: active) and (prefers-color-scheme: dark) {
-    .bp6-button:not([class*='bp6-intent-']) {
-        border: 1px solid buttonborder;
-    }
 }
 
 .bp6-button.bp6-intent-primary {
@@ -959,73 +859,6 @@ a:hover {
     }
 }
 
-.bp6-button.bp6-small,
-.bp6-small .bp6-button {
-    min-height: calc(var(--bp-surface-spacing) * 6);
-    min-width: calc(var(--bp-surface-spacing) * 6);
-    padding: 0 calc(var(--bp-surface-spacing) * 2);
-}
-
-.bp6-dark .bp6-button:not([class*='bp6-intent-']),
-[data-bp-color-scheme='dark'] .bp6-button:not([class*='bp6-intent-']) {
-    background-color: color-mix(
-        in srgb,
-        var(--bp-intent-default-rest) 40%,
-        var(--bp-palette-black)
-    );
-    box-shadow:
-        inset 0 0 0 var(--bp-surface-border-width)
-            color-mix(in oklch, var(--bp-surface-border-color-default) 50%, transparent),
-        0 1px 2px color-mix(in oklch, var(--bp-palette-black) 20%, transparent);
-    color: var(--bp-intent-default-foreground);
-}
-
-.bp6-dark .bp6-button:not([class*='bp6-intent-']):hover,
-.bp6-dark .bp6-button:not([class*='bp6-intent-']):active,
-.bp6-dark .bp6-button:not([class*='bp6-intent-']).bp6-active,
-[data-bp-color-scheme='dark'] .bp6-button:not([class*='bp6-intent-']):hover,
-[data-bp-color-scheme='dark'] .bp6-button:not([class*='bp6-intent-']):active,
-[data-bp-color-scheme='dark'] .bp6-button:not([class*='bp6-intent-']).bp6-active {
-    color: color-mix(in srgb, var(--bp-intent-default-hover) 4%, var(--bp-palette-white));
-}
-
-.bp6-dark .bp6-button:not([class*='bp6-intent-']):hover,
-[data-bp-color-scheme='dark'] .bp6-button:not([class*='bp6-intent-']):hover {
-    background-color: color-mix(
-        in srgb,
-        var(--bp-intent-default-hover) 42%,
-        var(--bp-palette-black)
-    );
-    box-shadow:
-        inset 0 0 0 var(--bp-surface-border-width)
-            color-mix(in oklch, var(--bp-surface-border-color-default) 50%, transparent),
-        0 1px 2px color-mix(in oklch, var(--bp-palette-black) 40%, transparent);
-}
-
-.bp6-dark .bp6-button:not([class*='bp6-intent-']):active,
-.bp6-dark .bp6-button:not([class*='bp6-intent-']).bp6-active,
-[data-bp-color-scheme='dark'] .bp6-button:not([class*='bp6-intent-']):active,
-[data-bp-color-scheme='dark'] .bp6-button:not([class*='bp6-intent-']).bp6-active {
-    background-color: color-mix(
-        in srgb,
-        var(--bp-intent-default-active) 30%,
-        var(--bp-palette-black)
-    );
-    box-shadow:
-        inset 0 0 0 var(--bp-surface-border-width)
-            color-mix(in oklch, var(--bp-surface-border-color-default) 50%, transparent),
-        0 1px 2px color-mix(in oklch, var(--bp-palette-black) 40%, transparent);
-}
-
-.bp6-dark .bp6-button:not([class*='bp6-intent-']):disabled,
-.bp6-dark .bp6-button:not([class*='bp6-intent-']).bp6-disabled,
-[data-bp-color-scheme='dark'] .bp6-button:not([class*='bp6-intent-']):disabled,
-[data-bp-color-scheme='dark'] .bp6-button:not([class*='bp6-intent-']).bp6-disabled {
-    background-color: color-mix(in srgb, var(--bp-intent-default-disabled) 4%, transparent);
-    box-shadow: none;
-    color: var(--bp-typography-color-default-disabled);
-}
-
 .bp6-dark .bp6-button:not([class*='bp6-intent-']):disabled.bp6-active,
 .bp6-dark .bp6-button:not([class*='bp6-intent-']).bp6-disabled.bp6-active,
 [data-bp-color-scheme='dark'] .bp6-button:not([class*='bp6-intent-']):disabled.bp6-active,
@@ -1061,82 +894,11 @@ a:hover {
     color: color-mix(in oklch, var(--bp-intent-default-foreground) 30%, transparent);
 }
 
-.bp6-button:disabled:before,
-.bp6-button.bp6-disabled:before {
-    color: inherit !important;
-}
-
-.bp6-button.bp6-minimal {
-    box-shadow: none;
-    background: none;
-}
-
-.bp6-button.bp6-minimal:hover {
-    background-color: color-mix(in srgb, var(--bp-intent-default-hover) 8%, transparent);
-    box-shadow: none;
-    color: var(--bp-typography-color-default-rest);
-    text-decoration: none;
-}
-
-.bp6-button.bp6-minimal:active,
-.bp6-button.bp6-minimal.bp6-active {
-    background-color: color-mix(in srgb, var(--bp-intent-default-active) 16%, transparent);
-    box-shadow: none;
-    color: var(--bp-typography-color-default-rest);
-}
-
-.bp6-button.bp6-minimal:disabled,
-.bp6-button.bp6-minimal:disabled:hover,
-.bp6-button.bp6-minimal.bp6-disabled,
-.bp6-button.bp6-minimal.bp6-disabled:hover {
-    color: var(--bp-typography-color-default-disabled);
-    cursor: not-allowed;
-    background: none;
-}
-
 .bp6-button.bp6-minimal:disabled.bp6-active,
 .bp6-button.bp6-minimal:disabled:hover.bp6-active,
 .bp6-button.bp6-minimal.bp6-disabled.bp6-active,
 .bp6-button.bp6-minimal.bp6-disabled:hover.bp6-active {
     background-color: color-mix(in srgb, var(--bp-intent-default-disabled) 30%, transparent);
-}
-
-.bp6-dark .bp6-button.bp6-minimal,
-[data-bp-color-scheme='dark'] .bp6-button.bp6-minimal,
-.bp6-dark .bp6-button.bp6-minimal:hover,
-.bp6-dark .bp6-button.bp6-minimal:active,
-.bp6-dark .bp6-button.bp6-minimal.bp6-active,
-[data-bp-color-scheme='dark'] .bp6-button.bp6-minimal:hover,
-[data-bp-color-scheme='dark'] .bp6-button.bp6-minimal:active,
-[data-bp-color-scheme='dark'] .bp6-button.bp6-minimal.bp6-active {
-    box-shadow: none;
-    color: var(--bp-intent-default-foreground);
-    background: none;
-}
-
-.bp6-dark .bp6-button.bp6-minimal:hover,
-[data-bp-color-scheme='dark'] .bp6-button.bp6-minimal:hover {
-    background-color: color-mix(in srgb, var(--bp-intent-default-rest) 24%, transparent);
-}
-
-.bp6-dark .bp6-button.bp6-minimal:active,
-.bp6-dark .bp6-button.bp6-minimal.bp6-active,
-[data-bp-color-scheme='dark'] .bp6-button.bp6-minimal:active,
-[data-bp-color-scheme='dark'] .bp6-button.bp6-minimal.bp6-active {
-    background-color: color-mix(in srgb, var(--bp-intent-default-rest) 49%, transparent);
-}
-
-.bp6-dark .bp6-button.bp6-minimal:disabled,
-.bp6-dark .bp6-button.bp6-minimal:disabled:hover,
-.bp6-dark .bp6-button.bp6-minimal.bp6-disabled,
-.bp6-dark .bp6-button.bp6-minimal.bp6-disabled:hover,
-[data-bp-color-scheme='dark'] .bp6-button.bp6-minimal:disabled,
-[data-bp-color-scheme='dark'] .bp6-button.bp6-minimal:disabled:hover,
-[data-bp-color-scheme='dark'] .bp6-button.bp6-minimal.bp6-disabled,
-[data-bp-color-scheme='dark'] .bp6-button.bp6-minimal.bp6-disabled:hover {
-    color: var(--bp-typography-color-default-disabled);
-    cursor: not-allowed;
-    background: none;
 }
 
 .bp6-dark .bp6-button.bp6-minimal:disabled.bp6-active,
@@ -2004,10 +1766,6 @@ a:hover {
     color: color-mix(in oklch, var(--bp-intent-warning-hover) 40%, transparent);
 }
 
-.bp6-button-text {
-    flex: 0 auto;
-}
-
 @supports (color: oklch(from var(--any-color) l c h)) {
     :root {
         --bp6-button-warning-rest: oklch(
@@ -2697,50 +2455,6 @@ form {
 .xh-dark .xh-popover__content-wrapper .xh-popover__content,
 .xh-dark .xh-popover__content-wrapper .bp6-heading {
     color: inherit;
-}
-
-.bp6-segmented-control {
-    border-radius: var(--bp-surface-border-radius);
-    background-color: #f6f7f9;
-    gap: 2px;
-    padding: 2px;
-    display: flex;
-}
-
-.bp6-segmented-control.bp6-fill {
-    width: 100%;
-}
-
-.bp6-segmented-control.bp6-fill > .bp6-button {
-    flex-grow: 1;
-}
-
-.bp6-segmented-control > .bp6-button:not(.bp6-minimal):not(.bp6-intent-primary) {
-    background-color: #fff;
-}
-
-.bp6-dark .bp6-segmented-control > .bp6-button:not(.bp6-minimal):not(.bp6-intent-primary) {
-    background-color: #404854;
-}
-
-.bp6-segmented-control > .bp6-button.bp6-minimal {
-    color: #5f6b7c;
-}
-
-.bp6-dark .bp6-segmented-control > .bp6-button.bp6-minimal {
-    color: #abb3bf;
-}
-
-.bp6-segmented-control > .bp6-button.bp6-minimal:disabled {
-    color: #5f6b7c99;
-}
-
-.bp6-dark .bp6-segmented-control > .bp6-button.bp6-minimal:disabled {
-    color: #abb3bf99;
-}
-
-.bp6-dark .bp6-segmented-control {
-    background-color: #252a31;
 }
 
 @supports (color: oklch(from var(--any-color) l c h)) {

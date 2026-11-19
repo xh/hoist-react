@@ -57,7 +57,8 @@ file is the working guide.
 - [x] Inputs: `InputGroup`, `NumericInput`, `TextArea`, and the checkbox, switch and radio
       `Control`. No visual change. Their rules live in `desktop/styles/Inputs.scss`. A Blueprint
       `:not(.bp6-focus-style-manager-ignore *)` stays in it for the focus toggle step.
-- [ ] `SegmentedControl`.
+- [x] `SegmentedControl`. No visual change. Options are `xh-segmented-control__option`, with
+      `--selected` and `--disabled`, inside `xh-segmented-control__options`.
 - [ ] `Slider`.
 - [ ] Tabs: `TabList`, `TabSwitcher`, `DynamicTabSwitcher`.
 - [ ] `Toolbar` overflow and `AppBar`.
@@ -93,11 +94,12 @@ element already carries the `xh-*` class, so the `bp6-*` class is only dropped.
 |---|---|
 | `bp6-active` | `xh-button--active`, `xh-menu-item--active`, `xh-slider__handle--active` |
 | `bp6-active` set by a popover on its target | `xh-popover__target--active` |
+| `bp6-minimal` on a segmented option | `xh-segmented-control__option--selected` on the selected option instead |
 | `bp6-disabled` | `xh-button--disabled`, `xh-menu-item--disabled`, `xh-control--disabled`, `xh-input-group--disabled`, `xh-slider__body--disabled`, `xh-segmented-control__option--disabled` |
 | `bp6-intent-*` | `xh-<component>--intent-*`, as `xh-button--intent-*` and `xh-menu-item--intent-*` already are |
 | `bp6-minimal`, `bp6-outlined`, `bp6-fill`, `bp6-vertical` | `xh-button--*`, `xh-button-group--*`, `xh-tab-list--vertical`, `xh-slider__body--vertical` |
-| `bp6-small` | `xh-segmented-control--small`, and `.xh-action-col-cell .xh-record-action-button` for grid action buttons - `xh-record-action-button` alone also marks `RecordActionBar` buttons, which are not small |
-| `bp6-inline` | `xh-control--inline`, `xh-segmented-control--inline` |
+| `bp6-small` | the existing `xh-segmented-control--compact`, which is set exactly when Blueprint's small was, and `.xh-action-col-cell .xh-record-action-button` for grid action buttons - `xh-record-action-button` alone also marks `RecordActionBar` buttons, which are not small |
+| `bp6-inline` | `xh-control--inline` - SegmentedControl never set it |
 | `bp6-start`, `bp6-end` | `xh-slider__handle--start`, `xh-slider__handle--end` |
 | `bp6-heading` | `xh-dialog__title` (-), `xh-menu-header__title`, `xh-hotkeys-dialog__group-title` |
 | `bp6-icon` | `xh-menu-item__submenu-icon` (-) |
