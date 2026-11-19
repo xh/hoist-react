@@ -38,6 +38,41 @@ describe('MenuButton', () => {
         expect(screen.getByTestId('group-by-sector').textContent).toBe('Sector');
     });
 
+    it('takes arrow and typeahead keys as soon as it opens', async () => {
+        const items = [
+            {text: 'Region', testId: 'region'},
+            {text: 'Sector', testId: 'sector'},
+            {text: 'Trader', testId: 'trader'}
+        ];
+        render(host({testId: 'group-by', menuItems: items}));
+        const open = async () => {
+            fireEvent.click(screen.getByTestId('group-by'));
+            await screen.findByTestId('group-by-menu');
+            // The popover takes focus itself on opening, ahead of any item.
+            await waitFor(() =>
+                expect(document.activeElement.classList).toContain('xh-popover__floating')
+            );
+        };
+        const close = async () => {
+            fireEvent.keyDown(document.activeElement, {key: 'Escape'});
+            await waitFor(() => expect(screen.queryByTestId('group-by-menu')).toBeNull());
+        };
+
+        await open();
+        fireEvent.keyDown(document.activeElement, {key: 's'});
+        expect(document.activeElement).toBe(screen.getByTestId('sector'));
+        await close();
+
+        await open();
+        fireEvent.keyDown(document.activeElement, {key: 'ArrowUp'});
+        expect(document.activeElement).toBe(screen.getByTestId('trader'));
+        await close();
+
+        await open();
+        fireEvent.keyDown(document.activeElement, {key: 'ArrowDown'});
+        expect(document.activeElement).toBe(screen.getByTestId('region'));
+    });
+
     it('closes when an item is clicked, unless the item sets keepMenuOpen', async () => {
         const actionFn = vi.fn();
         render(

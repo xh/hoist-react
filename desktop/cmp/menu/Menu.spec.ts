@@ -54,6 +54,65 @@ describe('Menu', () => {
         expect(document.activeElement).toBe(screen.getByTestId('cherry'));
     });
 
+    it('cycles through the items that start with a letter typed repeatedly', () => {
+        render(
+            menu({
+                menuItems: ['Apple', 'Banana', 'Bread', 'Cherry'].map(text => ({
+                    text,
+                    testId: text.toLowerCase()
+                }))
+            })
+        );
+        screen.getByTestId('apple').focus();
+
+        key('b');
+        expect(document.activeElement).toBe(screen.getByTestId('banana'));
+        key('b');
+        expect(document.activeElement).toBe(screen.getByTestId('bread'));
+        key('b');
+        expect(document.activeElement).toBe(screen.getByTestId('banana'));
+    });
+
+    it('takes a space as part of a search in progress, and as activation otherwise', async () => {
+        const saveFn = vi.fn();
+        render(
+            menu({
+                menuItems: [
+                    {text: 'Save', testId: 'save', actionFn: saveFn},
+                    {text: 'Save As...', testId: 'save-as'}
+                ]
+            })
+        );
+        screen.getByTestId('save').focus();
+
+        for (const k of ['s', 'a', 'v', 'e', ' ', 'a']) key(k);
+        expect(document.activeElement).toBe(screen.getByTestId('save-as'));
+
+        // Once the search resets, Space activates the focused item.
+        screen.getByTestId('save').focus();
+        await new Promise(resolve => setTimeout(resolve, 800));
+        key(' ');
+        await waitFor(() => expect(saveFn).toHaveBeenCalledTimes(1));
+    });
+
+    it('moves focus to an item under the pointer only when focus is already in the menu', () => {
+        const input = document.createElement('input');
+        document.body.appendChild(input);
+        try {
+            render(menu({menuItems: items()}));
+
+            input.focus();
+            fireEvent.mouseEnter(screen.getByTestId('banana'));
+            expect(document.activeElement).toBe(input);
+
+            screen.getByTestId('apple').focus();
+            fireEvent.mouseEnter(screen.getByTestId('cherry'));
+            expect(document.activeElement).toBe(screen.getByTestId('cherry'));
+        } finally {
+            input.remove();
+        }
+    });
+
     it('runs an item action on Enter', async () => {
         const actionFn = vi.fn();
         render(menu({menuItems: [{text: 'Run', testId: 'run', actionFn}]}));

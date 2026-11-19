@@ -253,18 +253,6 @@ const popoverInner = hoistCmp.factory<PopoverImplProps>({
             if (e.key === 'Escape' && canEscapeKeyClose && open) {
                 e.stopPropagation();
                 setOpen(false, e);
-            } else if (
-                (e.key === 'ArrowDown' || e.key === 'ArrowUp') &&
-                e.target === e.currentTarget
-            ) {
-                // Focus is on the popover itself, as after opening. Arrow keys enter a menu in it.
-                const items = e.currentTarget.querySelectorAll<HTMLElement>(
-                    '[role=menuitem]:not([aria-disabled=true])'
-                );
-                if (items.length) {
-                    e.preventDefault();
-                    items[e.key === 'ArrowDown' ? 0 : items.length - 1].focus();
-                }
             }
         };
 
