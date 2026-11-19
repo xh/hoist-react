@@ -63,6 +63,10 @@ detailed, step-by-step upgrade instructions with before/after code examples.
   `bp6-radio` and `bp6-radio-group` classes alongside new `xh-control*` ones. Set
   `useBlueprint = true` in each component's `defaults` at startup to fall back to Blueprint's for
   this release.
+* Desktop `TextInput` and `TextArea` now render their own native `<input>` and `<textarea>`, not
+  Blueprint's components, keeping Blueprint's `bp6-input`, `bp6-input-group` and `bp6-text-area`
+  classes. Set `useBlueprint = true` in each component's `defaults` at startup to fall back to
+  Blueprint's for this release.
 * Mobile `Popover` and `MenuButton` now use the cross-platform `Popover` from
   `@xh/hoist/cmp/popover`. `@xh/hoist/mobile/cmp/popover` re-exports it for one release - import
   from `@xh/hoist/cmp/popover` instead. Popover content now renders in an `xh-popover__floating`

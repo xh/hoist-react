@@ -12,12 +12,14 @@ import {hoistCmp} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
-import {inputGroup} from '@xh/hoist/kit/blueprint';
+import {inputGroup as bpInputGroup} from '@xh/hoist/kit/blueprint';
 import {getTestId, TEST_ID, withDefault} from '@xh/hoist/utils/js';
 import {useComposedRefs, getLayoutProps} from '@xh/hoist/utils/react';
 import type {Property} from 'csstype';
 import {isEmpty} from 'lodash';
 import type {FocusEvent, KeyboardEventHandler, ReactElement, ReactNode, Ref} from 'react';
+import {createElement} from 'react';
+import {InputGroup} from './impl/InputGroup';
 
 export interface TextInputProps
     extends HoistProps, HoistInputProps, PasswordManagerSupportProps, LayoutProps, StyleProps {
@@ -92,9 +94,20 @@ export interface TextInputProps
 /**
  * A single-line text input with additional support for embedded icons/elements.
  */
-export const [TextInput, textInput] = hoistCmp.withFactory<TextInputProps>({
+export interface TextInputDefaults {
+    /**
+     * True to render desktop text inputs with Blueprint's input group, as before Hoist had its own.
+     * For apps to fall back on while they adopt Hoist's - removed in the next major version.
+     */
+    useBlueprint?: boolean;
+}
+
+export const [TextInput, textInput] = hoistCmp.withFactory<TextInputProps, TextInputDefaults>({
     displayName: 'TextInput',
     className: 'xh-text-input',
+    defaults: {
+        useBlueprint: false
+    },
     render(props, ref) {
         return useHoistInputModel(cmp, props, ref, TextInputModel);
     }
@@ -147,6 +160,10 @@ const cmp = hoistCmp.factory<TextInputProps & {model: TextInputModel}>(
         const {width, flex, ...layoutProps} = getLayoutProps(props);
 
         const isClearable = !isEmpty(model.internalValue);
+
+        const inputGroup = TextInput.defaults.useBlueprint
+            ? bpInputGroup
+            : (groupProps: object) => createElement(InputGroup, groupProps);
 
         return div({
             children: inputGroup({

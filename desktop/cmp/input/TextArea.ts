@@ -12,7 +12,9 @@ import '@xh/hoist/desktop/register';
 import {textArea as bpTextarea} from '@xh/hoist/kit/blueprint';
 import {TEST_ID, withDefault} from '@xh/hoist/utils/js';
 import {useComposedRefs, getLayoutProps} from '@xh/hoist/utils/react';
+import classNames from 'classnames';
 import type {Ref} from 'react';
+import {createElement} from 'react';
 import './TextArea.scss';
 
 export interface TextAreaProps
@@ -44,9 +46,20 @@ export interface TextAreaProps
 /**
  * A multi-line text input.
  */
-export const [TextArea, textArea] = hoistCmp.withFactory<TextAreaProps>({
+export interface TextAreaDefaults {
+    /**
+     * True to render desktop text areas with Blueprint's, as before Hoist had its own.
+     * For apps to fall back on while they adopt Hoist's - removed in the next major version.
+     */
+    useBlueprint?: boolean;
+}
+
+export const [TextArea, textArea] = hoistCmp.withFactory<TextAreaProps, TextAreaDefaults>({
     displayName: 'TextArea',
     className: 'xh-text-area',
+    defaults: {
+        useBlueprint: false
+    },
     render(props, ref) {
         return useHoistInputModel(cmp, props, ref, TextAreaInputModel);
     }
@@ -84,7 +97,7 @@ class TextAreaInputModel extends HoistInputModel {
 const cmp = hoistCmp.factory<TextAreaInputModel>(({model, className, ...props}, ref) => {
     const {width, height, flex, ...layoutProps} = getLayoutProps(props);
 
-    return bpTextarea({
+    const textareaProps = {
         value: model.renderValue || '',
 
         autoFocus: props.autoFocus,
@@ -109,5 +122,15 @@ const cmp = hoistCmp.factory<TextAreaInputModel>(({model, className, ...props}, 
         onChange: model.onChange,
         onFocus: model.onFocus,
         onKeyDown: model.onKeyDown
+    };
+
+    if (TextArea.defaults.useBlueprint) return bpTextarea(textareaProps);
+
+    // Blueprint's class names are kept, so its styles and any app CSS keyed to them still apply.
+    const {inputRef, ...rest} = textareaProps;
+    return createElement('textarea', {
+        ...rest,
+        ref: inputRef,
+        className: classNames('bp6-input', 'bp6-text-area', className)
     });
 });
