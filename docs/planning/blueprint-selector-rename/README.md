@@ -54,8 +54,9 @@ file is the working guide.
 - [x] Dialog, overlay and mask. No visual change.
 - [x] Toasts. No visual change.
 - [x] Hotkeys dialog - done on #4995 (`675e3e1e0`), as a Hoist dialog with only `xh-*` classes.
-- [ ] Inputs: `InputGroup`, `NumericInput`, `TextArea`, and the checkbox, switch and radio
-      `Control`.
+- [x] Inputs: `InputGroup`, `NumericInput`, `TextArea`, and the checkbox, switch and radio
+      `Control`. No visual change. Their rules live in `desktop/styles/Inputs.scss`. A Blueprint
+      `:not(.bp6-focus-style-manager-ignore *)` stays in it for the focus toggle step.
 - [ ] `SegmentedControl`.
 - [ ] `Slider`.
 - [ ] Tabs: `TabList`, `TabSwitcher`, `DynamicTabSwitcher`.
@@ -193,6 +194,10 @@ Proposals are hints, not decisions:
   one server user, and pages that persist grid state, such as Admin's Grid Formatter Parity test,
   differ by timing. Do not commit or edit hoist-react files while a capture runs: the pre-commit
   hook and Toolbox's docs tab both trigger a rebuild, and the page reloads mid-run.
+- The bundler rewrites Blueprint's legacy `:-ms-input-placeholder` as `:placeholder-shown`, which
+  Hoist never had. Drop vendor placeholder variants when porting from the full file.
+- `styles.cjs` keys elements by their class context, so new `xh-*` modifiers on markup show as
+  "missing after" and "new after" pairs. Strip them from the keys before comparing.
 - Verify each step on the routes and opened UI that render the component, with `styles.cjs` and
   `capture.cjs` route filters and `popups.cjs` scenarios. A full-route pass takes hours.
 - Start the Toolbox server and clients with `setsid nohup ... &`, not as background tasks, which

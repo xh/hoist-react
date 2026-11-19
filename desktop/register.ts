@@ -4,6 +4,7 @@ import {platformManager} from '@xh/hoist/core/impl/PlatformManager';
 // ahead of its own stylesheet - so component styles always come later and win at equal specificity.
 import './styles/BlueprintBase.css';
 import './styles/Popover.scss';
+import './styles/Inputs.scss';
 import './styles/BlueprintOverrides.scss';
 
 platformManager.registerDesktop();

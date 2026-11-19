@@ -23,10 +23,10 @@ describe('Checkbox, SwitchInput and RadioInput (desktop)', () => {
         const label = input.closest('label');
         expect(input.type).toBe('checkbox');
         expect(input.checked).toBe(true);
-        ['xh-check-box', 'bp6-control', 'bp6-checkbox', 'bp6-inline'].forEach(cls =>
+        ['xh-check-box', 'xh-control', 'xh-control--checkbox', 'xh-control--inline'].forEach(cls =>
             expect(label.classList).toContain(cls)
         );
-        expect(label.querySelector('.bp6-control-indicator')).not.toBeNull();
+        expect(label.querySelector('.xh-control__indicator')).not.toBeNull();
         expect(label.textContent).toBe('Active');
     });
 
@@ -43,19 +43,19 @@ describe('Checkbox, SwitchInput and RadioInput (desktop)', () => {
 
     it('puts the indicator after the label when labelSide is left', () => {
         const {input} = renderBound(checkbox, false, {labelSide: 'left'});
-        expect(input.closest('label').classList).toContain('bp6-align-right');
+        expect(input.closest('label').classList).toContain('xh-control--align-right');
     });
 
     it('disables the native input and marks the label disabled', () => {
         const {input} = renderBound(switchInput, false, {disabled: true});
         expect(input.disabled).toBe(true);
-        expect(input.closest('label').classList).toContain('bp6-disabled');
+        expect(input.closest('label').classList).toContain('xh-control--disabled');
     });
 
     it('renders a switch as a checkbox input with switch class names, and commits toggles', () => {
         const {input, model} = renderBound(switchInput, false);
         expect(input.type).toBe('checkbox');
-        expect(input.closest('label').classList).toContain('bp6-switch');
+        expect(input.closest('label').classList).toContain('xh-control--switch');
         fireEvent.click(input);
         expect(model.value).toBe(true);
     });
@@ -73,7 +73,7 @@ describe('Checkbox, SwitchInput and RadioInput (desktop)', () => {
         const group = screen.getByTestId('radios'),
             [a, b, c] = Array.from(group.querySelectorAll('input'));
         expect(group.getAttribute('role')).toBe('radiogroup');
-        expect(group.classList).toContain('bp6-radio-group');
+        expect(group.classList).toContain('xh-radio-input');
         expect(new Set([a.name, b.name, c.name]).size).toBe(1);
         expect(b.checked).toBe(true);
         expect(c.disabled).toBe(true);

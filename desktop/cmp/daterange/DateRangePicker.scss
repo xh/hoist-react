@@ -288,7 +288,7 @@ $drp-transition-dur: 120ms;
       margin-bottom: var(--xh-spacing);
 
       // The count stepper - a small gap between its buttons and input.
-      .bp6-control-group {
+      .xh-control-group {
         gap: 2px;
       }
     }
@@ -433,7 +433,7 @@ $drp-transition-dur: 120ms;
     &__field {
       flex: 1;
 
-      .xh-date-input .bp6-input {
+      .xh-date-input :is(.xh-input-group__input, .xh-text-area) {
         font-family: var(--xh-date-range-picker-date-font-family);
       }
 

@@ -109,7 +109,7 @@ export const numericInput = hoistCmp.factory<NumericInputProps>({
 
         return h(
             'div',
-            {className: classNames('bp6-control-group', 'bp6-numeric-input', className)},
+            {className: classNames('xh-control-group', 'xh-numeric-input', className)},
             inputGroup({
                 autoComplete: 'off',
                 id,

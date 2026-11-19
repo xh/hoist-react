@@ -11,7 +11,6 @@ import {hoistCmp} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {computed} from '@xh/hoist/mobx';
 import {getTestId, TEST_ID, withDefault} from '@xh/hoist/utils/js';
-import classNames from 'classnames';
 import {filter, isObject} from 'lodash';
 import {createElement, useId} from 'react';
 import {control} from './impl/Control';
@@ -101,7 +100,7 @@ const cmp = hoistCmp.factory<RadioInputModel>(({model, className, ...props}, ref
             role: 'radiogroup',
             [TEST_ID]: props.testId,
             ...props.domAttrs,
-            className: classNames('bp6-radio-group', className)
+            className
         },
         ...normalizedOptions.map(opt =>
             control({

@@ -258,7 +258,9 @@ const popoverInner = hoistCmp.factory<PopoverImplProps>({
             onFloatingClick = (e: MouseEvent) => {
                 const target = e.target as Element,
                     dismissEl = target.closest(DISMISS_SELECTOR),
-                    isDisabled = target.closest(':disabled, .bp6-disabled, [aria-disabled=true]');
+                    isDisabled = target.closest(
+                        ':disabled, .bp6-disabled, .xh-control--disabled, [aria-disabled=true]'
+                    );
                 if (dismissEl && !isDisabled) setOpen(false, e);
             };
 

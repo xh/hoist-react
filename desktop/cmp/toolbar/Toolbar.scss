@@ -128,9 +128,9 @@
       max-height: var(--xh-toolbar-compact-item-height);
       min-height: var(--xh-toolbar-compact-item-height);
 
-      .bp6-input-group {
+      .xh-input-group {
         // This padding reserves space for a left-icon - default 30px overly wide in compact mode.
-        .bp6-input:not(:first-child) {
+        :is(.xh-input-group__input, .xh-text-area):not(:first-child) {
           padding-left: 20px;
         }
 
@@ -162,15 +162,15 @@
         align-items: center;
         padding-inline-start: 0;
 
-        .bp6-control-indicator {
+        .xh-control__indicator {
           margin: 0 var(--xh-spacing-half) 0 0;
         }
 
-        &.bp6-align-right {
+        &.xh-control--align-right {
           flex-direction: row-reverse;
           padding-right: 0;
 
-          .bp6-control-indicator {
+          .xh-control__indicator {
             float: none;
             margin: 0 0 0 var(--xh-spacing-half);
           }
@@ -219,10 +219,10 @@
   }
 
   // Form field margins (if set) are not desired within Toolbars.
-  .bp6-control {
+  .xh-control {
     margin-bottom: 0;
 
-    &.bp6-inline {
+    &.xh-control--inline {
       margin-right: 0;
     }
   }

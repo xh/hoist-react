@@ -1,0 +1,1076 @@
+/*
+ * This file belongs to Hoist, an application development toolkit
+ * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
+ *
+ * Copyright © 2026 Extremely Heavy Industries Inc.
+ */
+
+// Desktop input styles - InputGroup, TextArea, NumericInput, ControlGroup and the checkbox,
+// switch and radio Control.
+
+//-----------------------------------------------
+// Base input styles
+//-----------------------------------------------
+.xh-focus-disabled :focus:not(.bp6-focus-style-manager-ignore *) ~ .xh-control__indicator {
+  outline: none !important;
+}
+
+.xh-control-group {
+  transform: translateZ(0);
+  display: flex;
+  flex-direction: row;
+}
+
+.xh-control-group > * {
+  flex-grow: 0;
+  flex-shrink: 0;
+}
+
+.xh-control-group {
+  align-items: stretch;
+}
+
+.xh-control-group .xh-button,
+.xh-control-group :is(.xh-input-group__input, .xh-text-area) {
+  position: relative;
+}
+
+.xh-control-group :is(.xh-input-group__input, .xh-text-area) {
+  z-index: 2;
+}
+
+.xh-control-group :is(.xh-input-group__input, .xh-text-area):focus {
+  z-index: 14;
+}
+
+.xh-control-group :is(.xh-input-group__input, .xh-text-area)[readonly],
+.xh-control-group :is(.xh-input-group__input, .xh-text-area):disabled {
+  z-index: 1;
+}
+
+.xh-control-group .xh-button {
+  transform: translateZ(0);
+  z-index: 4;
+}
+
+.xh-control-group .xh-button:focus {
+  z-index: 5;
+}
+
+.xh-control-group .xh-button:hover {
+  z-index: 6;
+}
+
+.xh-control-group .xh-button:active {
+  z-index: 7;
+}
+
+.xh-control-group .xh-button[readonly],
+.xh-control-group .xh-button:disabled {
+  z-index: 3;
+}
+
+.xh-control-group .xh-input-group > .xh-button,
+.xh-control-group .xh-input-group > .xh-input-group__left-element,
+.xh-control-group .xh-input-group > .xh-input-group__right-element {
+  z-index: 16;
+}
+
+.xh-control-group .xh-numeric-input:not(:first-child) .xh-input-group {
+  border-bottom-left-radius: 0;
+  border-top-left-radius: 0;
+}
+
+.xh-control input:checked ~ .xh-control__indicator {
+  background-color: var(--bp-intent-primary-rest);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--bp-palette-black) 20%, transparent);
+  color: var(--bp-intent-primary-foreground);
+}
+
+@media (forced-colors: active) and (prefers-color-scheme: dark) {
+  .xh-control input:checked ~ .xh-control__indicator {
+    background-color: highlight;
+    border: 1px solid highlight;
+  }
+}
+
+.xh-control:hover input:checked ~ .xh-control__indicator {
+  background-color: var(--bp-intent-primary-hover);
+}
+
+@media (forced-colors: active) and (prefers-color-scheme: dark) {
+  .xh-control:hover input:checked ~ .xh-control__indicator {
+    background-color: highlight;
+  }
+}
+
+.xh-control input:not(:disabled):active:checked ~ .xh-control__indicator {
+  background: var(--bp-intent-primary-active);
+}
+
+.xh-control input:disabled:checked ~ .xh-control__indicator {
+  background: color-mix(in srgb, var(--bp-intent-primary-rest) 50%, transparent);
+  box-shadow: none;
+  color: color-mix(in srgb, var(--bp-intent-primary-foreground) 60%, transparent);
+}
+
+@media (forced-colors: active) and (prefers-color-scheme: dark) {
+  .xh-control input:disabled:checked ~ .xh-control__indicator {
+    background-color: graytext;
+    border-color: graytext;
+  }
+}
+
+.xh-dark .xh-control input:checked ~ .xh-control__indicator {
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--bp-palette-white) 10%, transparent);
+}
+
+@media (forced-colors: active) and (prefers-color-scheme: dark) {
+  .xh-dark .xh-control input:checked ~ .xh-control__indicator {
+    border: 1px solid buttonborder;
+  }
+}
+
+.xh-dark .xh-control:hover input:checked ~ .xh-control__indicator {
+  background-color: var(--bp-intent-primary-hover);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--bp-palette-white) 10%, transparent);
+}
+
+.xh-dark .xh-control input:not(:disabled):active:checked ~ .xh-control__indicator {
+  background-color: var(--bp-intent-primary-active);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--bp-palette-white) 10%, transparent);
+}
+
+.xh-dark .xh-control input:disabled:checked ~ .xh-control__indicator {
+  background: color-mix(in srgb, var(--bp-intent-primary-rest) 50%, transparent);
+  box-shadow: none;
+  color: color-mix(in srgb, var(--bp-intent-primary-foreground) 60%, transparent);
+}
+
+.xh-control:not(.xh-control--align-right) {
+  padding-inline-start: 24px;
+}
+
+.xh-control:not(.xh-control--align-right) .xh-control__indicator {
+  margin-inline-start: -24px;
+}
+
+.xh-control.xh-control--align-right {
+  padding-right: 24px;
+}
+
+.xh-control.xh-control--align-right .xh-control__indicator {
+  margin-right: -24px;
+}
+
+[dir='rtl'] .xh-control.xh-control--align-left {
+  padding-inline-start: 0;
+  padding-left: 24px;
+}
+
+[dir='rtl'] .xh-control.xh-control--align-left .xh-control__indicator {
+  margin-left: -24px;
+}
+
+.xh-control {
+  cursor: pointer;
+  display: block;
+  margin-bottom: 8px;
+  position: relative;
+  text-transform: none;
+}
+
+.xh-control.xh-control--disabled {
+  color: rgba(95, 107, 124, 0.6);
+  cursor: not-allowed;
+}
+
+.xh-control.xh-control--inline {
+  display: inline-block;
+  margin-inline-end: 20px;
+}
+
+.xh-control .xh-control__input {
+  left: 0;
+  opacity: 0;
+  position: absolute;
+  top: 0;
+  z-index: -1;
+}
+
+.xh-control .xh-control__indicator {
+  background-clip: padding-box;
+  background-color: transparent;
+  border: none;
+  box-shadow: inset 0 0 0 1px var(--bp-palette-gray-2);
+  cursor: pointer;
+  display: inline-block;
+  font-size: 16px;
+  height: 1em;
+  margin-inline-end: 8px;
+  margin-top: -3px;
+  position: relative;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  vertical-align: middle;
+  width: 1em;
+}
+
+.xh-control .xh-control__indicator::before {
+  content: '';
+  display: block;
+  height: 1em;
+  width: 1em;
+}
+
+@media (forced-colors: active) and (prefers-color-scheme: dark) {
+  .xh-control .xh-control__indicator {
+    border: 1px solid buttonborder;
+  }
+}
+
+@media (forced-colors: active) and (prefers-color-scheme: dark) {
+  .xh-control .xh-control__indicator::before {
+    margin-left: -1px;
+    margin-top: -1px;
+  }
+}
+
+.xh-control:hover .xh-control__indicator {
+  background-color: rgba(143, 153, 168, 0.15);
+}
+
+.xh-control input:not(:disabled):active ~ .xh-control__indicator {
+  background: rgba(143, 153, 168, 0.3);
+  box-shadow: inset 0 0 0 1px var(--bp-palette-gray-2);
+}
+
+.xh-control input:disabled ~ .xh-control__indicator {
+  background: rgba(143, 153, 168, 0.15);
+  box-shadow: none;
+  cursor: not-allowed;
+}
+
+.xh-control input:focus ~ .xh-control__indicator {
+  outline: rgba(33, 93, 176, 0.752) solid 2px;
+  outline-offset: 2px;
+  -moz-outline-radius: 6px;
+}
+
+.xh-dark .xh-control input:focus ~ .xh-control__indicator {
+  outline-color: rgba(138, 187, 255, 0.752);
+}
+
+.xh-control.xh-control--align-right .xh-control__indicator {
+  float: right;
+  margin-left: 8px;
+  margin-top: 1px;
+}
+
+[dir='rtl'] .xh-control.xh-control--align-left .xh-control__indicator {
+  float: left;
+  margin-top: 1px;
+}
+
+.xh-control.xh-control--checkbox input:indeterminate ~ .xh-control__indicator {
+  background-color: var(--bp-intent-primary-rest);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--bp-palette-black) 20%, transparent);
+  color: var(--bp-intent-primary-foreground);
+}
+
+@media (forced-colors: active) and (prefers-color-scheme: dark) {
+  .xh-control.xh-control--checkbox input:indeterminate ~ .xh-control__indicator {
+    background-color: highlight;
+    border: 1px solid highlight;
+  }
+}
+
+.xh-control.xh-control--checkbox:hover input:indeterminate ~ .xh-control__indicator {
+  background-color: var(--bp-intent-primary-hover);
+}
+
+@media (forced-colors: active) and (prefers-color-scheme: dark) {
+  .xh-control.xh-control--checkbox:hover input:indeterminate ~ .xh-control__indicator {
+    background-color: highlight;
+  }
+}
+
+.xh-control.xh-control--checkbox
+  input:not(:disabled):active:indeterminate
+  ~ .xh-control__indicator {
+  background: var(--bp-intent-primary-active);
+}
+
+.xh-control.xh-control--checkbox input:disabled:indeterminate ~ .xh-control__indicator {
+  background: color-mix(in srgb, var(--bp-intent-primary-rest) 50%, transparent);
+  box-shadow: none;
+  color: color-mix(in srgb, var(--bp-intent-primary-foreground) 60%, transparent);
+}
+
+@media (forced-colors: active) and (prefers-color-scheme: dark) {
+  .xh-control.xh-control--checkbox input:disabled:indeterminate ~ .xh-control__indicator {
+    background-color: graytext;
+    border-color: graytext;
+  }
+}
+
+.xh-dark .xh-control.xh-control--checkbox input:indeterminate ~ .xh-control__indicator {
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--bp-palette-white) 10%, transparent);
+}
+
+@media (forced-colors: active) and (prefers-color-scheme: dark) {
+  .xh-dark .xh-control.xh-control--checkbox input:indeterminate ~ .xh-control__indicator {
+    border: 1px solid buttonborder;
+  }
+}
+
+.xh-dark .xh-control.xh-control--checkbox:hover input:indeterminate ~ .xh-control__indicator {
+  background-color: var(--bp-intent-primary-hover);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--bp-palette-white) 10%, transparent);
+}
+
+.xh-dark
+  .xh-control.xh-control--checkbox
+  input:not(:disabled):active:indeterminate
+  ~ .xh-control__indicator {
+  background-color: var(--bp-intent-primary-active);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--bp-palette-white) 10%, transparent);
+}
+
+.xh-dark .xh-control.xh-control--checkbox input:disabled:indeterminate ~ .xh-control__indicator {
+  background: color-mix(in srgb, var(--bp-intent-primary-rest) 50%, transparent);
+  box-shadow: none;
+  color: color-mix(in srgb, var(--bp-intent-primary-foreground) 60%, transparent);
+}
+
+.xh-control.xh-control--checkbox .xh-control__indicator {
+  border-radius: var(--bp-surface-border-radius);
+}
+
+.xh-control.xh-control--checkbox input:checked ~ .xh-control__indicator::before {
+  background-color: var(--bp-intent-primary-foreground);
+  -webkit-mask-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='%23111418' d='M11.72 4.72a.75.75 0 1 1 1.06 1.06l-5.5 5.5a.75.75 0 0 1-1.06 0l-3-3a.75.75 0 1 1 1.06-1.06l2.47 2.47z'/%3e%3c/svg%3e");
+  mask-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='%23111418' d='M11.72 4.72a.75.75 0 1 1 1.06 1.06l-5.5 5.5a.75.75 0 0 1-1.06 0l-3-3a.75.75 0 1 1 1.06-1.06l2.47 2.47z'/%3e%3c/svg%3e");
+  -webkit-mask-position: center;
+  mask-position: center;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-size: contain;
+  mask-size: contain;
+}
+
+.xh-control.xh-control--checkbox input:indeterminate ~ .xh-control__indicator::before {
+  background-color: var(--bp-intent-primary-foreground);
+  -webkit-mask-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='%23111418' d='M11.5 7.25a.75.75 0 0 1 0 1.5h-7a.75.75 0 0 1 0-1.5z'/%3e%3c/svg%3e");
+  mask-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='%23111418' d='M11.5 7.25a.75.75 0 0 1 0 1.5h-7a.75.75 0 0 1 0-1.5z'/%3e%3c/svg%3e");
+  -webkit-mask-position: center;
+  mask-position: center;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-size: contain;
+  mask-size: contain;
+}
+
+.xh-control.xh-control--checkbox input:disabled ~ .xh-control__indicator::before {
+  opacity: 0.5;
+}
+
+@media (forced-colors: active) and (prefers-color-scheme: dark) {
+  .xh-control.xh-control--checkbox input:checked:not(:disabled) ~ .xh-control__indicator::before {
+    background-color: var(--bp-palette-black);
+  }
+}
+
+@media (forced-colors: active) and (prefers-color-scheme: dark) {
+  .xh-control.xh-control--checkbox
+    input:indeterminate:not(:disabled)
+    ~ .xh-control__indicator::before {
+    background-color: var(--bp-palette-black);
+  }
+}
+
+@media (forced-colors: active) and (prefers-color-scheme: dark) {
+  .xh-control.xh-control--checkbox input:disabled ~ .xh-control__indicator {
+    border-color: graytext;
+  }
+}
+
+.xh-control.xh-control--radio .xh-control__indicator {
+  border-radius: 50%;
+}
+
+.xh-control.xh-control--radio input:checked ~ .xh-control__indicator::before {
+  background-image: radial-gradient(
+    var(--bp-intent-primary-foreground),
+    var(--bp-intent-primary-foreground) 28%,
+    transparent 32%
+  );
+}
+
+@media (forced-colors: active) and (prefers-color-scheme: dark) {
+  .xh-control.xh-control--radio input:checked ~ .xh-control__indicator::before {
+    background: highlight;
+    height: 12px;
+    margin-left: 1px;
+    margin-top: 1px;
+    width: 12px;
+  }
+}
+
+.xh-control.xh-control--radio input:checked:disabled ~ .xh-control__indicator::before {
+  opacity: 0.5;
+}
+
+@media (forced-colors: active) and (prefers-color-scheme: dark) {
+  .xh-control.xh-control--radio input:checked:disabled ~ .xh-control__indicator::before {
+    background: graytext;
+  }
+}
+
+.xh-control.xh-control--radio input:focus ~ .xh-control__indicator {
+  -moz-outline-radius: 16px;
+}
+
+@media (forced-colors: active) and (prefers-color-scheme: dark) {
+  .xh-control.xh-control--radio input:disabled ~ .xh-control__indicator {
+    border-color: graytext;
+  }
+}
+
+.xh-control.xh-control--switch input ~ .xh-control__indicator {
+  background: color-mix(in srgb, var(--bp-palette-gray-3) 30%, transparent);
+  color: #1c2127;
+}
+
+.xh-control.xh-control--switch:hover input ~ .xh-control__indicator {
+  background: color-mix(in srgb, var(--bp-palette-gray-3) 40%, transparent);
+}
+
+.xh-control.xh-control--switch input:not(:disabled):active ~ .xh-control__indicator {
+  background: color-mix(in srgb, var(--bp-palette-gray-3) 50%, transparent);
+}
+
+.xh-control.xh-control--switch input:disabled ~ .xh-control__indicator {
+  background: color-mix(in srgb, var(--bp-palette-gray-3) 15%, transparent);
+  color: rgba(95, 107, 124, 0.6);
+}
+
+.xh-control.xh-control--switch input:disabled ~ .xh-control__indicator::before {
+  background: color-mix(in srgb, var(--bp-palette-white) 80%, transparent);
+  box-shadow: none;
+}
+
+.xh-control.xh-control--switch input:checked ~ .xh-control__indicator {
+  background: var(--bp-intent-primary-rest);
+  color: var(--bp-intent-primary-foreground);
+}
+
+.xh-control.xh-control--switch:hover input:checked ~ .xh-control__indicator {
+  background: var(--bp-intent-primary-hover);
+}
+
+.xh-control.xh-control--switch input:checked:not(:disabled):active ~ .xh-control__indicator {
+  background: var(--bp-intent-primary-active);
+}
+
+.xh-control.xh-control--switch input:checked:disabled ~ .xh-control__indicator {
+  background: color-mix(in srgb, var(--bp-intent-primary-rest) 50%, transparent);
+  color: color-mix(in srgb, var(--bp-intent-primary-foreground) 60%, transparent);
+}
+
+.xh-control.xh-control--switch input:checked:disabled ~ .xh-control__indicator::before {
+  background: color-mix(in srgb, var(--bp-palette-white) 50%, transparent);
+  box-shadow: none;
+}
+
+.xh-control.xh-control--switch:not(.xh-control--align-right) {
+  padding-inline-start: 36px;
+}
+
+.xh-control.xh-control--switch:not(.xh-control--align-right) .xh-control__indicator {
+  margin-inline-start: -36px;
+}
+
+.xh-control.xh-control--switch.xh-control--align-right {
+  padding-right: 36px;
+}
+
+.xh-control.xh-control--switch.xh-control--align-right .xh-control__indicator {
+  margin-right: -36px;
+}
+
+[dir='rtl'] .xh-control.xh-control--switch.xh-control--align-left {
+  padding-inline-start: 0;
+  padding-left: 36px;
+}
+
+[dir='rtl'] .xh-control.xh-control--switch.xh-control--align-left .xh-control__indicator {
+  margin-left: -36px;
+}
+
+@media (forced-colors: active) and (prefers-color-scheme: dark) {
+  .xh-control.xh-control--switch input:checked ~ .xh-control__indicator {
+    background: highlight;
+    border: 1px solid buttonborder;
+  }
+}
+
+@media (forced-colors: active) and (prefers-color-scheme: dark) {
+  .xh-control.xh-control--switch input:checked:disabled ~ .xh-control__indicator {
+    background-color: graytext;
+  }
+}
+
+@media (forced-colors: active) and (prefers-color-scheme: dark) {
+  .xh-control.xh-control--switch input:not(:checked):disabled ~ .xh-control__indicator {
+    border-color: graytext;
+  }
+}
+
+@media (forced-colors: active) and (prefers-color-scheme: dark) {
+  .xh-control.xh-control--switch input:not(:checked):disabled ~ .xh-control__indicator::before {
+    border-color: graytext;
+  }
+}
+
+@media (forced-colors: active) and (prefers-color-scheme: dark) {
+  .xh-control.xh-control--switch:hover input:checked ~ .xh-control__indicator {
+    background: highlight;
+  }
+}
+
+.xh-control.xh-control--switch .xh-control__indicator {
+  border: none;
+  border-radius: 1.75em;
+  box-shadow: none !important;
+  min-width: 1.75em;
+  transition: background-color 100ms cubic-bezier(0.4, 1, 0.75, 0.9);
+  width: auto;
+}
+
+.xh-control.xh-control--switch .xh-control__indicator::before {
+  background: var(--bp-palette-white);
+  border-radius: 50%;
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--bp-palette-black) 50%, transparent);
+  height: calc(1em - 4px);
+  left: 2px;
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  transition: left 100ms cubic-bezier(0.4, 1, 0.75, 0.9);
+  width: calc(1em - 4px);
+}
+
+@media (forced-colors: active) and (prefers-color-scheme: dark) {
+  .xh-control.xh-control--switch .xh-control__indicator::before {
+    border: 1px solid buttonborder;
+    margin-top: 1px;
+  }
+}
+
+@media (forced-colors: active) and (prefers-color-scheme: dark) {
+  .xh-control.xh-control--switch .xh-control__indicator {
+    border: 1px solid buttonborder;
+  }
+}
+
+.xh-control.xh-control--switch input:checked ~ .xh-control__indicator::before {
+  left: calc(2px + 100% - 1em);
+}
+
+.xh-dark .xh-control.xh-control--switch input ~ .xh-control__indicator {
+  background: color-mix(in srgb, var(--bp-palette-gray-3) 30%, transparent);
+  color: #f6f7f9;
+}
+
+.xh-dark .xh-control.xh-control--switch:hover input ~ .xh-control__indicator {
+  background: color-mix(in srgb, var(--bp-palette-gray-3) 40%, transparent);
+}
+
+.xh-dark .xh-control.xh-control--switch input:not(:disabled):active ~ .xh-control__indicator {
+  background: color-mix(in srgb, var(--bp-palette-gray-3) 50%, transparent);
+}
+
+.xh-dark .xh-control.xh-control--switch input:disabled ~ .xh-control__indicator {
+  background: color-mix(in srgb, var(--bp-palette-gray-3) 15%, transparent);
+  color: rgba(171, 179, 191, 0.6);
+}
+
+.xh-dark .xh-control.xh-control--switch input:disabled ~ .xh-control__indicator::before {
+  background: color-mix(in srgb, var(--bp-palette-white) 80%, transparent);
+  box-shadow: none;
+}
+
+.xh-dark .xh-control.xh-control--switch input:checked ~ .xh-control__indicator {
+  background: var(--bp-intent-primary-rest);
+  color: var(--bp-intent-primary-foreground);
+}
+
+.xh-dark .xh-control.xh-control--switch:hover input:checked ~ .xh-control__indicator {
+  background: var(--bp-intent-primary-hover);
+}
+
+.xh-dark
+  .xh-control.xh-control--switch
+  input:checked:not(:disabled):active
+  ~ .xh-control__indicator {
+  background: var(--bp-intent-primary-active);
+}
+
+.xh-dark .xh-control.xh-control--switch input:checked:disabled ~ .xh-control__indicator {
+  background: color-mix(in srgb, var(--bp-intent-primary-rest) 50%, transparent);
+  color: rgba(171, 179, 191, 0.6);
+}
+
+.xh-dark .xh-control.xh-control--switch input:checked:disabled ~ .xh-control__indicator::before {
+  background: color-mix(in srgb, var(--bp-palette-white) 50%, transparent);
+  box-shadow: none;
+}
+
+@media (forced-colors: active) and (prefers-color-scheme: dark) {
+  .xh-dark .xh-control.xh-control--switch input:checked ~ .xh-control__indicator {
+    background: highlight;
+    border: 1px solid buttonborder;
+  }
+}
+
+@media (forced-colors: active) and (prefers-color-scheme: dark) {
+  .xh-dark .xh-control.xh-control--switch input:checked:disabled ~ .xh-control__indicator {
+    background-color: graytext;
+  }
+}
+
+@media (forced-colors: active) and (prefers-color-scheme: dark) {
+  .xh-dark .xh-control.xh-control--switch input:not(:checked):disabled ~ .xh-control__indicator {
+    border-color: graytext;
+  }
+}
+
+@media (forced-colors: active) and (prefers-color-scheme: dark) {
+  .xh-dark
+    .xh-control.xh-control--switch
+    input:not(:checked):disabled
+    ~ .xh-control__indicator::before {
+    border-color: graytext;
+  }
+}
+
+@media (forced-colors: active) and (prefers-color-scheme: dark) {
+  .xh-dark .xh-control.xh-control--switch:hover input:checked ~ .xh-control__indicator {
+    background: highlight;
+  }
+}
+
+.xh-dark .xh-control {
+  color: #f6f7f9;
+}
+
+.xh-dark .xh-control.xh-control--disabled {
+  color: rgba(171, 179, 191, 0.6);
+}
+
+.xh-dark .xh-control .xh-control__indicator {
+  background-color: transparent;
+  box-shadow: inset 0 0 0 1px var(--bp-palette-gray-3);
+}
+
+.xh-dark .xh-control:hover .xh-control__indicator {
+  background-color: rgba(143, 153, 168, 0.15);
+}
+
+.xh-dark .xh-control input:not(:disabled):active ~ .xh-control__indicator {
+  background: rgba(143, 153, 168, 0.3);
+  box-shadow: inset 0 0 0 1px var(--bp-palette-gray-3);
+}
+
+.xh-dark .xh-control input:disabled ~ .xh-control__indicator {
+  background: rgba(143, 153, 168, 0.15);
+  box-shadow: none;
+  cursor: not-allowed;
+}
+
+.xh-dark .xh-control.xh-control--checkbox input:disabled:checked ~ .xh-control__indicator,
+.xh-dark .xh-control.xh-control--checkbox input:disabled:indeterminate ~ .xh-control__indicator {
+  background: color-mix(in srgb, var(--bp-intent-primary-rest) 50%, transparent);
+}
+
+.xh-input-group {
+  display: block;
+  position: relative;
+}
+
+.xh-input-group :is(.xh-input-group__input, .xh-text-area) {
+  position: relative;
+  width: 100%;
+}
+
+.xh-input-group :is(.xh-input-group__input, .xh-text-area):not(:first-child) {
+  padding-left: calc(var(--bp-surface-spacing) * 7.5);
+}
+
+.xh-input-group :is(.xh-input-group__input, .xh-text-area):not(:last-child) {
+  padding-right: calc(var(--bp-surface-spacing) * 7.5);
+}
+
+.xh-input-group .xh-input-group__right-element,
+.xh-input-group > .xh-input-group__left-element,
+.xh-input-group > .xh-button {
+  position: absolute;
+  top: 0;
+}
+
+.xh-input-group .xh-input-group__right-element:first-child,
+.xh-input-group > .xh-input-group__left-element:first-child,
+.xh-input-group > .xh-button:first-child {
+  left: 0;
+}
+
+.xh-input-group .xh-input-group__right-element:last-child,
+.xh-input-group > .xh-input-group__left-element:last-child,
+.xh-input-group > .xh-button:last-child {
+  right: 0;
+}
+
+.xh-input-group .xh-button {
+  min-height: calc(var(--bp-surface-spacing) * 6);
+  min-width: calc(var(--bp-surface-spacing) * 6);
+  margin: calc(var(--bp-surface-spacing) * 0.75);
+  padding: 0 calc(var(--bp-surface-spacing) * 2);
+}
+
+.xh-input-group .xh-button:empty {
+  padding: 0;
+}
+
+.xh-input-group > .xh-input-group__left-element {
+  z-index: 1;
+}
+
+.xh-input-group
+  :is(.xh-input-group__input, .xh-text-area):not(:focus)
+  + .xh-button.xh-button--minimal:not(:hover):not(:focus),
+.xh-input-group
+  :is(.xh-input-group__input, .xh-text-area):not(:focus)
+  + .xh-input-group__right-element
+  .xh-button.xh-button--minimal:not(:hover):not(:focus) {
+  color: var(--bp-typography-color-muted);
+}
+
+.xh-dark
+  .xh-input-group
+  :is(.xh-input-group__input, .xh-text-area):not(:focus)
+  + .xh-button.xh-button--minimal:not(:hover):not(:focus),
+.xh-dark
+  .xh-input-group
+  :is(.xh-input-group__input, .xh-text-area):not(:focus)
+  + .xh-input-group__right-element
+  .xh-button.xh-button--minimal:not(:hover):not(:focus) {
+  color: oklch(from var(--bp-typography-color-muted) calc(l + 0.24) calc(c - 0.011) h);
+}
+
+.xh-input-group
+  :is(.xh-input-group__input, .xh-text-area):not(:focus)
+  + .xh-button.xh-button--minimal:disabled,
+.xh-input-group
+  :is(.xh-input-group__input, .xh-text-area):not(:focus)
+  + .xh-input-group__right-element
+  .xh-button.xh-button--minimal:disabled {
+  color: var(--bp-typography-color-default-disabled) !important;
+}
+
+.xh-input-group.xh-input-group--disabled {
+  cursor: not-allowed;
+}
+
+.xh-input-group.xh-input-group--round .xh-button,
+.xh-input-group.xh-input-group--round :is(.xh-input-group__input, .xh-text-area) {
+  border-radius: calc(var(--bp-surface-spacing) * 7.5);
+}
+
+:is(.xh-input-group__input, .xh-text-area)::placeholder {
+  color: var(--bp-typography-color-muted);
+  opacity: 1;
+}
+
+:is(.xh-input-group__input, .xh-text-area) {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  background: var(--bp-surface-background-color-default-rest);
+  border: none;
+  border-radius: var(--bp-surface-border-radius);
+  box-shadow:
+    inset 0 0 0 0 oklch(from var(--bp-intent-primary-rest) calc(l - 0.074) calc(c - 0.018) h/0),
+    0 0 0 0 oklch(from var(--bp-intent-primary-rest) calc(l - 0.074) calc(c - 0.018) h/0),
+    inset 0 0 0 1px oklch(from var(--bp-palette-black) l c h/0.2),
+    inset 0 1px 1px oklch(from var(--bp-palette-black) l c h/0.3);
+  color: var(--bp-typography-color-default-rest);
+  font-size: var(--bp-typography-size-body-medium);
+  font-weight: var(--bp-typography-weight-default);
+  height: calc(var(--bp-surface-spacing) * 7.5);
+  line-height: calc(var(--bp-surface-spacing) * 7.5);
+  outline: none;
+  padding: 0 calc(var(--bp-surface-spacing) * 2);
+  transition: box-shadow var(--bp-emphasis-transition-duration) var(--bp-emphasis-ease-default);
+  vertical-align: middle;
+}
+
+:is(.xh-input-group__input, .xh-text-area):focus {
+  box-shadow:
+    inset 0 0 0 1px
+      oklch(from var(--bp-intent-primary-rest) calc(l - 0.074) calc(c - 0.018) h/0.752),
+    0 0 0 1px oklch(from var(--bp-intent-primary-rest) calc(l - 0.074) calc(c - 0.018) h/0.752),
+    inset 0 1px 1px oklch(from var(--bp-palette-black) l c h/0.2);
+}
+
+:is(.xh-input-group__input, .xh-text-area)[type='search'] {
+  border-radius: calc(var(--bp-surface-spacing) * 7.5);
+  box-sizing: border-box;
+  padding-left: calc(var(--bp-surface-spacing) * 2);
+}
+
+:is(.xh-input-group__input, .xh-text-area)[readonly] {
+  box-shadow: inset 0 0 0 1px var(--bp-surface-border-color-default);
+}
+
+:is(.xh-input-group__input, .xh-text-area)[readonly]:focus {
+  box-shadow:
+    inset 0 0 0 1px
+      oklch(from var(--bp-intent-primary-rest) calc(l - 0.074) calc(c - 0.018) h/0.752),
+    0 0 0 1px oklch(from var(--bp-intent-primary-rest) calc(l - 0.074) calc(c - 0.018) h/0.752),
+    inset 0 0 0 1px oklch(from var(--bp-palette-black) l c h/0.2),
+    inset 0 1px 1px oklch(from var(--bp-palette-black) l c h/0.3);
+}
+
+:is(.xh-input-group__input, .xh-text-area):disabled {
+  background: oklch(from var(--bp-intent-default-disabled) calc(l + 0.2) calc(c - 0.015) h/0.5);
+  box-shadow: none;
+  color: var(--bp-typography-color-default-disabled);
+  cursor: not-allowed;
+  resize: none;
+}
+
+:is(.xh-input-group__input, .xh-text-area):disabled::placeholder {
+  color: var(--bp-typography-color-default-disabled);
+}
+
+@media (forced-colors: active) and (prefers-color-scheme: dark) {
+  :is(.xh-input-group__input, .xh-text-area) {
+    border: 1px solid buttonborder;
+  }
+}
+
+.xh-dark :is(.xh-input-group__input, .xh-text-area)::placeholder {
+  color: oklch(from var(--bp-typography-color-muted) calc(l + 0.24) calc(c - 0.011) h);
+}
+
+.xh-dark :is(.xh-input-group__input, .xh-text-area) {
+  background: oklch(from var(--bp-palette-black) l c h/0.3);
+  box-shadow:
+    inset 0 0 0 0 oklch(from var(--bp-intent-primary-rest) calc(l + 0.224) calc(c - 0.053) h/0),
+    0 0 0 0 oklch(from var(--bp-intent-primary-rest) calc(l + 0.224) calc(c - 0.053) h/0),
+    inset 0 0 0 1px oklch(from var(--bp-palette-white) l c h/0.2),
+    inset 0 -1px 1px 0 oklch(from var(--bp-palette-white) l c h/0.3);
+  color: oklch(from var(--bp-typography-color-default-rest) calc(l + 0.239) calc(c - 0.011) h);
+}
+
+.xh-dark :is(.xh-input-group__input, .xh-text-area):focus {
+  box-shadow:
+    inset 0 0 0 1px
+      oklch(from var(--bp-intent-primary-rest) calc(l + 0.224) calc(c - 0.053) h/0.752),
+    0 0 0 1px oklch(from var(--bp-intent-primary-rest) calc(l + 0.224) calc(c - 0.053) h/0.752);
+}
+
+.xh-dark :is(.xh-input-group__input, .xh-text-area)[readonly] {
+  box-shadow: inset 0 0 0 1px oklch(from var(--bp-palette-black) l c h/0.4);
+}
+
+.xh-dark :is(.xh-input-group__input, .xh-text-area)[readonly]:focus {
+  box-shadow:
+    inset 0 0 0 1px
+      oklch(from var(--bp-intent-primary-rest) calc(l + 0.224) calc(c - 0.053) h/0.752),
+    0 0 0 1px oklch(from var(--bp-intent-primary-rest) calc(l + 0.224) calc(c - 0.053) h/0.752);
+}
+
+.xh-dark :is(.xh-input-group__input, .xh-text-area):disabled {
+  background: oklch(from var(--bp-intent-default-hover) l c h/0.5);
+  box-shadow: none;
+  color: var(--bp-typography-color-default-disabled);
+}
+
+:is(.xh-input-group__input, .xh-text-area)::-ms-clear {
+  display: none;
+}
+
+@supports (-webkit-touch-callout: none) {
+  input:is(.xh-input-group__input, .xh-text-area):disabled {
+    opacity: 1;
+    -webkit-text-fill-color: var(--bp-typography-color-default-disabled);
+  }
+}
+
+@supports (-webkit-touch-callout: none) {
+  .xh-dark input:is(.xh-input-group__input, .xh-text-area):disabled {
+    -webkit-text-fill-color: var(--bp-typography-color-default-disabled);
+  }
+}
+
+textarea:is(.xh-input-group__input, .xh-text-area) {
+  max-width: 100%;
+  padding: calc(var(--bp-surface-spacing) * 2);
+}
+
+textarea:is(.xh-input-group__input, .xh-text-area) {
+  height: auto;
+  line-height: inherit;
+}
+
+.xh-numeric-input .xh-button-group.xh-button-group--vertical > .xh-button {
+  flex: 1 1 calc(var(--bp-surface-spacing) * 2.75);
+  min-height: 0;
+  padding: 0;
+  width: calc(var(--bp-surface-spacing) * 6);
+}
+
+.xh-control-group .xh-popover__target-wrapper {
+  border-radius: inherit;
+}
+
+//-----------------------------------------------
+// Hoist input styles
+//-----------------------------------------------
+:is(.xh-input-group__input, .xh-text-area),
+.xh-dark :is(.xh-input-group__input, .xh-text-area),
+textarea.xh-text-area,
+.xh-dark textarea.xh-text-area {
+  color: var(--xh-input-text-color);
+  background: var(--xh-input-bg);
+  border-radius: var(--xh-input-border-radius);
+  // Follow the surrounding font size (e.g. smaller in compact toolbars and grids) rather than
+  // Blueprint's fixed default.
+  font-size: inherit;
+
+  &::placeholder {
+    color: var(--xh-input-placeholder-text-color);
+    opacity: 1;
+  }
+
+  // Use Hoist theme vars for disabled input styles.
+  &:disabled {
+    background-color: var(--xh-input-disabled-bg);
+    color: var(--xh-input-disabled-text-color);
+  }
+}
+
+// Expose CSS var for box-shadow tweaking
+// The repeated :is() keeps the weight this rule had when it also excluded an active input.
+:is(.xh-input-group__input, .xh-text-area):is(.xh-input-group__input, .xh-text-area):not(:focus) {
+  box-shadow: var(--xh-form-field-box-shadow);
+}
+
+.xh-control,
+.xh-dark .xh-control {
+  input:focus ~ .xh-control__indicator {
+    outline: var(--xh-form-field-focused-border-color) solid 1px !important;
+    outline-offset: 1px;
+  }
+}
+
+:is(.xh-input-group__input, .xh-text-area):focus,
+.xh-dark :is(.xh-input-group__input, .xh-text-area):focus,
+.xh-dark textarea.xh-text-area:focus {
+  box-shadow: var(--xh-form-field-focused-box-shadow);
+}
+
+// Textarea and switch input dark theme
+.xh-dark textarea.xh-text-area {
+  box-shadow: var(--xh-form-field-box-shadow);
+}
+
+.xh-dark .xh-control.xh-control--switch input ~ .xh-control__indicator {
+  box-shadow: var(--xh-form-field-box-shadow) !important;
+}
+
+.xh-dark .xh-control.xh-control--switch:hover input ~ .xh-control__indicator {
+  background-color: #202b33;
+}
+
+// Style Hoist icons within input groups as Blueprint styled its own.
+.xh-input-group {
+  .xh-icon {
+    position: absolute;
+    top: 0;
+    line-height: 1;
+    font-size: var(--xh-font-size-large);
+    font-weight: 400;
+    font-style: normal;
+    -moz-osx-font-smoothing: grayscale;
+    -webkit-font-smoothing: antialiased;
+    z-index: 1;
+    margin: 7px;
+    color: var(--xh-text-color-muted);
+  }
+
+  // Button.scss loads after this file, so its `.xh-button > :last-child` rule would otherwise
+  // remove the margin above from a button's icon.
+  .xh-button > .xh-icon:last-child {
+    margin-right: 7px;
+  }
+
+  // Support direct use of a Hoist Icon as input `rightElement` prop - w/o the below, the icon SVG
+  // will not be measured (clientWidth == 0) and the input's internal layout won't account for it.
+  .xh-input-group__right-element > .xh-icon {
+    position: relative;
+    display: block;
+  }
+
+  .xh-button-group {
+    margin-right: 3px;
+
+    .xh-button {
+      margin-right: 0;
+      margin-left: 0;
+    }
+
+    .xh-icon {
+      margin-top: 4px;
+    }
+  }
+}
+
+// Blueprint's z-index of 16 for icons within a control group.
+.xh-control-group .xh-input-group svg {
+  z-index: 16;
+}
+
+// Controls ship with default bottom and (inline) right margins.
+// We zero those out here so padding can be re-applied at HoistInput or FormField layer.
+// Hoist theme text-color applied to elements not styled with a more specific selector.
+.xh-control {
+  color: var(--xh-text-color);
+  margin-bottom: 0;
+
+  &.xh-control--inline {
+    margin-inline-end: 0;
+  }
+}
+
+// See desktop/cmp/button/Button.scss for button styles.
+// Rule below applies only to buttons within inputs to disable default hover background-color
+// (which looks weird) and instead tweak the icon color to indicate it's active.
+.xh-app .xh-input .xh-input-group .xh-button {
+  &.xh-button--minimal,
+  &.xh-button--outlined {
+    &.xh-button--enabled {
+      &:hover {
+        background-color: unset !important;
+
+        svg {
+          color: var(--xh-button-text-color) !important;
+        }
+      }
+    }
+  }
+}

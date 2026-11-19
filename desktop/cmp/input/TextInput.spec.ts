@@ -25,8 +25,8 @@ describe('TextInput and TextArea (desktop)', () => {
         expect(input.type).toBe('text');
         expect(input.value).toBe('Hello');
         expect(input.placeholder).toBe('Name');
-        expect(input.classList).toContain('bp6-input');
-        expect(input.parentElement.classList).toContain('bp6-input-group');
+        expect(input.classList).toContain('xh-input-group__input');
+        expect(input.parentElement.classList).toContain('xh-input-group');
         expect(input.closest('.xh-text-input')).not.toBeNull();
     });
 
@@ -56,13 +56,13 @@ describe('TextInput and TextArea (desktop)', () => {
     it('marks the group disabled with the input', () => {
         const {input} = renderBound(textInput, 'a', {disabled: true});
         expect(input.disabled).toBe(true);
-        expect(input.parentElement.classList).toContain('bp6-disabled');
+        expect(input.parentElement.classList).toContain('xh-input-group--disabled');
     });
 
     it('renders a native textarea with Blueprint class names, committing on Enter', () => {
         const {input, model} = renderBound(textArea, 'one');
         expect(input.tagName).toBe('TEXTAREA');
-        expect(input.classList).toContain('bp6-text-area');
+        expect(input.classList).toContain('xh-text-area');
         expect(input.classList).toContain('xh-text-area');
 
         fireEvent.change(input, {target: {value: 'two'}});
