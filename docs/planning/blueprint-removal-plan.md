@@ -1,6 +1,7 @@
 # Plan: Removing BlueprintJS from hoist-react
 
-Status: Phases 0-5 done - see [Phase 0 results](#phase-0-results). The selector rename follows as a
+Status: Phases 0-5 done - see [Phase 0 results](#phase-0-results), and
+[Handoff](#handoff---current-state) for where the work stands. The selector rename follows as a
 separate technical PR - see [Follow-up: selector rename](#follow-up-selector-rename).
 All phases land on one branch and one PR, xh/hoist-react#4995, reviewed and merged to `develop` as
 a whole - see [Delivery](#delivery).
@@ -288,6 +289,59 @@ Budget for them accordingly.
 - Still to do in hoist-dev-utils: remove its Blueprint icon stubbing. Until then, builds log a
   harmless warning that `@blueprintjs/icons` could not be resolved.
 
+### Handoff - current state
+
+Notes for picking the work up in a new session. Pull before every change - more than one agent
+pushes to this branch.
+
+**Branches and PRs**
+- hoist-react: `claude/blueprint-phase1-api`, draft xh/hoist-react#4995.
+- Toolbox: `claude/hoist-no-blueprint`, draft xh/toolbox#965 - merge together with #4995.
+
+**Decisions made after the phases above**
+- `Tooltip` and `TooltipProps` live in their own `@xh/hoist/cmp/tooltip` package, a facade over
+  `cmp/popover/impl/PopoverImpl`. `cmp/popover` does not export them.
+- Desktop `ButtonProps.tooltip` takes `string | ButtonTooltipConfig` and renders a Hoist `Tooltip`
+  on the button itself, with no wrapper. `title` stays the native tooltip. Button tooltips open
+  after 500ms, and on disabled buttons too - driven by pointer events, since React drops
+  `onMouseEnter` on a disabled button. Hoist's own buttons default `tooltip`, giving way to an
+  app's `title`.
+- A tooltip closes when its target is pressed and stays closed until the pointer leaves.
+- `portalContainerProvider` is internal, in `cmp/popover/impl`.
+- `menuItem` and `menuDivider` stay exported as factories only. Whether to add the `[Component,
+  factory]` pair is undecided - leave as is until decided.
+- New internal components use `hoistCmp.factory` with `model: false` and `observer: false`.
+
+**Still to check in a browser**
+- Button tooltips - position, delay, close on press, and disabled buttons in Firefox and Safari.
+- Mobile on a real device, the popped-out Inspector, tab and sparkline tooltips.
+
+**Still to do**
+- The selector rename PR below.
+- hoist-dev-utils: remove its Blueprint icon stubbing, which now logs a harmless warning.
+
+**Running Toolbox against this branch** - see the root `CLAUDE.md`. In a cloud session:
+- Start the server and client detached with `setsid nohup ... &`, so they outlive the 2-hour limit
+  on background commands. The server needs `JAVA_HOME` and
+  `-Porg.gradle.java.installations.paths` set to a JDK 25, plus the throwaway H2 settings and the
+  `agent@xh.io` / `localDevOnly` login.
+- Start the client from the Toolbox worktree with
+  `XH_HOIST_REACT_PATH=<hoist-react path> pnpm startWithHoist`.
+- To type-check Toolbox against local hoist-react, use a temporary copy of its `tsconfig.json`
+  with the `paths` block uncommented and `references` removed.
+- Toolbox's pre-commit typecheck runs against the published `@xh/hoist`, which lacks this
+  branch's APIs - commit Toolbox changes with `--no-verify` until hoist-react publishes them.
+
+**Verification tooling** - the scripts used so far lived in a session scratchpad and are gone.
+Rebuild them as needed:
+- Screenshots: Playwright over every Toolbox desktop and Admin route, in light and dark, against
+  two Toolbox builds - one on `develop` hoist-react, one on this branch - then a pixel diff.
+- CSS coverage, for regenerating `BlueprintBase.css`: Playwright's `startCSSCoverage` across the
+  same routes plus state variants, keeping the Blueprint rules used.
+- Bundle size: production Toolbox builds with hoist-react compiled inline. The build refuses
+  inline Hoist for a prod build, so patch `configureRsbuild.js` in Toolbox's `node_modules`
+  temporarily to allow it, and restore it after.
+
 ### Follow-up: selector rename
 
 A separate technical PR, needing little review:
@@ -328,4 +382,4 @@ are removed in a later release, after the selector rename. Apps importing `kit/b
 2. Match Blueprint's current look exactly, or take the chance to restyle controls?
 
 Resolved by Phase 0: Floating UI plus hand-rolled controls, with no headless library. Release
-pace: two releases, as above.
+pace: one release - see [Release strategy](#release-strategy).
