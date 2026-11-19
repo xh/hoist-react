@@ -123,7 +123,8 @@ root.walkRules(rule => {
         }
         if (hasContext(s, spec.foreignContext)) foreign = true;
         const t = translate(s);
-        if (t == null) report.dropped.push(str);
+        // spec.dropSelectors leaves out translated selectors that match it.
+        if (t == null || spec.dropSelectors?.test(t)) report.dropped.push(str);
         else translated.push(t);
     }
     if (!translated.length) return;
