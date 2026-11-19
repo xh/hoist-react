@@ -6,7 +6,7 @@
  */
 import {hoistCmp} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
-import {navbarDivider} from '@xh/hoist/kit/blueprint';
+import {div} from '@xh/hoist/cmp/layout';
 
 /**
  * Convenience component for adding a separator between AppBar items.
@@ -15,6 +15,6 @@ export const [AppBarSeparator, appBarSeparator] = hoistCmp.withFactory({
     displayName: 'AppBarSeparator',
 
     render() {
-        return navbarDivider({role: 'separator'});
+        return div({className: 'xh-appbar-separator bp6-navbar-divider', role: 'separator'});
     }
 });
