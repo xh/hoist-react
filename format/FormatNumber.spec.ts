@@ -8,6 +8,7 @@ import {span} from '@xh/hoist/cmp/layout';
 import {
     type ColorClassSpec,
     fmtBillions,
+    fmtCompact,
     fmtMillions,
     fmtNumber,
     fmtNumberTooltip,
@@ -403,6 +404,42 @@ describe('fmtThousands, fmtMillions and fmtBillions', () => {
         const tooltip = vi.fn(() => 'tip');
         fmtMillions(2512345, {tooltip});
         expect(tooltip).toHaveBeenCalledWith(2512345);
+    });
+});
+
+describe('fmtCompact', () => {
+    // Plain-string output, for readable expectations.
+    const strOpts = {labelCls: null};
+
+    it.each([
+        [99999, '99,999'],
+        [100000, '100K'],
+        [999499, '999K'],
+        [999500, '1M'],
+        [1234567, '1.23M'],
+        [12345678, '12.3M'],
+        [123456789, '123M'],
+        [-2500000, '-2.5M'],
+        [48500000000, '48.5B'],
+        [1500000000000, '1.5T'],
+        [2e15, '2,000T']
+    ])('formats %s as "%s"', (v, expected) => {
+        expect(fmtCompact(v, strOpts)).toBe(expected);
+    });
+
+    it('lets caller options replace its precision, zeroPad and label', () => {
+        expect(fmtCompact(1234567, {...strOpts, precision: 1})).toBe('1.2M');
+        expect(fmtCompact(2500000, {...strOpts, zeroPad: true})).toBe('2.50M');
+        expect(fmtCompact(-2500000, {...strOpts, ledger: true, forceLedgerAlign: false})).toBe(
+            '(2.5M)'
+        );
+        expect(fmtCompact(1234567, {...strOpts, label: false})).toBe('1.23');
+    });
+
+    it('wraps its unit in the units label span, and shows the unscaled value in a tooltip', () => {
+        expect(html(fmtCompact(2500000, {tooltip: true}))).toBe(
+            '<span class="xh-title-tip" title="2,500,000">2.5<span class="xh-units-label">M</span></span>'
+        );
     });
 });
 

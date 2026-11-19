@@ -29,6 +29,13 @@ const THOUSAND = 1000,
     MILLION = 1000000,
     BILLION = 1000000000,
     MAX_NUMERIC_PRECISION = 12,
+    COMPACT_MIN = 100000,
+    COMPACT_UNITS = [
+        {size: 1e12, label: 'T'},
+        {size: 1e9, label: 'B'},
+        {size: 1e6, label: 'M'},
+        {size: 1e3, label: 'K'}
+    ],
     MAX_SIGNIFICANT_DIGITS = 15;
 
 // A formatted value (sign removed) that shows only zero digits - see `strictZero`.
@@ -296,6 +303,35 @@ export function fmtBillions(v: number, opts?: NumberFormatOptions): ReactNode {
     v = v / BILLION;
     if (opts.label === true) opts.label = 'b';
     return fmtNumber(v, opts);
+}
+
+/**
+ * Render a number in the largest unit of thousands (K), millions (M), billions (B) or trillions
+ * (T) it fills, such as `48.5B` for 48,500,000,000 - a compact figure for a headline or a chart.
+ * Values under 100,000 render as {@link fmtNumber} does. The unit is the label, and a value that
+ * would round up to 1,000 of one unit takes the next: `1M`, not `1,000K`.
+ *
+ * Defaults to three significant digits with no trailing zeros - `1.23M`, `12.3M`, `123M` - and
+ * caller options win.
+ */
+export function fmtCompact(v: number, opts?: NumberFormatOptions): ReactNode {
+    opts = {...opts};
+    saveOriginal(v, opts);
+    if (isInvalidInput(v)) return fmtNumber(v, opts);
+
+    const absV = Math.abs(v),
+        unit = absV < COMPACT_MIN ? null : COMPACT_UNITS.find(it => absV >= it.size * 0.9995);
+    if (!unit) return fmtNumber(v, opts);
+
+    const scaled = v / unit.size,
+        absScaled = Math.abs(scaled);
+    defaults(opts, {
+        precision: absScaled < 10 ? 2 : absScaled < 100 ? 1 : 0,
+        zeroPad: false,
+        label: true
+    });
+    if (opts.label === true) opts.label = unit.label;
+    return fmtNumber(scaled, opts);
 }
 
 /**

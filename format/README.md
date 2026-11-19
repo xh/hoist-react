@@ -85,6 +85,7 @@ Every formatter function has a corresponding renderer factory:
 | `fmtMillions` | `millionsRenderer` |
 | `fmtBillions` | `billionsRenderer` |
 | `fmtQuantity` | `quantityRenderer` |
+| `fmtCompact` | `compactRenderer` |
 | `fmtPrice` | `priceRenderer` |
 | `fmtPercent` | `percentRenderer` |
 | `fmtDate` | `dateRenderer` |
@@ -352,6 +353,18 @@ fmtQuantity(1200000000)   // "1.20b"
 
 Supports `useMillions` and `useBillions` options (both default `true`) to control which scale
 thresholds are active.
+
+#### `fmtCompact(v, opts?)`
+
+Scales to the largest unit of thousands, millions, billions or trillions the value fills, with
+three significant digits by default, for headline figures. Values under 100,000 format as
+`fmtNumber` does. Unlike `fmtQuantity`, it uses upper-case units and trims trailing zeros.
+
+```typescript
+fmtCompact(99999)         // "99,999"
+fmtCompact(1234567)       // "1.23M"
+fmtCompact(48500000000)   // "48.5B"
+```
 
 #### `fmtPrice(v, opts?)`
 

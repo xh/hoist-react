@@ -10,6 +10,7 @@ import type {ReactNode} from 'react';
 import type {ColorClassSpec, NumberFormatOptions, QuantityFormatOptions} from './FormatNumber';
 import {
     fmtBillions,
+    fmtCompact,
     fmtMillions,
     fmtNumber,
     fmtPercent,
@@ -29,6 +30,7 @@ export const numberRenderer = createRenderer(fmtNumber),
     millionsRenderer = createRenderer(fmtMillions),
     billionsRenderer = createRenderer(fmtBillions),
     quantityRenderer = createRenderer(fmtQuantity),
+    compactRenderer = createRenderer(fmtCompact),
     priceRenderer = createRenderer(fmtPrice),
     percentRenderer = createRenderer(fmtPercent);
 
@@ -44,6 +46,7 @@ export const numberTextRenderer = createNumberTextRenderer(fmtNumber),
     millionsTextRenderer = createNumberTextRenderer(fmtMillions),
     billionsTextRenderer = createNumberTextRenderer(fmtBillions),
     quantityTextRenderer = createNumberTextRenderer(fmtQuantity, {ledger: true}),
+    compactTextRenderer = createNumberTextRenderer(fmtCompact),
     priceTextRenderer = createNumberTextRenderer(fmtPrice),
     percentTextRenderer = createNumberTextRenderer(fmtPercent);
 
