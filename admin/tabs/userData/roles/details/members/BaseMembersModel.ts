@@ -7,7 +7,7 @@
 import type {RowDoubleClickedEvent} from '@xh/hoist/kit/ag-grid';
 import type {ColumnRenderer, ColumnTooltipFn} from '@xh/hoist/cmp/grid';
 import {GridModel} from '@xh/hoist/cmp/grid';
-import {hbox, span} from '@xh/hoist/cmp/layout';
+import {div, hbox} from '@xh/hoist/cmp/layout';
 import type {PlainObject} from '@xh/hoist/core';
 import {HoistModel, lookup, managed} from '@xh/hoist/core';
 import classNames from 'classnames';
@@ -146,7 +146,7 @@ export abstract class BaseMembersModel extends HoistModel {
 }
 
 /**
- * A compact tag naming a role, with Blueprint's tag class names so its styles apply.
+ * A tag naming a role, styled as a `tagsRenderer` tag.
  * @internal
  */
 export function roleTag({
@@ -159,9 +159,9 @@ export function roleTag({
     title?: string;
     onDoubleClick?: () => void;
 }) {
-    return span({
+    return div({
         ...rest,
-        className: classNames('bp6-tag', 'bp6-minimal', className),
-        children: span({className: 'bp6-fill bp6-text-overflow-ellipsis', children})
+        className: classNames('xh-tags-renderer__tag', className),
+        children
     });
 }
