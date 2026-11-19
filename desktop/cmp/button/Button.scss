@@ -584,3 +584,21 @@
     }
   }
 }
+
+// A dialog's title bar keeps its color in the dark theme, so the standard dark hover - a darker
+// background - shows as a dark block on it. Tint with the title text color instead.
+.xh-app.xh-dark,
+.xh-app.xh-dark.bp6-dark {
+  .xh-dialog__header .xh-button.bp6-button.xh-button--minimal {
+    &.xh-button--intent-none {
+      &.xh-button--enabled {
+        &:hover:not(:active):not(.xh-button--active):not(.bp6-active) {
+          background-color: color-mix(in srgb, currentColor 15%, transparent);
+        }
+        &:active {
+          background-color: color-mix(in srgb, currentColor 25%, transparent);
+        }
+      }
+    }
+  }
+}
