@@ -21,19 +21,18 @@ import {
 } from '@xh/hoist/cmp/menu/impl/Menus';
 import {clone, isEmpty} from 'lodash';
 import type {ReactNode} from 'react';
-import {menuDivider, menuItem, type MenuItemImplProps} from './MenuImpl';
+import {menuDivider, menuItem, type MenuItemElementProps} from './MenuImpl';
 
 export interface MenuDefaults {
     /**
      * Milliseconds a submenu stays open after the pointer leaves its parent item. Default 300.
      *
-     * Blueprint's `MenuItem` hardcodes this to 0, so a submenu closes the moment the pointer
-     * leaves the parent item's row. A diagonal move toward an entry lower in the submenu then
-     * crosses a sibling item and dismisses the submenu, which is the standard failure of
-     * hover-driven submenus. Hoist restores Blueprint's own `Popover` default of 300.
+     * With no delay, a submenu closes the moment the pointer leaves the parent item's row. A
+     * diagonal move toward an entry lower in the submenu then crosses a sibling item and dismisses
+     * the submenu, which is the standard failure of hover-driven submenus.
      *
      * Raise it to make a diagonal easier, at the cost of a submenu that lingers longer after a
-     * deliberate move away. Set 0 to restore the Blueprint behavior.
+     * deliberate move away. Set 0 to close submenus at once.
      */
     submenuHoverCloseDelay?: number;
 }
@@ -56,16 +55,15 @@ export interface ParseMenuItemsOptions {
      * anchored at the cursor adds `{usePortal: true}`, because its submenus mis-position without
      * a portal.
      */
-    submenuPopoverProps?: MenuItemImplProps['popoverProps'];
+    submenuPopoverProps?: MenuItemElementProps['popoverProps'];
 }
 
 /**
- * Parse MenuItem configs into Blueprint MenuItems.
+ * Parse MenuItem configs into menu item elements.
  *
  * The {@link Menu} and {@link ContextMenu} components share this function. Note that Hoist does
- * not apply it to every menu-like component. In particular, the `menu` component re-exported from
- * Blueprint does not use it. See https://github.com/xh/hoist-react/issues/2400 for the remaining
- * standardization work.
+ * not apply it to every menu-like component. See https://github.com/xh/hoist-react/issues/2400 for
+ * the remaining standardization work.
  *
  * @internal
  */
@@ -106,7 +104,7 @@ export function parseMenuItems(
             const {actionFn} = item;
 
             // Create menuItem from config
-            const cfg: ElementSpec<MenuItemImplProps> = {
+            const cfg: ElementSpec<MenuItemElementProps> = {
                 text: item.text,
                 icon: item.icon,
                 intent: item.intent,

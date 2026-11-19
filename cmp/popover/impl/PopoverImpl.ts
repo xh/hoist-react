@@ -553,7 +553,7 @@ function toBoundary(boundary: PopoverBoundary): Boundary {
 /**
  * True if `target` is in a top-level layer of the document mounted after the popover's own - an
  * overlay opened from within it, such as a nested popover, a select dropdown, an AG Grid popup or
- * a Blueprint overlay. A press there must not dismiss the popover. This works across overlay
+ * a dialog. A press there must not dismiss the popover. This works across overlay
  * libraries, since each mounts its layer as a later child of the document body. Floating UI makes
  * the same check only while its focus manager is active, so this covers `autoFocus: false` too.
  */

@@ -159,8 +159,8 @@ export interface ViewManagerConfig {
     typeDisplayName?: string;
 
     /**
-     * Optional render function to customize the BlueprintJS `menuItem` shown for each view in the
-     * ViewManager menu.
+     * Optional render function to customize the item shown for each view in the ViewManager menu.
+     * On desktop, return an element from `menuItem` in `@xh/hoist/desktop/cmp/menu`.
      */
     viewMenuItemFn?: (view: ViewInfo, model: ViewManagerModel) => ReactNode;
 

@@ -50,7 +50,7 @@ A click on any element with the class `xh-popover-dismiss` inside the content cl
 Menu items use this to close the menu that holds them. A click on a disabled element does not.
 
 Presses inside overlays opened from within a popover do not close it. That covers nested popovers,
-select dropdowns, AG Grid popups and Blueprint overlays, which each mount their own layer on the
+select dropdowns, AG Grid popups and other overlays, which each mount their own layer on the
 page after the popover's.
 
 ## Portals

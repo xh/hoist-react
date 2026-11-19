@@ -518,6 +518,6 @@ getRoutes() {
 
 ## Related Packages
 
-- `/desktop/cmp/tab/` - Desktop TabContainer component with Blueprint tabs
+- `/desktop/cmp/tab/` - Desktop TabContainer component and tab switcher
 - `/mobile/cmp/tab/` - Mobile TabContainer component with a docked button switcher
 - [`/core/`](../../core/README.md) - RefreshContextModel, RenderMode, RefreshMode

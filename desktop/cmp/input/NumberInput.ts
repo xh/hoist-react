@@ -111,11 +111,7 @@ export interface NumberInputProps
 /**
  * Number input, with optional support for formatting of display value, shorthand units, and more.
  *
- * This component is built on the Blueprint NumericInput and gets default increment/decrement
- * functionality from that component, based on the three stepSize props.
- *
- * This Hoist component hides the up/down buttons by default but keeps the keyboard handling.
- * Users can use the following keys to increment/decrement:
+ * Users can use the following keys to increment/decrement, based on the three stepSize props:
  *
  *      ↑/↓           by one step
  *      Shift + ↑/↓   by one major step
@@ -285,9 +281,7 @@ const cmp = hoistCmp.factory<NumberInputModel>(({model, className, ...props}, re
     useOnMount(() => model.inputEl?.addEventListener('beforeinput', model.onBeforeInput));
 
     // Alt + arrow keys step by minorStepSize, which also sets the precision of stepped values.
-    // The default BP value of 0.1 for this prop emits a console warning any time the input
-    // value extends beyond 1 dp. Re-default here to sync with our `precision` prop.
-    // See https://blueprintjs.com/docs/#core/components/numeric-input.numeric-precision
+    // Default it from the `precision` prop, so stepping keeps the value's decimal places.
     const {precision} = model,
         majorStepSize = props.majorStepSize,
         minorStepSize = precision

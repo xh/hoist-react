@@ -29,7 +29,7 @@ export const maskImpl = hoistCmp.factory<MaskProps>({
             ]
         });
 
-        // Blueprint's overlay forces a reflow on every show, via its CSSTransition.
+        // An inline mask is a plain div, which shows without forcing a layout.
         if (inline) {
             return div({
                 className: classNames(className, 'xh-mask--inline'),

@@ -486,7 +486,7 @@ that doc's Recommended Core column, not the floor.
 
 - **MobX** - Reactive state management
 - **AG Grid** - Data grid (requires separate license for enterprise features)
-- **Blueprint** - UI component library
+- **Floating UI** - Positioning for popovers, tooltips, menus and dialogs
 - **Router5** - Client-side routing
 - **Highcharts** - Charting (requires separate license)
 

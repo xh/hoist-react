@@ -415,15 +415,8 @@ function getValidChild(children) {
 }
 
 function getValidationTooltipContent(validationResults: ValidationResult[]): ReactElement | string {
-    // If no ValidationResults, something other than null must be returned.
-    // If null is returned, as of Blueprint v5, the Blueprint Tooltip component causes deep re-renders of its target
-    // when content changes from null <-> not null.
-    // In `formField` `minimal:true` mode with `commitonchange:true`, this causes the
-    // TextInput component to lose focus when its validation state changes, which is undesirable.
-    // It is not clear if this is a bug or intended behavior in BP v5, but this workaround prevents the issue.
-    // `Tooltip:content` has been a required prop since at least BP v4, but something about the way it is used in BP v5 changed.
     if (isEmpty(validationResults)) {
-        return 'Is Valid';
+        return null;
     } else if (validationResults.length === 1) {
         return first(validationResults).message;
     } else {

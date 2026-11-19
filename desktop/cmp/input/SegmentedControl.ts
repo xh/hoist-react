@@ -87,8 +87,6 @@ export interface SegmentedControlProps extends HoistProps, HoistInputProps {
  * Similar to ButtonGroupInput but driven by an `options` prop (like Select/RadioInput)
  * rather than Button children, and with stronger visual differentiation between selected
  * and unselected states.
- *
- * Built on Blueprint's SegmentedControl component.
  */
 export const [SegmentedControl, segmentedControl] = hoistCmp.withFactory<SegmentedControlProps>({
     displayName: 'SegmentedControl',
@@ -102,13 +100,6 @@ export const [SegmentedControl, segmentedControl] = hoistCmp.withFactory<Segment
 //-----------------------
 // Implementation
 //-----------------------
-
-/**
- * Key handed to the Blueprint control when no option is selected. Option keys are always
- * `String(index)`, so this cannot collide with a real option - and unlike a nullish value, it
- * keeps Blueprint from falling back to its own internal selection state. See usage note below.
- */
-const NO_SELECTION_KEY = '__xh_no_selection__';
 
 interface NormalizedOption extends SegmentedControlOption {
     label: string;
@@ -144,8 +135,7 @@ class SegmentedControlModel extends HoistInputModel {
 
     /**
      * Key of the option matching the current render value, or null if no option matches -
-     * including whenever the bound value is itself null. Note this is the model's own view of
-     * the selection: the key actually handed to Blueprint is resolved at its point of use below.
+     * including whenever the bound value is itself null.
      */
     @computed
     get selectedKey(): string | null {
@@ -174,7 +164,7 @@ class SegmentedControlModel extends HoistInputModel {
 
 const cmp = hoistCmp.factory<SegmentedControlModel>(({model, className, ...props}, ref) => {
     const {
-        // HoistInput props - exclude from passthrough to BP
+        // HoistInput props - exclude from passthrough to the segments
         bind,
         disabled,
         onChange,
@@ -194,8 +184,8 @@ const cmp = hoistCmp.factory<SegmentedControlModel>(({model, className, ...props
         showOptionDividers = 'auto',
         testId,
         domAttrs,
-        // Remainder passed to BP SegmentedControl
-        ...bpProps
+        // Remainder passed to the segments
+        ...segmentProps
     } = getNonLayoutProps(props);
 
     // 'auto' dividers track the empty state - shown only while nothing is selected.
@@ -204,7 +194,7 @@ const cmp = hoistCmp.factory<SegmentedControlModel>(({model, className, ...props
     // Resolve the effective intent per option (own intent wins over control-level default),
     // applied via a per-button className that our SCSS keys its solid/hint coloring off of.
     const defaultIntent = intent && intent !== 'none' ? intent : null,
-        bpOptions = model.normalizedOptions.map(opt => {
+        segmentOptions = model.normalizedOptions.map(opt => {
             const optIntent = opt.intent ?? defaultIntent,
                 optTestId = opt.testId ?? (testId ? `${testId}-${String(opt.value)}` : null);
             return {
@@ -235,17 +225,11 @@ const cmp = hoistCmp.factory<SegmentedControlModel>(({model, className, ...props
         [TEST_ID]: props.testId,
         ...domAttrs,
         children: h(SegmentedControlImpl, {
-            ...bpProps,
+            ...segmentProps,
             fill,
             size: compact ? 'small' : undefined,
-            options: bpOptions,
-            // Blueprint resolves its selection as `value ?? internalState`, where the internal
-            // state is set on every click even when controlled. Passing a nullish value for a
-            // selection matching no option would fall back to the last-clicked segment,
-            // leaving it highlighted after the bound value is cleared. Pass a sentinel key
-            // instead, keeping the control fully controlled - Blueprint handles a value matching
-            // no option natively (see `isAnySelected`) and emits no warning.
-            value: model.selectedKey ?? NO_SELECTION_KEY,
+            options: segmentOptions,
+            value: model.selectedKey,
             onValueChange: model.onValueChange,
             disabled
         })

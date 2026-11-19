@@ -17,8 +17,11 @@ export interface MenuListProps extends HTMLAttributes<HTMLUListElement> {
     ulRef?: Ref<HTMLUListElement>;
 }
 
-/** A single item within a menu, optionally holding a submenu of further items as `children`. */
-export interface MenuItemImplProps extends Omit<AnchorHTMLAttributes<HTMLElement>, 'children'> {
+/**
+ * A single item within a menu, optionally holding a submenu of further items as `children`. Most
+ * menus are better built from `MenuItem` configs, which `Menu` and `MenuButton` render with this.
+ */
+export interface MenuItemElementProps extends Omit<AnchorHTMLAttributes<HTMLElement>, 'children'> {
     text?: ReactNode;
     icon?: ReactNode;
     intent?: Intent;
@@ -44,7 +47,7 @@ export interface MenuItemImplProps extends Omit<AnchorHTMLAttributes<HTMLElement
 }
 
 /** A separator between menu items, or a heading over the items below it when given a `title`. */
-export interface MenuDividerImplProps {
+export interface MenuDividerElementProps {
     className?: string;
     title?: ReactNode;
 }
@@ -123,7 +126,7 @@ const MenuList: FC<MenuListProps> = ({className, children, ulRef, onKeyDown, ...
 //------------------------
 // Menu item
 //------------------------
-const MenuItem: FC<MenuItemImplProps> = props => {
+const MenuItem: FC<MenuItemElementProps> = props => {
     const {
         active = false,
         children,
@@ -278,7 +281,7 @@ const MenuItem: FC<MenuItemImplProps> = props => {
 //------------------------
 // Divider
 //------------------------
-const MenuDivider: FC<MenuDividerImplProps> = ({className, title}) =>
+const MenuDivider: FC<MenuDividerElementProps> = ({className, title}) =>
     h(
         'li',
         {

@@ -66,19 +66,19 @@ pass their `testId` through to a layout container, which handles the attribute i
 
 ### Pattern 2: Direct Attribute on Wrapped Element
 
-Components that delegate to a third-party widget (e.g. Blueprint's `Button`, `Checkbox`,
-`InputGroup`) apply the `data-testid` directly to the wrapped element:
+Components that render a single native element, or delegate to a third-party widget, apply the
+`data-testid` directly to that element:
 
 ```typescript
 // From desktop/cmp/button/Button.ts
-return bpButton({
+return createElement('button', {
     [TEST_ID]: testId,
     // ...other props
 });
 ```
 
 This pattern is used by `Button`, `ButtonGroup`, `AppBar`, `Badge`, `Checkbox`, `SwitchInput`,
-`NumberInput`, `TextArea`, and other components that render through third-party UI libraries.
+`NumberInput`, `TextArea`, and other components that render a single element.
 
 ### The TEST_ID Constant
 

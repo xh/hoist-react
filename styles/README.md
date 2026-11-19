@@ -249,7 +249,7 @@ Hoist switches to its dark theme by toggling a CSS class on the `<body>` element
 1. `ThemeModel` (in `/appcontainer/`) manages the active theme. The `xhTheme` preference persists
    it, with the values `'light'`, `'dark'`, and `'system'`.
 2. When dark mode activates, `ThemeModel` adds the class `xh-dark` to `document.body`. It also adds
-   `bp6-dark` for Blueprint compatibility.
+   `bp6-dark`, for CSS keyed to Blueprint's class names.
 3. In `vars.scss`, `&:where(.xh-dark) { ... }` blocks override the relevant `--xh-*` variables
    with dark values.
 4. All component styles adapt automatically, because they read CSS vars, not static colors.
@@ -508,8 +508,8 @@ They can also target Hoist framework classes for contextual overrides:
 
 ### Integrating with Third-Party Libraries
 
-Applications sometimes need to style elements from third-party libraries such as Blueprint or
-ag-Grid. Read Hoist CSS vars there for consistency:
+Applications sometimes need to style elements from third-party libraries such as ag-Grid
+or react-select. Read Hoist CSS vars there for consistency:
 
 ```scss
 body.xh-app {
@@ -518,24 +518,18 @@ body.xh-app {
     .xh-ag-grid {
         --ag-header-column-resize-handle-color: var(--xh-border-color);
     }
-
-    // Blueprint integration - style elements Hoist does not theme with the shared vars.
-    .bp6-callout {
-        border: var(--xh-border-solid);
-    }
 }
 ```
 
-Hoist already themes Blueprint tooltips. To change their look, set the `--xh-tooltip-*` vars on
+Hoist themes its tooltips with shared vars. To change their look, set the `--xh-tooltip-*` vars on
 `body.xh-app`, such as `--xh-tooltip-bg` or `--xh-tooltip-border-color`. Do not target
-`.bp6-tooltip` directly.
+`.xh-tooltip` directly.
 
 ### Dialogs and Popovers
 
 Dialogs and popovers share the `--xh-popup-*` vars for background, border, corner radius, and
 title bar. Dialogs read them directly. Popovers read a matching `--xh-popover-*` set, which
-defaults to the popup values. This applies to Blueprint popovers on desktop and to the mobile
-`Popover`.
+defaults to the popup values. This applies to Hoist's `Popover` on desktop and mobile.
 
 A dialog sits on a mask that dims the app. A popover has no mask and often opens over busy content
 such as a grid. For this reason a popover takes a stronger border and its own shadow:
@@ -551,8 +545,8 @@ such as a grid. For this reason a popover takes a stronger border and its own sh
 | `--xh-popover-backdrop-bg` | Mobile `Popover` with `backdrop: true` only |
 
 Set the popup vars to change dialogs and popovers together. Set the popover vars to change popovers
-alone. To change one popover, set the popover vars on its `popoverClassName`. Blueprint renders
-popovers in a portal, so a selector on the popover's target does not reach them.
+alone. To change one popover, set the popover vars on its `popoverClassName`. Popovers render
+in a portal, so a selector on the popover's target does not reach them.
 
 ```scss
 body.xh-app {
@@ -570,7 +564,7 @@ The popover border is an outset box-shadow ring, so it does not change the size 
 `--xh-popover-box-shadow` holds a list of shadows drawn outside that ring. To remove the shadow,
 set it to `0 0 transparent`, not `none`.
 
-Blueprint tooltips are popovers too, but they read their own `--xh-tooltip-*` vars.
+Tooltips are popovers too, but they read their own `--xh-tooltip-*` vars.
 
 ## Related Packages
 

@@ -461,8 +461,8 @@ form({
 ### Importing desktop components in a mobile app
 
 Mobile apps should import platform-specific components from `@xh/hoist/mobile/` and shared models
-from `@xh/hoist/cmp/`. Accidentally importing from `@xh/hoist/desktop/` will pull in Blueprint
-dependencies and desktop-styled components that won't render correctly in a mobile context.
+from `@xh/hoist/cmp/`. Accidentally importing from `@xh/hoist/desktop/` will pull in desktop-only code, styles and
+dependencies, and components that won't render correctly in a mobile context.
 
 ```typescript
 // ✅ Do: Import cross-platform components from /cmp/ and mobile components from /mobile/

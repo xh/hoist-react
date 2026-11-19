@@ -56,7 +56,7 @@ export interface SliderProps extends HoistProps, HoistInputProps, LayoutProps {
 /**
  * A slider input to edit either a single number or an array of two (for a range).
  *
- * Blueprint hangs or throws on some scales, so the slider adjusts them. It uses 1 for a `stepSize`
+ * Some scales cannot be drawn, or would take too long to, so the slider adjusts them. It uses 1 for a `stepSize`
  * of zero or less, and raises a `stepSize` too small for the range. It shows a label at each end
  * only for a `labelStepSize` of zero or less, or one that gives over 1,000 labels. With a `max` not
  * above `min`, it renders disabled. It logs a warning for each change in development mode.
@@ -102,7 +102,7 @@ const cmp = hoistCmp.factory<SliderInputModel>(({model, className, ...props}, re
     const {width, ...layoutProps} = getLayoutProps(props),
         scale = getSafeScale(props),
         boxRef = useRef<HTMLElement>(null),
-        // Blueprint places the handles once it has measured its track, after this effect runs.
+        // The slider places its handles once it has measured them, after this effect runs.
         resizeRef = useOnResize(() => fitLabels(boxRef.current));
 
     // Runs after every render, so a handle label follows its handle as it moves.
@@ -165,8 +165,8 @@ const HANDLE_NAME_ATTRS = ['aria-label', 'aria-labelledby'];
 // Labels
 //-----------------------
 /**
- * Shift each label that crosses an edge of the slider back inside it. Blueprint centers a label on
- * its tick or handle, so a long label at either end of the track runs past the side padding. Only
+ * Shift each label that crosses an edge of the slider back inside it. The slider centers a label
+ * on its tick or handle, so a long label at either end of the track runs past the side padding. Only
  * the end labels of the axis and the handle labels can reach an edge. A label that fits keeps its
  * centered place.
  */
@@ -205,14 +205,14 @@ const MIN_STEP_RATIO = 1e-12;
 /** Most decimal places for a default label. Number precision gives out before this. */
 const MAX_LABEL_PRECISION = 20;
 
-/** Blueprint draws a label at each step from `min` until it passes `max` by this much. */
+/** The slider draws a label at each step from `min` until it passes `max` by this much. */
 const LABEL_TOLERANCE = 0.00001;
 
 interface SliderScale {
     min: number;
     max: number;
     stepSize: number;
-    /** Undefined when `labelValues` is set - Blueprint takes one or the other. */
+    /** Undefined when `labelValues` is set - the slider takes one or the other. */
     labelStepSize: number;
     labelValues: number[];
     labelPrecision: number;
@@ -223,10 +223,10 @@ interface SliderScale {
 }
 
 /**
- * The scale to hand to Blueprint. Blueprint throws on a step of zero or less, and reads the decimal
- * places of `stepSize` in a loop that never ends for a number too small. It draws a label for each
+ * The scale to hand to the slider. A step of zero or less never advances, and the decimal places
+ * of a `stepSize` too small take too long to count. The slider draws a label for each
  * `labelStepSize` in the range, however many, and divides by the range. Returns the props as given
- * for any scale that Blueprint draws.
+ * for any scale the slider can draw.
  */
 function getSafeScale(props: SliderProps): SliderScale {
     const changes: string[] = [],
@@ -282,8 +282,8 @@ function getSafeScale(props: SliderProps): SliderScale {
 }
 
 /**
- * Decimal places in a number, as Blueprint counts them to format a default label, but with a
- * limit. Blueprint's own count never ends for a number below about 1e-308.
+ * Decimal places in a number, to format a default label, with a limit - an unlimited count never
+ * ends for a number below about 1e-308.
  */
 function countDecimalPlaces(num: number): number {
     let e = 1,

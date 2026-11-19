@@ -67,7 +67,7 @@ export const manageDialog = hoistCmp.factory({
                     ),
                     // Anchors this dialog's toasts within it - see ManageDialogModel.toastOpts.
                     ref: model.dialogRef,
-                    // Blueprint's Dialog does not pass `data-testid` through - tag this panel.
+                    // The panel takes the testId, so tests can target the dialog's content.
                     testId,
                     mask: [updateTask, loadTask]
                 })

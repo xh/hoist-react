@@ -19,7 +19,7 @@ Components in `/cmp/` fall into two categories:
 ├── Used directly by apps OR wrapped by platform packages
 │
 ├── /desktop/
-│   ├── Extends /cmp/ components with Blueprint UI
+│   ├── Extends /cmp/ components with mouse- and keyboard-oriented UI
 │   ├── Adds desktop-specific inputs, panels, toolbars
 │   └── Desktop app container and shell
 │
@@ -35,7 +35,7 @@ Both `GridModel` and the `Grid` component itself are fully cross-platform - appl
 and use them identically on desktop and mobile. The platform-specific packages provide *helper*
 components built with platform-appropriate UI libraries:
 
-- `/desktop/cmp/grid/` - Cell editors, column chooser dialog, filter UI (using Blueprint)
+- `/desktop/cmp/grid/` - Cell editors, column chooser dialog, filter UI
 - `/mobile/cmp/grid/` - Column chooser sheet
 
 The core grid functionality (sorting, grouping, selection, data binding) works the same everywhere.

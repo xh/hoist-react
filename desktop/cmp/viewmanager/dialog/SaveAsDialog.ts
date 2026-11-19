@@ -50,8 +50,8 @@ const formPanel = hoistCmp.factory<SaveAsDialogModel>({
             visOptions = getVisibilityOptions(parent),
             visInfo = getVisibilityInfo(parent, visibility);
 
-        // Blueprint's Dialog does not pass `data-testid` through, so tag the panel within it.
-        // The form takes the same testId to derive one for each field.
+        // The panel takes the testId, so tests can target the dialog's content. The form takes
+        // the same testId to derive one for each field.
         return panel({
             testId,
             children: form({

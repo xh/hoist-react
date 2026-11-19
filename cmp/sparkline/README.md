@@ -180,7 +180,7 @@ renderer: (data, {record}) =>
     })
 ```
 
-On desktop the tooltip shows in a Blueprint tooltip. No tooltip mounts until the user first rests
+On desktop the tooltip shows in a Hoist `Tooltip`. No tooltip mounts until the user first rests
 the pointer on a sparkline, and a function runs only from then on. A sparkline with a tooltip
 renders the same DOM as one without until then, so a tooltip on a grid column costs nothing in rows
 the user does not hover.
