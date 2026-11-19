@@ -58,23 +58,40 @@ export interface KeyValueDisplayProps
     labelSide?: 'left' | 'top';
 
     /**
-     * Side of its column each label aligns to, when `labelSide` is `left`. Default `left`. Use
-     * `right` to set each label against its value. No effect when `labelSide` is `top`.
+     * Style of the labels. Default `standard`. Use `muted` for smaller, lighter labels, so the
+     * values stand out, as in a dense detail panel.
+     */
+    labelVariant?: 'standard' | 'muted';
+
+    /**
+     * Side of its column each label aligns to, when `labelSide` is `left`. Default `left`, or
+     * `right` when `align` is `right`. Use `right` to set each label against its value. No effect
+     * when `labelSide` is `top`.
      */
     labelAlign?: HSide;
 
     /**
      * Side of its column each value aligns to, when `labelSide` is `left`. Default `left`, with
-     * each value beside its label. Use `right` to set the values at the far side of the column,
-     * across from their labels, as in a summary or statement. Digits then take equal widths, so
-     * the figures in a column line up. No effect when `labelSide` is `top`.
+     * each value beside its label, or `right` when `align` is `right`. Use `right` to set the
+     * values at the far side of the column, across from their labels, as in a summary or
+     * statement. Digits then take equal widths, so the figures in a column line up. No effect when
+     * `labelSide` is `top`.
      */
     valueAlign?: HSide;
+
+    /**
+     * Edge of its container to size the list to its content and set it against. Omit to fill the
+     * width of the container. Use `right` for a block of totals, as at the foot of an invoice -
+     * it also sets `labelAlign` and `valueAlign` to `right` by default. A list sized to its
+     * content cannot fit columns to its own width, so it uses one column, or `columns` if set.
+     */
+    align?: HSide;
 
     /**
      * Most columns to lay the entries out in, filled row by row. The list uses fewer in a
      * container too narrow to hold them at `minColumnWidth`, and never more than it has entries.
      * Omit to fit as many columns of at least `minColumnWidth` as the width of the list allows.
+     * With `align` set, the list uses exactly this many columns, up to one per entry.
      */
     columns?: number;
 
@@ -107,9 +124,10 @@ export interface KeyValueDisplayProps
  *
  * The list is presentation-only. Callers pass each `value` already formatted.
  *
- * The list fills the width of its container and has no outer margin. Long labels and values wrap,
- * breaking within a word if needed, so the list never forces horizontal overflow. To truncate a
- * value instead, pass an element that does so.
+ * The list fills the width of its container and has no outer margin. With `align`, it sizes to its
+ * content and sits at one edge instead. Long labels and values wrap, breaking within a word if
+ * needed, so the list never forces horizontal overflow. To truncate a value instead, pass an
+ * element that does so.
  */
 export const [KeyValueDisplay, keyValueDisplay] = hoistCmp.withFactory<KeyValueDisplayProps>({
     displayName: 'KeyValueDisplay',
@@ -124,8 +142,10 @@ export const [KeyValueDisplay, keyValueDisplay] = hoistCmp.withFactory<KeyValueD
                     className,
                     entries,
                     labelSide,
+                    labelVariant,
                     labelAlign,
                     valueAlign,
+                    align,
                     columns,
                     minColumnWidth,
                     nullDisplay,
@@ -137,6 +157,10 @@ export const [KeyValueDisplay, keyValueDisplay] = hoistCmp.withFactory<KeyValueD
                 }
             ] = splitLayoutProps(props),
             labelOnTop = labelSide === 'top',
+            alignClass = align && `xh-key-value-display--align-${align}`,
+            sideDefault: HSide = align === 'right' ? 'right' : 'left',
+            labelsRight = !labelOnTop && (labelAlign ?? sideDefault) === 'right',
+            valuesRight = !labelOnTop && (valueAlign ?? sideDefault) === 'right',
             minWidth = minColumnWidth ?? (labelOnTop ? 160 : 240),
             visibleEntries = (entries ?? []).filter(it => it && !it.omit),
             count = visibleEntries.length,
@@ -160,24 +184,27 @@ export const [KeyValueDisplay, keyValueDisplay] = hoistCmp.withFactory<KeyValueD
         if (isEmpty(visibleEntries)) {
             return isBlankNode(emptyText)
                 ? null
-                : div({ref, ...rootProps(['xh-key-value-display--empty']), children: emptyText});
+                : div({
+                      ref,
+                      ...rootProps(['xh-key-value-display--empty', alignClass]),
+                      children: emptyText
+                  });
         }
 
-        const maxColumns = Math.min(columns ?? count, count),
-            columnCount = Math.max(Math.min(maxColumns, fitColumns), 1),
+        // A list sized to its content takes its columns as given, not from its width.
+        const maxColumns = Math.min(columns ?? (align ? 1 : count), count),
+            columnCount = Math.max(align ? maxColumns : Math.min(maxColumns, fitColumns), 1),
             lastRowStart = count - (count % columnCount || columnCount);
 
         return dl({
             ref: composedRef,
             ...rootProps(
                 [
+                    alignClass,
                     labelOnTop && 'xh-key-value-display--label-top',
-                    !labelOnTop &&
-                        labelAlign === 'right' &&
-                        'xh-key-value-display--label-align-right',
-                    !labelOnTop &&
-                        valueAlign === 'right' &&
-                        'xh-key-value-display--value-align-right',
+                    labelVariant === 'muted' && 'xh-key-value-display--label-muted',
+                    labelsRight && 'xh-key-value-display--label-align-right',
+                    valuesRight && 'xh-key-value-display--value-align-right',
                     size === 'compact' && 'xh-key-value-display--compact',
                     dividers && 'xh-key-value-display--dividers'
                 ],

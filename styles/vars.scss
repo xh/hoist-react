@@ -788,6 +788,10 @@ body {
   // Widest a column of labels gets, when the label is on the left. Longer labels wrap.
   --xh-key-value-display-label-max-width: 16em;
   --xh-key-value-display-label-text-color: var(--xh-blue-gray);
+  // Labels with `labelVariant: 'muted'`. Labels are already this color in the dark theme, so muted
+  // labels there are only smaller.
+  --xh-key-value-display-muted-label-font-size: var(--xh-font-size-small-relative);
+  --xh-key-value-display-muted-label-text-color: var(--xh-text-color-muted);
   --xh-key-value-display-null-text-color: var(--xh-text-color-muted);
   --xh-key-value-display-primary-color: var(--xh-intent-primary-text-color);
   --xh-key-value-display-row-gap: var(--xh-spacing-half);

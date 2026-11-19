@@ -36,10 +36,35 @@
     color: var(--xh-key-value-display-empty-text-color);
   }
 
+  // Sized to its content and set at one edge of its container. Each label track takes its widest
+  // label, up to the max label width, and each value track its widest value.
+  &--align-left,
+  &--align-right {
+    grid-template-columns: repeat(
+      var(--xh-key-value-display-columns, 1),
+      fit-content(var(--xh-key-value-display-label-max-width)) auto
+    );
+    width: fit-content;
+  }
+
+  &--align-left {
+    margin-right: auto;
+  }
+
+  &--align-right {
+    margin-left: auto;
+  }
+
   // Swaps in the compact variables, so the rules below draw both sizes.
   &--compact {
     --xh-key-value-display-font-size: var(--xh-key-value-display-compact-font-size);
     --xh-key-value-display-row-gap: var(--xh-key-value-display-compact-row-gap);
+  }
+
+  // Swaps in the muted label variables, for smaller, lighter labels.
+  &--label-muted {
+    --xh-key-value-display-label-font-size: var(--xh-key-value-display-muted-label-font-size);
+    --xh-key-value-display-label-text-color: var(--xh-key-value-display-muted-label-text-color);
   }
 
   // Spans the two tracks of its column and lays its label and value out on them, so the labels of

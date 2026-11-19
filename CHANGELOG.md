@@ -53,7 +53,9 @@ detailed, step-by-step upgrade instructions with before/after code examples.
       factory examples in markdown docs such as CLAUDE.md, and edits them only with `--fix-docs`.
 * Added `KeyValueDisplay` to `@xh/hoist/cmp/keyvaluedisplay`, a display-only list of labeled
   values, such as the fields of a record in a detail panel. It lays out its `entries` in aligned
-  columns that fit the available width, with each label to the left of or above its value.
+  columns that fit the available width, with each label to the left of or above its value. Set
+  `align` to size it to its content at one edge, as for a block of totals, and set `labelVariant`
+  to `muted` for smaller, lighter labels.
 * Added `ListDisplay` to `@xh/hoist/cmp/listdisplay`, a short, static list of `entries`, such as a
   few alerts or search results. Each entry has a title, description, icon and trailing detail, and
   can take an `onClick`. It needs no Store or model. Use `DataView` for long lists.
