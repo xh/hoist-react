@@ -2,7 +2,8 @@
 
 Status: Phases 0-5 done - see [Phase 0 results](#phase-0-results), and
 [Handoff](#handoff---current-state) for where the work stands. The selector rename follows as a
-separate technical PR - see [Follow-up: selector rename](#follow-up-selector-rename).
+separate technical PR that must also land in v91 - see
+[Follow-up: selector rename](#follow-up-selector-rename).
 All phases land on one branch and one PR, xh/hoist-react#4995, reviewed and merged to `develop` as
 a whole - see [Delivery](#delivery).
 Baseline: `develop` at `5e18f21` (91.0.0-SNAPSHOT), `@blueprintjs/core` 6.23.
@@ -308,8 +309,9 @@ pushes to this branch.
   app's `title`.
 - A tooltip closes when its target is pressed and stays closed until the pointer leaves.
 - `portalContainerProvider` is internal, in `cmp/popover/impl`.
-- `menuItem` and `menuDivider` stay exported as factories only. Whether to add the `[Component,
-  factory]` pair is undecided - leave as is until decided.
+- `menuItem` and `menuDivider` are not exported. Apps and Hoist's own menus build items from
+  `MenuItem` configs, and `MenuItem.rightElement` takes the place of Blueprint's `labelElement`.
+- Submenus render in a portal, so the parent menu and its popover cannot clip them.
 - New internal components use `hoistCmp.factory` with `model: false` and `observer: false`.
 
 **Still to check in a browser**
@@ -344,21 +346,37 @@ Rebuild them as needed:
 
 ### Follow-up: selector rename
 
-A separate technical PR, needing little review:
+A separate technical PR, which lands in v91 with the rest of this work, so apps migrate their CSS
+once:
 
 - Rewrite `BlueprintBase.css` and the SCSS and TS that reference `bp6-*` classes against `xh-*`
-  classes, moving rules into each component's stylesheet, with a `bp6-*` to `xh-*` mapping table.
-- Replace the `--bp-*` custom properties with `--xh-*` variables or values.
+  classes, moving rules into each component's stylesheet. Write each component's rules from what it
+  needs, not from the coverage recording, which missed states such as open submenus.
+- Replace the `--bp-*` custom properties with `--xh-*` variables or values. Settle the remaining
+  Blueprint looks along the way: the hotkeys dialog, the submenu caret glyph, the checkbox marks
+  and the Blueprint blue of checked controls.
+- Remove the `bp6-*` classes from Hoist's markup in the same PR, with no aliases, along with the
+  `bp6-dark` and `bp6-focus-disabled` toggles. Delete `BlueprintBase.css` and
+  `BlueprintOverrides.scss`.
+- Add a `bp6-*` to `xh-*` mapping table to the v91 upgrade notes.
+- Add a codemod to `docs/codemod/v91`, as for the CSS variables. It rewrites the mapped selectors
+  in app `.scss`, `.css` and TS class strings, and reports the ones it cannot map - combined classes
+  such as `.bp6-button.bp6-minimal`, and Blueprint internals with no Hoist equivalent. The
+  `xh:hoist-upgrade` skill runs it and works through the report.
+- In development mode, scan the loaded stylesheets at startup and log a warning naming any `bp6-`
+  selector, as Hoist does for old CSS variable names. App CSS on a removed class otherwise fails
+  silently.
+- Migrate hoist-chat-kit (26 `bp6-` references in 14 files) and Toolbox (5 in 2 files) in the same
+  release - chat-kit renders inside apps, so its CSS must move with Hoist's.
 - Verify with the same before/after screenshots of every route.
-- Later, once apps have moved their CSS, remove the `bp6-*` class aliases and the `bp6-dark` and
-  `bp6-focus-disabled` toggles.
 
 ## Release strategy
 
-One release. Everything lands in v91 with no fallback flags. Hoist's markup keeps the `bp6-*`
-class names alongside its `xh-*` ones, so app CSS keyed to them keeps working until the aliases
-are removed in a later release, after the selector rename. Apps importing `kit/blueprint` or
-`@blueprintjs/core` move to Hoist's components, as in the v91 upgrade notes.
+One release. Everything lands in v91 with no fallback flags, including the selector rename, so
+Hoist's markup carries only `xh-*` classes when v91 ships. v91 already asks apps to migrate their
+CSS, with the CSS variable codemod, so the `bp6-*` codemod runs in the same upgrade rather than in
+a second breaking release. Apps importing `kit/blueprint` or `@blueprintjs/core` move to Hoist's
+components, as in the v91 upgrade notes.
 
 ## Risks
 
@@ -371,14 +389,16 @@ are removed in a later release, after the selector rename. Apps importing `kit/b
   break. The spike's layer-order rule handled every case tested; popovers inside dialogs remain
   to check.
 - **App CSS breakage.** Every `bp6-` selector in app code breaks silently, with no build error.
-  Keeping `bp6-*` class names on Hoist markup for release N gives apps a release to move.
+  Mitigation: the codemod rewrites the mapped selectors and reports the rest, and the
+  development-mode warning names any `bp6-` selector left in loaded stylesheets.
 - **Apps using `kit/blueprint` directly.** Size unknown until measured.
 - **Visual drift** from dropping `blueprint.css` globals.
 
 ## Open questions
 
 1. How much do client apps import `kit/blueprint` or style `bp6-*` classes? A code search across
-   app repos would size the migration burden and how long release N+1 should wait.
+   app repos would size the migration, and show which unmapped selectors the codemod should
+   handle.
 2. Match Blueprint's current look exactly, or take the chance to restyle controls?
 
 Resolved by Phase 0: Floating UI plus hand-rolled controls, with no headless library. Release
