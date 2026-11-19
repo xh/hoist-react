@@ -69,8 +69,6 @@ detailed, step-by-step upgrade instructions with before/after code examples.
   desktop components that open popovers now use it.
     * Popovers, and the menus in them, use the app's font. Blueprint's used its own system font.
     * Escape now returns focus to the popover's target, so keyboard users keep their place.
-    * Added `PortalContainerProvider` to `@xh/hoist/cmp/popover`, to send popovers within it to a
-      given container, e.g. a popped-out child window.
     * It works on mobile too, with no arrow and a transparent backdrop that keeps a tap outside
       from reaching what lies behind. Set `backdrop` to dim the page behind it on either platform.
     * Any popover now closes when the app's route changes, as mobile popovers did before.

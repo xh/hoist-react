@@ -119,8 +119,7 @@ export interface PopoverProps extends HoistProps, TestSupportProps {
     usePortal?: boolean;
 
     /**
-     * Element to render the popover in. Default the container set by `portalContainerProvider`,
-     * else `document.body`.
+     * Element to render the popover in. Default `document.body`.
      */
     portalContainer?: HTMLElement;
 

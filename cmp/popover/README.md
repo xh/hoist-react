@@ -57,8 +57,7 @@ page after the popover's.
 
 A popover renders in a portal on `document.body`, so no clipping ancestor cuts it off. Set
 `usePortal: false` to render it inline, next to its target, or `portalContainer` for a specific
-element. To send every popover within part of the app to one container, such as a popped-out
-child window, wrap that part in `portalContainerProvider` from `@xh/hoist/cmp/popover`.
+element.
 
 ## Tooltip
 

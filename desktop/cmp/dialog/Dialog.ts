@@ -48,7 +48,7 @@ export interface DialogProps extends HoistProps, StyleProps, TestSupportProps {
      */
     lazy?: boolean;
 
-    /** Element to render the dialog in. Default the container set by `portalContainerProvider`. */
+    /** Element to render the dialog in. Default `document.body`. */
     portalContainer?: HTMLElement;
 }
 

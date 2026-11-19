@@ -5,7 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {hframe} from '@xh/hoist/cmp/layout';
-import {portalContainerProvider} from '@xh/hoist/cmp/popover';
+import {portalContainerProvider} from '@xh/hoist/cmp/popover/impl/PortalContainerProvider';
 import {creates, hoistCmp, XH} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {panel} from '@xh/hoist/desktop/cmp/panel';

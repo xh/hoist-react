@@ -4,7 +4,8 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {popover, type PopoverProps, portalContainerProvider} from '@xh/hoist/cmp/popover';
+import {popover, type PopoverProps} from '@xh/hoist/cmp/popover';
+import {portalContainerProvider} from '@xh/hoist/cmp/popover/impl/PortalContainerProvider';
 import {XH} from '@xh/hoist/core';
 import {initTestAppAsync} from '@xh/hoist/test-support';
 import {act, fireEvent, render, screen, waitFor} from '@testing-library/react';

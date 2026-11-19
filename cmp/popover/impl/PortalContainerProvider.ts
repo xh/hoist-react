@@ -17,14 +17,14 @@ export interface PortalContainerProviderProps extends HoistProps {
 /**
  * Render `children` so that Hoist popovers and other overlays within them portal into `container`
  * rather than `document.body` - e.g. to keep them in a popped-out child window.
+ * @internal
  */
-export const [PortalContainerProvider, portalContainerProvider] =
-    hoistCmp.withFactory<PortalContainerProviderProps>({
-        displayName: 'PortalContainerProvider',
-        model: false,
-        observer: false,
+export const portalContainerProvider = hoistCmp.factory<PortalContainerProviderProps>({
+    displayName: 'PortalContainerProvider',
+    model: false,
+    observer: false,
 
-        render({container, children}) {
-            return createElement(PortalContainerContext.Provider, {value: container}, children);
-        }
-    });
+    render({container, children}) {
+        return createElement(PortalContainerContext.Provider, {value: container}, children);
+    }
+});
