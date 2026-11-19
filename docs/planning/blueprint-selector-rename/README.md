@@ -64,7 +64,7 @@ file is the working guide.
       `desktop/cmp/tab/impl/TabList.scss`, which `TabContainer` imports ahead of `Tabs.scss`.
       Tab title and panel ids now use the `xh-tab-title_` and `xh-tab-panel_` prefixes.
       `BlueprintOverrides.scss` holds nothing now.
-- [ ] `Toolbar` overflow and `AppBar`.
+- [x] `Toolbar` overflow and `AppBar`. No visual change.
 - [ ] Theme and focus style toggles.
 - [ ] Every other stylesheet in the inventory's "Stylesheets with `bp6-*` selectors" list.
 - [ ] No `--bp-*` custom properties left.

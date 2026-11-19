@@ -77,7 +77,7 @@ describe('Toolbar overflow with simulated layout', () => {
         const spy = vi
             .spyOn(HTMLElement.prototype, 'offsetWidth', 'get')
             .mockImplementation(function (this: HTMLElement) {
-                if (!this.classList.contains('bp6-overflow-list-spacer')) return 0;
+                if (!this.classList.contains('xh-overflow-list__spacer')) return 0;
                 const count = this.parentElement.querySelectorAll(':scope > .xh-button').length;
                 return count <= room ? 10 : 0;
             });
@@ -86,7 +86,7 @@ describe('Toolbar overflow with simulated layout', () => {
     }
 
     function visibleItems(): string[] {
-        const list = document.querySelector('.bp6-overflow-list');
+        const list = document.querySelector('.xh-overflow-list');
         return Array.from(list.querySelectorAll(':scope > .xh-button')).map(it => it.textContent);
     }
 

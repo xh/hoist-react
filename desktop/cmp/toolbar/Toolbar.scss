@@ -9,15 +9,15 @@
   flex-wrap: nowrap;
 
   // Overflow box
-  .bp6-overflow-list {
+  .xh-overflow-list {
     flex: 1;
     align-items: center;
 
     > * {
       white-space: nowrap;
 
-      // The overflow space needs to be able to shrink - BP checks this to determine overflow
-      &:not(.bp6-overflow-list-spacer) {
+      // The overflow space needs to be able to shrink - OverflowList checks this to determine overflow
+      &:not(.xh-overflow-list__spacer) {
         flex-shrink: 0;
       }
 
