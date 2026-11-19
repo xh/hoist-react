@@ -261,6 +261,7 @@
       font-size: var(--xh-menu-heading-font-size);
       font-weight: var(--xh-menu-heading-font-weight);
       line-height: normal;
+      margin: 0;
       // Left inset lines the label up with the item icons, not the item text.
       padding: var(--xh-spacing-half) 10px var(--xh-spacing-half) 14px;
     }
