@@ -292,16 +292,6 @@ function wrapWithModel(render: RenderFn, cfg: Config): RenderFn {
             resolvedModel = useResolvedModel(props, modelLookup, cfg),
             {isLinked, model, fromContext} = resolvedModel;
 
-        // 2) Validate
-        if (!model && !spec.optional && spec instanceof UsesSpec) {
-            logError(
-                `Failed to find model with selector '${formatSelector(spec.selector)}'. Ensure the
-                proper model is available via context, or specify using the 'model' prop.`,
-                cfg.displayName
-            );
-            return cmpErrDisplay({...getLayoutProps(props), children: 'No model found'});
-        }
-
         useDebugValue(model, m => {
             if (!m) return 'null';
             return [
@@ -311,7 +301,7 @@ function wrapWithModel(render: RenderFn, cfg: Config): RenderFn {
             ].join(' | ');
         });
 
-        // 3) insert any new lookup context that needs to be established.  Avoid adding if default
+        // 2) insert any new lookup context that needs to be established.  Avoid adding if default
         // model not changing; cache object to avoid triggering re-renders in context children
         const insertLookup = useRef<ModelLookup>(null);
         if (
@@ -327,6 +317,16 @@ function wrapWithModel(render: RenderFn, cfg: Config): RenderFn {
             }
         } else {
             insertLookup.current = null;
+        }
+
+        // 3) Validate - only after the hooks above, so a failed lookup keeps the hook count stable.
+        if (!model && !spec.optional && spec instanceof UsesSpec) {
+            logError(
+                `Failed to find model with selector '${formatSelector(spec.selector)}'. Ensure the
+                proper model is available via context, or specify using the 'model' prop.`,
+                cfg.displayName
+            );
+            return cmpErrDisplay({...getLayoutProps(props), children: 'No model found'});
         }
 
         // 4) Get the rendering of the component with its model context

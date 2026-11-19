@@ -85,6 +85,12 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 * Added `ProgressBar` to `@xh/hoist/cmp/progressbar`, a cross-platform bar that shows a value
   against a maximum, with an optional label, figure, `intent` and `target` marker. Set
   `indeterminate` for work of unknown length.
+* Added `Callout` to `@xh/hoist/cmp/callout`, a cross-platform note set off within content, with
+  an `intent`, its icon, an optional `title`, a body and a `compact` size. Use it inside content,
+  and `Banner` for a status strip in panel chrome.
+* Added `Icon.forIntent()` and the `intentPrimary`, `intentSuccess`, `intentWarning` and
+  `intentDanger` icon aliases. `Banner` and `Callout` use them, so an app can replace an intent's
+  icon via `Icon.register()` with `replace: true`.
 * Added `Separator` to `@xh/hoist/cmp/layout`, a horizontal or `vertical` rule that divides
   content, with an optional `label` within the rule.
 * Added `scrollIntoViewWithin` to `@xh/hoist/utils/js`, to scroll a container just far enough to
@@ -122,6 +128,9 @@ detailed, step-by-step upgrade instructions with before/after code examples.
   only its own tab strip.
 * Fixed desktop toasts shown together before the first toast appeared, such as at startup, each
   showing more than once, in stacks drawn over one another.
+* Fixed a component with a `uses()` model crashing with a React hooks error when its model went
+  missing between renders, e.g. after a dev-server hot reload of the model class. The component
+  now shows its "No model found" placeholder.
 
 ### ⚙️ Technical
 
@@ -189,6 +198,9 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 * Desktop `Select` now rounds its corners to match other inputs (4px, up from 3px). A desktop
   `TabSwitcher` placed at the bottom now marks its active tab in the active tab color, as one at
   the top does, rather than in the resting text color.
+* Desktop `SegmentedControl` now looks disabled when `disabled`, matching other disabled inputs
+  such as `DateInput`. Its tray takes the disabled input fill and its labels fade, while the
+  selected option keeps a hairline edge so the current value stays legible.
 
 ### 📚 Libraries
 

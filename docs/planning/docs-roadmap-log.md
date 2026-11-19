@@ -608,3 +608,9 @@
 - Updated the `/popover/` entry in `cmp/README.md`.
 - Indexed in `docs/README.md` (Quick Reference and Components), the roadmap Priority 2 table
   (Draft), and `docs/doc-registry.json`.
+- Added a package README for `Callout`. It covers when to use the component over `Banner` and
+  `Card`, examples, CSS variables and pitfalls. TSDoc holds the props and their defaults, so the
+  README has no prop table.
+- Added a short `Callout` entry to `cmp/README.md`.
+- Indexed in `docs/README.md` (Quick Reference and Components), the roadmap Priority 2 table, and
+  `docs/doc-registry.json`.
