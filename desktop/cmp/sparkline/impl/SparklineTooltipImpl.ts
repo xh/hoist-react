@@ -25,7 +25,7 @@ interface SparklineTooltipImplProps extends HoistProps {
 const HOVER_OPEN_DELAY = 100;
 
 /**
- * Desktop implementation of a Sparkline's tooltip, shown in a Hoist tooltip.
+ * Desktop implementation of a Sparkline's tooltip.
  *
  * Sparklines often render in every row of a grid, so this mounts no tooltip until the pointer
  * first rests on the sparkline. Until then it renders the sparkline with two mouse handlers. On

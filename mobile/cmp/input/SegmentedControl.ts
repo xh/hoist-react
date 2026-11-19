@@ -82,8 +82,7 @@ export interface SegmentedControlProps extends HoistProps, HoistInputProps {
  *
  * Similar to ButtonGroupInput but driven by an `options` prop (like Select) rather than Button
  * children, and with stronger visual differentiation between selected and unselected states.
- * The mobile counterpart to the desktop SegmentedControl, built on Hoist's mobile Button
- * (no Blueprint dependency).
+ * The mobile counterpart to the desktop SegmentedControl, built on Hoist's mobile Button.
  */
 export const [SegmentedControl, segmentedControl] = hoistCmp.withFactory<SegmentedControlProps>({
     displayName: 'SegmentedControl',

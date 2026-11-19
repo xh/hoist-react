@@ -56,10 +56,11 @@ export interface SliderProps extends HoistProps, HoistInputProps, LayoutProps {
 /**
  * A slider input to edit either a single number or an array of two (for a range).
  *
- * Some scales cannot be drawn, or would take too long to, so the slider adjusts them. It uses 1 for a `stepSize`
- * of zero or less, and raises a `stepSize` too small for the range. It shows a label at each end
- * only for a `labelStepSize` of zero or less, or one that gives over 1,000 labels. With a `max` not
- * above `min`, it renders disabled. It logs a warning for each change in development mode.
+ * Some scales cannot be drawn, or would take too long to, so the slider adjusts them. It uses 1
+ * for a `stepSize` of zero or less, and raises a `stepSize` too small for the range. It shows a
+ * label at each end only for a `labelStepSize` of zero or less, or one that gives over 1,000
+ * labels. With a `max` not above `min`, it renders disabled. It logs a warning for each change in
+ * development mode.
  */
 export const [Slider, slider] = hoistCmp.withFactory<SliderProps>({
     displayName: 'Slider',
@@ -166,9 +167,9 @@ const HANDLE_NAME_ATTRS = ['aria-label', 'aria-labelledby'];
 //-----------------------
 /**
  * Shift each label that crosses an edge of the slider back inside it. The slider centers a label
- * on its tick or handle, so a long label at either end of the track runs past the side padding. Only
- * the end labels of the axis and the handle labels can reach an edge. A label that fits keeps its
- * centered place.
+ * on its tick or handle, so a long label at either end of the track runs past the side padding.
+ * Only the end labels of the axis and the handle labels can reach an edge. A label that fits keeps
+ * its centered place.
  */
 function fitLabels(el: HTMLElement) {
     if (!el) return;

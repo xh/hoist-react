@@ -15,7 +15,7 @@ interface StatCardInfoImplProps extends HoistProps {
 }
 
 /**
- * Desktop implementation of a StatCard's info icon, showing its tooltip in a Hoist tooltip.
+ * Desktop implementation of a StatCard's info icon and its tooltip.
  * @internal
  */
 export const statCardInfoImpl = hoistCmp.factory<StatCardInfoImplProps>({

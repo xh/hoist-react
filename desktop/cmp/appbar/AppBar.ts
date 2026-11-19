@@ -77,7 +77,7 @@ export const [AppBar, appBar] = hoistCmp.withFactory<AppBarProps>({
 
         const title = withDefault(props.title, XH.clientAppName);
 
-        // Blueprint's navbar class names are kept, so its styles and any app CSS still apply.
+        // Blueprint's navbar class names are kept, so its styles and app CSS apply.
         return div({
             className: classNames('bp6-navbar', className),
             children: [

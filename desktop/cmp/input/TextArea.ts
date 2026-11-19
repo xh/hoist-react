@@ -112,7 +112,7 @@ const cmp = hoistCmp.factory<TextAreaInputModel>(({model, className, ...props}, 
         onKeyDown: model.onKeyDown
     };
 
-    // Blueprint's class names are kept, so its styles and any app CSS keyed to them still apply.
+    // Blueprint's class names are kept, so its styles and app CSS keyed to them apply.
     const {inputRef, ...rest} = textareaProps;
     return createElement('textarea', {
         ...rest,

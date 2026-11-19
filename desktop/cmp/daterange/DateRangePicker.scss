@@ -388,7 +388,7 @@ $drp-transition-dur: 120ms;
     &__year-row.xh-button {
       margin: 14px 6px 0;
 
-      // Blueprint wraps `items` in a non-flex text span - lay them out, as the trigger does.
+      // Button wraps `items` in a non-flex text span - lay them out, as the trigger does.
       > .bp6-button-text {
         display: flex;
         align-items: center;

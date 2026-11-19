@@ -127,14 +127,13 @@ export const [Button, button] = hoistCmp.withFactory<ButtonProps, ButtonDefaults
             ...rest
         };
 
-        // Blueprint's class names are kept, so its styles and any app CSS keyed to them still apply.
+        // Blueprint's class names are kept, so its styles and app CSS keyed to them apply.
         const hasText = !isEmptyNode(text) || !isEmptyNode(children);
         return createElement(
             'button',
             {
                 type: 'button',
                 ...nativeProps,
-                // As Blueprint's button, a disabled button is taken out of the tab order.
                 tabIndex: disabled ? -1 : nativeProps.tabIndex,
                 ref,
                 className: classNames(

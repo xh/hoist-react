@@ -35,7 +35,7 @@ export interface InputGroupProps extends InputHTMLAttributes<HTMLInputElement> {
 /**
  * A native text input with optional elements inside it at either end, padded so typed text does
  * not run under them. Renders the same elements and class names as Blueprint's `InputGroup`, so
- * its styles and any app CSS keyed to them still apply.
+ * its styles and app CSS keyed to them apply.
  * @internal
  */
 export const inputGroup = hoistCmp.factory<InputGroupProps>({

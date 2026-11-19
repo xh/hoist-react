@@ -7,16 +7,15 @@
 
 /**
  * Classes set on the document root while the user works with the mouse, under which focus
- * outlines are hidden. Pressing Tab clears them, so keyboard users see where focus is. Blueprint's
- * class is kept so its styles, and any app CSS keyed to it, still apply.
+ * outlines are hidden. Pressing Tab clears them, so keyboard users see where focus is. Includes
+ * Blueprint's class, for its styles and app CSS keyed to it.
  */
 const FOCUS_DISABLED_CLASSES = ['xh-focus-disabled', 'bp6-focus-disabled'];
 
 let installed = false;
 
 /**
- * Show focus outlines only after the user starts tabbing, as Blueprint's
- * `FocusStyleManager.onlyShowFocusOnTabs()` did. Call once - later calls do nothing.
+ * Show focus outlines only after the user starts tabbing. Call once - later calls do nothing.
  * @internal
  */
 export function installFocusStyle() {

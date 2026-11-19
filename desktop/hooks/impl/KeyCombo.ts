@@ -6,8 +6,8 @@
  */
 
 /**
- * Parsing and matching of hotkey combos such as `'shift + s'` or `'mod + enter'`. Accepts the same
- * syntax, aliases and shifted symbols as Blueprint's hotkeys, so existing combos keep working.
+ * Parsing and matching of hotkey combos such as `'shift + s'` or `'mod + enter'`. Accepts the
+ * syntax, aliases and shifted symbols of Blueprint's hotkeys.
  */
 export interface KeyCombo {
     /** Bitmask of the modifier keys held - see `MODIFIER_BITS`. */

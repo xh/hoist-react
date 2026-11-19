@@ -37,7 +37,7 @@ export interface ControlProps {
 /**
  * A native checkbox or radio input styled as a checkbox, radio button or switch, wrapped in a
  * `<label>` with its indicator and label text. Renders the same elements and class names as
- * Blueprint's controls, so their styles and any app CSS keyed to them still apply.
+ * Blueprint's controls, so their styles and app CSS keyed to them apply.
  * @internal
  */
 export function control({

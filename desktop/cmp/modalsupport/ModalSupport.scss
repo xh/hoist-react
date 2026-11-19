@@ -1,5 +1,5 @@
 .xh-modal-support {
-  // Unwind the (surprising) 500px default dialog width from the base dialog styles.
+  // Drop the 500px default dialog width from the base dialog styles.
   // If the user has configured their ModalSupportOptions with null width, this should be respected.
   &__modal {
     width: auto;

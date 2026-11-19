@@ -18,7 +18,7 @@ export const description = hoistCmp.factory<LeftRightChooserModel>(({model}) => 
 
     if (!hasDescription || !selDescription) return null;
 
-    // Blueprint's callout class names are kept, so its styles and any app CSS still apply.
+    // Blueprint's callout class names are kept, so its styles and app CSS apply.
     return div({
         className:
             'xh-lr-chooser__description bp6-callout bp6-intent-primary bp6-callout-has-body-content',

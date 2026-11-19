@@ -374,9 +374,8 @@ export interface MenuItem<T = MenuToken, C = MenuContext> extends TestSupportPro
      * Element shown at the right edge of the item, such as a button that acts on the item or a
      * keyboard shortcut.
      *
-     * A click on a button or other control within it goes to that control alone. It does not run
-     * `actionFn` or close the menu, so the control's handler need not stop the event itself. A
-     * click elsewhere within it acts as a click on the item.
+     * A click on a button or other control within it goes to that control alone, without running
+     * `actionFn` or closing the menu. A click elsewhere within it acts as a click on the item.
      */
     rightElement?: ReactNode;
 

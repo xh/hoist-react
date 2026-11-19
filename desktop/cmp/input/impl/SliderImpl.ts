@@ -34,10 +34,9 @@ export interface SliderImplProps {
 }
 
 /**
- * A single or range slider, dragged by pointer or stepped by keyboard. Renders the same elements
- * and class names as Blueprint's `Slider` and `RangeSlider`, so `Slider.scss` and Hoist's label
- * fitting still apply. Adds the WAI-ARIA slider keys Blueprint lacks: Home/End and
- * PageUp/PageDown.
+ * A single or range slider, dragged by pointer or stepped by the WAI-ARIA slider keys, including
+ * Home/End and PageUp/PageDown. Renders the elements and class names of Blueprint's `Slider` and
+ * `RangeSlider`, which `Slider.scss` and Hoist's label fitting target.
  * @internal
  */
 export const sliderImpl = hoistCmp.factory<SliderImplProps>({
@@ -74,9 +73,9 @@ export const sliderImpl = hoistCmp.factory<SliderImplProps>({
             [dragIdx, setDragIdx] = useState<number>(null),
             [handleMid, setHandleMid] = useState(8);
 
-        // Offset handles by half their cross-axis size, measured once rendered, as Blueprint does. A
-        // full handle is square, so this centers it. Range handles are half-width, so this sets each
-        // flush against its value - the end handle's CSS margin moves it to the far side.
+        // Offset handles by half their cross-axis size, measured once rendered. A full handle is
+        // square, so this centers it. Range handles are half-width, so this sets each flush against
+        // its value - the end handle's CSS margin moves it to the far side.
         useLayoutEffect(() => {
             const el = handleRefs.current[0];
             if (el) setHandleMid((vertical ? el.offsetWidth : el.offsetHeight) / 2 || 8);

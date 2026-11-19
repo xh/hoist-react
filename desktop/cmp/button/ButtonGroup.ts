@@ -56,7 +56,7 @@ export const [ButtonGroup, buttonGroup] = hoistCmp.withFactory<ButtonGroupProps>
             {className, fill, minimal, outlined, vertical, style, testId, domAttrs, ...rest}
         ] = splitLayoutProps(props);
 
-        // Blueprint's class names are kept, so its styles and any app CSS keyed to them still apply.
+        // Blueprint's class names are kept, so its styles and app CSS keyed to them apply.
         return createElement('div', {
             [TEST_ID]: testId,
             ...domAttrs,

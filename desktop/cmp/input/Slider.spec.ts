@@ -78,9 +78,8 @@ describe('Slider', () => {
         });
     });
 
-    // Blueprint does not guard its scale. A step too small for a number hangs the render, a step
-    // of zero throws, and a label step too small for the range floods the page with labels. A
-    // scale can come from data, so the slider must draw something for each. Fixed in v91.
+    // A scale can come from data, so the slider must draw something for a step too small for a
+    // number, a step of zero, and a label step too small for the range.
     describe('track fill', () => {
         it('fills the track with the primary intent by default', () => {
             renderSlider(5);
@@ -223,7 +222,7 @@ function spyOnWarn() {
     return spy;
 }
 
-/** The element that takes the slider's `domAttrs`, around the Blueprint slider. */
+/** The element that takes the slider's `domAttrs`, around the inner slider. */
 function wrapper(): HTMLElement {
     return document.querySelector('.xh-slider');
 }

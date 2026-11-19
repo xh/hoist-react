@@ -33,7 +33,7 @@ interface PartitionState {
  *
  * A one-pixel spacer ends the row. While it is squeezed to nothing, items overflow, so a binary
  * search moves items to or from the overflow until the rest just fit. The search runs again when
- * the row resizes or its items change. Ports Blueprint's `OverflowList`, with its class names.
+ * the row resizes or its items change. Renders Blueprint's `OverflowList` class names.
  * @internal
  */
 export const overflowList = hoistCmp.factory<OverflowListProps>({
@@ -66,7 +66,7 @@ export const overflowList = hoistCmp.factory<OverflowListProps>({
                         !exhausted;
 
                 if (!shrink && !grow) {
-                    // Settled - return the same state when nothing changes, so this does not re-render.
+                    // Settled - return the same state when nothing changes, to skip a re-render.
                     const chopSize = halve(items.length);
                     return s.repartitioning || s.chopSize !== chopSize || s.lastChopSize != null
                         ? {...s, chopSize, lastChopSize: null, repartitioning: false}

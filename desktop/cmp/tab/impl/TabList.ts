@@ -25,7 +25,7 @@ export interface TabListProps {
 /**
  * The strip of tabs in a `TabSwitcher`. Arrow keys move focus between enabled tabs, and Enter or
  * Space selects the focused one. Renders the same elements, ids and class names as Blueprint's
- * `Tabs`, so its styles and any app CSS keyed to them still apply.
+ * `Tabs`, so its styles and app CSS keyed to them apply.
  * @internal
  */
 export const tabList = hoistCmp.factory<TabListProps>({

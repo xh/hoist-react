@@ -146,7 +146,7 @@ export abstract class BaseMembersModel extends HoistModel {
 }
 
 /**
- * A compact tag naming a role, with Blueprint's tag class names so its styles still apply.
+ * A compact tag naming a role, with Blueprint's tag class names so its styles apply.
  * @internal
  */
 export function roleTag({

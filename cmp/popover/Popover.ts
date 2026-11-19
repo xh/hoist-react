@@ -46,8 +46,8 @@ export const [Popover, popover] = hoistCmp.withFactory<PopoverProps>({
     render(props) {
         if (!XH.appSpec?.isMobileApp) return popoverImpl(props);
 
-        // Mobile keeps an outer element carrying the class names around the target wrapper, as
-        // mobile's own popover rendered before this shared one replaced it.
+        // On mobile, an outer element around the target wrapper carries the class names, for app
+        // CSS keyed to that structure.
         const {className, ...rest} = props;
         return createElement('div', {className}, popoverImpl({...MOBILE_DEFAULTS, ...rest}));
     }

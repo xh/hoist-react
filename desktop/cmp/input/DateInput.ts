@@ -116,7 +116,7 @@ export interface DateInputProps extends HoistProps, LayoutProps, HoistInputProps
     popoverBoundary?: PopoverBoundary;
 
     /**
-     * Popper.js modifiers for the calendar popover. No longer has any effect.
+     * Popper.js modifiers for the calendar popover. Has no effect.
      * @deprecated Use `popoverPosition` and `popoverBoundary` instead.
      */
     popoverModifiers?: PlainObject;

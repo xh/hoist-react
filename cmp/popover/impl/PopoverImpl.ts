@@ -59,7 +59,7 @@ import {popoverArrow, POPOVER_ARROW_SIZE} from './PopoverArrow';
 /** Gap kept between a popover and the edge of its boundary as it flips or shifts. */
 const VIEWPORT_PADDING = 8;
 
-/** Elements whose click closes the popover that holds them. Blueprint's class is still honored. */
+/** Elements whose click closes the popover that holds them, by Hoist's or Blueprint's class. */
 const DISMISS_SELECTOR = '.xh-popover-dismiss, .bp6-popover-dismiss';
 
 /** Options for Hoist's own components built on the popover, beyond the public `PopoverProps`. */
@@ -186,8 +186,8 @@ const popoverInner = hoistCmp.factory<PopoverImplProps>({
 
         useEffect(() => clearTimer, []);
 
-        // Close on a route change, so the app does not navigate underneath an open popover - e.g. via
-        // the browser's back button.
+        // Close on a route change, such as from the browser's back button, so the app does not
+        // navigate underneath an open popover.
         useEffect(() => {
             if (!open) return;
             return reaction(
@@ -238,7 +238,7 @@ const popoverInner = hoistCmp.factory<PopoverImplProps>({
         //------------------------
         const click = useClick(context, {enabled: !isHover && !disabled, keyboardHandlers: false}),
             dismiss = useDismiss(context, {
-                // Escape is handled in `onFloatingKeyDown`, so it can stop propagation to any enclosing
+                // `onFloatingKeyDown` handles Escape, so it can stop propagation to any enclosing
                 // overlay and close only the innermost popover per keystroke.
                 escapeKey: false,
                 outsidePress:
@@ -257,7 +257,7 @@ const popoverInner = hoistCmp.factory<PopoverImplProps>({
                 (e.key === 'ArrowDown' || e.key === 'ArrowUp') &&
                 e.target === e.currentTarget
             ) {
-                // Focus is on the popover itself, as after opening. Arrow keys enter a menu within it.
+                // Focus is on the popover itself, as after opening. Arrow keys enter a menu in it.
                 const items = e.currentTarget.querySelectorAll<HTMLElement>(
                     '[role=menuitem]:not([aria-disabled=true])'
                 );

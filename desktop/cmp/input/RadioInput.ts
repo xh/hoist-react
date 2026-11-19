@@ -94,7 +94,7 @@ const cmp = hoistCmp.factory<RadioInputModel>(({model, className, ...props}, ref
         alignIndicator = labelSide === 'left' ? 'right' : 'left',
         name = useId();
 
-    // Blueprint's class names are kept, so its styles and any app CSS keyed to them still apply.
+    // Blueprint's class names are kept, so its styles and app CSS keyed to them apply.
     return createElement(
         'div',
         {
