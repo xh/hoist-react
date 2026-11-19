@@ -100,6 +100,8 @@ detailed, step-by-step upgrade instructions with before/after code examples.
   now shows its "No model found" placeholder.
 * Fixed `ViewportSizeModel` occasionally throwing at startup in a browser with no orientation API,
   when it checked orientation before its first measure. It now measures the viewport at once.
+* Fixed `XH.installServicesAsync()` creating and initializing a new instance of a service that was
+  already installed, before it threw. It now rejects a duplicate before creating any instance.
 
 ### ⚙️ Technical
 
