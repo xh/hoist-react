@@ -259,7 +259,7 @@ const popoverInner = hoistCmp.factory<PopoverImplProps>({
                 const target = e.target as Element,
                     dismissEl = target.closest(DISMISS_SELECTOR),
                     isDisabled = target.closest(
-                        ':disabled, .bp6-disabled, .xh-control--disabled, [aria-disabled=true]'
+                        ':disabled, [aria-disabled=true], .xh-control--disabled, .xh-input-group--disabled, .xh-slider__body--disabled'
                     );
                 if (dismissEl && !isDisabled) setOpen(false, e);
             };

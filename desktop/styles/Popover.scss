@@ -157,12 +157,6 @@ span.xh-popover__target-wrapper {
 .xh-tooltip {
   color: var(--bp-typography-color-default-rest);
 }
-.xh-tooltip .bp6-text-disabled {
-  color: rgba(171, 179, 191, 0.6);
-}
-.xh-tooltip .bp6-running-text hr {
-  border-color: rgba(255, 255, 255, 0.2);
-}
 .xh-tooltip a {
   color: #8abbff;
 }
@@ -170,18 +164,6 @@ span.xh-popover__target-wrapper {
   color: #8abbff;
 }
 .xh-tooltip a code {
-  color: inherit;
-}
-.xh-tooltip .bp6-code-block,
-.xh-tooltip .bp6-running-text pre {
-  background: rgba(17, 20, 24, 0.3);
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.2);
-  color: #f6f7f9;
-}
-.xh-tooltip .bp6-code-block > code,
-.xh-tooltip .bp6-running-text pre > code {
-  background: none;
-  box-shadow: none;
   color: inherit;
 }
 .xh-tooltip .xh-popover__content {
@@ -216,12 +198,6 @@ span.xh-popover__target-wrapper {
     border: 1px solid buttonborder;
   }
 }
-.xh-dark .xh-tooltip .bp6-text-disabled {
-  color: rgba(95, 107, 124, 0.6);
-}
-.xh-dark .xh-tooltip .bp6-running-text hr {
-  border-color: rgba(17, 20, 24, 0.15);
-}
 .xh-dark .xh-tooltip a {
   color: #215db0;
 }
@@ -230,25 +206,6 @@ span.xh-popover__target-wrapper {
 }
 .xh-dark .xh-tooltip a code {
   color: inherit;
-}
-.xh-dark .xh-tooltip .bp6-code-block,
-.xh-dark .xh-tooltip .bp6-running-text pre {
-  background: rgba(255, 255, 255, 0.7);
-  box-shadow: inset 0 0 0 1px rgba(17, 20, 24, 0.15);
-  color: #1c2127;
-}
-.xh-dark .xh-tooltip .bp6-code-block > code,
-.xh-dark .xh-tooltip .bp6-running-text pre > code {
-  background: none;
-  box-shadow: none;
-  color: inherit;
-}
-@media (forced-colors: active) and (prefers-color-scheme: dark) {
-  .xh-dark .xh-tooltip .bp6-code-block,
-  .xh-dark .xh-tooltip .bp6-running-text pre {
-    border: 1px solid buttonborder;
-    box-shadow: none;
-  }
 }
 .xh-tooltip.xh-tooltip--intent-primary .xh-popover__content {
   background: #2d72d2;
@@ -330,12 +287,6 @@ span.xh-popover__target-wrapper {
 .xh-tooltip {
   color: var(--bp-typography-color-default-rest);
 }
-.xh-tooltip .bp6-text-disabled {
-  color: rgba(171, 179, 191, 0.6);
-}
-.xh-tooltip .bp6-running-text hr {
-  border-color: rgba(255, 255, 255, 0.2);
-}
 .xh-tooltip a {
   color: #8abbff;
 }
@@ -343,18 +294,6 @@ span.xh-popover__target-wrapper {
   color: #8abbff;
 }
 .xh-tooltip a code {
-  color: inherit;
-}
-.xh-tooltip .bp6-code-block,
-.xh-tooltip .bp6-running-text pre {
-  background: rgba(17, 20, 24, 0.3);
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.2);
-  color: #f6f7f9;
-}
-.xh-tooltip .bp6-code-block > code,
-.xh-tooltip .bp6-running-text pre > code {
-  background: none;
-  box-shadow: none;
   color: inherit;
 }
 .xh-tooltip .xh-popover__content {
@@ -389,12 +328,6 @@ span.xh-popover__target-wrapper {
     border: 1px solid buttonborder;
   }
 }
-.xh-dark .xh-tooltip .bp6-text-disabled {
-  color: rgba(95, 107, 124, 0.6);
-}
-.xh-dark .xh-tooltip .bp6-running-text hr {
-  border-color: rgba(17, 20, 24, 0.15);
-}
 .xh-dark .xh-tooltip a {
   color: #215db0;
 }
@@ -403,25 +336,6 @@ span.xh-popover__target-wrapper {
 }
 .xh-dark .xh-tooltip a code {
   color: inherit;
-}
-.xh-dark .xh-tooltip .bp6-code-block,
-.xh-dark .xh-tooltip .bp6-running-text pre {
-  background: rgba(255, 255, 255, 0.7);
-  box-shadow: inset 0 0 0 1px rgba(17, 20, 24, 0.15);
-  color: #1c2127;
-}
-.xh-dark .xh-tooltip .bp6-code-block > code,
-.xh-dark .xh-tooltip .bp6-running-text pre > code {
-  background: none;
-  box-shadow: none;
-  color: inherit;
-}
-@media (forced-colors: active) and (prefers-color-scheme: dark) {
-  .xh-dark .xh-tooltip .bp6-code-block,
-  .xh-dark .xh-tooltip .bp6-running-text pre {
-    border: 1px solid buttonborder;
-    box-shadow: none;
-  }
 }
 .xh-tooltip.xh-tooltip--intent-primary .xh-popover__content {
   background: #2d72d2;
@@ -535,10 +449,6 @@ span.xh-popover__target-wrapper {
     overflow-wrap: break-word;
   }
 
-  .bp6-heading {
-    color: inherit;
-  }
-
   // Arrow border and fill match the tooltip border and background.
   .xh-popover__arrow::before {
     box-shadow: none;
@@ -554,25 +464,7 @@ span.xh-popover__target-wrapper {
     fill: var(--xh-tooltip-bg);
   }
 
-  // BP inverts typography colors within tooltips as well - restyle text, key combos, code, and links
-  // to follow the theme.
-  .bp6-text-muted {
-    color: var(--xh-text-color-muted);
-  }
-
-  .bp6-key {
-    color: var(--xh-tooltip-text-color);
-    background: var(--xh-bg);
-    // Inset, so that a container sized to the key does not clip the ring.
-    box-shadow: inset 0 0 0 1px var(--xh-border-color);
-  }
-
-  .bp6-code {
-    color: var(--xh-tooltip-text-color);
-    background: var(--xh-bg-alt);
-    box-shadow: inset 0 0 0 1px var(--xh-border-color);
-  }
-
+  // Blueprint inverts link colors within tooltips - follow the theme instead.
   a,
   a:hover {
     color: #215db0;

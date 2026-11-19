@@ -67,7 +67,10 @@ file is the working guide.
 - [x] `Toolbar` overflow and `AppBar`. No visual change.
 - [x] Theme and focus style toggles. No visual change. `BlueprintBase.css` keys on `xh-dark` and
       `xh-focus-disabled` now, and Blueprint's focus-manager ignore class is gone - Hoist never set it.
-- [ ] Every other stylesheet in the inventory's "Stylesheets with `bp6-*` selectors" list.
+- [x] Every other stylesheet in the inventory's "Stylesheets with `bp6-*` selectors" list. Only
+      `BlueprintBase.css` and `BlueprintOverrides.scss` are left. Tooltip rules for Blueprint's
+      typography classes in app content (`bp6-code`, `bp6-key`, `bp6-running-text` and the like) are
+      gone - list them in the upgrade notes as classes apps must restyle.
 - [ ] No `--bp-*` custom properties left.
 - [ ] Delete `desktop/styles/BlueprintBase.css` and `desktop/styles/BlueprintOverrides.scss`, and
       their imports in `desktop/register.ts`. Re-run `inventory.mjs` - its class table should be

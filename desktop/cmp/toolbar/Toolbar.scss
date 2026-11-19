@@ -147,7 +147,7 @@
         }
 
         // Inline input icons made smaller, lighter, and alignment tweaked.
-        svg:not(.bp6-icon) {
+        svg {
           font-size: var(--xh-toolbar-compact-font-size);
           margin: 5px 2px 5px 4px;
           opacity: 0.6;
