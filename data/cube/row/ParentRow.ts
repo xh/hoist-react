@@ -200,6 +200,19 @@ export abstract class ParentRow extends BaseRow {
         return changed;
     }
 
+    /**
+     * Re-aggregate the given fields in place, returning true if any value changed.
+     * @internal
+     */
+    refreshAggregates(fields: CubeField[]): boolean {
+        let changed = false;
+        fields.forEach(field => {
+            if (this.aggFieldNames.has(field.name) && this.recomputeAggregate(field))
+                changed = true;
+        });
+        return changed;
+    }
+
     // Re-aggregate a single field in place, returning true if anything our parent aggregates over
     // changed - the published value, or the aggregator state a parent composes from, which may
     // differ behind an unchanged value.
@@ -250,6 +263,18 @@ export class AggregateRow extends ParentRow {
     /** The dimension for which this row is aggregating data. Null for a top-level summary row. */
     readonly dim: CubeField = null;
     readonly dimName: string = null;
+
+    /**
+     * Values of the dimensions applied at this row, by name - empty for a summary row.
+     * @internal
+     */
+    get appliedDims(): PlainObject {
+        const ret = {};
+        this.view.query.dimensions?.slice(0, this.depth).forEach(({name}) => {
+            ret[name] = this.data[name];
+        });
+        return ret;
+    }
 
     protected get dimOrBucketName(): string {
         return this.dimName;

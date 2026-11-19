@@ -80,6 +80,7 @@ const cube = new Cube({
 | `'NULL'` | Always null - for fields that should not be aggregated |
 | `'LEAF_COUNT'` | Count of leaf records |
 | `'CHILD_COUNT'` | Count of immediate children |
+| `'SUPPLIED'` | The value supplied to the Cube for the group - see [Supplied Aggregates](#supplied-aggregates) |
 | `WeightedAverageAggregator` | Average weighted by a second field, e.g. price by quantity |
 | `SumIfSameAggregator` | Total only if all leaves with a value share a second field, such as a currency |
 
@@ -93,6 +94,30 @@ A field is never aggregated at or below the level at which it is applied as a di
 there publish the dimension value, and rows above aggregate over those values, one per grouped row.
 `MIN`, `MAX` and `UNIQUE` remain meaningful for such a field; `SUM` and `AVG` do not. To average a
 field you also group by, add a second measure field over the same value.
+
+## Supplied Aggregates
+
+Some measures only the data source can roll up, such as VaR, or a return over a window. Give such a
+field the `'SUPPLIED'` aggregator, and pass its group values to the Cube as `SuppliedAggregate`s:
+each one a `dims` object of the dimension values that define a group, and the `values` for that
+group by field name. `{dims: {}}` is the grand total.
+
+```typescript
+await cube.loadDataAsync(rows, {}, [
+    {dims: {}, values: {var95: 1.4e6}},
+    {dims: {fund: 'Alpha'}, values: {var95: 9.1e5}},
+    {dims: {fund: 'Alpha', strategy: 'Macro'}, values: {var95: 4.2e5}}
+]);
+```
+
+* A group row reads the entry for the dimensions applied at its level, in any order - the
+  `{fund, strategy}` entry above serves a View grouped by strategy, then fund, too. Leaf rows keep
+  their own values. A row with no entry shows null.
+* A load replaces all supplied values. `updateDataAsync()` takes them with data changes, and
+  `updateAggregatesAsync()` alone. Both merge into existing entries field by field.
+* `View.suppliedGroupingSets` lists the sets of dimensions whose values a View reads - use it to
+  ask the data source for what the View needs. Single-value `=` clauses in a View's filter add
+  their dimensions to each set. Any other filter, or a pivot, leaves the View's group rows null.
 
 ## Custom Aggregators
 

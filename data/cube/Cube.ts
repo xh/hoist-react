@@ -11,7 +11,7 @@ import {instanceManager} from '@xh/hoist/core/impl/InstanceManager';
 import {action, observableRef} from '@xh/hoist/mobx';
 import {forEachAsync} from '@xh/hoist/utils/async';
 import {throwIf} from '@xh/hoist/utils/js';
-import {defaultsDeep, isArray, isEmpty} from 'lodash';
+import {defaultsDeep, isArray, isEmpty, mapValues, sortBy, toPairs} from 'lodash';
 import type {StoreConfig, StoreRecordIdSpec, StoreTransaction} from '../Store';
 import {Store} from '../Store';
 import type {RecordSetDelta} from '../impl/RecordSet';
@@ -24,6 +24,23 @@ import {Query} from './Query';
 import type {ViewRow} from './ViewRow';
 import {View} from './View';
 import type {ViewRowData} from './ViewRowData';
+
+/**
+ * Values supplied for one group of a Cube's leaves, read by fields with a
+ * {@link SuppliedAggregator}. A View's group row reads the entry whose `dims` match the values of
+ * the dimensions applied at that row, plus any its filter folds in - see
+ * {@link View.suppliedGroupingSets}. The grouping order does not matter.
+ */
+export interface SuppliedAggregate {
+    /**
+     * Dimension values that define the group, as raw data - parsed by each field's type. Empty for
+     * the grand total. A null value matches the group of leaves with no value.
+     */
+    dims: PlainObject;
+
+    /** Values by field name, for fields with a SuppliedAggregator. */
+    values: PlainObject;
+}
 
 /**
  * Configuration for a {@link Cube}. Provide `fields` (including at least one dimension
@@ -182,6 +199,9 @@ export class Cube extends HoistBase {
     @observableRef accessor info: any = null;
 
     _connectedViews: Set<View> = new Set();
+
+    // Values of supplied aggregates, by the key of their dimension values.
+    private _supplied = new Map<string, PlainObject>();
 
     constructor({
         fields,
@@ -349,10 +369,13 @@ export class Cube extends HoistBase {
      *
      * @param rawData - flat array of lowest/leaf level data rows, or a streaming source of same.
      * @param info - optional metadata to associate with this cube/dataset.
+     * @param aggregates - values for fields with a {@link SuppliedAggregator}. Replace all
+     *      previously supplied values - a load without them clears those values.
      */
     async loadDataAsync(
         rawData: PlainObject[] | AnyIterable<PlainObject>,
-        info: PlainObject = {}
+        info: PlainObject = {},
+        aggregates: SuppliedAggregate[] = null
     ): Promise<void> {
         const {store} = this,
             prevRecords = store._filtered;
@@ -362,14 +385,17 @@ export class Cube extends HoistBase {
             await store.loadDataAsync(rawData);
         }
         this.setInfo(info);
+        this._supplied.clear();
+        this.mergeSupplied(aggregates);
 
         // Sync views incrementally on no-change loads and cheaply derivable deltas - see deltaFrom.
         const {_filtered} = store,
             unchanged = _filtered === prevRecords,
             delta = unchanged ? null : _filtered.deltaFrom(prevRecords);
-        await forEachAsync(this._connectedViews, v =>
-            unchanged || delta ? v.noteCubeUpdated(delta) : v.noteCubeLoaded()
-        );
+        await forEachAsync(this._connectedViews, v => {
+            unchanged || delta ? v.noteCubeUpdated(delta) : v.noteCubeLoaded();
+            v.noteSuppliedAggregatesChanged();
+        });
     }
 
     /**
@@ -382,10 +408,13 @@ export class Cube extends HoistBase {
      * @param rawData - data changes to process. If provided as an array, rawData will be processed
      *      into adds and updates, with updates determined by matching existing records by ID.
      * @param infoUpdates - new key-value pairs to be applied to existing info on this cube.
+     * @param aggregates - values for fields with a {@link SuppliedAggregator}, merged as by
+     *      {@link updateAggregatesAsync} and applied to views along with the data changes.
      */
     async updateDataAsync(
         rawData: PlainObject[] | StoreTransaction,
-        infoUpdates: PlainObject = {}
+        infoUpdates: PlainObject = {},
+        aggregates: SuppliedAggregate[] = null
     ): Promise<void> {
         // 1) Process data
         const changeLog = this.store.updateData(rawData);
@@ -394,12 +423,35 @@ export class Cube extends HoistBase {
         const hasInfoUpdates = !isEmpty(infoUpdates);
         if (hasInfoUpdates) this.setInfo({...this.info, ...infoUpdates});
 
-        // 3) Notify connected views
-        if (changeLog || hasInfoUpdates) {
-            await forEachAsync(this._connectedViews, v =>
-                v.noteCubeUpdated(changeLog as RecordSetDelta)
-            );
+        // 3) Process supplied aggregates
+        const hasAggregates = !isEmpty(aggregates);
+        this.mergeSupplied(aggregates);
+
+        // 4) Notify connected views
+        if (changeLog || hasInfoUpdates || hasAggregates) {
+            await forEachAsync(this._connectedViews, v => {
+                if (changeLog || hasInfoUpdates) v.noteCubeUpdated(changeLog as RecordSetDelta);
+                if (hasAggregates) v.noteSuppliedAggregatesChanged();
+            });
         }
+    }
+
+    /**
+     * Update the values read by fields with a {@link SuppliedAggregator}, and apply them to
+     * connected views. Each entry merges into any existing entry for the same dimension values,
+     * field by field.
+     */
+    async updateAggregatesAsync(aggregates: SuppliedAggregate[]): Promise<void> {
+        await this.updateDataAsync([], {}, aggregates);
+    }
+
+    /**
+     * The supplied value of a field for a group of leaves, or null if none was supplied.
+     * @param dims - dimension values that define the group, parsed by field type.
+     * @internal
+     */
+    _getSuppliedValue(dims: PlainObject, fieldName: string): any {
+        return this._supplied.get(suppliedKey(dims))?.[fieldName] ?? null;
     }
 
     /**
@@ -422,6 +474,14 @@ export class Cube extends HoistBase {
                 v.noteCubeUpdated(changeLog as RecordSetDelta)
             );
         }
+    }
+
+    private mergeSupplied(aggregates: SuppliedAggregate[]) {
+        aggregates?.forEach(({dims, values}) => {
+            const parsed = mapValues(dims, (v, name) => this.getField(name)?.parseVal(v) ?? v),
+                key = suppliedKey(parsed);
+            this._supplied.set(key, {...this._supplied.get(key), ...values});
+        });
     }
 
     /** Clear any/all data and info from this Cube. */
@@ -476,4 +536,9 @@ export class Cube extends HoistBase {
         this._connectedViews.forEach(v => v.disconnect());
         super.destroy();
     }
+}
+
+// Order-insensitive key for a set of parsed dimension values - LocalDates serialize by `toJSON`.
+function suppliedKey(dims: PlainObject): string {
+    return JSON.stringify(sortBy(toPairs(dims), 0));
 }

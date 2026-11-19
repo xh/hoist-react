@@ -23,14 +23,15 @@ import type {
     StoreRecord,
     StoreRecordId
 } from '@xh/hoist/data';
-import {Cube, Store} from '@xh/hoist/data';
+import {CompoundFilter, Cube, FieldFilter, Store} from '@xh/hoist/data';
 import type {ViewRowData} from '@xh/hoist/data/cube/ViewRowData';
 import {VIEW_ROW_DATA_FIELDS} from '@xh/hoist/data/cube/ViewRowData';
 import {ViewDiagnostics} from './impl/ViewDiagnostics';
 import {action, observable, observableRef} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
-import {castArray, forEach, groupBy, isEmpty, isNil, map} from 'lodash';
+import {castArray, forEach, groupBy, isEmpty, isNil, map, sortBy, uniq, uniqBy} from 'lodash';
 import {AggregationContext} from './aggregate/AggregationContext';
+import {SuppliedAggregator} from './aggregate/SuppliedAggregator';
 import {PivotCells} from './pivot/impl/PivotCells';
 import {RowCache} from './impl/RowCache';
 import {RowDataGenerator} from './impl/RowDataGenerator';
@@ -38,6 +39,7 @@ import type {PivotCellField, PivotPath} from './pivot/PivotPath';
 import {BaseRow} from './row/BaseRow';
 import type {LeafRow, LeafUpdateChanges} from './row/LeafRow';
 import {ExposedLeafRow, HiddenLeafRow} from './row/LeafRow';
+import type {ParentRow} from './row/ParentRow';
 import {AggregateRow, BucketRow} from './row/ParentRow';
 import type {RecordSet, RecordSetDelta} from '../impl/RecordSet';
 
@@ -219,6 +221,11 @@ export class View
     _aggContext: AggregationContext = null;
     _rowCache: RowCache = null;
 
+    // Fields with a SuppliedAggregator, and the dimension values the query filter fixes for every
+    // group - null if the filter cannot be expressed as such.
+    private _suppliedFields: CubeField[] = null;
+    private _suppliedFilterDims: PlainObject = null;
+
     /** @internal - applications should use {@link Cube.createView} */
     constructor(config: ViewConfig) {
         super();
@@ -263,6 +270,34 @@ export class View
 
     get isConnected(): boolean {
         return this.cube.viewIsConnected(this);
+    }
+
+    /**
+     * The grouping sets for which this View reads supplied aggregates - see
+     * {@link SuppliedAggregate}. Each set lists, in sorted order, the dimensions whose values
+     * define a group row at one level: the query's dimensions down to that level, plus the
+     * dimension of each single-value `=` clause in the query's filter. The filter's dimensions
+     * stand in for the filter, so the grand total of a View filtered to `sector = Tech` reads the
+     * value supplied for `{sector: 'Tech'}`. The sets start with the grand total, if the query
+     * includes the root.
+     *
+     * Null if the filter holds anything else - an OR, a list of values, another operator or a
+     * clause on a field that is not a dimension - or if the query is pivoted. Such a View's group
+     * rows read no supplied values, and show null.
+     */
+    get suppliedGroupingSets(): string[][] {
+        const filterDims = this._suppliedFilterDims;
+        if (!filterDims) return null;
+
+        const dimNames = map(this.query.dimensions, 'name'),
+            filterDimNames = Object.keys(filterDims),
+            levels = dimNames.map((it, idx) => dimNames.slice(0, idx + 1));
+        if (this.query.includeRoot) levels.unshift([]);
+
+        return uniqBy(
+            levels.map(it => sortBy(uniq([...it, ...filterDimNames]))),
+            it => it.join()
+        );
     }
 
     get isFiltered(): boolean {
@@ -416,6 +451,45 @@ export class View
         return this.cube.store.getValuesForFieldFilter(fieldName, filter);
     }
 
+    /**
+     * Re-read supplied aggregates on all group rows, pushing rows whose values changed to
+     * connected stores.
+     * @internal - called by Cube when its supplied aggregates change.
+     */
+    noteSuppliedAggregatesChanged() {
+        const {_suppliedFields, _rootRows} = this;
+        if (isEmpty(_suppliedFields) || isEmpty(_rootRows) || this.result?.exception) return;
+
+        const changed = new Set<BaseRow>(),
+            refresh = (rows: BaseRow[]) =>
+                rows.forEach(row => {
+                    if (row.isLeaf) return;
+                    if ((row as ParentRow).refreshAggregates(_suppliedFields)) changed.add(row);
+                    refresh(row.children);
+                });
+        refresh(_rootRows);
+        if (!changed.size) return;
+
+        changed.forEach(row => BaseRow.assignDigest(row.data as ViewRowData));
+        const fieldNames = new Set(map(_suppliedFields, 'name')),
+            rows = this._pivot ? this._pivot.projectUpdatedRows(changed, fieldNames) : changed;
+        this.loadUpdatedRows(rows, fieldNames);
+        this.updateResults();
+    }
+
+    /**
+     * The supplied value of a field for a group row - see {@link SuppliedAggregator}.
+     * @internal
+     */
+    _getSuppliedValue(row: ParentRow, fieldName: string): any {
+        const filterDims = this._suppliedFilterDims;
+        if (!filterDims || !row?.isAggregate) return null;
+        return this.cube._getSuppliedValue(
+            {...filterDims, ...(row as AggregateRow).appliedDims},
+            fieldName
+        );
+    }
+
     //------------------------
     // Implementation
     //------------------------
@@ -482,8 +556,34 @@ export class View
             fields.filter(it => !it.aggregator.dependsOnChildrenOnly)
         );
 
+        this._suppliedFields = this.fields.filter(
+            it => it.aggregator instanceof SuppliedAggregator
+        );
+        this._suppliedFilterDims = query.isPivoted ? null : this.foldFilterDims(query.filter);
+
         if (query.pivot) this._pivot ??= new PivotCells(this);
         this._pivot?.buildIndices();
+    }
+
+    // The dimension values fixed by single-value `=` clauses joined by AND - null for any other filter.
+    private foldFilterDims(filter: Filter): PlainObject {
+        if (!filter) return {};
+        if (FieldFilter.isFieldFilter(filter)) {
+            const field = this.cube.getField(filter.field),
+                values = castArray(filter.value);
+            if (filter.op !== '=' || !field?.isDimension || values.length !== 1) return null;
+            return {[field.name]: field.parseVal(values[0])};
+        }
+        if (CompoundFilter.isCompoundFilter(filter) && filter.op === 'AND') {
+            const ret = {};
+            for (const it of filter.filters) {
+                const dims = this.foldFilterDims(it);
+                if (!dims) return null;
+                Object.assign(ret, dims);
+            }
+            return ret;
+        }
+        return null;
     }
 
     private fullUpdate(trigger: 'load' | 'update' | 'query', start: number) {

@@ -21,6 +21,7 @@ import {
     SingleAggregator,
     SumAggregator,
     SumStrictAggregator,
+    SuppliedAggregator,
     UniqueAggregator
 } from '@xh/hoist/data';
 import {isString} from 'lodash';
@@ -73,6 +74,7 @@ export type AggregatorToken =
     | 'SINGLE'
     | 'SUM'
     | 'SUM_STRICT'
+    | 'SUPPLIED'
     | 'UNIQUE';
 
 /**
@@ -112,6 +114,7 @@ export class CubeField extends Field {
     static singleAggregator = new SingleAggregator();
     static sumAggregator = new SumAggregator();
     static sumStrictAggregator = new SumStrictAggregator();
+    static suppliedAggregator = new SuppliedAggregator();
     static uniqueAggregator = new UniqueAggregator();
 
     constructor({
@@ -160,6 +163,8 @@ export class CubeField extends Field {
                     return CubeField.sumAggregator;
                 case 'SUM_STRICT':
                     return CubeField.sumStrictAggregator;
+                case 'SUPPLIED':
+                    return CubeField.suppliedAggregator;
                 case 'UNIQUE':
                     return CubeField.uniqueAggregator;
             }

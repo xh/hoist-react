@@ -77,6 +77,10 @@ detailed, step-by-step upgrade instructions with before/after code examples.
   `buildUrl()` with a name that may not be registered, as both throw for an unknown route.
 * Added `DashCanvasModel.setViewSpecs()` to replace a canvas's view specs at any time. It removes
   views whose spec is gone. Call `loadState()` next to place views of new specs.
+* Added the `SUPPLIED` Cube aggregator, for measures only the data source can roll up, such as VaR.
+  Its group rows read values passed to `Cube.loadDataAsync()`, `updateDataAsync()` or the new
+  `updateAggregatesAsync()`, keyed by the group's dimension values. `View.suppliedGroupingSets`
+  lists the groupings a View needs values for.
 
 ### 🐞 Bug Fixes
 

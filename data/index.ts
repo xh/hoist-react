@@ -34,6 +34,7 @@ export * from './cube/aggregate/SingleAggregator';
 export * from './cube/aggregate/SumAggregator';
 export * from './cube/aggregate/SumIfSameAggregator';
 export * from './cube/aggregate/SumStrictAggregator';
+export * from './cube/aggregate/SuppliedAggregator';
 export * from './cube/aggregate/UniqueAggregator';
 export * from './cube/aggregate/WeightedAverageAggregator';
 
