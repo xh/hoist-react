@@ -21,6 +21,8 @@ import {getLayoutProps, getNonLayoutProps} from '@xh/hoist/utils/react';
 import {TEST_ID} from '@xh/hoist/utils/js';
 import classNames from 'classnames';
 import {filter, isObject} from 'lodash';
+import type {FC, KeyboardEvent, ReactElement, ReactNode} from 'react';
+import {createElement as h, useRef} from 'react';
 import './SegmentedControl.scss';
 
 export interface SegmentedControlProps extends HoistProps, HoistInputProps {
@@ -89,9 +91,23 @@ export interface SegmentedControlProps extends HoistProps, HoistInputProps {
  *
  * Built on Blueprint's SegmentedControl component.
  */
-export const [SegmentedControl, segmentedControl] = hoistCmp.withFactory<SegmentedControlProps>({
+export interface SegmentedControlDefaults {
+    /**
+     * True to render desktop segmented controls with Blueprint's, as before Hoist had its own.
+     * For apps to fall back on while they adopt Hoist's - removed in the next major version.
+     */
+    useBlueprint?: boolean;
+}
+
+export const [SegmentedControl, segmentedControl] = hoistCmp.withFactory<
+    SegmentedControlProps,
+    SegmentedControlDefaults
+>({
     displayName: 'SegmentedControl',
     className: 'xh-segmented-control',
+    defaults: {
+        useBlueprint: false
+    },
     render(props, ref) {
         return useHoistInputModel(cmp, props, ref, SegmentedControlModel);
     }
@@ -233,7 +249,9 @@ const cmp = hoistCmp.factory<SegmentedControlModel>(({model, className, ...props
         ...getLayoutProps(props),
         [TEST_ID]: props.testId,
         ...domAttrs,
-        children: bpSegmentedControl({
+        children: (SegmentedControl.defaults.useBlueprint
+            ? bpSegmentedControl
+            : (p: SegmentedControlImplProps) => h(SegmentedControlImpl, p))({
             ...bpProps,
             fill,
             size: compact ? 'small' : undefined,
@@ -250,3 +268,112 @@ const cmp = hoistCmp.factory<SegmentedControlModel>(({model, className, ...props
         })
     });
 });
+
+//------------------------
+// Segments
+//------------------------
+interface SegmentSpec {
+    value: string;
+    label?: ReactNode;
+    icon?: ReactElement;
+    disabled?: boolean;
+    className?: string;
+    [attr: string]: any;
+}
+
+interface SegmentedControlImplProps {
+    options: SegmentSpec[];
+    value: string;
+    onValueChange: (value: string) => void;
+    disabled?: boolean;
+    fill?: boolean;
+    inline?: boolean;
+    size?: 'small';
+    [attr: string]: any;
+}
+
+/**
+ * The segments, as a radio group of buttons. Arrow keys move the selection, and only the selected
+ * segment is in the tab order. Renders the same elements and class names as Blueprint's
+ * `SegmentedControl`, so its styles and any app CSS keyed to them still apply.
+ */
+const SegmentedControlImpl: FC<SegmentedControlImplProps> = ({
+    options,
+    value,
+    onValueChange,
+    disabled,
+    fill,
+    inline,
+    size,
+    ...rest
+}) => {
+    const groupRef = useRef<HTMLDivElement>(null),
+        isAnySelected = options.some(it => it.value === value);
+
+    const onKeyDown = (e: KeyboardEvent) => {
+        const direction = ['ArrowLeft', 'ArrowUp'].includes(e.key)
+            ? -1
+            : ['ArrowRight', 'ArrowDown'].includes(e.key)
+              ? 1
+              : 0;
+        const focused = (document.activeElement as HTMLElement)?.closest('button');
+        if (!direction || !focused) return;
+        const buttons = Array.from(
+                groupRef.current.querySelectorAll<HTMLButtonElement>('button:not(:disabled)')
+            ),
+            idx = buttons.indexOf(focused);
+        if (idx < 0) return;
+        e.preventDefault();
+        const next = buttons[(idx + direction + buttons.length) % buttons.length];
+        next.click();
+        next.focus();
+    };
+
+    return h(
+        'div',
+        {
+            ...rest,
+            ref: groupRef,
+            role: 'radiogroup',
+            onKeyDown,
+            className: classNames('bp6-segmented-control', {
+                'bp6-fill': fill,
+                'bp6-inline': inline
+            })
+        },
+        ...options.map(
+            ({value: optValue, label, icon, disabled: optDisabled, className, ...attrs}, idx) => {
+                const isSelected = optValue === value,
+                    isDisabled = optDisabled || disabled,
+                    text = label ?? optValue;
+                return h(
+                    'button',
+                    {
+                        ...attrs,
+                        key: optValue,
+                        type: 'button',
+                        role: 'radio',
+                        'aria-checked': isSelected,
+                        tabIndex:
+                            !isDisabled && (isSelected || (idx === 0 && !isAnySelected)) ? 0 : -1,
+                        disabled: isDisabled,
+                        className: classNames(
+                            'bp6-button',
+                            {
+                                'bp6-disabled': isDisabled,
+                                'bp6-small': size === 'small',
+                                'bp6-minimal': !isSelected
+                            },
+                            className
+                        ),
+                        onClick: () => onValueChange(optValue)
+                    },
+                    icon ?? null,
+                    text == null || text === ''
+                        ? null
+                        : h('span', {className: 'bp6-button-text'}, text)
+                );
+            }
+        )
+    );
+};

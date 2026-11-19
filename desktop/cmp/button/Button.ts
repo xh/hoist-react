@@ -158,6 +158,8 @@ export const [Button, button] = hoistCmp.withFactory<ButtonProps, ButtonDefaults
             {
                 type: 'button',
                 ...sharedProps,
+                // As Blueprint's button, a disabled button is taken out of the tab order.
+                tabIndex: disabled ? -1 : sharedProps.tabIndex,
                 ref,
                 className: classNames(
                     'bp6-button',
