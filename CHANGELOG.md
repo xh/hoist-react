@@ -76,6 +76,7 @@ detailed, step-by-step upgrade instructions with before/after code examples.
       from reaching what lies behind. Set `backdrop` to dim the page behind it on either platform.
     * Any popover now closes when the app's route changes, as mobile popovers did before.
     * `content` also takes a component or a function that returns an element.
+    * `offset` sets its distance from the target, in place of a Popper.js `offset` modifier.
 * Added `Tooltip` to `@xh/hoist/cmp/tooltip`, a hover `Popover` with tooltip defaults, on desktop
   and mobile. It takes an `intent` and `compact`, and opens on keyboard focus as well as hover.
 * Desktop `ButtonProps.tooltip` now takes a `ButtonTooltipConfig` as well as a string, for rich

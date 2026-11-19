@@ -70,9 +70,6 @@ export interface PopoverImplProps extends PopoverProps {
     /** Props for the backdrop, when `hasBackdrop` is set. */
     backdropProps?: HTMLAttributes<HTMLDivElement>;
 
-    /** Distance from the target, overriding the default for the arrow. */
-    offset?: {mainAxis?: number; crossAxis?: number};
-
     /** ARIA role of the popup - e.g. `tooltip`. */
     popupRole?: string;
 
