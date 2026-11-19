@@ -42,7 +42,7 @@
   position: absolute;
 }
 .xh-slider__track {
-  border-radius: var(--bp-surface-border-radius);
+  border-radius: 4px;
   overflow: hidden;
 }
 .xh-slider__progress {
@@ -69,32 +69,25 @@
   }
 }
 .xh-slider__handle {
-  background-color: color-mix(in srgb, var(--bp-intent-default-rest) 5%, var(--bp-palette-white));
+  background-color: color-mix(in srgb, #5f6b7c 5%, #fff);
   box-shadow:
-    inset 0 0 0 var(--bp-surface-border-width)
-      color-mix(in oklch, var(--bp-surface-border-color-strong) 90%, var(--bp-palette-black)),
-    0 1px 2px color-mix(in oklch, var(--bp-palette-black) 10%, transparent);
-  color: var(--bp-typography-color-default-rest);
+    inset 0 0 0 1px color-mix(in oklch, var(--xh-base-surface-border-color-strong) 90%, #111418),
+    0 1px 2px color-mix(in oklch, #111418 10%, transparent);
+  color: var(--xh-base-text-color);
 }
 .xh-slider__handle:hover {
   background-clip: padding-box;
-  background-color: color-mix(in srgb, var(--bp-intent-default-hover) 9%, var(--bp-palette-white));
+  background-color: color-mix(in srgb, #404854 9%, #fff);
   box-shadow:
-    inset 0 0 0 var(--bp-surface-border-width)
-      color-mix(in oklch, var(--bp-surface-border-color-strong) 90%, var(--bp-palette-black)),
-    0 1px 2px color-mix(in oklch, var(--bp-palette-black) 20%, transparent);
+    inset 0 0 0 1px color-mix(in oklch, var(--xh-base-surface-border-color-strong) 90%, #111418),
+    0 1px 2px color-mix(in oklch, #111418 20%, transparent);
 }
 .xh-slider__handle:active,
 .xh-slider__handle.xh-slider__handle--active {
-  background-color: color-mix(
-    in srgb,
-    var(--bp-intent-default-active) 16%,
-    var(--bp-palette-white)
-  );
+  background-color: color-mix(in srgb, #383e47 16%, #fff);
   box-shadow:
-    inset 0 0 0 var(--bp-surface-border-width)
-      color-mix(in oklch, var(--bp-surface-border-color-strong) 90%, var(--bp-palette-black)),
-    0 1px 2px color-mix(in oklch, var(--bp-palette-black) 20%, transparent);
+    inset 0 0 0 1px color-mix(in oklch, var(--xh-base-surface-border-color-strong) 90%, #111418),
+    0 1px 2px color-mix(in oklch, #111418 20%, transparent);
 }
 @media (forced-colors: active) and (prefers-color-scheme: dark) {
   .xh-slider__handle:active,
@@ -103,15 +96,15 @@
   }
 }
 .xh-slider__handle:disabled {
-  background-color: color-mix(in srgb, var(--bp-intent-default-disabled) 20%, transparent);
+  background-color: color-mix(in srgb, #8f99a8 20%, transparent);
   box-shadow: none;
-  color: var(--bp-typography-color-default-disabled);
+  color: var(--xh-base-text-color-disabled);
   cursor: not-allowed;
   outline: none;
 }
 .xh-slider__handle:disabled.xh-slider__handle--active,
 .xh-slider__handle:disabled.xh-slider__handle--active:hover {
-  background-color: color-mix(in srgb, var(--bp-intent-default-disabled) 28%, transparent);
+  background-color: color-mix(in srgb, #8f99a8 28%, transparent);
 }
 @media (forced-colors: active) and (prefers-color-scheme: dark) {
   .xh-slider__handle {
@@ -119,7 +112,7 @@
   }
 }
 .xh-slider__handle {
-  border-radius: var(--bp-surface-border-radius);
+  border-radius: 4px;
   box-shadow:
     0 0 0 1px rgba(17, 20, 24, 0.5),
     0 1px 1px rgba(17, 20, 24, 0.5);
@@ -135,11 +128,10 @@
 }
 .xh-slider__handle:hover {
   background-clip: padding-box;
-  background-color: color-mix(in srgb, var(--bp-intent-default-hover) 9%, var(--bp-palette-white));
+  background-color: color-mix(in srgb, #404854 9%, #fff);
   box-shadow:
-    inset 0 0 0 var(--bp-surface-border-width)
-      color-mix(in oklch, var(--bp-surface-border-color-strong) 90%, var(--bp-palette-black)),
-    0 1px 2px color-mix(in oklch, var(--bp-palette-black) 20%, transparent);
+    inset 0 0 0 1px color-mix(in oklch, var(--xh-base-surface-border-color-strong) 90%, #111418),
+    0 1px 2px color-mix(in oklch, #111418 20%, transparent);
   box-shadow:
     0 0 0 1px rgba(17, 20, 24, 0.5),
     0 1px 2px rgba(17, 20, 24, 0.6);
@@ -147,15 +139,10 @@
   z-index: 2;
 }
 .xh-slider__handle.xh-slider__handle--active {
-  background-color: color-mix(
-    in srgb,
-    var(--bp-intent-default-active) 16%,
-    var(--bp-palette-white)
-  );
+  background-color: color-mix(in srgb, #383e47 16%, #fff);
   box-shadow:
-    inset 0 0 0 var(--bp-surface-border-width)
-      color-mix(in oklch, var(--bp-surface-border-color-strong) 90%, var(--bp-palette-black)),
-    0 1px 2px color-mix(in oklch, var(--bp-palette-black) 20%, transparent);
+    inset 0 0 0 1px color-mix(in oklch, var(--xh-base-surface-border-color-strong) 90%, #111418),
+    0 1px 2px color-mix(in oklch, #111418 20%, transparent);
 }
 @media (forced-colors: active) and (prefers-color-scheme: dark) {
   .xh-slider__handle.xh-slider__handle--active {
@@ -200,7 +187,7 @@
 }
 .xh-slider__handle .xh-slider__label {
   background: #404854;
-  border-radius: var(--bp-surface-border-radius);
+  border-radius: 4px;
   box-shadow:
     0 0 0 1px rgba(17, 20, 24, 0.1),
     0 20px 25px -5px rgba(0, 0, 0, 0.1),
@@ -276,7 +263,7 @@
   width: 16px;
 }
 .xh-slider__body.xh-slider__body--vertical .xh-slider__handle.xh-slider__handle--start {
-  border-bottom-right-radius: var(--bp-surface-border-radius);
+  border-bottom-right-radius: 4px;
   border-top-left-radius: 0;
 }
 .xh-slider__body.xh-slider__body--vertical
@@ -287,7 +274,7 @@
 .xh-slider__body.xh-slider__body--vertical .xh-slider__handle.xh-slider__handle--end {
   border-bottom-left-radius: 0;
   border-bottom-right-radius: 0;
-  border-top-left-radius: var(--bp-surface-border-radius);
+  border-top-left-radius: 4px;
   margin-bottom: 8px;
 }
 
@@ -360,7 +347,7 @@
 
       &.xh-slider__handle--start {
         border-top-left-radius: 0;
-        border-bottom-right-radius: var(--bp-surface-border-radius);
+        border-bottom-right-radius: 4px;
 
         .xh-slider__label {
           transform: translate(20px);
@@ -369,7 +356,7 @@
 
       &.xh-slider__handle--end {
         margin-bottom: 8px;
-        border-top-left-radius: var(--bp-surface-border-radius);
+        border-top-left-radius: 4px;
         border-bottom-left-radius: 0;
         border-bottom-right-radius: 0;
       }

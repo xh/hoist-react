@@ -27,7 +27,7 @@
 }
 .xh-button::before,
 .xh-button > * {
-  margin-right: calc(var(--bp-surface-spacing) * 2);
+  margin-right: calc(4px * 2);
 }
 .xh-button:empty::before,
 .xh-button > :last-child {
@@ -36,15 +36,15 @@
 .xh-button {
   align-items: center;
   border: none;
-  border-radius: var(--bp-surface-border-radius);
+  border-radius: 4px;
   cursor: pointer;
-  font-size: var(--bp-typography-size-body-medium);
+  font-size: 14px;
   justify-content: center;
-  padding: var(--bp-surface-spacing) calc(var(--bp-surface-spacing) * 2);
+  padding: 4px calc(4px * 2);
   text-align: left;
   vertical-align: middle;
-  min-height: calc(var(--bp-surface-spacing) * 7.5);
-  min-width: calc(var(--bp-surface-spacing) * 7.5);
+  min-height: calc(4px * 7.5);
+  min-width: calc(4px * 7.5);
 }
 .xh-button:empty {
   padding: 0 !important;
@@ -54,32 +54,25 @@
   cursor: not-allowed;
 }
 .xh-button.xh-button--intent-none {
-  background-color: color-mix(in srgb, var(--bp-intent-default-rest) 5%, var(--bp-palette-white));
+  background-color: color-mix(in srgb, #5f6b7c 5%, #fff);
   box-shadow:
-    inset 0 0 0 var(--bp-surface-border-width)
-      color-mix(in oklch, var(--bp-surface-border-color-strong) 90%, var(--bp-palette-black)),
-    0 1px 2px color-mix(in oklch, var(--bp-palette-black) 10%, transparent);
-  color: var(--bp-typography-color-default-rest);
+    inset 0 0 0 1px color-mix(in oklch, var(--xh-base-surface-border-color-strong) 90%, #111418),
+    0 1px 2px color-mix(in oklch, #111418 10%, transparent);
+  color: var(--xh-base-text-color);
 }
 .xh-button.xh-button--intent-none:hover {
   background-clip: padding-box;
-  background-color: color-mix(in srgb, var(--bp-intent-default-hover) 9%, var(--bp-palette-white));
+  background-color: color-mix(in srgb, #404854 9%, #fff);
   box-shadow:
-    inset 0 0 0 var(--bp-surface-border-width)
-      color-mix(in oklch, var(--bp-surface-border-color-strong) 90%, var(--bp-palette-black)),
-    0 1px 2px color-mix(in oklch, var(--bp-palette-black) 20%, transparent);
+    inset 0 0 0 1px color-mix(in oklch, var(--xh-base-surface-border-color-strong) 90%, #111418),
+    0 1px 2px color-mix(in oklch, #111418 20%, transparent);
 }
 .xh-button.xh-button--intent-none:active,
 .xh-button.xh-button--intent-none:is(.xh-button--active, .xh-popover__target--active) {
-  background-color: color-mix(
-    in srgb,
-    var(--bp-intent-default-active) 16%,
-    var(--bp-palette-white)
-  );
+  background-color: color-mix(in srgb, #383e47 16%, #fff);
   box-shadow:
-    inset 0 0 0 var(--bp-surface-border-width)
-      color-mix(in oklch, var(--bp-surface-border-color-strong) 90%, var(--bp-palette-black)),
-    0 1px 2px color-mix(in oklch, var(--bp-palette-black) 20%, transparent);
+    inset 0 0 0 1px color-mix(in oklch, var(--xh-base-surface-border-color-strong) 90%, #111418),
+    0 1px 2px color-mix(in oklch, #111418 20%, transparent);
 }
 @media (forced-colors: active) and (prefers-color-scheme: dark) {
   .xh-button.xh-button--intent-none:active,
@@ -89,9 +82,9 @@
 }
 .xh-button.xh-button--intent-none:disabled,
 .xh-button.xh-button--intent-none.xh-button--disabled {
-  background-color: color-mix(in srgb, var(--bp-intent-default-disabled) 20%, transparent);
+  background-color: color-mix(in srgb, #8f99a8 20%, transparent);
   box-shadow: none;
-  color: var(--bp-typography-color-default-disabled);
+  color: var(--xh-base-text-color-disabled);
   cursor: not-allowed;
   outline: none;
 }
@@ -108,7 +101,7 @@
     .xh-button--active,
     .xh-popover__target--active
   ):hover {
-  background-color: color-mix(in srgb, var(--bp-intent-default-disabled) 28%, transparent);
+  background-color: color-mix(in srgb, #8f99a8 28%, transparent);
 }
 @media (forced-colors: active) and (prefers-color-scheme: dark) {
   .xh-button.xh-button--intent-none {
@@ -116,39 +109,36 @@
   }
 }
 .xh-button.xh-button--intent-primary {
-  background-color: var(--bp-intent-primary-rest);
+  background-color: #2d72d2;
   box-shadow:
-    inset 0 0 0 var(--bp-surface-border-width)
-      color-mix(in oklch, var(--bp-surface-border-color-strong) 90%, var(--bp-palette-black)),
-    0 1px 2px color-mix(in oklch, var(--bp-palette-black) 10%, transparent);
-  color: var(--bp-intent-primary-foreground);
+    inset 0 0 0 1px color-mix(in oklch, var(--xh-base-surface-border-color-strong) 90%, #111418),
+    0 1px 2px color-mix(in oklch, #111418 10%, transparent);
+  color: #fff;
 }
 .xh-button.xh-button--intent-primary:hover,
 .xh-button.xh-button--intent-primary:active,
 .xh-button.xh-button--intent-primary:is(.xh-button--active, .xh-popover__target--active) {
-  color: var(--bp-intent-primary-foreground);
+  color: #fff;
 }
 .xh-button.xh-button--intent-primary:hover {
-  background-color: var(--bp-intent-primary-hover);
+  background-color: #215db0;
   box-shadow:
-    inset 0 0 0 var(--bp-surface-border-width)
-      color-mix(in oklch, var(--bp-surface-border-color-strong) 90%, var(--bp-palette-black)),
-    0 1px 2px color-mix(in oklch, var(--bp-palette-black) 20%, transparent);
+    inset 0 0 0 1px color-mix(in oklch, var(--xh-base-surface-border-color-strong) 90%, #111418),
+    0 1px 2px color-mix(in oklch, #111418 20%, transparent);
 }
 .xh-button.xh-button--intent-primary:active,
 .xh-button.xh-button--intent-primary:is(.xh-button--active, .xh-popover__target--active) {
-  background-color: var(--bp-intent-primary-active);
+  background-color: #184a90;
   box-shadow:
-    inset 0 0 0 var(--bp-surface-border-width)
-      color-mix(in oklch, var(--bp-surface-border-color-strong) 90%, var(--bp-palette-black)),
-    0 1px 2px color-mix(in oklch, var(--bp-palette-black) 20%, transparent);
+    inset 0 0 0 1px color-mix(in oklch, var(--xh-base-surface-border-color-strong) 90%, #111418),
+    0 1px 2px color-mix(in oklch, #111418 20%, transparent);
 }
 .xh-button.xh-button--intent-primary:disabled,
 .xh-button.xh-button--intent-primary.xh-button--disabled {
-  background-color: color-mix(in oklch, var(--bp-intent-primary-rest) 50%, transparent);
+  background-color: color-mix(in oklch, #2d72d2 50%, transparent);
   border-color: transparent;
   box-shadow: none;
-  color: color-mix(in oklch, var(--bp-intent-primary-foreground) 60%, transparent);
+  color: color-mix(in oklch, #fff 60%, transparent);
 }
 @media (forced-colors: active) and (prefers-color-scheme: dark) {
   .xh-button.xh-button--intent-primary:disabled,
@@ -164,39 +154,36 @@
   }
 }
 .xh-button.xh-button--intent-success {
-  background-color: var(--bp-intent-success-rest);
+  background-color: #238551;
   box-shadow:
-    inset 0 0 0 var(--bp-surface-border-width)
-      color-mix(in oklch, var(--bp-surface-border-color-strong) 90%, var(--bp-palette-black)),
-    0 1px 2px color-mix(in oklch, var(--bp-palette-black) 10%, transparent);
-  color: var(--bp-intent-success-foreground);
+    inset 0 0 0 1px color-mix(in oklch, var(--xh-base-surface-border-color-strong) 90%, #111418),
+    0 1px 2px color-mix(in oklch, #111418 10%, transparent);
+  color: #fff;
 }
 .xh-button.xh-button--intent-success:hover,
 .xh-button.xh-button--intent-success:active,
 .xh-button.xh-button--intent-success:is(.xh-button--active, .xh-popover__target--active) {
-  color: var(--bp-intent-success-foreground);
+  color: #fff;
 }
 .xh-button.xh-button--intent-success:hover {
-  background-color: var(--bp-intent-success-hover);
+  background-color: #1c6e42;
   box-shadow:
-    inset 0 0 0 var(--bp-surface-border-width)
-      color-mix(in oklch, var(--bp-surface-border-color-strong) 90%, var(--bp-palette-black)),
-    0 1px 2px color-mix(in oklch, var(--bp-palette-black) 20%, transparent);
+    inset 0 0 0 1px color-mix(in oklch, var(--xh-base-surface-border-color-strong) 90%, #111418),
+    0 1px 2px color-mix(in oklch, #111418 20%, transparent);
 }
 .xh-button.xh-button--intent-success:active,
 .xh-button.xh-button--intent-success:is(.xh-button--active, .xh-popover__target--active) {
-  background-color: var(--bp-intent-success-active);
+  background-color: #165a36;
   box-shadow:
-    inset 0 0 0 var(--bp-surface-border-width)
-      color-mix(in oklch, var(--bp-surface-border-color-strong) 90%, var(--bp-palette-black)),
-    0 1px 2px color-mix(in oklch, var(--bp-palette-black) 20%, transparent);
+    inset 0 0 0 1px color-mix(in oklch, var(--xh-base-surface-border-color-strong) 90%, #111418),
+    0 1px 2px color-mix(in oklch, #111418 20%, transparent);
 }
 .xh-button.xh-button--intent-success:disabled,
 .xh-button.xh-button--intent-success.xh-button--disabled {
-  background-color: color-mix(in oklch, var(--bp-intent-success-rest) 50%, transparent);
+  background-color: color-mix(in oklch, #238551 50%, transparent);
   border-color: transparent;
   box-shadow: none;
-  color: color-mix(in oklch, var(--bp-intent-success-foreground) 60%, transparent);
+  color: color-mix(in oklch, #fff 60%, transparent);
 }
 @media (forced-colors: active) and (prefers-color-scheme: dark) {
   .xh-button.xh-button--intent-success:disabled,
@@ -212,39 +199,40 @@
   }
 }
 .xh-button.xh-button--intent-warning {
-  background-color: var(--bp6-button-warning-rest);
+  background-color: oklch(from #c87619 calc(l + 0.177) calc(c - 0.01) calc(h + 6.26));
   box-shadow:
-    inset 0 0 0 var(--bp-surface-border-width)
-      color-mix(in oklch, var(--bp-surface-border-color-strong) 90%, var(--bp-palette-black)),
-    0 1px 2px color-mix(in oklch, var(--bp-palette-black) 10%, transparent);
-  color: var(--bp-intent-warning-foreground);
+    inset 0 0 0 1px color-mix(in oklch, var(--xh-base-surface-border-color-strong) 90%, #111418),
+    0 1px 2px color-mix(in oklch, #111418 10%, transparent);
+  color: #111418;
 }
 .xh-button.xh-button--intent-warning:hover,
 .xh-button.xh-button--intent-warning:active,
 .xh-button.xh-button--intent-warning:is(.xh-button--active, .xh-popover__target--active) {
-  color: var(--bp-intent-warning-foreground);
+  color: #111418;
 }
 .xh-button.xh-button--intent-warning:hover {
-  background-color: var(--bp-intent-warning-hover);
+  background-color: #935610;
   box-shadow:
-    inset 0 0 0 var(--bp-surface-border-width)
-      color-mix(in oklch, var(--bp-surface-border-color-strong) 90%, var(--bp-palette-black)),
-    0 1px 2px color-mix(in oklch, var(--bp-palette-black) 20%, transparent);
+    inset 0 0 0 1px color-mix(in oklch, var(--xh-base-surface-border-color-strong) 90%, #111418),
+    0 1px 2px color-mix(in oklch, #111418 20%, transparent);
 }
 .xh-button.xh-button--intent-warning:active,
 .xh-button.xh-button--intent-warning:is(.xh-button--active, .xh-popover__target--active) {
-  background-color: var(--bp-intent-warning-active);
+  background-color: #77450d;
   box-shadow:
-    inset 0 0 0 var(--bp-surface-border-width)
-      color-mix(in oklch, var(--bp-surface-border-color-strong) 90%, var(--bp-palette-black)),
-    0 1px 2px color-mix(in oklch, var(--bp-palette-black) 20%, transparent);
+    inset 0 0 0 1px color-mix(in oklch, var(--xh-base-surface-border-color-strong) 90%, #111418),
+    0 1px 2px color-mix(in oklch, #111418 20%, transparent);
 }
 .xh-button.xh-button--intent-warning:disabled,
 .xh-button.xh-button--intent-warning.xh-button--disabled {
-  background-color: color-mix(in oklch, var(--bp6-button-warning-rest) 50%, transparent);
+  background-color: color-mix(
+    in oklch,
+    oklch(from #c87619 calc(l + 0.177) calc(c - 0.01) calc(h + 6.26)) 50%,
+    transparent
+  );
   border-color: transparent;
   box-shadow: none;
-  color: color-mix(in oklch, var(--bp-intent-warning-foreground) 60%, transparent);
+  color: color-mix(in oklch, #111418 60%, transparent);
 }
 @media (forced-colors: active) and (prefers-color-scheme: dark) {
   .xh-button.xh-button--intent-warning:disabled,
@@ -260,39 +248,36 @@
   }
 }
 .xh-button.xh-button--intent-danger {
-  background-color: var(--bp-intent-danger-rest);
+  background-color: #cd4246;
   box-shadow:
-    inset 0 0 0 var(--bp-surface-border-width)
-      color-mix(in oklch, var(--bp-surface-border-color-strong) 90%, var(--bp-palette-black)),
-    0 1px 2px color-mix(in oklch, var(--bp-palette-black) 10%, transparent);
-  color: var(--bp-intent-danger-foreground);
+    inset 0 0 0 1px color-mix(in oklch, var(--xh-base-surface-border-color-strong) 90%, #111418),
+    0 1px 2px color-mix(in oklch, #111418 10%, transparent);
+  color: #fff;
 }
 .xh-button.xh-button--intent-danger:hover,
 .xh-button.xh-button--intent-danger:active,
 .xh-button.xh-button--intent-danger:is(.xh-button--active, .xh-popover__target--active) {
-  color: var(--bp-intent-danger-foreground);
+  color: #fff;
 }
 .xh-button.xh-button--intent-danger:hover {
-  background-color: var(--bp-intent-danger-hover);
+  background-color: #ac2f33;
   box-shadow:
-    inset 0 0 0 var(--bp-surface-border-width)
-      color-mix(in oklch, var(--bp-surface-border-color-strong) 90%, var(--bp-palette-black)),
-    0 1px 2px color-mix(in oklch, var(--bp-palette-black) 20%, transparent);
+    inset 0 0 0 1px color-mix(in oklch, var(--xh-base-surface-border-color-strong) 90%, #111418),
+    0 1px 2px color-mix(in oklch, #111418 20%, transparent);
 }
 .xh-button.xh-button--intent-danger:active,
 .xh-button.xh-button--intent-danger:is(.xh-button--active, .xh-popover__target--active) {
-  background-color: var(--bp-intent-danger-active);
+  background-color: #8e292c;
   box-shadow:
-    inset 0 0 0 var(--bp-surface-border-width)
-      color-mix(in oklch, var(--bp-surface-border-color-strong) 90%, var(--bp-palette-black)),
-    0 1px 2px color-mix(in oklch, var(--bp-palette-black) 20%, transparent);
+    inset 0 0 0 1px color-mix(in oklch, var(--xh-base-surface-border-color-strong) 90%, #111418),
+    0 1px 2px color-mix(in oklch, #111418 20%, transparent);
 }
 .xh-button.xh-button--intent-danger:disabled,
 .xh-button.xh-button--intent-danger.xh-button--disabled {
-  background-color: color-mix(in oklch, var(--bp-intent-danger-rest) 50%, transparent);
+  background-color: color-mix(in oklch, #cd4246 50%, transparent);
   border-color: transparent;
   box-shadow: none;
-  color: color-mix(in oklch, var(--bp-intent-danger-foreground) 60%, transparent);
+  color: color-mix(in oklch, #fff 60%, transparent);
 }
 @media (forced-colors: active) and (prefers-color-scheme: dark) {
   .xh-button.xh-button--intent-danger:disabled,
@@ -308,42 +293,35 @@
   }
 }
 .xh-dark .xh-button.xh-button--intent-none {
-  background-color: color-mix(in srgb, var(--bp-intent-default-rest) 40%, var(--bp-palette-black));
+  background-color: color-mix(in srgb, #5f6b7c 40%, #111418);
   box-shadow:
-    inset 0 0 0 var(--bp-surface-border-width)
-      color-mix(in oklch, var(--bp-surface-border-color-default) 50%, transparent),
-    0 1px 2px color-mix(in oklch, var(--bp-palette-black) 20%, transparent);
-  color: var(--bp-intent-default-foreground);
+    inset 0 0 0 1px color-mix(in oklch, var(--xh-base-surface-border-color) 50%, transparent),
+    0 1px 2px color-mix(in oklch, #111418 20%, transparent);
+  color: #fff;
 }
 .xh-dark .xh-button.xh-button--intent-none:hover,
 .xh-dark .xh-button.xh-button--intent-none:active,
 .xh-dark .xh-button.xh-button--intent-none:is(.xh-button--active, .xh-popover__target--active) {
-  color: color-mix(in srgb, var(--bp-intent-default-hover) 4%, var(--bp-palette-white));
+  color: color-mix(in srgb, #404854 4%, #fff);
 }
 .xh-dark .xh-button.xh-button--intent-none:hover {
-  background-color: color-mix(in srgb, var(--bp-intent-default-hover) 42%, var(--bp-palette-black));
+  background-color: color-mix(in srgb, #404854 42%, #111418);
   box-shadow:
-    inset 0 0 0 var(--bp-surface-border-width)
-      color-mix(in oklch, var(--bp-surface-border-color-default) 50%, transparent),
-    0 1px 2px color-mix(in oklch, var(--bp-palette-black) 40%, transparent);
+    inset 0 0 0 1px color-mix(in oklch, var(--xh-base-surface-border-color) 50%, transparent),
+    0 1px 2px color-mix(in oklch, #111418 40%, transparent);
 }
 .xh-dark .xh-button.xh-button--intent-none:active,
 .xh-dark .xh-button.xh-button--intent-none:is(.xh-button--active, .xh-popover__target--active) {
-  background-color: color-mix(
-    in srgb,
-    var(--bp-intent-default-active) 30%,
-    var(--bp-palette-black)
-  );
+  background-color: color-mix(in srgb, #383e47 30%, #111418);
   box-shadow:
-    inset 0 0 0 var(--bp-surface-border-width)
-      color-mix(in oklch, var(--bp-surface-border-color-default) 50%, transparent),
-    0 1px 2px color-mix(in oklch, var(--bp-palette-black) 40%, transparent);
+    inset 0 0 0 1px color-mix(in oklch, var(--xh-base-surface-border-color) 50%, transparent),
+    0 1px 2px color-mix(in oklch, #111418 40%, transparent);
 }
 .xh-dark .xh-button.xh-button--intent-none:disabled,
 .xh-dark .xh-button.xh-button--intent-none.xh-button--disabled {
-  background-color: color-mix(in srgb, var(--bp-intent-default-disabled) 4%, transparent);
+  background-color: color-mix(in srgb, #8f99a8 4%, transparent);
   box-shadow: none;
-  color: var(--bp-typography-color-default-disabled);
+  color: var(--xh-base-text-color-disabled);
 }
 .xh-dark
   .xh-button.xh-button--intent-none:disabled:is(.xh-button--active, .xh-popover__target--active),
@@ -352,32 +330,29 @@
     .xh-button--active,
     .xh-popover__target--active
   ) {
-  background-color: color-mix(in srgb, var(--bp-intent-default-disabled) 7%, transparent);
+  background-color: color-mix(in srgb, #8f99a8 7%, transparent);
 }
 .xh-dark .xh-button:not(.xh-button--intent-none) {
   box-shadow:
-    inset 0 0 0 var(--bp-surface-border-width)
-      color-mix(in oklch, var(--bp-surface-border-color-default) 50%, transparent),
-    0 1px 2px color-mix(in oklch, var(--bp-palette-black) 20%, transparent);
+    inset 0 0 0 1px color-mix(in oklch, var(--xh-base-surface-border-color) 50%, transparent),
+    0 1px 2px color-mix(in oklch, #111418 20%, transparent);
 }
 .xh-dark .xh-button:not(.xh-button--intent-none):hover {
   box-shadow:
-    inset 0 0 0 var(--bp-surface-border-width)
-      color-mix(in oklch, var(--bp-surface-border-color-default) 50%, transparent),
-    0 1px 2px color-mix(in oklch, var(--bp-palette-black) 20%, transparent);
+    inset 0 0 0 1px color-mix(in oklch, var(--xh-base-surface-border-color) 50%, transparent),
+    0 1px 2px color-mix(in oklch, #111418 20%, transparent);
 }
 .xh-dark .xh-button:not(.xh-button--intent-none):active,
 .xh-dark
   .xh-button:not(.xh-button--intent-none):is(.xh-button--active, .xh-popover__target--active) {
   box-shadow:
-    inset 0 0 0 var(--bp-surface-border-width)
-      color-mix(in oklch, var(--bp-surface-border-color-default) 50%, transparent),
-    0 1px 2px color-mix(in oklch, var(--bp-palette-black) 40%, transparent);
+    inset 0 0 0 1px color-mix(in oklch, var(--xh-base-surface-border-color) 50%, transparent),
+    0 1px 2px color-mix(in oklch, #111418 40%, transparent);
 }
 .xh-dark .xh-button:not(.xh-button--intent-none):disabled,
 .xh-dark .xh-button:not(.xh-button--intent-none).xh-button--disabled {
   box-shadow: none;
-  color: color-mix(in oklch, var(--bp-intent-default-foreground) 30%, transparent);
+  color: color-mix(in oklch, #fff 30%, transparent);
 }
 .xh-button:disabled::before,
 .xh-button.xh-button--disabled::before,
@@ -389,23 +364,23 @@
   box-shadow: none;
 }
 .xh-button.xh-button--minimal:hover {
-  background-color: color-mix(in srgb, var(--bp-intent-default-hover) 8%, transparent);
+  background-color: color-mix(in srgb, #404854 8%, transparent);
   box-shadow: none;
-  color: var(--bp-typography-color-default-rest);
+  color: var(--xh-base-text-color);
   text-decoration: none;
 }
 .xh-button.xh-button--minimal:active,
 .xh-button.xh-button--minimal:is(.xh-button--active, .xh-popover__target--active) {
-  background-color: color-mix(in srgb, var(--bp-intent-default-active) 16%, transparent);
+  background-color: color-mix(in srgb, #383e47 16%, transparent);
   box-shadow: none;
-  color: var(--bp-typography-color-default-rest);
+  color: var(--xh-base-text-color);
 }
 .xh-button.xh-button--minimal:disabled,
 .xh-button.xh-button--minimal:disabled:hover,
 .xh-button.xh-button--minimal.xh-button--disabled,
 .xh-button.xh-button--minimal.xh-button--disabled:hover {
   background: none;
-  color: var(--bp-typography-color-default-disabled);
+  color: var(--xh-base-text-color-disabled);
   cursor: not-allowed;
 }
 .xh-button.xh-button--minimal:disabled:is(.xh-button--active, .xh-popover__target--active),
@@ -418,33 +393,33 @@
     .xh-button--active,
     .xh-popover__target--active
   ) {
-  background-color: color-mix(in srgb, var(--bp-intent-default-disabled) 30%, transparent);
+  background-color: color-mix(in srgb, #8f99a8 30%, transparent);
 }
 .xh-dark .xh-button.xh-button--minimal {
   background: none;
   box-shadow: none;
-  color: var(--bp-intent-default-foreground);
+  color: #fff;
 }
 .xh-dark .xh-button.xh-button--minimal:hover,
 .xh-dark .xh-button.xh-button--minimal:active,
 .xh-dark .xh-button.xh-button--minimal:is(.xh-button--active, .xh-popover__target--active) {
   background: none;
   box-shadow: none;
-  color: var(--bp-intent-default-foreground);
+  color: #fff;
 }
 .xh-dark .xh-button.xh-button--minimal:hover {
-  background-color: color-mix(in srgb, var(--bp-intent-default-rest) 24%, transparent);
+  background-color: color-mix(in srgb, #5f6b7c 24%, transparent);
 }
 .xh-dark .xh-button.xh-button--minimal:active,
 .xh-dark .xh-button.xh-button--minimal:is(.xh-button--active, .xh-popover__target--active) {
-  background-color: color-mix(in srgb, var(--bp-intent-default-rest) 49%, transparent);
+  background-color: color-mix(in srgb, #5f6b7c 49%, transparent);
 }
 .xh-dark .xh-button.xh-button--minimal:disabled,
 .xh-dark .xh-button.xh-button--minimal:disabled:hover,
 .xh-dark .xh-button.xh-button--minimal.xh-button--disabled,
 .xh-dark .xh-button.xh-button--minimal.xh-button--disabled:hover {
   background: none;
-  color: var(--bp-typography-color-default-disabled);
+  color: var(--xh-base-text-color-disabled);
   cursor: not-allowed;
 }
 .xh-dark .xh-button.xh-button--minimal:disabled:is(.xh-button--active, .xh-popover__target--active),
@@ -460,10 +435,10 @@
     .xh-button--active,
     .xh-popover__target--active
   ) {
-  background-color: color-mix(in srgb, var(--bp-intent-default-disabled) 30%, transparent);
+  background-color: color-mix(in srgb, #8f99a8 30%, transparent);
 }
 .xh-button.xh-button--minimal.xh-button--intent-primary {
-  color: var(--bp-intent-primary-hover);
+  color: #215db0;
 }
 .xh-button.xh-button--minimal.xh-button--intent-primary:hover,
 .xh-button.xh-button--minimal.xh-button--intent-primary:active,
@@ -473,24 +448,24 @@
   ) {
   background: none;
   box-shadow: none;
-  color: var(--bp-intent-primary-hover);
+  color: #215db0;
 }
 .xh-button.xh-button--minimal.xh-button--intent-primary:hover {
-  background-color: color-mix(in oklch, var(--bp-intent-primary-rest) 15%, transparent);
-  color: var(--bp-intent-primary-hover);
+  background-color: color-mix(in oklch, #2d72d2 15%, transparent);
+  color: #215db0;
 }
 .xh-button.xh-button--minimal.xh-button--intent-primary:active,
 .xh-button.xh-button--minimal.xh-button--intent-primary:is(
     .xh-button--active,
     .xh-popover__target--active
   ) {
-  background-color: color-mix(in oklch, var(--bp-intent-primary-rest) 30%, transparent);
-  color: var(--bp-intent-primary-active);
+  background-color: color-mix(in oklch, #2d72d2 30%, transparent);
+  color: #184a90;
 }
 .xh-button.xh-button--minimal.xh-button--intent-primary:disabled,
 .xh-button.xh-button--minimal.xh-button--intent-primary.xh-button--disabled {
   background: none;
-  color: color-mix(in oklch, var(--bp-intent-primary-hover) 50%, transparent);
+  color: color-mix(in oklch, #215db0 50%, transparent);
 }
 .xh-button.xh-button--minimal.xh-button--intent-primary:disabled:is(
     .xh-button--active,
@@ -500,14 +475,14 @@
     .xh-button--active,
     .xh-popover__target--active
   ) {
-  background-color: color-mix(in oklch, var(--bp-intent-primary-rest) 30%, transparent);
+  background-color: color-mix(in oklch, #2d72d2 30%, transparent);
 }
 .xh-dark .xh-button.xh-button--minimal.xh-button--intent-primary {
-  color: color-mix(in oklch, var(--bp-intent-primary-rest) 51%, var(--bp-palette-white));
+  color: color-mix(in oklch, #2d72d2 51%, #fff);
 }
 .xh-dark .xh-button.xh-button--minimal.xh-button--intent-primary:hover {
-  background-color: color-mix(in oklch, var(--bp-intent-primary-rest) 20%, transparent);
-  color: color-mix(in oklch, var(--bp-intent-primary-hover) 51%, var(--bp-palette-white));
+  background-color: color-mix(in oklch, #2d72d2 20%, transparent);
+  color: color-mix(in oklch, #215db0 51%, #fff);
 }
 .xh-dark .xh-button.xh-button--minimal.xh-button--intent-primary:active,
 .xh-dark
@@ -515,17 +490,13 @@
     .xh-button--active,
     .xh-popover__target--active
   ) {
-  background-color: color-mix(in oklch, var(--bp-intent-primary-rest) 30%, transparent);
-  color: color-mix(in oklch, var(--bp-intent-primary-active) 51%, var(--bp-palette-white));
+  background-color: color-mix(in oklch, #2d72d2 30%, transparent);
+  color: color-mix(in oklch, #184a90 51%, #fff);
 }
 .xh-dark .xh-button.xh-button--minimal.xh-button--intent-primary:disabled,
 .xh-dark .xh-button.xh-button--minimal.xh-button--intent-primary.xh-button--disabled {
   background: none;
-  color: color-mix(
-    in oklch,
-    color-mix(in oklch, var(--bp-intent-primary-rest) 51%, var(--bp-palette-white)) 50%,
-    transparent
-  );
+  color: color-mix(in oklch, color-mix(in oklch, #2d72d2 51%, #fff) 50%, transparent);
 }
 .xh-dark
   .xh-button.xh-button--minimal.xh-button--intent-primary:disabled:is(
@@ -537,10 +508,10 @@
     .xh-button--active,
     .xh-popover__target--active
   ) {
-  background-color: color-mix(in oklch, var(--bp-intent-primary-rest) 30%, transparent);
+  background-color: color-mix(in oklch, #2d72d2 30%, transparent);
 }
 .xh-button.xh-button--minimal.xh-button--intent-success {
-  color: var(--bp-intent-success-hover);
+  color: #1c6e42;
 }
 .xh-button.xh-button--minimal.xh-button--intent-success:hover,
 .xh-button.xh-button--minimal.xh-button--intent-success:active,
@@ -550,24 +521,24 @@
   ) {
   background: none;
   box-shadow: none;
-  color: var(--bp-intent-success-hover);
+  color: #1c6e42;
 }
 .xh-button.xh-button--minimal.xh-button--intent-success:hover {
-  background-color: color-mix(in oklch, var(--bp-intent-success-rest) 15%, transparent);
-  color: var(--bp-intent-success-hover);
+  background-color: color-mix(in oklch, #238551 15%, transparent);
+  color: #1c6e42;
 }
 .xh-button.xh-button--minimal.xh-button--intent-success:active,
 .xh-button.xh-button--minimal.xh-button--intent-success:is(
     .xh-button--active,
     .xh-popover__target--active
   ) {
-  background-color: color-mix(in oklch, var(--bp-intent-success-rest) 30%, transparent);
-  color: var(--bp-intent-success-active);
+  background-color: color-mix(in oklch, #238551 30%, transparent);
+  color: #165a36;
 }
 .xh-button.xh-button--minimal.xh-button--intent-success:disabled,
 .xh-button.xh-button--minimal.xh-button--intent-success.xh-button--disabled {
   background: none;
-  color: color-mix(in oklch, var(--bp-intent-success-hover) 50%, transparent);
+  color: color-mix(in oklch, #1c6e42 50%, transparent);
 }
 .xh-button.xh-button--minimal.xh-button--intent-success:disabled:is(
     .xh-button--active,
@@ -577,14 +548,14 @@
     .xh-button--active,
     .xh-popover__target--active
   ) {
-  background-color: color-mix(in oklch, var(--bp-intent-success-rest) 30%, transparent);
+  background-color: color-mix(in oklch, #238551 30%, transparent);
 }
 .xh-dark .xh-button.xh-button--minimal.xh-button--intent-success {
-  color: color-mix(in oklch, var(--bp-intent-success-rest) 54%, var(--bp-palette-white));
+  color: color-mix(in oklch, #238551 54%, #fff);
 }
 .xh-dark .xh-button.xh-button--minimal.xh-button--intent-success:hover {
-  background-color: color-mix(in oklch, var(--bp-intent-success-rest) 20%, transparent);
-  color: color-mix(in oklch, var(--bp-intent-success-hover) 54%, var(--bp-palette-white));
+  background-color: color-mix(in oklch, #238551 20%, transparent);
+  color: color-mix(in oklch, #1c6e42 54%, #fff);
 }
 .xh-dark .xh-button.xh-button--minimal.xh-button--intent-success:active,
 .xh-dark
@@ -592,17 +563,13 @@
     .xh-button--active,
     .xh-popover__target--active
   ) {
-  background-color: color-mix(in oklch, var(--bp-intent-success-rest) 30%, transparent);
-  color: color-mix(in oklch, var(--bp-intent-success-active) 54%, var(--bp-palette-white));
+  background-color: color-mix(in oklch, #238551 30%, transparent);
+  color: color-mix(in oklch, #165a36 54%, #fff);
 }
 .xh-dark .xh-button.xh-button--minimal.xh-button--intent-success:disabled,
 .xh-dark .xh-button.xh-button--minimal.xh-button--intent-success.xh-button--disabled {
   background: none;
-  color: color-mix(
-    in oklch,
-    color-mix(in oklch, var(--bp-intent-success-rest) 54%, var(--bp-palette-white)) 50%,
-    transparent
-  );
+  color: color-mix(in oklch, color-mix(in oklch, #238551 54%, #fff) 50%, transparent);
 }
 .xh-dark
   .xh-button.xh-button--minimal.xh-button--intent-success:disabled:is(
@@ -614,10 +581,10 @@
     .xh-button--active,
     .xh-popover__target--active
   ) {
-  background-color: color-mix(in oklch, var(--bp-intent-success-rest) 30%, transparent);
+  background-color: color-mix(in oklch, #238551 30%, transparent);
 }
 .xh-button.xh-button--minimal.xh-button--intent-warning {
-  color: var(--bp-intent-warning-hover);
+  color: #935610;
 }
 .xh-button.xh-button--minimal.xh-button--intent-warning:hover,
 .xh-button.xh-button--minimal.xh-button--intent-warning:active,
@@ -627,24 +594,32 @@
   ) {
   background: none;
   box-shadow: none;
-  color: var(--bp-intent-warning-hover);
+  color: #935610;
 }
 .xh-button.xh-button--minimal.xh-button--intent-warning:hover {
-  background-color: color-mix(in oklch, var(--bp6-button-warning-rest) 15%, transparent);
-  color: var(--bp-intent-warning-hover);
+  background-color: color-mix(
+    in oklch,
+    oklch(from #c87619 calc(l + 0.177) calc(c - 0.01) calc(h + 6.26)) 15%,
+    transparent
+  );
+  color: #935610;
 }
 .xh-button.xh-button--minimal.xh-button--intent-warning:active,
 .xh-button.xh-button--minimal.xh-button--intent-warning:is(
     .xh-button--active,
     .xh-popover__target--active
   ) {
-  background-color: color-mix(in oklch, var(--bp6-button-warning-rest) 30%, transparent);
-  color: var(--bp-intent-warning-active);
+  background-color: color-mix(
+    in oklch,
+    oklch(from #c87619 calc(l + 0.177) calc(c - 0.01) calc(h + 6.26)) 30%,
+    transparent
+  );
+  color: #77450d;
 }
 .xh-button.xh-button--minimal.xh-button--intent-warning:disabled,
 .xh-button.xh-button--minimal.xh-button--intent-warning.xh-button--disabled {
   background: none;
-  color: color-mix(in oklch, var(--bp-intent-warning-hover) 50%, transparent);
+  color: color-mix(in oklch, #935610 50%, transparent);
 }
 .xh-button.xh-button--minimal.xh-button--intent-warning:disabled:is(
     .xh-button--active,
@@ -654,14 +629,22 @@
     .xh-button--active,
     .xh-popover__target--active
   ) {
-  background-color: color-mix(in oklch, var(--bp6-button-warning-rest) 30%, transparent);
+  background-color: color-mix(
+    in oklch,
+    oklch(from #c87619 calc(l + 0.177) calc(c - 0.01) calc(h + 6.26)) 30%,
+    transparent
+  );
 }
 .xh-dark .xh-button.xh-button--minimal.xh-button--intent-warning {
-  color: color-mix(in oklch, var(--bp-intent-warning-rest) 53%, var(--bp-palette-white));
+  color: color-mix(in oklch, #c87619 53%, #fff);
 }
 .xh-dark .xh-button.xh-button--minimal.xh-button--intent-warning:hover {
-  background-color: color-mix(in oklch, var(--bp6-button-warning-rest) 20%, transparent);
-  color: color-mix(in oklch, var(--bp-intent-warning-hover) 53%, var(--bp-palette-white));
+  background-color: color-mix(
+    in oklch,
+    oklch(from #c87619 calc(l + 0.177) calc(c - 0.01) calc(h + 6.26)) 20%,
+    transparent
+  );
+  color: color-mix(in oklch, #935610 53%, #fff);
 }
 .xh-dark .xh-button.xh-button--minimal.xh-button--intent-warning:active,
 .xh-dark
@@ -669,17 +652,17 @@
     .xh-button--active,
     .xh-popover__target--active
   ) {
-  background-color: color-mix(in oklch, var(--bp6-button-warning-rest) 30%, transparent);
-  color: color-mix(in oklch, var(--bp-intent-warning-active) 53%, var(--bp-palette-white));
+  background-color: color-mix(
+    in oklch,
+    oklch(from #c87619 calc(l + 0.177) calc(c - 0.01) calc(h + 6.26)) 30%,
+    transparent
+  );
+  color: color-mix(in oklch, #77450d 53%, #fff);
 }
 .xh-dark .xh-button.xh-button--minimal.xh-button--intent-warning:disabled,
 .xh-dark .xh-button.xh-button--minimal.xh-button--intent-warning.xh-button--disabled {
   background: none;
-  color: color-mix(
-    in oklch,
-    color-mix(in oklch, var(--bp-intent-warning-rest) 53%, var(--bp-palette-white)) 50%,
-    transparent
-  );
+  color: color-mix(in oklch, color-mix(in oklch, #c87619 53%, #fff) 50%, transparent);
 }
 .xh-dark
   .xh-button.xh-button--minimal.xh-button--intent-warning:disabled:is(
@@ -691,10 +674,14 @@
     .xh-button--active,
     .xh-popover__target--active
   ) {
-  background-color: color-mix(in oklch, var(--bp6-button-warning-rest) 30%, transparent);
+  background-color: color-mix(
+    in oklch,
+    oklch(from #c87619 calc(l + 0.177) calc(c - 0.01) calc(h + 6.26)) 30%,
+    transparent
+  );
 }
 .xh-button.xh-button--minimal.xh-button--intent-danger {
-  color: var(--bp-intent-danger-hover);
+  color: #ac2f33;
 }
 .xh-button.xh-button--minimal.xh-button--intent-danger:hover,
 .xh-button.xh-button--minimal.xh-button--intent-danger:active,
@@ -704,24 +691,24 @@
   ) {
   background: none;
   box-shadow: none;
-  color: var(--bp-intent-danger-hover);
+  color: #ac2f33;
 }
 .xh-button.xh-button--minimal.xh-button--intent-danger:hover {
-  background-color: color-mix(in oklch, var(--bp-intent-danger-rest) 15%, transparent);
-  color: var(--bp-intent-danger-hover);
+  background-color: color-mix(in oklch, #cd4246 15%, transparent);
+  color: #ac2f33;
 }
 .xh-button.xh-button--minimal.xh-button--intent-danger:active,
 .xh-button.xh-button--minimal.xh-button--intent-danger:is(
     .xh-button--active,
     .xh-popover__target--active
   ) {
-  background-color: color-mix(in oklch, var(--bp-intent-danger-rest) 30%, transparent);
-  color: var(--bp-intent-danger-active);
+  background-color: color-mix(in oklch, #cd4246 30%, transparent);
+  color: #8e292c;
 }
 .xh-button.xh-button--minimal.xh-button--intent-danger:disabled,
 .xh-button.xh-button--minimal.xh-button--intent-danger.xh-button--disabled {
   background: none;
-  color: color-mix(in oklch, var(--bp-intent-danger-hover) 50%, transparent);
+  color: color-mix(in oklch, #ac2f33 50%, transparent);
 }
 .xh-button.xh-button--minimal.xh-button--intent-danger:disabled:is(
     .xh-button--active,
@@ -731,14 +718,14 @@
     .xh-button--active,
     .xh-popover__target--active
   ) {
-  background-color: color-mix(in oklch, var(--bp-intent-danger-rest) 30%, transparent);
+  background-color: color-mix(in oklch, #cd4246 30%, transparent);
 }
 .xh-dark .xh-button.xh-button--minimal.xh-button--intent-danger {
-  color: color-mix(in oklch, var(--bp-intent-danger-rest) 53%, var(--bp-palette-white));
+  color: color-mix(in oklch, #cd4246 53%, #fff);
 }
 .xh-dark .xh-button.xh-button--minimal.xh-button--intent-danger:hover {
-  background-color: color-mix(in oklch, var(--bp-intent-danger-rest) 20%, transparent);
-  color: color-mix(in oklch, var(--bp-intent-danger-hover) 53%, var(--bp-palette-white));
+  background-color: color-mix(in oklch, #cd4246 20%, transparent);
+  color: color-mix(in oklch, #ac2f33 53%, #fff);
 }
 .xh-dark .xh-button.xh-button--minimal.xh-button--intent-danger:active,
 .xh-dark
@@ -746,17 +733,13 @@
     .xh-button--active,
     .xh-popover__target--active
   ) {
-  background-color: color-mix(in oklch, var(--bp-intent-danger-rest) 30%, transparent);
-  color: color-mix(in oklch, var(--bp-intent-danger-active) 53%, var(--bp-palette-white));
+  background-color: color-mix(in oklch, #cd4246 30%, transparent);
+  color: color-mix(in oklch, #8e292c 53%, #fff);
 }
 .xh-dark .xh-button.xh-button--minimal.xh-button--intent-danger:disabled,
 .xh-dark .xh-button.xh-button--minimal.xh-button--intent-danger.xh-button--disabled {
   background: none;
-  color: color-mix(
-    in oklch,
-    color-mix(in oklch, var(--bp-intent-danger-rest) 53%, var(--bp-palette-white)) 50%,
-    transparent
-  );
+  color: color-mix(in oklch, color-mix(in oklch, #cd4246 53%, #fff) 50%, transparent);
 }
 .xh-dark
   .xh-button.xh-button--minimal.xh-button--intent-danger:disabled:is(
@@ -768,30 +751,30 @@
     .xh-button--active,
     .xh-popover__target--active
   ) {
-  background-color: color-mix(in oklch, var(--bp-intent-danger-rest) 30%, transparent);
+  background-color: color-mix(in oklch, #cd4246 30%, transparent);
 }
 .xh-button.xh-button--outlined {
   background: none;
   box-shadow: none;
 }
 .xh-button.xh-button--outlined:hover {
-  background-color: color-mix(in srgb, var(--bp-intent-default-hover) 8%, transparent);
+  background-color: color-mix(in srgb, #404854 8%, transparent);
   box-shadow: none;
-  color: var(--bp-typography-color-default-rest);
+  color: var(--xh-base-text-color);
   text-decoration: none;
 }
 .xh-button.xh-button--outlined:active,
 .xh-button.xh-button--outlined:is(.xh-button--active, .xh-popover__target--active) {
-  background-color: color-mix(in srgb, var(--bp-intent-default-active) 16%, transparent);
+  background-color: color-mix(in srgb, #383e47 16%, transparent);
   box-shadow: none;
-  color: var(--bp-typography-color-default-rest);
+  color: var(--xh-base-text-color);
 }
 .xh-button.xh-button--outlined:disabled,
 .xh-button.xh-button--outlined:disabled:hover,
 .xh-button.xh-button--outlined.xh-button--disabled,
 .xh-button.xh-button--outlined.xh-button--disabled:hover {
   background: none;
-  color: var(--bp-typography-color-default-disabled);
+  color: var(--xh-base-text-color-disabled);
   cursor: not-allowed;
 }
 .xh-button.xh-button--outlined:disabled:is(.xh-button--active, .xh-popover__target--active),
@@ -804,33 +787,33 @@
     .xh-button--active,
     .xh-popover__target--active
   ) {
-  background-color: color-mix(in srgb, var(--bp-intent-default-disabled) 30%, transparent);
+  background-color: color-mix(in srgb, #8f99a8 30%, transparent);
 }
 .xh-dark .xh-button.xh-button--outlined {
   background: none;
   box-shadow: none;
-  color: var(--bp-intent-default-foreground);
+  color: #fff;
 }
 .xh-dark .xh-button.xh-button--outlined:hover,
 .xh-dark .xh-button.xh-button--outlined:active,
 .xh-dark .xh-button.xh-button--outlined:is(.xh-button--active, .xh-popover__target--active) {
   background: none;
   box-shadow: none;
-  color: var(--bp-intent-default-foreground);
+  color: #fff;
 }
 .xh-dark .xh-button.xh-button--outlined:hover {
-  background-color: color-mix(in srgb, var(--bp-intent-default-rest) 24%, transparent);
+  background-color: color-mix(in srgb, #5f6b7c 24%, transparent);
 }
 .xh-dark .xh-button.xh-button--outlined:active,
 .xh-dark .xh-button.xh-button--outlined:is(.xh-button--active, .xh-popover__target--active) {
-  background-color: color-mix(in srgb, var(--bp-intent-default-rest) 49%, transparent);
+  background-color: color-mix(in srgb, #5f6b7c 49%, transparent);
 }
 .xh-dark .xh-button.xh-button--outlined:disabled,
 .xh-dark .xh-button.xh-button--outlined:disabled:hover,
 .xh-dark .xh-button.xh-button--outlined.xh-button--disabled,
 .xh-dark .xh-button.xh-button--outlined.xh-button--disabled:hover {
   background: none;
-  color: var(--bp-typography-color-default-disabled);
+  color: var(--xh-base-text-color-disabled);
   cursor: not-allowed;
 }
 .xh-dark
@@ -847,10 +830,10 @@
     .xh-button--active,
     .xh-popover__target--active
   ) {
-  background-color: color-mix(in srgb, var(--bp-intent-default-disabled) 30%, transparent);
+  background-color: color-mix(in srgb, #8f99a8 30%, transparent);
 }
 .xh-button.xh-button--outlined.xh-button--intent-primary {
-  color: var(--bp-intent-primary-hover);
+  color: #215db0;
 }
 .xh-button.xh-button--outlined.xh-button--intent-primary:hover,
 .xh-button.xh-button--outlined.xh-button--intent-primary:active,
@@ -860,24 +843,24 @@
   ) {
   background: none;
   box-shadow: none;
-  color: var(--bp-intent-primary-hover);
+  color: #215db0;
 }
 .xh-button.xh-button--outlined.xh-button--intent-primary:hover {
-  background-color: color-mix(in oklch, var(--bp-intent-primary-rest) 15%, transparent);
-  color: var(--bp-intent-primary-hover);
+  background-color: color-mix(in oklch, #2d72d2 15%, transparent);
+  color: #215db0;
 }
 .xh-button.xh-button--outlined.xh-button--intent-primary:active,
 .xh-button.xh-button--outlined.xh-button--intent-primary:is(
     .xh-button--active,
     .xh-popover__target--active
   ) {
-  background-color: color-mix(in oklch, var(--bp-intent-primary-rest) 30%, transparent);
-  color: var(--bp-intent-primary-active);
+  background-color: color-mix(in oklch, #2d72d2 30%, transparent);
+  color: #184a90;
 }
 .xh-button.xh-button--outlined.xh-button--intent-primary:disabled,
 .xh-button.xh-button--outlined.xh-button--intent-primary.xh-button--disabled {
   background: none;
-  color: color-mix(in oklch, var(--bp-intent-primary-hover) 50%, transparent);
+  color: color-mix(in oklch, #215db0 50%, transparent);
 }
 .xh-button.xh-button--outlined.xh-button--intent-primary:disabled:is(
     .xh-button--active,
@@ -887,14 +870,14 @@
     .xh-button--active,
     .xh-popover__target--active
   ) {
-  background-color: color-mix(in oklch, var(--bp-intent-primary-rest) 30%, transparent);
+  background-color: color-mix(in oklch, #2d72d2 30%, transparent);
 }
 .xh-dark .xh-button.xh-button--outlined.xh-button--intent-primary {
-  color: color-mix(in oklch, var(--bp-intent-primary-rest) 51%, var(--bp-palette-white));
+  color: color-mix(in oklch, #2d72d2 51%, #fff);
 }
 .xh-dark .xh-button.xh-button--outlined.xh-button--intent-primary:hover {
-  background-color: color-mix(in oklch, var(--bp-intent-primary-rest) 20%, transparent);
-  color: color-mix(in oklch, var(--bp-intent-primary-hover) 51%, var(--bp-palette-white));
+  background-color: color-mix(in oklch, #2d72d2 20%, transparent);
+  color: color-mix(in oklch, #215db0 51%, #fff);
 }
 .xh-dark .xh-button.xh-button--outlined.xh-button--intent-primary:active,
 .xh-dark
@@ -902,17 +885,13 @@
     .xh-button--active,
     .xh-popover__target--active
   ) {
-  background-color: color-mix(in oklch, var(--bp-intent-primary-rest) 30%, transparent);
-  color: color-mix(in oklch, var(--bp-intent-primary-active) 51%, var(--bp-palette-white));
+  background-color: color-mix(in oklch, #2d72d2 30%, transparent);
+  color: color-mix(in oklch, #184a90 51%, #fff);
 }
 .xh-dark .xh-button.xh-button--outlined.xh-button--intent-primary:disabled,
 .xh-dark .xh-button.xh-button--outlined.xh-button--intent-primary.xh-button--disabled {
   background: none;
-  color: color-mix(
-    in oklch,
-    color-mix(in oklch, var(--bp-intent-primary-rest) 51%, var(--bp-palette-white)) 50%,
-    transparent
-  );
+  color: color-mix(in oklch, color-mix(in oklch, #2d72d2 51%, #fff) 50%, transparent);
 }
 .xh-dark
   .xh-button.xh-button--outlined.xh-button--intent-primary:disabled:is(
@@ -924,10 +903,10 @@
     .xh-button--active,
     .xh-popover__target--active
   ) {
-  background-color: color-mix(in oklch, var(--bp-intent-primary-rest) 30%, transparent);
+  background-color: color-mix(in oklch, #2d72d2 30%, transparent);
 }
 .xh-button.xh-button--outlined.xh-button--intent-success {
-  color: var(--bp-intent-success-hover);
+  color: #1c6e42;
 }
 .xh-button.xh-button--outlined.xh-button--intent-success:hover,
 .xh-button.xh-button--outlined.xh-button--intent-success:active,
@@ -937,24 +916,24 @@
   ) {
   background: none;
   box-shadow: none;
-  color: var(--bp-intent-success-hover);
+  color: #1c6e42;
 }
 .xh-button.xh-button--outlined.xh-button--intent-success:hover {
-  background-color: color-mix(in oklch, var(--bp-intent-success-rest) 15%, transparent);
-  color: var(--bp-intent-success-hover);
+  background-color: color-mix(in oklch, #238551 15%, transparent);
+  color: #1c6e42;
 }
 .xh-button.xh-button--outlined.xh-button--intent-success:active,
 .xh-button.xh-button--outlined.xh-button--intent-success:is(
     .xh-button--active,
     .xh-popover__target--active
   ) {
-  background-color: color-mix(in oklch, var(--bp-intent-success-rest) 30%, transparent);
-  color: var(--bp-intent-success-active);
+  background-color: color-mix(in oklch, #238551 30%, transparent);
+  color: #165a36;
 }
 .xh-button.xh-button--outlined.xh-button--intent-success:disabled,
 .xh-button.xh-button--outlined.xh-button--intent-success.xh-button--disabled {
   background: none;
-  color: color-mix(in oklch, var(--bp-intent-success-hover) 50%, transparent);
+  color: color-mix(in oklch, #1c6e42 50%, transparent);
 }
 .xh-button.xh-button--outlined.xh-button--intent-success:disabled:is(
     .xh-button--active,
@@ -964,14 +943,14 @@
     .xh-button--active,
     .xh-popover__target--active
   ) {
-  background-color: color-mix(in oklch, var(--bp-intent-success-rest) 30%, transparent);
+  background-color: color-mix(in oklch, #238551 30%, transparent);
 }
 .xh-dark .xh-button.xh-button--outlined.xh-button--intent-success {
-  color: color-mix(in oklch, var(--bp-intent-success-rest) 54%, var(--bp-palette-white));
+  color: color-mix(in oklch, #238551 54%, #fff);
 }
 .xh-dark .xh-button.xh-button--outlined.xh-button--intent-success:hover {
-  background-color: color-mix(in oklch, var(--bp-intent-success-rest) 20%, transparent);
-  color: color-mix(in oklch, var(--bp-intent-success-hover) 54%, var(--bp-palette-white));
+  background-color: color-mix(in oklch, #238551 20%, transparent);
+  color: color-mix(in oklch, #1c6e42 54%, #fff);
 }
 .xh-dark .xh-button.xh-button--outlined.xh-button--intent-success:active,
 .xh-dark
@@ -979,17 +958,13 @@
     .xh-button--active,
     .xh-popover__target--active
   ) {
-  background-color: color-mix(in oklch, var(--bp-intent-success-rest) 30%, transparent);
-  color: color-mix(in oklch, var(--bp-intent-success-active) 54%, var(--bp-palette-white));
+  background-color: color-mix(in oklch, #238551 30%, transparent);
+  color: color-mix(in oklch, #165a36 54%, #fff);
 }
 .xh-dark .xh-button.xh-button--outlined.xh-button--intent-success:disabled,
 .xh-dark .xh-button.xh-button--outlined.xh-button--intent-success.xh-button--disabled {
   background: none;
-  color: color-mix(
-    in oklch,
-    color-mix(in oklch, var(--bp-intent-success-rest) 54%, var(--bp-palette-white)) 50%,
-    transparent
-  );
+  color: color-mix(in oklch, color-mix(in oklch, #238551 54%, #fff) 50%, transparent);
 }
 .xh-dark
   .xh-button.xh-button--outlined.xh-button--intent-success:disabled:is(
@@ -1001,10 +976,10 @@
     .xh-button--active,
     .xh-popover__target--active
   ) {
-  background-color: color-mix(in oklch, var(--bp-intent-success-rest) 30%, transparent);
+  background-color: color-mix(in oklch, #238551 30%, transparent);
 }
 .xh-button.xh-button--outlined.xh-button--intent-warning {
-  color: var(--bp-intent-warning-hover);
+  color: #935610;
 }
 .xh-button.xh-button--outlined.xh-button--intent-warning:hover,
 .xh-button.xh-button--outlined.xh-button--intent-warning:active,
@@ -1014,24 +989,32 @@
   ) {
   background: none;
   box-shadow: none;
-  color: var(--bp-intent-warning-hover);
+  color: #935610;
 }
 .xh-button.xh-button--outlined.xh-button--intent-warning:hover {
-  background-color: color-mix(in oklch, var(--bp6-button-warning-rest) 15%, transparent);
-  color: var(--bp-intent-warning-hover);
+  background-color: color-mix(
+    in oklch,
+    oklch(from #c87619 calc(l + 0.177) calc(c - 0.01) calc(h + 6.26)) 15%,
+    transparent
+  );
+  color: #935610;
 }
 .xh-button.xh-button--outlined.xh-button--intent-warning:active,
 .xh-button.xh-button--outlined.xh-button--intent-warning:is(
     .xh-button--active,
     .xh-popover__target--active
   ) {
-  background-color: color-mix(in oklch, var(--bp6-button-warning-rest) 30%, transparent);
-  color: var(--bp-intent-warning-active);
+  background-color: color-mix(
+    in oklch,
+    oklch(from #c87619 calc(l + 0.177) calc(c - 0.01) calc(h + 6.26)) 30%,
+    transparent
+  );
+  color: #77450d;
 }
 .xh-button.xh-button--outlined.xh-button--intent-warning:disabled,
 .xh-button.xh-button--outlined.xh-button--intent-warning.xh-button--disabled {
   background: none;
-  color: color-mix(in oklch, var(--bp-intent-warning-hover) 50%, transparent);
+  color: color-mix(in oklch, #935610 50%, transparent);
 }
 .xh-button.xh-button--outlined.xh-button--intent-warning:disabled:is(
     .xh-button--active,
@@ -1041,14 +1024,22 @@
     .xh-button--active,
     .xh-popover__target--active
   ) {
-  background-color: color-mix(in oklch, var(--bp6-button-warning-rest) 30%, transparent);
+  background-color: color-mix(
+    in oklch,
+    oklch(from #c87619 calc(l + 0.177) calc(c - 0.01) calc(h + 6.26)) 30%,
+    transparent
+  );
 }
 .xh-dark .xh-button.xh-button--outlined.xh-button--intent-warning {
-  color: color-mix(in oklch, var(--bp-intent-warning-rest) 53%, var(--bp-palette-white));
+  color: color-mix(in oklch, #c87619 53%, #fff);
 }
 .xh-dark .xh-button.xh-button--outlined.xh-button--intent-warning:hover {
-  background-color: color-mix(in oklch, var(--bp6-button-warning-rest) 20%, transparent);
-  color: color-mix(in oklch, var(--bp-intent-warning-hover) 53%, var(--bp-palette-white));
+  background-color: color-mix(
+    in oklch,
+    oklch(from #c87619 calc(l + 0.177) calc(c - 0.01) calc(h + 6.26)) 20%,
+    transparent
+  );
+  color: color-mix(in oklch, #935610 53%, #fff);
 }
 .xh-dark .xh-button.xh-button--outlined.xh-button--intent-warning:active,
 .xh-dark
@@ -1056,17 +1047,17 @@
     .xh-button--active,
     .xh-popover__target--active
   ) {
-  background-color: color-mix(in oklch, var(--bp6-button-warning-rest) 30%, transparent);
-  color: color-mix(in oklch, var(--bp-intent-warning-active) 53%, var(--bp-palette-white));
+  background-color: color-mix(
+    in oklch,
+    oklch(from #c87619 calc(l + 0.177) calc(c - 0.01) calc(h + 6.26)) 30%,
+    transparent
+  );
+  color: color-mix(in oklch, #77450d 53%, #fff);
 }
 .xh-dark .xh-button.xh-button--outlined.xh-button--intent-warning:disabled,
 .xh-dark .xh-button.xh-button--outlined.xh-button--intent-warning.xh-button--disabled {
   background: none;
-  color: color-mix(
-    in oklch,
-    color-mix(in oklch, var(--bp-intent-warning-rest) 53%, var(--bp-palette-white)) 50%,
-    transparent
-  );
+  color: color-mix(in oklch, color-mix(in oklch, #c87619 53%, #fff) 50%, transparent);
 }
 .xh-dark
   .xh-button.xh-button--outlined.xh-button--intent-warning:disabled:is(
@@ -1078,10 +1069,14 @@
     .xh-button--active,
     .xh-popover__target--active
   ) {
-  background-color: color-mix(in oklch, var(--bp6-button-warning-rest) 30%, transparent);
+  background-color: color-mix(
+    in oklch,
+    oklch(from #c87619 calc(l + 0.177) calc(c - 0.01) calc(h + 6.26)) 30%,
+    transparent
+  );
 }
 .xh-button.xh-button--outlined.xh-button--intent-danger {
-  color: var(--bp-intent-danger-hover);
+  color: #ac2f33;
 }
 .xh-button.xh-button--outlined.xh-button--intent-danger:hover,
 .xh-button.xh-button--outlined.xh-button--intent-danger:active,
@@ -1091,24 +1086,24 @@
   ) {
   background: none;
   box-shadow: none;
-  color: var(--bp-intent-danger-hover);
+  color: #ac2f33;
 }
 .xh-button.xh-button--outlined.xh-button--intent-danger:hover {
-  background-color: color-mix(in oklch, var(--bp-intent-danger-rest) 15%, transparent);
-  color: var(--bp-intent-danger-hover);
+  background-color: color-mix(in oklch, #cd4246 15%, transparent);
+  color: #ac2f33;
 }
 .xh-button.xh-button--outlined.xh-button--intent-danger:active,
 .xh-button.xh-button--outlined.xh-button--intent-danger:is(
     .xh-button--active,
     .xh-popover__target--active
   ) {
-  background-color: color-mix(in oklch, var(--bp-intent-danger-rest) 30%, transparent);
-  color: var(--bp-intent-danger-active);
+  background-color: color-mix(in oklch, #cd4246 30%, transparent);
+  color: #8e292c;
 }
 .xh-button.xh-button--outlined.xh-button--intent-danger:disabled,
 .xh-button.xh-button--outlined.xh-button--intent-danger.xh-button--disabled {
   background: none;
-  color: color-mix(in oklch, var(--bp-intent-danger-hover) 50%, transparent);
+  color: color-mix(in oklch, #ac2f33 50%, transparent);
 }
 .xh-button.xh-button--outlined.xh-button--intent-danger:disabled:is(
     .xh-button--active,
@@ -1118,14 +1113,14 @@
     .xh-button--active,
     .xh-popover__target--active
   ) {
-  background-color: color-mix(in oklch, var(--bp-intent-danger-rest) 30%, transparent);
+  background-color: color-mix(in oklch, #cd4246 30%, transparent);
 }
 .xh-dark .xh-button.xh-button--outlined.xh-button--intent-danger {
-  color: color-mix(in oklch, var(--bp-intent-danger-rest) 53%, var(--bp-palette-white));
+  color: color-mix(in oklch, #cd4246 53%, #fff);
 }
 .xh-dark .xh-button.xh-button--outlined.xh-button--intent-danger:hover {
-  background-color: color-mix(in oklch, var(--bp-intent-danger-rest) 20%, transparent);
-  color: color-mix(in oklch, var(--bp-intent-danger-hover) 53%, var(--bp-palette-white));
+  background-color: color-mix(in oklch, #cd4246 20%, transparent);
+  color: color-mix(in oklch, #ac2f33 53%, #fff);
 }
 .xh-dark .xh-button.xh-button--outlined.xh-button--intent-danger:active,
 .xh-dark
@@ -1133,17 +1128,13 @@
     .xh-button--active,
     .xh-popover__target--active
   ) {
-  background-color: color-mix(in oklch, var(--bp-intent-danger-rest) 30%, transparent);
-  color: color-mix(in oklch, var(--bp-intent-danger-active) 53%, var(--bp-palette-white));
+  background-color: color-mix(in oklch, #cd4246 30%, transparent);
+  color: color-mix(in oklch, #8e292c 53%, #fff);
 }
 .xh-dark .xh-button.xh-button--outlined.xh-button--intent-danger:disabled,
 .xh-dark .xh-button.xh-button--outlined.xh-button--intent-danger.xh-button--disabled {
   background: none;
-  color: color-mix(
-    in oklch,
-    color-mix(in oklch, var(--bp-intent-danger-rest) 53%, var(--bp-palette-white)) 50%,
-    transparent
-  );
+  color: color-mix(in oklch, color-mix(in oklch, #cd4246 53%, #fff) 50%, transparent);
 }
 .xh-dark
   .xh-button.xh-button--outlined.xh-button--intent-danger:disabled:is(
@@ -1155,122 +1146,90 @@
     .xh-button--active,
     .xh-popover__target--active
   ) {
-  background-color: color-mix(in oklch, var(--bp-intent-danger-rest) 30%, transparent);
+  background-color: color-mix(in oklch, #cd4246 30%, transparent);
 }
 .xh-button.xh-button--outlined {
-  border: var(--bp-surface-border-width) solid var(--bp-surface-border-color-strong);
+  border: 1px solid var(--xh-base-surface-border-color-strong);
   box-sizing: border-box;
 }
 .xh-button.xh-button--outlined:disabled,
 .xh-button.xh-button--outlined:disabled:hover,
 .xh-button.xh-button--outlined.xh-button--disabled,
 .xh-button.xh-button--outlined.xh-button--disabled:hover {
-  border-color: var(--bp-surface-border-color-default);
+  border-color: var(--xh-base-surface-border-color);
 }
 .xh-dark .xh-button.xh-button--outlined {
-  border-color: var(--bp-surface-border-color-strong);
+  border-color: var(--xh-base-surface-border-color-strong);
 }
 .xh-dark .xh-button.xh-button--outlined:disabled,
 .xh-dark .xh-button.xh-button--outlined:disabled:hover,
 .xh-dark .xh-button.xh-button--outlined.xh-button--disabled,
 .xh-dark .xh-button.xh-button--outlined.xh-button--disabled:hover {
-  border-color: var(--bp-surface-border-color-default);
+  border-color: var(--xh-base-surface-border-color);
 }
 .xh-button.xh-button--outlined.xh-button--intent-primary {
-  border-color: color-mix(in oklch, var(--bp-intent-primary-hover) 60%, transparent);
+  border-color: color-mix(in oklch, #215db0 60%, transparent);
 }
 .xh-button.xh-button--outlined.xh-button--intent-primary:disabled,
 .xh-button.xh-button--outlined.xh-button--intent-primary.xh-button--disabled {
-  border-color: color-mix(in oklch, var(--bp-intent-primary-hover) 20%, transparent);
+  border-color: color-mix(in oklch, #215db0 20%, transparent);
 }
 .xh-dark .xh-button.xh-button--outlined.xh-button--intent-primary {
-  border-color: color-mix(
-    in oklch,
-    color-mix(in oklch, var(--bp-intent-primary-rest) 51%, var(--bp-palette-white)) 60%,
-    transparent
-  );
+  border-color: color-mix(in oklch, color-mix(in oklch, #2d72d2 51%, #fff) 60%, transparent);
 }
 .xh-dark .xh-button.xh-button--outlined.xh-button--intent-primary:disabled,
 .xh-dark .xh-button.xh-button--outlined.xh-button--intent-primary.xh-button--disabled {
-  border-color: color-mix(
-    in oklch,
-    color-mix(in oklch, var(--bp-intent-primary-rest) 51%, var(--bp-palette-white)) 20%,
-    transparent
-  );
+  border-color: color-mix(in oklch, color-mix(in oklch, #2d72d2 51%, #fff) 20%, transparent);
 }
 .xh-button.xh-button--outlined.xh-button--intent-success {
-  border-color: color-mix(in oklch, var(--bp-intent-success-hover) 60%, transparent);
+  border-color: color-mix(in oklch, #1c6e42 60%, transparent);
 }
 .xh-button.xh-button--outlined.xh-button--intent-success:disabled,
 .xh-button.xh-button--outlined.xh-button--intent-success.xh-button--disabled {
-  border-color: color-mix(in oklch, var(--bp-intent-success-hover) 20%, transparent);
+  border-color: color-mix(in oklch, #1c6e42 20%, transparent);
 }
 .xh-dark .xh-button.xh-button--outlined.xh-button--intent-success {
-  border-color: color-mix(
-    in oklch,
-    color-mix(in oklch, var(--bp-intent-success-rest) 54%, var(--bp-palette-white)) 60%,
-    transparent
-  );
+  border-color: color-mix(in oklch, color-mix(in oklch, #238551 54%, #fff) 60%, transparent);
 }
 .xh-dark .xh-button.xh-button--outlined.xh-button--intent-success:disabled,
 .xh-dark .xh-button.xh-button--outlined.xh-button--intent-success.xh-button--disabled {
-  border-color: color-mix(
-    in oklch,
-    color-mix(in oklch, var(--bp-intent-success-rest) 54%, var(--bp-palette-white)) 20%,
-    transparent
-  );
+  border-color: color-mix(in oklch, color-mix(in oklch, #238551 54%, #fff) 20%, transparent);
 }
 .xh-button.xh-button--outlined.xh-button--intent-warning {
-  border-color: color-mix(in oklch, var(--bp-intent-warning-hover) 60%, transparent);
+  border-color: color-mix(in oklch, #935610 60%, transparent);
 }
 .xh-button.xh-button--outlined.xh-button--intent-warning:disabled,
 .xh-button.xh-button--outlined.xh-button--intent-warning.xh-button--disabled {
-  border-color: color-mix(in oklch, var(--bp-intent-warning-hover) 20%, transparent);
+  border-color: color-mix(in oklch, #935610 20%, transparent);
 }
 .xh-dark .xh-button.xh-button--outlined.xh-button--intent-warning {
-  border-color: color-mix(
-    in oklch,
-    color-mix(in oklch, var(--bp-intent-warning-rest) 53%, var(--bp-palette-white)) 60%,
-    transparent
-  );
+  border-color: color-mix(in oklch, color-mix(in oklch, #c87619 53%, #fff) 60%, transparent);
 }
 .xh-dark .xh-button.xh-button--outlined.xh-button--intent-warning:disabled,
 .xh-dark .xh-button.xh-button--outlined.xh-button--intent-warning.xh-button--disabled {
-  border-color: color-mix(
-    in oklch,
-    color-mix(in oklch, var(--bp-intent-warning-rest) 53%, var(--bp-palette-white)) 20%,
-    transparent
-  );
+  border-color: color-mix(in oklch, color-mix(in oklch, #c87619 53%, #fff) 20%, transparent);
 }
 .xh-button.xh-button--outlined.xh-button--intent-danger {
-  border-color: color-mix(in oklch, var(--bp-intent-danger-hover) 60%, transparent);
+  border-color: color-mix(in oklch, #ac2f33 60%, transparent);
 }
 .xh-button.xh-button--outlined.xh-button--intent-danger:disabled,
 .xh-button.xh-button--outlined.xh-button--intent-danger.xh-button--disabled {
-  border-color: color-mix(in oklch, var(--bp-intent-danger-hover) 20%, transparent);
+  border-color: color-mix(in oklch, #ac2f33 20%, transparent);
 }
 .xh-dark .xh-button.xh-button--outlined.xh-button--intent-danger {
-  border-color: color-mix(
-    in oklch,
-    color-mix(in oklch, var(--bp-intent-danger-rest) 53%, var(--bp-palette-white)) 60%,
-    transparent
-  );
+  border-color: color-mix(in oklch, color-mix(in oklch, #cd4246 53%, #fff) 60%, transparent);
 }
 .xh-dark .xh-button.xh-button--outlined.xh-button--intent-danger:disabled,
 .xh-dark .xh-button.xh-button--outlined.xh-button--intent-danger.xh-button--disabled {
-  border-color: color-mix(
-    in oklch,
-    color-mix(in oklch, var(--bp-intent-danger-rest) 53%, var(--bp-palette-white)) 20%,
-    transparent
-  );
+  border-color: color-mix(in oklch, color-mix(in oklch, #cd4246 53%, #fff) 20%, transparent);
 }
 .xh-button.xh-button--intent-warning:not(.xh-button--disabled):not(.xh-button--minimal):not(
     .xh-button--outlined
   ):hover {
   background: color-mix(
     in oklch,
-    var(--bp6-button-warning-rest) 77%,
-    var(--bp-intent-warning-hover)
+    oklch(from #c87619 calc(l + 0.177) calc(c - 0.01) calc(h + 6.26)) 77%,
+    #935610
   );
 }
 .xh-button.xh-button--intent-warning:not(.xh-button--disabled):not(.xh-button--minimal):not(
@@ -1281,8 +1240,8 @@
   ):is(.xh-button--active, .xh-popover__target--active) {
   background: color-mix(
     in oklch,
-    var(--bp6-button-warning-rest) 46%,
-    var(--bp-intent-warning-active)
+    oklch(from #c87619 calc(l + 0.177) calc(c - 0.01) calc(h + 6.26)) 46%,
+    #77450d
   );
 }
 @media (forced-colors: active) and (prefers-color-scheme: dark) {
@@ -1297,11 +1256,11 @@
 }
 .xh-button.xh-button--intent-warning:disabled,
 .xh-button.xh-button--intent-warning.xh-button--disabled {
-  background-color: color-mix(in oklch, var(--bp-intent-warning-rest) 40%, transparent);
+  background-color: color-mix(in oklch, #c87619 40%, transparent);
 }
 .xh-dark .xh-button.xh-button--intent-warning:disabled,
 .xh-dark .xh-button.xh-button--intent-warning.xh-button--disabled {
-  color: color-mix(in oklch, var(--bp-intent-warning-foreground) 50%, transparent);
+  color: color-mix(in oklch, #111418 50%, transparent);
 }
 .xh-button.xh-button--intent-warning.xh-button--minimal,
 .xh-button.xh-button--intent-warning.xh-button--outlined {
@@ -1311,7 +1270,7 @@
 .xh-button.xh-button--intent-warning.xh-button--minimal.xh-button--disabled,
 .xh-button.xh-button--intent-warning.xh-button--outlined:disabled,
 .xh-button.xh-button--intent-warning.xh-button--outlined.xh-button--disabled {
-  color: color-mix(in oklch, var(--bp-intent-warning-hover) 40%, transparent);
+  color: color-mix(in oklch, #935610 40%, transparent);
 }
 a.xh-button {
   text-align: center;
@@ -1321,10 +1280,10 @@ a.xh-button {
 a.xh-button,
 a.xh-button:hover,
 a.xh-button:active {
-  color: var(--bp-typography-color-default-rest);
+  color: var(--xh-base-text-color);
 }
 a.xh-button.xh-button--disabled {
-  color: var(--bp-typography-color-default-disabled);
+  color: var(--xh-base-text-color-disabled);
 }
 .xh-button__text {
   flex: 0 1 auto;
@@ -1396,7 +1355,7 @@ a.xh-button.xh-button--disabled {
   > .xh-button,
 .xh-button-group:not(.xh-button-group--minimal):not(.xh-button-group--outlined)
   > .xh-button:not(:last-child) {
-  margin-right: calc(-1 * var(--bp-surface-border-width));
+  margin-right: calc(-1 * 1px);
 }
 .xh-button-group.xh-button-group--minimal .xh-button,
 .xh-button-group.xh-button-group--outlined .xh-button {
@@ -1405,9 +1364,9 @@ a.xh-button.xh-button--disabled {
 }
 .xh-button-group.xh-button-group--minimal .xh-button:hover,
 .xh-button-group.xh-button-group--outlined .xh-button:hover {
-  background-color: color-mix(in srgb, var(--bp-intent-default-hover) 8%, transparent);
+  background-color: color-mix(in srgb, #404854 8%, transparent);
   box-shadow: none;
-  color: var(--bp-typography-color-default-rest);
+  color: var(--xh-base-text-color);
   text-decoration: none;
 }
 .xh-button-group.xh-button-group--minimal .xh-button:active,
@@ -1416,9 +1375,9 @@ a.xh-button.xh-button--disabled {
 .xh-button-group.xh-button-group--outlined .xh-button:active,
 .xh-button-group.xh-button-group--outlined
   .xh-button:is(.xh-button--active, .xh-popover__target--active) {
-  background-color: color-mix(in srgb, var(--bp-intent-default-active) 16%, transparent);
+  background-color: color-mix(in srgb, #383e47 16%, transparent);
   box-shadow: none;
-  color: var(--bp-typography-color-default-rest);
+  color: var(--xh-base-text-color);
 }
 .xh-button-group.xh-button-group--minimal .xh-button:disabled,
 .xh-button-group.xh-button-group--minimal .xh-button:disabled:hover,
@@ -1429,7 +1388,7 @@ a.xh-button.xh-button--disabled {
 .xh-button-group.xh-button-group--outlined .xh-button.xh-button--disabled,
 .xh-button-group.xh-button-group--outlined .xh-button.xh-button--disabled:hover {
   background: none;
-  color: var(--bp-typography-color-default-disabled);
+  color: var(--xh-base-text-color-disabled);
   cursor: not-allowed;
 }
 .xh-button-group.xh-button-group--minimal
@@ -1448,13 +1407,13 @@ a.xh-button.xh-button--disabled {
   .xh-button.xh-button--disabled:is(.xh-button--active, .xh-popover__target--active),
 .xh-button-group.xh-button-group--outlined
   .xh-button.xh-button--disabled:hover:is(.xh-button--active, .xh-popover__target--active) {
-  background-color: color-mix(in srgb, var(--bp-intent-default-disabled) 30%, transparent);
+  background-color: color-mix(in srgb, #8f99a8 30%, transparent);
 }
 .xh-dark .xh-button-group.xh-button-group--minimal .xh-button,
 .xh-dark .xh-button-group.xh-button-group--outlined .xh-button {
   background: none;
   box-shadow: none;
-  color: var(--bp-intent-default-foreground);
+  color: #fff;
 }
 .xh-dark .xh-button-group.xh-button-group--minimal .xh-button:hover,
 .xh-dark .xh-button-group.xh-button-group--minimal .xh-button:active,
@@ -1468,11 +1427,11 @@ a.xh-button.xh-button--disabled {
   .xh-button:is(.xh-button--active, .xh-popover__target--active) {
   background: none;
   box-shadow: none;
-  color: var(--bp-intent-default-foreground);
+  color: #fff;
 }
 .xh-dark .xh-button-group.xh-button-group--minimal .xh-button:hover,
 .xh-dark .xh-button-group.xh-button-group--outlined .xh-button:hover {
-  background-color: color-mix(in srgb, var(--bp-intent-default-rest) 24%, transparent);
+  background-color: color-mix(in srgb, #5f6b7c 24%, transparent);
 }
 .xh-dark .xh-button-group.xh-button-group--minimal .xh-button:active,
 .xh-dark
@@ -1482,7 +1441,7 @@ a.xh-button.xh-button--disabled {
 .xh-dark
   .xh-button-group.xh-button-group--outlined
   .xh-button:is(.xh-button--active, .xh-popover__target--active) {
-  background-color: color-mix(in srgb, var(--bp-intent-default-rest) 49%, transparent);
+  background-color: color-mix(in srgb, #5f6b7c 49%, transparent);
 }
 .xh-dark .xh-button-group.xh-button-group--minimal .xh-button:disabled,
 .xh-dark .xh-button-group.xh-button-group--minimal .xh-button:disabled:hover,
@@ -1493,7 +1452,7 @@ a.xh-button.xh-button--disabled {
 .xh-dark .xh-button-group.xh-button-group--outlined .xh-button.xh-button--disabled,
 .xh-dark .xh-button-group.xh-button-group--outlined .xh-button.xh-button--disabled:hover {
   background: none;
-  color: var(--bp-typography-color-default-disabled);
+  color: var(--xh-base-text-color-disabled);
   cursor: not-allowed;
 }
 .xh-dark
@@ -1520,11 +1479,11 @@ a.xh-button.xh-button--disabled {
 .xh-dark
   .xh-button-group.xh-button-group--outlined
   .xh-button.xh-button--disabled:hover:is(.xh-button--active, .xh-popover__target--active) {
-  background-color: color-mix(in srgb, var(--bp-intent-default-disabled) 30%, transparent);
+  background-color: color-mix(in srgb, #8f99a8 30%, transparent);
 }
 .xh-button-group.xh-button-group--minimal .xh-button.xh-button--intent-primary,
 .xh-button-group.xh-button-group--outlined .xh-button.xh-button--intent-primary {
-  color: var(--bp-intent-primary-hover);
+  color: #215db0;
 }
 .xh-button-group.xh-button-group--minimal .xh-button.xh-button--intent-primary:hover,
 .xh-button-group.xh-button-group--minimal .xh-button.xh-button--intent-primary:active,
@@ -1536,12 +1495,12 @@ a.xh-button.xh-button--disabled {
   .xh-button.xh-button--intent-primary:is(.xh-button--active, .xh-popover__target--active) {
   background: none;
   box-shadow: none;
-  color: var(--bp-intent-primary-hover);
+  color: #215db0;
 }
 .xh-button-group.xh-button-group--minimal .xh-button.xh-button--intent-primary:hover,
 .xh-button-group.xh-button-group--outlined .xh-button.xh-button--intent-primary:hover {
-  background-color: color-mix(in oklch, var(--bp-intent-primary-rest) 15%, transparent);
-  color: var(--bp-intent-primary-hover);
+  background-color: color-mix(in oklch, #2d72d2 15%, transparent);
+  color: #215db0;
 }
 .xh-button-group.xh-button-group--minimal .xh-button.xh-button--intent-primary:active,
 .xh-button-group.xh-button-group--minimal
@@ -1549,8 +1508,8 @@ a.xh-button.xh-button--disabled {
 .xh-button-group.xh-button-group--outlined .xh-button.xh-button--intent-primary:active,
 .xh-button-group.xh-button-group--outlined
   .xh-button.xh-button--intent-primary:is(.xh-button--active, .xh-popover__target--active) {
-  background-color: color-mix(in oklch, var(--bp-intent-primary-rest) 30%, transparent);
-  color: var(--bp-intent-primary-active);
+  background-color: color-mix(in oklch, #2d72d2 30%, transparent);
+  color: #184a90;
 }
 .xh-button-group.xh-button-group--minimal .xh-button.xh-button--intent-primary:disabled,
 .xh-button-group.xh-button-group--minimal .xh-button.xh-button--intent-primary.xh-button--disabled,
@@ -1558,7 +1517,7 @@ a.xh-button.xh-button--disabled {
 .xh-button-group.xh-button-group--outlined
   .xh-button.xh-button--intent-primary.xh-button--disabled {
   background: none;
-  color: color-mix(in oklch, var(--bp-intent-primary-hover) 50%, transparent);
+  color: color-mix(in oklch, #215db0 50%, transparent);
 }
 .xh-button-group.xh-button-group--minimal
   .xh-button.xh-button--intent-primary:disabled:is(.xh-button--active, .xh-popover__target--active),
@@ -1574,16 +1533,16 @@ a.xh-button.xh-button--disabled {
     .xh-button--active,
     .xh-popover__target--active
   ) {
-  background-color: color-mix(in oklch, var(--bp-intent-primary-rest) 30%, transparent);
+  background-color: color-mix(in oklch, #2d72d2 30%, transparent);
 }
 .xh-dark .xh-button-group.xh-button-group--minimal .xh-button.xh-button--intent-primary,
 .xh-dark .xh-button-group.xh-button-group--outlined .xh-button.xh-button--intent-primary {
-  color: color-mix(in oklch, var(--bp-intent-primary-rest) 51%, var(--bp-palette-white));
+  color: color-mix(in oklch, #2d72d2 51%, #fff);
 }
 .xh-dark .xh-button-group.xh-button-group--minimal .xh-button.xh-button--intent-primary:hover,
 .xh-dark .xh-button-group.xh-button-group--outlined .xh-button.xh-button--intent-primary:hover {
-  background-color: color-mix(in oklch, var(--bp-intent-primary-rest) 20%, transparent);
-  color: color-mix(in oklch, var(--bp-intent-primary-hover) 51%, var(--bp-palette-white));
+  background-color: color-mix(in oklch, #2d72d2 20%, transparent);
+  color: color-mix(in oklch, #215db0 51%, #fff);
 }
 .xh-dark .xh-button-group.xh-button-group--minimal .xh-button.xh-button--intent-primary:active,
 .xh-dark
@@ -1593,8 +1552,8 @@ a.xh-button.xh-button--disabled {
 .xh-dark
   .xh-button-group.xh-button-group--outlined
   .xh-button.xh-button--intent-primary:is(.xh-button--active, .xh-popover__target--active) {
-  background-color: color-mix(in oklch, var(--bp-intent-primary-rest) 30%, transparent);
-  color: color-mix(in oklch, var(--bp-intent-primary-active) 51%, var(--bp-palette-white));
+  background-color: color-mix(in oklch, #2d72d2 30%, transparent);
+  color: color-mix(in oklch, #184a90 51%, #fff);
 }
 .xh-dark .xh-button-group.xh-button-group--minimal .xh-button.xh-button--intent-primary:disabled,
 .xh-dark
@@ -1605,11 +1564,7 @@ a.xh-button.xh-button--disabled {
   .xh-button-group.xh-button-group--outlined
   .xh-button.xh-button--intent-primary.xh-button--disabled {
   background: none;
-  color: color-mix(
-    in oklch,
-    color-mix(in oklch, var(--bp-intent-primary-rest) 51%, var(--bp-palette-white)) 50%,
-    transparent
-  );
+  color: color-mix(in oklch, color-mix(in oklch, #2d72d2 51%, #fff) 50%, transparent);
 }
 .xh-dark
   .xh-button-group.xh-button-group--minimal
@@ -1629,11 +1584,11 @@ a.xh-button.xh-button--disabled {
     .xh-button--active,
     .xh-popover__target--active
   ) {
-  background-color: color-mix(in oklch, var(--bp-intent-primary-rest) 30%, transparent);
+  background-color: color-mix(in oklch, #2d72d2 30%, transparent);
 }
 .xh-button-group.xh-button-group--minimal .xh-button.xh-button--intent-success,
 .xh-button-group.xh-button-group--outlined .xh-button.xh-button--intent-success {
-  color: var(--bp-intent-success-hover);
+  color: #1c6e42;
 }
 .xh-button-group.xh-button-group--minimal .xh-button.xh-button--intent-success:hover,
 .xh-button-group.xh-button-group--minimal .xh-button.xh-button--intent-success:active,
@@ -1645,12 +1600,12 @@ a.xh-button.xh-button--disabled {
   .xh-button.xh-button--intent-success:is(.xh-button--active, .xh-popover__target--active) {
   background: none;
   box-shadow: none;
-  color: var(--bp-intent-success-hover);
+  color: #1c6e42;
 }
 .xh-button-group.xh-button-group--minimal .xh-button.xh-button--intent-success:hover,
 .xh-button-group.xh-button-group--outlined .xh-button.xh-button--intent-success:hover {
-  background-color: color-mix(in oklch, var(--bp-intent-success-rest) 15%, transparent);
-  color: var(--bp-intent-success-hover);
+  background-color: color-mix(in oklch, #238551 15%, transparent);
+  color: #1c6e42;
 }
 .xh-button-group.xh-button-group--minimal .xh-button.xh-button--intent-success:active,
 .xh-button-group.xh-button-group--minimal
@@ -1658,8 +1613,8 @@ a.xh-button.xh-button--disabled {
 .xh-button-group.xh-button-group--outlined .xh-button.xh-button--intent-success:active,
 .xh-button-group.xh-button-group--outlined
   .xh-button.xh-button--intent-success:is(.xh-button--active, .xh-popover__target--active) {
-  background-color: color-mix(in oklch, var(--bp-intent-success-rest) 30%, transparent);
-  color: var(--bp-intent-success-active);
+  background-color: color-mix(in oklch, #238551 30%, transparent);
+  color: #165a36;
 }
 .xh-button-group.xh-button-group--minimal .xh-button.xh-button--intent-success:disabled,
 .xh-button-group.xh-button-group--minimal .xh-button.xh-button--intent-success.xh-button--disabled,
@@ -1667,7 +1622,7 @@ a.xh-button.xh-button--disabled {
 .xh-button-group.xh-button-group--outlined
   .xh-button.xh-button--intent-success.xh-button--disabled {
   background: none;
-  color: color-mix(in oklch, var(--bp-intent-success-hover) 50%, transparent);
+  color: color-mix(in oklch, #1c6e42 50%, transparent);
 }
 .xh-button-group.xh-button-group--minimal
   .xh-button.xh-button--intent-success:disabled:is(.xh-button--active, .xh-popover__target--active),
@@ -1683,16 +1638,16 @@ a.xh-button.xh-button--disabled {
     .xh-button--active,
     .xh-popover__target--active
   ) {
-  background-color: color-mix(in oklch, var(--bp-intent-success-rest) 30%, transparent);
+  background-color: color-mix(in oklch, #238551 30%, transparent);
 }
 .xh-dark .xh-button-group.xh-button-group--minimal .xh-button.xh-button--intent-success,
 .xh-dark .xh-button-group.xh-button-group--outlined .xh-button.xh-button--intent-success {
-  color: color-mix(in oklch, var(--bp-intent-success-rest) 54%, var(--bp-palette-white));
+  color: color-mix(in oklch, #238551 54%, #fff);
 }
 .xh-dark .xh-button-group.xh-button-group--minimal .xh-button.xh-button--intent-success:hover,
 .xh-dark .xh-button-group.xh-button-group--outlined .xh-button.xh-button--intent-success:hover {
-  background-color: color-mix(in oklch, var(--bp-intent-success-rest) 20%, transparent);
-  color: color-mix(in oklch, var(--bp-intent-success-hover) 54%, var(--bp-palette-white));
+  background-color: color-mix(in oklch, #238551 20%, transparent);
+  color: color-mix(in oklch, #1c6e42 54%, #fff);
 }
 .xh-dark .xh-button-group.xh-button-group--minimal .xh-button.xh-button--intent-success:active,
 .xh-dark
@@ -1702,8 +1657,8 @@ a.xh-button.xh-button--disabled {
 .xh-dark
   .xh-button-group.xh-button-group--outlined
   .xh-button.xh-button--intent-success:is(.xh-button--active, .xh-popover__target--active) {
-  background-color: color-mix(in oklch, var(--bp-intent-success-rest) 30%, transparent);
-  color: color-mix(in oklch, var(--bp-intent-success-active) 54%, var(--bp-palette-white));
+  background-color: color-mix(in oklch, #238551 30%, transparent);
+  color: color-mix(in oklch, #165a36 54%, #fff);
 }
 .xh-dark .xh-button-group.xh-button-group--minimal .xh-button.xh-button--intent-success:disabled,
 .xh-dark
@@ -1714,11 +1669,7 @@ a.xh-button.xh-button--disabled {
   .xh-button-group.xh-button-group--outlined
   .xh-button.xh-button--intent-success.xh-button--disabled {
   background: none;
-  color: color-mix(
-    in oklch,
-    color-mix(in oklch, var(--bp-intent-success-rest) 54%, var(--bp-palette-white)) 50%,
-    transparent
-  );
+  color: color-mix(in oklch, color-mix(in oklch, #238551 54%, #fff) 50%, transparent);
 }
 .xh-dark
   .xh-button-group.xh-button-group--minimal
@@ -1738,11 +1689,11 @@ a.xh-button.xh-button--disabled {
     .xh-button--active,
     .xh-popover__target--active
   ) {
-  background-color: color-mix(in oklch, var(--bp-intent-success-rest) 30%, transparent);
+  background-color: color-mix(in oklch, #238551 30%, transparent);
 }
 .xh-button-group.xh-button-group--minimal .xh-button.xh-button--intent-warning,
 .xh-button-group.xh-button-group--outlined .xh-button.xh-button--intent-warning {
-  color: var(--bp-intent-warning-hover);
+  color: #935610;
 }
 .xh-button-group.xh-button-group--minimal .xh-button.xh-button--intent-warning:hover,
 .xh-button-group.xh-button-group--minimal .xh-button.xh-button--intent-warning:active,
@@ -1754,12 +1705,16 @@ a.xh-button.xh-button--disabled {
   .xh-button.xh-button--intent-warning:is(.xh-button--active, .xh-popover__target--active) {
   background: none;
   box-shadow: none;
-  color: var(--bp-intent-warning-hover);
+  color: #935610;
 }
 .xh-button-group.xh-button-group--minimal .xh-button.xh-button--intent-warning:hover,
 .xh-button-group.xh-button-group--outlined .xh-button.xh-button--intent-warning:hover {
-  background-color: color-mix(in oklch, var(--bp6-button-warning-rest) 15%, transparent);
-  color: var(--bp-intent-warning-hover);
+  background-color: color-mix(
+    in oklch,
+    oklch(from #c87619 calc(l + 0.177) calc(c - 0.01) calc(h + 6.26)) 15%,
+    transparent
+  );
+  color: #935610;
 }
 .xh-button-group.xh-button-group--minimal .xh-button.xh-button--intent-warning:active,
 .xh-button-group.xh-button-group--minimal
@@ -1767,8 +1722,12 @@ a.xh-button.xh-button--disabled {
 .xh-button-group.xh-button-group--outlined .xh-button.xh-button--intent-warning:active,
 .xh-button-group.xh-button-group--outlined
   .xh-button.xh-button--intent-warning:is(.xh-button--active, .xh-popover__target--active) {
-  background-color: color-mix(in oklch, var(--bp6-button-warning-rest) 30%, transparent);
-  color: var(--bp-intent-warning-active);
+  background-color: color-mix(
+    in oklch,
+    oklch(from #c87619 calc(l + 0.177) calc(c - 0.01) calc(h + 6.26)) 30%,
+    transparent
+  );
+  color: #77450d;
 }
 .xh-button-group.xh-button-group--minimal .xh-button.xh-button--intent-warning:disabled,
 .xh-button-group.xh-button-group--minimal .xh-button.xh-button--intent-warning.xh-button--disabled,
@@ -1776,7 +1735,7 @@ a.xh-button.xh-button--disabled {
 .xh-button-group.xh-button-group--outlined
   .xh-button.xh-button--intent-warning.xh-button--disabled {
   background: none;
-  color: color-mix(in oklch, var(--bp-intent-warning-hover) 50%, transparent);
+  color: color-mix(in oklch, #935610 50%, transparent);
 }
 .xh-button-group.xh-button-group--minimal
   .xh-button.xh-button--intent-warning:disabled:is(.xh-button--active, .xh-popover__target--active),
@@ -1792,16 +1751,24 @@ a.xh-button.xh-button--disabled {
     .xh-button--active,
     .xh-popover__target--active
   ) {
-  background-color: color-mix(in oklch, var(--bp6-button-warning-rest) 30%, transparent);
+  background-color: color-mix(
+    in oklch,
+    oklch(from #c87619 calc(l + 0.177) calc(c - 0.01) calc(h + 6.26)) 30%,
+    transparent
+  );
 }
 .xh-dark .xh-button-group.xh-button-group--minimal .xh-button.xh-button--intent-warning,
 .xh-dark .xh-button-group.xh-button-group--outlined .xh-button.xh-button--intent-warning {
-  color: color-mix(in oklch, var(--bp-intent-warning-rest) 53%, var(--bp-palette-white));
+  color: color-mix(in oklch, #c87619 53%, #fff);
 }
 .xh-dark .xh-button-group.xh-button-group--minimal .xh-button.xh-button--intent-warning:hover,
 .xh-dark .xh-button-group.xh-button-group--outlined .xh-button.xh-button--intent-warning:hover {
-  background-color: color-mix(in oklch, var(--bp6-button-warning-rest) 20%, transparent);
-  color: color-mix(in oklch, var(--bp-intent-warning-hover) 53%, var(--bp-palette-white));
+  background-color: color-mix(
+    in oklch,
+    oklch(from #c87619 calc(l + 0.177) calc(c - 0.01) calc(h + 6.26)) 20%,
+    transparent
+  );
+  color: color-mix(in oklch, #935610 53%, #fff);
 }
 .xh-dark .xh-button-group.xh-button-group--minimal .xh-button.xh-button--intent-warning:active,
 .xh-dark
@@ -1811,8 +1778,12 @@ a.xh-button.xh-button--disabled {
 .xh-dark
   .xh-button-group.xh-button-group--outlined
   .xh-button.xh-button--intent-warning:is(.xh-button--active, .xh-popover__target--active) {
-  background-color: color-mix(in oklch, var(--bp6-button-warning-rest) 30%, transparent);
-  color: color-mix(in oklch, var(--bp-intent-warning-active) 53%, var(--bp-palette-white));
+  background-color: color-mix(
+    in oklch,
+    oklch(from #c87619 calc(l + 0.177) calc(c - 0.01) calc(h + 6.26)) 30%,
+    transparent
+  );
+  color: color-mix(in oklch, #77450d 53%, #fff);
 }
 .xh-dark .xh-button-group.xh-button-group--minimal .xh-button.xh-button--intent-warning:disabled,
 .xh-dark
@@ -1823,11 +1794,7 @@ a.xh-button.xh-button--disabled {
   .xh-button-group.xh-button-group--outlined
   .xh-button.xh-button--intent-warning.xh-button--disabled {
   background: none;
-  color: color-mix(
-    in oklch,
-    color-mix(in oklch, var(--bp-intent-warning-rest) 53%, var(--bp-palette-white)) 50%,
-    transparent
-  );
+  color: color-mix(in oklch, color-mix(in oklch, #c87619 53%, #fff) 50%, transparent);
 }
 .xh-dark
   .xh-button-group.xh-button-group--minimal
@@ -1847,11 +1814,15 @@ a.xh-button.xh-button--disabled {
     .xh-button--active,
     .xh-popover__target--active
   ) {
-  background-color: color-mix(in oklch, var(--bp6-button-warning-rest) 30%, transparent);
+  background-color: color-mix(
+    in oklch,
+    oklch(from #c87619 calc(l + 0.177) calc(c - 0.01) calc(h + 6.26)) 30%,
+    transparent
+  );
 }
 .xh-button-group.xh-button-group--minimal .xh-button.xh-button--intent-danger,
 .xh-button-group.xh-button-group--outlined .xh-button.xh-button--intent-danger {
-  color: var(--bp-intent-danger-hover);
+  color: #ac2f33;
 }
 .xh-button-group.xh-button-group--minimal .xh-button.xh-button--intent-danger:hover,
 .xh-button-group.xh-button-group--minimal .xh-button.xh-button--intent-danger:active,
@@ -1863,12 +1834,12 @@ a.xh-button.xh-button--disabled {
   .xh-button.xh-button--intent-danger:is(.xh-button--active, .xh-popover__target--active) {
   background: none;
   box-shadow: none;
-  color: var(--bp-intent-danger-hover);
+  color: #ac2f33;
 }
 .xh-button-group.xh-button-group--minimal .xh-button.xh-button--intent-danger:hover,
 .xh-button-group.xh-button-group--outlined .xh-button.xh-button--intent-danger:hover {
-  background-color: color-mix(in oklch, var(--bp-intent-danger-rest) 15%, transparent);
-  color: var(--bp-intent-danger-hover);
+  background-color: color-mix(in oklch, #cd4246 15%, transparent);
+  color: #ac2f33;
 }
 .xh-button-group.xh-button-group--minimal .xh-button.xh-button--intent-danger:active,
 .xh-button-group.xh-button-group--minimal
@@ -1876,15 +1847,15 @@ a.xh-button.xh-button--disabled {
 .xh-button-group.xh-button-group--outlined .xh-button.xh-button--intent-danger:active,
 .xh-button-group.xh-button-group--outlined
   .xh-button.xh-button--intent-danger:is(.xh-button--active, .xh-popover__target--active) {
-  background-color: color-mix(in oklch, var(--bp-intent-danger-rest) 30%, transparent);
-  color: var(--bp-intent-danger-active);
+  background-color: color-mix(in oklch, #cd4246 30%, transparent);
+  color: #8e292c;
 }
 .xh-button-group.xh-button-group--minimal .xh-button.xh-button--intent-danger:disabled,
 .xh-button-group.xh-button-group--minimal .xh-button.xh-button--intent-danger.xh-button--disabled,
 .xh-button-group.xh-button-group--outlined .xh-button.xh-button--intent-danger:disabled,
 .xh-button-group.xh-button-group--outlined .xh-button.xh-button--intent-danger.xh-button--disabled {
   background: none;
-  color: color-mix(in oklch, var(--bp-intent-danger-hover) 50%, transparent);
+  color: color-mix(in oklch, #ac2f33 50%, transparent);
 }
 .xh-button-group.xh-button-group--minimal
   .xh-button.xh-button--intent-danger:disabled:is(.xh-button--active, .xh-popover__target--active),
@@ -1900,16 +1871,16 @@ a.xh-button.xh-button--disabled {
     .xh-button--active,
     .xh-popover__target--active
   ) {
-  background-color: color-mix(in oklch, var(--bp-intent-danger-rest) 30%, transparent);
+  background-color: color-mix(in oklch, #cd4246 30%, transparent);
 }
 .xh-dark .xh-button-group.xh-button-group--minimal .xh-button.xh-button--intent-danger,
 .xh-dark .xh-button-group.xh-button-group--outlined .xh-button.xh-button--intent-danger {
-  color: color-mix(in oklch, var(--bp-intent-danger-rest) 53%, var(--bp-palette-white));
+  color: color-mix(in oklch, #cd4246 53%, #fff);
 }
 .xh-dark .xh-button-group.xh-button-group--minimal .xh-button.xh-button--intent-danger:hover,
 .xh-dark .xh-button-group.xh-button-group--outlined .xh-button.xh-button--intent-danger:hover {
-  background-color: color-mix(in oklch, var(--bp-intent-danger-rest) 20%, transparent);
-  color: color-mix(in oklch, var(--bp-intent-danger-hover) 53%, var(--bp-palette-white));
+  background-color: color-mix(in oklch, #cd4246 20%, transparent);
+  color: color-mix(in oklch, #ac2f33 53%, #fff);
 }
 .xh-dark .xh-button-group.xh-button-group--minimal .xh-button.xh-button--intent-danger:active,
 .xh-dark
@@ -1919,8 +1890,8 @@ a.xh-button.xh-button--disabled {
 .xh-dark
   .xh-button-group.xh-button-group--outlined
   .xh-button.xh-button--intent-danger:is(.xh-button--active, .xh-popover__target--active) {
-  background-color: color-mix(in oklch, var(--bp-intent-danger-rest) 30%, transparent);
-  color: color-mix(in oklch, var(--bp-intent-danger-active) 53%, var(--bp-palette-white));
+  background-color: color-mix(in oklch, #cd4246 30%, transparent);
+  color: color-mix(in oklch, #8e292c 53%, #fff);
 }
 .xh-dark .xh-button-group.xh-button-group--minimal .xh-button.xh-button--intent-danger:disabled,
 .xh-dark
@@ -1931,11 +1902,7 @@ a.xh-button.xh-button--disabled {
   .xh-button-group.xh-button-group--outlined
   .xh-button.xh-button--intent-danger.xh-button--disabled {
   background: none;
-  color: color-mix(
-    in oklch,
-    color-mix(in oklch, var(--bp-intent-danger-rest) 53%, var(--bp-palette-white)) 50%,
-    transparent
-  );
+  color: color-mix(in oklch, color-mix(in oklch, #cd4246 53%, #fff) 50%, transparent);
 }
 .xh-dark
   .xh-button-group.xh-button-group--minimal
@@ -1955,7 +1922,7 @@ a.xh-button.xh-button--disabled {
     .xh-button--active,
     .xh-popover__target--active
   ) {
-  background-color: color-mix(in oklch, var(--bp-intent-danger-rest) 30%, transparent);
+  background-color: color-mix(in oklch, #cd4246 30%, transparent);
 }
 @media (forced-colors: active) and (prefers-color-scheme: dark) {
   .xh-button-group.xh-button-group--minimal:not(:first-child),
@@ -1970,12 +1937,12 @@ a.xh-button.xh-button--disabled {
   .xh-button-group.xh-button-group--outlined:not(:last-child) {
     border-bottom-right-radius: 0;
     border-top-right-radius: 0;
-    margin-right: calc(-1 * var(--bp-surface-border-width));
+    margin-right: calc(-1 * 1px);
   }
 }
 .xh-button-group.xh-button-group--outlined > .xh-button,
 .xh-button-group.xh-button-group--outlined > .xh-popover__target-wrapper > .xh-button {
-  border: var(--bp-surface-border-width) solid var(--bp-surface-border-color-strong);
+  border: 1px solid var(--xh-base-surface-border-color-strong);
   box-sizing: border-box;
 }
 .xh-button-group.xh-button-group--outlined > .xh-button:disabled,
@@ -1992,11 +1959,11 @@ a.xh-button.xh-button--disabled {
 .xh-button-group.xh-button-group--outlined
   > .xh-popover__target-wrapper
   > .xh-button.xh-button--disabled:hover {
-  border-color: var(--bp-surface-border-color-default);
+  border-color: var(--xh-base-surface-border-color);
 }
 .xh-dark .xh-button-group.xh-button-group--outlined > .xh-button,
 .xh-dark .xh-button-group.xh-button-group--outlined > .xh-popover__target-wrapper > .xh-button {
-  border-color: var(--bp-surface-border-color-strong);
+  border-color: var(--xh-base-surface-border-color-strong);
 }
 .xh-dark .xh-button-group.xh-button-group--outlined > .xh-button:disabled,
 .xh-dark .xh-button-group.xh-button-group--outlined > .xh-button:disabled:hover,
@@ -2018,13 +1985,13 @@ a.xh-button.xh-button--disabled {
   .xh-button-group.xh-button-group--outlined
   > .xh-popover__target-wrapper
   > .xh-button.xh-button--disabled:hover {
-  border-color: var(--bp-surface-border-color-default);
+  border-color: var(--xh-base-surface-border-color);
 }
 .xh-button-group.xh-button-group--outlined > .xh-button.xh-button--intent-primary,
 .xh-button-group.xh-button-group--outlined
   > .xh-popover__target-wrapper
   > .xh-button.xh-button--intent-primary {
-  border-color: color-mix(in oklch, var(--bp-intent-primary-hover) 60%, transparent);
+  border-color: color-mix(in oklch, #215db0 60%, transparent);
 }
 .xh-button-group.xh-button-group--outlined > .xh-button.xh-button--intent-primary:disabled,
 .xh-button-group.xh-button-group--outlined
@@ -2035,18 +2002,14 @@ a.xh-button.xh-button--disabled {
 .xh-button-group.xh-button-group--outlined
   > .xh-popover__target-wrapper
   > .xh-button.xh-button--intent-primary.xh-button--disabled {
-  border-color: color-mix(in oklch, var(--bp-intent-primary-hover) 20%, transparent);
+  border-color: color-mix(in oklch, #215db0 20%, transparent);
 }
 .xh-dark .xh-button-group.xh-button-group--outlined > .xh-button.xh-button--intent-primary,
 .xh-dark
   .xh-button-group.xh-button-group--outlined
   > .xh-popover__target-wrapper
   > .xh-button.xh-button--intent-primary {
-  border-color: color-mix(
-    in oklch,
-    color-mix(in oklch, var(--bp-intent-primary-rest) 51%, var(--bp-palette-white)) 60%,
-    transparent
-  );
+  border-color: color-mix(in oklch, color-mix(in oklch, #2d72d2 51%, #fff) 60%, transparent);
 }
 .xh-dark .xh-button-group.xh-button-group--outlined > .xh-button.xh-button--intent-primary:disabled,
 .xh-dark
@@ -2060,17 +2023,13 @@ a.xh-button.xh-button--disabled {
   .xh-button-group.xh-button-group--outlined
   > .xh-popover__target-wrapper
   > .xh-button.xh-button--intent-primary.xh-button--disabled {
-  border-color: color-mix(
-    in oklch,
-    color-mix(in oklch, var(--bp-intent-primary-rest) 51%, var(--bp-palette-white)) 20%,
-    transparent
-  );
+  border-color: color-mix(in oklch, color-mix(in oklch, #2d72d2 51%, #fff) 20%, transparent);
 }
 .xh-button-group.xh-button-group--outlined > .xh-button.xh-button--intent-success,
 .xh-button-group.xh-button-group--outlined
   > .xh-popover__target-wrapper
   > .xh-button.xh-button--intent-success {
-  border-color: color-mix(in oklch, var(--bp-intent-success-hover) 60%, transparent);
+  border-color: color-mix(in oklch, #1c6e42 60%, transparent);
 }
 .xh-button-group.xh-button-group--outlined > .xh-button.xh-button--intent-success:disabled,
 .xh-button-group.xh-button-group--outlined
@@ -2081,18 +2040,14 @@ a.xh-button.xh-button--disabled {
 .xh-button-group.xh-button-group--outlined
   > .xh-popover__target-wrapper
   > .xh-button.xh-button--intent-success.xh-button--disabled {
-  border-color: color-mix(in oklch, var(--bp-intent-success-hover) 20%, transparent);
+  border-color: color-mix(in oklch, #1c6e42 20%, transparent);
 }
 .xh-dark .xh-button-group.xh-button-group--outlined > .xh-button.xh-button--intent-success,
 .xh-dark
   .xh-button-group.xh-button-group--outlined
   > .xh-popover__target-wrapper
   > .xh-button.xh-button--intent-success {
-  border-color: color-mix(
-    in oklch,
-    color-mix(in oklch, var(--bp-intent-success-rest) 54%, var(--bp-palette-white)) 60%,
-    transparent
-  );
+  border-color: color-mix(in oklch, color-mix(in oklch, #238551 54%, #fff) 60%, transparent);
 }
 .xh-dark .xh-button-group.xh-button-group--outlined > .xh-button.xh-button--intent-success:disabled,
 .xh-dark
@@ -2106,17 +2061,13 @@ a.xh-button.xh-button--disabled {
   .xh-button-group.xh-button-group--outlined
   > .xh-popover__target-wrapper
   > .xh-button.xh-button--intent-success.xh-button--disabled {
-  border-color: color-mix(
-    in oklch,
-    color-mix(in oklch, var(--bp-intent-success-rest) 54%, var(--bp-palette-white)) 20%,
-    transparent
-  );
+  border-color: color-mix(in oklch, color-mix(in oklch, #238551 54%, #fff) 20%, transparent);
 }
 .xh-button-group.xh-button-group--outlined > .xh-button.xh-button--intent-warning,
 .xh-button-group.xh-button-group--outlined
   > .xh-popover__target-wrapper
   > .xh-button.xh-button--intent-warning {
-  border-color: color-mix(in oklch, var(--bp-intent-warning-hover) 60%, transparent);
+  border-color: color-mix(in oklch, #935610 60%, transparent);
 }
 .xh-button-group.xh-button-group--outlined > .xh-button.xh-button--intent-warning:disabled,
 .xh-button-group.xh-button-group--outlined
@@ -2127,18 +2078,14 @@ a.xh-button.xh-button--disabled {
 .xh-button-group.xh-button-group--outlined
   > .xh-popover__target-wrapper
   > .xh-button.xh-button--intent-warning.xh-button--disabled {
-  border-color: color-mix(in oklch, var(--bp-intent-warning-hover) 20%, transparent);
+  border-color: color-mix(in oklch, #935610 20%, transparent);
 }
 .xh-dark .xh-button-group.xh-button-group--outlined > .xh-button.xh-button--intent-warning,
 .xh-dark
   .xh-button-group.xh-button-group--outlined
   > .xh-popover__target-wrapper
   > .xh-button.xh-button--intent-warning {
-  border-color: color-mix(
-    in oklch,
-    color-mix(in oklch, var(--bp-intent-warning-rest) 53%, var(--bp-palette-white)) 60%,
-    transparent
-  );
+  border-color: color-mix(in oklch, color-mix(in oklch, #c87619 53%, #fff) 60%, transparent);
 }
 .xh-dark .xh-button-group.xh-button-group--outlined > .xh-button.xh-button--intent-warning:disabled,
 .xh-dark
@@ -2152,17 +2099,13 @@ a.xh-button.xh-button--disabled {
   .xh-button-group.xh-button-group--outlined
   > .xh-popover__target-wrapper
   > .xh-button.xh-button--intent-warning.xh-button--disabled {
-  border-color: color-mix(
-    in oklch,
-    color-mix(in oklch, var(--bp-intent-warning-rest) 53%, var(--bp-palette-white)) 20%,
-    transparent
-  );
+  border-color: color-mix(in oklch, color-mix(in oklch, #c87619 53%, #fff) 20%, transparent);
 }
 .xh-button-group.xh-button-group--outlined > .xh-button.xh-button--intent-danger,
 .xh-button-group.xh-button-group--outlined
   > .xh-popover__target-wrapper
   > .xh-button.xh-button--intent-danger {
-  border-color: color-mix(in oklch, var(--bp-intent-danger-hover) 60%, transparent);
+  border-color: color-mix(in oklch, #ac2f33 60%, transparent);
 }
 .xh-button-group.xh-button-group--outlined > .xh-button.xh-button--intent-danger:disabled,
 .xh-button-group.xh-button-group--outlined
@@ -2173,18 +2116,14 @@ a.xh-button.xh-button--disabled {
 .xh-button-group.xh-button-group--outlined
   > .xh-popover__target-wrapper
   > .xh-button.xh-button--intent-danger.xh-button--disabled {
-  border-color: color-mix(in oklch, var(--bp-intent-danger-hover) 20%, transparent);
+  border-color: color-mix(in oklch, #ac2f33 20%, transparent);
 }
 .xh-dark .xh-button-group.xh-button-group--outlined > .xh-button.xh-button--intent-danger,
 .xh-dark
   .xh-button-group.xh-button-group--outlined
   > .xh-popover__target-wrapper
   > .xh-button.xh-button--intent-danger {
-  border-color: color-mix(
-    in oklch,
-    color-mix(in oklch, var(--bp-intent-danger-rest) 53%, var(--bp-palette-white)) 60%,
-    transparent
-  );
+  border-color: color-mix(in oklch, color-mix(in oklch, #cd4246 53%, #fff) 60%, transparent);
 }
 .xh-dark .xh-button-group.xh-button-group--outlined > .xh-button.xh-button--intent-danger:disabled,
 .xh-dark
@@ -2198,11 +2137,7 @@ a.xh-button.xh-button--disabled {
   .xh-button-group.xh-button-group--outlined
   > .xh-popover__target-wrapper
   > .xh-button.xh-button--intent-danger.xh-button--disabled {
-  border-color: color-mix(
-    in oklch,
-    color-mix(in oklch, var(--bp-intent-danger-rest) 53%, var(--bp-palette-white)) 20%,
-    transparent
-  );
+  border-color: color-mix(in oklch, color-mix(in oklch, #cd4246 53%, #fff) 20%, transparent);
 }
 .xh-button-group.xh-button-group--outlined:not(.xh-button-group--vertical)
   > .xh-button:not(:last-child),
@@ -2243,7 +2178,7 @@ a.xh-button.xh-button--disabled {
   > .xh-popover__target-wrapper:first-child
   > .xh-button,
 .xh-button-group.xh-button-group--vertical.xh-button-group--outlined > .xh-button:first-child {
-  border-radius: var(--bp-surface-border-radius) var(--bp-surface-border-radius) 0 0;
+  border-radius: 4px 4px 0 0;
 }
 .xh-button-group.xh-button-group--vertical:not(.xh-button-group--minimal)
   > .xh-popover__target-wrapper:last-child
@@ -2253,7 +2188,7 @@ a.xh-button.xh-button--disabled {
   > .xh-popover__target-wrapper:last-child
   > .xh-button,
 .xh-button-group.xh-button-group--vertical.xh-button-group--outlined > .xh-button:last-child {
-  border-radius: 0 0 var(--bp-surface-border-radius) var(--bp-surface-border-radius);
+  border-radius: 0 0 4px 4px;
 }
 .xh-button-group.xh-button-group--vertical:not(.xh-button-group--minimal):not(
     .xh-button-group--outlined
@@ -2264,7 +2199,7 @@ a.xh-button.xh-button--disabled {
     .xh-button-group--outlined
   )
   > .xh-button:not(:last-child) {
-  margin-bottom: calc(-1 * var(--bp-surface-border-width));
+  margin-bottom: calc(-1 * 1px);
 }
 .xh-button-group.xh-button-group--vertical.xh-button-group--outlined > .xh-button:not(:last-child),
 .xh-button-group.xh-button-group--vertical.xh-button-group--outlined
@@ -2292,12 +2227,12 @@ a.xh-button.xh-button--disabled {
 .xh-button-group.xh-button-group--vertical:not(.xh-button-group--minimal)
   > .xh-popover__target-wrapper:first-child
   .xh-button {
-  border-radius: var(--bp-surface-border-radius) var(--bp-surface-border-radius) 0 0;
+  border-radius: 4px 4px 0 0;
 }
 .xh-button-group.xh-button-group--vertical:not(.xh-button-group--minimal)
   > .xh-popover__target-wrapper:last-child
   .xh-button {
-  border-radius: 0 0 var(--bp-surface-border-radius) var(--bp-surface-border-radius);
+  border-radius: 0 0 4px 4px;
 }
 .xh-button-group.xh-button-group--vertical:not(.xh-button-group--minimal)
   > .xh-popover__target-wrapper:not(:last-child)
@@ -2402,7 +2337,7 @@ a.xh-button.xh-button--disabled {
       &:not(.xh-button-group--minimal):not(.xh-button-group--outlined)
         > .xh-button:not(:last-child) {
         margin-right: 0;
-        margin-bottom: calc(-1 * var(--bp-surface-border-width));
+        margin-bottom: calc(-1 * 1px);
       }
     }
 

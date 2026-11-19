@@ -71,7 +71,9 @@ file is the working guide.
       `BlueprintBase.css` and `BlueprintOverrides.scss` are left. Tooltip rules for Blueprint's
       typography classes in app content (`bp6-code`, `bp6-key`, `bp6-running-text` and the like) are
       gone - list them in the upgrade notes as classes apps must restyle.
-- [ ] No `--bp-*` custom properties left.
+- [x] No `--bp-*` custom properties left in Hoist's own stylesheets, apart from `BlueprintBase.css`.
+      Constant ones are literal values. The six that change with the theme are `--xh-base-*`
+      variables in `desktop/styles/Base.scss`, loaded first by `desktop/register.ts`.
 - [ ] Delete `desktop/styles/BlueprintBase.css` and `desktop/styles/BlueprintOverrides.scss`, and
       their imports in `desktop/register.ts`. Re-run `inventory.mjs` - its class table should be
       empty.
@@ -264,6 +266,13 @@ see the same server data.
   dialogs: Picker, IconPicker, GroupingChooser, DateRangePicker, a menu button, an app bar tooltip
   with cloned intent and compact variants, `XH.alert`, `confirm`, `prompt`, an exception dialog,
   and six toasts across intents and positions. About a minute and a half for both servers. Compare two runs with `stylediff.cjs`.
+- `restcheck.cjs <app> <route,...>` - computed styles of every element on each route, at rest, in
+  both themes, against the baseline client, keyed by document order. Fast, for changes that keep
+  the markup.
+- `statecheck.cjs '<selector>' <route,...>` - the same for the matching elements, with `:hover`,
+  `:active` and `:focus` forced on each. Set `REST=1` for rest only.
+- `samecolor.py` - reads either script's output and reports differences that are not the same
+  color, so `color(srgb ...)` against `rgb(...)` and oklch float noise drop out.
 - `translate.cjs <spec> <css> <outDir>` - translates the Blueprint rules a spec names onto `xh-*`
   classes, class for class, so specificity is unchanged. `specs/button.cjs` is the Button spec and
   `specs/menu.cjs` the Menu spec. A `contextMap` value can be a function of the compound's

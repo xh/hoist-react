@@ -10,7 +10,7 @@
 //-----------------------------------------------
 .xh-menu-list {
   background: #ffffff;
-  border-radius: var(--bp-surface-border-radius);
+  border-radius: 4px;
   color: #1c2127;
   list-style: none;
   margin: 0;
@@ -56,7 +56,7 @@
 
 .xh-menu-item {
   align-items: flex-start;
-  border-radius: var(--bp-surface-border-radius);
+  border-radius: 4px;
   color: inherit;
   line-height: 22px;
   padding: 4px 8px;

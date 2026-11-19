@@ -1,0 +1,30 @@
+/*
+ * This file belongs to Hoist, an application development toolkit
+ * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
+ *
+ * Copyright © 2026 Extremely Heavy Industries Inc.
+ */
+
+// Base styles for desktop components, loaded first by desktop/register.ts.
+
+//-----------------------------------------------
+// Theme variables
+//-----------------------------------------------
+// Colors that the base component styles take from Blueprint, which differ between themes.
+body {
+  --xh-base-surface-bg: oklch(from #5f6b7c calc(l * 1.909) calc(c * 0) h);
+  --xh-base-surface-border-color: oklch(from #5f6b7c l c h / 0.12);
+  --xh-base-surface-border-color-strong: oklch(from #5f6b7c l c h / 0.25);
+  --xh-base-text-color: #1c2127;
+  --xh-base-text-color-muted: #5f6b7c;
+  --xh-base-text-color-disabled: oklch(from #5f6b7c l c h / 0.6);
+
+  &.xh-dark {
+    --xh-base-surface-bg: oklch(from #5f6b7c calc(l * 0.362) calc(c * 0.308) calc(h + -1.44));
+    --xh-base-surface-border-color: oklch(from #fff l c h / 0.2);
+    --xh-base-surface-border-color-strong: oklch(from #fff l c h / 0.3);
+    --xh-base-text-color: #f6f7f9;
+    --xh-base-text-color-muted: #abb3bf;
+    --xh-base-text-color-disabled: oklch(from #abb3bf l c h / 0.6);
+  }
+}

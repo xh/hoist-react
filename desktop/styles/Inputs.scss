@@ -82,9 +82,9 @@
 }
 
 .xh-control input:checked ~ .xh-control__indicator {
-  background-color: var(--bp-intent-primary-rest);
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--bp-palette-black) 20%, transparent);
-  color: var(--bp-intent-primary-foreground);
+  background-color: #2d72d2;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, #111418 20%, transparent);
+  color: #fff;
 }
 
 @media (forced-colors: active) and (prefers-color-scheme: dark) {
@@ -95,7 +95,7 @@
 }
 
 .xh-control:hover input:checked ~ .xh-control__indicator {
-  background-color: var(--bp-intent-primary-hover);
+  background-color: #215db0;
 }
 
 @media (forced-colors: active) and (prefers-color-scheme: dark) {
@@ -105,13 +105,13 @@
 }
 
 .xh-control input:not(:disabled):active:checked ~ .xh-control__indicator {
-  background: var(--bp-intent-primary-active);
+  background: #184a90;
 }
 
 .xh-control input:disabled:checked ~ .xh-control__indicator {
-  background: color-mix(in srgb, var(--bp-intent-primary-rest) 50%, transparent);
+  background: color-mix(in srgb, #2d72d2 50%, transparent);
   box-shadow: none;
-  color: color-mix(in srgb, var(--bp-intent-primary-foreground) 60%, transparent);
+  color: color-mix(in srgb, #fff 60%, transparent);
 }
 
 @media (forced-colors: active) and (prefers-color-scheme: dark) {
@@ -122,7 +122,7 @@
 }
 
 .xh-dark .xh-control input:checked ~ .xh-control__indicator {
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--bp-palette-white) 10%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, #fff 10%, transparent);
 }
 
 @media (forced-colors: active) and (prefers-color-scheme: dark) {
@@ -132,19 +132,19 @@
 }
 
 .xh-dark .xh-control:hover input:checked ~ .xh-control__indicator {
-  background-color: var(--bp-intent-primary-hover);
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--bp-palette-white) 10%, transparent);
+  background-color: #215db0;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, #fff 10%, transparent);
 }
 
 .xh-dark .xh-control input:not(:disabled):active:checked ~ .xh-control__indicator {
-  background-color: var(--bp-intent-primary-active);
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--bp-palette-white) 10%, transparent);
+  background-color: #184a90;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, #fff 10%, transparent);
 }
 
 .xh-dark .xh-control input:disabled:checked ~ .xh-control__indicator {
-  background: color-mix(in srgb, var(--bp-intent-primary-rest) 50%, transparent);
+  background: color-mix(in srgb, #2d72d2 50%, transparent);
   box-shadow: none;
-  color: color-mix(in srgb, var(--bp-intent-primary-foreground) 60%, transparent);
+  color: color-mix(in srgb, #fff 60%, transparent);
 }
 
 .xh-control:not(.xh-control--align-right) {
@@ -202,7 +202,7 @@
   background-clip: padding-box;
   background-color: transparent;
   border: none;
-  box-shadow: inset 0 0 0 1px var(--bp-palette-gray-2);
+  box-shadow: inset 0 0 0 1px #738091;
   cursor: pointer;
   display: inline-block;
   font-size: 16px;
@@ -244,7 +244,7 @@
 
 .xh-control input:not(:disabled):active ~ .xh-control__indicator {
   background: rgba(143, 153, 168, 0.3);
-  box-shadow: inset 0 0 0 1px var(--bp-palette-gray-2);
+  box-shadow: inset 0 0 0 1px #738091;
 }
 
 .xh-control input:disabled ~ .xh-control__indicator {
@@ -275,9 +275,9 @@
 }
 
 .xh-control.xh-control--checkbox input:indeterminate ~ .xh-control__indicator {
-  background-color: var(--bp-intent-primary-rest);
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--bp-palette-black) 20%, transparent);
-  color: var(--bp-intent-primary-foreground);
+  background-color: #2d72d2;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, #111418 20%, transparent);
+  color: #fff;
 }
 
 @media (forced-colors: active) and (prefers-color-scheme: dark) {
@@ -288,7 +288,7 @@
 }
 
 .xh-control.xh-control--checkbox:hover input:indeterminate ~ .xh-control__indicator {
-  background-color: var(--bp-intent-primary-hover);
+  background-color: #215db0;
 }
 
 @media (forced-colors: active) and (prefers-color-scheme: dark) {
@@ -300,13 +300,13 @@
 .xh-control.xh-control--checkbox
   input:not(:disabled):active:indeterminate
   ~ .xh-control__indicator {
-  background: var(--bp-intent-primary-active);
+  background: #184a90;
 }
 
 .xh-control.xh-control--checkbox input:disabled:indeterminate ~ .xh-control__indicator {
-  background: color-mix(in srgb, var(--bp-intent-primary-rest) 50%, transparent);
+  background: color-mix(in srgb, #2d72d2 50%, transparent);
   box-shadow: none;
-  color: color-mix(in srgb, var(--bp-intent-primary-foreground) 60%, transparent);
+  color: color-mix(in srgb, #fff 60%, transparent);
 }
 
 @media (forced-colors: active) and (prefers-color-scheme: dark) {
@@ -317,7 +317,7 @@
 }
 
 .xh-dark .xh-control.xh-control--checkbox input:indeterminate ~ .xh-control__indicator {
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--bp-palette-white) 10%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, #fff 10%, transparent);
 }
 
 @media (forced-colors: active) and (prefers-color-scheme: dark) {
@@ -327,30 +327,30 @@
 }
 
 .xh-dark .xh-control.xh-control--checkbox:hover input:indeterminate ~ .xh-control__indicator {
-  background-color: var(--bp-intent-primary-hover);
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--bp-palette-white) 10%, transparent);
+  background-color: #215db0;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, #fff 10%, transparent);
 }
 
 .xh-dark
   .xh-control.xh-control--checkbox
   input:not(:disabled):active:indeterminate
   ~ .xh-control__indicator {
-  background-color: var(--bp-intent-primary-active);
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--bp-palette-white) 10%, transparent);
+  background-color: #184a90;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, #fff 10%, transparent);
 }
 
 .xh-dark .xh-control.xh-control--checkbox input:disabled:indeterminate ~ .xh-control__indicator {
-  background: color-mix(in srgb, var(--bp-intent-primary-rest) 50%, transparent);
+  background: color-mix(in srgb, #2d72d2 50%, transparent);
   box-shadow: none;
-  color: color-mix(in srgb, var(--bp-intent-primary-foreground) 60%, transparent);
+  color: color-mix(in srgb, #fff 60%, transparent);
 }
 
 .xh-control.xh-control--checkbox .xh-control__indicator {
-  border-radius: var(--bp-surface-border-radius);
+  border-radius: 4px;
 }
 
 .xh-control.xh-control--checkbox input:checked ~ .xh-control__indicator::before {
-  background-color: var(--bp-intent-primary-foreground);
+  background-color: #fff;
   -webkit-mask-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='%23111418' d='M11.72 4.72a.75.75 0 1 1 1.06 1.06l-5.5 5.5a.75.75 0 0 1-1.06 0l-3-3a.75.75 0 1 1 1.06-1.06l2.47 2.47z'/%3e%3c/svg%3e");
   mask-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='%23111418' d='M11.72 4.72a.75.75 0 1 1 1.06 1.06l-5.5 5.5a.75.75 0 0 1-1.06 0l-3-3a.75.75 0 1 1 1.06-1.06l2.47 2.47z'/%3e%3c/svg%3e");
   -webkit-mask-position: center;
@@ -362,7 +362,7 @@
 }
 
 .xh-control.xh-control--checkbox input:indeterminate ~ .xh-control__indicator::before {
-  background-color: var(--bp-intent-primary-foreground);
+  background-color: #fff;
   -webkit-mask-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='%23111418' d='M11.5 7.25a.75.75 0 0 1 0 1.5h-7a.75.75 0 0 1 0-1.5z'/%3e%3c/svg%3e");
   mask-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='%23111418' d='M11.5 7.25a.75.75 0 0 1 0 1.5h-7a.75.75 0 0 1 0-1.5z'/%3e%3c/svg%3e");
   -webkit-mask-position: center;
@@ -379,7 +379,7 @@
 
 @media (forced-colors: active) and (prefers-color-scheme: dark) {
   .xh-control.xh-control--checkbox input:checked:not(:disabled) ~ .xh-control__indicator::before {
-    background-color: var(--bp-palette-black);
+    background-color: #111418;
   }
 }
 
@@ -387,7 +387,7 @@
   .xh-control.xh-control--checkbox
     input:indeterminate:not(:disabled)
     ~ .xh-control__indicator::before {
-    background-color: var(--bp-palette-black);
+    background-color: #111418;
   }
 }
 
@@ -402,11 +402,7 @@
 }
 
 .xh-control.xh-control--radio input:checked ~ .xh-control__indicator::before {
-  background-image: radial-gradient(
-    var(--bp-intent-primary-foreground),
-    var(--bp-intent-primary-foreground) 28%,
-    transparent 32%
-  );
+  background-image: radial-gradient(#fff, #fff 28%, transparent 32%);
 }
 
 @media (forced-colors: active) and (prefers-color-scheme: dark) {
@@ -440,48 +436,48 @@
 }
 
 .xh-control.xh-control--switch input ~ .xh-control__indicator {
-  background: color-mix(in srgb, var(--bp-palette-gray-3) 30%, transparent);
+  background: color-mix(in srgb, #8f99a8 30%, transparent);
   color: #1c2127;
 }
 
 .xh-control.xh-control--switch:hover input ~ .xh-control__indicator {
-  background: color-mix(in srgb, var(--bp-palette-gray-3) 40%, transparent);
+  background: color-mix(in srgb, #8f99a8 40%, transparent);
 }
 
 .xh-control.xh-control--switch input:not(:disabled):active ~ .xh-control__indicator {
-  background: color-mix(in srgb, var(--bp-palette-gray-3) 50%, transparent);
+  background: color-mix(in srgb, #8f99a8 50%, transparent);
 }
 
 .xh-control.xh-control--switch input:disabled ~ .xh-control__indicator {
-  background: color-mix(in srgb, var(--bp-palette-gray-3) 15%, transparent);
+  background: color-mix(in srgb, #8f99a8 15%, transparent);
   color: rgba(95, 107, 124, 0.6);
 }
 
 .xh-control.xh-control--switch input:disabled ~ .xh-control__indicator::before {
-  background: color-mix(in srgb, var(--bp-palette-white) 80%, transparent);
+  background: color-mix(in srgb, #fff 80%, transparent);
   box-shadow: none;
 }
 
 .xh-control.xh-control--switch input:checked ~ .xh-control__indicator {
-  background: var(--bp-intent-primary-rest);
-  color: var(--bp-intent-primary-foreground);
+  background: #2d72d2;
+  color: #fff;
 }
 
 .xh-control.xh-control--switch:hover input:checked ~ .xh-control__indicator {
-  background: var(--bp-intent-primary-hover);
+  background: #215db0;
 }
 
 .xh-control.xh-control--switch input:checked:not(:disabled):active ~ .xh-control__indicator {
-  background: var(--bp-intent-primary-active);
+  background: #184a90;
 }
 
 .xh-control.xh-control--switch input:checked:disabled ~ .xh-control__indicator {
-  background: color-mix(in srgb, var(--bp-intent-primary-rest) 50%, transparent);
-  color: color-mix(in srgb, var(--bp-intent-primary-foreground) 60%, transparent);
+  background: color-mix(in srgb, #2d72d2 50%, transparent);
+  color: color-mix(in srgb, #fff 60%, transparent);
 }
 
 .xh-control.xh-control--switch input:checked:disabled ~ .xh-control__indicator::before {
-  background: color-mix(in srgb, var(--bp-palette-white) 50%, transparent);
+  background: color-mix(in srgb, #fff 50%, transparent);
   box-shadow: none;
 }
 
@@ -551,9 +547,9 @@
 }
 
 .xh-control.xh-control--switch .xh-control__indicator::before {
-  background: var(--bp-palette-white);
+  background: #fff;
   border-radius: 50%;
-  box-shadow: 0 0 0 1px color-mix(in srgb, var(--bp-palette-black) 50%, transparent);
+  box-shadow: 0 0 0 1px color-mix(in srgb, #111418 50%, transparent);
   height: calc(1em - 4px);
   left: 2px;
   position: absolute;
@@ -581,51 +577,51 @@
 }
 
 .xh-dark .xh-control.xh-control--switch input ~ .xh-control__indicator {
-  background: color-mix(in srgb, var(--bp-palette-gray-3) 30%, transparent);
+  background: color-mix(in srgb, #8f99a8 30%, transparent);
   color: #f6f7f9;
 }
 
 .xh-dark .xh-control.xh-control--switch:hover input ~ .xh-control__indicator {
-  background: color-mix(in srgb, var(--bp-palette-gray-3) 40%, transparent);
+  background: color-mix(in srgb, #8f99a8 40%, transparent);
 }
 
 .xh-dark .xh-control.xh-control--switch input:not(:disabled):active ~ .xh-control__indicator {
-  background: color-mix(in srgb, var(--bp-palette-gray-3) 50%, transparent);
+  background: color-mix(in srgb, #8f99a8 50%, transparent);
 }
 
 .xh-dark .xh-control.xh-control--switch input:disabled ~ .xh-control__indicator {
-  background: color-mix(in srgb, var(--bp-palette-gray-3) 15%, transparent);
+  background: color-mix(in srgb, #8f99a8 15%, transparent);
   color: rgba(171, 179, 191, 0.6);
 }
 
 .xh-dark .xh-control.xh-control--switch input:disabled ~ .xh-control__indicator::before {
-  background: color-mix(in srgb, var(--bp-palette-white) 80%, transparent);
+  background: color-mix(in srgb, #fff 80%, transparent);
   box-shadow: none;
 }
 
 .xh-dark .xh-control.xh-control--switch input:checked ~ .xh-control__indicator {
-  background: var(--bp-intent-primary-rest);
-  color: var(--bp-intent-primary-foreground);
+  background: #2d72d2;
+  color: #fff;
 }
 
 .xh-dark .xh-control.xh-control--switch:hover input:checked ~ .xh-control__indicator {
-  background: var(--bp-intent-primary-hover);
+  background: #215db0;
 }
 
 .xh-dark
   .xh-control.xh-control--switch
   input:checked:not(:disabled):active
   ~ .xh-control__indicator {
-  background: var(--bp-intent-primary-active);
+  background: #184a90;
 }
 
 .xh-dark .xh-control.xh-control--switch input:checked:disabled ~ .xh-control__indicator {
-  background: color-mix(in srgb, var(--bp-intent-primary-rest) 50%, transparent);
+  background: color-mix(in srgb, #2d72d2 50%, transparent);
   color: rgba(171, 179, 191, 0.6);
 }
 
 .xh-dark .xh-control.xh-control--switch input:checked:disabled ~ .xh-control__indicator::before {
-  background: color-mix(in srgb, var(--bp-palette-white) 50%, transparent);
+  background: color-mix(in srgb, #fff 50%, transparent);
   box-shadow: none;
 }
 
@@ -673,7 +669,7 @@
 
 .xh-dark .xh-control .xh-control__indicator {
   background-color: transparent;
-  box-shadow: inset 0 0 0 1px var(--bp-palette-gray-3);
+  box-shadow: inset 0 0 0 1px #8f99a8;
 }
 
 .xh-dark .xh-control:hover .xh-control__indicator {
@@ -682,7 +678,7 @@
 
 .xh-dark .xh-control input:not(:disabled):active ~ .xh-control__indicator {
   background: rgba(143, 153, 168, 0.3);
-  box-shadow: inset 0 0 0 1px var(--bp-palette-gray-3);
+  box-shadow: inset 0 0 0 1px #8f99a8;
 }
 
 .xh-dark .xh-control input:disabled ~ .xh-control__indicator {
@@ -693,7 +689,7 @@
 
 .xh-dark .xh-control.xh-control--checkbox input:disabled:checked ~ .xh-control__indicator,
 .xh-dark .xh-control.xh-control--checkbox input:disabled:indeterminate ~ .xh-control__indicator {
-  background: color-mix(in srgb, var(--bp-intent-primary-rest) 50%, transparent);
+  background: color-mix(in srgb, #2d72d2 50%, transparent);
 }
 
 .xh-input-group {
@@ -707,11 +703,11 @@
 }
 
 .xh-input-group :is(.xh-input-group__input, .xh-text-area):not(:first-child) {
-  padding-left: calc(var(--bp-surface-spacing) * 7.5);
+  padding-left: calc(4px * 7.5);
 }
 
 .xh-input-group :is(.xh-input-group__input, .xh-text-area):not(:last-child) {
-  padding-right: calc(var(--bp-surface-spacing) * 7.5);
+  padding-right: calc(4px * 7.5);
 }
 
 .xh-input-group .xh-input-group__right-element,
@@ -734,10 +730,10 @@
 }
 
 .xh-input-group .xh-button {
-  min-height: calc(var(--bp-surface-spacing) * 6);
-  min-width: calc(var(--bp-surface-spacing) * 6);
-  margin: calc(var(--bp-surface-spacing) * 0.75);
-  padding: 0 calc(var(--bp-surface-spacing) * 2);
+  min-height: calc(4px * 6);
+  min-width: calc(4px * 6);
+  margin: calc(4px * 0.75);
+  padding: 0 calc(4px * 2);
 }
 
 .xh-input-group .xh-button:empty {
@@ -755,7 +751,7 @@
   :is(.xh-input-group__input, .xh-text-area):not(:focus)
   + .xh-input-group__right-element
   .xh-button.xh-button--minimal:not(:hover):not(:focus) {
-  color: var(--bp-typography-color-muted);
+  color: var(--xh-base-text-color-muted);
 }
 
 .xh-dark
@@ -767,7 +763,7 @@
   :is(.xh-input-group__input, .xh-text-area):not(:focus)
   + .xh-input-group__right-element
   .xh-button.xh-button--minimal:not(:hover):not(:focus) {
-  color: oklch(from var(--bp-typography-color-muted) calc(l + 0.24) calc(c - 0.011) h);
+  color: oklch(from var(--xh-base-text-color-muted) calc(l + 0.24) calc(c - 0.011) h);
 }
 
 .xh-input-group
@@ -777,7 +773,7 @@
   :is(.xh-input-group__input, .xh-text-area):not(:focus)
   + .xh-input-group__right-element
   .xh-button.xh-button--minimal:disabled {
-  color: var(--bp-typography-color-default-disabled) !important;
+  color: var(--xh-base-text-color-disabled) !important;
 }
 
 .xh-input-group.xh-input-group--disabled {
@@ -786,11 +782,11 @@
 
 .xh-input-group.xh-input-group--round .xh-button,
 .xh-input-group.xh-input-group--round :is(.xh-input-group__input, .xh-text-area) {
-  border-radius: calc(var(--bp-surface-spacing) * 7.5);
+  border-radius: calc(4px * 7.5);
 }
 
 :is(.xh-input-group__input, .xh-text-area)::placeholder {
-  color: var(--bp-typography-color-muted);
+  color: var(--xh-base-text-color-muted);
   opacity: 1;
 }
 
@@ -798,62 +794,60 @@
   -webkit-appearance: none;
   -moz-appearance: none;
   appearance: none;
-  background: var(--bp-surface-background-color-default-rest);
+  background: var(--xh-base-surface-bg);
   border: none;
-  border-radius: var(--bp-surface-border-radius);
+  border-radius: 4px;
   box-shadow:
-    inset 0 0 0 0 oklch(from var(--bp-intent-primary-rest) calc(l - 0.074) calc(c - 0.018) h/0),
-    0 0 0 0 oklch(from var(--bp-intent-primary-rest) calc(l - 0.074) calc(c - 0.018) h/0),
-    inset 0 0 0 1px oklch(from var(--bp-palette-black) l c h/0.2),
-    inset 0 1px 1px oklch(from var(--bp-palette-black) l c h/0.3);
-  color: var(--bp-typography-color-default-rest);
-  font-size: var(--bp-typography-size-body-medium);
-  font-weight: var(--bp-typography-weight-default);
-  height: calc(var(--bp-surface-spacing) * 7.5);
-  line-height: calc(var(--bp-surface-spacing) * 7.5);
+    inset 0 0 0 0 oklch(from #2d72d2 calc(l - 0.074) calc(c - 0.018) h/0),
+    0 0 0 0 oklch(from #2d72d2 calc(l - 0.074) calc(c - 0.018) h/0),
+    inset 0 0 0 1px oklch(from #111418 l c h/0.2),
+    inset 0 1px 1px oklch(from #111418 l c h/0.3);
+  color: var(--xh-base-text-color);
+  font-size: 14px;
+  font-weight: 400;
+  height: calc(4px * 7.5);
+  line-height: calc(4px * 7.5);
   outline: none;
-  padding: 0 calc(var(--bp-surface-spacing) * 2);
-  transition: box-shadow var(--bp-emphasis-transition-duration) var(--bp-emphasis-ease-default);
+  padding: 0 calc(4px * 2);
+  transition: box-shadow 0.1s cubic-bezier(0.4, 1, 0.75, 0.9);
   vertical-align: middle;
 }
 
 :is(.xh-input-group__input, .xh-text-area):focus {
   box-shadow:
-    inset 0 0 0 1px
-      oklch(from var(--bp-intent-primary-rest) calc(l - 0.074) calc(c - 0.018) h/0.752),
-    0 0 0 1px oklch(from var(--bp-intent-primary-rest) calc(l - 0.074) calc(c - 0.018) h/0.752),
-    inset 0 1px 1px oklch(from var(--bp-palette-black) l c h/0.2);
+    inset 0 0 0 1px oklch(from #2d72d2 calc(l - 0.074) calc(c - 0.018) h/0.752),
+    0 0 0 1px oklch(from #2d72d2 calc(l - 0.074) calc(c - 0.018) h/0.752),
+    inset 0 1px 1px oklch(from #111418 l c h/0.2);
 }
 
 :is(.xh-input-group__input, .xh-text-area)[type='search'] {
-  border-radius: calc(var(--bp-surface-spacing) * 7.5);
+  border-radius: calc(4px * 7.5);
   box-sizing: border-box;
-  padding-left: calc(var(--bp-surface-spacing) * 2);
+  padding-left: calc(4px * 2);
 }
 
 :is(.xh-input-group__input, .xh-text-area)[readonly] {
-  box-shadow: inset 0 0 0 1px var(--bp-surface-border-color-default);
+  box-shadow: inset 0 0 0 1px var(--xh-base-surface-border-color);
 }
 
 :is(.xh-input-group__input, .xh-text-area)[readonly]:focus {
   box-shadow:
-    inset 0 0 0 1px
-      oklch(from var(--bp-intent-primary-rest) calc(l - 0.074) calc(c - 0.018) h/0.752),
-    0 0 0 1px oklch(from var(--bp-intent-primary-rest) calc(l - 0.074) calc(c - 0.018) h/0.752),
-    inset 0 0 0 1px oklch(from var(--bp-palette-black) l c h/0.2),
-    inset 0 1px 1px oklch(from var(--bp-palette-black) l c h/0.3);
+    inset 0 0 0 1px oklch(from #2d72d2 calc(l - 0.074) calc(c - 0.018) h/0.752),
+    0 0 0 1px oklch(from #2d72d2 calc(l - 0.074) calc(c - 0.018) h/0.752),
+    inset 0 0 0 1px oklch(from #111418 l c h/0.2),
+    inset 0 1px 1px oklch(from #111418 l c h/0.3);
 }
 
 :is(.xh-input-group__input, .xh-text-area):disabled {
-  background: oklch(from var(--bp-intent-default-disabled) calc(l + 0.2) calc(c - 0.015) h/0.5);
+  background: oklch(from #8f99a8 calc(l + 0.2) calc(c - 0.015) h/0.5);
   box-shadow: none;
-  color: var(--bp-typography-color-default-disabled);
+  color: var(--xh-base-text-color-disabled);
   cursor: not-allowed;
   resize: none;
 }
 
 :is(.xh-input-group__input, .xh-text-area):disabled::placeholder {
-  color: var(--bp-typography-color-default-disabled);
+  color: var(--xh-base-text-color-disabled);
 }
 
 @media (forced-colors: active) and (prefers-color-scheme: dark) {
@@ -863,41 +857,39 @@
 }
 
 .xh-dark :is(.xh-input-group__input, .xh-text-area)::placeholder {
-  color: oklch(from var(--bp-typography-color-muted) calc(l + 0.24) calc(c - 0.011) h);
+  color: oklch(from var(--xh-base-text-color-muted) calc(l + 0.24) calc(c - 0.011) h);
 }
 
 .xh-dark :is(.xh-input-group__input, .xh-text-area) {
-  background: oklch(from var(--bp-palette-black) l c h/0.3);
+  background: oklch(from #111418 l c h/0.3);
   box-shadow:
-    inset 0 0 0 0 oklch(from var(--bp-intent-primary-rest) calc(l + 0.224) calc(c - 0.053) h/0),
-    0 0 0 0 oklch(from var(--bp-intent-primary-rest) calc(l + 0.224) calc(c - 0.053) h/0),
-    inset 0 0 0 1px oklch(from var(--bp-palette-white) l c h/0.2),
-    inset 0 -1px 1px 0 oklch(from var(--bp-palette-white) l c h/0.3);
-  color: oklch(from var(--bp-typography-color-default-rest) calc(l + 0.239) calc(c - 0.011) h);
+    inset 0 0 0 0 oklch(from #2d72d2 calc(l + 0.224) calc(c - 0.053) h/0),
+    0 0 0 0 oklch(from #2d72d2 calc(l + 0.224) calc(c - 0.053) h/0),
+    inset 0 0 0 1px oklch(from #fff l c h/0.2),
+    inset 0 -1px 1px 0 oklch(from #fff l c h/0.3);
+  color: oklch(from var(--xh-base-text-color) calc(l + 0.239) calc(c - 0.011) h);
 }
 
 .xh-dark :is(.xh-input-group__input, .xh-text-area):focus {
   box-shadow:
-    inset 0 0 0 1px
-      oklch(from var(--bp-intent-primary-rest) calc(l + 0.224) calc(c - 0.053) h/0.752),
-    0 0 0 1px oklch(from var(--bp-intent-primary-rest) calc(l + 0.224) calc(c - 0.053) h/0.752);
+    inset 0 0 0 1px oklch(from #2d72d2 calc(l + 0.224) calc(c - 0.053) h/0.752),
+    0 0 0 1px oklch(from #2d72d2 calc(l + 0.224) calc(c - 0.053) h/0.752);
 }
 
 .xh-dark :is(.xh-input-group__input, .xh-text-area)[readonly] {
-  box-shadow: inset 0 0 0 1px oklch(from var(--bp-palette-black) l c h/0.4);
+  box-shadow: inset 0 0 0 1px oklch(from #111418 l c h/0.4);
 }
 
 .xh-dark :is(.xh-input-group__input, .xh-text-area)[readonly]:focus {
   box-shadow:
-    inset 0 0 0 1px
-      oklch(from var(--bp-intent-primary-rest) calc(l + 0.224) calc(c - 0.053) h/0.752),
-    0 0 0 1px oklch(from var(--bp-intent-primary-rest) calc(l + 0.224) calc(c - 0.053) h/0.752);
+    inset 0 0 0 1px oklch(from #2d72d2 calc(l + 0.224) calc(c - 0.053) h/0.752),
+    0 0 0 1px oklch(from #2d72d2 calc(l + 0.224) calc(c - 0.053) h/0.752);
 }
 
 .xh-dark :is(.xh-input-group__input, .xh-text-area):disabled {
-  background: oklch(from var(--bp-intent-default-hover) l c h/0.5);
+  background: oklch(from #404854 l c h/0.5);
   box-shadow: none;
-  color: var(--bp-typography-color-default-disabled);
+  color: var(--xh-base-text-color-disabled);
 }
 
 :is(.xh-input-group__input, .xh-text-area)::-ms-clear {
@@ -907,19 +899,19 @@
 @supports (-webkit-touch-callout: none) {
   input:is(.xh-input-group__input, .xh-text-area):disabled {
     opacity: 1;
-    -webkit-text-fill-color: var(--bp-typography-color-default-disabled);
+    -webkit-text-fill-color: var(--xh-base-text-color-disabled);
   }
 }
 
 @supports (-webkit-touch-callout: none) {
   .xh-dark input:is(.xh-input-group__input, .xh-text-area):disabled {
-    -webkit-text-fill-color: var(--bp-typography-color-default-disabled);
+    -webkit-text-fill-color: var(--xh-base-text-color-disabled);
   }
 }
 
 textarea:is(.xh-input-group__input, .xh-text-area) {
   max-width: 100%;
-  padding: calc(var(--bp-surface-spacing) * 2);
+  padding: calc(4px * 2);
 }
 
 textarea:is(.xh-input-group__input, .xh-text-area) {
@@ -928,10 +920,10 @@ textarea:is(.xh-input-group__input, .xh-text-area) {
 }
 
 .xh-numeric-input .xh-button-group.xh-button-group--vertical > .xh-button {
-  flex: 1 1 calc(var(--bp-surface-spacing) * 2.75);
+  flex: 1 1 calc(4px * 2.75);
   min-height: 0;
   padding: 0;
-  width: calc(var(--bp-surface-spacing) * 6);
+  width: calc(4px * 6);
 }
 
 .xh-control-group .xh-popover__target-wrapper {

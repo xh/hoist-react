@@ -17,7 +17,7 @@
 }
 .xh-tab-list.xh-tab-list--vertical > .xh-tab-list__tabs .xh-tab-list__tab {
   align-items: center;
-  border-radius: var(--bp-surface-border-radius);
+  border-radius: 4px;
   display: flex;
   padding: 0 8px;
   width: 100%;
@@ -37,7 +37,7 @@
   .xh-tab-list__indicator-wrapper
   .xh-tab-list__indicator {
   background-color: rgba(45, 114, 210, 0.2);
-  border-radius: var(--bp-surface-border-radius);
+  border-radius: 4px;
   height: auto;
   inset: 0;
 }

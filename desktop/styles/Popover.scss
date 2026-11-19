@@ -57,12 +57,12 @@
   transform: scale(1);
 }
 .xh-popover__content-wrapper {
-  border-radius: var(--bp-surface-border-radius);
+  border-radius: 4px;
   display: inline-block;
   z-index: 20;
 }
 .xh-popover__content-wrapper .xh-popover__content {
-  border-radius: var(--bp-surface-border-radius);
+  border-radius: 4px;
   position: relative;
 }
 .xh-popover__content-wrapper.xh-popover__content-wrapper--minimal {
@@ -155,7 +155,7 @@ span.xh-popover__target-wrapper {
   transform: scale(1);
 }
 .xh-tooltip {
-  color: var(--bp-typography-color-default-rest);
+  color: var(--xh-base-text-color);
 }
 .xh-tooltip a {
   color: #8abbff;
@@ -285,7 +285,7 @@ span.xh-popover__target-wrapper {
   transform: scale(1);
 }
 .xh-tooltip {
-  color: var(--bp-typography-color-default-rest);
+  color: var(--xh-base-text-color);
 }
 .xh-tooltip a {
   color: #8abbff;
