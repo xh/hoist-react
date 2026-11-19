@@ -227,7 +227,8 @@ In this order, since later items build on earlier ones:
     - Platform defaults cover mobile's own behavior: a transparent tap-catching backdrop that
       respects the safe-area insets, fixed positioning, and `auto` placement. Closing on route
       change moves into the shared component for both platforms.
-    - `mobile/cmp/popover` re-exports the shared component for one release.
+    - Mobile apps import the shared component from `@xh/hoist/cmp/popover`. Phase 5 removed
+      `mobile/cmp/popover`.
     - The shared component must not import `kit/blueprint`, which would pull Blueprint into mobile
       bundles. Check mobile bundle size before and after.
     - Test touch behavior with Playwright's mobile emulation and on a device - in particular that
@@ -276,8 +277,11 @@ Budget for them accordingly.
 
 - Removed `@blueprintjs/core`, `kit/blueprint`, and the Blueprint version in
   `svc/EnvironmentService.ts` and the Admin About panel.
-- Exported `menuItem` and `menuDivider` from `@xh/hoist/desktop/cmp/menu`, the replacement for
-  Blueprint's `menuItem` in apps.
+- Apps build menu items from `MenuItem` configs, the replacement for Blueprint's `menuItem`.
+  `MenuItem.rightElement` takes the place of `labelElement`, and a click on a control within it
+  does not run the item's `actionFn` or close the menu. Hoist's own menus use configs too, so
+  `menuItem` and `menuDivider` stay internal to `desktop/cmp/menu`.
+- Removed the `mobile/cmp/popover` re-export of the shared `Popover`.
 - Updated docs, the doc registry and the v91 upgrade notes (Step 8 maps each `kit/blueprint`
   import to its replacement).
 - Toolbox moved off `kit/blueprint` in its own branch.
