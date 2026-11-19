@@ -51,7 +51,7 @@ file is the working guide.
 - [x] Popover and tooltip. One approved visual change: compact tooltips take Blueprint's tighter
       4px 8px padding, as Hoist's override comment intended. List it in the CHANGELOG entry.
       `PopoverImpl` still accepts `.bp6-disabled` on a target - drop it once no input renders it.
-- [ ] Dialog, overlay and mask.
+- [x] Dialog, overlay and mask. No visual change.
 - [ ] Toasts.
 - [x] Hotkeys dialog - done on #4995 (`675e3e1e0`), as a Hoist dialog with only `xh-*` classes.
 - [ ] Inputs: `InputGroup`, `NumericInput`, `TextArea`, and the checkbox, switch and radio
@@ -193,6 +193,12 @@ Proposals are hints, not decisions:
   one server user, and pages that persist grid state, such as Admin's Grid Formatter Parity test,
   differ by timing. Do not commit or edit hoist-react files while a capture runs: the pre-commit
   hook and Toolbox's docs tab both trigger a rebuild, and the page reloads mid-run.
+- Verify each step on the routes and opened UI that render the component, with `styles.cjs` and
+  `capture.cjs` route filters and `popups.cjs` scenarios. A full-route pass takes hours.
+- Start the Toolbox server and clients with `setsid nohup ... &`, not as background tasks, which
+  are killed after two hours.
+- A class Blueprint puts on two kinds of element maps to an `:is()` of both, which keeps the weight
+  of the one class - `bp6-overlay` became `:is(.xh-dialog__overlay, .xh-overlay)`.
 - A grid's right-click menu is AG Grid's own, not a Hoist menu. Check Hoist context menus on a
   `contextMenu` panel, such as Toolbox's Panels intro.
 - Check that a `bp6-*` class and the `xh-*` class you map it to are on the same elements. Grid
@@ -235,9 +241,10 @@ see the same server data.
   its submenu, with `:hover`, `:active` and `:focus` forced on each item. It clones a plain item
   for the states Toolbox does not render (primary and warning intents, active, a label). Compare
   two runs with `stylediff.cjs`.
-- `popups.cjs <dir> [scenarioRegex]` - computed styles and screenshots of open popovers: Picker,
-  IconPicker, GroupingChooser, DateRangePicker, a menu button and an app bar tooltip, with cloned
-  intent and compact tooltips. Compare two runs with `stylediff.cjs`.
+- `popups.cjs <dir> [scenarioRegex]` - computed styles and screenshots of open popovers and
+  dialogs: Picker, IconPicker, GroupingChooser, DateRangePicker, a menu button, an app bar tooltip
+  with cloned intent and compact variants, and `XH.alert`, `confirm`, `prompt` and an exception
+  dialog. About a minute and a half for both servers. Compare two runs with `stylediff.cjs`.
 - `translate.cjs <spec> <css> <outDir>` - translates the Blueprint rules a spec names onto `xh-*`
   classes, class for class, so specificity is unchanged. `specs/button.cjs` is the Button spec and
   `specs/menu.cjs` the Menu spec. A `contextMap` value can be a function of the compound's

@@ -510,20 +510,6 @@ a code {
         0 1px 2px -1px #0000001a;
 }
 
-.bp6-heading {
-    color: #1c2127;
-    font-weight: 600;
-}
-
-.bp6-dark .bp6-heading {
-    color: #f6f7f9;
-}
-
-.bp6-heading {
-    margin: 0 0 12px;
-    padding: 0;
-}
-
 .bp6-running-text h2,
 h2.bp6-heading {
     font-size: 28px;
@@ -2385,103 +2371,6 @@ a:hover {
     border-right: none;
 }
 
-.bp6-dialog-container {
-    opacity: 1;
-    transform: scale(1);
-}
-
-.bp6-dialog-container {
-    pointer-events: none;
-    -webkit-user-select: none;
-    user-select: none;
-    justify-content: center;
-    align-items: center;
-    width: 100%;
-    min-height: 100%;
-    display: flex;
-}
-
-.bp6-dialog {
-    border-radius: var(--bp-surface-border-radius);
-    pointer-events: all;
-    -webkit-user-select: text;
-    user-select: text;
-    background: #f6f7f9;
-    flex-direction: column;
-    width: 500px;
-    margin: 32px 0;
-    display: flex;
-    box-shadow:
-        0 0 0 1px #1114181a,
-        0 20px 25px -5px #0000001a,
-        0 10px 15px -3px #0000001a;
-}
-
-.bp6-dialog:focus {
-    outline: 0;
-}
-
-.bp6-dialog.bp6-dark,
-.bp6-dark .bp6-dialog {
-    color: #f6f7f9;
-    background: #1c2127;
-    box-shadow:
-        inset 0 0 0 1px #fff3,
-        0 20px 25px -5px #0000004d,
-        inset 0 0 0.5px #ffffff4d,
-        inset 0 0.5px #ffffff14,
-        0 10px 30px -5px #0000004d;
-}
-
-@media (forced-colors: active) and (prefers-color-scheme: dark) {
-    .bp6-dialog {
-        border: 1px solid buttonborder;
-    }
-}
-
-.bp6-dialog-header {
-    border-radius: var(--bp-surface-border-radius) var(--bp-surface-border-radius) 0 0;
-    z-index: 0;
-    background: #fff;
-    flex: none;
-    align-items: center;
-    min-height: 38px;
-    padding: 4px 4px 4px 16px;
-    display: flex;
-    box-shadow: 0 1px #11141826;
-}
-
-.bp6-dialog-header .bp6-heading {
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    word-wrap: normal;
-    font-size: 14px;
-    line-height: inherit;
-    flex: auto;
-    margin: 0;
-    overflow: hidden;
-}
-
-.bp6-dialog-header .bp6-heading:last-child {
-    margin-right: 16px;
-}
-
-.bp6-dark .bp6-dialog-header {
-    background: #2f343c;
-    box-shadow: inset 0 0 0 1px #fff3;
-}
-
-@media (forced-colors: active) and (prefers-color-scheme: dark) {
-    .bp6-dialog-header {
-        border-bottom: 1px solid buttonborder;
-    }
-}
-
-.bp6-dialog-body {
-    flex: auto;
-    margin: 16px;
-}
-
 @supports (color: oklch(from var(--any-color) l c h)) {
     :root {
         --bp6-button-warning-rest: oklch(
@@ -3522,11 +3411,6 @@ form {
     top: 40px;
 }
 
-.bp6-hotkey-dialog .bp6-dialog-body {
-    margin: 0;
-    padding: 0;
-}
-
 .bp6-hotkey-dialog .bp6-hotkey-label {
     flex-grow: 1;
 }
@@ -3534,14 +3418,6 @@ form {
 .bp6-hotkey-column {
     margin: auto;
     padding: 30px;
-}
-
-.bp6-hotkey-column .bp6-heading {
-    margin-bottom: 20px;
-}
-
-.bp6-hotkey-column .bp6-heading:not(:first-child) {
-    margin-top: 40px;
 }
 
 .bp6-hotkey {
@@ -3633,52 +3509,6 @@ form {
     width: 1px;
 }
 
-body.bp6-overlay-open {
-    overflow: hidden;
-}
-
-.bp6-overlay {
-    z-index: 20;
-    position: static;
-    inset: 0;
-}
-
-.bp6-overlay:not(.bp6-overlay-open) {
-    pointer-events: none;
-}
-
-.bp6-overlay.bp6-overlay-scroll-container {
-    position: fixed;
-    overflow: auto;
-}
-
-.bp6-overlay-content {
-    z-index: 20;
-    position: fixed;
-}
-
-.bp6-overlay-inline .bp6-overlay-content,
-.bp6-overlay-scroll-container .bp6-overlay-content {
-    position: absolute;
-}
-
-.bp6-overlay-backdrop {
-    opacity: 1;
-    position: fixed;
-    inset: 0;
-}
-
-.bp6-overlay-backdrop {
-    -webkit-user-select: none;
-    user-select: none;
-    z-index: 20;
-    background-color: #111418b3;
-    overflow: auto;
-}
-
-.bp6-overlay-backdrop:focus {
-    outline: none;
-}
 
 @supports (color: oklch(from var(--any-color) l c h)) {
     :root {

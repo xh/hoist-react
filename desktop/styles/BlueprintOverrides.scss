@@ -27,54 +27,6 @@
 //------------------------
 // Dialogs, Popovers, Masking
 //------------------------
-.bp6-dialog {
-  padding-bottom: 0;
-  border-radius: var(--xh-popup-border-radius);
-  border: var(--xh-popup-border-width) solid var(--xh-popup-border-color);
-
-  .bp6-dialog-header {
-    color: var(--xh-popup-title-text-color);
-    background-color: var(--xh-popup-title-bg);
-    font-family: var(--xh-popup-title-font-family);
-    font-size: var(--xh-popup-title-font-size);
-    padding-left: var(--xh-spacing);
-    border-top-right-radius: var(--xh-popup-border-radius);
-    border-top-left-radius: var(--xh-popup-border-radius);
-
-    .bp6-heading,
-    .bp6-icon {
-      color: var(--xh-popup-title-text-color);
-    }
-
-    .bp6-heading {
-      font-weight: var(--xh-popup-title-font-weight);
-    }
-
-    > svg:first-child {
-      margin-right: var(--xh-spacing);
-    }
-  }
-
-  .bp6-dialog-body {
-    margin: 0;
-    padding: var(--xh-spacing-double);
-    background: var(--xh-popup-bg);
-
-    // See https://github.com/xh/hoist-react/issues/862 for why this is necessary.
-    overflow-wrap: break-word;
-  }
-}
-
-// Customized here for backdrops behind dialogs.
-// Note that masks use their own CSS var, set in Mask.scss.
-.bp6-overlay {
-  transition: none;
-
-  &-backdrop:not(.bp6-popover-backdrop) {
-    background-color: var(--xh-backdrop-bg);
-  }
-}
-
 //------------------------
 // Buttons
 //------------------------
