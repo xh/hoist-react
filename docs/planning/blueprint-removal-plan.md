@@ -319,7 +319,8 @@ pushes to this branch.
 - Mobile on a real device, the popped-out Inspector, tab and sparkline tooltips.
 
 **Still to do**
-- The selector rename PR below.
+- The selector rename PR below, on branch `claude/blueprint-selector-rename` - its working guide
+  and class inventory are in [blueprint-selector-rename](blueprint-selector-rename/README.md).
 - hoist-dev-utils: remove its Blueprint icon stubbing, which now logs a harmless warning.
 
 **Running Toolbox against this branch** - see the root `CLAUDE.md`. In a cloud session:
