@@ -58,7 +58,7 @@ export const toast = hoistCmp.factory({
                     children: message
                 }),
                 div({
-                    className: 'xh-toast__buttons bp6-button-group bp6-minimal',
+                    className: 'xh-toast__buttons xh-button-group xh-button-group--minimal',
                     children: [
                         actionButtonProps
                             ? button({

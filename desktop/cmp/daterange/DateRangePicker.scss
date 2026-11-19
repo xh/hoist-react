@@ -78,17 +78,17 @@ $drp-transition-dur: 120ms;
       display: block;
     }
 
-    &__step-btn.xh-button.bp6-button {
+    &__step-btn.xh-button {
       flex: none;
       min-width: 24px;
       padding-left: 4px;
       padding-right: 4px;
     }
 
-    &__trigger.xh-button.bp6-button {
+    &__trigger.xh-button {
       width: 100%;
 
-      > .bp6-button-text {
+      > .xh-button__text {
         display: flex;
         align-items: center;
         gap: 7px;
@@ -143,7 +143,7 @@ $drp-transition-dur: 120ms;
 
         &:active,
         &.xh-button--active,
-        &.bp6-active {
+        &.xh-popover__target--active {
           background-color: color-mix(in srgb, var(--xh-input-bg) 88%, gray) !important;
           box-shadow: var(--xh-form-field-box-shadow) !important;
         }
@@ -350,7 +350,7 @@ $drp-transition-dur: 120ms;
       }
     }
 
-    &__nav-btn.xh-button.bp6-button {
+    &__nav-btn.xh-button {
       width: 24px;
       min-width: 24px;
       height: 24px;
@@ -394,7 +394,7 @@ $drp-transition-dur: 120ms;
       margin: 14px 6px 0;
 
       // Button wraps `items` in a non-flex text span - lay them out, as the trigger does.
-      > .bp6-button-text {
+      > .xh-button__text {
         display: flex;
         align-items: center;
         gap: 8px;

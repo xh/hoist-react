@@ -34,6 +34,21 @@ describe('Popover', () => {
         await waitFor(() => expect(screen.queryByText('Body')).toBeNull());
     });
 
+    it('marks its target active while open, unless controlled', async () => {
+        const {unmount} = render(withPopover());
+        const isActive = () =>
+            screen.getByText('Open').classList.contains('xh-popover__target--active');
+        expect(isActive()).toBe(false);
+        fireEvent.click(screen.getByText('Open'));
+        await screen.findByText('Body');
+        expect(isActive()).toBe(true);
+        unmount();
+
+        render(withPopover({isOpen: true}));
+        await screen.findByText('Body');
+        expect(isActive()).toBe(false);
+    });
+
     it('closes when the route changes', async () => {
         render(withPopover());
         fireEvent.click(screen.getByText('Open'));

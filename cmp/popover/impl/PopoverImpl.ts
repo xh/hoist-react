@@ -470,7 +470,7 @@ function renderTarget({
             tabIndex,
             className: classNames(className, 'xh-popover__target-wrapper', 'bp6-popover-target', {
                 'xh-popover__target-wrapper--open': open,
-                'bp6-popover-open bp6-active': isActive
+                'xh-popover__target--active bp6-popover-open bp6-active': isActive
             }),
             isOpen: open
         });
@@ -496,7 +496,9 @@ function renderTarget({
         cloneElement(el, {
             ...ariaProps,
             tabIndex: el.props.tabIndex ?? tabIndex,
-            className: classNames(el.props.className, {'bp6-active': isActive})
+            className: classNames(el.props.className, {
+                'xh-popover__target--active bp6-active': isActive
+            })
         })
     );
 }

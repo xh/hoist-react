@@ -51,8 +51,8 @@
       overflow-wrap: break-word;
     }
 
-    // High level of specificity here required to override built-in BP styles
-    &.bp6-toast .bp6-button {
+    // High level of specificity here required to override the base button styles
+    &.bp6-toast .xh-button {
       background: none !important;
       color: white !important;
 

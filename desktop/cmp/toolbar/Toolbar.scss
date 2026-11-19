@@ -109,9 +109,9 @@
     // Compact toolbar buttons
     .xh-app.xh-dark.bp6-dark &,
     .xh-app & {
-      button.xh-button.bp6-button.xh-button--minimal,
-      button.xh-button.bp6-button.xh-button--standard,
-      button.xh-button.bp6-button.xh-button--outlined {
+      button.xh-button.xh-button--minimal,
+      button.xh-button.xh-button--standard,
+      button.xh-button.xh-button--outlined {
         padding: 3px var(--xh-spacing-half);
         min-height: var(--xh-toolbar-compact-item-height);
         max-height: var(--xh-toolbar-compact-item-height);

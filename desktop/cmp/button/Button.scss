@@ -5,13 +5,2454 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
-// Active-state selectors throughout this file match `bp6-active` alongside Hoist's own
-// `xh-button--active`. The Hoist `active` prop sets both, but Blueprint additionally sets
-// `bp6-active` on the button that triggered an *uncontrolled* popover it opened - so a button that
-// simply opens a menu picks up the active look with no per-component code. Blueprint deliberately
-// skips this for controlled popovers (those passed an `isOpen`), which must pass `active`
-// themselves. A component that needs full control of the look can therefore opt out by taking
-// ownership of `isOpen`.
+// A popover marks the target it opened with `xh-popover__target--active`, so a button that opens an
+// uncontrolled click popover, such as a menu, takes the active look with no code of its own. A
+// controlled popover (one passed `isOpen`) does not, and its button passes `active` itself.
+
+//-----------------------------------------------
+// Base button styles
+//-----------------------------------------------
+:where(.xh-button) {
+  display: inline-flex;
+  flex-direction: row;
+}
+:where(.xh-button) > * {
+  flex-grow: 0;
+  flex-shrink: 0;
+}
+:where(.xh-button)::before,
+:where(.xh-button) > * {
+  margin-right: calc(var(--bp-surface-spacing) * 2);
+}
+:where(.xh-button):empty::before,
+:where(.xh-button) > :last-child {
+  margin-right: 0;
+}
+:where(.xh-button) {
+  align-items: center;
+  border: none;
+  border-radius: var(--bp-surface-border-radius);
+  cursor: pointer;
+  font-size: var(--bp-typography-size-body-medium);
+  justify-content: center;
+  padding: var(--bp-surface-spacing) calc(var(--bp-surface-spacing) * 2);
+  text-align: left;
+  vertical-align: middle;
+  min-height: calc(var(--bp-surface-spacing) * 7.5);
+  min-width: calc(var(--bp-surface-spacing) * 7.5);
+}
+:where(.xh-button):empty {
+  padding: 0 !important;
+}
+:where(.xh-button):disabled,
+:where(.xh-button).xh-button--disabled {
+  cursor: not-allowed;
+}
+:where(.xh-button).xh-button--intent-none {
+  background-color: color-mix(in srgb, var(--bp-intent-default-rest) 5%, var(--bp-palette-white));
+  box-shadow:
+    inset 0 0 0 var(--bp-surface-border-width)
+      color-mix(in oklch, var(--bp-surface-border-color-strong) 90%, var(--bp-palette-black)),
+    0 1px 2px color-mix(in oklch, var(--bp-palette-black) 10%, transparent);
+  color: var(--bp-typography-color-default-rest);
+}
+:where(.xh-button).xh-button--intent-none:hover {
+  background-clip: padding-box;
+  background-color: color-mix(in srgb, var(--bp-intent-default-hover) 9%, var(--bp-palette-white));
+  box-shadow:
+    inset 0 0 0 var(--bp-surface-border-width)
+      color-mix(in oklch, var(--bp-surface-border-color-strong) 90%, var(--bp-palette-black)),
+    0 1px 2px color-mix(in oklch, var(--bp-palette-black) 20%, transparent);
+}
+:where(.xh-button).xh-button--intent-none:active,
+:where(.xh-button).xh-button--intent-none:is(.xh-button--active, .xh-popover__target--active) {
+  background-color: color-mix(
+    in srgb,
+    var(--bp-intent-default-active) 16%,
+    var(--bp-palette-white)
+  );
+  box-shadow:
+    inset 0 0 0 var(--bp-surface-border-width)
+      color-mix(in oklch, var(--bp-surface-border-color-strong) 90%, var(--bp-palette-black)),
+    0 1px 2px color-mix(in oklch, var(--bp-palette-black) 20%, transparent);
+}
+@media (forced-colors: active) and (prefers-color-scheme: dark) {
+  :where(.xh-button).xh-button--intent-none:active,
+  :where(.xh-button).xh-button--intent-none:is(.xh-button--active, .xh-popover__target--active) {
+    background: highlight;
+  }
+}
+:where(.xh-button).xh-button--intent-none:disabled,
+:where(.xh-button).xh-button--intent-none.xh-button--disabled {
+  background-color: color-mix(in srgb, var(--bp-intent-default-disabled) 20%, transparent);
+  box-shadow: none;
+  color: var(--bp-typography-color-default-disabled);
+  cursor: not-allowed;
+  outline: none;
+}
+:where(.xh-button).xh-button--intent-none:disabled:is(
+    .xh-button--active,
+    .xh-popover__target--active
+  ),
+:where(.xh-button).xh-button--intent-none:disabled:is(
+    .xh-button--active,
+    .xh-popover__target--active
+  ):hover,
+:where(.xh-button).xh-button--intent-none.xh-button--disabled:is(
+    .xh-button--active,
+    .xh-popover__target--active
+  ),
+:where(.xh-button).xh-button--intent-none.xh-button--disabled:is(
+    .xh-button--active,
+    .xh-popover__target--active
+  ):hover {
+  background-color: color-mix(in srgb, var(--bp-intent-default-disabled) 28%, transparent);
+}
+@media (forced-colors: active) and (prefers-color-scheme: dark) {
+  :where(.xh-button).xh-button--intent-none {
+    border: 1px solid buttonborder;
+  }
+}
+:where(.xh-button).xh-button--intent-primary {
+  background-color: var(--bp-intent-primary-rest);
+  box-shadow:
+    inset 0 0 0 var(--bp-surface-border-width)
+      color-mix(in oklch, var(--bp-surface-border-color-strong) 90%, var(--bp-palette-black)),
+    0 1px 2px color-mix(in oklch, var(--bp-palette-black) 10%, transparent);
+  color: var(--bp-intent-primary-foreground);
+}
+:where(.xh-button).xh-button--intent-primary:hover,
+:where(.xh-button).xh-button--intent-primary:active,
+:where(.xh-button).xh-button--intent-primary:is(.xh-button--active, .xh-popover__target--active) {
+  color: var(--bp-intent-primary-foreground);
+}
+:where(.xh-button).xh-button--intent-primary:hover {
+  background-color: var(--bp-intent-primary-hover);
+  box-shadow:
+    inset 0 0 0 var(--bp-surface-border-width)
+      color-mix(in oklch, var(--bp-surface-border-color-strong) 90%, var(--bp-palette-black)),
+    0 1px 2px color-mix(in oklch, var(--bp-palette-black) 20%, transparent);
+}
+:where(.xh-button).xh-button--intent-primary:active,
+:where(.xh-button).xh-button--intent-primary:is(.xh-button--active, .xh-popover__target--active) {
+  background-color: var(--bp-intent-primary-active);
+  box-shadow:
+    inset 0 0 0 var(--bp-surface-border-width)
+      color-mix(in oklch, var(--bp-surface-border-color-strong) 90%, var(--bp-palette-black)),
+    0 1px 2px color-mix(in oklch, var(--bp-palette-black) 20%, transparent);
+}
+:where(.xh-button).xh-button--intent-primary:disabled,
+:where(.xh-button).xh-button--intent-primary.xh-button--disabled {
+  background-color: color-mix(in oklch, var(--bp-intent-primary-rest) 50%, transparent);
+  border-color: transparent;
+  box-shadow: none;
+  color: color-mix(in oklch, var(--bp-intent-primary-foreground) 60%, transparent);
+}
+@media (forced-colors: active) and (prefers-color-scheme: dark) {
+  :where(.xh-button).xh-button--intent-primary:disabled,
+  :where(.xh-button).xh-button--intent-primary.xh-button--disabled {
+    border-color: graytext;
+    color: graytext;
+  }
+}
+@media (forced-colors: active) and (prefers-color-scheme: dark) {
+  :where(.xh-button).xh-button--intent-primary {
+    border: 1px solid buttonborder;
+    box-shadow: none;
+  }
+}
+:where(.xh-button).xh-button--intent-success {
+  background-color: var(--bp-intent-success-rest);
+  box-shadow:
+    inset 0 0 0 var(--bp-surface-border-width)
+      color-mix(in oklch, var(--bp-surface-border-color-strong) 90%, var(--bp-palette-black)),
+    0 1px 2px color-mix(in oklch, var(--bp-palette-black) 10%, transparent);
+  color: var(--bp-intent-success-foreground);
+}
+:where(.xh-button).xh-button--intent-success:hover,
+:where(.xh-button).xh-button--intent-success:active,
+:where(.xh-button).xh-button--intent-success:is(.xh-button--active, .xh-popover__target--active) {
+  color: var(--bp-intent-success-foreground);
+}
+:where(.xh-button).xh-button--intent-success:hover {
+  background-color: var(--bp-intent-success-hover);
+  box-shadow:
+    inset 0 0 0 var(--bp-surface-border-width)
+      color-mix(in oklch, var(--bp-surface-border-color-strong) 90%, var(--bp-palette-black)),
+    0 1px 2px color-mix(in oklch, var(--bp-palette-black) 20%, transparent);
+}
+:where(.xh-button).xh-button--intent-success:active,
+:where(.xh-button).xh-button--intent-success:is(.xh-button--active, .xh-popover__target--active) {
+  background-color: var(--bp-intent-success-active);
+  box-shadow:
+    inset 0 0 0 var(--bp-surface-border-width)
+      color-mix(in oklch, var(--bp-surface-border-color-strong) 90%, var(--bp-palette-black)),
+    0 1px 2px color-mix(in oklch, var(--bp-palette-black) 20%, transparent);
+}
+:where(.xh-button).xh-button--intent-success:disabled,
+:where(.xh-button).xh-button--intent-success.xh-button--disabled {
+  background-color: color-mix(in oklch, var(--bp-intent-success-rest) 50%, transparent);
+  border-color: transparent;
+  box-shadow: none;
+  color: color-mix(in oklch, var(--bp-intent-success-foreground) 60%, transparent);
+}
+@media (forced-colors: active) and (prefers-color-scheme: dark) {
+  :where(.xh-button).xh-button--intent-success:disabled,
+  :where(.xh-button).xh-button--intent-success.xh-button--disabled {
+    border-color: graytext;
+    color: graytext;
+  }
+}
+@media (forced-colors: active) and (prefers-color-scheme: dark) {
+  :where(.xh-button).xh-button--intent-success {
+    border: 1px solid buttonborder;
+    box-shadow: none;
+  }
+}
+:where(.xh-button).xh-button--intent-warning {
+  background-color: var(--bp6-button-warning-rest);
+  box-shadow:
+    inset 0 0 0 var(--bp-surface-border-width)
+      color-mix(in oklch, var(--bp-surface-border-color-strong) 90%, var(--bp-palette-black)),
+    0 1px 2px color-mix(in oklch, var(--bp-palette-black) 10%, transparent);
+  color: var(--bp-intent-warning-foreground);
+}
+:where(.xh-button).xh-button--intent-warning:hover,
+:where(.xh-button).xh-button--intent-warning:active,
+:where(.xh-button).xh-button--intent-warning:is(.xh-button--active, .xh-popover__target--active) {
+  color: var(--bp-intent-warning-foreground);
+}
+:where(.xh-button).xh-button--intent-warning:hover {
+  background-color: var(--bp-intent-warning-hover);
+  box-shadow:
+    inset 0 0 0 var(--bp-surface-border-width)
+      color-mix(in oklch, var(--bp-surface-border-color-strong) 90%, var(--bp-palette-black)),
+    0 1px 2px color-mix(in oklch, var(--bp-palette-black) 20%, transparent);
+}
+:where(.xh-button).xh-button--intent-warning:active,
+:where(.xh-button).xh-button--intent-warning:is(.xh-button--active, .xh-popover__target--active) {
+  background-color: var(--bp-intent-warning-active);
+  box-shadow:
+    inset 0 0 0 var(--bp-surface-border-width)
+      color-mix(in oklch, var(--bp-surface-border-color-strong) 90%, var(--bp-palette-black)),
+    0 1px 2px color-mix(in oklch, var(--bp-palette-black) 20%, transparent);
+}
+:where(.xh-button).xh-button--intent-warning:disabled,
+:where(.xh-button).xh-button--intent-warning.xh-button--disabled {
+  background-color: color-mix(in oklch, var(--bp6-button-warning-rest) 50%, transparent);
+  border-color: transparent;
+  box-shadow: none;
+  color: color-mix(in oklch, var(--bp-intent-warning-foreground) 60%, transparent);
+}
+@media (forced-colors: active) and (prefers-color-scheme: dark) {
+  :where(.xh-button).xh-button--intent-warning:disabled,
+  :where(.xh-button).xh-button--intent-warning.xh-button--disabled {
+    border-color: graytext;
+    color: graytext;
+  }
+}
+@media (forced-colors: active) and (prefers-color-scheme: dark) {
+  :where(.xh-button).xh-button--intent-warning {
+    border: 1px solid buttonborder;
+    box-shadow: none;
+  }
+}
+:where(.xh-button).xh-button--intent-danger {
+  background-color: var(--bp-intent-danger-rest);
+  box-shadow:
+    inset 0 0 0 var(--bp-surface-border-width)
+      color-mix(in oklch, var(--bp-surface-border-color-strong) 90%, var(--bp-palette-black)),
+    0 1px 2px color-mix(in oklch, var(--bp-palette-black) 10%, transparent);
+  color: var(--bp-intent-danger-foreground);
+}
+:where(.xh-button).xh-button--intent-danger:hover,
+:where(.xh-button).xh-button--intent-danger:active,
+:where(.xh-button).xh-button--intent-danger:is(.xh-button--active, .xh-popover__target--active) {
+  color: var(--bp-intent-danger-foreground);
+}
+:where(.xh-button).xh-button--intent-danger:hover {
+  background-color: var(--bp-intent-danger-hover);
+  box-shadow:
+    inset 0 0 0 var(--bp-surface-border-width)
+      color-mix(in oklch, var(--bp-surface-border-color-strong) 90%, var(--bp-palette-black)),
+    0 1px 2px color-mix(in oklch, var(--bp-palette-black) 20%, transparent);
+}
+:where(.xh-button).xh-button--intent-danger:active,
+:where(.xh-button).xh-button--intent-danger:is(.xh-button--active, .xh-popover__target--active) {
+  background-color: var(--bp-intent-danger-active);
+  box-shadow:
+    inset 0 0 0 var(--bp-surface-border-width)
+      color-mix(in oklch, var(--bp-surface-border-color-strong) 90%, var(--bp-palette-black)),
+    0 1px 2px color-mix(in oklch, var(--bp-palette-black) 20%, transparent);
+}
+:where(.xh-button).xh-button--intent-danger:disabled,
+:where(.xh-button).xh-button--intent-danger.xh-button--disabled {
+  background-color: color-mix(in oklch, var(--bp-intent-danger-rest) 50%, transparent);
+  border-color: transparent;
+  box-shadow: none;
+  color: color-mix(in oklch, var(--bp-intent-danger-foreground) 60%, transparent);
+}
+@media (forced-colors: active) and (prefers-color-scheme: dark) {
+  :where(.xh-button).xh-button--intent-danger:disabled,
+  :where(.xh-button).xh-button--intent-danger.xh-button--disabled {
+    border-color: graytext;
+    color: graytext;
+  }
+}
+@media (forced-colors: active) and (prefers-color-scheme: dark) {
+  :where(.xh-button).xh-button--intent-danger {
+    border: 1px solid buttonborder;
+    box-shadow: none;
+  }
+}
+.xh-dark :where(.xh-button).xh-button--intent-none {
+  background-color: color-mix(in srgb, var(--bp-intent-default-rest) 40%, var(--bp-palette-black));
+  box-shadow:
+    inset 0 0 0 var(--bp-surface-border-width)
+      color-mix(in oklch, var(--bp-surface-border-color-default) 50%, transparent),
+    0 1px 2px color-mix(in oklch, var(--bp-palette-black) 20%, transparent);
+  color: var(--bp-intent-default-foreground);
+}
+.xh-dark :where(.xh-button).xh-button--intent-none:hover,
+.xh-dark :where(.xh-button).xh-button--intent-none:active,
+.xh-dark
+  :where(.xh-button).xh-button--intent-none:is(.xh-button--active, .xh-popover__target--active) {
+  color: color-mix(in srgb, var(--bp-intent-default-hover) 4%, var(--bp-palette-white));
+}
+.xh-dark :where(.xh-button).xh-button--intent-none:hover {
+  background-color: color-mix(in srgb, var(--bp-intent-default-hover) 42%, var(--bp-palette-black));
+  box-shadow:
+    inset 0 0 0 var(--bp-surface-border-width)
+      color-mix(in oklch, var(--bp-surface-border-color-default) 50%, transparent),
+    0 1px 2px color-mix(in oklch, var(--bp-palette-black) 40%, transparent);
+}
+.xh-dark :where(.xh-button).xh-button--intent-none:active,
+.xh-dark
+  :where(.xh-button).xh-button--intent-none:is(.xh-button--active, .xh-popover__target--active) {
+  background-color: color-mix(
+    in srgb,
+    var(--bp-intent-default-active) 30%,
+    var(--bp-palette-black)
+  );
+  box-shadow:
+    inset 0 0 0 var(--bp-surface-border-width)
+      color-mix(in oklch, var(--bp-surface-border-color-default) 50%, transparent),
+    0 1px 2px color-mix(in oklch, var(--bp-palette-black) 40%, transparent);
+}
+.xh-dark :where(.xh-button).xh-button--intent-none:disabled,
+.xh-dark :where(.xh-button).xh-button--intent-none.xh-button--disabled {
+  background-color: color-mix(in srgb, var(--bp-intent-default-disabled) 4%, transparent);
+  box-shadow: none;
+  color: var(--bp-typography-color-default-disabled);
+}
+.xh-dark
+  :where(.xh-button).xh-button--intent-none:disabled:is(
+    .xh-button--active,
+    .xh-popover__target--active
+  ),
+.xh-dark
+  :where(.xh-button).xh-button--intent-none.xh-button--disabled:is(
+    .xh-button--active,
+    .xh-popover__target--active
+  ) {
+  background-color: color-mix(in srgb, var(--bp-intent-default-disabled) 7%, transparent);
+}
+.xh-dark :where(.xh-button):not(.xh-button--intent-none) {
+  box-shadow:
+    inset 0 0 0 var(--bp-surface-border-width)
+      color-mix(in oklch, var(--bp-surface-border-color-default) 50%, transparent),
+    0 1px 2px color-mix(in oklch, var(--bp-palette-black) 20%, transparent);
+}
+.xh-dark :where(.xh-button):not(.xh-button--intent-none):hover {
+  box-shadow:
+    inset 0 0 0 var(--bp-surface-border-width)
+      color-mix(in oklch, var(--bp-surface-border-color-default) 50%, transparent),
+    0 1px 2px color-mix(in oklch, var(--bp-palette-black) 20%, transparent);
+}
+.xh-dark :where(.xh-button):not(.xh-button--intent-none):active,
+.xh-dark
+  :where(.xh-button):not(.xh-button--intent-none):is(
+    .xh-button--active,
+    .xh-popover__target--active
+  ) {
+  box-shadow:
+    inset 0 0 0 var(--bp-surface-border-width)
+      color-mix(in oklch, var(--bp-surface-border-color-default) 50%, transparent),
+    0 1px 2px color-mix(in oklch, var(--bp-palette-black) 40%, transparent);
+}
+.xh-dark :where(.xh-button):not(.xh-button--intent-none):disabled,
+.xh-dark :where(.xh-button):not(.xh-button--intent-none).xh-button--disabled {
+  box-shadow: none;
+  color: color-mix(in oklch, var(--bp-intent-default-foreground) 30%, transparent);
+}
+:where(.xh-button):disabled::before,
+:where(.xh-button).xh-button--disabled::before,
+:where(.xh-button):not(.xh-button--intent-none)::before {
+  color: inherit !important;
+}
+:where(.xh-button).xh-button--minimal {
+  background: none;
+  box-shadow: none;
+}
+:where(.xh-button).xh-button--minimal:hover {
+  background-color: color-mix(in srgb, var(--bp-intent-default-hover) 8%, transparent);
+  box-shadow: none;
+  color: var(--bp-typography-color-default-rest);
+  text-decoration: none;
+}
+:where(.xh-button).xh-button--minimal:active,
+:where(.xh-button).xh-button--minimal:is(.xh-button--active, .xh-popover__target--active) {
+  background-color: color-mix(in srgb, var(--bp-intent-default-active) 16%, transparent);
+  box-shadow: none;
+  color: var(--bp-typography-color-default-rest);
+}
+:where(.xh-button).xh-button--minimal:disabled,
+:where(.xh-button).xh-button--minimal:disabled:hover,
+:where(.xh-button).xh-button--minimal.xh-button--disabled,
+:where(.xh-button).xh-button--minimal.xh-button--disabled:hover {
+  background: none;
+  color: var(--bp-typography-color-default-disabled);
+  cursor: not-allowed;
+}
+:where(.xh-button).xh-button--minimal:disabled:is(.xh-button--active, .xh-popover__target--active),
+:where(.xh-button).xh-button--minimal:disabled:hover:is(
+    .xh-button--active,
+    .xh-popover__target--active
+  ),
+:where(.xh-button).xh-button--minimal.xh-button--disabled:is(
+    .xh-button--active,
+    .xh-popover__target--active
+  ),
+:where(.xh-button).xh-button--minimal.xh-button--disabled:hover:is(
+    .xh-button--active,
+    .xh-popover__target--active
+  ) {
+  background-color: color-mix(in srgb, var(--bp-intent-default-disabled) 30%, transparent);
+}
+.xh-dark :where(.xh-button).xh-button--minimal {
+  background: none;
+  box-shadow: none;
+  color: var(--bp-intent-default-foreground);
+}
+.xh-dark :where(.xh-button).xh-button--minimal:hover,
+.xh-dark :where(.xh-button).xh-button--minimal:active,
+.xh-dark :where(.xh-button).xh-button--minimal:is(.xh-button--active, .xh-popover__target--active) {
+  background: none;
+  box-shadow: none;
+  color: var(--bp-intent-default-foreground);
+}
+.xh-dark :where(.xh-button).xh-button--minimal:hover {
+  background-color: color-mix(in srgb, var(--bp-intent-default-rest) 24%, transparent);
+}
+.xh-dark :where(.xh-button).xh-button--minimal:active,
+.xh-dark :where(.xh-button).xh-button--minimal:is(.xh-button--active, .xh-popover__target--active) {
+  background-color: color-mix(in srgb, var(--bp-intent-default-rest) 49%, transparent);
+}
+.xh-dark :where(.xh-button).xh-button--minimal:disabled,
+.xh-dark :where(.xh-button).xh-button--minimal:disabled:hover,
+.xh-dark :where(.xh-button).xh-button--minimal.xh-button--disabled,
+.xh-dark :where(.xh-button).xh-button--minimal.xh-button--disabled:hover {
+  background: none;
+  color: var(--bp-typography-color-default-disabled);
+  cursor: not-allowed;
+}
+.xh-dark
+  :where(.xh-button).xh-button--minimal:disabled:is(
+    .xh-button--active,
+    .xh-popover__target--active
+  ),
+.xh-dark
+  :where(.xh-button).xh-button--minimal:disabled:hover:is(
+    .xh-button--active,
+    .xh-popover__target--active
+  ),
+.xh-dark
+  :where(.xh-button).xh-button--minimal.xh-button--disabled:is(
+    .xh-button--active,
+    .xh-popover__target--active
+  ),
+.xh-dark
+  :where(.xh-button).xh-button--minimal.xh-button--disabled:hover:is(
+    .xh-button--active,
+    .xh-popover__target--active
+  ) {
+  background-color: color-mix(in srgb, var(--bp-intent-default-disabled) 30%, transparent);
+}
+:where(.xh-button).xh-button--minimal.xh-button--intent-primary {
+  color: var(--bp-intent-primary-hover);
+}
+:where(.xh-button).xh-button--minimal.xh-button--intent-primary:hover,
+:where(.xh-button).xh-button--minimal.xh-button--intent-primary:active,
+:where(.xh-button).xh-button--minimal.xh-button--intent-primary:is(
+    .xh-button--active,
+    .xh-popover__target--active
+  ) {
+  background: none;
+  box-shadow: none;
+  color: var(--bp-intent-primary-hover);
+}
+:where(.xh-button).xh-button--minimal.xh-button--intent-primary:hover {
+  background-color: color-mix(in oklch, var(--bp-intent-primary-rest) 15%, transparent);
+  color: var(--bp-intent-primary-hover);
+}
+:where(.xh-button).xh-button--minimal.xh-button--intent-primary:active,
+:where(.xh-button).xh-button--minimal.xh-button--intent-primary:is(
+    .xh-button--active,
+    .xh-popover__target--active
+  ) {
+  background-color: color-mix(in oklch, var(--bp-intent-primary-rest) 30%, transparent);
+  color: var(--bp-intent-primary-active);
+}
+:where(.xh-button).xh-button--minimal.xh-button--intent-primary:disabled,
+:where(.xh-button).xh-button--minimal.xh-button--intent-primary.xh-button--disabled {
+  background: none;
+  color: color-mix(in oklch, var(--bp-intent-primary-hover) 50%, transparent);
+}
+:where(.xh-button).xh-button--minimal.xh-button--intent-primary:disabled:is(
+    .xh-button--active,
+    .xh-popover__target--active
+  ),
+:where(.xh-button).xh-button--minimal.xh-button--intent-primary.xh-button--disabled:is(
+    .xh-button--active,
+    .xh-popover__target--active
+  ) {
+  background-color: color-mix(in oklch, var(--bp-intent-primary-rest) 30%, transparent);
+}
+.xh-dark :where(.xh-button).xh-button--minimal.xh-button--intent-primary {
+  color: color-mix(in oklch, var(--bp-intent-primary-rest) 51%, var(--bp-palette-white));
+}
+.xh-dark :where(.xh-button).xh-button--minimal.xh-button--intent-primary:hover {
+  background-color: color-mix(in oklch, var(--bp-intent-primary-rest) 20%, transparent);
+  color: color-mix(in oklch, var(--bp-intent-primary-hover) 51%, var(--bp-palette-white));
+}
+.xh-dark :where(.xh-button).xh-button--minimal.xh-button--intent-primary:active,
+.xh-dark
+  :where(.xh-button).xh-button--minimal.xh-button--intent-primary:is(
+    .xh-button--active,
+    .xh-popover__target--active
+  ) {
+  background-color: color-mix(in oklch, var(--bp-intent-primary-rest) 30%, transparent);
+  color: color-mix(in oklch, var(--bp-intent-primary-active) 51%, var(--bp-palette-white));
+}
+.xh-dark :where(.xh-button).xh-button--minimal.xh-button--intent-primary:disabled,
+.xh-dark :where(.xh-button).xh-button--minimal.xh-button--intent-primary.xh-button--disabled {
+  background: none;
+  color: color-mix(
+    in oklch,
+    color-mix(in oklch, var(--bp-intent-primary-rest) 51%, var(--bp-palette-white)) 50%,
+    transparent
+  );
+}
+.xh-dark
+  :where(.xh-button).xh-button--minimal.xh-button--intent-primary:disabled:is(
+    .xh-button--active,
+    .xh-popover__target--active
+  ),
+.xh-dark
+  :where(.xh-button).xh-button--minimal.xh-button--intent-primary.xh-button--disabled:is(
+    .xh-button--active,
+    .xh-popover__target--active
+  ) {
+  background-color: color-mix(in oklch, var(--bp-intent-primary-rest) 30%, transparent);
+}
+:where(.xh-button).xh-button--minimal.xh-button--intent-success {
+  color: var(--bp-intent-success-hover);
+}
+:where(.xh-button).xh-button--minimal.xh-button--intent-success:hover,
+:where(.xh-button).xh-button--minimal.xh-button--intent-success:active,
+:where(.xh-button).xh-button--minimal.xh-button--intent-success:is(
+    .xh-button--active,
+    .xh-popover__target--active
+  ) {
+  background: none;
+  box-shadow: none;
+  color: var(--bp-intent-success-hover);
+}
+:where(.xh-button).xh-button--minimal.xh-button--intent-success:hover {
+  background-color: color-mix(in oklch, var(--bp-intent-success-rest) 15%, transparent);
+  color: var(--bp-intent-success-hover);
+}
+:where(.xh-button).xh-button--minimal.xh-button--intent-success:active,
+:where(.xh-button).xh-button--minimal.xh-button--intent-success:is(
+    .xh-button--active,
+    .xh-popover__target--active
+  ) {
+  background-color: color-mix(in oklch, var(--bp-intent-success-rest) 30%, transparent);
+  color: var(--bp-intent-success-active);
+}
+:where(.xh-button).xh-button--minimal.xh-button--intent-success:disabled,
+:where(.xh-button).xh-button--minimal.xh-button--intent-success.xh-button--disabled {
+  background: none;
+  color: color-mix(in oklch, var(--bp-intent-success-hover) 50%, transparent);
+}
+:where(.xh-button).xh-button--minimal.xh-button--intent-success:disabled:is(
+    .xh-button--active,
+    .xh-popover__target--active
+  ),
+:where(.xh-button).xh-button--minimal.xh-button--intent-success.xh-button--disabled:is(
+    .xh-button--active,
+    .xh-popover__target--active
+  ) {
+  background-color: color-mix(in oklch, var(--bp-intent-success-rest) 30%, transparent);
+}
+.xh-dark :where(.xh-button).xh-button--minimal.xh-button--intent-success {
+  color: color-mix(in oklch, var(--bp-intent-success-rest) 54%, var(--bp-palette-white));
+}
+.xh-dark :where(.xh-button).xh-button--minimal.xh-button--intent-success:hover {
+  background-color: color-mix(in oklch, var(--bp-intent-success-rest) 20%, transparent);
+  color: color-mix(in oklch, var(--bp-intent-success-hover) 54%, var(--bp-palette-white));
+}
+.xh-dark :where(.xh-button).xh-button--minimal.xh-button--intent-success:active,
+.xh-dark
+  :where(.xh-button).xh-button--minimal.xh-button--intent-success:is(
+    .xh-button--active,
+    .xh-popover__target--active
+  ) {
+  background-color: color-mix(in oklch, var(--bp-intent-success-rest) 30%, transparent);
+  color: color-mix(in oklch, var(--bp-intent-success-active) 54%, var(--bp-palette-white));
+}
+.xh-dark :where(.xh-button).xh-button--minimal.xh-button--intent-success:disabled,
+.xh-dark :where(.xh-button).xh-button--minimal.xh-button--intent-success.xh-button--disabled {
+  background: none;
+  color: color-mix(
+    in oklch,
+    color-mix(in oklch, var(--bp-intent-success-rest) 54%, var(--bp-palette-white)) 50%,
+    transparent
+  );
+}
+.xh-dark
+  :where(.xh-button).xh-button--minimal.xh-button--intent-success:disabled:is(
+    .xh-button--active,
+    .xh-popover__target--active
+  ),
+.xh-dark
+  :where(.xh-button).xh-button--minimal.xh-button--intent-success.xh-button--disabled:is(
+    .xh-button--active,
+    .xh-popover__target--active
+  ) {
+  background-color: color-mix(in oklch, var(--bp-intent-success-rest) 30%, transparent);
+}
+:where(.xh-button).xh-button--minimal.xh-button--intent-warning {
+  color: var(--bp-intent-warning-hover);
+}
+:where(.xh-button).xh-button--minimal.xh-button--intent-warning:hover,
+:where(.xh-button).xh-button--minimal.xh-button--intent-warning:active,
+:where(.xh-button).xh-button--minimal.xh-button--intent-warning:is(
+    .xh-button--active,
+    .xh-popover__target--active
+  ) {
+  background: none;
+  box-shadow: none;
+  color: var(--bp-intent-warning-hover);
+}
+:where(.xh-button).xh-button--minimal.xh-button--intent-warning:hover {
+  background-color: color-mix(in oklch, var(--bp6-button-warning-rest) 15%, transparent);
+  color: var(--bp-intent-warning-hover);
+}
+:where(.xh-button).xh-button--minimal.xh-button--intent-warning:active,
+:where(.xh-button).xh-button--minimal.xh-button--intent-warning:is(
+    .xh-button--active,
+    .xh-popover__target--active
+  ) {
+  background-color: color-mix(in oklch, var(--bp6-button-warning-rest) 30%, transparent);
+  color: var(--bp-intent-warning-active);
+}
+:where(.xh-button).xh-button--minimal.xh-button--intent-warning:disabled,
+:where(.xh-button).xh-button--minimal.xh-button--intent-warning.xh-button--disabled {
+  background: none;
+  color: color-mix(in oklch, var(--bp-intent-warning-hover) 50%, transparent);
+}
+:where(.xh-button).xh-button--minimal.xh-button--intent-warning:disabled:is(
+    .xh-button--active,
+    .xh-popover__target--active
+  ),
+:where(.xh-button).xh-button--minimal.xh-button--intent-warning.xh-button--disabled:is(
+    .xh-button--active,
+    .xh-popover__target--active
+  ) {
+  background-color: color-mix(in oklch, var(--bp6-button-warning-rest) 30%, transparent);
+}
+.xh-dark :where(.xh-button).xh-button--minimal.xh-button--intent-warning {
+  color: color-mix(in oklch, var(--bp-intent-warning-rest) 53%, var(--bp-palette-white));
+}
+.xh-dark :where(.xh-button).xh-button--minimal.xh-button--intent-warning:hover {
+  background-color: color-mix(in oklch, var(--bp6-button-warning-rest) 20%, transparent);
+  color: color-mix(in oklch, var(--bp-intent-warning-hover) 53%, var(--bp-palette-white));
+}
+.xh-dark :where(.xh-button).xh-button--minimal.xh-button--intent-warning:active,
+.xh-dark
+  :where(.xh-button).xh-button--minimal.xh-button--intent-warning:is(
+    .xh-button--active,
+    .xh-popover__target--active
+  ) {
+  background-color: color-mix(in oklch, var(--bp6-button-warning-rest) 30%, transparent);
+  color: color-mix(in oklch, var(--bp-intent-warning-active) 53%, var(--bp-palette-white));
+}
+.xh-dark :where(.xh-button).xh-button--minimal.xh-button--intent-warning:disabled,
+.xh-dark :where(.xh-button).xh-button--minimal.xh-button--intent-warning.xh-button--disabled {
+  background: none;
+  color: color-mix(
+    in oklch,
+    color-mix(in oklch, var(--bp-intent-warning-rest) 53%, var(--bp-palette-white)) 50%,
+    transparent
+  );
+}
+.xh-dark
+  :where(.xh-button).xh-button--minimal.xh-button--intent-warning:disabled:is(
+    .xh-button--active,
+    .xh-popover__target--active
+  ),
+.xh-dark
+  :where(.xh-button).xh-button--minimal.xh-button--intent-warning.xh-button--disabled:is(
+    .xh-button--active,
+    .xh-popover__target--active
+  ) {
+  background-color: color-mix(in oklch, var(--bp6-button-warning-rest) 30%, transparent);
+}
+:where(.xh-button).xh-button--minimal.xh-button--intent-danger {
+  color: var(--bp-intent-danger-hover);
+}
+:where(.xh-button).xh-button--minimal.xh-button--intent-danger:hover,
+:where(.xh-button).xh-button--minimal.xh-button--intent-danger:active,
+:where(.xh-button).xh-button--minimal.xh-button--intent-danger:is(
+    .xh-button--active,
+    .xh-popover__target--active
+  ) {
+  background: none;
+  box-shadow: none;
+  color: var(--bp-intent-danger-hover);
+}
+:where(.xh-button).xh-button--minimal.xh-button--intent-danger:hover {
+  background-color: color-mix(in oklch, var(--bp-intent-danger-rest) 15%, transparent);
+  color: var(--bp-intent-danger-hover);
+}
+:where(.xh-button).xh-button--minimal.xh-button--intent-danger:active,
+:where(.xh-button).xh-button--minimal.xh-button--intent-danger:is(
+    .xh-button--active,
+    .xh-popover__target--active
+  ) {
+  background-color: color-mix(in oklch, var(--bp-intent-danger-rest) 30%, transparent);
+  color: var(--bp-intent-danger-active);
+}
+:where(.xh-button).xh-button--minimal.xh-button--intent-danger:disabled,
+:where(.xh-button).xh-button--minimal.xh-button--intent-danger.xh-button--disabled {
+  background: none;
+  color: color-mix(in oklch, var(--bp-intent-danger-hover) 50%, transparent);
+}
+:where(.xh-button).xh-button--minimal.xh-button--intent-danger:disabled:is(
+    .xh-button--active,
+    .xh-popover__target--active
+  ),
+:where(.xh-button).xh-button--minimal.xh-button--intent-danger.xh-button--disabled:is(
+    .xh-button--active,
+    .xh-popover__target--active
+  ) {
+  background-color: color-mix(in oklch, var(--bp-intent-danger-rest) 30%, transparent);
+}
+.xh-dark :where(.xh-button).xh-button--minimal.xh-button--intent-danger {
+  color: color-mix(in oklch, var(--bp-intent-danger-rest) 53%, var(--bp-palette-white));
+}
+.xh-dark :where(.xh-button).xh-button--minimal.xh-button--intent-danger:hover {
+  background-color: color-mix(in oklch, var(--bp-intent-danger-rest) 20%, transparent);
+  color: color-mix(in oklch, var(--bp-intent-danger-hover) 53%, var(--bp-palette-white));
+}
+.xh-dark :where(.xh-button).xh-button--minimal.xh-button--intent-danger:active,
+.xh-dark
+  :where(.xh-button).xh-button--minimal.xh-button--intent-danger:is(
+    .xh-button--active,
+    .xh-popover__target--active
+  ) {
+  background-color: color-mix(in oklch, var(--bp-intent-danger-rest) 30%, transparent);
+  color: color-mix(in oklch, var(--bp-intent-danger-active) 53%, var(--bp-palette-white));
+}
+.xh-dark :where(.xh-button).xh-button--minimal.xh-button--intent-danger:disabled,
+.xh-dark :where(.xh-button).xh-button--minimal.xh-button--intent-danger.xh-button--disabled {
+  background: none;
+  color: color-mix(
+    in oklch,
+    color-mix(in oklch, var(--bp-intent-danger-rest) 53%, var(--bp-palette-white)) 50%,
+    transparent
+  );
+}
+.xh-dark
+  :where(.xh-button).xh-button--minimal.xh-button--intent-danger:disabled:is(
+    .xh-button--active,
+    .xh-popover__target--active
+  ),
+.xh-dark
+  :where(.xh-button).xh-button--minimal.xh-button--intent-danger.xh-button--disabled:is(
+    .xh-button--active,
+    .xh-popover__target--active
+  ) {
+  background-color: color-mix(in oklch, var(--bp-intent-danger-rest) 30%, transparent);
+}
+:where(.xh-button).xh-button--outlined {
+  background: none;
+  box-shadow: none;
+}
+:where(.xh-button).xh-button--outlined:hover {
+  background-color: color-mix(in srgb, var(--bp-intent-default-hover) 8%, transparent);
+  box-shadow: none;
+  color: var(--bp-typography-color-default-rest);
+  text-decoration: none;
+}
+:where(.xh-button).xh-button--outlined:active,
+:where(.xh-button).xh-button--outlined:is(.xh-button--active, .xh-popover__target--active) {
+  background-color: color-mix(in srgb, var(--bp-intent-default-active) 16%, transparent);
+  box-shadow: none;
+  color: var(--bp-typography-color-default-rest);
+}
+:where(.xh-button).xh-button--outlined:disabled,
+:where(.xh-button).xh-button--outlined:disabled:hover,
+:where(.xh-button).xh-button--outlined.xh-button--disabled,
+:where(.xh-button).xh-button--outlined.xh-button--disabled:hover {
+  background: none;
+  color: var(--bp-typography-color-default-disabled);
+  cursor: not-allowed;
+}
+:where(.xh-button).xh-button--outlined:disabled:is(.xh-button--active, .xh-popover__target--active),
+:where(.xh-button).xh-button--outlined:disabled:hover:is(
+    .xh-button--active,
+    .xh-popover__target--active
+  ),
+:where(.xh-button).xh-button--outlined.xh-button--disabled:is(
+    .xh-button--active,
+    .xh-popover__target--active
+  ),
+:where(.xh-button).xh-button--outlined.xh-button--disabled:hover:is(
+    .xh-button--active,
+    .xh-popover__target--active
+  ) {
+  background-color: color-mix(in srgb, var(--bp-intent-default-disabled) 30%, transparent);
+}
+.xh-dark :where(.xh-button).xh-button--outlined {
+  background: none;
+  box-shadow: none;
+  color: var(--bp-intent-default-foreground);
+}
+.xh-dark :where(.xh-button).xh-button--outlined:hover,
+.xh-dark :where(.xh-button).xh-button--outlined:active,
+.xh-dark
+  :where(.xh-button).xh-button--outlined:is(.xh-button--active, .xh-popover__target--active) {
+  background: none;
+  box-shadow: none;
+  color: var(--bp-intent-default-foreground);
+}
+.xh-dark :where(.xh-button).xh-button--outlined:hover {
+  background-color: color-mix(in srgb, var(--bp-intent-default-rest) 24%, transparent);
+}
+.xh-dark :where(.xh-button).xh-button--outlined:active,
+.xh-dark
+  :where(.xh-button).xh-button--outlined:is(.xh-button--active, .xh-popover__target--active) {
+  background-color: color-mix(in srgb, var(--bp-intent-default-rest) 49%, transparent);
+}
+.xh-dark :where(.xh-button).xh-button--outlined:disabled,
+.xh-dark :where(.xh-button).xh-button--outlined:disabled:hover,
+.xh-dark :where(.xh-button).xh-button--outlined.xh-button--disabled,
+.xh-dark :where(.xh-button).xh-button--outlined.xh-button--disabled:hover {
+  background: none;
+  color: var(--bp-typography-color-default-disabled);
+  cursor: not-allowed;
+}
+.xh-dark
+  :where(.xh-button).xh-button--outlined:disabled:is(
+    .xh-button--active,
+    .xh-popover__target--active
+  ),
+.xh-dark
+  :where(.xh-button).xh-button--outlined:disabled:hover:is(
+    .xh-button--active,
+    .xh-popover__target--active
+  ),
+.xh-dark
+  :where(.xh-button).xh-button--outlined.xh-button--disabled:is(
+    .xh-button--active,
+    .xh-popover__target--active
+  ),
+.xh-dark
+  :where(.xh-button).xh-button--outlined.xh-button--disabled:hover:is(
+    .xh-button--active,
+    .xh-popover__target--active
+  ) {
+  background-color: color-mix(in srgb, var(--bp-intent-default-disabled) 30%, transparent);
+}
+:where(.xh-button).xh-button--outlined.xh-button--intent-primary {
+  color: var(--bp-intent-primary-hover);
+}
+:where(.xh-button).xh-button--outlined.xh-button--intent-primary:hover,
+:where(.xh-button).xh-button--outlined.xh-button--intent-primary:active,
+:where(.xh-button).xh-button--outlined.xh-button--intent-primary:is(
+    .xh-button--active,
+    .xh-popover__target--active
+  ) {
+  background: none;
+  box-shadow: none;
+  color: var(--bp-intent-primary-hover);
+}
+:where(.xh-button).xh-button--outlined.xh-button--intent-primary:hover {
+  background-color: color-mix(in oklch, var(--bp-intent-primary-rest) 15%, transparent);
+  color: var(--bp-intent-primary-hover);
+}
+:where(.xh-button).xh-button--outlined.xh-button--intent-primary:active,
+:where(.xh-button).xh-button--outlined.xh-button--intent-primary:is(
+    .xh-button--active,
+    .xh-popover__target--active
+  ) {
+  background-color: color-mix(in oklch, var(--bp-intent-primary-rest) 30%, transparent);
+  color: var(--bp-intent-primary-active);
+}
+:where(.xh-button).xh-button--outlined.xh-button--intent-primary:disabled,
+:where(.xh-button).xh-button--outlined.xh-button--intent-primary.xh-button--disabled {
+  background: none;
+  color: color-mix(in oklch, var(--bp-intent-primary-hover) 50%, transparent);
+}
+:where(.xh-button).xh-button--outlined.xh-button--intent-primary:disabled:is(
+    .xh-button--active,
+    .xh-popover__target--active
+  ),
+:where(.xh-button).xh-button--outlined.xh-button--intent-primary.xh-button--disabled:is(
+    .xh-button--active,
+    .xh-popover__target--active
+  ) {
+  background-color: color-mix(in oklch, var(--bp-intent-primary-rest) 30%, transparent);
+}
+.xh-dark :where(.xh-button).xh-button--outlined.xh-button--intent-primary {
+  color: color-mix(in oklch, var(--bp-intent-primary-rest) 51%, var(--bp-palette-white));
+}
+.xh-dark :where(.xh-button).xh-button--outlined.xh-button--intent-primary:hover {
+  background-color: color-mix(in oklch, var(--bp-intent-primary-rest) 20%, transparent);
+  color: color-mix(in oklch, var(--bp-intent-primary-hover) 51%, var(--bp-palette-white));
+}
+.xh-dark :where(.xh-button).xh-button--outlined.xh-button--intent-primary:active,
+.xh-dark
+  :where(.xh-button).xh-button--outlined.xh-button--intent-primary:is(
+    .xh-button--active,
+    .xh-popover__target--active
+  ) {
+  background-color: color-mix(in oklch, var(--bp-intent-primary-rest) 30%, transparent);
+  color: color-mix(in oklch, var(--bp-intent-primary-active) 51%, var(--bp-palette-white));
+}
+.xh-dark :where(.xh-button).xh-button--outlined.xh-button--intent-primary:disabled,
+.xh-dark :where(.xh-button).xh-button--outlined.xh-button--intent-primary.xh-button--disabled {
+  background: none;
+  color: color-mix(
+    in oklch,
+    color-mix(in oklch, var(--bp-intent-primary-rest) 51%, var(--bp-palette-white)) 50%,
+    transparent
+  );
+}
+.xh-dark
+  :where(.xh-button).xh-button--outlined.xh-button--intent-primary:disabled:is(
+    .xh-button--active,
+    .xh-popover__target--active
+  ),
+.xh-dark
+  :where(.xh-button).xh-button--outlined.xh-button--intent-primary.xh-button--disabled:is(
+    .xh-button--active,
+    .xh-popover__target--active
+  ) {
+  background-color: color-mix(in oklch, var(--bp-intent-primary-rest) 30%, transparent);
+}
+:where(.xh-button).xh-button--outlined.xh-button--intent-success {
+  color: var(--bp-intent-success-hover);
+}
+:where(.xh-button).xh-button--outlined.xh-button--intent-success:hover,
+:where(.xh-button).xh-button--outlined.xh-button--intent-success:active,
+:where(.xh-button).xh-button--outlined.xh-button--intent-success:is(
+    .xh-button--active,
+    .xh-popover__target--active
+  ) {
+  background: none;
+  box-shadow: none;
+  color: var(--bp-intent-success-hover);
+}
+:where(.xh-button).xh-button--outlined.xh-button--intent-success:hover {
+  background-color: color-mix(in oklch, var(--bp-intent-success-rest) 15%, transparent);
+  color: var(--bp-intent-success-hover);
+}
+:where(.xh-button).xh-button--outlined.xh-button--intent-success:active,
+:where(.xh-button).xh-button--outlined.xh-button--intent-success:is(
+    .xh-button--active,
+    .xh-popover__target--active
+  ) {
+  background-color: color-mix(in oklch, var(--bp-intent-success-rest) 30%, transparent);
+  color: var(--bp-intent-success-active);
+}
+:where(.xh-button).xh-button--outlined.xh-button--intent-success:disabled,
+:where(.xh-button).xh-button--outlined.xh-button--intent-success.xh-button--disabled {
+  background: none;
+  color: color-mix(in oklch, var(--bp-intent-success-hover) 50%, transparent);
+}
+:where(.xh-button).xh-button--outlined.xh-button--intent-success:disabled:is(
+    .xh-button--active,
+    .xh-popover__target--active
+  ),
+:where(.xh-button).xh-button--outlined.xh-button--intent-success.xh-button--disabled:is(
+    .xh-button--active,
+    .xh-popover__target--active
+  ) {
+  background-color: color-mix(in oklch, var(--bp-intent-success-rest) 30%, transparent);
+}
+.xh-dark :where(.xh-button).xh-button--outlined.xh-button--intent-success {
+  color: color-mix(in oklch, var(--bp-intent-success-rest) 54%, var(--bp-palette-white));
+}
+.xh-dark :where(.xh-button).xh-button--outlined.xh-button--intent-success:hover {
+  background-color: color-mix(in oklch, var(--bp-intent-success-rest) 20%, transparent);
+  color: color-mix(in oklch, var(--bp-intent-success-hover) 54%, var(--bp-palette-white));
+}
+.xh-dark :where(.xh-button).xh-button--outlined.xh-button--intent-success:active,
+.xh-dark
+  :where(.xh-button).xh-button--outlined.xh-button--intent-success:is(
+    .xh-button--active,
+    .xh-popover__target--active
+  ) {
+  background-color: color-mix(in oklch, var(--bp-intent-success-rest) 30%, transparent);
+  color: color-mix(in oklch, var(--bp-intent-success-active) 54%, var(--bp-palette-white));
+}
+.xh-dark :where(.xh-button).xh-button--outlined.xh-button--intent-success:disabled,
+.xh-dark :where(.xh-button).xh-button--outlined.xh-button--intent-success.xh-button--disabled {
+  background: none;
+  color: color-mix(
+    in oklch,
+    color-mix(in oklch, var(--bp-intent-success-rest) 54%, var(--bp-palette-white)) 50%,
+    transparent
+  );
+}
+.xh-dark
+  :where(.xh-button).xh-button--outlined.xh-button--intent-success:disabled:is(
+    .xh-button--active,
+    .xh-popover__target--active
+  ),
+.xh-dark
+  :where(.xh-button).xh-button--outlined.xh-button--intent-success.xh-button--disabled:is(
+    .xh-button--active,
+    .xh-popover__target--active
+  ) {
+  background-color: color-mix(in oklch, var(--bp-intent-success-rest) 30%, transparent);
+}
+:where(.xh-button).xh-button--outlined.xh-button--intent-warning {
+  color: var(--bp-intent-warning-hover);
+}
+:where(.xh-button).xh-button--outlined.xh-button--intent-warning:hover,
+:where(.xh-button).xh-button--outlined.xh-button--intent-warning:active,
+:where(.xh-button).xh-button--outlined.xh-button--intent-warning:is(
+    .xh-button--active,
+    .xh-popover__target--active
+  ) {
+  background: none;
+  box-shadow: none;
+  color: var(--bp-intent-warning-hover);
+}
+:where(.xh-button).xh-button--outlined.xh-button--intent-warning:hover {
+  background-color: color-mix(in oklch, var(--bp6-button-warning-rest) 15%, transparent);
+  color: var(--bp-intent-warning-hover);
+}
+:where(.xh-button).xh-button--outlined.xh-button--intent-warning:active,
+:where(.xh-button).xh-button--outlined.xh-button--intent-warning:is(
+    .xh-button--active,
+    .xh-popover__target--active
+  ) {
+  background-color: color-mix(in oklch, var(--bp6-button-warning-rest) 30%, transparent);
+  color: var(--bp-intent-warning-active);
+}
+:where(.xh-button).xh-button--outlined.xh-button--intent-warning:disabled,
+:where(.xh-button).xh-button--outlined.xh-button--intent-warning.xh-button--disabled {
+  background: none;
+  color: color-mix(in oklch, var(--bp-intent-warning-hover) 50%, transparent);
+}
+:where(.xh-button).xh-button--outlined.xh-button--intent-warning:disabled:is(
+    .xh-button--active,
+    .xh-popover__target--active
+  ),
+:where(.xh-button).xh-button--outlined.xh-button--intent-warning.xh-button--disabled:is(
+    .xh-button--active,
+    .xh-popover__target--active
+  ) {
+  background-color: color-mix(in oklch, var(--bp6-button-warning-rest) 30%, transparent);
+}
+.xh-dark :where(.xh-button).xh-button--outlined.xh-button--intent-warning {
+  color: color-mix(in oklch, var(--bp-intent-warning-rest) 53%, var(--bp-palette-white));
+}
+.xh-dark :where(.xh-button).xh-button--outlined.xh-button--intent-warning:hover {
+  background-color: color-mix(in oklch, var(--bp6-button-warning-rest) 20%, transparent);
+  color: color-mix(in oklch, var(--bp-intent-warning-hover) 53%, var(--bp-palette-white));
+}
+.xh-dark :where(.xh-button).xh-button--outlined.xh-button--intent-warning:active,
+.xh-dark
+  :where(.xh-button).xh-button--outlined.xh-button--intent-warning:is(
+    .xh-button--active,
+    .xh-popover__target--active
+  ) {
+  background-color: color-mix(in oklch, var(--bp6-button-warning-rest) 30%, transparent);
+  color: color-mix(in oklch, var(--bp-intent-warning-active) 53%, var(--bp-palette-white));
+}
+.xh-dark :where(.xh-button).xh-button--outlined.xh-button--intent-warning:disabled,
+.xh-dark :where(.xh-button).xh-button--outlined.xh-button--intent-warning.xh-button--disabled {
+  background: none;
+  color: color-mix(
+    in oklch,
+    color-mix(in oklch, var(--bp-intent-warning-rest) 53%, var(--bp-palette-white)) 50%,
+    transparent
+  );
+}
+.xh-dark
+  :where(.xh-button).xh-button--outlined.xh-button--intent-warning:disabled:is(
+    .xh-button--active,
+    .xh-popover__target--active
+  ),
+.xh-dark
+  :where(.xh-button).xh-button--outlined.xh-button--intent-warning.xh-button--disabled:is(
+    .xh-button--active,
+    .xh-popover__target--active
+  ) {
+  background-color: color-mix(in oklch, var(--bp6-button-warning-rest) 30%, transparent);
+}
+:where(.xh-button).xh-button--outlined.xh-button--intent-danger {
+  color: var(--bp-intent-danger-hover);
+}
+:where(.xh-button).xh-button--outlined.xh-button--intent-danger:hover,
+:where(.xh-button).xh-button--outlined.xh-button--intent-danger:active,
+:where(.xh-button).xh-button--outlined.xh-button--intent-danger:is(
+    .xh-button--active,
+    .xh-popover__target--active
+  ) {
+  background: none;
+  box-shadow: none;
+  color: var(--bp-intent-danger-hover);
+}
+:where(.xh-button).xh-button--outlined.xh-button--intent-danger:hover {
+  background-color: color-mix(in oklch, var(--bp-intent-danger-rest) 15%, transparent);
+  color: var(--bp-intent-danger-hover);
+}
+:where(.xh-button).xh-button--outlined.xh-button--intent-danger:active,
+:where(.xh-button).xh-button--outlined.xh-button--intent-danger:is(
+    .xh-button--active,
+    .xh-popover__target--active
+  ) {
+  background-color: color-mix(in oklch, var(--bp-intent-danger-rest) 30%, transparent);
+  color: var(--bp-intent-danger-active);
+}
+:where(.xh-button).xh-button--outlined.xh-button--intent-danger:disabled,
+:where(.xh-button).xh-button--outlined.xh-button--intent-danger.xh-button--disabled {
+  background: none;
+  color: color-mix(in oklch, var(--bp-intent-danger-hover) 50%, transparent);
+}
+:where(.xh-button).xh-button--outlined.xh-button--intent-danger:disabled:is(
+    .xh-button--active,
+    .xh-popover__target--active
+  ),
+:where(.xh-button).xh-button--outlined.xh-button--intent-danger.xh-button--disabled:is(
+    .xh-button--active,
+    .xh-popover__target--active
+  ) {
+  background-color: color-mix(in oklch, var(--bp-intent-danger-rest) 30%, transparent);
+}
+.xh-dark :where(.xh-button).xh-button--outlined.xh-button--intent-danger {
+  color: color-mix(in oklch, var(--bp-intent-danger-rest) 53%, var(--bp-palette-white));
+}
+.xh-dark :where(.xh-button).xh-button--outlined.xh-button--intent-danger:hover {
+  background-color: color-mix(in oklch, var(--bp-intent-danger-rest) 20%, transparent);
+  color: color-mix(in oklch, var(--bp-intent-danger-hover) 53%, var(--bp-palette-white));
+}
+.xh-dark :where(.xh-button).xh-button--outlined.xh-button--intent-danger:active,
+.xh-dark
+  :where(.xh-button).xh-button--outlined.xh-button--intent-danger:is(
+    .xh-button--active,
+    .xh-popover__target--active
+  ) {
+  background-color: color-mix(in oklch, var(--bp-intent-danger-rest) 30%, transparent);
+  color: color-mix(in oklch, var(--bp-intent-danger-active) 53%, var(--bp-palette-white));
+}
+.xh-dark :where(.xh-button).xh-button--outlined.xh-button--intent-danger:disabled,
+.xh-dark :where(.xh-button).xh-button--outlined.xh-button--intent-danger.xh-button--disabled {
+  background: none;
+  color: color-mix(
+    in oklch,
+    color-mix(in oklch, var(--bp-intent-danger-rest) 53%, var(--bp-palette-white)) 50%,
+    transparent
+  );
+}
+.xh-dark
+  :where(.xh-button).xh-button--outlined.xh-button--intent-danger:disabled:is(
+    .xh-button--active,
+    .xh-popover__target--active
+  ),
+.xh-dark
+  :where(.xh-button).xh-button--outlined.xh-button--intent-danger.xh-button--disabled:is(
+    .xh-button--active,
+    .xh-popover__target--active
+  ) {
+  background-color: color-mix(in oklch, var(--bp-intent-danger-rest) 30%, transparent);
+}
+:where(.xh-button).xh-button--outlined {
+  border: var(--bp-surface-border-width) solid var(--bp-surface-border-color-strong);
+  box-sizing: border-box;
+}
+:where(.xh-button).xh-button--outlined:disabled,
+:where(.xh-button).xh-button--outlined:disabled:hover,
+:where(.xh-button).xh-button--outlined.xh-button--disabled,
+:where(.xh-button).xh-button--outlined.xh-button--disabled:hover {
+  border-color: var(--bp-surface-border-color-default);
+}
+.xh-dark :where(.xh-button).xh-button--outlined {
+  border-color: var(--bp-surface-border-color-strong);
+}
+.xh-dark :where(.xh-button).xh-button--outlined:disabled,
+.xh-dark :where(.xh-button).xh-button--outlined:disabled:hover,
+.xh-dark :where(.xh-button).xh-button--outlined.xh-button--disabled,
+.xh-dark :where(.xh-button).xh-button--outlined.xh-button--disabled:hover {
+  border-color: var(--bp-surface-border-color-default);
+}
+:where(.xh-button).xh-button--outlined.xh-button--intent-primary {
+  border-color: color-mix(in oklch, var(--bp-intent-primary-hover) 60%, transparent);
+}
+:where(.xh-button).xh-button--outlined.xh-button--intent-primary:disabled,
+:where(.xh-button).xh-button--outlined.xh-button--intent-primary.xh-button--disabled {
+  border-color: color-mix(in oklch, var(--bp-intent-primary-hover) 20%, transparent);
+}
+.xh-dark :where(.xh-button).xh-button--outlined.xh-button--intent-primary {
+  border-color: color-mix(
+    in oklch,
+    color-mix(in oklch, var(--bp-intent-primary-rest) 51%, var(--bp-palette-white)) 60%,
+    transparent
+  );
+}
+.xh-dark :where(.xh-button).xh-button--outlined.xh-button--intent-primary:disabled,
+.xh-dark :where(.xh-button).xh-button--outlined.xh-button--intent-primary.xh-button--disabled {
+  border-color: color-mix(
+    in oklch,
+    color-mix(in oklch, var(--bp-intent-primary-rest) 51%, var(--bp-palette-white)) 20%,
+    transparent
+  );
+}
+:where(.xh-button).xh-button--outlined.xh-button--intent-success {
+  border-color: color-mix(in oklch, var(--bp-intent-success-hover) 60%, transparent);
+}
+:where(.xh-button).xh-button--outlined.xh-button--intent-success:disabled,
+:where(.xh-button).xh-button--outlined.xh-button--intent-success.xh-button--disabled {
+  border-color: color-mix(in oklch, var(--bp-intent-success-hover) 20%, transparent);
+}
+.xh-dark :where(.xh-button).xh-button--outlined.xh-button--intent-success {
+  border-color: color-mix(
+    in oklch,
+    color-mix(in oklch, var(--bp-intent-success-rest) 54%, var(--bp-palette-white)) 60%,
+    transparent
+  );
+}
+.xh-dark :where(.xh-button).xh-button--outlined.xh-button--intent-success:disabled,
+.xh-dark :where(.xh-button).xh-button--outlined.xh-button--intent-success.xh-button--disabled {
+  border-color: color-mix(
+    in oklch,
+    color-mix(in oklch, var(--bp-intent-success-rest) 54%, var(--bp-palette-white)) 20%,
+    transparent
+  );
+}
+:where(.xh-button).xh-button--outlined.xh-button--intent-warning {
+  border-color: color-mix(in oklch, var(--bp-intent-warning-hover) 60%, transparent);
+}
+:where(.xh-button).xh-button--outlined.xh-button--intent-warning:disabled,
+:where(.xh-button).xh-button--outlined.xh-button--intent-warning.xh-button--disabled {
+  border-color: color-mix(in oklch, var(--bp-intent-warning-hover) 20%, transparent);
+}
+.xh-dark :where(.xh-button).xh-button--outlined.xh-button--intent-warning {
+  border-color: color-mix(
+    in oklch,
+    color-mix(in oklch, var(--bp-intent-warning-rest) 53%, var(--bp-palette-white)) 60%,
+    transparent
+  );
+}
+.xh-dark :where(.xh-button).xh-button--outlined.xh-button--intent-warning:disabled,
+.xh-dark :where(.xh-button).xh-button--outlined.xh-button--intent-warning.xh-button--disabled {
+  border-color: color-mix(
+    in oklch,
+    color-mix(in oklch, var(--bp-intent-warning-rest) 53%, var(--bp-palette-white)) 20%,
+    transparent
+  );
+}
+:where(.xh-button).xh-button--outlined.xh-button--intent-danger {
+  border-color: color-mix(in oklch, var(--bp-intent-danger-hover) 60%, transparent);
+}
+:where(.xh-button).xh-button--outlined.xh-button--intent-danger:disabled,
+:where(.xh-button).xh-button--outlined.xh-button--intent-danger.xh-button--disabled {
+  border-color: color-mix(in oklch, var(--bp-intent-danger-hover) 20%, transparent);
+}
+.xh-dark :where(.xh-button).xh-button--outlined.xh-button--intent-danger {
+  border-color: color-mix(
+    in oklch,
+    color-mix(in oklch, var(--bp-intent-danger-rest) 53%, var(--bp-palette-white)) 60%,
+    transparent
+  );
+}
+.xh-dark :where(.xh-button).xh-button--outlined.xh-button--intent-danger:disabled,
+.xh-dark :where(.xh-button).xh-button--outlined.xh-button--intent-danger.xh-button--disabled {
+  border-color: color-mix(
+    in oklch,
+    color-mix(in oklch, var(--bp-intent-danger-rest) 53%, var(--bp-palette-white)) 20%,
+    transparent
+  );
+}
+:where(.xh-button).xh-button--intent-warning:not(.xh-button--disabled):not(.xh-button--minimal):not(
+    .xh-button--outlined
+  ):hover {
+  background: color-mix(
+    in oklch,
+    var(--bp6-button-warning-rest) 77%,
+    var(--bp-intent-warning-hover)
+  );
+}
+:where(.xh-button).xh-button--intent-warning:not(.xh-button--disabled):not(.xh-button--minimal):not(
+    .xh-button--outlined
+  ):active,
+:where(.xh-button).xh-button--intent-warning:not(.xh-button--disabled):not(.xh-button--minimal):not(
+    .xh-button--outlined
+  ):is(.xh-button--active, .xh-popover__target--active) {
+  background: color-mix(
+    in oklch,
+    var(--bp6-button-warning-rest) 46%,
+    var(--bp-intent-warning-active)
+  );
+}
+@media (forced-colors: active) and (prefers-color-scheme: dark) {
+  :where(.xh-button).xh-button--intent-warning:not(.xh-button--disabled):not(
+      .xh-button--minimal
+    ):not(.xh-button--outlined):active,
+  :where(.xh-button).xh-button--intent-warning:not(.xh-button--disabled):not(
+      .xh-button--minimal
+    ):not(.xh-button--outlined):is(.xh-button--active, .xh-popover__target--active) {
+    background: highlight;
+  }
+}
+:where(.xh-button).xh-button--intent-warning:disabled,
+:where(.xh-button).xh-button--intent-warning.xh-button--disabled {
+  background-color: color-mix(in oklch, var(--bp-intent-warning-rest) 40%, transparent);
+}
+.xh-dark :where(.xh-button).xh-button--intent-warning:disabled,
+.xh-dark :where(.xh-button).xh-button--intent-warning.xh-button--disabled {
+  color: color-mix(in oklch, var(--bp-intent-warning-foreground) 50%, transparent);
+}
+:where(.xh-button).xh-button--intent-warning.xh-button--minimal,
+:where(.xh-button).xh-button--intent-warning.xh-button--outlined {
+  background: none;
+}
+:where(.xh-button).xh-button--intent-warning.xh-button--minimal:disabled,
+:where(.xh-button).xh-button--intent-warning.xh-button--minimal.xh-button--disabled,
+:where(.xh-button).xh-button--intent-warning.xh-button--outlined:disabled,
+:where(.xh-button).xh-button--intent-warning.xh-button--outlined.xh-button--disabled {
+  color: color-mix(in oklch, var(--bp-intent-warning-hover) 40%, transparent);
+}
+a:where(.xh-button) {
+  text-align: center;
+  text-decoration: none;
+  transition: none;
+}
+a:where(.xh-button),
+a:where(.xh-button):hover,
+a:where(.xh-button):active {
+  color: var(--bp-typography-color-default-rest);
+}
+a:where(.xh-button).xh-button--disabled {
+  color: var(--bp-typography-color-default-disabled);
+}
+.xh-button__text {
+  flex: 0 1 auto;
+}
+.xh-button-group {
+  display: inline-flex;
+}
+.xh-button-group :where(.xh-button) {
+  flex: 0 0 auto;
+  position: relative;
+  z-index: 4;
+}
+.xh-button-group :where(.xh-button):focus {
+  z-index: 5;
+}
+.xh-button-group :where(.xh-button):hover {
+  z-index: 6;
+}
+.xh-button-group :where(.xh-button):active,
+.xh-button-group :where(.xh-button):is(.xh-button--active, .xh-popover__target--active) {
+  z-index: 7;
+}
+.xh-button-group :where(.xh-button):disabled,
+.xh-button-group :where(.xh-button).xh-button--disabled {
+  z-index: 3;
+}
+.xh-button-group :where(.xh-button):not(.xh-button--intent-none) {
+  z-index: 9;
+}
+.xh-button-group :where(.xh-button):not(.xh-button--intent-none):focus {
+  z-index: 10;
+}
+.xh-button-group :where(.xh-button):not(.xh-button--intent-none):hover {
+  z-index: 11;
+}
+.xh-button-group :where(.xh-button):not(.xh-button--intent-none):active,
+.xh-button-group
+  :where(.xh-button):not(.xh-button--intent-none):is(
+    .xh-button--active,
+    .xh-popover__target--active
+  ) {
+  z-index: 12;
+}
+.xh-button-group :where(.xh-button):not(.xh-button--intent-none):disabled,
+.xh-button-group :where(.xh-button):not(.xh-button--intent-none).xh-button--disabled {
+  z-index: 8;
+}
+.xh-button-group:not(.xh-button-group--minimal)
+  > .xh-popover__target-wrapper:not(:first-child)
+  > :where(.xh-button),
+.xh-button-group:not(.xh-button-group--minimal) > :where(.xh-button):not(:first-child),
+.xh-button-group.xh-button-group--outlined
+  > .xh-popover__target-wrapper:not(:first-child)
+  > :where(.xh-button),
+.xh-button-group.xh-button-group--outlined > :where(.xh-button):not(:first-child) {
+  border-bottom-left-radius: 0;
+  border-top-left-radius: 0;
+}
+.xh-button-group:not(.xh-button-group--minimal)
+  > .xh-popover__target-wrapper:not(:last-child)
+  > :where(.xh-button),
+.xh-button-group:not(.xh-button-group--minimal) > :where(.xh-button):not(:last-child),
+.xh-button-group.xh-button-group--outlined
+  > .xh-popover__target-wrapper:not(:last-child)
+  > :where(.xh-button),
+.xh-button-group.xh-button-group--outlined > :where(.xh-button):not(:last-child) {
+  border-bottom-right-radius: 0;
+  border-top-right-radius: 0;
+}
+.xh-button-group:not(.xh-button-group--minimal):not(.xh-button-group--outlined)
+  > .xh-popover__target-wrapper:not(:last-child)
+  > :where(.xh-button),
+.xh-button-group:not(.xh-button-group--minimal):not(.xh-button-group--outlined)
+  > :where(.xh-button):not(:last-child) {
+  margin-right: calc(-1 * var(--bp-surface-border-width));
+}
+.xh-button-group.xh-button-group--minimal :where(.xh-button),
+.xh-button-group.xh-button-group--outlined :where(.xh-button) {
+  background: none;
+  box-shadow: none;
+}
+.xh-button-group.xh-button-group--minimal :where(.xh-button):hover,
+.xh-button-group.xh-button-group--outlined :where(.xh-button):hover {
+  background-color: color-mix(in srgb, var(--bp-intent-default-hover) 8%, transparent);
+  box-shadow: none;
+  color: var(--bp-typography-color-default-rest);
+  text-decoration: none;
+}
+.xh-button-group.xh-button-group--minimal :where(.xh-button):active,
+.xh-button-group.xh-button-group--minimal
+  :where(.xh-button):is(.xh-button--active, .xh-popover__target--active),
+.xh-button-group.xh-button-group--outlined :where(.xh-button):active,
+.xh-button-group.xh-button-group--outlined
+  :where(.xh-button):is(.xh-button--active, .xh-popover__target--active) {
+  background-color: color-mix(in srgb, var(--bp-intent-default-active) 16%, transparent);
+  box-shadow: none;
+  color: var(--bp-typography-color-default-rest);
+}
+.xh-button-group.xh-button-group--minimal :where(.xh-button):disabled,
+.xh-button-group.xh-button-group--minimal :where(.xh-button):disabled:hover,
+.xh-button-group.xh-button-group--minimal :where(.xh-button).xh-button--disabled,
+.xh-button-group.xh-button-group--minimal :where(.xh-button).xh-button--disabled:hover,
+.xh-button-group.xh-button-group--outlined :where(.xh-button):disabled,
+.xh-button-group.xh-button-group--outlined :where(.xh-button):disabled:hover,
+.xh-button-group.xh-button-group--outlined :where(.xh-button).xh-button--disabled,
+.xh-button-group.xh-button-group--outlined :where(.xh-button).xh-button--disabled:hover {
+  background: none;
+  color: var(--bp-typography-color-default-disabled);
+  cursor: not-allowed;
+}
+.xh-button-group.xh-button-group--minimal
+  :where(.xh-button):disabled:is(.xh-button--active, .xh-popover__target--active),
+.xh-button-group.xh-button-group--minimal
+  :where(.xh-button):disabled:hover:is(.xh-button--active, .xh-popover__target--active),
+.xh-button-group.xh-button-group--minimal
+  :where(.xh-button).xh-button--disabled:is(.xh-button--active, .xh-popover__target--active),
+.xh-button-group.xh-button-group--minimal
+  :where(.xh-button).xh-button--disabled:hover:is(.xh-button--active, .xh-popover__target--active),
+.xh-button-group.xh-button-group--outlined
+  :where(.xh-button):disabled:is(.xh-button--active, .xh-popover__target--active),
+.xh-button-group.xh-button-group--outlined
+  :where(.xh-button):disabled:hover:is(.xh-button--active, .xh-popover__target--active),
+.xh-button-group.xh-button-group--outlined
+  :where(.xh-button).xh-button--disabled:is(.xh-button--active, .xh-popover__target--active),
+.xh-button-group.xh-button-group--outlined
+  :where(.xh-button).xh-button--disabled:hover:is(.xh-button--active, .xh-popover__target--active) {
+  background-color: color-mix(in srgb, var(--bp-intent-default-disabled) 30%, transparent);
+}
+.xh-dark .xh-button-group.xh-button-group--minimal :where(.xh-button),
+.xh-dark .xh-button-group.xh-button-group--outlined :where(.xh-button) {
+  background: none;
+  box-shadow: none;
+  color: var(--bp-intent-default-foreground);
+}
+.xh-dark .xh-button-group.xh-button-group--minimal :where(.xh-button):hover,
+.xh-dark .xh-button-group.xh-button-group--minimal :where(.xh-button):active,
+.xh-dark
+  .xh-button-group.xh-button-group--minimal
+  :where(.xh-button):is(.xh-button--active, .xh-popover__target--active),
+.xh-dark .xh-button-group.xh-button-group--outlined :where(.xh-button):hover,
+.xh-dark .xh-button-group.xh-button-group--outlined :where(.xh-button):active,
+.xh-dark
+  .xh-button-group.xh-button-group--outlined
+  :where(.xh-button):is(.xh-button--active, .xh-popover__target--active) {
+  background: none;
+  box-shadow: none;
+  color: var(--bp-intent-default-foreground);
+}
+.xh-dark .xh-button-group.xh-button-group--minimal :where(.xh-button):hover,
+.xh-dark .xh-button-group.xh-button-group--outlined :where(.xh-button):hover {
+  background-color: color-mix(in srgb, var(--bp-intent-default-rest) 24%, transparent);
+}
+.xh-dark .xh-button-group.xh-button-group--minimal :where(.xh-button):active,
+.xh-dark
+  .xh-button-group.xh-button-group--minimal
+  :where(.xh-button):is(.xh-button--active, .xh-popover__target--active),
+.xh-dark .xh-button-group.xh-button-group--outlined :where(.xh-button):active,
+.xh-dark
+  .xh-button-group.xh-button-group--outlined
+  :where(.xh-button):is(.xh-button--active, .xh-popover__target--active) {
+  background-color: color-mix(in srgb, var(--bp-intent-default-rest) 49%, transparent);
+}
+.xh-dark .xh-button-group.xh-button-group--minimal :where(.xh-button):disabled,
+.xh-dark .xh-button-group.xh-button-group--minimal :where(.xh-button):disabled:hover,
+.xh-dark .xh-button-group.xh-button-group--minimal :where(.xh-button).xh-button--disabled,
+.xh-dark .xh-button-group.xh-button-group--minimal :where(.xh-button).xh-button--disabled:hover,
+.xh-dark .xh-button-group.xh-button-group--outlined :where(.xh-button):disabled,
+.xh-dark .xh-button-group.xh-button-group--outlined :where(.xh-button):disabled:hover,
+.xh-dark .xh-button-group.xh-button-group--outlined :where(.xh-button).xh-button--disabled,
+.xh-dark .xh-button-group.xh-button-group--outlined :where(.xh-button).xh-button--disabled:hover {
+  background: none;
+  color: var(--bp-typography-color-default-disabled);
+  cursor: not-allowed;
+}
+.xh-dark
+  .xh-button-group.xh-button-group--minimal
+  :where(.xh-button):disabled:is(.xh-button--active, .xh-popover__target--active),
+.xh-dark
+  .xh-button-group.xh-button-group--minimal
+  :where(.xh-button):disabled:hover:is(.xh-button--active, .xh-popover__target--active),
+.xh-dark
+  .xh-button-group.xh-button-group--minimal
+  :where(.xh-button).xh-button--disabled:is(.xh-button--active, .xh-popover__target--active),
+.xh-dark
+  .xh-button-group.xh-button-group--minimal
+  :where(.xh-button).xh-button--disabled:hover:is(.xh-button--active, .xh-popover__target--active),
+.xh-dark
+  .xh-button-group.xh-button-group--outlined
+  :where(.xh-button):disabled:is(.xh-button--active, .xh-popover__target--active),
+.xh-dark
+  .xh-button-group.xh-button-group--outlined
+  :where(.xh-button):disabled:hover:is(.xh-button--active, .xh-popover__target--active),
+.xh-dark
+  .xh-button-group.xh-button-group--outlined
+  :where(.xh-button).xh-button--disabled:is(.xh-button--active, .xh-popover__target--active),
+.xh-dark
+  .xh-button-group.xh-button-group--outlined
+  :where(.xh-button).xh-button--disabled:hover:is(.xh-button--active, .xh-popover__target--active) {
+  background-color: color-mix(in srgb, var(--bp-intent-default-disabled) 30%, transparent);
+}
+.xh-button-group.xh-button-group--minimal :where(.xh-button).xh-button--intent-primary,
+.xh-button-group.xh-button-group--outlined :where(.xh-button).xh-button--intent-primary {
+  color: var(--bp-intent-primary-hover);
+}
+.xh-button-group.xh-button-group--minimal :where(.xh-button).xh-button--intent-primary:hover,
+.xh-button-group.xh-button-group--minimal :where(.xh-button).xh-button--intent-primary:active,
+.xh-button-group.xh-button-group--minimal
+  :where(.xh-button).xh-button--intent-primary:is(.xh-button--active, .xh-popover__target--active),
+.xh-button-group.xh-button-group--outlined :where(.xh-button).xh-button--intent-primary:hover,
+.xh-button-group.xh-button-group--outlined :where(.xh-button).xh-button--intent-primary:active,
+.xh-button-group.xh-button-group--outlined
+  :where(.xh-button).xh-button--intent-primary:is(.xh-button--active, .xh-popover__target--active) {
+  background: none;
+  box-shadow: none;
+  color: var(--bp-intent-primary-hover);
+}
+.xh-button-group.xh-button-group--minimal :where(.xh-button).xh-button--intent-primary:hover,
+.xh-button-group.xh-button-group--outlined :where(.xh-button).xh-button--intent-primary:hover {
+  background-color: color-mix(in oklch, var(--bp-intent-primary-rest) 15%, transparent);
+  color: var(--bp-intent-primary-hover);
+}
+.xh-button-group.xh-button-group--minimal :where(.xh-button).xh-button--intent-primary:active,
+.xh-button-group.xh-button-group--minimal
+  :where(.xh-button).xh-button--intent-primary:is(.xh-button--active, .xh-popover__target--active),
+.xh-button-group.xh-button-group--outlined :where(.xh-button).xh-button--intent-primary:active,
+.xh-button-group.xh-button-group--outlined
+  :where(.xh-button).xh-button--intent-primary:is(.xh-button--active, .xh-popover__target--active) {
+  background-color: color-mix(in oklch, var(--bp-intent-primary-rest) 30%, transparent);
+  color: var(--bp-intent-primary-active);
+}
+.xh-button-group.xh-button-group--minimal :where(.xh-button).xh-button--intent-primary:disabled,
+.xh-button-group.xh-button-group--minimal
+  :where(.xh-button).xh-button--intent-primary.xh-button--disabled,
+.xh-button-group.xh-button-group--outlined :where(.xh-button).xh-button--intent-primary:disabled,
+.xh-button-group.xh-button-group--outlined
+  :where(.xh-button).xh-button--intent-primary.xh-button--disabled {
+  background: none;
+  color: color-mix(in oklch, var(--bp-intent-primary-hover) 50%, transparent);
+}
+.xh-button-group.xh-button-group--minimal
+  :where(.xh-button).xh-button--intent-primary:disabled:is(
+    .xh-button--active,
+    .xh-popover__target--active
+  ),
+.xh-button-group.xh-button-group--minimal
+  :where(.xh-button).xh-button--intent-primary.xh-button--disabled:is(
+    .xh-button--active,
+    .xh-popover__target--active
+  ),
+.xh-button-group.xh-button-group--outlined
+  :where(.xh-button).xh-button--intent-primary:disabled:is(
+    .xh-button--active,
+    .xh-popover__target--active
+  ),
+.xh-button-group.xh-button-group--outlined
+  :where(.xh-button).xh-button--intent-primary.xh-button--disabled:is(
+    .xh-button--active,
+    .xh-popover__target--active
+  ) {
+  background-color: color-mix(in oklch, var(--bp-intent-primary-rest) 30%, transparent);
+}
+.xh-dark .xh-button-group.xh-button-group--minimal :where(.xh-button).xh-button--intent-primary,
+.xh-dark .xh-button-group.xh-button-group--outlined :where(.xh-button).xh-button--intent-primary {
+  color: color-mix(in oklch, var(--bp-intent-primary-rest) 51%, var(--bp-palette-white));
+}
+.xh-dark
+  .xh-button-group.xh-button-group--minimal
+  :where(.xh-button).xh-button--intent-primary:hover,
+.xh-dark
+  .xh-button-group.xh-button-group--outlined
+  :where(.xh-button).xh-button--intent-primary:hover {
+  background-color: color-mix(in oklch, var(--bp-intent-primary-rest) 20%, transparent);
+  color: color-mix(in oklch, var(--bp-intent-primary-hover) 51%, var(--bp-palette-white));
+}
+.xh-dark
+  .xh-button-group.xh-button-group--minimal
+  :where(.xh-button).xh-button--intent-primary:active,
+.xh-dark
+  .xh-button-group.xh-button-group--minimal
+  :where(.xh-button).xh-button--intent-primary:is(.xh-button--active, .xh-popover__target--active),
+.xh-dark
+  .xh-button-group.xh-button-group--outlined
+  :where(.xh-button).xh-button--intent-primary:active,
+.xh-dark
+  .xh-button-group.xh-button-group--outlined
+  :where(.xh-button).xh-button--intent-primary:is(.xh-button--active, .xh-popover__target--active) {
+  background-color: color-mix(in oklch, var(--bp-intent-primary-rest) 30%, transparent);
+  color: color-mix(in oklch, var(--bp-intent-primary-active) 51%, var(--bp-palette-white));
+}
+.xh-dark
+  .xh-button-group.xh-button-group--minimal
+  :where(.xh-button).xh-button--intent-primary:disabled,
+.xh-dark
+  .xh-button-group.xh-button-group--minimal
+  :where(.xh-button).xh-button--intent-primary.xh-button--disabled,
+.xh-dark
+  .xh-button-group.xh-button-group--outlined
+  :where(.xh-button).xh-button--intent-primary:disabled,
+.xh-dark
+  .xh-button-group.xh-button-group--outlined
+  :where(.xh-button).xh-button--intent-primary.xh-button--disabled {
+  background: none;
+  color: color-mix(
+    in oklch,
+    color-mix(in oklch, var(--bp-intent-primary-rest) 51%, var(--bp-palette-white)) 50%,
+    transparent
+  );
+}
+.xh-dark
+  .xh-button-group.xh-button-group--minimal
+  :where(.xh-button).xh-button--intent-primary:disabled:is(
+    .xh-button--active,
+    .xh-popover__target--active
+  ),
+.xh-dark
+  .xh-button-group.xh-button-group--minimal
+  :where(.xh-button).xh-button--intent-primary.xh-button--disabled:is(
+    .xh-button--active,
+    .xh-popover__target--active
+  ),
+.xh-dark
+  .xh-button-group.xh-button-group--outlined
+  :where(.xh-button).xh-button--intent-primary:disabled:is(
+    .xh-button--active,
+    .xh-popover__target--active
+  ),
+.xh-dark
+  .xh-button-group.xh-button-group--outlined
+  :where(.xh-button).xh-button--intent-primary.xh-button--disabled:is(
+    .xh-button--active,
+    .xh-popover__target--active
+  ) {
+  background-color: color-mix(in oklch, var(--bp-intent-primary-rest) 30%, transparent);
+}
+.xh-button-group.xh-button-group--minimal :where(.xh-button).xh-button--intent-success,
+.xh-button-group.xh-button-group--outlined :where(.xh-button).xh-button--intent-success {
+  color: var(--bp-intent-success-hover);
+}
+.xh-button-group.xh-button-group--minimal :where(.xh-button).xh-button--intent-success:hover,
+.xh-button-group.xh-button-group--minimal :where(.xh-button).xh-button--intent-success:active,
+.xh-button-group.xh-button-group--minimal
+  :where(.xh-button).xh-button--intent-success:is(.xh-button--active, .xh-popover__target--active),
+.xh-button-group.xh-button-group--outlined :where(.xh-button).xh-button--intent-success:hover,
+.xh-button-group.xh-button-group--outlined :where(.xh-button).xh-button--intent-success:active,
+.xh-button-group.xh-button-group--outlined
+  :where(.xh-button).xh-button--intent-success:is(.xh-button--active, .xh-popover__target--active) {
+  background: none;
+  box-shadow: none;
+  color: var(--bp-intent-success-hover);
+}
+.xh-button-group.xh-button-group--minimal :where(.xh-button).xh-button--intent-success:hover,
+.xh-button-group.xh-button-group--outlined :where(.xh-button).xh-button--intent-success:hover {
+  background-color: color-mix(in oklch, var(--bp-intent-success-rest) 15%, transparent);
+  color: var(--bp-intent-success-hover);
+}
+.xh-button-group.xh-button-group--minimal :where(.xh-button).xh-button--intent-success:active,
+.xh-button-group.xh-button-group--minimal
+  :where(.xh-button).xh-button--intent-success:is(.xh-button--active, .xh-popover__target--active),
+.xh-button-group.xh-button-group--outlined :where(.xh-button).xh-button--intent-success:active,
+.xh-button-group.xh-button-group--outlined
+  :where(.xh-button).xh-button--intent-success:is(.xh-button--active, .xh-popover__target--active) {
+  background-color: color-mix(in oklch, var(--bp-intent-success-rest) 30%, transparent);
+  color: var(--bp-intent-success-active);
+}
+.xh-button-group.xh-button-group--minimal :where(.xh-button).xh-button--intent-success:disabled,
+.xh-button-group.xh-button-group--minimal
+  :where(.xh-button).xh-button--intent-success.xh-button--disabled,
+.xh-button-group.xh-button-group--outlined :where(.xh-button).xh-button--intent-success:disabled,
+.xh-button-group.xh-button-group--outlined
+  :where(.xh-button).xh-button--intent-success.xh-button--disabled {
+  background: none;
+  color: color-mix(in oklch, var(--bp-intent-success-hover) 50%, transparent);
+}
+.xh-button-group.xh-button-group--minimal
+  :where(.xh-button).xh-button--intent-success:disabled:is(
+    .xh-button--active,
+    .xh-popover__target--active
+  ),
+.xh-button-group.xh-button-group--minimal
+  :where(.xh-button).xh-button--intent-success.xh-button--disabled:is(
+    .xh-button--active,
+    .xh-popover__target--active
+  ),
+.xh-button-group.xh-button-group--outlined
+  :where(.xh-button).xh-button--intent-success:disabled:is(
+    .xh-button--active,
+    .xh-popover__target--active
+  ),
+.xh-button-group.xh-button-group--outlined
+  :where(.xh-button).xh-button--intent-success.xh-button--disabled:is(
+    .xh-button--active,
+    .xh-popover__target--active
+  ) {
+  background-color: color-mix(in oklch, var(--bp-intent-success-rest) 30%, transparent);
+}
+.xh-dark .xh-button-group.xh-button-group--minimal :where(.xh-button).xh-button--intent-success,
+.xh-dark .xh-button-group.xh-button-group--outlined :where(.xh-button).xh-button--intent-success {
+  color: color-mix(in oklch, var(--bp-intent-success-rest) 54%, var(--bp-palette-white));
+}
+.xh-dark
+  .xh-button-group.xh-button-group--minimal
+  :where(.xh-button).xh-button--intent-success:hover,
+.xh-dark
+  .xh-button-group.xh-button-group--outlined
+  :where(.xh-button).xh-button--intent-success:hover {
+  background-color: color-mix(in oklch, var(--bp-intent-success-rest) 20%, transparent);
+  color: color-mix(in oklch, var(--bp-intent-success-hover) 54%, var(--bp-palette-white));
+}
+.xh-dark
+  .xh-button-group.xh-button-group--minimal
+  :where(.xh-button).xh-button--intent-success:active,
+.xh-dark
+  .xh-button-group.xh-button-group--minimal
+  :where(.xh-button).xh-button--intent-success:is(.xh-button--active, .xh-popover__target--active),
+.xh-dark
+  .xh-button-group.xh-button-group--outlined
+  :where(.xh-button).xh-button--intent-success:active,
+.xh-dark
+  .xh-button-group.xh-button-group--outlined
+  :where(.xh-button).xh-button--intent-success:is(.xh-button--active, .xh-popover__target--active) {
+  background-color: color-mix(in oklch, var(--bp-intent-success-rest) 30%, transparent);
+  color: color-mix(in oklch, var(--bp-intent-success-active) 54%, var(--bp-palette-white));
+}
+.xh-dark
+  .xh-button-group.xh-button-group--minimal
+  :where(.xh-button).xh-button--intent-success:disabled,
+.xh-dark
+  .xh-button-group.xh-button-group--minimal
+  :where(.xh-button).xh-button--intent-success.xh-button--disabled,
+.xh-dark
+  .xh-button-group.xh-button-group--outlined
+  :where(.xh-button).xh-button--intent-success:disabled,
+.xh-dark
+  .xh-button-group.xh-button-group--outlined
+  :where(.xh-button).xh-button--intent-success.xh-button--disabled {
+  background: none;
+  color: color-mix(
+    in oklch,
+    color-mix(in oklch, var(--bp-intent-success-rest) 54%, var(--bp-palette-white)) 50%,
+    transparent
+  );
+}
+.xh-dark
+  .xh-button-group.xh-button-group--minimal
+  :where(.xh-button).xh-button--intent-success:disabled:is(
+    .xh-button--active,
+    .xh-popover__target--active
+  ),
+.xh-dark
+  .xh-button-group.xh-button-group--minimal
+  :where(.xh-button).xh-button--intent-success.xh-button--disabled:is(
+    .xh-button--active,
+    .xh-popover__target--active
+  ),
+.xh-dark
+  .xh-button-group.xh-button-group--outlined
+  :where(.xh-button).xh-button--intent-success:disabled:is(
+    .xh-button--active,
+    .xh-popover__target--active
+  ),
+.xh-dark
+  .xh-button-group.xh-button-group--outlined
+  :where(.xh-button).xh-button--intent-success.xh-button--disabled:is(
+    .xh-button--active,
+    .xh-popover__target--active
+  ) {
+  background-color: color-mix(in oklch, var(--bp-intent-success-rest) 30%, transparent);
+}
+.xh-button-group.xh-button-group--minimal :where(.xh-button).xh-button--intent-warning,
+.xh-button-group.xh-button-group--outlined :where(.xh-button).xh-button--intent-warning {
+  color: var(--bp-intent-warning-hover);
+}
+.xh-button-group.xh-button-group--minimal :where(.xh-button).xh-button--intent-warning:hover,
+.xh-button-group.xh-button-group--minimal :where(.xh-button).xh-button--intent-warning:active,
+.xh-button-group.xh-button-group--minimal
+  :where(.xh-button).xh-button--intent-warning:is(.xh-button--active, .xh-popover__target--active),
+.xh-button-group.xh-button-group--outlined :where(.xh-button).xh-button--intent-warning:hover,
+.xh-button-group.xh-button-group--outlined :where(.xh-button).xh-button--intent-warning:active,
+.xh-button-group.xh-button-group--outlined
+  :where(.xh-button).xh-button--intent-warning:is(.xh-button--active, .xh-popover__target--active) {
+  background: none;
+  box-shadow: none;
+  color: var(--bp-intent-warning-hover);
+}
+.xh-button-group.xh-button-group--minimal :where(.xh-button).xh-button--intent-warning:hover,
+.xh-button-group.xh-button-group--outlined :where(.xh-button).xh-button--intent-warning:hover {
+  background-color: color-mix(in oklch, var(--bp6-button-warning-rest) 15%, transparent);
+  color: var(--bp-intent-warning-hover);
+}
+.xh-button-group.xh-button-group--minimal :where(.xh-button).xh-button--intent-warning:active,
+.xh-button-group.xh-button-group--minimal
+  :where(.xh-button).xh-button--intent-warning:is(.xh-button--active, .xh-popover__target--active),
+.xh-button-group.xh-button-group--outlined :where(.xh-button).xh-button--intent-warning:active,
+.xh-button-group.xh-button-group--outlined
+  :where(.xh-button).xh-button--intent-warning:is(.xh-button--active, .xh-popover__target--active) {
+  background-color: color-mix(in oklch, var(--bp6-button-warning-rest) 30%, transparent);
+  color: var(--bp-intent-warning-active);
+}
+.xh-button-group.xh-button-group--minimal :where(.xh-button).xh-button--intent-warning:disabled,
+.xh-button-group.xh-button-group--minimal
+  :where(.xh-button).xh-button--intent-warning.xh-button--disabled,
+.xh-button-group.xh-button-group--outlined :where(.xh-button).xh-button--intent-warning:disabled,
+.xh-button-group.xh-button-group--outlined
+  :where(.xh-button).xh-button--intent-warning.xh-button--disabled {
+  background: none;
+  color: color-mix(in oklch, var(--bp-intent-warning-hover) 50%, transparent);
+}
+.xh-button-group.xh-button-group--minimal
+  :where(.xh-button).xh-button--intent-warning:disabled:is(
+    .xh-button--active,
+    .xh-popover__target--active
+  ),
+.xh-button-group.xh-button-group--minimal
+  :where(.xh-button).xh-button--intent-warning.xh-button--disabled:is(
+    .xh-button--active,
+    .xh-popover__target--active
+  ),
+.xh-button-group.xh-button-group--outlined
+  :where(.xh-button).xh-button--intent-warning:disabled:is(
+    .xh-button--active,
+    .xh-popover__target--active
+  ),
+.xh-button-group.xh-button-group--outlined
+  :where(.xh-button).xh-button--intent-warning.xh-button--disabled:is(
+    .xh-button--active,
+    .xh-popover__target--active
+  ) {
+  background-color: color-mix(in oklch, var(--bp6-button-warning-rest) 30%, transparent);
+}
+.xh-dark .xh-button-group.xh-button-group--minimal :where(.xh-button).xh-button--intent-warning,
+.xh-dark .xh-button-group.xh-button-group--outlined :where(.xh-button).xh-button--intent-warning {
+  color: color-mix(in oklch, var(--bp-intent-warning-rest) 53%, var(--bp-palette-white));
+}
+.xh-dark
+  .xh-button-group.xh-button-group--minimal
+  :where(.xh-button).xh-button--intent-warning:hover,
+.xh-dark
+  .xh-button-group.xh-button-group--outlined
+  :where(.xh-button).xh-button--intent-warning:hover {
+  background-color: color-mix(in oklch, var(--bp6-button-warning-rest) 20%, transparent);
+  color: color-mix(in oklch, var(--bp-intent-warning-hover) 53%, var(--bp-palette-white));
+}
+.xh-dark
+  .xh-button-group.xh-button-group--minimal
+  :where(.xh-button).xh-button--intent-warning:active,
+.xh-dark
+  .xh-button-group.xh-button-group--minimal
+  :where(.xh-button).xh-button--intent-warning:is(.xh-button--active, .xh-popover__target--active),
+.xh-dark
+  .xh-button-group.xh-button-group--outlined
+  :where(.xh-button).xh-button--intent-warning:active,
+.xh-dark
+  .xh-button-group.xh-button-group--outlined
+  :where(.xh-button).xh-button--intent-warning:is(.xh-button--active, .xh-popover__target--active) {
+  background-color: color-mix(in oklch, var(--bp6-button-warning-rest) 30%, transparent);
+  color: color-mix(in oklch, var(--bp-intent-warning-active) 53%, var(--bp-palette-white));
+}
+.xh-dark
+  .xh-button-group.xh-button-group--minimal
+  :where(.xh-button).xh-button--intent-warning:disabled,
+.xh-dark
+  .xh-button-group.xh-button-group--minimal
+  :where(.xh-button).xh-button--intent-warning.xh-button--disabled,
+.xh-dark
+  .xh-button-group.xh-button-group--outlined
+  :where(.xh-button).xh-button--intent-warning:disabled,
+.xh-dark
+  .xh-button-group.xh-button-group--outlined
+  :where(.xh-button).xh-button--intent-warning.xh-button--disabled {
+  background: none;
+  color: color-mix(
+    in oklch,
+    color-mix(in oklch, var(--bp-intent-warning-rest) 53%, var(--bp-palette-white)) 50%,
+    transparent
+  );
+}
+.xh-dark
+  .xh-button-group.xh-button-group--minimal
+  :where(.xh-button).xh-button--intent-warning:disabled:is(
+    .xh-button--active,
+    .xh-popover__target--active
+  ),
+.xh-dark
+  .xh-button-group.xh-button-group--minimal
+  :where(.xh-button).xh-button--intent-warning.xh-button--disabled:is(
+    .xh-button--active,
+    .xh-popover__target--active
+  ),
+.xh-dark
+  .xh-button-group.xh-button-group--outlined
+  :where(.xh-button).xh-button--intent-warning:disabled:is(
+    .xh-button--active,
+    .xh-popover__target--active
+  ),
+.xh-dark
+  .xh-button-group.xh-button-group--outlined
+  :where(.xh-button).xh-button--intent-warning.xh-button--disabled:is(
+    .xh-button--active,
+    .xh-popover__target--active
+  ) {
+  background-color: color-mix(in oklch, var(--bp6-button-warning-rest) 30%, transparent);
+}
+.xh-button-group.xh-button-group--minimal :where(.xh-button).xh-button--intent-danger,
+.xh-button-group.xh-button-group--outlined :where(.xh-button).xh-button--intent-danger {
+  color: var(--bp-intent-danger-hover);
+}
+.xh-button-group.xh-button-group--minimal :where(.xh-button).xh-button--intent-danger:hover,
+.xh-button-group.xh-button-group--minimal :where(.xh-button).xh-button--intent-danger:active,
+.xh-button-group.xh-button-group--minimal
+  :where(.xh-button).xh-button--intent-danger:is(.xh-button--active, .xh-popover__target--active),
+.xh-button-group.xh-button-group--outlined :where(.xh-button).xh-button--intent-danger:hover,
+.xh-button-group.xh-button-group--outlined :where(.xh-button).xh-button--intent-danger:active,
+.xh-button-group.xh-button-group--outlined
+  :where(.xh-button).xh-button--intent-danger:is(.xh-button--active, .xh-popover__target--active) {
+  background: none;
+  box-shadow: none;
+  color: var(--bp-intent-danger-hover);
+}
+.xh-button-group.xh-button-group--minimal :where(.xh-button).xh-button--intent-danger:hover,
+.xh-button-group.xh-button-group--outlined :where(.xh-button).xh-button--intent-danger:hover {
+  background-color: color-mix(in oklch, var(--bp-intent-danger-rest) 15%, transparent);
+  color: var(--bp-intent-danger-hover);
+}
+.xh-button-group.xh-button-group--minimal :where(.xh-button).xh-button--intent-danger:active,
+.xh-button-group.xh-button-group--minimal
+  :where(.xh-button).xh-button--intent-danger:is(.xh-button--active, .xh-popover__target--active),
+.xh-button-group.xh-button-group--outlined :where(.xh-button).xh-button--intent-danger:active,
+.xh-button-group.xh-button-group--outlined
+  :where(.xh-button).xh-button--intent-danger:is(.xh-button--active, .xh-popover__target--active) {
+  background-color: color-mix(in oklch, var(--bp-intent-danger-rest) 30%, transparent);
+  color: var(--bp-intent-danger-active);
+}
+.xh-button-group.xh-button-group--minimal :where(.xh-button).xh-button--intent-danger:disabled,
+.xh-button-group.xh-button-group--minimal
+  :where(.xh-button).xh-button--intent-danger.xh-button--disabled,
+.xh-button-group.xh-button-group--outlined :where(.xh-button).xh-button--intent-danger:disabled,
+.xh-button-group.xh-button-group--outlined
+  :where(.xh-button).xh-button--intent-danger.xh-button--disabled {
+  background: none;
+  color: color-mix(in oklch, var(--bp-intent-danger-hover) 50%, transparent);
+}
+.xh-button-group.xh-button-group--minimal
+  :where(.xh-button).xh-button--intent-danger:disabled:is(
+    .xh-button--active,
+    .xh-popover__target--active
+  ),
+.xh-button-group.xh-button-group--minimal
+  :where(.xh-button).xh-button--intent-danger.xh-button--disabled:is(
+    .xh-button--active,
+    .xh-popover__target--active
+  ),
+.xh-button-group.xh-button-group--outlined
+  :where(.xh-button).xh-button--intent-danger:disabled:is(
+    .xh-button--active,
+    .xh-popover__target--active
+  ),
+.xh-button-group.xh-button-group--outlined
+  :where(.xh-button).xh-button--intent-danger.xh-button--disabled:is(
+    .xh-button--active,
+    .xh-popover__target--active
+  ) {
+  background-color: color-mix(in oklch, var(--bp-intent-danger-rest) 30%, transparent);
+}
+.xh-dark .xh-button-group.xh-button-group--minimal :where(.xh-button).xh-button--intent-danger,
+.xh-dark .xh-button-group.xh-button-group--outlined :where(.xh-button).xh-button--intent-danger {
+  color: color-mix(in oklch, var(--bp-intent-danger-rest) 53%, var(--bp-palette-white));
+}
+.xh-dark
+  .xh-button-group.xh-button-group--minimal
+  :where(.xh-button).xh-button--intent-danger:hover,
+.xh-dark
+  .xh-button-group.xh-button-group--outlined
+  :where(.xh-button).xh-button--intent-danger:hover {
+  background-color: color-mix(in oklch, var(--bp-intent-danger-rest) 20%, transparent);
+  color: color-mix(in oklch, var(--bp-intent-danger-hover) 53%, var(--bp-palette-white));
+}
+.xh-dark
+  .xh-button-group.xh-button-group--minimal
+  :where(.xh-button).xh-button--intent-danger:active,
+.xh-dark
+  .xh-button-group.xh-button-group--minimal
+  :where(.xh-button).xh-button--intent-danger:is(.xh-button--active, .xh-popover__target--active),
+.xh-dark
+  .xh-button-group.xh-button-group--outlined
+  :where(.xh-button).xh-button--intent-danger:active,
+.xh-dark
+  .xh-button-group.xh-button-group--outlined
+  :where(.xh-button).xh-button--intent-danger:is(.xh-button--active, .xh-popover__target--active) {
+  background-color: color-mix(in oklch, var(--bp-intent-danger-rest) 30%, transparent);
+  color: color-mix(in oklch, var(--bp-intent-danger-active) 53%, var(--bp-palette-white));
+}
+.xh-dark
+  .xh-button-group.xh-button-group--minimal
+  :where(.xh-button).xh-button--intent-danger:disabled,
+.xh-dark
+  .xh-button-group.xh-button-group--minimal
+  :where(.xh-button).xh-button--intent-danger.xh-button--disabled,
+.xh-dark
+  .xh-button-group.xh-button-group--outlined
+  :where(.xh-button).xh-button--intent-danger:disabled,
+.xh-dark
+  .xh-button-group.xh-button-group--outlined
+  :where(.xh-button).xh-button--intent-danger.xh-button--disabled {
+  background: none;
+  color: color-mix(
+    in oklch,
+    color-mix(in oklch, var(--bp-intent-danger-rest) 53%, var(--bp-palette-white)) 50%,
+    transparent
+  );
+}
+.xh-dark
+  .xh-button-group.xh-button-group--minimal
+  :where(.xh-button).xh-button--intent-danger:disabled:is(
+    .xh-button--active,
+    .xh-popover__target--active
+  ),
+.xh-dark
+  .xh-button-group.xh-button-group--minimal
+  :where(.xh-button).xh-button--intent-danger.xh-button--disabled:is(
+    .xh-button--active,
+    .xh-popover__target--active
+  ),
+.xh-dark
+  .xh-button-group.xh-button-group--outlined
+  :where(.xh-button).xh-button--intent-danger:disabled:is(
+    .xh-button--active,
+    .xh-popover__target--active
+  ),
+.xh-dark
+  .xh-button-group.xh-button-group--outlined
+  :where(.xh-button).xh-button--intent-danger.xh-button--disabled:is(
+    .xh-button--active,
+    .xh-popover__target--active
+  ) {
+  background-color: color-mix(in oklch, var(--bp-intent-danger-rest) 30%, transparent);
+}
+@media (forced-colors: active) and (prefers-color-scheme: dark) {
+  .xh-button-group.xh-button-group--minimal:not(:first-child),
+  .xh-button-group.xh-button-group--outlined:not(:first-child) {
+    border-bottom-left-radius: 0;
+    border-left: none;
+    border-top-left-radius: 0;
+  }
+}
+@media (forced-colors: active) and (prefers-color-scheme: dark) {
+  .xh-button-group.xh-button-group--minimal:not(:last-child),
+  .xh-button-group.xh-button-group--outlined:not(:last-child) {
+    border-bottom-right-radius: 0;
+    border-top-right-radius: 0;
+    margin-right: calc(-1 * var(--bp-surface-border-width));
+  }
+}
+.xh-button-group.xh-button-group--outlined > :where(.xh-button),
+.xh-button-group.xh-button-group--outlined > .xh-popover__target-wrapper > :where(.xh-button) {
+  border: var(--bp-surface-border-width) solid var(--bp-surface-border-color-strong);
+  box-sizing: border-box;
+}
+.xh-button-group.xh-button-group--outlined > :where(.xh-button):disabled,
+.xh-button-group.xh-button-group--outlined > :where(.xh-button):disabled:hover,
+.xh-button-group.xh-button-group--outlined > :where(.xh-button).xh-button--disabled,
+.xh-button-group.xh-button-group--outlined > :where(.xh-button).xh-button--disabled:hover,
+.xh-button-group.xh-button-group--outlined
+  > .xh-popover__target-wrapper
+  > :where(.xh-button):disabled,
+.xh-button-group.xh-button-group--outlined
+  > .xh-popover__target-wrapper
+  > :where(.xh-button):disabled:hover,
+.xh-button-group.xh-button-group--outlined
+  > .xh-popover__target-wrapper
+  > :where(.xh-button).xh-button--disabled,
+.xh-button-group.xh-button-group--outlined
+  > .xh-popover__target-wrapper
+  > :where(.xh-button).xh-button--disabled:hover {
+  border-color: var(--bp-surface-border-color-default);
+}
+.xh-dark .xh-button-group.xh-button-group--outlined > :where(.xh-button),
+.xh-dark
+  .xh-button-group.xh-button-group--outlined
+  > .xh-popover__target-wrapper
+  > :where(.xh-button) {
+  border-color: var(--bp-surface-border-color-strong);
+}
+.xh-dark .xh-button-group.xh-button-group--outlined > :where(.xh-button):disabled,
+.xh-dark .xh-button-group.xh-button-group--outlined > :where(.xh-button):disabled:hover,
+.xh-dark .xh-button-group.xh-button-group--outlined > :where(.xh-button).xh-button--disabled,
+.xh-dark .xh-button-group.xh-button-group--outlined > :where(.xh-button).xh-button--disabled:hover,
+.xh-dark
+  .xh-button-group.xh-button-group--outlined
+  > .xh-popover__target-wrapper
+  > :where(.xh-button):disabled,
+.xh-dark
+  .xh-button-group.xh-button-group--outlined
+  > .xh-popover__target-wrapper
+  > :where(.xh-button):disabled:hover,
+.xh-dark
+  .xh-button-group.xh-button-group--outlined
+  > .xh-popover__target-wrapper
+  > :where(.xh-button).xh-button--disabled,
+.xh-dark
+  .xh-button-group.xh-button-group--outlined
+  > .xh-popover__target-wrapper
+  > :where(.xh-button).xh-button--disabled:hover {
+  border-color: var(--bp-surface-border-color-default);
+}
+.xh-button-group.xh-button-group--outlined > :where(.xh-button).xh-button--intent-primary,
+.xh-button-group.xh-button-group--outlined
+  > .xh-popover__target-wrapper
+  > :where(.xh-button).xh-button--intent-primary {
+  border-color: color-mix(in oklch, var(--bp-intent-primary-hover) 60%, transparent);
+}
+.xh-button-group.xh-button-group--outlined > :where(.xh-button).xh-button--intent-primary:disabled,
+.xh-button-group.xh-button-group--outlined
+  > :where(.xh-button).xh-button--intent-primary.xh-button--disabled,
+.xh-button-group.xh-button-group--outlined
+  > .xh-popover__target-wrapper
+  > :where(.xh-button).xh-button--intent-primary:disabled,
+.xh-button-group.xh-button-group--outlined
+  > .xh-popover__target-wrapper
+  > :where(.xh-button).xh-button--intent-primary.xh-button--disabled {
+  border-color: color-mix(in oklch, var(--bp-intent-primary-hover) 20%, transparent);
+}
+.xh-dark .xh-button-group.xh-button-group--outlined > :where(.xh-button).xh-button--intent-primary,
+.xh-dark
+  .xh-button-group.xh-button-group--outlined
+  > .xh-popover__target-wrapper
+  > :where(.xh-button).xh-button--intent-primary {
+  border-color: color-mix(
+    in oklch,
+    color-mix(in oklch, var(--bp-intent-primary-rest) 51%, var(--bp-palette-white)) 60%,
+    transparent
+  );
+}
+.xh-dark
+  .xh-button-group.xh-button-group--outlined
+  > :where(.xh-button).xh-button--intent-primary:disabled,
+.xh-dark
+  .xh-button-group.xh-button-group--outlined
+  > :where(.xh-button).xh-button--intent-primary.xh-button--disabled,
+.xh-dark
+  .xh-button-group.xh-button-group--outlined
+  > .xh-popover__target-wrapper
+  > :where(.xh-button).xh-button--intent-primary:disabled,
+.xh-dark
+  .xh-button-group.xh-button-group--outlined
+  > .xh-popover__target-wrapper
+  > :where(.xh-button).xh-button--intent-primary.xh-button--disabled {
+  border-color: color-mix(
+    in oklch,
+    color-mix(in oklch, var(--bp-intent-primary-rest) 51%, var(--bp-palette-white)) 20%,
+    transparent
+  );
+}
+.xh-button-group.xh-button-group--outlined > :where(.xh-button).xh-button--intent-success,
+.xh-button-group.xh-button-group--outlined
+  > .xh-popover__target-wrapper
+  > :where(.xh-button).xh-button--intent-success {
+  border-color: color-mix(in oklch, var(--bp-intent-success-hover) 60%, transparent);
+}
+.xh-button-group.xh-button-group--outlined > :where(.xh-button).xh-button--intent-success:disabled,
+.xh-button-group.xh-button-group--outlined
+  > :where(.xh-button).xh-button--intent-success.xh-button--disabled,
+.xh-button-group.xh-button-group--outlined
+  > .xh-popover__target-wrapper
+  > :where(.xh-button).xh-button--intent-success:disabled,
+.xh-button-group.xh-button-group--outlined
+  > .xh-popover__target-wrapper
+  > :where(.xh-button).xh-button--intent-success.xh-button--disabled {
+  border-color: color-mix(in oklch, var(--bp-intent-success-hover) 20%, transparent);
+}
+.xh-dark .xh-button-group.xh-button-group--outlined > :where(.xh-button).xh-button--intent-success,
+.xh-dark
+  .xh-button-group.xh-button-group--outlined
+  > .xh-popover__target-wrapper
+  > :where(.xh-button).xh-button--intent-success {
+  border-color: color-mix(
+    in oklch,
+    color-mix(in oklch, var(--bp-intent-success-rest) 54%, var(--bp-palette-white)) 60%,
+    transparent
+  );
+}
+.xh-dark
+  .xh-button-group.xh-button-group--outlined
+  > :where(.xh-button).xh-button--intent-success:disabled,
+.xh-dark
+  .xh-button-group.xh-button-group--outlined
+  > :where(.xh-button).xh-button--intent-success.xh-button--disabled,
+.xh-dark
+  .xh-button-group.xh-button-group--outlined
+  > .xh-popover__target-wrapper
+  > :where(.xh-button).xh-button--intent-success:disabled,
+.xh-dark
+  .xh-button-group.xh-button-group--outlined
+  > .xh-popover__target-wrapper
+  > :where(.xh-button).xh-button--intent-success.xh-button--disabled {
+  border-color: color-mix(
+    in oklch,
+    color-mix(in oklch, var(--bp-intent-success-rest) 54%, var(--bp-palette-white)) 20%,
+    transparent
+  );
+}
+.xh-button-group.xh-button-group--outlined > :where(.xh-button).xh-button--intent-warning,
+.xh-button-group.xh-button-group--outlined
+  > .xh-popover__target-wrapper
+  > :where(.xh-button).xh-button--intent-warning {
+  border-color: color-mix(in oklch, var(--bp-intent-warning-hover) 60%, transparent);
+}
+.xh-button-group.xh-button-group--outlined > :where(.xh-button).xh-button--intent-warning:disabled,
+.xh-button-group.xh-button-group--outlined
+  > :where(.xh-button).xh-button--intent-warning.xh-button--disabled,
+.xh-button-group.xh-button-group--outlined
+  > .xh-popover__target-wrapper
+  > :where(.xh-button).xh-button--intent-warning:disabled,
+.xh-button-group.xh-button-group--outlined
+  > .xh-popover__target-wrapper
+  > :where(.xh-button).xh-button--intent-warning.xh-button--disabled {
+  border-color: color-mix(in oklch, var(--bp-intent-warning-hover) 20%, transparent);
+}
+.xh-dark .xh-button-group.xh-button-group--outlined > :where(.xh-button).xh-button--intent-warning,
+.xh-dark
+  .xh-button-group.xh-button-group--outlined
+  > .xh-popover__target-wrapper
+  > :where(.xh-button).xh-button--intent-warning {
+  border-color: color-mix(
+    in oklch,
+    color-mix(in oklch, var(--bp-intent-warning-rest) 53%, var(--bp-palette-white)) 60%,
+    transparent
+  );
+}
+.xh-dark
+  .xh-button-group.xh-button-group--outlined
+  > :where(.xh-button).xh-button--intent-warning:disabled,
+.xh-dark
+  .xh-button-group.xh-button-group--outlined
+  > :where(.xh-button).xh-button--intent-warning.xh-button--disabled,
+.xh-dark
+  .xh-button-group.xh-button-group--outlined
+  > .xh-popover__target-wrapper
+  > :where(.xh-button).xh-button--intent-warning:disabled,
+.xh-dark
+  .xh-button-group.xh-button-group--outlined
+  > .xh-popover__target-wrapper
+  > :where(.xh-button).xh-button--intent-warning.xh-button--disabled {
+  border-color: color-mix(
+    in oklch,
+    color-mix(in oklch, var(--bp-intent-warning-rest) 53%, var(--bp-palette-white)) 20%,
+    transparent
+  );
+}
+.xh-button-group.xh-button-group--outlined > :where(.xh-button).xh-button--intent-danger,
+.xh-button-group.xh-button-group--outlined
+  > .xh-popover__target-wrapper
+  > :where(.xh-button).xh-button--intent-danger {
+  border-color: color-mix(in oklch, var(--bp-intent-danger-hover) 60%, transparent);
+}
+.xh-button-group.xh-button-group--outlined > :where(.xh-button).xh-button--intent-danger:disabled,
+.xh-button-group.xh-button-group--outlined
+  > :where(.xh-button).xh-button--intent-danger.xh-button--disabled,
+.xh-button-group.xh-button-group--outlined
+  > .xh-popover__target-wrapper
+  > :where(.xh-button).xh-button--intent-danger:disabled,
+.xh-button-group.xh-button-group--outlined
+  > .xh-popover__target-wrapper
+  > :where(.xh-button).xh-button--intent-danger.xh-button--disabled {
+  border-color: color-mix(in oklch, var(--bp-intent-danger-hover) 20%, transparent);
+}
+.xh-dark .xh-button-group.xh-button-group--outlined > :where(.xh-button).xh-button--intent-danger,
+.xh-dark
+  .xh-button-group.xh-button-group--outlined
+  > .xh-popover__target-wrapper
+  > :where(.xh-button).xh-button--intent-danger {
+  border-color: color-mix(
+    in oklch,
+    color-mix(in oklch, var(--bp-intent-danger-rest) 53%, var(--bp-palette-white)) 60%,
+    transparent
+  );
+}
+.xh-dark
+  .xh-button-group.xh-button-group--outlined
+  > :where(.xh-button).xh-button--intent-danger:disabled,
+.xh-dark
+  .xh-button-group.xh-button-group--outlined
+  > :where(.xh-button).xh-button--intent-danger.xh-button--disabled,
+.xh-dark
+  .xh-button-group.xh-button-group--outlined
+  > .xh-popover__target-wrapper
+  > :where(.xh-button).xh-button--intent-danger:disabled,
+.xh-dark
+  .xh-button-group.xh-button-group--outlined
+  > .xh-popover__target-wrapper
+  > :where(.xh-button).xh-button--intent-danger.xh-button--disabled {
+  border-color: color-mix(
+    in oklch,
+    color-mix(in oklch, var(--bp-intent-danger-rest) 53%, var(--bp-palette-white)) 20%,
+    transparent
+  );
+}
+.xh-button-group.xh-button-group--outlined:not(.xh-button-group--vertical)
+  > :where(.xh-button):not(:last-child),
+.xh-button-group.xh-button-group--outlined:not(.xh-button-group--vertical)
+  > .xh-popover__target-wrapper:not(:last-child)
+  > :where(.xh-button) {
+  border-right: none;
+}
+.xh-button-group .xh-popover__target-wrapper {
+  display: flex;
+  flex: 1 1 auto;
+}
+.xh-button-group.xh-button-group--fill {
+  display: flex;
+  width: 100%;
+}
+.xh-button-group.xh-button-group--fill :where(.xh-button) {
+  flex: 1 1 auto;
+}
+.xh-button-group.xh-button-group--vertical {
+  align-items: stretch;
+  flex-direction: column;
+  vertical-align: top;
+}
+.xh-button-group.xh-button-group--vertical.xh-button-group--fill {
+  height: 100%;
+  width: unset;
+}
+.xh-button-group.xh-button-group--vertical :where(.xh-button) {
+  margin-right: 0 !important;
+  width: 100%;
+}
+.xh-button-group.xh-button-group--vertical:not(.xh-button-group--minimal)
+  > .xh-popover__target-wrapper:first-child
+  > :where(.xh-button),
+.xh-button-group.xh-button-group--vertical:not(.xh-button-group--minimal)
+  > :where(.xh-button):first-child,
+.xh-button-group.xh-button-group--vertical.xh-button-group--outlined
+  > .xh-popover__target-wrapper:first-child
+  > :where(.xh-button),
+.xh-button-group.xh-button-group--vertical.xh-button-group--outlined
+  > :where(.xh-button):first-child {
+  border-radius: var(--bp-surface-border-radius) var(--bp-surface-border-radius) 0 0;
+}
+.xh-button-group.xh-button-group--vertical:not(.xh-button-group--minimal)
+  > .xh-popover__target-wrapper:last-child
+  > :where(.xh-button),
+.xh-button-group.xh-button-group--vertical:not(.xh-button-group--minimal)
+  > :where(.xh-button):last-child,
+.xh-button-group.xh-button-group--vertical.xh-button-group--outlined
+  > .xh-popover__target-wrapper:last-child
+  > :where(.xh-button),
+.xh-button-group.xh-button-group--vertical.xh-button-group--outlined
+  > :where(.xh-button):last-child {
+  border-radius: 0 0 var(--bp-surface-border-radius) var(--bp-surface-border-radius);
+}
+.xh-button-group.xh-button-group--vertical:not(.xh-button-group--minimal):not(
+    .xh-button-group--outlined
+  )
+  > .xh-popover__target-wrapper:not(:last-child)
+  > :where(.xh-button),
+.xh-button-group.xh-button-group--vertical:not(.xh-button-group--minimal):not(
+    .xh-button-group--outlined
+  )
+  > :where(.xh-button):not(:last-child) {
+  margin-bottom: calc(-1 * var(--bp-surface-border-width));
+}
+.xh-button-group.xh-button-group--vertical.xh-button-group--outlined
+  > :where(.xh-button):not(:last-child),
+.xh-button-group.xh-button-group--vertical.xh-button-group--outlined
+  > .xh-popover__target-wrapper:not(:last-child)
+  > :where(.xh-button) {
+  border-bottom: none;
+}
+.xh-button-group:not(.xh-button-group--minimal)
+  > .xh-popover__target-wrapper:not(:first-child)
+  :where(.xh-button) {
+  border-bottom-left-radius: 0;
+  border-top-left-radius: 0;
+}
+.xh-button-group:not(.xh-button-group--minimal)
+  > .xh-popover__target-wrapper:not(:last-child)
+  :where(.xh-button) {
+  border-bottom-right-radius: 0;
+  border-top-right-radius: 0;
+  margin-right: -1px;
+}
+.xh-button-group .xh-popover__target-wrapper {
+  display: flex;
+  flex: 1 1 auto;
+}
+.xh-button-group.xh-button-group--vertical:not(.xh-button-group--minimal)
+  > .xh-popover__target-wrapper:first-child
+  :where(.xh-button) {
+  border-radius: var(--bp-surface-border-radius) var(--bp-surface-border-radius) 0 0;
+}
+.xh-button-group.xh-button-group--vertical:not(.xh-button-group--minimal)
+  > .xh-popover__target-wrapper:last-child
+  :where(.xh-button) {
+  border-radius: 0 0 var(--bp-surface-border-radius) var(--bp-surface-border-radius);
+}
+.xh-button-group.xh-button-group--vertical:not(.xh-button-group--minimal)
+  > .xh-popover__target-wrapper:not(:last-child)
+  :where(.xh-button) {
+  margin-bottom: -1px;
+}
 
 //-----------------------------------------------
 // Core button styles for both light+dark themes
@@ -20,7 +2461,7 @@
 .xh-app,
 .xh-app.xh-dark,
 .xh-app.xh-dark.bp6-dark {
-  .xh-button.bp6-button {
+  .xh-button {
     border-radius: var(--xh-button-border-radius);
     font-family: var(--xh-button-font-family);
     font-size: var(--xh-button-font-size);
@@ -56,7 +2497,7 @@
   // Button group (input)
   //------------------------
   .xh-button-group {
-    .xh-button.bp6-button {
+    .xh-button {
       &.xh-button--minimal,
       &.xh-button--outlined {
         // Ensures outlined buttons in button-groups appear seamlessly adjacent to each other in dark mode.
@@ -115,8 +2556,8 @@
     }
 
     // Horizontal mode only styles
-    &:not(.bp6-vertical) {
-      .xh-button.bp6-button {
+    &:not(.xh-button-group--vertical) {
+      .xh-button {
         // Standard and outlined have borders - remove standard radius in between adjacent buttons so
         // they seamlessly combine their inner borders.
         border-radius: 0;
@@ -139,8 +2580,8 @@
     }
 
     // Vertical mode only styles
-    &.bp6-vertical {
-      .xh-button.bp6-button {
+    &.xh-button-group--vertical {
+      .xh-button {
         // Standard and outlined have borders - remove standard radius in between adjacent buttons so
         // they seamlessly combine their inner borders.
         border-radius: 0;
@@ -168,11 +2609,11 @@
 // Default/light theme colors
 //---------------------------
 .xh-app {
-  .xh-button.bp6-button {
+  .xh-button {
     // Shaded/filled-in (non-minimal) mode.
     &.xh-button--standard {
       &.xh-button--active,
-      &.bp6-active {
+      &.xh-popover__target--active {
         box-shadow: var(--xh-button-active-box-shadow);
       }
 
@@ -181,7 +2622,7 @@
         background-color: var(--xh-button-bg-lightest);
 
         &.xh-button--active,
-        &.bp6-active {
+        &.xh-popover__target--active {
           background-color: var(--xh-button-active-bg);
           color: var(--xh-button-active-text-color);
         }
@@ -189,7 +2630,7 @@
         // highlight on hover for a disabled button. Note that :active pseudo-selector here is
         // triggered while button is being "held down" by user.
         &.xh-button--enabled {
-          &:hover:not(:active):not(.xh-button--active):not(.bp6-active) {
+          &:hover:not(:active):not(.xh-button--active):not(.xh-popover__target--active) {
             background-color: var(--xh-button-bg-lighter);
           }
           &:active {
@@ -202,11 +2643,11 @@
         color: white;
         background-color: var(--xh-intent-primary);
         &.xh-button--active,
-        &.bp6-active {
+        &.xh-popover__target--active {
           background-color: var(--xh-intent-primary-darkest);
         }
         &.xh-button--enabled {
-          &:hover:not(:active):not(.xh-button--active):not(.bp6-active) {
+          &:hover:not(:active):not(.xh-button--active):not(.xh-popover__target--active) {
             background-color: var(--xh-intent-primary-darker);
           }
           &:active {
@@ -219,11 +2660,11 @@
         color: white;
         background-color: var(--xh-intent-success);
         &.xh-button--active,
-        &.bp6-active {
+        &.xh-popover__target--active {
           background-color: var(--xh-intent-success-darkest);
         }
         &.xh-button--enabled {
-          &:hover:not(:active):not(.xh-button--active):not(.bp6-active) {
+          &:hover:not(:active):not(.xh-button--active):not(.xh-popover__target--active) {
             background-color: var(--xh-intent-success-darker);
           }
           &:active {
@@ -238,12 +2679,12 @@
         color: white;
         background-color: var(--xh-intent-warning);
         &.xh-button--active,
-        &.bp6-active {
+        &.xh-popover__target--active {
           color: white;
           background-color: var(--xh-intent-warning-darkest);
         }
         &.xh-button--enabled {
-          &:hover:not(:active):not(.xh-button--active):not(.bp6-active) {
+          &:hover:not(:active):not(.xh-button--active):not(.xh-popover__target--active) {
             color: white;
             background-color: var(--xh-intent-warning-darker);
           }
@@ -257,11 +2698,11 @@
         color: white;
         background-color: var(--xh-intent-danger);
         &.xh-button--active,
-        &.bp6-active {
+        &.xh-popover__target--active {
           background-color: var(--xh-intent-danger-darkest);
         }
         &.xh-button--enabled {
-          &:hover:not(:active):not(.xh-button--active):not(.bp6-active) {
+          &:hover:not(:active):not(.xh-button--active):not(.xh-popover__target--active) {
             background-color: var(--xh-intent-danger-darker);
           }
           &:active {
@@ -279,12 +2720,12 @@
         background-color: transparent;
         border-color: var(--xh-button-border-color);
         &.xh-button--active,
-        &.bp6-active {
+        &.xh-popover__target--active {
           background-color: var(--xh-button-active-bg);
           color: var(--xh-button-active-text-color);
         }
         &.xh-button--enabled {
-          &:hover:not(:active):not(.xh-button--active):not(.bp6-active) {
+          &:hover:not(:active):not(.xh-button--active):not(.xh-popover__target--active) {
             background-color: var(--xh-button-bg-darker);
           }
           &:active {
@@ -298,11 +2739,11 @@
         background-color: transparent;
         border-color: var(--xh-intent-primary);
         &.xh-button--active,
-        &.bp6-active {
+        &.xh-popover__target--active {
           background-color: var(--xh-intent-primary-trans2);
         }
         &.xh-button--enabled {
-          &:hover:not(:active):not(.xh-button--active):not(.bp6-active) {
+          &:hover:not(:active):not(.xh-button--active):not(.xh-popover__target--active) {
             background-color: var(--xh-intent-primary-trans1);
           }
           &:active {
@@ -316,11 +2757,11 @@
         background-color: transparent;
         border-color: var(--xh-intent-success);
         &.xh-button--active,
-        &.bp6-active {
+        &.xh-popover__target--active {
           background-color: var(--xh-intent-success-trans2);
         }
         &.xh-button--enabled {
-          &:hover:not(:active):not(.xh-button--active):not(.bp6-active) {
+          &:hover:not(:active):not(.xh-button--active):not(.xh-popover__target--active) {
             background-color: var(--xh-intent-success-trans1);
           }
           &:active {
@@ -334,11 +2775,11 @@
         background-color: transparent;
         border-color: var(--xh-intent-warning);
         &.xh-button--active,
-        &.bp6-active {
+        &.xh-popover__target--active {
           background-color: var(--xh-intent-warning-trans2);
         }
         &.xh-button--enabled {
-          &:hover:not(:active):not(.xh-button--active):not(.bp6-active) {
+          &:hover:not(:active):not(.xh-button--active):not(.xh-popover__target--active) {
             background-color: var(--xh-intent-warning-trans1);
           }
           &:active {
@@ -352,11 +2793,11 @@
         background-color: transparent;
         border-color: var(--xh-intent-danger);
         &.xh-button--active,
-        &.bp6-active {
+        &.xh-popover__target--active {
           background-color: var(--xh-intent-danger-trans2);
         }
         &.xh-button--enabled {
-          &:hover:not(:active):not(.xh-button--active):not(.bp6-active) {
+          &:hover:not(:active):not(.xh-button--active):not(.xh-popover__target--active) {
             background-color: var(--xh-intent-danger-trans1);
           }
           &:active {
@@ -373,19 +2814,19 @@
 //---------------------------
 .xh-app.xh-dark,
 .xh-app.xh-dark.bp6-dark {
-  .xh-button.bp6-button {
+  .xh-button {
     // Dark - shaded/filled-in (non-minimal) mode.
     &.xh-button--standard {
       &.xh-button--intent-none {
         color: var(--xh-button-text-color);
         background-color: var(--xh-button-bg);
         &.xh-button--active,
-        &.bp6-active {
+        &.xh-popover__target--active {
           background-color: var(--xh-button-active-bg);
           color: var(--xh-button-active-text-color);
         }
         &.xh-button--enabled {
-          &:hover:not(:active):not(.xh-button--active):not(.bp6-active) {
+          &:hover:not(:active):not(.xh-button--active):not(.xh-popover__target--active) {
             background-color: var(--xh-button-bg-darker);
           }
           &:active {
@@ -398,11 +2839,11 @@
         color: white;
         background-color: var(--xh-intent-primary);
         &.xh-button--active,
-        &.bp6-active {
+        &.xh-popover__target--active {
           background-color: var(--xh-intent-primary-darkest);
         }
         &.xh-button--enabled {
-          &:hover:not(:active):not(.xh-button--active):not(.bp6-active) {
+          &:hover:not(:active):not(.xh-button--active):not(.xh-popover__target--active) {
             background-color: var(--xh-intent-primary-darker);
           }
           &:active {
@@ -415,11 +2856,11 @@
         color: white;
         background-color: var(--xh-intent-success);
         &.xh-button--active,
-        &.bp6-active {
+        &.xh-popover__target--active {
           background-color: var(--xh-intent-success-darkest);
         }
         &.xh-button--enabled {
-          &:hover:not(:active):not(.xh-button--active):not(.bp6-active) {
+          &:hover:not(:active):not(.xh-button--active):not(.xh-popover__target--active) {
             background-color: var(--xh-intent-success-darker);
           }
           &:active {
@@ -432,11 +2873,11 @@
         color: white;
         background-color: var(--xh-intent-warning);
         &.xh-button--active,
-        &.bp6-active {
+        &.xh-popover__target--active {
           background-color: var(--xh-intent-warning-darkest);
         }
         &.xh-button--enabled {
-          &:hover:not(:active):not(.xh-button--active):not(.bp6-active) {
+          &:hover:not(:active):not(.xh-button--active):not(.xh-popover__target--active) {
             background-color: var(--xh-intent-warning-darker);
           }
           &:active {
@@ -449,11 +2890,11 @@
         color: white;
         background-color: var(--xh-intent-danger);
         &.xh-button--active,
-        &.bp6-active {
+        &.xh-popover__target--active {
           background-color: var(--xh-intent-danger-darkest);
         }
         &.xh-button--enabled {
-          &:hover:not(:active):not(.xh-button--active):not(.bp6-active) {
+          &:hover:not(:active):not(.xh-button--active):not(.xh-popover__target--active) {
             background-color: var(--xh-intent-danger-darker);
           }
           &:active {
@@ -471,12 +2912,12 @@
         background-color: transparent;
         border-color: var(--xh-button-border-color);
         &.xh-button--active,
-        &.bp6-active {
+        &.xh-popover__target--active {
           background-color: var(--xh-button-active-bg);
           color: var(--xh-button-active-text-color);
         }
         &.xh-button--enabled {
-          &:hover:not(:active):not(.xh-button--active):not(.bp6-active) {
+          &:hover:not(:active):not(.xh-button--active):not(.xh-popover__target--active) {
             background-color: var(--xh-button-bg-darker);
           }
           &:active {
@@ -490,11 +2931,11 @@
         background-color: transparent;
         border-color: var(--xh-intent-primary-lighter);
         &.xh-button--active,
-        &.bp6-active {
+        &.xh-popover__target--active {
           background-color: var(--xh-intent-primary-trans2);
         }
         &.xh-button--enabled {
-          &:hover:not(:active):not(.xh-button--active):not(.bp6-active) {
+          &:hover:not(:active):not(.xh-button--active):not(.xh-popover__target--active) {
             background-color: var(--xh-intent-primary-trans1);
           }
           &:active {
@@ -508,11 +2949,11 @@
         background-color: transparent;
         border-color: var(--xh-intent-success-lighter);
         &.xh-button--active,
-        &.bp6-active {
+        &.xh-popover__target--active {
           background-color: var(--xh-intent-success-trans2);
         }
         &.xh-button--enabled {
-          &:hover:not(:active):not(.xh-button--active):not(.bp6-active) {
+          &:hover:not(:active):not(.xh-button--active):not(.xh-popover__target--active) {
             background-color: var(--xh-intent-success-trans1);
           }
           &:active {
@@ -526,11 +2967,11 @@
         background-color: transparent;
         border-color: var(--xh-intent-warning-lighter);
         &.xh-button--active,
-        &.bp6-active {
+        &.xh-popover__target--active {
           background-color: var(--xh-intent-warning-trans2);
         }
         &.xh-button--enabled {
-          &:hover:not(:active):not(.xh-button--active):not(.bp6-active) {
+          &:hover:not(:active):not(.xh-button--active):not(.xh-popover__target--active) {
             background-color: var(--xh-intent-warning-trans1);
           }
           &:active {
@@ -544,11 +2985,11 @@
         background-color: transparent;
         border-color: var(--xh-intent-danger-lighter);
         &.xh-button--active,
-        &.bp6-active {
+        &.xh-popover__target--active {
           background-color: var(--xh-intent-danger-trans2);
         }
         &.xh-button--enabled {
-          &:hover:not(:active):not(.xh-button--active):not(.bp6-active) {
+          &:hover:not(:active):not(.xh-button--active):not(.xh-popover__target--active) {
             background-color: var(--xh-intent-danger-trans1);
           }
           &:active {
@@ -570,10 +3011,10 @@
   .xh-panel-header__items,
   .xh-panel-header--right,
   .xh-panel-header--left {
-    .xh-button.bp6-button.xh-button--minimal {
+    .xh-button.xh-button--minimal {
       &.xh-button--intent-none {
         &.xh-button--enabled {
-          &:hover:not(:active):not(.xh-button--active):not(.bp6-active) {
+          &:hover:not(:active):not(.xh-button--active):not(.xh-popover__target--active) {
             background-color: var(--xh-intent-neutral-trans1);
           }
           &:active {
@@ -589,10 +3030,10 @@
 // background - shows as a dark block on it. Tint with the title text color instead.
 .xh-app.xh-dark,
 .xh-app.xh-dark.bp6-dark {
-  .xh-dialog__header .xh-button.bp6-button.xh-button--minimal {
+  .xh-dialog__header .xh-button.xh-button--minimal {
     &.xh-button--intent-none {
       &.xh-button--enabled {
-        &:hover:not(:active):not(.xh-button--active):not(.bp6-active) {
+        &:hover:not(:active):not(.xh-button--active):not(.xh-popover__target--active) {
           background-color: color-mix(in srgb, currentColor 15%, transparent);
         }
         &:active {
