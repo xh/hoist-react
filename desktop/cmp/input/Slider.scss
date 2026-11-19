@@ -24,12 +24,12 @@
     background: var(--xh-slider-track-bg);
   }
 
-  // A vertical slider, for `SliderProps.vertical`. The track runs bottom to top, with labels to
-  // its right.
+  // A vertical slider, for `SliderProps.vertical`. The track runs bottom to top, filling the height
+  // of the wrapper within its padding, with labels to its right.
   .bp6-slider.bp6-vertical {
     width: 40px;
     min-width: 40px;
-    height: 150px;
+    height: 100%;
 
     .bp6-slider-track {
       top: 0;

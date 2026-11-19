@@ -97,6 +97,41 @@ describe('Slider', () => {
         });
     });
 
+    describe('padding', () => {
+        // The end handles and labels run past the ends of the track, and the wrapper clips.
+        it('pads a horizontal slider at its left and right ends', () => {
+            renderSlider(5);
+            expect(wrapper().style.paddingLeft).toBe('20px');
+            expect(wrapper().style.paddingRight).toBe('20px');
+            expect(wrapper().style.paddingTop).toBe('');
+        });
+
+        it('pads a vertical slider at its top and bottom ends too', () => {
+            renderSlider(5, {vertical: true});
+            expect(wrapper().style.paddingTop).toBe('12px');
+            expect(wrapper().style.paddingBottom).toBe('12px');
+            expect(wrapper().style.paddingLeft).toBe('20px');
+        });
+    });
+
+    describe('size', () => {
+        // The track fills the wrapper along its length, so these set the length of the track.
+        it('defaults the width of a horizontal slider, and leaves its height to its content', () => {
+            renderSlider(5);
+            expect(wrapper().style.width).toBe('200px');
+            expect(wrapper().style.height).toBe('');
+        });
+
+        it('defaults the height of a vertical slider, and takes a given height', () => {
+            const {unmount} = renderSlider(5, {vertical: true});
+            expect(wrapper().style.height).toBe('200px');
+            unmount();
+
+            renderSlider(5, {vertical: true, height: 160});
+            expect(wrapper().style.height).toBe('160px');
+        });
+    });
+
     describe('scale', () => {
         it('draws an ordinary scale as given', () => {
             const warn = spyOnWarn();

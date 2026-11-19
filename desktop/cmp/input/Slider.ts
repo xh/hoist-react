@@ -49,7 +49,10 @@ export interface SliderProps extends HoistProps, HoistInputProps, LayoutProps {
      */
     showTrackFill?: boolean;
 
-    /** True to render in a vertical orientation. */
+    /**
+     * True to render in a vertical orientation. The track fills the slider's `height`, default
+     * 200px, as a horizontal track fills its `width`.
+     */
     vertical?: boolean;
 }
 
@@ -111,9 +114,14 @@ const cmp = hoistCmp.factory<SliderInputModel>(({model, className, ...props}, re
 
     model.warnOfScaleChanges(scale.changes);
 
-    // Set default left / right padding. Slider.scss sets the top and bottom padding.
+    // Default padding, so the box does not clip the end handles and labels where they run past the
+    // ends of the track. Slider.scss sets the top and bottom padding of a horizontal slider.
     if (!layoutProps.padding && !layoutProps.paddingLeft) layoutProps.paddingLeft = 20;
     if (!layoutProps.padding && !layoutProps.paddingRight) layoutProps.paddingRight = 20;
+    if (props.vertical) {
+        if (!layoutProps.padding && !layoutProps.paddingTop) layoutProps.paddingTop = 12;
+        if (!layoutProps.padding && !layoutProps.paddingBottom) layoutProps.paddingBottom = 12;
+    }
 
     // The handles hold the `slider` role, so they take the accessible name from `domAttrs`. With
     // none, they point at the label FormField renders with an id derived from the input's id.
@@ -148,7 +156,9 @@ const cmp = hoistCmp.factory<SliderInputModel>(({model, className, ...props}, re
         }),
 
         ...layoutProps,
+        // The track fills the wrapper along its length - its width, or its height when vertical.
         width: withDefault(width, 200),
+        height: props.vertical ? withDefault(layoutProps.height, 200) : layoutProps.height,
         className,
         testId: props.testId,
         domAttrs: omit(props.domAttrs, HANDLE_NAME_ATTRS),
