@@ -10,6 +10,8 @@ import type {TabSwitcherProps} from '@xh/hoist/cmp/tab/Types';
 import {getTestId} from '@xh/hoist/utils/js';
 import {getLayoutProps} from '@xh/hoist/utils/react';
 import {isEmpty, isNull, isObject} from 'lodash';
+// TabList's base rules load ahead of Tabs.scss, which overrides them.
+import './TabList.scss';
 import '../Tabs.scss';
 import {tabSwitcher} from '../TabSwitcher';
 import {dynamicTabSwitcher} from '../dynamic/DynamicTabSwitcher';

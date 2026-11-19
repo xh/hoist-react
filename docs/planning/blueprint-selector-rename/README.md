@@ -60,7 +60,10 @@ file is the working guide.
 - [x] `SegmentedControl`. No visual change. Options are `xh-segmented-control__option`, with
       `--selected` and `--disabled`, inside `xh-segmented-control__options`.
 - [x] `Slider`. No visual change.
-- [ ] Tabs: `TabList`, `TabSwitcher`, `DynamicTabSwitcher`.
+- [x] Tabs: `TabList`, `TabSwitcher`, `DynamicTabSwitcher`. No visual change. Base rules live in
+      `desktop/cmp/tab/impl/TabList.scss`, which `TabContainer` imports ahead of `Tabs.scss`.
+      Tab title and panel ids now use the `xh-tab-title_` and `xh-tab-panel_` prefixes.
+      `BlueprintOverrides.scss` holds nothing now.
 - [ ] `Toolbar` overflow and `AppBar`.
 - [ ] Theme and focus style toggles.
 - [ ] Every other stylesheet in the inventory's "Stylesheets with `bp6-*` selectors" list.
@@ -203,6 +206,8 @@ Proposals are hints, not decisions:
 - `translate.cjs` leaves a context class it has no mapping for as-is, so the rule silently stops
   matching once markup drops it - Slider's `.bp6-disabled .bp6-slider-handle` did. After each
   build, grep the new stylesheet for `bp6-` and map or drop every hit.
+- When ported base rules go in their own file, check that it loads before every stylesheet that
+  overrides it. `TabContainer` imported `Tabs.scss` ahead of `TabList`, so the base rules won ties.
 - Verify each step on the routes and opened UI that render the component, with `styles.cjs` and
   `capture.cjs` route filters and `popups.cjs` scenarios. A full-route pass takes hours.
 - Start the Toolbox server and clients with `setsid nohup ... &`, not as background tasks, which

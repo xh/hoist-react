@@ -55,7 +55,7 @@ describe('TabSwitcher', () => {
             ]);
             expect(tabs[0].tabIndex).toBe(0);
             expect(tabs[2].tabIndex).toBe(-1);
-            expect(tabs[0].id).toBe(`bp6-tab-title_${model.xhId}_alpha`);
+            expect(tabs[0].id).toBe(`xh-tab-title_${model.xhId}_alpha`);
         });
 
         it('activates a tab on click, but not a disabled one', () => {
@@ -154,7 +154,7 @@ function renderOverflowSwitcher(betaLeft: number) {
     const model = createModel('static'),
         {container} = render(tabSwitcher({model, enableOverflow: true})),
         strip = container.querySelector<HTMLElement>('.xh-tab-switcher__scroll'),
-        beta = container.querySelector<HTMLElement>('.bp6-tab[data-tab-id=beta]');
+        beta = container.querySelector<HTMLElement>('.xh-tab-list__tab[data-tab-id=beta]');
 
     vi.spyOn(strip, 'getBoundingClientRect').mockReturnValue(rect(0, 100));
     vi.spyOn(beta, 'getBoundingClientRect').mockReturnValue(rect(betaLeft, betaLeft + 50));

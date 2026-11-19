@@ -2,7 +2,7 @@
   &:not(&--vertical) &__tabs {
     overflow-x: auto;
 
-    .bp6-tab-list {
+    .xh-tab-list__tabs {
       column-gap: var(--xh-spacing-double);
     }
   }

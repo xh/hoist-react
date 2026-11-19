@@ -7,19 +7,3 @@
 
 // Hoist's adjustments to the Blueprint base styles in `BlueprintBase.css`, for desktop components
 // that render Blueprint's `bp6-*` class names.
-
-//------------------------
-// Tabs
-//------------------------
-.bp6-tab-panel > div {
-  margin: 0 !important; // TODO - investigate this....
-}
-
-.bp6-tab > svg:first-child {
-  margin-right: var(--xh-spacing-half);
-}
-
-// Vertical tab lists fill their width
-.bp6-tabs.bp6-vertical .bp6-tab-list {
-  flex: 1;
-}
