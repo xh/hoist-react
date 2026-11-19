@@ -67,6 +67,10 @@ detailed, step-by-step upgrade instructions with before/after code examples.
   Blueprint's components, keeping Blueprint's `bp6-input`, `bp6-input-group` and `bp6-text-area`
   classes. Set `useBlueprint = true` in each component's `defaults` at startup to fall back to
   Blueprint's for this release.
+* Desktop `NumberInput` now renders its own input, not Blueprint's `NumericInput`. Arrow-key
+  stepping, the numeric-character filter and paste cleanup work as before, and it keeps Blueprint's
+  `bp6-numeric-input` and `bp6-input` classes. Set `NumberInput.defaults.useBlueprint = true` at
+  startup to fall back to Blueprint's for this release.
 * Mobile `Popover` and `MenuButton` now use the cross-platform `Popover` from
   `@xh/hoist/cmp/popover`. `@xh/hoist/mobile/cmp/popover` re-exports it for one release - import
   from `@xh/hoist/cmp/popover` instead. Popover content now renders in an `xh-popover__floating`
