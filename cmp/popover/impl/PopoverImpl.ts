@@ -494,11 +494,12 @@ function renderTarget({
             }),
             [TEST_ID]: testId
         },
+        // A disabled popover stays closed but leaves its target alone - a validation tooltip on a
+        // valid field is disabled, and its input must stay usable.
         cloneElement(el, {
             ...ariaProps,
             tabIndex: el.props.tabIndex ?? tabIndex,
-            className: classNames(el.props.className, {'bp6-active': isActive}),
-            disabled: el.props.disabled ?? (disabled || undefined)
+            className: classNames(el.props.className, {'bp6-active': isActive})
         })
     );
 }

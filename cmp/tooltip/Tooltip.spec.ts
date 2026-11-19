@@ -75,6 +75,14 @@ describe('Tooltip', () => {
         expect(screen.queryByText('Hint')).toBeNull();
     });
 
+    it('leaves its target enabled while disabled', () => {
+        // A form field disables its validation tooltip while the field is valid.
+        render(
+            withTooltip({disabled: true, children: createElement('input', {'aria-label': 'Name'})})
+        );
+        expect(screen.getByLabelText<HTMLInputElement>('Name').disabled).toBe(false);
+    });
+
     it('opens from a target drawn by renderTarget', async () => {
         render(
             tooltip({
