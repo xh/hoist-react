@@ -10,7 +10,15 @@ import type {Intent} from '@xh/hoist/core';
 import {hoistCmp} from '@xh/hoist/core';
 import classNames from 'classnames';
 import {stopRightElementControlEvent} from '@xh/hoist/cmp/menu/impl/Menus';
-import type {AnchorHTMLAttributes, HTMLAttributes, KeyboardEvent, ReactNode, Ref} from 'react';
+import {useComposedRefs} from '@xh/hoist/utils/react';
+import type {
+    AnchorHTMLAttributes,
+    HTMLAttributes,
+    KeyboardEvent,
+    MouseEvent,
+    ReactNode,
+    Ref
+} from 'react';
 import {createContext, createElement as h, useContext, useEffect, useRef, useState} from 'react';
 
 /** A list of menu items, as rendered within a popover or a context menu. */
@@ -60,6 +68,22 @@ const CARET_RIGHT_PATH =
 /** Set by a submenu for the menu list it holds, so ArrowLeft can close it. */
 const SubmenuContext = createContext<{close: () => void}>(null);
 
+/** Set by a menu list for its items - true while a typeahead search is in progress. */
+const TypeaheadContext = createContext<() => boolean>(null);
+
+/** Milliseconds after the last key typed before a typeahead search starts over. */
+const TYPEAHEAD_RESET_MS = 750;
+
+interface Typeahead {
+    buffer: string;
+    timer: number;
+}
+
+type MenuKeyEvent = Pick<
+    globalThis.KeyboardEvent,
+    'key' | 'ctrlKey' | 'metaKey' | 'altKey' | 'preventDefault' | 'stopPropagation'
+>;
+
 //------------------------
 // Menu list
 //------------------------
@@ -70,63 +94,52 @@ export const menuList = hoistCmp.factory<MenuListProps>({
 
     render({className, children, ulRef, onKeyDown, ...rest}) {
         const submenu = useContext(SubmenuContext),
-            typeahead = useRef({buffer: '', timer: 0});
+            listRef = useRef<HTMLUListElement>(null),
+            ref = useComposedRefs(listRef, ulRef),
+            typeahead = useRef<Typeahead>({buffer: '', timer: 0});
+
+        // The popover holding the list takes focus itself on opening. Keys sent to it move into
+        // the list, unless another list comes first in the popover.
+        useEffect(() => {
+            const list = listRef.current,
+                panel = list?.closest<HTMLElement>('.xh-popover__floating');
+            if (!panel || panel.querySelector('[role=menu]') !== list) return;
+
+            const onPanelKeyDown = (e: globalThis.KeyboardEvent) => {
+                if (e.target === panel) navigateMenu(e, list, -1, typeahead.current);
+            };
+            panel.addEventListener('keydown', onPanelKeyDown);
+            return () => panel.removeEventListener('keydown', onPanelKeyDown);
+        }, []);
 
         const handleKeyDown = (e: KeyboardEvent<HTMLUListElement>) => {
             onKeyDown?.(e);
-            const items = menuItemsOf(e.currentTarget),
-                idx = items.indexOf(e.target as HTMLElement);
+            const idx = menuItemsOf(e.currentTarget).indexOf(e.target as HTMLElement);
             if (idx < 0) return; // From a nested submenu, which handles its own keys.
 
-            const focusAt = (i: number) => {
+            if (e.key === 'ArrowLeft' && submenu) {
                 e.preventDefault();
                 e.stopPropagation();
-                items[(i + items.length) % items.length]?.focus();
-            };
-
-            switch (e.key) {
-                case 'ArrowDown':
-                    return focusAt(idx + 1);
-                case 'ArrowUp':
-                    return focusAt(idx - 1);
-                case 'Home':
-                    return focusAt(0);
-                case 'End':
-                    return focusAt(items.length - 1);
-                case 'ArrowLeft':
-                    if (submenu) {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        submenu.close();
-                    }
-                    return;
+                submenu.close();
+                return;
             }
-
-            // Typeahead - move to the next item whose text starts with the characters typed.
-            if (e.key.length === 1 && e.key !== ' ' && !e.ctrlKey && !e.metaKey && !e.altKey) {
-                const t = typeahead.current;
-                window.clearTimeout(t.timer);
-                t.buffer += e.key.toLowerCase();
-                t.timer = window.setTimeout(() => (t.buffer = ''), 500);
-                const start = t.buffer.length === 1 ? idx + 1 : idx,
-                    ordered = [...items.slice(start), ...items.slice(0, start)],
-                    match = ordered.find(it =>
-                        it.textContent.trim().toLowerCase().startsWith(t.buffer)
-                    );
-                if (match) focusAt(items.indexOf(match));
-            }
+            navigateMenu(e, e.currentTarget, idx, typeahead.current);
         };
 
         return h(
-            'ul',
-            {
-                role: 'menu',
-                ...rest,
-                ref: ulRef,
-                onKeyDown: handleKeyDown,
-                className: classNames(className, 'xh-menu-list', 'bp6-menu')
-            },
-            children
+            TypeaheadContext.Provider,
+            {value: () => typeahead.current.buffer !== ''},
+            h(
+                'ul',
+                {
+                    role: 'menu',
+                    ...rest,
+                    ref,
+                    onKeyDown: handleKeyDown,
+                    className: classNames(className, 'xh-menu-list', 'bp6-menu')
+                },
+                children
+            )
         );
     }
 });
@@ -155,6 +168,7 @@ export const menuItem = hoistCmp.factory<MenuItemElementProps>({
         } = props;
 
         const hasSubmenu = children != null,
+            isTypingAhead = useContext(TypeaheadContext),
             [subOpen, setSubOpen] = useState(false),
             focusFirstOnOpen = useRef(false),
             liRef = useRef<HTMLLIElement>(null),
@@ -184,6 +198,8 @@ export const menuItem = hoistCmp.factory<MenuItemElementProps>({
             htmlProps.onKeyDown?.(e);
             // A key on a control within the right element belongs to that control.
             if (disabled || e.target !== e.currentTarget) return;
+            // Space within a typeahead search is part of the search - the list handles it.
+            if (e.key === ' ' && isTypingAhead?.()) return;
             if (e.key === 'Enter' || e.key === ' ') {
                 e.preventDefault();
                 (e.currentTarget as HTMLElement).click();
@@ -202,6 +218,10 @@ export const menuItem = hoistCmp.factory<MenuItemElementProps>({
                 ...htmlProps,
                 tabIndex: htmlProps.tabIndex ?? 0,
                 onKeyDown,
+                onMouseEnter: (e: MouseEvent<HTMLElement>) => {
+                    htmlProps.onMouseEnter?.(e);
+                    focusOnHover(e.currentTarget);
+                },
                 'aria-haspopup': hasSubmenu ? 'menu' : undefined,
                 'aria-expanded': hasSubmenu ? subOpen : undefined,
                 ...(disabled
@@ -326,6 +346,64 @@ function menuItemsOf(list: Element): HTMLElement[] {
             ':scope > li > [role=menuitem], :scope > li > .xh-popover__target-wrapper > [role=menuitem]'
         )
     ).filter(it => it.getAttribute('aria-disabled') !== 'true');
+}
+
+/**
+ * Move focus within a menu list for a navigation or typeahead key. `idx` is the focused item, or -1
+ * when focus is on the popover around the list, before its first item.
+ */
+function navigateMenu(e: MenuKeyEvent, list: HTMLElement, idx: number, typeahead: Typeahead) {
+    const items = menuItemsOf(list);
+    if (!items.length) return;
+
+    const focusAt = (i: number) => {
+        e.preventDefault();
+        e.stopPropagation();
+        items[(i + items.length) % items.length].focus();
+    };
+
+    switch (e.key) {
+        case 'ArrowDown':
+            return focusAt(idx + 1);
+        case 'ArrowUp':
+            return focusAt(idx < 0 ? items.length - 1 : idx - 1);
+        case 'Home':
+            return focusAt(0);
+        case 'End':
+            return focusAt(items.length - 1);
+    }
+
+    // Typeahead - move to the next item whose text starts with the characters typed. Space
+    // activates the focused item, unless it continues a search in progress.
+    const isChar = e.key.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey;
+    if (!isChar || (e.key === ' ' && !typeahead.buffer)) return;
+
+    e.preventDefault();
+    window.clearTimeout(typeahead.timer);
+    typeahead.buffer += e.key.toLowerCase();
+    typeahead.timer = window.setTimeout(() => (typeahead.buffer = ''), TYPEAHEAD_RESET_MS);
+
+    // Typing one letter repeatedly cycles through the items that start with it.
+    const {buffer} = typeahead,
+        cycle = [...buffer].every(c => c === buffer[0]),
+        search = cycle ? buffer[0] : buffer,
+        start = cycle ? idx + 1 : Math.max(idx, 0),
+        ordered = [...items.slice(start), ...items.slice(0, start)],
+        match = ordered.find(it => it.textContent.trim().toLowerCase().startsWith(search));
+    if (match) focusAt(items.indexOf(match));
+}
+
+/**
+ * Focus an item under the pointer, so the keyboard carries on from it and one item shows as
+ * current. Only when focus is already in a menu, or on the popover holding this item, so a menu
+ * never takes focus from an input beside it.
+ */
+function focusOnHover(item: HTMLElement) {
+    const active = document.activeElement as HTMLElement;
+    if (!active || active === item) return;
+    const inMenu = active.closest('[role=menu]') != null,
+        onPanel = active.classList.contains('xh-popover__floating') && active.contains(item);
+    if (inMenu || onPanel) item.focus({preventScroll: true});
 }
 
 function caretIcon() {

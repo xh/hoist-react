@@ -83,6 +83,11 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 * Desktop menus now support the keyboard: arrow keys, Home and End move between items, typing
   jumps to an item by its first letters, and ArrowRight and ArrowLeft open and close submenus.
   Escape in a submenu closes only that submenu.
+    * Keys work as soon as a menu opens, whether by mouse or keyboard.
+    * The focused item is highlighted as on hover, and moving the pointer over an item makes it
+      the focused one.
+    * Typing one letter repeatedly cycles through the items that start with it. A space continues
+      a search in progress, so "save a" finds "Save As...".
 * Added `MenuItem.rightElement`, an element shown at the right edge of a menu item, such as a
   button that acts on the item. A click on a control within it does not run the item's `actionFn`
   or close the menu, so its handler need not stop the event. Desktop and mobile menus both render
