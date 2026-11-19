@@ -627,6 +627,12 @@ export class GridModel extends HoistModel implements GridLikeModel {
     @observableRef accessor groupBy: string[] = null;
     @observable accessor expandLevel: number = 0;
 
+    /**
+     * True while {@link restoreDefaultsAsync} runs, through any `restoreDefaultsFn`. Observers that
+     * treat changes to this grid's state as user changes can skip those the restore makes.
+     */
+    @observable accessor isRestoringDefaults: boolean = false;
+
     /** @internal - latest RecordSet applied to ag-Grid, maintained by the Grid component. */
     @observableRef accessor _syncedRs: RecordSet = null;
 
@@ -884,23 +890,33 @@ export class GridModel extends HoistModel implements GridLikeModel {
             if (!confirmed) return false;
         }
 
-        const {columns, sortBy, groupBy, filter, expandLevel} = this._defaultState;
-        this.setColumns(columns);
-        this.setSortBy(sortBy);
-        this.setGroupBy(groupBy);
-        this.expandToLevel(expandLevel);
+        this.setIsRestoringDefaults(true);
+        try {
+            const {columns, sortBy, groupBy, filter, expandLevel} = this._defaultState;
+            this.setColumns(columns);
+            this.setSortBy(sortBy);
+            this.setGroupBy(groupBy);
+            this.expandToLevel(expandLevel);
 
-        this.filterModel?.setFilter(filter);
+            this.filterModel?.setFilter(filter);
 
-        if (this.autosizeOptions.mode === 'managed') {
-            await this.autosizeAsync();
-        }
+            if (this.autosizeOptions.mode === 'managed') {
+                await this.autosizeAsync();
+            }
 
-        if (this.restoreDefaultsFn) {
-            await this.restoreDefaultsFn();
+            if (this.restoreDefaultsFn) {
+                await this.restoreDefaultsFn();
+            }
+        } finally {
+            this.setIsRestoringDefaults(false);
         }
 
         return true;
+    }
+
+    @action
+    private setIsRestoringDefaults(v: boolean) {
+        this.isRestoringDefaults = v;
     }
 
     /**

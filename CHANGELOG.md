@@ -81,6 +81,9 @@ detailed, step-by-step upgrade instructions with before/after code examples.
   Its group rows read values passed to `Cube.loadDataAsync()`, `updateDataAsync()` or the new
   `updateAggregatesAsync()`, keyed by the group's dimension values. `View.suppliedGroupingSets`
   lists the groupings a View needs values for.
+* Added the observable `GridModel.isRestoringDefaults`, true while `restoreDefaultsAsync()` runs,
+  through any `restoreDefaultsFn`. Code that reacts to user changes to grid state can skip those
+  the restore makes.
 
 ### 🐞 Bug Fixes
 

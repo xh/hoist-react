@@ -7,6 +7,7 @@
 import {Column, dateTime, type GridConfig, GridModel, GridSorter, number} from '@xh/hoist/cmp/grid';
 import {XH} from '@xh/hoist/core';
 import {numberTextRenderer} from '@xh/hoist/format';
+import {reaction} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
 import {initTestAppAsync} from '@xh/hoist/test-support';
 import {beforeAll, describe, expect, it, onTestFinished, vi} from 'vitest';
@@ -289,6 +290,32 @@ describe('GridModel', () => {
             expect(gridModel.expandLevel).toBe(1);
             expect(store.filter.toJSON()).toEqual({field: 'region', op: '=', value: 'US'});
             expect(restoreDefaultsFn).toHaveBeenCalledOnce();
+        });
+
+        it('sets isRestoringDefaults for the whole restore, so observers can tell it from a user change', async () => {
+            const seen = [],
+                gridModel = createGridModel({
+                    sortBy: 'pnl|desc',
+                    restoreDefaultsWarning: null,
+                    restoreDefaultsFn: () => {
+                        seen.push(['fn', gridModel.isRestoringDefaults]);
+                        throw new Error('app restore failed');
+                    }
+                });
+            gridModel.setSortBy('name');
+            const disposer = reaction(
+                () => gridModel.sortBy,
+                () => seen.push(['sortBy', gridModel.isRestoringDefaults])
+            );
+            onTestFinished(disposer);
+
+            await expect(gridModel.restoreDefaultsAsync()).rejects.toThrow('app restore failed');
+
+            expect(seen).toEqual([
+                ['sortBy', true],
+                ['fn', true]
+            ]);
+            expect(gridModel.isRestoringDefaults).toBe(false);
         });
 
         it('leaves the grid unchanged if the user declines to confirm', async () => {
