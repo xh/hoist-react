@@ -25,9 +25,9 @@ import {throwIfRowsPassedAsChildren} from '@xh/hoist/utils/impl';
 import {mergeDeep, TEST_ID} from '@xh/hoist/utils/js';
 import {isBlankNode, splitLayoutProps, useComposedRefs, useOnResize} from '@xh/hoist/utils/react';
 
-import './KeyValueList.scss';
+import './KeyValueDisplay.scss';
 
-/** A labeled value in a {@link KeyValueList}. */
+/** A labeled value in a {@link KeyValueDisplay}. */
 export interface KeyValueEntry {
     /** Caption for the value. */
     label: ReactNode;
@@ -46,7 +46,7 @@ export interface KeyValueEntry {
     omit?: boolean;
 }
 
-export interface KeyValueListProps
+export interface KeyValueDisplayProps
     extends HoistProps, LayoutProps, TestSupportProps, DomAttrsProps {
     /** Labeled values to show, in order. Null entries are skipped. */
     entries: KeyValueEntry[];
@@ -111,13 +111,13 @@ export interface KeyValueListProps
  * breaking within a word if needed, so the list never forces horizontal overflow. To truncate a
  * value instead, pass an element that does so.
  */
-export const [KeyValueList, keyValueList] = hoistCmp.withFactory<KeyValueListProps>({
-    displayName: 'KeyValueList',
+export const [KeyValueDisplay, keyValueDisplay] = hoistCmp.withFactory<KeyValueDisplayProps>({
+    displayName: 'KeyValueDisplay',
     model: false,
-    className: 'xh-key-value-list',
+    className: 'xh-key-value-display',
 
     render(props, ref) {
-        throwIfRowsPassedAsChildren(props.children, 'entries', 'KeyValueList');
+        throwIfRowsPassedAsChildren(props.children, 'entries', 'KeyValueDisplay');
         const [
                 layoutProps,
                 {
@@ -160,7 +160,7 @@ export const [KeyValueList, keyValueList] = hoistCmp.withFactory<KeyValueListPro
         if (isEmpty(visibleEntries)) {
             return isBlankNode(emptyText)
                 ? null
-                : div({ref, ...rootProps(['xh-key-value-list--empty']), children: emptyText});
+                : div({ref, ...rootProps(['xh-key-value-display--empty']), children: emptyText});
         }
 
         const maxColumns = Math.min(columns ?? count, count),
@@ -171,29 +171,33 @@ export const [KeyValueList, keyValueList] = hoistCmp.withFactory<KeyValueListPro
             ref: composedRef,
             ...rootProps(
                 [
-                    labelOnTop && 'xh-key-value-list--label-top',
-                    !labelOnTop && labelAlign === 'right' && 'xh-key-value-list--label-align-right',
-                    !labelOnTop && valueAlign === 'right' && 'xh-key-value-list--value-align-right',
-                    size === 'compact' && 'xh-key-value-list--compact',
-                    dividers && 'xh-key-value-list--dividers'
+                    labelOnTop && 'xh-key-value-display--label-top',
+                    !labelOnTop &&
+                        labelAlign === 'right' &&
+                        'xh-key-value-display--label-align-right',
+                    !labelOnTop &&
+                        valueAlign === 'right' &&
+                        'xh-key-value-display--value-align-right',
+                    size === 'compact' && 'xh-key-value-display--compact',
+                    dividers && 'xh-key-value-display--dividers'
                 ],
-                {'--xh-key-value-list-columns': columnCount}
+                {'--xh-key-value-display-columns': columnCount}
             ),
             children: visibleEntries.map(({label, value, intent}, idx) => {
                 const isNull = value == null;
                 return div({
                     key: idx,
                     className: classNames(
-                        'xh-key-value-list__entry',
-                        intent && `xh-key-value-list__entry--intent-${intent}`,
-                        idx >= lastRowStart && 'xh-key-value-list__entry--last-row'
+                        'xh-key-value-display__entry',
+                        intent && `xh-key-value-display__entry--intent-${intent}`,
+                        idx >= lastRowStart && 'xh-key-value-display__entry--last-row'
                     ),
                     children: [
-                        dt({className: 'xh-key-value-list__label', children: label}),
+                        dt({className: 'xh-key-value-display__label', children: label}),
                         dd({
                             className: classNames(
-                                'xh-key-value-list__value',
-                                isNull && 'xh-key-value-list__value--null'
+                                'xh-key-value-display__value',
+                                isNull && 'xh-key-value-display__value--null'
                             ),
                             children: isNull ? (nullDisplay ?? '-') : value
                         })

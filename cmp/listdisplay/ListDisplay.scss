@@ -5,7 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
-.xh-item-list {
+.xh-list-display {
   display: flex;
   flex-direction: column;
   box-sizing: border-box;
@@ -15,20 +15,20 @@
   margin: 0;
   padding: 0;
   list-style: none;
-  font-size: var(--xh-item-list-font-size);
+  font-size: var(--xh-list-display-font-size);
 
   // Swaps in the compact variables, so the rules below draw both sizes.
   &--compact {
-    --xh-item-list-entry-padding: var(--xh-item-list-compact-entry-padding);
-    --xh-item-list-font-size: var(--xh-item-list-compact-font-size);
+    --xh-list-display-entry-padding: var(--xh-list-display-compact-entry-padding);
+    --xh-list-display-font-size: var(--xh-list-display-compact-font-size);
   }
 
   &--empty {
-    color: var(--xh-item-list-empty-text-color);
+    color: var(--xh-list-display-empty-text-color);
   }
 
   &--dividers &__entry:not(:first-child) {
-    border-top: var(--xh-item-list-divider-border);
+    border-top: var(--xh-list-display-divider-border);
   }
 
   &__entry {
@@ -38,8 +38,8 @@
   &__entry-inner {
     display: flex;
     align-items: flex-start;
-    gap: var(--xh-item-list-entry-gap);
-    padding: var(--xh-item-list-entry-padding);
+    gap: var(--xh-list-display-entry-gap);
+    padding: var(--xh-list-display-entry-padding);
   }
 
   // As tall as one line of the title, so an icon or number centers on the title's first line.
@@ -48,9 +48,9 @@
     flex: none;
     align-items: center;
     justify-content: center;
-    min-width: var(--xh-item-list-marker-width);
-    height: calc(var(--xh-item-list-line-height) * 1em);
-    color: var(--xh-item-list-marker-text-color);
+    min-width: var(--xh-list-display-marker-width);
+    height: calc(var(--xh-list-display-line-height) * 1em);
+    color: var(--xh-list-display-marker-text-color);
 
     &--number {
       font-variant-numeric: tabular-nums;
@@ -62,9 +62,9 @@
     &--accent {
       align-self: stretch;
       min-width: 0;
-      width: var(--xh-item-list-accent-width);
+      width: var(--xh-list-display-accent-width);
       height: auto;
-      border-radius: var(--xh-item-list-accent-width);
+      border-radius: var(--xh-list-display-accent-width);
       background-color: currentColor;
       color: transparent;
     }
@@ -72,26 +72,26 @@
 
   // Stands in for the icon of an entry that has an intent and no icon.
   &__dot {
-    width: var(--xh-item-list-dot-size);
-    height: var(--xh-item-list-dot-size);
+    width: var(--xh-list-display-dot-size);
+    height: var(--xh-list-display-dot-size);
     border-radius: 50%;
     background-color: currentColor;
   }
 
   &__entry--intent-primary &__marker {
-    color: var(--xh-item-list-primary-color);
+    color: var(--xh-list-display-primary-color);
   }
 
   &__entry--intent-success &__marker {
-    color: var(--xh-item-list-success-color);
+    color: var(--xh-list-display-success-color);
   }
 
   &__entry--intent-warning &__marker {
-    color: var(--xh-item-list-warning-color);
+    color: var(--xh-list-display-warning-color);
   }
 
   &__entry--intent-danger &__marker {
-    color: var(--xh-item-list-danger-color);
+    color: var(--xh-list-display-danger-color);
   }
 
   &__content {
@@ -101,13 +101,13 @@
 
   // The title leads its line, with the detail held at the far end. A long title wraps beside the
   // detail. The detail drops to a line of its own only when the title would get narrower than
-  // `--xh-item-list-title-min-width`.
+  // `--xh-list-display-title-min-width`.
   &__header {
     display: flex;
     flex-wrap: wrap;
     align-items: baseline;
-    column-gap: var(--xh-item-list-entry-gap);
-    line-height: var(--xh-item-list-line-height);
+    column-gap: var(--xh-list-display-entry-gap);
+    line-height: var(--xh-list-display-line-height);
   }
 
   // Text wraps, at any character if it must, so a narrow list never forces overflow.
@@ -119,8 +119,8 @@
   }
 
   &__title {
-    flex: 1 1 var(--xh-item-list-title-min-width);
-    font-weight: var(--xh-item-list-title-font-weight);
+    flex: 1 1 var(--xh-list-display-title-min-width);
+    font-weight: var(--xh-list-display-title-font-weight);
   }
 
   &__detail {
@@ -130,8 +130,8 @@
   }
 
   &__description {
-    color: var(--xh-item-list-description-text-color);
-    font-size: var(--xh-item-list-description-font-size);
+    color: var(--xh-list-display-description-text-color);
+    font-size: var(--xh-list-display-description-font-size);
   }
 
   //------------------
@@ -140,7 +140,7 @@
   // Every entry of a list with a clickable entry is padded at the sides, so the text of all its
   // entries lines up and the hover background does not sit tight against the text.
   &--clickable &__entry-inner {
-    padding-inline: var(--xh-item-list-entry-gap);
+    padding-inline: var(--xh-list-display-entry-gap);
     border-radius: var(--xh-border-radius);
   }
 
@@ -148,11 +148,11 @@
     cursor: pointer;
 
     &:hover {
-      background-color: var(--xh-item-list-hover-bg);
+      background-color: var(--xh-list-display-hover-bg);
     }
 
     // The title is the button that takes focus. The focus ring goes around the whole entry.
-    &:has(.xh-item-list__title:focus-visible) {
+    &:has(.xh-list-display__title:focus-visible) {
       outline: 2px solid var(--xh-focus-outline-color);
       outline-offset: -2px;
     }
@@ -163,6 +163,6 @@
   }
 
   &__entry--disabled &__entry-inner {
-    opacity: var(--xh-item-list-disabled-opacity);
+    opacity: var(--xh-list-display-disabled-opacity);
   }
 }

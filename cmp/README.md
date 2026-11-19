@@ -152,8 +152,8 @@ techniques.
 | `/zoneGrid/` | Multi-zone grid layout for complex record displays |
 | `/cubegrid/` | Cube View as a tree grid, with pivot paths as nested column groups when pivoted. [See README](./cubegrid/README.md) |
 | `/statcard/` | Tiles that call out key figures (StatCard), laid out in equal-width rows (StatCardStrip) |
-| `/keyvaluelist/` | Display-only list of labeled values (KeyValueList), such as the fields of a record in a detail panel. [See README](./keyvaluelist/README.md) |
-| `/itemlist/` | Short, static list of entries with a title, description, icon and trailing detail (ItemList). [See README](./itemlist/README.md) |
+| `/keyvaluedisplay/` | Display-only list of labeled values (KeyValueDisplay), such as the fields of a record in a detail panel. [See README](./keyvaluedisplay/README.md) |
+| `/listdisplay/` | Short, static list of entries with a title, description, icon and trailing detail (ListDisplay). [See README](./listdisplay/README.md) |
 | `/sparkline/` | Small inline trend chart in plain SVG (Sparkline), for a stat card or a grid cell. [See README](./sparkline/README.md) |
 
 ### Layout and Containers
@@ -289,10 +289,11 @@ const dataViewModel = new DataViewModel({
 });
 ```
 
-### ItemList (`/itemlist/`)
+### ListDisplay (`/listdisplay/`)
 
 A short, static list of entries, each with a title, description, icon and trailing detail. It takes
-a plain array, so use `DataView` for many records. See the [ItemList README](./itemlist/README.md).
+a plain array, so use `DataView` for many records. See the
+[ListDisplay README](./listdisplay/README.md).
 
 ### TabContainer (`/tab/`)
 
@@ -352,10 +353,11 @@ CardModel supports `collapsible` state with configurable `renderMode` (`'always'
 displaying their aggregate validation state as intent-colored borders and tooltips. See the
 [Form README](./form/README.md#formfieldset) for details.
 
-### KeyValueList (`/keyvaluelist/`)
+### KeyValueDisplay (`/keyvaluedisplay/`)
 
 A display-only list of labeled values, such as the fields of a record in a detail panel, laid out
-in as many columns as the width allows. See the [KeyValueList README](./keyvaluelist/README.md).
+in as many columns as the width allows. See the
+[KeyValueDisplay README](./keyvaluedisplay/README.md).
 
 ### Callout (`/callout/`)
 

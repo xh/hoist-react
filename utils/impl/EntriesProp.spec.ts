@@ -4,8 +4,8 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {itemList} from '@xh/hoist/cmp/itemlist';
-import {keyValueList} from '@xh/hoist/cmp/keyvaluelist';
+import {listDisplay} from '@xh/hoist/cmp/listdisplay';
+import {keyValueDisplay} from '@xh/hoist/cmp/keyvaluedisplay';
 import {span} from '@xh/hoist/cmp/layout';
 import {XH} from '@xh/hoist/core';
 import {initTestAppAsync} from '@xh/hoist/test-support';
@@ -53,10 +53,14 @@ describe('throwIfRowsPassedAsChildren', () => {
     });
 
     it.each([
-        ['KeyValueList', 'children', () => keyValueList({children: [{label: 'Symbol'}]} as any)],
-        ['KeyValueList', 'items', () => keyValueList({items: [{label: 'Symbol'}]} as any)],
-        ['ItemList', 'children', () => itemList({children: [{title: 'Alert'}]} as any)],
-        ['ItemList', 'items', () => itemList({items: [{title: 'Alert'}]} as any)]
+        [
+            'KeyValueDisplay',
+            'children',
+            () => keyValueDisplay({children: [{label: 'Symbol'}]} as any)
+        ],
+        ['KeyValueDisplay', 'items', () => keyValueDisplay({items: [{label: 'Symbol'}]} as any)],
+        ['ListDisplay', 'children', () => listDisplay({children: [{title: 'Alert'}]} as any)],
+        ['ListDisplay', 'items', () => listDisplay({items: [{title: 'Alert'}]} as any)]
     ])('%s checks for rows passed as %s', (name, _, factory) => {
         setDevMode(true);
         // React logs the error thrown during render - keep the test output clean.

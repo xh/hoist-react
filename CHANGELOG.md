@@ -51,11 +51,11 @@ detailed, step-by-step upgrade instructions with before/after code examples.
       `@xh/hoist/docs/codemod/v91` folder - see Step 6 of the upgrade notes. It uses the TypeScript
       checker, so `items` keys that hold menu or other data stay unchanged. It also reports
       factory examples in markdown docs such as CLAUDE.md, and edits them only with `--fix-docs`.
-* Added `KeyValueList` to `@xh/hoist/cmp/keyvaluelist`, a display-only list of labeled values,
-  such as the fields of a record in a detail panel. It lays out its `entries` in aligned columns
-  that fit the available width, with each label to the left of or above its value.
-* Added `ItemList` to `@xh/hoist/cmp/itemlist`, a short, static list of `entries`, such as a few
-  alerts or search results. Each entry has a title, description, icon and trailing detail, and
+* Added `KeyValueDisplay` to `@xh/hoist/cmp/keyvaluedisplay`, a display-only list of labeled
+  values, such as the fields of a record in a detail panel. It lays out its `entries` in aligned
+  columns that fit the available width, with each label to the left of or above its value.
+* Added `ListDisplay` to `@xh/hoist/cmp/listdisplay`, a short, static list of `entries`, such as a
+  few alerts or search results. Each entry has a title, description, icon and trailing detail, and
   can take an `onClick`. It needs no Store or model. Use `DataView` for long lists.
 * Added `ProgressBar` to `@xh/hoist/cmp/progressbar`, a cross-platform bar that shows a value
   against a maximum, with an optional label, figure, `intent` and `target` marker. Set

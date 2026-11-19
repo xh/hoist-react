@@ -24,15 +24,15 @@ import type {RowClickHandler} from '@xh/hoist/utils/impl';
 import {mergeDeep, TEST_ID} from '@xh/hoist/utils/js';
 import {isBlankNode, splitLayoutProps} from '@xh/hoist/utils/react';
 
-import './ItemList.scss';
+import './ListDisplay.scss';
 
 /**
- * One entry in an {@link ItemList}.
+ * One entry in an {@link ListDisplay}.
  *
  * A `title`, `description` or `detail` that is null, a boolean or a blank string renders
  * nothing and leaves no gap.
  */
-export interface ItemListEntry {
+export interface ListDisplayEntry {
     /** Main text of the entry. Wraps when it does not fit on one line. */
     title: ReactNode;
 
@@ -77,9 +77,9 @@ export interface ItemListEntry {
     omit?: boolean;
 }
 
-export interface ItemListProps extends HoistProps, LayoutProps, TestSupportProps, DomAttrsProps {
+export interface ListDisplayProps extends HoistProps, LayoutProps, TestSupportProps, DomAttrsProps {
     /** Entries to show, in order. Null entries are skipped. */
-    entries: ItemListEntry[];
+    entries: ListDisplayEntry[];
 
     /**
      * True to number the entries, for a ranking or a sequence. Renders an HTML ordered list.
@@ -110,16 +110,16 @@ export interface ItemListProps extends HoistProps, LayoutProps, TestSupportProps
  * the rows in view and adds a Store, selection, sorting and grouping.
  *
  * The list fills the width of its container and has no outer margin. Text wraps, breaking within
- * a word if needed, so the list never forces horizontal overflow. Set the `--xh-item-list-*` CSS
+ * a word if needed, so the list never forces horizontal overflow. Set the `--xh-list-display-*` CSS
  * variables to change its spacing and colors.
  */
-export const [ItemList, itemList] = hoistCmp.withFactory<ItemListProps>({
-    displayName: 'ItemList',
+export const [ListDisplay, listDisplay] = hoistCmp.withFactory<ListDisplayProps>({
+    displayName: 'ListDisplay',
     model: false,
-    className: 'xh-item-list',
+    className: 'xh-list-display',
 
     render(props, ref) {
-        throwIfRowsPassedAsChildren(props.children, 'entries', 'ItemList');
+        throwIfRowsPassedAsChildren(props.children, 'entries', 'ListDisplay');
         const [
                 layoutProps,
                 {className, entries, numbered, dividers, size, emptyText, testId, domAttrs}
@@ -139,7 +139,7 @@ export const [ItemList, itemList] = hoistCmp.withFactory<ItemListProps>({
         if (isEmpty(visible)) {
             return isBlankNode(emptyText)
                 ? null
-                : div({ref, ...rootProps('xh-item-list--empty'), children: emptyText});
+                : div({ref, ...rootProps('xh-list-display--empty'), children: emptyText});
         }
 
         const shown = visible.map(it => it.entry),
@@ -151,9 +151,9 @@ export const [ItemList, itemList] = hoistCmp.withFactory<ItemListProps>({
             ref,
             role: 'list',
             ...rootProps(
-                size === 'compact' && 'xh-item-list--compact',
-                dividers && 'xh-item-list--dividers',
-                shown.some(it => it.onClick) && 'xh-item-list--clickable'
+                size === 'compact' && 'xh-list-display--compact',
+                dividers && 'xh-list-display--dividers',
+                shown.some(it => it.onClick) && 'xh-list-display--clickable'
             ),
             children: visible.map(({entry, index}, position) =>
                 renderEntry(entry, `${idPrefix}-${index}`, position, marker)
@@ -172,21 +172,21 @@ type MarkerType = 'number' | 'icon' | 'accent';
  * One type for the whole list, so the text of every entry starts at the same place. An entry
  * with nothing to show in the marker keeps its space.
  */
-function markerType(entries: ItemListEntry[], numbered: boolean): MarkerType {
+function markerType(entries: ListDisplayEntry[], numbered: boolean): MarkerType {
     if (numbered) return 'number';
     if (entries.some(it => it.icon)) return 'icon';
     if (entries.some(it => it.intent)) return 'accent';
     return null;
 }
 
-function markerContent(entry: ItemListEntry, position: number, marker: MarkerType): ReactNode {
+function markerContent(entry: ListDisplayEntry, position: number, marker: MarkerType): ReactNode {
     if (marker === 'number') return position + 1;
     if (marker !== 'icon') return null;
     // A dot carries the intent of an entry with no icon, drawn in the marker's color.
-    return entry.icon ?? (entry.intent ? span({className: 'xh-item-list__dot'}) : null);
+    return entry.icon ?? (entry.intent ? span({className: 'xh-list-display__dot'}) : null);
 }
 
-function renderEntry(entry: ItemListEntry, id: string, position: number, marker: MarkerType) {
+function renderEntry(entry: ListDisplayEntry, id: string, position: number, marker: MarkerType) {
     const {title, description, detail, intent, onClick, disabled} = entry,
         isButton = !!onClick,
         isDisabled = isButton && !!disabled,
@@ -197,33 +197,33 @@ function renderEntry(entry: ItemListEntry, id: string, position: number, marker:
     return li({
         key: id,
         className: classNames(
-            'xh-item-list__entry',
-            intent && `xh-item-list__entry--intent-${intent}`,
-            isButton && !isDisabled && 'xh-item-list__entry--clickable',
-            isDisabled && 'xh-item-list__entry--disabled'
+            'xh-list-display__entry',
+            intent && `xh-list-display__entry--intent-${intent}`,
+            isButton && !isDisabled && 'xh-list-display__entry--clickable',
+            isDisabled && 'xh-list-display__entry--disabled'
         ),
         children: div({
-            className: 'xh-item-list__entry-inner',
+            className: 'xh-list-display__entry-inner',
             ...rowProps,
             children: [
                 // Decorative: the list itself gives each entry's position to a screen reader.
                 div({
                     omit: !marker,
-                    className: `xh-item-list__marker xh-item-list__marker--${marker}`,
+                    className: `xh-list-display__marker xh-list-display__marker--${marker}`,
                     'aria-hidden': true,
                     children: markerContent(entry, position, marker)
                 }),
                 div({
-                    className: 'xh-item-list__content',
+                    className: 'xh-list-display__content',
                     children: [
                         div({
                             omit: !isButton && isBlankNode(title) && isBlankNode(detail),
-                            className: 'xh-item-list__header',
+                            className: 'xh-list-display__header',
                             children: [
                                 // Kept when blank on a clickable entry, as it is the button.
                                 div({
                                     omit: !isButton && isBlankNode(title),
-                                    className: 'xh-item-list__title',
+                                    className: 'xh-list-display__title',
                                     ...buttonProps,
                                     'aria-describedby':
                                         isButton && hasDescription ? descriptionId : null,
@@ -231,7 +231,7 @@ function renderEntry(entry: ItemListEntry, id: string, position: number, marker:
                                 }),
                                 div({
                                     omit: isBlankNode(detail),
-                                    className: 'xh-item-list__detail',
+                                    className: 'xh-list-display__detail',
                                     children: detail
                                 })
                             ]
@@ -239,7 +239,7 @@ function renderEntry(entry: ItemListEntry, id: string, position: number, marker:
                         div({
                             omit: !hasDescription,
                             id: isButton ? descriptionId : null,
-                            className: 'xh-item-list__description',
+                            className: 'xh-list-display__description',
                             children: description
                         })
                     ]

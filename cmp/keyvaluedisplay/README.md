@@ -1,14 +1,14 @@
-# KeyValueList Package
+# KeyValueDisplay Package
 
 ## Overview
 
-`KeyValueList` shows labeled values for display only, such as the fields of a record in a detail
+`KeyValueDisplay` shows labeled values for display only, such as the fields of a record in a detail
 panel. It takes a plain array of entries and no model, and renders an HTML description list. The
-props and their defaults are documented in `KeyValueList.ts`.
+props and their defaults are documented in `KeyValueDisplay.ts`.
 
 Choose it by what the user does with the values:
 
-- **KeyValueList** - the user reads the values. The app formats each one.
+- **KeyValueDisplay** - the user reads the values. The app formats each one.
 - **Read-only `Form`** - the same fields can switch to editing, or the values need the bindings,
   validation or renderers of a `FormModel`. Set `readonly` on the `FormModel`. See the
   [Form README](../form/README.md).
@@ -17,10 +17,10 @@ Choose it by what the user does with the values:
 ## Usage
 
 ```typescript
-import {keyValueList} from '@xh/hoist/cmp/keyvaluelist';
+import {keyValueDisplay} from '@xh/hoist/cmp/keyvaluedisplay';
 import {fmtDate, fmtNumber} from '@xh/hoist/format';
 
-keyValueList({
+keyValueDisplay({
     entries: [
         {label: 'Symbol', value: trade.symbol},
         {label: 'Quantity', value: fmtNumber(trade.quantity, {precision: 0})},
@@ -33,10 +33,10 @@ keyValueList({
 })
 
 // Labels above their values, in at most three columns, with a rule between rows
-keyValueList({entries, labelSide: 'top', columns: 3, dividers: true, size: 'compact'})
+keyValueDisplay({entries, labelSide: 'top', columns: 3, dividers: true, size: 'compact'})
 
 // A summary, with each value set at the far side of its column, across from its label
-keyValueList({entries, valueAlign: 'right', dividers: true})
+keyValueDisplay({entries, valueAlign: 'right', dividers: true})
 ```
 
 A value can be any element, such as a `badge` or a link. A null or undefined value shows the
@@ -46,15 +46,15 @@ give a group of values a title.
 
 ## Styling
 
-Set the `--xh-key-value-list-*` variables on `body.xh-app` to change the gaps, label width and
-colors. The full set is in the `Key Value Lists` block of
+Set the `--xh-key-value-display-*` variables on `body.xh-app` to change the gaps, label width and
+colors. The full set is in the `Key Value Displays` block of
 [`styles/vars.scss`](../../styles/vars.scss). See the [Styles README](../../styles/README.md) for
 how overrides work.
 
 ```scss
 body.xh-app {
-  --xh-key-value-list-label-max-width: 12em;
-  --xh-key-value-list-label-text-color: var(--xh-text-color-muted);
+  --xh-key-value-display-label-max-width: 12em;
+  --xh-key-value-display-label-text-color: var(--xh-text-color-muted);
 }
 ```
 

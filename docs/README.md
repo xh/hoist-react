@@ -38,8 +38,8 @@ See [`docs-roadmap.md`](./planning/docs-roadmap.md) for documentation coverage t
 | Save and restore named view configurations | [`/cmp/viewmanager/`](../cmp/viewmanager/README.md)                                                                 |
 | Select a period or date range (presets, lookbacks, months, custom) | [`/cmp/daterange/`](../cmp/daterange/README.md)                                                                   |
 | Display a PDF document (page nav, zoom, find, download) | [`/cmp/pdfviewer/`](../cmp/pdfviewer/README.md) |
-| Show a short list of alerts, activity or search results | [`/cmp/itemlist/`](../cmp/itemlist/README.md) |
-| Show the fields of a record as labeled values | [`/cmp/keyvaluelist/`](../cmp/keyvaluelist/README.md) |
+| Show a short list of alerts, activity or search results | [`/cmp/listdisplay/`](../cmp/listdisplay/README.md) |
+| Show the fields of a record as labeled values | [`/cmp/keyvaluedisplay/`](../cmp/keyvaluedisplay/README.md) |
 | Set off a note, caveat or warning within content | [`/cmp/callout/`](../cmp/callout/README.md) |
 | Show progress or usage against a limit as a bar | [`/cmp/progressbar/`](../cmp/progressbar/README.md) |
 | Show a small inline trend chart beside a figure or in a grid cell | [`/cmp/sparkline/`](../cmp/sparkline/README.md) |
@@ -99,13 +99,13 @@ See [`docs-roadmap.md`](./planning/docs-roadmap.md) for documentation coverage t
 | [`/cmp/input/`](../cmp/input/README.md) | Base classes and interfaces for input components | HoistInputModel, change/commit lifecycle, value binding, focus management |
 | [`/cmp/callout/`](../cmp/callout/README.md) | Short note set off within content, tinted by its intent | Callout, intent, icon, title, Callout or Banner or Card, untrusted text |
 | [`/cmp/layout/`](../cmp/layout/README.md) | Flexbox-based layout containers | Box, VBox, HBox, Frame, Viewport, Separator, LayoutProps, pixel conversion |
-| [`/cmp/keyvaluelist/`](../cmp/keyvaluelist/README.md) | Display-only list of labeled values, such as the fields of a record in a detail panel | KeyValueList, KeyValueEntry, entries, labelSide, columns, minColumnWidth, KeyValueList or read-only Form |
+| [`/cmp/keyvaluedisplay/`](../cmp/keyvaluedisplay/README.md) | Display-only list of labeled values, such as the fields of a record in a detail panel | KeyValueDisplay, KeyValueEntry, entries, labelSide, columns, minColumnWidth, KeyValueDisplay or read-only Form |
 | [`/cmp/progressbar/`](../cmp/progressbar/README.md) | Bar that shows a value against a maximum, or indeterminate progress | ProgressBar, value, min, max, label, valueRenderer, intent, target, indeterminate |
 | [`/cmp/tab/`](../cmp/tab/README.md) | Tabbed interface system | TabContainerModel, routing integration, render modes, refresh strategies |
 | [`/cmp/viewmanager/`](../cmp/viewmanager/README.md) | Save/load named bundles of component state | ViewManagerModel, views, sharing, pinning, auto-save, JsonBlob persistence |
 | [`/cmp/daterange/`](../cmp/daterange/README.md) | Period selection as presets, relative lookbacks, months/years, or custom ranges, resolved to dates and filters | DateRangePickerModel, DateRangePicker, DateRangeSelection, presets, anchorDate, LocalDateRange, currentRangeFilter, priorRange |
 | [`/cmp/pdfviewer/`](../cmp/pdfviewer/README.md) | PDF document viewer built on pdf.js, with a configurable toolbar and observable model API | PdfViewerModel, PdfViewer, PdfSource, toolbar tokens, find, zoom presets, pdfjs-dist |
-| [`/cmp/itemlist/`](../cmp/itemlist/README.md) | Short, static list of entries with a title, description, icon and trailing detail | ItemList, ItemListEntry, entries, intent, numbered, onClick, ItemList or DataView |
+| [`/cmp/listdisplay/`](../cmp/listdisplay/README.md) | Short, static list of entries with a title, description, icon and trailing detail | ListDisplay, ListDisplayEntry, entries, intent, numbered, onClick, ListDisplay or DataView |
 | [`/cmp/sparkline/`](../cmp/sparkline/README.md) | Small inline trend chart in plain SVG, for a stat card or a grid cell | Sparkline, line, area, bar, colorBy, markers, baseline, shared scale, grid column renderer, scope, Sparkline or Chart, AG Grid sparkline |
 | [`/desktop/`](../desktop/README.md) | Desktop-specific components and app container | Desktop components, Blueprint wrappers, desktop navigation |
 | [`/desktop/cmp/dash/`](../desktop/cmp/dash/README.md) | Configurable dashboard system with draggable, resizable widgets | DashContainerModel, DashCanvasModel, DashViewSpec, DashViewModel, widget persistence, ViewManager integration |

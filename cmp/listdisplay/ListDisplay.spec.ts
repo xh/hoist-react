@@ -4,8 +4,8 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {itemList} from '@xh/hoist/cmp/itemlist';
-import type {ItemListProps} from '@xh/hoist/cmp/itemlist';
+import {listDisplay} from '@xh/hoist/cmp/listdisplay';
+import type {ListDisplayProps} from '@xh/hoist/cmp/listdisplay';
 import {a, htmlButton, span} from '@xh/hoist/cmp/layout';
 import {Icon} from '@xh/hoist/icon';
 import {initTestAppAsync} from '@xh/hoist/test-support';
@@ -13,11 +13,11 @@ import {fireEvent, render} from '@testing-library/react';
 import {beforeAll, describe, expect, it, vi} from 'vitest';
 
 /**
- * An ItemList takes plain data that is often partial: entries left out, null entries, some with
+ * A ListDisplay takes plain data that is often partial: entries left out, null entries, some with
  * an icon and some without. It must render what it has as a real HTML list, keep the text of its
  * entries aligned, and work from the keyboard when its entries are clickable.
  */
-describe('ItemList', () => {
+describe('ListDisplay', () => {
     beforeAll(() => initTestAppAsync());
 
     it('renders an unordered list with an entry per item, in order', () => {
@@ -64,13 +64,13 @@ describe('ItemList', () => {
         ['a missing array', null],
         ['only omitted entries', [{title: 'A', omit: true}]]
     ])('renders nothing for %s', (name, entries) => {
-        expect(render(itemList({entries})).container.innerHTML).toBe('');
+        expect(render(listDisplay({entries})).container.innerHTML).toBe('');
     });
 
     it('shows emptyText in place of an empty list, with layout props and class name', () => {
         const root = renderRoot({entries: [], emptyText: 'No alerts', width: 200});
 
-        expect(root.classList).toContain('xh-item-list--empty');
+        expect(root.classList).toContain('xh-list-display--empty');
         expect(root.textContent).toBe('No alerts');
         expect(root.style.width).toBe('200px');
     });
@@ -125,7 +125,7 @@ describe('ItemList', () => {
         ['false', false],
         ['a blank string', '  ']
     ])('renders nothing for an empty list with an emptyText that is %s', (name, emptyText) => {
-        expect(render(itemList({entries: [], emptyText})).container.innerHTML).toBe('');
+        expect(render(listDisplay({entries: [], emptyText})).container.innerHTML).toBe('');
     });
 
     it('takes the default for a prop set to null', () => {
@@ -169,9 +169,9 @@ describe('ItemList', () => {
 
             expect(part(withIcon, 'dot')).toBeNull();
             expect(
-                part(withIntent, 'marker--icon').querySelector('.xh-item-list__dot')
+                part(withIntent, 'marker--icon').querySelector('.xh-list-display__dot')
             ).not.toBeNull();
-            expect(withIntent.classList).toContain('xh-item-list__entry--intent-danger');
+            expect(withIntent.classList).toContain('xh-list-display__entry--intent-danger');
             expect(part(plain, 'dot')).toBeNull();
         });
 
@@ -195,7 +195,7 @@ describe('ItemList', () => {
             const root = renderRoot({entries: [{title: 'A', intent: 'danger'}, {title: 'B'}]}),
                 [flagged, plain] = entriesOf(root);
 
-            expect(flagged.classList).toContain('xh-item-list__entry--intent-danger');
+            expect(flagged.classList).toContain('xh-list-display__entry--intent-danger');
             expect(part(flagged, 'marker--accent')).not.toBeNull();
             expect(part(plain, 'marker--accent')).not.toBeNull();
             expect(plain.className).not.toMatch(/--intent/);
@@ -217,8 +217,8 @@ describe('ItemList', () => {
             testId: 'alerts'
         });
 
-        expect(root.classList).toContain('xh-item-list--compact');
-        expect(root.classList).toContain('xh-item-list--dividers');
+        expect(root.classList).toContain('xh-list-display--compact');
+        expect(root.classList).toContain('xh-list-display--dividers');
         expect(root.style.maxWidth).toBe('300px');
         expect(root.getAttribute('data-testid')).toBe('alerts');
     });
@@ -229,14 +229,14 @@ describe('ItemList', () => {
 
             expect(root.querySelector('[role="button"]')).toBeNull();
             expect(root.querySelector('[tabindex]')).toBeNull();
-            expect(root.classList).not.toContain('xh-item-list--clickable');
+            expect(root.classList).not.toContain('xh-list-display--clickable');
         });
 
         it('makes the title of each entry with a handler a focusable button', () => {
             const root = renderRoot({entries: [{title: 'A', onClick: vi.fn()}, {title: 'B'}]}),
                 [clickable, plain] = entriesOf(root).map(it => part(it, 'title'));
 
-            expect(root.classList).toContain('xh-item-list--clickable');
+            expect(root.classList).toContain('xh-list-display--clickable');
             expect(clickable.getAttribute('role')).toBe('button');
             expect(clickable.getAttribute('tabindex')).toBe('0');
             expect(plain.hasAttribute('role')).toBe(false);
@@ -333,19 +333,19 @@ describe('ItemList', () => {
     });
 });
 
-function renderRoot(props: ItemListProps): HTMLElement {
-    return render(itemList(props)).container.querySelector('.xh-item-list');
+function renderRoot(props: ListDisplayProps): HTMLElement {
+    return render(listDisplay(props)).container.querySelector('.xh-list-display');
 }
 
 function entriesOf(root: HTMLElement): HTMLElement[] {
-    return Array.from(root.querySelectorAll('.xh-item-list__entry'));
+    return Array.from(root.querySelectorAll('.xh-list-display__entry'));
 }
 
 /** The first element of a part, by the suffix of its class name. */
 function part(el: HTMLElement, name: string): HTMLElement {
-    return el.querySelector(`.xh-item-list__${name}`);
+    return el.querySelector(`.xh-list-display__${name}`);
 }
 
 function texts(root: HTMLElement, name: string): string[] {
-    return Array.from(root.querySelectorAll(`.xh-item-list__${name}`)).map(it => it.textContent);
+    return Array.from(root.querySelectorAll(`.xh-list-display__${name}`)).map(it => it.textContent);
 }

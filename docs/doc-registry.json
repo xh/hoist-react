@@ -152,20 +152,20 @@
             "keywords": ["PdfViewerModel", "PdfViewer", "PdfSource", "PdfScale", "PdfViewerToolbarToken", "pdfjs-dist", "pdf.js", "PDF", "document preview"]
         },
         {
-            "id": "cmp/keyvaluelist/README.md",
-            "title": "KeyValueList Package",
+            "id": "cmp/keyvaluedisplay/README.md",
+            "title": "KeyValueDisplay Package",
             "mcpCategory": "package",
             "viewerCategory": "components",
             "description": "Display-only list of labeled values, such as the fields of a record in a detail panel, and when to use it over a read-only Form.",
-            "keywords": ["KeyValueList", "KeyValueEntry", "key value", "label value", "labeled values", "detail panel", "record fields", "description list", "labelSide", "minColumnWidth", "read-only form"]
+            "keywords": ["KeyValueDisplay", "KeyValueEntry", "key value", "label value", "labeled values", "detail panel", "record fields", "description list", "labelSide", "minColumnWidth", "read-only form"]
         },
         {
-            "id": "cmp/itemlist/README.md",
-            "title": "ItemList Package",
+            "id": "cmp/listdisplay/README.md",
+            "title": "ListDisplay Package",
             "mcpCategory": "package",
             "viewerCategory": "components",
             "description": "Short, static list of entries with a title, description, icon and trailing detail, and when to use it over a DataView or Grid.",
-            "keywords": ["ItemList", "ItemListEntry", "list of items", "alerts", "recent activity", "search results", "numbered list", "ranking", "clickable entries"]
+            "keywords": ["ListDisplay", "ListDisplayEntry", "list of items", "alerts", "recent activity", "search results", "numbered list", "ranking", "clickable entries"]
         },
         {
             "id": "cmp/callout/README.md",
