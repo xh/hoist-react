@@ -8,9 +8,14 @@
 // Scoped under .xh-app to win specificity over the .xh-app-scoped mobile Button styles.
 .xh-app {
   .xh-segmented-control {
-    // The tray - a recessed container the selected option rises out of.
+    // The tray - a recessed container the selected option rises out of. Sized to its options by
+    // default, rather than spanning the parent. Layout props set as inline styles (`width`,
+    // `flex`) take precedence.
     display: flex;
     align-items: stretch;
+    width: fit-content;
+    overflow: hidden;
+    position: relative;
     // Size the whole control (tray padding included) to one standard control height, so it matches
     // a button / input rather than standing taller. Options stretch to fill the tray (below) rather
     // than each taking the full button height, which - plus the tray padding - would overshoot.
@@ -23,8 +28,11 @@
 
     // Options - buttons receding into the tray by default. Override the minimal Button base so
     // the tray background shows through and our segmented text color applies.
+    // Each option starts at its content width and shares out any extra width the control is given,
+    // so a wider label yields a wider segment. Options shrink + ellipsis (see the label below) when
+    // the set genuinely cannot fit. The equal-widths rule further down (the default) replaces this.
     .xh-button.xh-segmented-control-option {
-      flex: 0 0 auto;
+      flex: 1 1 auto;
       // Fill the tray height (via the tray's align-items: stretch) instead of the fixed button
       // height, so tray padding does not add on top of a full-height button.
       height: auto;
@@ -69,21 +77,15 @@
       }
     }
 
-    // Fill mode (default) - options grow to fill the available width. The basis set here is `auto`
-    // (content), so without `equalSegmentWidths` each option keeps its content width and only the
-    // leftover space is shared out - a wider label yields a wider segment. The equal-widths rule
-    // below (the default) overrides this basis. Options still shrink + ellipsis (see above) when
-    // the set genuinely cannot fit.
-    &.xh-segmented-control--fill .xh-button.xh-segmented-control-option {
-      flex: 1 1 auto;
-    }
-
-    // Equal-width segments (default, via the `equalSegmentWidths` prop) - a 0 flex-basis divides
-    // the row into equal parts regardless of label length, the conventional segmented-control
-    // appearance. Higher specificity than the content-basis rule above, so it wins when applied.
-    &.xh-segmented-control--fill.xh-segmented-control--equal-widths
-      .xh-button.xh-segmented-control-option {
-      flex-basis: 0;
+    // Equal-width segments (default, via the `equalSegmentWidths` prop) - a single row of grid
+    // columns, each taking an identical `1fr` share. A control sized to its content has no width
+    // to divide, so the fr unit resolves to the widest option and every option matches it. A
+    // control given a width divides it equally. The zero minimum lets options shrink + ellipsis
+    // when the set genuinely cannot fit, as in the flex layout above.
+    &.xh-segmented-control--equal-widths {
+      display: grid;
+      grid-auto-flow: column;
+      grid-auto-columns: minmax(0, 1fr);
     }
 
     // Outlined mode (default) - a border around the tray. Independent of the tray fill, which is

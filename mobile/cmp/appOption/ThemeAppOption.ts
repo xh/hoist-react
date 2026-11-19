@@ -36,6 +36,7 @@ export const themeAppOption = ({
                     {value: 'dark', label: 'Dark', icon: Icon.moon()},
                     {value: 'system', label: 'System', icon: Icon.sync()}
                 ],
+                width: '100%',
                 ...inputProps
             }),
             ...formFieldProps

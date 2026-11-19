@@ -126,6 +126,14 @@ export interface DomAttrsProps {
     };
 }
 
+/**
+ * CSS layout styles accepted as top-level props, e.g. `width`, `flex`, and `margin`.
+ *
+ * A component that extends this interface must also apply the props - as the `style` of a DOM
+ * element, or by spreading them onto a component that supports layout props. Extending it alone
+ * lets callers pass these props without effect. See "Supporting Layout Props in a Custom
+ * Component" in `cmp/layout/README.md`.
+ */
 export interface LayoutProps {
     margin?: string | number | boolean;
     marginTop?: string | number | boolean;

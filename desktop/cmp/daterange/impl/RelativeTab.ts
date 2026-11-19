@@ -55,6 +55,7 @@ export const relativeTab = hoistCmp.factory<DateRangePickerLocalModel>(({model, 
                     segmentedControl({
                         model,
                         bind: 'relativeUnit',
+                        flex: 1,
                         testId: getTestId(testId, 'unit'),
                         options: DATE_RANGE_UNITS.map(unit => ({
                             value: unit,
@@ -72,7 +73,6 @@ export const relativeTab = hoistCmp.factory<DateRangePickerLocalModel>(({model, 
                         omit: !model.snapApplies,
                         model,
                         bind: 'relativeSnap',
-                        fill: false,
                         testId: getTestId(testId, 'snap'),
                         options: [
                             {value: false, label: 'Rolling'},

@@ -604,8 +604,8 @@
             "title": "v91 Upgrade Notes",
             "mcpCategory": "devops",
             "viewerCategory": "upgrade",
-            "description": "Upgrade guide from v90.x to v91.0.0. Medium difficulty. Covers the CSS custom property overhaul - codemod, removed override hooks, renamed variables, and units in size values. Also covers the element factory move from item/items to children, with its codemod.",
-            "keywords": ["upgrade", "migration", "breaking changes", "v91", "v90", "css variables", "custom properties", "override hooks", "codemod", "renamed variables", "units", "--xh-"]
+            "description": "Upgrade guide from v90.x to v91.0.0. Medium difficulty. Covers the CSS custom property overhaul - codemod, removed override hooks, renamed variables, and units in size values. Also covers the element factory move from item/items to children, with its codemod, and SegmentedControl sizing with layout props in place of `fill`.",
+            "keywords": ["upgrade", "migration", "breaking changes", "v91", "v90", "css variables", "custom properties", "override hooks", "codemod", "renamed variables", "units", "--xh-", "SegmentedControl fill", "equalSegmentWidths"]
         }
     ]
 }

@@ -14,7 +14,7 @@
 
 ## 91.0.0-SNAPSHOT - unreleased
 
-### 💥 Breaking Changes (upgrade difficulty: 🟠 MEDIUM - CSS variables)
+### 💥 Breaking Changes (upgrade difficulty: 🟠 MEDIUM - CSS variables, SegmentedControl sizing)
 
 See [`docs/upgrade-notes/v91-upgrade-notes.md`](docs/upgrade-notes/v91-upgrade-notes.md) for
 detailed, step-by-step upgrade instructions with before/after code examples.
@@ -40,6 +40,12 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 * `FetchService` now sends a request with no `method` as a GET, even when it sets `params`. Before,
   `params` made it a POST with a form-encoded body. Set `method: 'POST'` on calls that change data,
   send credentials, or send large params - see Step 7 of the upgrade notes.
+* Removed `SegmentedControlProps.fill` (desktop and mobile). The control is now sized to its options
+  by default. Set `flex: 1` or `width: '100%'` on any control that relied on `fill` to stretch - see
+  Step 8 of the upgrade notes.
+* `SegmentedControl.equalSegmentWidths` (default `true`) now applies at any size. A control sized to
+  its options gives each segment the width of its widest label, including former `fill: false`
+  controls. Set `equalSegmentWidths: false` to keep label-width segments.
 
 ### 🎁 New Features
 
@@ -78,6 +84,8 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 
 ### 🐞 Bug Fixes
 
+* Fixed desktop `SegmentedControl` and `IntentInput` ignoring layout props such as `width` and
+  `flex`.
 * Fixed mobile `FormField` ignoring the `--xh-form-field-inline-label-*` custom properties for
   inline labels - it referenced stale names left behind by an earlier rename.
 * Fixed `StatCard` titles and values not lining up across a `StatCardStrip` whose cards differ in
@@ -118,6 +126,7 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 
 ### ⚙️ Typescript API Adjustments
 
+* `SegmentedControlProps` (desktop and mobile) and `IntentInputProps` now include `LayoutProps`.
 * `ElementSpec.children` takes the type of the component's own `children` prop when it declares
   one, such as a render function.
 * `AppOptionSpec.formField` is now typed as a loose element spec instead of `any`.

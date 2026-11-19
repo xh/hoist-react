@@ -33,6 +33,9 @@ a fetch with `params` but no `method` as a GET.
   will remove them.
 - **`FetchService` default method (review fetches that send `params`)** - see Step 7. A request
   with `params` and no `method` is now a GET, not a POST.
+- **`SegmentedControl.fill` removed (required if used)** - see Step 8. The control is now sized to
+  its options by default, with equal segment widths at any size. Size it with layout props such as
+  `flex` and `width`.
 
 The CSS changes also cover the variables added in v90 - the panel splitter (`--xh-panel-splitter-*`,
 `--xh-panel-collapsed-strip-*`), `PdfViewer` (`--xh-pdf-viewer-*`) and `StatCard`
@@ -402,7 +405,73 @@ await XH.fetchJson({url: 'api/orders/cancel', method: 'POST', params: {orderId}}
 A unit test that serves one of these reads with `hoistCore.route('POST', ...)` and checks `req.form`
 now needs `route('GET', ...)` and `req.query`.
 
-### 8. Check the Console and the UI
+### 8. Update `SegmentedControl` Sizing
+
+`SegmentedControl` is now sized like any other component, on desktop and mobile. These steps apply
+only to apps that use the control.
+
+#### Replace `fill` with Layout Props
+
+`SegmentedControlProps.fill` is gone. A `SegmentedControl` is now as wide as its options and does
+not stretch to fill its container. Size it with layout props, as for any other component.
+
+**Find affected code:** run your type check. TypeScript reports each `fill` passed to
+`segmentedControl()` in an object literal. Also search for props built elsewhere and spread in:
+
+```bash
+grep -rn "segmentedControl(" client-app/src/
+```
+
+- Delete `fill: false`. It is now the default.
+- Replace `fill: true` with `flex: 1` in a row, such as a toolbar or `hbox`. Use `width: '100%'`
+  in a column or block container, such as a panel body or card.
+
+Before:
+
+```typescript
+segmentedControl({bind: 'view', options: VIEWS, fill: false});
+segmentedControl({bind: 'weight', options: WEIGHTS, fill: true});
+```
+
+After:
+
+```typescript
+segmentedControl({bind: 'view', options: VIEWS});
+segmentedControl({bind: 'weight', options: WEIGHTS, width: '100%'});
+```
+
+A control with no `fill` used the old default, `fill: true`. In a toolbar or other row, it was
+already sized to its options, so it needs no change. In a column or block container, it spanned
+the container. Add `width: '100%'` to keep that.
+
+#### Review Equal Segment Widths
+
+`equalSegmentWidths` (default `true`) now applies at any size. A control sized to its options
+gives every segment the width of its widest label. A control given a width divides it equally.
+
+Controls that set `fill: false` used to size each segment to its own label. They now show equal
+segments, which makes the control wider. Set `equalSegmentWidths: false` to keep label-width
+segments.
+
+```typescript
+segmentedControl({bind: 'level', options: LEVELS, equalSegmentWidths: false});
+```
+
+#### Review Layout Props on `SegmentedControl` and `IntentInput`
+
+Desktop `SegmentedControl` and `IntentInput` ignored layout props such as `width`, `flex`, and
+`margin`. They now apply them. An app that passed these props, through a cast or a spread object,
+may see them take effect for the first time.
+
+A desktop `FormField` passes `flex: 1` to an input with no `width` or `flex` of its own. In some
+field layouts, that now stretches a `SegmentedControl` across the field. Set `flex: 'none'` on the
+control to keep it at the width of its options.
+
+```typescript
+formField({field: 'level', children: segmentedControl({options: LEVELS, flex: 'none'})});
+```
+
+### 9. Check the Console and the UI
 
 Start the app in development mode. Hoist logs a warning at startup if any size variable resolves to
 a bare number - almost always an override the codemod could not see, such as one set from
@@ -467,6 +536,8 @@ After completing all steps:
   and a legacy `item` / `items` key.
 - [ ] Each fetch that sets `params` and changes data, sends a sensitive value, or sends large params
   also sets `method: 'POST'` (Step 7).
+- [ ] No `segmentedControl()` call sets `fill`, and each `SegmentedControl` renders at the intended
+  width, in toolbars, panels, and forms (Step 8).
 - [ ] No references to retired CSS variable names remain:
   ```bash
   # Should return nothing

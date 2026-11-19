@@ -7,7 +7,7 @@
 import type {HoistInputProps} from '@xh/hoist/cmp/input';
 import {HoistInputModel, useHoistInputModel} from '@xh/hoist/cmp/input';
 import {div, htmlButton} from '@xh/hoist/cmp/layout';
-import type {HoistProps, Intent} from '@xh/hoist/core';
+import type {HoistProps, Intent, LayoutProps} from '@xh/hoist/core';
 import {hoistCmp} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
@@ -21,7 +21,7 @@ import './IntentInput.scss';
 
 export const INTENTS: Intent[] = ['primary', 'success', 'warning', 'danger'];
 
-export interface IntentInputProps extends HoistProps, HoistInputProps {
+export interface IntentInputProps extends HoistProps, HoistInputProps, LayoutProps {
     /** True to render in a compact mode with reduced sizing for space-constrained contexts. */
     compact?: boolean;
 
@@ -162,7 +162,7 @@ const cmp = hoistCmp.factory<IntentInputModel>(({model, className, ...props}, re
         onFocus: model.onFocus,
         onBlur: model.onBlur,
         onKeyDown: disabled ? null : model.onKeyDown,
-        ...getLayoutProps(props),
+        style: {...getLayoutProps(props), ...rest.style},
         [TEST_ID]: testId,
         ...domAttrs,
         children: model.options.map(intent => {

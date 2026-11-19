@@ -74,7 +74,6 @@ export const roleGraph = hoistCmp.factory({
                     '-',
                     segmentedControl({
                         bind: 'inverted',
-                        fill: false,
                         options: [
                             {value: true, icon: Icon.treeGraph()},
                             {value: false, icon: Icon.treeGraph({rotation: 270})}
