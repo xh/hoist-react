@@ -561,10 +561,11 @@
 }
 
 //------------------------
-// Header "tool" buttons in panels and docks
+// Header "tool" buttons in panels, docks and dialogs
 // Adjustment needed only in light theme.
 //------------------------
 *:not(.xh-dark) {
+  .xh-dialog__header,
   .xh-dock-view__header,
   .xh-panel-header__items,
   .xh-panel-header--right,
