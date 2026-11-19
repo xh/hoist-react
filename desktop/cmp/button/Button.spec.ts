@@ -4,10 +4,10 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {button, buttonGroup} from '@xh/hoist/desktop/cmp/button';
+import {button, buttonGroup, refreshButton} from '@xh/hoist/desktop/cmp/button';
 import {Icon} from '@xh/hoist/icon';
 import {initTestAppAsync} from '@xh/hoist/test-support';
-import {act, fireEvent, render, screen} from '@testing-library/react';
+import {act, fireEvent, render, screen, waitFor} from '@testing-library/react';
 import {createElement, createRef} from 'react';
 import {beforeAll, describe, expect, it, onTestFinished, vi} from 'vitest';
 
@@ -120,6 +120,20 @@ describe('Button', () => {
         fireEvent.pointerEnter(el);
         expect(onPointerEnter).toHaveBeenCalledOnce();
         expect((await screen.findByRole('tooltip')).textContent).toBe('Not now');
+    });
+
+    it("gives Hoist's own buttons a default tooltip, unless the app sets a title", async () => {
+        const {unmount} = render(refreshButton({testId: 'refresh', onClick: () => {}}));
+        fireEvent.focus(screen.getByTestId('refresh'));
+        await waitFor(() => expect(screen.getByRole('tooltip').textContent).toBe('Refresh'));
+        unmount();
+
+        render(refreshButton({testId: 'refresh', title: 'Reload', onClick: () => {}}));
+        const el = screen.getByTestId('refresh');
+        expect(el.getAttribute('title')).toBe('Reload');
+        fireEvent.focus(el);
+        await new Promise(r => setTimeout(r, 600));
+        expect(screen.queryByRole('tooltip')).toBeNull();
     });
 
     it('renders no tooltip for empty tooltip content', () => {

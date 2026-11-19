@@ -267,13 +267,30 @@ const popoverInner = hoistCmp.factory<PopoverImplProps>({
 
         // Hover handling. For `hover`, the pointer can move from target into the popover without it
         // closing. For `hover-target`, only the target counts.
+        // A press on a tooltip's target closes it, and keeps it closed until the pointer leaves -
+        // so it does not sit beside whatever the press opens, nor reopen as the target takes focus.
+        const pressed = useRef(false),
+            isTooltip = interactionKind === 'hover-target',
+            canHoverOpen = () => !disabled && !pressed.current;
         const hoverHandlers: Record<string, (e: SyntheticEvent) => void> = isHover
             ? {
-                  onMouseEnter: e => !disabled && setOpen(true, e, hoverOpenDelay),
-                  onMouseLeave: e => setOpen(false, e, hoverCloseDelay),
+                  onMouseEnter: e => canHoverOpen() && setOpen(true, e, hoverOpenDelay),
+                  onMouseLeave: e => {
+                      pressed.current = false;
+                      setOpen(false, e, hoverCloseDelay);
+                  },
+                  ...(isTooltip
+                      ? {
+                            onPointerDown: e => {
+                                pressed.current = true;
+                                clearTimer();
+                                if (open) setOpen(false, e);
+                            }
+                        }
+                      : {}),
                   ...(openOnTargetFocus
                       ? {
-                            onFocus: e => !disabled && setOpen(true, e, hoverOpenDelay),
+                            onFocus: e => canHoverOpen() && setOpen(true, e, hoverOpenDelay),
                             onBlur: e => setOpen(false, e, hoverCloseDelay)
                         }
                       : {})

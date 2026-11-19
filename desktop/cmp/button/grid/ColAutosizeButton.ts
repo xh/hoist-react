@@ -38,6 +38,7 @@ export const [ColAutosizeButton, colAutosizeButton] = hoistCmp.withFactory<ColAu
             className,
             icon,
             title,
+            tooltip,
             onClick,
             gridModel: boundModel,
             disabled,
@@ -77,7 +78,8 @@ export const [ColAutosizeButton, colAutosizeButton] = hoistCmp.withFactory<ColAu
         return button({
             ref,
             icon: withDefault(icon, Icon.magic()),
-            title: withDefault(title, 'Autosize columns'),
+            title,
+            tooltip: title || tooltip ? tooltip : 'Autosize columns',
             disabled: withDefault(disabled, gridModel?.empty),
             className,
             onClick,

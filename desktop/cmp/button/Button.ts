@@ -194,6 +194,7 @@ const TOOLTIP_OPEN_DELAY = 500;
 const TOOLTIP_HANDLERS = {
     onPointerEnter: 'onMouseEnter',
     onPointerLeave: 'onMouseLeave',
+    onPointerDown: 'onPointerDown',
     onFocus: 'onFocus',
     onBlur: 'onBlur'
 };

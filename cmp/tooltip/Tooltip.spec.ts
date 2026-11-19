@@ -52,6 +52,22 @@ describe('Tooltip', () => {
         expect(screen.getByText('Target').hasAttribute('aria-haspopup')).toBe(false);
     });
 
+    it('closes when its target is pressed, and stays closed until the pointer leaves', async () => {
+        render(withTooltip());
+        const target = screen.getByText('Target');
+        fireEvent.mouseEnter(target);
+        await screen.findByText('Hint');
+
+        fireEvent.pointerDown(target);
+        fireEvent.focus(target);
+        await new Promise(r => setTimeout(r, 20));
+        expect(screen.queryByText('Hint')).toBeNull();
+
+        fireEvent.mouseLeave(target);
+        fireEvent.mouseEnter(target);
+        await screen.findByText('Hint');
+    });
+
     it('does not open while disabled', async () => {
         render(withTooltip({disabled: true}));
         fireEvent.mouseEnter(screen.getByText('Target'));

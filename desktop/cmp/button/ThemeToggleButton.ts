@@ -23,7 +23,11 @@ export const [ThemeToggleButton, themeToggleButton] = hoistCmp.withFactory<Theme
         return button({
             ref,
             icon: XH.darkTheme ? Icon.sun({prefix: 'fas'}) : Icon.moon(),
-            title: XH.darkTheme ? 'Switch to light theme' : 'Switch to dark theme',
+            tooltip: props.title
+                ? null
+                : XH.darkTheme
+                  ? 'Switch to light theme'
+                  : 'Switch to dark theme',
             onClick: () => XH.toggleTheme(),
             ...props
         });

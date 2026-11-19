@@ -34,7 +34,10 @@ export const [ZoneMapperButton, zoneMapperButton] = hoistCmp.withFactory<ZoneMap
     className: 'xh-zone-mapper-button',
     model: false,
 
-    render({className, icon, title, zoneGridModel, popoverPosition, disabled, ...rest}, ref) {
+    render(
+        {className, icon, title, tooltip, zoneGridModel, popoverPosition, disabled, ...rest},
+        ref
+    ) {
         zoneGridModel = withDefault(zoneGridModel, useContextModel(ZoneGridModel));
         const mapperModel = zoneGridModel?.mapperModel as ZoneMapperModel;
 
@@ -60,7 +63,8 @@ export const [ZoneMapperButton, zoneMapperButton] = hoistCmp.withFactory<ZoneMap
             position: withDefault(popoverPosition, 'auto'),
             children: button({
                 icon: withDefault(icon, Icon.gridLarge()),
-                title: withDefault(title, 'Customize fields...'),
+                title,
+                tooltip: title || tooltip ? tooltip : 'Customize fields...',
                 className,
                 disabled,
                 active: isOpen,

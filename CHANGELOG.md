@@ -80,7 +80,10 @@ detailed, step-by-step upgrade instructions with before/after code examples.
   and mobile. It takes an `intent` and `compact`, and opens on keyboard focus as well as hover.
 * Desktop `ButtonProps.tooltip` now takes a `ButtonTooltipConfig` as well as a string, for rich
   content, an `intent` or a `position`. Button tooltips open after 500ms, including on disabled
-  buttons. Set `title` for the browser's native tooltip.
+  buttons. Set `title` for the browser's native tooltip. Hoist's own buttons, such as
+  `RefreshButton` and `ColChooserButton`, now show their default label this way.
+* `Tooltip` now closes when its target is pressed, and stays closed until the pointer leaves, so
+  it does not sit beside a popover or dialog the press opens.
 * Dialogs now move keyboard focus inside when they open, and return it to where it was when they
   close.
 * Desktop `Slider` handles now also take Home and End, to jump to either end, and PageUp and

@@ -27,7 +27,7 @@ export const [LogoutButton, logoutButton] = hoistCmp.withFactory<LogoutButtonPro
         return button({
             ref,
             icon: Icon.logout(),
-            title: 'Logout',
+            tooltip: props.title ? null : 'Logout',
             intent: 'danger',
             onClick: () => XH.logoutAsync(),
             ...props
