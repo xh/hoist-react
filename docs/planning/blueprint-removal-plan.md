@@ -1,6 +1,7 @@
 # Plan: Removing BlueprintJS from hoist-react
 
-Status: in progress. Phase 0 spike done - see [Phase 0 results](#phase-0-results). Phase 1 done.
+Status: Phases 0-5 done - see [Phase 0 results](#phase-0-results). The selector rename follows as a
+separate technical PR - see [Follow-up: selector rename](#follow-up-selector-rename).
 All phases land on one branch and one PR, xh/hoist-react#4995, reviewed and merged to `develop` as
 a whole - see [Delivery](#delivery).
 Baseline: `develop` at `5e18f21` (91.0.0-SNAPSHOT), `@blueprintjs/core` 6.23.
@@ -256,40 +257,50 @@ use `ResizeObserver`), `DateRangePicker` `controlGroup`, `LeftRightChooser` `cal
 `NumberInput` and `Slider` carry the most behavior (stepping, keyboard, drag, range handles).
 Budget for them accordingly.
 
-### Phase 4 - CSS (M)
+### Phase 4 - CSS (M, done)
 
-- Rewrite the 35 SCSS files and 11 TS files that reference `bp6-` classes against Hoist classes.
-- Remove the `blueprint.css` import from `kit/blueprint/index.ts`. Port the global rules Hoist
-  actually relies on (body font, heading and link styles, focus outline) into `styles/XH.scss` on
-  purpose, and check the visual baseline for drift.
-- Remove the `bp6-dark` toggle in `appcontainer/ThemeModel.ts:101` and
-  `FocusStyleManager.onlyShowFocusOnTabs()` (use `:focus-visible`).
+- Replaced `blueprint.css` (567 KB) with `desktop/styles/BlueprintBase.css` (158 KB): the 649
+  Blueprint rules Hoist's desktop components match, light or dark, with their state variants and
+  the custom properties and keyframes they use. Found by recording CSS coverage across all 120
+  Toolbox desktop routes and 41 Admin routes in both themes, with menus, dialogs, toasts and the
+  hotkeys dialog open. Hoist's overrides moved to `desktop/styles/BlueprintOverrides.scss`. Both
+  load from `desktop/register.ts`, ahead of each component's stylesheet.
+- Screenshots of every route in both themes, with and without `blueprint.css`, match apart from
+  regenerated data.
+- `installFocusStyle()` replaces `FocusStyleManager.onlyShowFocusOnTabs()`, with the same
+  mouse/Tab switch rather than `:focus-visible`, which would show outlines on clicked text inputs.
+- The `useBlueprint` fallbacks were dropped rather than shipped for a release.
+- The selector rename moved to a follow-up PR - see below.
 
-### Phase 5 - Remove the dependency (S, breaking)
+### Phase 5 - Remove the dependency (S, breaking, done)
 
-- Remove `@blueprintjs/core` from `package.json`, delete `kit/blueprint`, and drop the Blueprint
-  version in `svc/EnvironmentService.ts`.
-- Remove icon stubbing from hoist-dev-utils in a matching major.
-- Update `mcp/data/symbol-search.spec.ts:645`, which uses `@blueprintjs/core` as a fixture.
-- Update `desktop/README.md`, `kit/README.md`, the docs index and doc registry
-  (`xh-update-doc-links` skill).
+- Removed `@blueprintjs/core`, `kit/blueprint`, and the Blueprint version in
+  `svc/EnvironmentService.ts` and the Admin About panel.
+- Exported `menuItem` and `menuDivider` from `@xh/hoist/desktop/cmp/menu`, the replacement for
+  Blueprint's `menuItem` in apps.
+- Updated docs, the doc registry and the v91 upgrade notes (Step 8 maps each `kit/blueprint`
+  import to its replacement).
+- Toolbox moved off `kit/blueprint` in its own branch.
+- Still to do in hoist-dev-utils: remove its Blueprint icon stubbing. Until then, builds log a
+  harmless warning that `@blueprintjs/icons` could not be resolved.
+
+### Follow-up: selector rename
+
+A separate technical PR, needing little review:
+
+- Rewrite `BlueprintBase.css` and the SCSS and TS that reference `bp6-*` classes against `xh-*`
+  classes, moving rules into each component's stylesheet, with a `bp6-*` to `xh-*` mapping table.
+- Replace the `--bp-*` custom properties with `--xh-*` variables or values.
+- Verify with the same before/after screenshots of every route.
+- Later, once apps have moved their CSS, remove the `bp6-*` class aliases and the `bp6-dark` and
+  `bp6-focus-disabled` toggles.
 
 ## Release strategy
 
-Two releases. The whole branch merges to `develop` ahead of release N.
-
-| Release | Contents | App impact |
-|---|---|---|
-| N | Phases 1-4, on by default. A flag falls back to Blueprint for this release. Hoist markup keeps the `bp6-*` class names alongside new `xh-*` ones. `kit/blueprint` deprecated. | Type changes on button, menu and popover props. App CSS keeps working. Overlays switch to the app font. |
-| N+1 | Phase 5. Flag, `bp6-*` aliases and the dependency removed. | App CSS on `bp6-*` must have moved to `xh-*`. Apps still importing `kit/blueprint` must migrate or add their own `@blueprintjs/core`. |
-
-Safety comes from the fallback flag and the class aliases rather than from spreading the work over
-more releases. Hoist ships a major every two to three weeks (88.0.0 on 2026-09-29, 89.0.0 on
-2026-10-13, 90.0.0 on 2026-11-02), so extra releases mostly add calendar time. Release N+1 can
-wait longer if open question 2 shows heavy direct use of `kit/blueprint` in apps.
-
-Each release needs upgrade notes listing every removed class and prop, with before/after examples
-(`xh-upgrade-notes` skill).
+One release. Everything lands in v91 with no fallback flags. Hoist's markup keeps the `bp6-*`
+class names alongside its `xh-*` ones, so app CSS keyed to them keeps working until the aliases
+are removed in a later release, after the selector rename. Apps importing `kit/blueprint` migrate
+as in the v91 upgrade notes, or add their own `@blueprintjs/core`.
 
 ## Risks
 
