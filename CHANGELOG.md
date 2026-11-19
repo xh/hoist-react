@@ -122,6 +122,10 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 
 ### 🐞 Bug Fixes
 
+* Fixed Hoist's built-in desktop menus behaving differently from other menus. The `ViewManager`,
+  app, `TabSwitcher` overflow and chooser favorites menus now render through `Menu`, so their
+  submenus stay open briefly as the pointer leaves the parent item, and a right-click within them
+  no longer shows the browser's context menu.
 * Fixed mobile `FormField` ignoring the `--xh-form-field-inline-label-*` custom properties for
   inline labels - it referenced stale names left behind by an earlier rename.
 * Fixed `StatCard` titles and values not lining up across a `StatCardStrip` whose cards differ in
