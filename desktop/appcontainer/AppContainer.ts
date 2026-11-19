@@ -43,6 +43,7 @@ import {appBanner} from './AppBanner';
 import {exceptionDialog} from './ExceptionDialog';
 import {feedbackDialog} from './FeedbackDialog';
 import {hotkeysDialog} from './HotkeysDialog';
+import {installFocusStyle} from './impl/FocusStyle';
 import {impersonationBar} from './ImpersonationBar';
 import {lockoutPanel} from './LockoutPanel';
 import {loginPanel} from './LoginPanel';
@@ -76,6 +77,10 @@ installDesktopImpls({
     pdfViewerToolbarImpl,
     sparklineTooltipImpl
 });
+
+// Show focus outlines only to keyboard users, once per page.
+installFocusStyle();
+
 /**
  * Top-level wrapper for Desktop applications.
  *

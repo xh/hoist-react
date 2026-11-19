@@ -7,7 +7,6 @@
 import {
     BlueprintProvider,
     Classes,
-    FocusStyleManager,
     type HotkeyConfig,
     OverlayToaster,
     PopoverInteractionKind,
@@ -18,10 +17,6 @@ import {
 import '@xh/hoist/desktop/styles/BlueprintBase.css';
 import {elementFactory} from '@xh/hoist/core';
 import './styles.scss';
-
-// Only show focus indicators when tabbing through components - avoids drawing focus outlines
-// on focusable components when focused via mouse click.
-FocusStyleManager.onlyShowFocusOnTabs();
 
 //---------------------
 // Re-exports

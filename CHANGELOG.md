@@ -84,6 +84,10 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 * Desktop `Toolbar` with `enableOverflowMenu` now moves overflowing items into its menu itself,
   not with Blueprint's `OverflowList`, keeping the `bp6-overflow-list` classes. Set
   `Toolbar.defaults.useBlueprint = true` at startup to fall back to Blueprint's for this release.
+* Desktop apps no longer load Blueprint's stylesheet. Hoist now ships the Blueprint rules its
+  components use, so they look the same, but app markup that relies on other Blueprint classes -
+  such as Blueprint components rendered directly, or with a `useBlueprint` fallback - loses its
+  Blueprint styling.
 * Desktop `AppBar`, `AppBarSeparator`, the `LeftRightChooser` description, the `DateRangePicker`
   relative-tab stepper and the admin role tags now render their own elements, not Blueprint's
   components. The markup and `bp6-*` classes are unchanged, so there is no fallback setting.
