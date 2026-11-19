@@ -186,4 +186,20 @@ describe('Menu', () => {
         await waitFor(() => expect(screen.queryByTestId('csv')).toBeNull());
         expect(document.activeElement).toBe(parent);
     });
+
+    it('opens a submenu outside its parent menu, which scrolls and would clip it', async () => {
+        render(
+            menu({
+                menuItems: [
+                    {text: 'Export', testId: 'export', items: [{text: 'CSV', testId: 'csv'}]}
+                ]
+            })
+        );
+        const parent = screen.getByTestId('export');
+        parent.focus();
+
+        key('ArrowRight');
+        const submenuItem = await screen.findByTestId('csv');
+        expect(parent.closest('.xh-menu-list').contains(submenuItem)).toBe(false);
+    });
 });

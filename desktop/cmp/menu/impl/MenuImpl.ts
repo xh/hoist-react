@@ -279,7 +279,9 @@ export const menuItem = hoistCmp.factory<MenuItemElementProps>({
                 position: 'right-top',
                 minimal: true,
                 autoFocus: false,
-                usePortal: false,
+                // A portal keeps the submenu clear of the parent menu, which scrolls and so clips
+                // anything inside it. It also positions correctly in a menu anchored at the cursor.
+                usePortal: true,
                 hoverCloseDelay: 0,
                 ...popoverProps,
                 disabled,

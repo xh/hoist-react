@@ -50,11 +50,7 @@ export interface ParseMenuItemsOptions {
     /** Contextual data passed to each item's `prepareFn` and `actionFn`. */
     context?: MenuContext;
 
-    /**
-     * Props for the popover that hosts a submenu, merged over the Hoist defaults. A menu
-     * anchored at the cursor adds `{usePortal: true}`, because its submenus mis-position without
-     * a portal.
-     */
+    /** Props for the popover that hosts a submenu, merged over the Hoist defaults. */
     submenuPopoverProps?: MenuItemElementProps['popoverProps'];
 }
 

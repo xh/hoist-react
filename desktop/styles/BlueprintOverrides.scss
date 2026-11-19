@@ -187,6 +187,16 @@
       color: inherit;
     }
 
+    // The submenu caret follows the item text color, as the item icons do, in either theme.
+    .xh-menu-item__submenu-icon {
+      color: inherit;
+
+      svg {
+        display: block;
+        fill: currentColor;
+      }
+    }
+
     // Highlight the focused item, as keyboard focus shows no outline after mouse use. A parent
     // item stays highlighted while its submenu is open.
     &:hover,
