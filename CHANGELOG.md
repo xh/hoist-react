@@ -78,6 +78,9 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 * Desktop `Slider` now renders its own single and range slider, not Blueprint's, keeping its
   `bp6-slider*` classes. Set `Slider.defaults.useBlueprint = true` at startup to fall back to
   Blueprint's for this release.
+* Desktop `TabSwitcher` now renders its own tab strip, not Blueprint's `Tabs`, with the same
+  roles, ids, keyboard handling and `bp6-tab*` classes. Set `TabSwitcher.defaults.useBlueprint =
+  true` at startup to fall back to Blueprint's for this release.
 * Desktop `AppBar`, `AppBarSeparator`, the `LeftRightChooser` description, the `DateRangePicker`
   relative-tab stepper and the admin role tags now render their own elements, not Blueprint's
   components. The markup and `bp6-*` classes are unchanged, so there is no fallback setting.
