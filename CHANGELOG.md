@@ -75,6 +75,9 @@ detailed, step-by-step upgrade instructions with before/after code examples.
   same arrow-key selection and `bp6-segmented-control` classes. Set
   `SegmentedControl.defaults.useBlueprint = true` at startup to fall back to Blueprint's for this
   release.
+* Desktop `Slider` now renders its own single and range slider, not Blueprint's, keeping its
+  `bp6-slider*` classes. Set `Slider.defaults.useBlueprint = true` at startup to fall back to
+  Blueprint's for this release.
 * Mobile `Popover` and `MenuButton` now use the cross-platform `Popover` from
   `@xh/hoist/cmp/popover`. `@xh/hoist/mobile/cmp/popover` re-exports it for one release - import
   from `@xh/hoist/cmp/popover` instead. Popover content now renders in an `xh-popover__floating`
@@ -105,6 +108,8 @@ detailed, step-by-step upgrade instructions with before/after code examples.
     * `content` also takes a component or a function that returns an element.
 * Dialogs now move keyboard focus inside when they open, and return it to where it was when they
   close.
+* Desktop `Slider` handles now also take Home and End, to jump to either end, and PageUp and
+  PageDown, to move by a label step.
 * Desktop menus now support the keyboard: arrow keys, Home and End move between items, typing
   jumps to an item by its first letters, and ArrowRight and ArrowLeft open and close submenus.
   Escape in a submenu closes only that submenu.

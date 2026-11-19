@@ -19,7 +19,8 @@ import {logWarn, withDefault} from '@xh/hoist/utils/js';
 import {composeRefs, getLayoutProps, useOnResize} from '@xh/hoist/utils/react';
 import {isArray, isEmpty, omit, pick} from 'lodash';
 import type {ReactNode} from 'react';
-import {useLayoutEffect, useRef} from 'react';
+import {createElement, useLayoutEffect, useRef} from 'react';
+import {SliderImpl} from './impl/SliderImpl';
 import './Slider.scss';
 
 export interface SliderProps extends HoistProps, HoistInputProps, LayoutProps {
@@ -65,9 +66,20 @@ export interface SliderProps extends HoistProps, HoistInputProps, LayoutProps {
  * only for a `labelStepSize` of zero or less, or one that gives over 1,000 labels. With a `max` not
  * above `min`, it renders disabled. It logs a warning for each change in development mode.
  */
-export const [Slider, slider] = hoistCmp.withFactory<SliderProps>({
+export interface SliderDefaults {
+    /**
+     * True to render desktop sliders with Blueprint's, as before Hoist had its own.
+     * For apps to fall back on while they adopt Hoist's - removed in the next major version.
+     */
+    useBlueprint?: boolean;
+}
+
+export const [Slider, slider] = hoistCmp.withFactory<SliderProps, SliderDefaults>({
     displayName: 'Slider',
     className: 'xh-slider',
+    defaults: {
+        useBlueprint: false
+    },
     render(props, ref) {
         return useHoistInputModel(cmp, props, ref, SliderInputModel);
     }
@@ -144,8 +156,14 @@ const cmp = hoistCmp.factory<SliderInputModel>(({model, className, ...props}, re
         onChange: val => model.noteValueChange(val)
     };
 
-    return box({
-        children: isRange
+    let sliderEl;
+    if (!Slider.defaults.useBlueprint) {
+        sliderEl = createElement(SliderImpl, {
+            ...(sliderProps as any),
+            handleHtmlProps: isRange ? {start: handleAttrs, end: handleAttrs} : handleAttrs
+        });
+    } else {
+        sliderEl = isRange
             ? bpRangeSlider({
                   ...(sliderProps as BpRangeSliderProps),
                   handleHtmlProps: {start: handleAttrs, end: handleAttrs}
@@ -153,7 +171,11 @@ const cmp = hoistCmp.factory<SliderInputModel>(({model, className, ...props}, re
             : bpSlider({
                   ...(sliderProps as BpSliderProps),
                   handleHtmlProps: handleAttrs
-              }),
+              });
+    }
+
+    return box({
+        children: sliderEl,
 
         ...layoutProps,
         width: withDefault(width, 200),

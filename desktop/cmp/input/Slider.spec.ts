@@ -8,11 +8,11 @@ import {form, FormModel} from '@xh/hoist/cmp/form';
 import {HoistModel, XH} from '@xh/hoist/core';
 import type {Some} from '@xh/hoist/core';
 import {formField} from '@xh/hoist/desktop/cmp/form';
-import {slider} from '@xh/hoist/desktop/cmp/input';
+import {Slider, slider} from '@xh/hoist/desktop/cmp/input';
 import type {SliderProps} from '@xh/hoist/desktop/cmp/input';
 import {bindableRef} from '@xh/hoist/mobx';
 import {initTestAppAsync} from '@xh/hoist/test-support';
-import {render, screen} from '@testing-library/react';
+import {fireEvent, render, screen} from '@testing-library/react';
 import {beforeAll, describe, expect, it, onTestFinished, vi} from 'vitest';
 
 /**
@@ -152,6 +152,51 @@ describe('Slider', () => {
 
             expect(warn).toHaveBeenCalledTimes(XH.isDevelopmentMode ? 1 : 0);
         });
+    });
+
+    describe('keyboard', () => {
+        it('steps with the arrow keys, and jumps with Page keys, Home and End', () => {
+            const {model} = renderSlider(50, {min: 0, max: 100, stepSize: 5, labelStepSize: 25});
+            const handle = screen.getByRole('slider');
+
+            fireEvent.keyDown(handle, {key: 'ArrowRight'});
+            expect(model.value).toBe(55);
+            fireEvent.keyDown(handle, {key: 'ArrowDown'});
+            expect(model.value).toBe(50);
+            fireEvent.keyDown(handle, {key: 'PageUp'});
+            expect(model.value).toBe(75);
+            fireEvent.keyDown(handle, {key: 'End'});
+            expect(model.value).toBe(100);
+            fireEvent.keyDown(handle, {key: 'Home'});
+            expect(model.value).toBe(0);
+        });
+
+        it('stops a range handle at the other handle', () => {
+            const {model} = renderSlider([40, 50], {min: 0, max: 100, stepSize: 10});
+            const [start] = screen.getAllByRole('slider');
+
+            fireEvent.keyDown(start, {key: 'ArrowRight'});
+            expect(model.value).toEqual([50, 50]);
+            fireEvent.keyDown(start, {key: 'ArrowRight'});
+            expect(model.value).toEqual([50, 50]);
+            expect(start.getAttribute('aria-valuemax')).toBe('50');
+        });
+
+        it('ignores keys while disabled', () => {
+            const {model} = renderSlider(5, {min: 0, max: 10, disabled: true});
+            fireEvent.keyDown(screen.getByRole('slider'), {key: 'ArrowRight'});
+            expect(model.value).toBe(5);
+        });
+    });
+
+    it('renders Blueprint slider when useBlueprint is set', () => {
+        Slider.defaults.useBlueprint = true;
+        onTestFinished(() => {
+            Slider.defaults.useBlueprint = false;
+        });
+        renderSlider(5, {min: 0, max: 10});
+        expect(screen.getByRole('slider').getAttribute('aria-valuenow')).toBe('5');
+        expect(document.querySelector('.bp6-slider')).not.toBeNull();
     });
 });
 
