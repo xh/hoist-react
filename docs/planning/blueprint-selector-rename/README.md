@@ -65,7 +65,8 @@ file is the working guide.
       Tab title and panel ids now use the `xh-tab-title_` and `xh-tab-panel_` prefixes.
       `BlueprintOverrides.scss` holds nothing now.
 - [x] `Toolbar` overflow and `AppBar`. No visual change.
-- [ ] Theme and focus style toggles.
+- [x] Theme and focus style toggles. No visual change. `BlueprintBase.css` keys on `xh-dark` and
+      `xh-focus-disabled` now, and Blueprint's focus-manager ignore class is gone - Hoist never set it.
 - [ ] Every other stylesheet in the inventory's "Stylesheets with `bp6-*` selectors" list.
 - [ ] No `--bp-*` custom properties left.
 - [ ] Delete `desktop/styles/BlueprintBase.css` and `desktop/styles/BlueprintOverrides.scss`, and

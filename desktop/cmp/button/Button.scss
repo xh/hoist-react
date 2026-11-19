@@ -11,7 +11,8 @@
 
 // `.xh-button.xh-button` repeats the class on purpose. It keeps the specificity these rules had when
 // buttons also carried Blueprint's class, so they still outrank the base rules below and any
-// component or app rules they outranked before.
+// component or app rules they outranked before. `.xh-app.xh-dark.xh-dark` does the same for the dark
+// theme rules, which also keyed on Blueprint's dark class.
 
 //-----------------------------------------------
 // Base button styles
@@ -2310,7 +2311,7 @@ a.xh-button.xh-button--disabled {
 //-----------------------------------------------
 .xh-app,
 .xh-app.xh-dark,
-.xh-app.xh-dark.bp6-dark {
+.xh-app.xh-dark.xh-dark {
   .xh-button.xh-button {
     border-radius: var(--xh-button-border-radius);
     font-family: var(--xh-button-font-family);
@@ -2663,7 +2664,7 @@ a.xh-button.xh-button--disabled {
 // Dark theme colors
 //---------------------------
 .xh-app.xh-dark,
-.xh-app.xh-dark.bp6-dark {
+.xh-app.xh-dark.xh-dark {
   .xh-button.xh-button {
     // Dark - shaded/filled-in (non-minimal) mode.
     &.xh-button--standard {
@@ -2879,7 +2880,7 @@ a.xh-button.xh-button--disabled {
 // A dialog's title bar keeps its color in the dark theme, so the standard dark hover - a darker
 // background - shows as a dark block on it. Tint with the title text color instead.
 .xh-app.xh-dark,
-.xh-app.xh-dark.bp6-dark {
+.xh-app.xh-dark.xh-dark {
   .xh-dialog__header .xh-button.xh-button.xh-button--minimal {
     &.xh-button--intent-none {
       &.xh-button--enabled {

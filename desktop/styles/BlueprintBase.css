@@ -125,7 +125,7 @@
     --bp-typography-color-default-disabled: oklch(from var(--bp-palette-gray-1) l c h / 0.6);
 }
 
-.bp6-dark {
+.xh-dark {
     --bp-surface-border-color-default: #fff3;
     --bp-surface-border-color-strong: #ffffff4d;
     --bp-surface-background-color-default-rest: #111418;
@@ -394,7 +394,7 @@
 }
 
 [data-bp-color-scheme='dark'],
-.bp6-dark {
+.xh-dark {
     --bp-surface-border-color-default: #fff3;
     --bp-surface-border-color-strong: #ffffff4d;
     --bp-surface-shadow-0: inset 0px 0px 0px 1px #fff3, 0px 0px 10px 0px #0003;
@@ -435,7 +435,7 @@
 
 @supports (color: oklch(from var(--any-color) l c h)) {
     [data-bp-color-scheme='dark'],
-    .bp6-dark {
+    .xh-dark {
         --bp-surface-border-color-default: oklch(from var(--bp-palette-white) l c h / 0.2);
         --bp-surface-border-color-strong: oklch(from var(--bp-palette-white) l c h / 0.3);
         --bp-surface-color-code: oklch(from var(--bp-palette-black) l c h / 0.3);
@@ -573,24 +573,24 @@ a:hover {
     display: inline-flex;
 }
 
-.bp6-dark {
+.xh-dark {
     color: var(--bp-typography-color-default-rest);
 }
 
-.bp6-dark a,
-.bp6-dark a:hover {
+.xh-dark a,
+.xh-dark a:hover {
     color: #8abbff;
 }
 
-.bp6-dark a .bp6-icon,
-.bp6-dark a .bp6-icon-standard,
-.bp6-dark a .bp6-icon-large,
-.bp6-dark a code {
+.xh-dark a .bp6-icon,
+.xh-dark a .bp6-icon-standard,
+.xh-dark a .bp6-icon-large,
+.xh-dark a code {
     color: inherit;
 }
 
-.bp6-dark .bp6-key,
-.bp6-dark .bp6-running-text kbd {
+.xh-dark .bp6-key,
+.xh-dark .bp6-running-text kbd {
     color: #abb3bf;
     background: #2f343c;
     box-shadow:
@@ -607,16 +607,16 @@ a:hover {
     outline: 2px solid #215db0c0;
 }
 
-.bp6-dark :focus {
+.xh-dark :focus {
     outline-color: #8abbffc0;
 }
 
-.bp6-focus-disabled :focus:not(.bp6-focus-style-manager-ignore *),
-.bp6-focus-disabled :focus:not(.bp6-focus-style-manager-ignore *) ~ .bp6-control-indicator {
+.xh-focus-disabled :focus,
+.xh-focus-disabled :focus ~ .bp6-control-indicator {
     outline: none !important;
 }
 
-.bp6-dark {
+.xh-dark {
     color-scheme: dark;
 }
 
@@ -859,16 +859,16 @@ a:hover {
     }
 }
 
-.bp6-dark .bp6-button:not([class*='bp6-intent-']):disabled.bp6-active,
-.bp6-dark .bp6-button:not([class*='bp6-intent-']).bp6-disabled.bp6-active,
+.xh-dark .bp6-button:not([class*='bp6-intent-']):disabled.bp6-active,
+.xh-dark .bp6-button:not([class*='bp6-intent-']).bp6-disabled.bp6-active,
 [data-bp-color-scheme='dark'] .bp6-button:not([class*='bp6-intent-']):disabled.bp6-active,
 [data-bp-color-scheme='dark'] .bp6-button:not([class*='bp6-intent-']).bp6-disabled.bp6-active {
     background-color: color-mix(in srgb, var(--bp-intent-default-disabled) 7%, transparent);
 }
 
-.bp6-dark .bp6-button[class*='bp6-intent-'],
+.xh-dark .bp6-button[class*='bp6-intent-'],
 [data-bp-color-scheme='dark'] .bp6-button[class*='bp6-intent-'],
-.bp6-dark .bp6-button[class*='bp6-intent-']:hover,
+.xh-dark .bp6-button[class*='bp6-intent-']:hover,
 [data-bp-color-scheme='dark'] .bp6-button[class*='bp6-intent-']:hover {
     box-shadow:
         inset 0 0 0 var(--bp-surface-border-width)
@@ -876,8 +876,8 @@ a:hover {
         0 1px 2px color-mix(in oklch, var(--bp-palette-black) 20%, transparent);
 }
 
-.bp6-dark .bp6-button[class*='bp6-intent-']:active,
-.bp6-dark .bp6-button[class*='bp6-intent-'].bp6-active,
+.xh-dark .bp6-button[class*='bp6-intent-']:active,
+.xh-dark .bp6-button[class*='bp6-intent-'].bp6-active,
 [data-bp-color-scheme='dark'] .bp6-button[class*='bp6-intent-']:active,
 [data-bp-color-scheme='dark'] .bp6-button[class*='bp6-intent-'].bp6-active {
     box-shadow:
@@ -886,8 +886,8 @@ a:hover {
         0 1px 2px color-mix(in oklch, var(--bp-palette-black) 40%, transparent);
 }
 
-.bp6-dark .bp6-button[class*='bp6-intent-']:disabled,
-.bp6-dark .bp6-button[class*='bp6-intent-'].bp6-disabled,
+.xh-dark .bp6-button[class*='bp6-intent-']:disabled,
+.xh-dark .bp6-button[class*='bp6-intent-'].bp6-disabled,
 [data-bp-color-scheme='dark'] .bp6-button[class*='bp6-intent-']:disabled,
 [data-bp-color-scheme='dark'] .bp6-button[class*='bp6-intent-'].bp6-disabled {
     box-shadow: none;
@@ -901,10 +901,10 @@ a:hover {
     background-color: color-mix(in srgb, var(--bp-intent-default-disabled) 30%, transparent);
 }
 
-.bp6-dark .bp6-button.bp6-minimal:disabled.bp6-active,
-.bp6-dark .bp6-button.bp6-minimal:disabled:hover.bp6-active,
-.bp6-dark .bp6-button.bp6-minimal.bp6-disabled.bp6-active,
-.bp6-dark .bp6-button.bp6-minimal.bp6-disabled:hover.bp6-active,
+.xh-dark .bp6-button.bp6-minimal:disabled.bp6-active,
+.xh-dark .bp6-button.bp6-minimal:disabled:hover.bp6-active,
+.xh-dark .bp6-button.bp6-minimal.bp6-disabled.bp6-active,
+.xh-dark .bp6-button.bp6-minimal.bp6-disabled:hover.bp6-active,
 [data-bp-color-scheme='dark'] .bp6-button.bp6-minimal:disabled.bp6-active,
 [data-bp-color-scheme='dark'] .bp6-button.bp6-minimal:disabled:hover.bp6-active,
 [data-bp-color-scheme='dark'] .bp6-button.bp6-minimal.bp6-disabled.bp6-active,
@@ -946,27 +946,27 @@ a:hover {
     background-color: color-mix(in oklch, var(--bp-intent-primary-rest) 30%, transparent);
 }
 
-.bp6-dark .bp6-button.bp6-minimal.bp6-intent-primary,
+.xh-dark .bp6-button.bp6-minimal.bp6-intent-primary,
 [data-bp-color-scheme='dark'] .bp6-button.bp6-minimal.bp6-intent-primary {
     color: color-mix(in oklch, var(--bp-intent-primary-rest) 51%, var(--bp-palette-white));
 }
 
-.bp6-dark .bp6-button.bp6-minimal.bp6-intent-primary:hover,
+.xh-dark .bp6-button.bp6-minimal.bp6-intent-primary:hover,
 [data-bp-color-scheme='dark'] .bp6-button.bp6-minimal.bp6-intent-primary:hover {
     background-color: color-mix(in oklch, var(--bp-intent-primary-rest) 20%, transparent);
     color: color-mix(in oklch, var(--bp-intent-primary-hover) 51%, var(--bp-palette-white));
 }
 
-.bp6-dark .bp6-button.bp6-minimal.bp6-intent-primary:active,
-.bp6-dark .bp6-button.bp6-minimal.bp6-intent-primary.bp6-active,
+.xh-dark .bp6-button.bp6-minimal.bp6-intent-primary:active,
+.xh-dark .bp6-button.bp6-minimal.bp6-intent-primary.bp6-active,
 [data-bp-color-scheme='dark'] .bp6-button.bp6-minimal.bp6-intent-primary:active,
 [data-bp-color-scheme='dark'] .bp6-button.bp6-minimal.bp6-intent-primary.bp6-active {
     background-color: color-mix(in oklch, var(--bp-intent-primary-rest) 30%, transparent);
     color: color-mix(in oklch, var(--bp-intent-primary-active) 51%, var(--bp-palette-white));
 }
 
-.bp6-dark .bp6-button.bp6-minimal.bp6-intent-primary:disabled,
-.bp6-dark .bp6-button.bp6-minimal.bp6-intent-primary.bp6-disabled,
+.xh-dark .bp6-button.bp6-minimal.bp6-intent-primary:disabled,
+.xh-dark .bp6-button.bp6-minimal.bp6-intent-primary.bp6-disabled,
 [data-bp-color-scheme='dark'] .bp6-button.bp6-minimal.bp6-intent-primary:disabled,
 [data-bp-color-scheme='dark'] .bp6-button.bp6-minimal.bp6-intent-primary.bp6-disabled {
     color: color-mix(
@@ -977,8 +977,8 @@ a:hover {
     background: none;
 }
 
-.bp6-dark .bp6-button.bp6-minimal.bp6-intent-primary:disabled.bp6-active,
-.bp6-dark .bp6-button.bp6-minimal.bp6-intent-primary.bp6-disabled.bp6-active,
+.xh-dark .bp6-button.bp6-minimal.bp6-intent-primary:disabled.bp6-active,
+.xh-dark .bp6-button.bp6-minimal.bp6-intent-primary.bp6-disabled.bp6-active,
 [data-bp-color-scheme='dark'] .bp6-button.bp6-minimal.bp6-intent-primary:disabled.bp6-active,
 [data-bp-color-scheme='dark'] .bp6-button.bp6-minimal.bp6-intent-primary.bp6-disabled.bp6-active {
     background-color: color-mix(in oklch, var(--bp-intent-primary-rest) 30%, transparent);
@@ -1018,27 +1018,27 @@ a:hover {
     background-color: color-mix(in oklch, var(--bp-intent-success-rest) 30%, transparent);
 }
 
-.bp6-dark .bp6-button.bp6-minimal.bp6-intent-success,
+.xh-dark .bp6-button.bp6-minimal.bp6-intent-success,
 [data-bp-color-scheme='dark'] .bp6-button.bp6-minimal.bp6-intent-success {
     color: color-mix(in oklch, var(--bp-intent-success-rest) 54%, var(--bp-palette-white));
 }
 
-.bp6-dark .bp6-button.bp6-minimal.bp6-intent-success:hover,
+.xh-dark .bp6-button.bp6-minimal.bp6-intent-success:hover,
 [data-bp-color-scheme='dark'] .bp6-button.bp6-minimal.bp6-intent-success:hover {
     background-color: color-mix(in oklch, var(--bp-intent-success-rest) 20%, transparent);
     color: color-mix(in oklch, var(--bp-intent-success-hover) 54%, var(--bp-palette-white));
 }
 
-.bp6-dark .bp6-button.bp6-minimal.bp6-intent-success:active,
-.bp6-dark .bp6-button.bp6-minimal.bp6-intent-success.bp6-active,
+.xh-dark .bp6-button.bp6-minimal.bp6-intent-success:active,
+.xh-dark .bp6-button.bp6-minimal.bp6-intent-success.bp6-active,
 [data-bp-color-scheme='dark'] .bp6-button.bp6-minimal.bp6-intent-success:active,
 [data-bp-color-scheme='dark'] .bp6-button.bp6-minimal.bp6-intent-success.bp6-active {
     background-color: color-mix(in oklch, var(--bp-intent-success-rest) 30%, transparent);
     color: color-mix(in oklch, var(--bp-intent-success-active) 54%, var(--bp-palette-white));
 }
 
-.bp6-dark .bp6-button.bp6-minimal.bp6-intent-success:disabled,
-.bp6-dark .bp6-button.bp6-minimal.bp6-intent-success.bp6-disabled,
+.xh-dark .bp6-button.bp6-minimal.bp6-intent-success:disabled,
+.xh-dark .bp6-button.bp6-minimal.bp6-intent-success.bp6-disabled,
 [data-bp-color-scheme='dark'] .bp6-button.bp6-minimal.bp6-intent-success:disabled,
 [data-bp-color-scheme='dark'] .bp6-button.bp6-minimal.bp6-intent-success.bp6-disabled {
     color: color-mix(
@@ -1049,8 +1049,8 @@ a:hover {
     background: none;
 }
 
-.bp6-dark .bp6-button.bp6-minimal.bp6-intent-success:disabled.bp6-active,
-.bp6-dark .bp6-button.bp6-minimal.bp6-intent-success.bp6-disabled.bp6-active,
+.xh-dark .bp6-button.bp6-minimal.bp6-intent-success:disabled.bp6-active,
+.xh-dark .bp6-button.bp6-minimal.bp6-intent-success.bp6-disabled.bp6-active,
 [data-bp-color-scheme='dark'] .bp6-button.bp6-minimal.bp6-intent-success:disabled.bp6-active,
 [data-bp-color-scheme='dark'] .bp6-button.bp6-minimal.bp6-intent-success.bp6-disabled.bp6-active {
     background-color: color-mix(in oklch, var(--bp-intent-success-rest) 30%, transparent);
@@ -1090,27 +1090,27 @@ a:hover {
     background-color: color-mix(in oklch, var(--bp6-button-warning-rest) 30%, transparent);
 }
 
-.bp6-dark .bp6-button.bp6-minimal.bp6-intent-warning,
+.xh-dark .bp6-button.bp6-minimal.bp6-intent-warning,
 [data-bp-color-scheme='dark'] .bp6-button.bp6-minimal.bp6-intent-warning {
     color: color-mix(in oklch, var(--bp-intent-warning-rest) 53%, var(--bp-palette-white));
 }
 
-.bp6-dark .bp6-button.bp6-minimal.bp6-intent-warning:hover,
+.xh-dark .bp6-button.bp6-minimal.bp6-intent-warning:hover,
 [data-bp-color-scheme='dark'] .bp6-button.bp6-minimal.bp6-intent-warning:hover {
     background-color: color-mix(in oklch, var(--bp6-button-warning-rest) 20%, transparent);
     color: color-mix(in oklch, var(--bp-intent-warning-hover) 53%, var(--bp-palette-white));
 }
 
-.bp6-dark .bp6-button.bp6-minimal.bp6-intent-warning:active,
-.bp6-dark .bp6-button.bp6-minimal.bp6-intent-warning.bp6-active,
+.xh-dark .bp6-button.bp6-minimal.bp6-intent-warning:active,
+.xh-dark .bp6-button.bp6-minimal.bp6-intent-warning.bp6-active,
 [data-bp-color-scheme='dark'] .bp6-button.bp6-minimal.bp6-intent-warning:active,
 [data-bp-color-scheme='dark'] .bp6-button.bp6-minimal.bp6-intent-warning.bp6-active {
     background-color: color-mix(in oklch, var(--bp6-button-warning-rest) 30%, transparent);
     color: color-mix(in oklch, var(--bp-intent-warning-active) 53%, var(--bp-palette-white));
 }
 
-.bp6-dark .bp6-button.bp6-minimal.bp6-intent-warning:disabled,
-.bp6-dark .bp6-button.bp6-minimal.bp6-intent-warning.bp6-disabled,
+.xh-dark .bp6-button.bp6-minimal.bp6-intent-warning:disabled,
+.xh-dark .bp6-button.bp6-minimal.bp6-intent-warning.bp6-disabled,
 [data-bp-color-scheme='dark'] .bp6-button.bp6-minimal.bp6-intent-warning:disabled,
 [data-bp-color-scheme='dark'] .bp6-button.bp6-minimal.bp6-intent-warning.bp6-disabled {
     color: color-mix(
@@ -1121,8 +1121,8 @@ a:hover {
     background: none;
 }
 
-.bp6-dark .bp6-button.bp6-minimal.bp6-intent-warning:disabled.bp6-active,
-.bp6-dark .bp6-button.bp6-minimal.bp6-intent-warning.bp6-disabled.bp6-active,
+.xh-dark .bp6-button.bp6-minimal.bp6-intent-warning:disabled.bp6-active,
+.xh-dark .bp6-button.bp6-minimal.bp6-intent-warning.bp6-disabled.bp6-active,
 [data-bp-color-scheme='dark'] .bp6-button.bp6-minimal.bp6-intent-warning:disabled.bp6-active,
 [data-bp-color-scheme='dark'] .bp6-button.bp6-minimal.bp6-intent-warning.bp6-disabled.bp6-active {
     background-color: color-mix(in oklch, var(--bp6-button-warning-rest) 30%, transparent);
@@ -1162,27 +1162,27 @@ a:hover {
     background-color: color-mix(in oklch, var(--bp-intent-danger-rest) 30%, transparent);
 }
 
-.bp6-dark .bp6-button.bp6-minimal.bp6-intent-danger,
+.xh-dark .bp6-button.bp6-minimal.bp6-intent-danger,
 [data-bp-color-scheme='dark'] .bp6-button.bp6-minimal.bp6-intent-danger {
     color: color-mix(in oklch, var(--bp-intent-danger-rest) 53%, var(--bp-palette-white));
 }
 
-.bp6-dark .bp6-button.bp6-minimal.bp6-intent-danger:hover,
+.xh-dark .bp6-button.bp6-minimal.bp6-intent-danger:hover,
 [data-bp-color-scheme='dark'] .bp6-button.bp6-minimal.bp6-intent-danger:hover {
     background-color: color-mix(in oklch, var(--bp-intent-danger-rest) 20%, transparent);
     color: color-mix(in oklch, var(--bp-intent-danger-hover) 53%, var(--bp-palette-white));
 }
 
-.bp6-dark .bp6-button.bp6-minimal.bp6-intent-danger:active,
-.bp6-dark .bp6-button.bp6-minimal.bp6-intent-danger.bp6-active,
+.xh-dark .bp6-button.bp6-minimal.bp6-intent-danger:active,
+.xh-dark .bp6-button.bp6-minimal.bp6-intent-danger.bp6-active,
 [data-bp-color-scheme='dark'] .bp6-button.bp6-minimal.bp6-intent-danger:active,
 [data-bp-color-scheme='dark'] .bp6-button.bp6-minimal.bp6-intent-danger.bp6-active {
     background-color: color-mix(in oklch, var(--bp-intent-danger-rest) 30%, transparent);
     color: color-mix(in oklch, var(--bp-intent-danger-active) 53%, var(--bp-palette-white));
 }
 
-.bp6-dark .bp6-button.bp6-minimal.bp6-intent-danger:disabled,
-.bp6-dark .bp6-button.bp6-minimal.bp6-intent-danger.bp6-disabled,
+.xh-dark .bp6-button.bp6-minimal.bp6-intent-danger:disabled,
+.xh-dark .bp6-button.bp6-minimal.bp6-intent-danger.bp6-disabled,
 [data-bp-color-scheme='dark'] .bp6-button.bp6-minimal.bp6-intent-danger:disabled,
 [data-bp-color-scheme='dark'] .bp6-button.bp6-minimal.bp6-intent-danger.bp6-disabled {
     color: color-mix(
@@ -1193,8 +1193,8 @@ a:hover {
     background: none;
 }
 
-.bp6-dark .bp6-button.bp6-minimal.bp6-intent-danger:disabled.bp6-active,
-.bp6-dark .bp6-button.bp6-minimal.bp6-intent-danger.bp6-disabled.bp6-active,
+.xh-dark .bp6-button.bp6-minimal.bp6-intent-danger:disabled.bp6-active,
+.xh-dark .bp6-button.bp6-minimal.bp6-intent-danger.bp6-disabled.bp6-active,
 [data-bp-color-scheme='dark'] .bp6-button.bp6-minimal.bp6-intent-danger:disabled.bp6-active,
 [data-bp-color-scheme='dark'] .bp6-button.bp6-minimal.bp6-intent-danger.bp6-disabled.bp6-active {
     background-color: color-mix(in oklch, var(--bp-intent-danger-rest) 30%, transparent);
@@ -1235,11 +1235,11 @@ a:hover {
     background-color: color-mix(in srgb, var(--bp-intent-default-disabled) 30%, transparent);
 }
 
-.bp6-dark .bp6-button.bp6-outlined,
+.xh-dark .bp6-button.bp6-outlined,
 [data-bp-color-scheme='dark'] .bp6-button.bp6-outlined,
-.bp6-dark .bp6-button.bp6-outlined:hover,
-.bp6-dark .bp6-button.bp6-outlined:active,
-.bp6-dark .bp6-button.bp6-outlined.bp6-active,
+.xh-dark .bp6-button.bp6-outlined:hover,
+.xh-dark .bp6-button.bp6-outlined:active,
+.xh-dark .bp6-button.bp6-outlined.bp6-active,
 [data-bp-color-scheme='dark'] .bp6-button.bp6-outlined:hover,
 [data-bp-color-scheme='dark'] .bp6-button.bp6-outlined:active,
 [data-bp-color-scheme='dark'] .bp6-button.bp6-outlined.bp6-active {
@@ -1248,22 +1248,22 @@ a:hover {
     background: none;
 }
 
-.bp6-dark .bp6-button.bp6-outlined:hover,
+.xh-dark .bp6-button.bp6-outlined:hover,
 [data-bp-color-scheme='dark'] .bp6-button.bp6-outlined:hover {
     background-color: color-mix(in srgb, var(--bp-intent-default-rest) 24%, transparent);
 }
 
-.bp6-dark .bp6-button.bp6-outlined:active,
-.bp6-dark .bp6-button.bp6-outlined.bp6-active,
+.xh-dark .bp6-button.bp6-outlined:active,
+.xh-dark .bp6-button.bp6-outlined.bp6-active,
 [data-bp-color-scheme='dark'] .bp6-button.bp6-outlined:active,
 [data-bp-color-scheme='dark'] .bp6-button.bp6-outlined.bp6-active {
     background-color: color-mix(in srgb, var(--bp-intent-default-rest) 49%, transparent);
 }
 
-.bp6-dark .bp6-button.bp6-outlined:disabled,
-.bp6-dark .bp6-button.bp6-outlined:disabled:hover,
-.bp6-dark .bp6-button.bp6-outlined.bp6-disabled,
-.bp6-dark .bp6-button.bp6-outlined.bp6-disabled:hover,
+.xh-dark .bp6-button.bp6-outlined:disabled,
+.xh-dark .bp6-button.bp6-outlined:disabled:hover,
+.xh-dark .bp6-button.bp6-outlined.bp6-disabled,
+.xh-dark .bp6-button.bp6-outlined.bp6-disabled:hover,
 [data-bp-color-scheme='dark'] .bp6-button.bp6-outlined:disabled,
 [data-bp-color-scheme='dark'] .bp6-button.bp6-outlined:disabled:hover,
 [data-bp-color-scheme='dark'] .bp6-button.bp6-outlined.bp6-disabled,
@@ -1273,10 +1273,10 @@ a:hover {
     background: none;
 }
 
-.bp6-dark .bp6-button.bp6-outlined:disabled.bp6-active,
-.bp6-dark .bp6-button.bp6-outlined:disabled:hover.bp6-active,
-.bp6-dark .bp6-button.bp6-outlined.bp6-disabled.bp6-active,
-.bp6-dark .bp6-button.bp6-outlined.bp6-disabled:hover.bp6-active,
+.xh-dark .bp6-button.bp6-outlined:disabled.bp6-active,
+.xh-dark .bp6-button.bp6-outlined:disabled:hover.bp6-active,
+.xh-dark .bp6-button.bp6-outlined.bp6-disabled.bp6-active,
+.xh-dark .bp6-button.bp6-outlined.bp6-disabled:hover.bp6-active,
 [data-bp-color-scheme='dark'] .bp6-button.bp6-outlined:disabled.bp6-active,
 [data-bp-color-scheme='dark'] .bp6-button.bp6-outlined:disabled:hover.bp6-active,
 [data-bp-color-scheme='dark'] .bp6-button.bp6-outlined.bp6-disabled.bp6-active,
@@ -1318,27 +1318,27 @@ a:hover {
     background-color: color-mix(in oklch, var(--bp-intent-primary-rest) 30%, transparent);
 }
 
-.bp6-dark .bp6-button.bp6-outlined.bp6-intent-primary,
+.xh-dark .bp6-button.bp6-outlined.bp6-intent-primary,
 [data-bp-color-scheme='dark'] .bp6-button.bp6-outlined.bp6-intent-primary {
     color: color-mix(in oklch, var(--bp-intent-primary-rest) 51%, var(--bp-palette-white));
 }
 
-.bp6-dark .bp6-button.bp6-outlined.bp6-intent-primary:hover,
+.xh-dark .bp6-button.bp6-outlined.bp6-intent-primary:hover,
 [data-bp-color-scheme='dark'] .bp6-button.bp6-outlined.bp6-intent-primary:hover {
     background-color: color-mix(in oklch, var(--bp-intent-primary-rest) 20%, transparent);
     color: color-mix(in oklch, var(--bp-intent-primary-hover) 51%, var(--bp-palette-white));
 }
 
-.bp6-dark .bp6-button.bp6-outlined.bp6-intent-primary:active,
-.bp6-dark .bp6-button.bp6-outlined.bp6-intent-primary.bp6-active,
+.xh-dark .bp6-button.bp6-outlined.bp6-intent-primary:active,
+.xh-dark .bp6-button.bp6-outlined.bp6-intent-primary.bp6-active,
 [data-bp-color-scheme='dark'] .bp6-button.bp6-outlined.bp6-intent-primary:active,
 [data-bp-color-scheme='dark'] .bp6-button.bp6-outlined.bp6-intent-primary.bp6-active {
     background-color: color-mix(in oklch, var(--bp-intent-primary-rest) 30%, transparent);
     color: color-mix(in oklch, var(--bp-intent-primary-active) 51%, var(--bp-palette-white));
 }
 
-.bp6-dark .bp6-button.bp6-outlined.bp6-intent-primary:disabled,
-.bp6-dark .bp6-button.bp6-outlined.bp6-intent-primary.bp6-disabled,
+.xh-dark .bp6-button.bp6-outlined.bp6-intent-primary:disabled,
+.xh-dark .bp6-button.bp6-outlined.bp6-intent-primary.bp6-disabled,
 [data-bp-color-scheme='dark'] .bp6-button.bp6-outlined.bp6-intent-primary:disabled,
 [data-bp-color-scheme='dark'] .bp6-button.bp6-outlined.bp6-intent-primary.bp6-disabled {
     color: color-mix(
@@ -1349,8 +1349,8 @@ a:hover {
     background: none;
 }
 
-.bp6-dark .bp6-button.bp6-outlined.bp6-intent-primary:disabled.bp6-active,
-.bp6-dark .bp6-button.bp6-outlined.bp6-intent-primary.bp6-disabled.bp6-active,
+.xh-dark .bp6-button.bp6-outlined.bp6-intent-primary:disabled.bp6-active,
+.xh-dark .bp6-button.bp6-outlined.bp6-intent-primary.bp6-disabled.bp6-active,
 [data-bp-color-scheme='dark'] .bp6-button.bp6-outlined.bp6-intent-primary:disabled.bp6-active,
 [data-bp-color-scheme='dark'] .bp6-button.bp6-outlined.bp6-intent-primary.bp6-disabled.bp6-active {
     background-color: color-mix(in oklch, var(--bp-intent-primary-rest) 30%, transparent);
@@ -1390,27 +1390,27 @@ a:hover {
     background-color: color-mix(in oklch, var(--bp-intent-success-rest) 30%, transparent);
 }
 
-.bp6-dark .bp6-button.bp6-outlined.bp6-intent-success,
+.xh-dark .bp6-button.bp6-outlined.bp6-intent-success,
 [data-bp-color-scheme='dark'] .bp6-button.bp6-outlined.bp6-intent-success {
     color: color-mix(in oklch, var(--bp-intent-success-rest) 54%, var(--bp-palette-white));
 }
 
-.bp6-dark .bp6-button.bp6-outlined.bp6-intent-success:hover,
+.xh-dark .bp6-button.bp6-outlined.bp6-intent-success:hover,
 [data-bp-color-scheme='dark'] .bp6-button.bp6-outlined.bp6-intent-success:hover {
     background-color: color-mix(in oklch, var(--bp-intent-success-rest) 20%, transparent);
     color: color-mix(in oklch, var(--bp-intent-success-hover) 54%, var(--bp-palette-white));
 }
 
-.bp6-dark .bp6-button.bp6-outlined.bp6-intent-success:active,
-.bp6-dark .bp6-button.bp6-outlined.bp6-intent-success.bp6-active,
+.xh-dark .bp6-button.bp6-outlined.bp6-intent-success:active,
+.xh-dark .bp6-button.bp6-outlined.bp6-intent-success.bp6-active,
 [data-bp-color-scheme='dark'] .bp6-button.bp6-outlined.bp6-intent-success:active,
 [data-bp-color-scheme='dark'] .bp6-button.bp6-outlined.bp6-intent-success.bp6-active {
     background-color: color-mix(in oklch, var(--bp-intent-success-rest) 30%, transparent);
     color: color-mix(in oklch, var(--bp-intent-success-active) 54%, var(--bp-palette-white));
 }
 
-.bp6-dark .bp6-button.bp6-outlined.bp6-intent-success:disabled,
-.bp6-dark .bp6-button.bp6-outlined.bp6-intent-success.bp6-disabled,
+.xh-dark .bp6-button.bp6-outlined.bp6-intent-success:disabled,
+.xh-dark .bp6-button.bp6-outlined.bp6-intent-success.bp6-disabled,
 [data-bp-color-scheme='dark'] .bp6-button.bp6-outlined.bp6-intent-success:disabled,
 [data-bp-color-scheme='dark'] .bp6-button.bp6-outlined.bp6-intent-success.bp6-disabled {
     color: color-mix(
@@ -1421,8 +1421,8 @@ a:hover {
     background: none;
 }
 
-.bp6-dark .bp6-button.bp6-outlined.bp6-intent-success:disabled.bp6-active,
-.bp6-dark .bp6-button.bp6-outlined.bp6-intent-success.bp6-disabled.bp6-active,
+.xh-dark .bp6-button.bp6-outlined.bp6-intent-success:disabled.bp6-active,
+.xh-dark .bp6-button.bp6-outlined.bp6-intent-success.bp6-disabled.bp6-active,
 [data-bp-color-scheme='dark'] .bp6-button.bp6-outlined.bp6-intent-success:disabled.bp6-active,
 [data-bp-color-scheme='dark'] .bp6-button.bp6-outlined.bp6-intent-success.bp6-disabled.bp6-active {
     background-color: color-mix(in oklch, var(--bp-intent-success-rest) 30%, transparent);
@@ -1462,27 +1462,27 @@ a:hover {
     background-color: color-mix(in oklch, var(--bp6-button-warning-rest) 30%, transparent);
 }
 
-.bp6-dark .bp6-button.bp6-outlined.bp6-intent-warning,
+.xh-dark .bp6-button.bp6-outlined.bp6-intent-warning,
 [data-bp-color-scheme='dark'] .bp6-button.bp6-outlined.bp6-intent-warning {
     color: color-mix(in oklch, var(--bp-intent-warning-rest) 53%, var(--bp-palette-white));
 }
 
-.bp6-dark .bp6-button.bp6-outlined.bp6-intent-warning:hover,
+.xh-dark .bp6-button.bp6-outlined.bp6-intent-warning:hover,
 [data-bp-color-scheme='dark'] .bp6-button.bp6-outlined.bp6-intent-warning:hover {
     background-color: color-mix(in oklch, var(--bp6-button-warning-rest) 20%, transparent);
     color: color-mix(in oklch, var(--bp-intent-warning-hover) 53%, var(--bp-palette-white));
 }
 
-.bp6-dark .bp6-button.bp6-outlined.bp6-intent-warning:active,
-.bp6-dark .bp6-button.bp6-outlined.bp6-intent-warning.bp6-active,
+.xh-dark .bp6-button.bp6-outlined.bp6-intent-warning:active,
+.xh-dark .bp6-button.bp6-outlined.bp6-intent-warning.bp6-active,
 [data-bp-color-scheme='dark'] .bp6-button.bp6-outlined.bp6-intent-warning:active,
 [data-bp-color-scheme='dark'] .bp6-button.bp6-outlined.bp6-intent-warning.bp6-active {
     background-color: color-mix(in oklch, var(--bp6-button-warning-rest) 30%, transparent);
     color: color-mix(in oklch, var(--bp-intent-warning-active) 53%, var(--bp-palette-white));
 }
 
-.bp6-dark .bp6-button.bp6-outlined.bp6-intent-warning:disabled,
-.bp6-dark .bp6-button.bp6-outlined.bp6-intent-warning.bp6-disabled,
+.xh-dark .bp6-button.bp6-outlined.bp6-intent-warning:disabled,
+.xh-dark .bp6-button.bp6-outlined.bp6-intent-warning.bp6-disabled,
 [data-bp-color-scheme='dark'] .bp6-button.bp6-outlined.bp6-intent-warning:disabled,
 [data-bp-color-scheme='dark'] .bp6-button.bp6-outlined.bp6-intent-warning.bp6-disabled {
     color: color-mix(
@@ -1493,8 +1493,8 @@ a:hover {
     background: none;
 }
 
-.bp6-dark .bp6-button.bp6-outlined.bp6-intent-warning:disabled.bp6-active,
-.bp6-dark .bp6-button.bp6-outlined.bp6-intent-warning.bp6-disabled.bp6-active,
+.xh-dark .bp6-button.bp6-outlined.bp6-intent-warning:disabled.bp6-active,
+.xh-dark .bp6-button.bp6-outlined.bp6-intent-warning.bp6-disabled.bp6-active,
 [data-bp-color-scheme='dark'] .bp6-button.bp6-outlined.bp6-intent-warning:disabled.bp6-active,
 [data-bp-color-scheme='dark'] .bp6-button.bp6-outlined.bp6-intent-warning.bp6-disabled.bp6-active {
     background-color: color-mix(in oklch, var(--bp6-button-warning-rest) 30%, transparent);
@@ -1534,27 +1534,27 @@ a:hover {
     background-color: color-mix(in oklch, var(--bp-intent-danger-rest) 30%, transparent);
 }
 
-.bp6-dark .bp6-button.bp6-outlined.bp6-intent-danger,
+.xh-dark .bp6-button.bp6-outlined.bp6-intent-danger,
 [data-bp-color-scheme='dark'] .bp6-button.bp6-outlined.bp6-intent-danger {
     color: color-mix(in oklch, var(--bp-intent-danger-rest) 53%, var(--bp-palette-white));
 }
 
-.bp6-dark .bp6-button.bp6-outlined.bp6-intent-danger:hover,
+.xh-dark .bp6-button.bp6-outlined.bp6-intent-danger:hover,
 [data-bp-color-scheme='dark'] .bp6-button.bp6-outlined.bp6-intent-danger:hover {
     background-color: color-mix(in oklch, var(--bp-intent-danger-rest) 20%, transparent);
     color: color-mix(in oklch, var(--bp-intent-danger-hover) 53%, var(--bp-palette-white));
 }
 
-.bp6-dark .bp6-button.bp6-outlined.bp6-intent-danger:active,
-.bp6-dark .bp6-button.bp6-outlined.bp6-intent-danger.bp6-active,
+.xh-dark .bp6-button.bp6-outlined.bp6-intent-danger:active,
+.xh-dark .bp6-button.bp6-outlined.bp6-intent-danger.bp6-active,
 [data-bp-color-scheme='dark'] .bp6-button.bp6-outlined.bp6-intent-danger:active,
 [data-bp-color-scheme='dark'] .bp6-button.bp6-outlined.bp6-intent-danger.bp6-active {
     background-color: color-mix(in oklch, var(--bp-intent-danger-rest) 30%, transparent);
     color: color-mix(in oklch, var(--bp-intent-danger-active) 53%, var(--bp-palette-white));
 }
 
-.bp6-dark .bp6-button.bp6-outlined.bp6-intent-danger:disabled,
-.bp6-dark .bp6-button.bp6-outlined.bp6-intent-danger.bp6-disabled,
+.xh-dark .bp6-button.bp6-outlined.bp6-intent-danger:disabled,
+.xh-dark .bp6-button.bp6-outlined.bp6-intent-danger.bp6-disabled,
 [data-bp-color-scheme='dark'] .bp6-button.bp6-outlined.bp6-intent-danger:disabled,
 [data-bp-color-scheme='dark'] .bp6-button.bp6-outlined.bp6-intent-danger.bp6-disabled {
     color: color-mix(
@@ -1565,8 +1565,8 @@ a:hover {
     background: none;
 }
 
-.bp6-dark .bp6-button.bp6-outlined.bp6-intent-danger:disabled.bp6-active,
-.bp6-dark .bp6-button.bp6-outlined.bp6-intent-danger.bp6-disabled.bp6-active,
+.xh-dark .bp6-button.bp6-outlined.bp6-intent-danger:disabled.bp6-active,
+.xh-dark .bp6-button.bp6-outlined.bp6-intent-danger.bp6-disabled.bp6-active,
 [data-bp-color-scheme='dark'] .bp6-button.bp6-outlined.bp6-intent-danger:disabled.bp6-active,
 [data-bp-color-scheme='dark'] .bp6-button.bp6-outlined.bp6-intent-danger.bp6-disabled.bp6-active {
     background-color: color-mix(in oklch, var(--bp-intent-danger-rest) 30%, transparent);
@@ -1584,15 +1584,15 @@ a:hover {
     border-color: var(--bp-surface-border-color-default);
 }
 
-.bp6-dark .bp6-button.bp6-outlined,
+.xh-dark .bp6-button.bp6-outlined,
 [data-bp-color-scheme='dark'] .bp6-button.bp6-outlined {
     border-color: var(--bp-surface-border-color-strong);
 }
 
-.bp6-dark .bp6-button.bp6-outlined:disabled,
-.bp6-dark .bp6-button.bp6-outlined:disabled:hover,
-.bp6-dark .bp6-button.bp6-outlined.bp6-disabled,
-.bp6-dark .bp6-button.bp6-outlined.bp6-disabled:hover,
+.xh-dark .bp6-button.bp6-outlined:disabled,
+.xh-dark .bp6-button.bp6-outlined:disabled:hover,
+.xh-dark .bp6-button.bp6-outlined.bp6-disabled,
+.xh-dark .bp6-button.bp6-outlined.bp6-disabled:hover,
 [data-bp-color-scheme='dark'] .bp6-button.bp6-outlined:disabled,
 [data-bp-color-scheme='dark'] .bp6-button.bp6-outlined:disabled:hover,
 [data-bp-color-scheme='dark'] .bp6-button.bp6-outlined.bp6-disabled,
@@ -1609,7 +1609,7 @@ a:hover {
     border-color: color-mix(in oklch, var(--bp-intent-primary-hover) 20%, transparent);
 }
 
-.bp6-dark .bp6-button.bp6-outlined.bp6-intent-primary,
+.xh-dark .bp6-button.bp6-outlined.bp6-intent-primary,
 [data-bp-color-scheme='dark'] .bp6-button.bp6-outlined.bp6-intent-primary {
     border-color: color-mix(
         in oklch,
@@ -1618,8 +1618,8 @@ a:hover {
     );
 }
 
-.bp6-dark .bp6-button.bp6-outlined.bp6-intent-primary:disabled,
-.bp6-dark .bp6-button.bp6-outlined.bp6-intent-primary.bp6-disabled,
+.xh-dark .bp6-button.bp6-outlined.bp6-intent-primary:disabled,
+.xh-dark .bp6-button.bp6-outlined.bp6-intent-primary.bp6-disabled,
 [data-bp-color-scheme='dark'] .bp6-button.bp6-outlined.bp6-intent-primary:disabled,
 [data-bp-color-scheme='dark'] .bp6-button.bp6-outlined.bp6-intent-primary.bp6-disabled {
     border-color: color-mix(
@@ -1638,7 +1638,7 @@ a:hover {
     border-color: color-mix(in oklch, var(--bp-intent-success-hover) 20%, transparent);
 }
 
-.bp6-dark .bp6-button.bp6-outlined.bp6-intent-success,
+.xh-dark .bp6-button.bp6-outlined.bp6-intent-success,
 [data-bp-color-scheme='dark'] .bp6-button.bp6-outlined.bp6-intent-success {
     border-color: color-mix(
         in oklch,
@@ -1647,8 +1647,8 @@ a:hover {
     );
 }
 
-.bp6-dark .bp6-button.bp6-outlined.bp6-intent-success:disabled,
-.bp6-dark .bp6-button.bp6-outlined.bp6-intent-success.bp6-disabled,
+.xh-dark .bp6-button.bp6-outlined.bp6-intent-success:disabled,
+.xh-dark .bp6-button.bp6-outlined.bp6-intent-success.bp6-disabled,
 [data-bp-color-scheme='dark'] .bp6-button.bp6-outlined.bp6-intent-success:disabled,
 [data-bp-color-scheme='dark'] .bp6-button.bp6-outlined.bp6-intent-success.bp6-disabled {
     border-color: color-mix(
@@ -1667,7 +1667,7 @@ a:hover {
     border-color: color-mix(in oklch, var(--bp-intent-warning-hover) 20%, transparent);
 }
 
-.bp6-dark .bp6-button.bp6-outlined.bp6-intent-warning,
+.xh-dark .bp6-button.bp6-outlined.bp6-intent-warning,
 [data-bp-color-scheme='dark'] .bp6-button.bp6-outlined.bp6-intent-warning {
     border-color: color-mix(
         in oklch,
@@ -1676,8 +1676,8 @@ a:hover {
     );
 }
 
-.bp6-dark .bp6-button.bp6-outlined.bp6-intent-warning:disabled,
-.bp6-dark .bp6-button.bp6-outlined.bp6-intent-warning.bp6-disabled,
+.xh-dark .bp6-button.bp6-outlined.bp6-intent-warning:disabled,
+.xh-dark .bp6-button.bp6-outlined.bp6-intent-warning.bp6-disabled,
 [data-bp-color-scheme='dark'] .bp6-button.bp6-outlined.bp6-intent-warning:disabled,
 [data-bp-color-scheme='dark'] .bp6-button.bp6-outlined.bp6-intent-warning.bp6-disabled {
     border-color: color-mix(
@@ -1696,7 +1696,7 @@ a:hover {
     border-color: color-mix(in oklch, var(--bp-intent-danger-hover) 20%, transparent);
 }
 
-.bp6-dark .bp6-button.bp6-outlined.bp6-intent-danger,
+.xh-dark .bp6-button.bp6-outlined.bp6-intent-danger,
 [data-bp-color-scheme='dark'] .bp6-button.bp6-outlined.bp6-intent-danger {
     border-color: color-mix(
         in oklch,
@@ -1705,8 +1705,8 @@ a:hover {
     );
 }
 
-.bp6-dark .bp6-button.bp6-outlined.bp6-intent-danger:disabled,
-.bp6-dark .bp6-button.bp6-outlined.bp6-intent-danger.bp6-disabled,
+.xh-dark .bp6-button.bp6-outlined.bp6-intent-danger:disabled,
+.xh-dark .bp6-button.bp6-outlined.bp6-intent-danger.bp6-disabled,
 [data-bp-color-scheme='dark'] .bp6-button.bp6-outlined.bp6-intent-danger:disabled,
 [data-bp-color-scheme='dark'] .bp6-button.bp6-outlined.bp6-intent-danger.bp6-disabled {
     border-color: color-mix(
@@ -1747,9 +1747,9 @@ a:hover {
     background-color: color-mix(in oklch, var(--bp-intent-warning-rest) 40%, transparent);
 }
 
-.bp6-dark .bp6-button.bp6-intent-warning:disabled,
+.xh-dark .bp6-button.bp6-intent-warning:disabled,
 [data-bp-color-scheme='dark'] .bp6-button.bp6-intent-warning:disabled,
-.bp6-dark .bp6-button.bp6-intent-warning.bp6-disabled,
+.xh-dark .bp6-button.bp6-intent-warning.bp6-disabled,
 [data-bp-color-scheme='dark'] .bp6-button.bp6-intent-warning.bp6-disabled {
     color: color-mix(in oklch, var(--bp-intent-warning-foreground) 50%, transparent);
 }
@@ -1905,19 +1905,19 @@ a:hover {
     background-color: color-mix(in srgb, var(--bp-intent-default-disabled) 30%, transparent);
 }
 
-.bp6-dark .bp6-button-group.bp6-minimal .bp6-button,
+.xh-dark .bp6-button-group.bp6-minimal .bp6-button,
 [data-bp-color-scheme='dark'] .bp6-button-group.bp6-minimal .bp6-button,
-.bp6-dark .bp6-button-group.bp6-outlined .bp6-button,
+.xh-dark .bp6-button-group.bp6-outlined .bp6-button,
 [data-bp-color-scheme='dark'] .bp6-button-group.bp6-outlined .bp6-button,
-.bp6-dark .bp6-button-group.bp6-minimal .bp6-button:hover,
-.bp6-dark .bp6-button-group.bp6-minimal .bp6-button:active,
-.bp6-dark .bp6-button-group.bp6-minimal .bp6-button.bp6-active,
+.xh-dark .bp6-button-group.bp6-minimal .bp6-button:hover,
+.xh-dark .bp6-button-group.bp6-minimal .bp6-button:active,
+.xh-dark .bp6-button-group.bp6-minimal .bp6-button.bp6-active,
 [data-bp-color-scheme='dark'] .bp6-button-group.bp6-minimal .bp6-button:hover,
 [data-bp-color-scheme='dark'] .bp6-button-group.bp6-minimal .bp6-button:active,
 [data-bp-color-scheme='dark'] .bp6-button-group.bp6-minimal .bp6-button.bp6-active,
-.bp6-dark .bp6-button-group.bp6-outlined .bp6-button:hover,
-.bp6-dark .bp6-button-group.bp6-outlined .bp6-button:active,
-.bp6-dark .bp6-button-group.bp6-outlined .bp6-button.bp6-active,
+.xh-dark .bp6-button-group.bp6-outlined .bp6-button:hover,
+.xh-dark .bp6-button-group.bp6-outlined .bp6-button:active,
+.xh-dark .bp6-button-group.bp6-outlined .bp6-button.bp6-active,
 [data-bp-color-scheme='dark'] .bp6-button-group.bp6-outlined .bp6-button:hover,
 [data-bp-color-scheme='dark'] .bp6-button-group.bp6-outlined .bp6-button:active,
 [data-bp-color-scheme='dark'] .bp6-button-group.bp6-outlined .bp6-button.bp6-active {
@@ -1926,36 +1926,36 @@ a:hover {
     background: none;
 }
 
-.bp6-dark .bp6-button-group.bp6-minimal .bp6-button:hover,
+.xh-dark .bp6-button-group.bp6-minimal .bp6-button:hover,
 [data-bp-color-scheme='dark'] .bp6-button-group.bp6-minimal .bp6-button:hover,
-.bp6-dark .bp6-button-group.bp6-outlined .bp6-button:hover,
+.xh-dark .bp6-button-group.bp6-outlined .bp6-button:hover,
 [data-bp-color-scheme='dark'] .bp6-button-group.bp6-outlined .bp6-button:hover {
     background-color: color-mix(in srgb, var(--bp-intent-default-rest) 24%, transparent);
 }
 
-.bp6-dark .bp6-button-group.bp6-minimal .bp6-button:active,
-.bp6-dark .bp6-button-group.bp6-minimal .bp6-button.bp6-active,
+.xh-dark .bp6-button-group.bp6-minimal .bp6-button:active,
+.xh-dark .bp6-button-group.bp6-minimal .bp6-button.bp6-active,
 [data-bp-color-scheme='dark'] .bp6-button-group.bp6-minimal .bp6-button:active,
 [data-bp-color-scheme='dark'] .bp6-button-group.bp6-minimal .bp6-button.bp6-active,
-.bp6-dark .bp6-button-group.bp6-outlined .bp6-button:active,
-.bp6-dark .bp6-button-group.bp6-outlined .bp6-button.bp6-active,
+.xh-dark .bp6-button-group.bp6-outlined .bp6-button:active,
+.xh-dark .bp6-button-group.bp6-outlined .bp6-button.bp6-active,
 [data-bp-color-scheme='dark'] .bp6-button-group.bp6-outlined .bp6-button:active,
 [data-bp-color-scheme='dark'] .bp6-button-group.bp6-outlined .bp6-button.bp6-active {
     background-color: color-mix(in srgb, var(--bp-intent-default-rest) 49%, transparent);
 }
 
-.bp6-dark .bp6-button-group.bp6-minimal .bp6-button:disabled,
-.bp6-dark .bp6-button-group.bp6-minimal .bp6-button:disabled:hover,
-.bp6-dark .bp6-button-group.bp6-minimal .bp6-button.bp6-disabled,
-.bp6-dark .bp6-button-group.bp6-minimal .bp6-button.bp6-disabled:hover,
+.xh-dark .bp6-button-group.bp6-minimal .bp6-button:disabled,
+.xh-dark .bp6-button-group.bp6-minimal .bp6-button:disabled:hover,
+.xh-dark .bp6-button-group.bp6-minimal .bp6-button.bp6-disabled,
+.xh-dark .bp6-button-group.bp6-minimal .bp6-button.bp6-disabled:hover,
 [data-bp-color-scheme='dark'] .bp6-button-group.bp6-minimal .bp6-button:disabled,
 [data-bp-color-scheme='dark'] .bp6-button-group.bp6-minimal .bp6-button:disabled:hover,
 [data-bp-color-scheme='dark'] .bp6-button-group.bp6-minimal .bp6-button.bp6-disabled,
 [data-bp-color-scheme='dark'] .bp6-button-group.bp6-minimal .bp6-button.bp6-disabled:hover,
-.bp6-dark .bp6-button-group.bp6-outlined .bp6-button:disabled,
-.bp6-dark .bp6-button-group.bp6-outlined .bp6-button:disabled:hover,
-.bp6-dark .bp6-button-group.bp6-outlined .bp6-button.bp6-disabled,
-.bp6-dark .bp6-button-group.bp6-outlined .bp6-button.bp6-disabled:hover,
+.xh-dark .bp6-button-group.bp6-outlined .bp6-button:disabled,
+.xh-dark .bp6-button-group.bp6-outlined .bp6-button:disabled:hover,
+.xh-dark .bp6-button-group.bp6-outlined .bp6-button.bp6-disabled,
+.xh-dark .bp6-button-group.bp6-outlined .bp6-button.bp6-disabled:hover,
 [data-bp-color-scheme='dark'] .bp6-button-group.bp6-outlined .bp6-button:disabled,
 [data-bp-color-scheme='dark'] .bp6-button-group.bp6-outlined .bp6-button:disabled:hover,
 [data-bp-color-scheme='dark'] .bp6-button-group.bp6-outlined .bp6-button.bp6-disabled,
@@ -1965,20 +1965,20 @@ a:hover {
     background: none;
 }
 
-.bp6-dark .bp6-button-group.bp6-minimal .bp6-button:disabled.bp6-active,
-.bp6-dark .bp6-button-group.bp6-minimal .bp6-button:disabled:hover.bp6-active,
-.bp6-dark .bp6-button-group.bp6-minimal .bp6-button.bp6-disabled.bp6-active,
-.bp6-dark .bp6-button-group.bp6-minimal .bp6-button.bp6-disabled:hover.bp6-active,
+.xh-dark .bp6-button-group.bp6-minimal .bp6-button:disabled.bp6-active,
+.xh-dark .bp6-button-group.bp6-minimal .bp6-button:disabled:hover.bp6-active,
+.xh-dark .bp6-button-group.bp6-minimal .bp6-button.bp6-disabled.bp6-active,
+.xh-dark .bp6-button-group.bp6-minimal .bp6-button.bp6-disabled:hover.bp6-active,
 [data-bp-color-scheme='dark'] .bp6-button-group.bp6-minimal .bp6-button:disabled.bp6-active,
 [data-bp-color-scheme='dark'] .bp6-button-group.bp6-minimal .bp6-button:disabled:hover.bp6-active,
 [data-bp-color-scheme='dark'] .bp6-button-group.bp6-minimal .bp6-button.bp6-disabled.bp6-active,
 [data-bp-color-scheme='dark']
     .bp6-button-group.bp6-minimal
     .bp6-button.bp6-disabled:hover.bp6-active,
-.bp6-dark .bp6-button-group.bp6-outlined .bp6-button:disabled.bp6-active,
-.bp6-dark .bp6-button-group.bp6-outlined .bp6-button:disabled:hover.bp6-active,
-.bp6-dark .bp6-button-group.bp6-outlined .bp6-button.bp6-disabled.bp6-active,
-.bp6-dark .bp6-button-group.bp6-outlined .bp6-button.bp6-disabled:hover.bp6-active,
+.xh-dark .bp6-button-group.bp6-outlined .bp6-button:disabled.bp6-active,
+.xh-dark .bp6-button-group.bp6-outlined .bp6-button:disabled:hover.bp6-active,
+.xh-dark .bp6-button-group.bp6-outlined .bp6-button.bp6-disabled.bp6-active,
+.xh-dark .bp6-button-group.bp6-outlined .bp6-button.bp6-disabled:hover.bp6-active,
 [data-bp-color-scheme='dark'] .bp6-button-group.bp6-outlined .bp6-button:disabled.bp6-active,
 [data-bp-color-scheme='dark'] .bp6-button-group.bp6-outlined .bp6-button:disabled:hover.bp6-active,
 [data-bp-color-scheme='dark'] .bp6-button-group.bp6-outlined .bp6-button.bp6-disabled.bp6-active,
@@ -2033,29 +2033,29 @@ a:hover {
     background-color: color-mix(in oklch, var(--bp-intent-primary-rest) 30%, transparent);
 }
 
-.bp6-dark .bp6-button-group.bp6-minimal .bp6-button.bp6-intent-primary,
+.xh-dark .bp6-button-group.bp6-minimal .bp6-button.bp6-intent-primary,
 [data-bp-color-scheme='dark'] .bp6-button-group.bp6-minimal .bp6-button.bp6-intent-primary,
-.bp6-dark .bp6-button-group.bp6-outlined .bp6-button.bp6-intent-primary,
+.xh-dark .bp6-button-group.bp6-outlined .bp6-button.bp6-intent-primary,
 [data-bp-color-scheme='dark'] .bp6-button-group.bp6-outlined .bp6-button.bp6-intent-primary {
     color: color-mix(in oklch, var(--bp-intent-primary-rest) 51%, var(--bp-palette-white));
 }
 
-.bp6-dark .bp6-button-group.bp6-minimal .bp6-button.bp6-intent-primary:hover,
+.xh-dark .bp6-button-group.bp6-minimal .bp6-button.bp6-intent-primary:hover,
 [data-bp-color-scheme='dark'] .bp6-button-group.bp6-minimal .bp6-button.bp6-intent-primary:hover,
-.bp6-dark .bp6-button-group.bp6-outlined .bp6-button.bp6-intent-primary:hover,
+.xh-dark .bp6-button-group.bp6-outlined .bp6-button.bp6-intent-primary:hover,
 [data-bp-color-scheme='dark'] .bp6-button-group.bp6-outlined .bp6-button.bp6-intent-primary:hover {
     background-color: color-mix(in oklch, var(--bp-intent-primary-rest) 20%, transparent);
     color: color-mix(in oklch, var(--bp-intent-primary-hover) 51%, var(--bp-palette-white));
 }
 
-.bp6-dark .bp6-button-group.bp6-minimal .bp6-button.bp6-intent-primary:active,
-.bp6-dark .bp6-button-group.bp6-minimal .bp6-button.bp6-intent-primary.bp6-active,
+.xh-dark .bp6-button-group.bp6-minimal .bp6-button.bp6-intent-primary:active,
+.xh-dark .bp6-button-group.bp6-minimal .bp6-button.bp6-intent-primary.bp6-active,
 [data-bp-color-scheme='dark'] .bp6-button-group.bp6-minimal .bp6-button.bp6-intent-primary:active,
 [data-bp-color-scheme='dark']
     .bp6-button-group.bp6-minimal
     .bp6-button.bp6-intent-primary.bp6-active,
-.bp6-dark .bp6-button-group.bp6-outlined .bp6-button.bp6-intent-primary:active,
-.bp6-dark .bp6-button-group.bp6-outlined .bp6-button.bp6-intent-primary.bp6-active,
+.xh-dark .bp6-button-group.bp6-outlined .bp6-button.bp6-intent-primary:active,
+.xh-dark .bp6-button-group.bp6-outlined .bp6-button.bp6-intent-primary.bp6-active,
 [data-bp-color-scheme='dark'] .bp6-button-group.bp6-outlined .bp6-button.bp6-intent-primary:active,
 [data-bp-color-scheme='dark']
     .bp6-button-group.bp6-outlined
@@ -2064,14 +2064,14 @@ a:hover {
     color: color-mix(in oklch, var(--bp-intent-primary-active) 51%, var(--bp-palette-white));
 }
 
-.bp6-dark .bp6-button-group.bp6-minimal .bp6-button.bp6-intent-primary:disabled,
-.bp6-dark .bp6-button-group.bp6-minimal .bp6-button.bp6-intent-primary.bp6-disabled,
+.xh-dark .bp6-button-group.bp6-minimal .bp6-button.bp6-intent-primary:disabled,
+.xh-dark .bp6-button-group.bp6-minimal .bp6-button.bp6-intent-primary.bp6-disabled,
 [data-bp-color-scheme='dark'] .bp6-button-group.bp6-minimal .bp6-button.bp6-intent-primary:disabled,
 [data-bp-color-scheme='dark']
     .bp6-button-group.bp6-minimal
     .bp6-button.bp6-intent-primary.bp6-disabled,
-.bp6-dark .bp6-button-group.bp6-outlined .bp6-button.bp6-intent-primary:disabled,
-.bp6-dark .bp6-button-group.bp6-outlined .bp6-button.bp6-intent-primary.bp6-disabled,
+.xh-dark .bp6-button-group.bp6-outlined .bp6-button.bp6-intent-primary:disabled,
+.xh-dark .bp6-button-group.bp6-outlined .bp6-button.bp6-intent-primary.bp6-disabled,
 [data-bp-color-scheme='dark']
     .bp6-button-group.bp6-outlined
     .bp6-button.bp6-intent-primary:disabled,
@@ -2086,16 +2086,16 @@ a:hover {
     background: none;
 }
 
-.bp6-dark .bp6-button-group.bp6-minimal .bp6-button.bp6-intent-primary:disabled.bp6-active,
-.bp6-dark .bp6-button-group.bp6-minimal .bp6-button.bp6-intent-primary.bp6-disabled.bp6-active,
+.xh-dark .bp6-button-group.bp6-minimal .bp6-button.bp6-intent-primary:disabled.bp6-active,
+.xh-dark .bp6-button-group.bp6-minimal .bp6-button.bp6-intent-primary.bp6-disabled.bp6-active,
 [data-bp-color-scheme='dark']
     .bp6-button-group.bp6-minimal
     .bp6-button.bp6-intent-primary:disabled.bp6-active,
 [data-bp-color-scheme='dark']
     .bp6-button-group.bp6-minimal
     .bp6-button.bp6-intent-primary.bp6-disabled.bp6-active,
-.bp6-dark .bp6-button-group.bp6-outlined .bp6-button.bp6-intent-primary:disabled.bp6-active,
-.bp6-dark .bp6-button-group.bp6-outlined .bp6-button.bp6-intent-primary.bp6-disabled.bp6-active,
+.xh-dark .bp6-button-group.bp6-outlined .bp6-button.bp6-intent-primary:disabled.bp6-active,
+.xh-dark .bp6-button-group.bp6-outlined .bp6-button.bp6-intent-primary.bp6-disabled.bp6-active,
 [data-bp-color-scheme='dark']
     .bp6-button-group.bp6-outlined
     .bp6-button.bp6-intent-primary:disabled.bp6-active,
@@ -2278,7 +2278,7 @@ a:hover {
     color: var(--bp-typography-color-default-disabled);
 }
 
-.bp6-dark .bp6-input::-moz-placeholder {
+.xh-dark .bp6-input::-moz-placeholder {
     color: oklch(from var(--bp-typography-color-muted) calc(l + 0.24) calc(c - 0.011) h);
 }
 
@@ -2356,7 +2356,7 @@ form {
     margin-bottom: 8px;
 }
 
-.bp6-navbar.bp6-dark {
+.bp6-navbar.xh-dark {
     box-shadow:
         inset inset 0 0 0 1px #fff3,
         0 1px 10px 0 #0003,
@@ -2380,10 +2380,10 @@ form {
     color: inherit;
 }
 
-.bp6-popover.bp6-dark .bp6-popover-content,
-.bp6-popover.bp6-dark .bp6-heading,
-.bp6-dark .bp6-popover .bp6-popover-content,
-.bp6-dark .bp6-popover .bp6-heading,
+.bp6-popover.xh-dark .bp6-popover-content,
+.bp6-popover.xh-dark .bp6-heading,
+.xh-dark .bp6-popover .bp6-popover-content,
+.xh-dark .bp6-popover .bp6-heading,
 .xh-dark .xh-popover__content-wrapper .xh-popover__content,
 .xh-dark .xh-popover__content-wrapper .bp6-heading {
     color: inherit;
@@ -2410,8 +2410,8 @@ form {
 }
 
 :is(
-    .bp6-dark .bp6-tag-input .bp6-input-ghost:placeholder-shown,
-    .bp6-tag-input.bp6-dark .bp6-input-ghost:placeholder-shown
+    .xh-dark .bp6-tag-input .bp6-input-ghost:placeholder-shown,
+    .bp6-tag-input.xh-dark .bp6-input-ghost:placeholder-shown
 ) {
     color: oklch(from var(--bp-typography-color-muted) calc(l + 0.24) calc(c - 0.011) h);
 }

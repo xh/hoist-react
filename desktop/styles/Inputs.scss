@@ -11,7 +11,7 @@
 //-----------------------------------------------
 // Base input styles
 //-----------------------------------------------
-.xh-focus-disabled :focus:not(.bp6-focus-style-manager-ignore *) ~ .xh-control__indicator {
+.xh-focus-disabled :focus ~ .xh-control__indicator {
   outline: none !important;
 }
 
