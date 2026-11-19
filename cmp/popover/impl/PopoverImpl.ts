@@ -383,7 +383,8 @@ const popoverInner = hoistCmp.factory<PopoverImplProps>({
                             `bp6-popover-placement-${side}`,
                             {
                                 'xh-popover__content-wrapper--minimal': minimal,
-                                'bp6-popover-match-target-width': matchTargetWidth
+                                'xh-popover__content-wrapper--match-target-width bp6-popover-match-target-width':
+                                    matchTargetWidth
                             },
                             popoverClassName
                         )

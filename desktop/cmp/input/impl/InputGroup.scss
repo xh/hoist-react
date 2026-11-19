@@ -1,0 +1,14 @@
+/*
+ * This file belongs to Hoist, an application development toolkit
+ * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
+ *
+ * Copyright © 2026 Extremely Heavy Industries Inc.
+ */
+
+// Rounded caps, for `TextInput.round`.
+.xh-input-group--round {
+  .xh-input-group__input,
+  .xh-button {
+    border-radius: 30px;
+  }
+}

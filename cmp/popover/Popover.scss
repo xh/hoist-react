@@ -10,6 +10,11 @@
   background-color: var(--xh-popover-backdrop-bg);
 }
 
+// Fill the floating element, which `matchTargetWidth` sizes to the target.
+.xh-popover__content-wrapper--match-target-width {
+  width: 100%;
+}
+
 // Mobile does not load the Blueprint base styles that frame desktop popovers, so frame them here.
 .xh-mobile {
   .xh-popover__floating {

@@ -8,6 +8,7 @@ import {hoistCmp} from '@xh/hoist/core';
 import classNames from 'classnames';
 import type {CSSProperties, InputHTMLAttributes, ReactElement, ReactNode, Ref} from 'react';
 import {createElement as h, useLayoutEffect, useRef, useState} from 'react';
+import './InputGroup.scss';
 
 export interface InputGroupProps extends InputHTMLAttributes<HTMLInputElement> {
     /** Ref to the native `<input>`. */
@@ -87,7 +88,7 @@ export const inputGroup = hoistCmp.factory<InputGroupProps>({
                 className: classNames('xh-input-group', 'bp6-input-group', groupClassName, {
                     'bp6-disabled': disabled,
                     'bp6-read-only': readOnly,
-                    'bp6-round': round
+                    'xh-input-group--round bp6-round': round
                 })
             },
             left,

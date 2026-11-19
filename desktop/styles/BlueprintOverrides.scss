@@ -187,7 +187,9 @@
       color: inherit;
     }
 
-    &:hover {
+    // A parent item stays highlighted while its submenu is open.
+    &:hover,
+    &[aria-expanded='true'] {
       background-color: var(--xh-menu-item-highlight-bg);
       border-radius: 0;
     }

@@ -10,3 +10,16 @@
 .xh-dialog__header .xh-dialog__close-button svg {
   color: var(--xh-popup-title-text-color);
 }
+
+// Matches the background and side padding of the body above it.
+.xh-dialog__footer {
+  flex: none;
+  padding: var(--xh-spacing) var(--xh-spacing-double) var(--xh-spacing-double);
+  background: var(--xh-popup-bg);
+}
+
+.xh-dialog__footer-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--xh-spacing-half);
+}
