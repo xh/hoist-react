@@ -41,8 +41,7 @@ detailed, step-by-step upgrade instructions with before/after code examples.
   loads Blueprint's stylesheet, and `@xh/hoist/kit/blueprint` is gone - replace its imports as in
   Step 8 of the upgrade notes. Hoist ships the Blueprint styles its components use, so they look
   the same. The DOM keeps Blueprint's `bp6-*` classes alongside new `xh-*` ones, so app CSS keyed
-  to them still applies. An app that keeps other Blueprint components must depend on
-  `@blueprintjs/core` and load its stylesheet itself.
+  to them still applies. Move any direct `@blueprintjs/core` imports onto Hoist's components too.
     * Popovers and tooltips use the new `Popover` and `Tooltip` in `@xh/hoist/cmp/popover` - see
       New Features. `DateInputProps.popoverModifiers` no longer has any effect.
     * Added `Dialog` to `@xh/hoist/desktop/cmp/dialog`, with `dialogBody`, `dialogFooter` and

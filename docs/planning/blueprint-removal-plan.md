@@ -303,8 +303,8 @@ A separate technical PR, needing little review:
 
 One release. Everything lands in v91 with no fallback flags. Hoist's markup keeps the `bp6-*`
 class names alongside its `xh-*` ones, so app CSS keyed to them keeps working until the aliases
-are removed in a later release, after the selector rename. Apps importing `kit/blueprint` migrate
-as in the v91 upgrade notes, or add their own `@blueprintjs/core`.
+are removed in a later release, after the selector rename. Apps importing `kit/blueprint` or
+`@blueprintjs/core` move to Hoist's components, as in the v91 upgrade notes.
 
 ## Risks
 

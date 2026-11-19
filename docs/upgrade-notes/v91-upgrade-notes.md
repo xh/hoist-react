@@ -59,8 +59,7 @@ The most significant impacts are:
 - **A fetch with `params` and no `method` is now a GET.** Before v91 it was a POST. A server action
   that accepts only POST rejects it, and a password or other sensitive param ends up in the URL.
 - **Imports from `@xh/hoist/kit/blueprint` fail to build.** The package is gone. Blueprint
-  components an app imports directly from `@blueprintjs/core` render unstyled unless the app loads
-  Blueprint's stylesheet itself.
+  components an app imports directly from `@blueprintjs/core` also need replacing - see Step 8.
 
 ## Prerequisites
 
@@ -419,10 +418,10 @@ grep -rn "@xh/hoist/kit/blueprint\|@blueprintjs\|@xh/hoist/mobile/cmp/popover" s
 ```
 
 Mobile apps import `popover` from `@xh/hoist/cmp/popover` in place of the removed
-`@xh/hoist/mobile/cmp/popover`. Replace each import from `@xh/hoist/kit/blueprint` with Hoist's
-equivalent:
+`@xh/hoist/mobile/cmp/popover`. Replace each Blueprint component, whether from
+`@xh/hoist/kit/blueprint` or `@blueprintjs/core`, with Hoist's equivalent:
 
-| Was (`@xh/hoist/kit/blueprint`) | Now |
+| Was (Blueprint) | Now |
 |---|---|
 | `dialog`, `Dialog` | `dialog` from `@xh/hoist/desktop/cmp/dialog` |
 | `dialogBody`, `dialogFooter`, `dialogFooterActions` | The same names from `@xh/hoist/desktop/cmp/dialog` |
@@ -432,6 +431,14 @@ equivalent:
 | `showContextMenu` | `useContextMenu` from `@xh/hoist/desktop/hooks`, or `PanelProps.contextMenu` |
 | `useHotkeys`, `HotkeyConfig` | The same names from `@xh/hoist/desktop/hooks` |
 | `OverlayToaster` | `XH.toast()` |
+| `alert` | `XH.message()`, `XH.alert()` or `XH.confirm()` |
+| `callout` | `callout` from `@xh/hoist/cmp/callout` |
+| `bpCard` | `card` from `@xh/hoist/cmp/card` |
+| `switchControl` | `switchInput` from `@xh/hoist/desktop/cmp/input` |
+| `radio`, `radioGroup` | `radioInput` from `@xh/hoist/desktop/cmp/input` |
+| `textArea` | `textArea` from `@xh/hoist/desktop/cmp/input` |
+| `rangeSlider` | `slider` from `@xh/hoist/desktop/cmp/input`, with a two-number array as its value |
+| `tag` | No standalone equivalent. For tags in a grid cell, `tagsRenderer` from `@xh/hoist/cmp/grid` |
 | `button`, `checkbox`, `inputGroup`, `numericInput`, `slider` and other controls | Hoist's components in `@xh/hoist/desktop/cmp/button` and `@xh/hoist/desktop/cmp/input` |
 | `Position.BOTTOM_LEFT` and other `Position` values | The string, e.g. `'bottom-left'`, typed as `PopoverPosition` from `@xh/hoist/cmp/popover` |
 | `PopoverInteractionKind.HOVER` and other kinds | The string, e.g. `'hover'` |
@@ -460,13 +467,8 @@ The props carry over, except Blueprint-only ones. Hoist's `Dialog` always render
 drop `usePortal`. A `Tooltip` takes `position`, not `placement`, and has no `targetProps` - set
 handlers and classes on its child instead.
 
-An app that uses Blueprint components Hoist does not replace, such as `Tree`, `Card` or
-`EditableText`, can keep them by adding `@blueprintjs/core` as its own dependency. It must then
-also import Blueprint's stylesheet, which Hoist no longer loads:
-
-```typescript
-import '@blueprintjs/core/lib/css/blueprint.css';
-```
+Do not add `@blueprintjs/core` to an app to keep a Blueprint component. Move it onto Hoist's
+nearest component, such as a tree-mode `Grid` for a `Tree` or a `textInput` for `EditableText`.
 
 Hoist's markup keeps Blueprint's `bp6-*` class names in v91, alongside its own `xh-*` ones, so app
 CSS that targets them still applies. Hoist ships the Blueprint styles its components use, so they

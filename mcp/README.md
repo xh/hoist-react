@@ -216,12 +216,12 @@ barrel edit invalidates it through the fingerprint. The formatters derive the fi
 time.
 
 **External members via the type checker.** The declaration walkers stop at types outside the
-index, so on their own they miss every Blueprint prop behind
-`ButtonProps extends Omit<BpButtonProps, 'ref'>`, `onClick` included. `hoist-get-members` also
-asks the checker for `decl.getType().getProperties()` and reports every property the walkers did
-not reach under `externalMembers`. Groups are by declaring type with its npm package
-(`ActionProps (@blueprintjs/core)`). Types come from the declaration's annotation, not the
-checker, so this stays cheap.
+index, so on their own they miss every React prop behind
+`ButtonProps extends Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'value'>`, `onClick` included.
+`hoist-get-members` also asks the checker for `decl.getType().getProperties()` and reports every
+property the walkers did not reach under `externalMembers`. Groups are by declaring type with its
+npm package (`DOMAttributes (@types/react)`). Types come from the declaration's annotation, not
+the checker, so this stays cheap.
 
 The tool counts React's generic attribute interfaces (`HTMLAttributes`, `AriaAttributes`,
 `DOMAttributes`, ~270 members on every Props interface) but lists them only when you pass a
@@ -782,19 +782,17 @@ groups list up to 40 members and count the rest.
 
 **Example output** (`hoist-ts members ButtonProps --filter click`):
 ```
-# ButtonProps Members matching "click" (0 of 58, 6 of 291 external)
+# ButtonProps Members matching "click" (0 of 57, 6 of 281 external)
 Import: import {ButtonProps} from '@xh/hoist/desktop/cmp/button';
 
 No members match.
 
 ## Inherited from types outside hoist-react
 
-### ActionProps (@blueprintjs/core) (1)
-- onClick: (event: React.MouseEvent<T>) => void
-
-### DOMAttributes (@types/react) (5)
+### DOMAttributes (@types/react) (6)
 - onAuxClick: MouseEventHandler<T> | undefined
 - onAuxClickCapture: MouseEventHandler<T> | undefined
+- onClick: MouseEventHandler<T> | undefined
 - onClickCapture: MouseEventHandler<T> | undefined
 - onDoubleClick: MouseEventHandler<T> | undefined
 - onDoubleClickCapture: MouseEventHandler<T> | undefined
