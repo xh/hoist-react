@@ -66,9 +66,8 @@ export const [Tooltip, tooltip] = hoistCmp.withFactory<TooltipProps>({
             popupRole: 'tooltip',
             popoverClassName: classNames(
                 'xh-tooltip',
-                'bp6-tooltip',
-                intent && [`xh-tooltip--intent-${intent}`, `bp6-intent-${intent}`],
-                compact && ['xh-tooltip--compact', 'bp6-compact'],
+                intent && `xh-tooltip--intent-${intent}`,
+                compact && 'xh-tooltip--compact',
                 popoverClassName
             )
         });

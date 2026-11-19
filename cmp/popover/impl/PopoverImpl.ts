@@ -60,7 +60,7 @@ import {popoverArrow, POPOVER_ARROW_SIZE} from './PopoverArrow';
 const VIEWPORT_PADDING = 8;
 
 /** Elements whose click closes the popover that holds them, by Hoist's or Blueprint's class. */
-const DISMISS_SELECTOR = '.xh-popover-dismiss, .bp6-popover-dismiss';
+const DISMISS_SELECTOR = '.xh-popover-dismiss';
 
 /** Options for Hoist's own components built on the popover, beyond the public `PopoverProps`. */
 export interface PopoverImplProps extends PopoverProps {
@@ -368,7 +368,7 @@ const popoverInner = hoistCmp.factory<PopoverImplProps>({
                 'div',
                 {
                     ref: refs.setFloating,
-                    className: 'xh-popover__floating bp6-popover-transition-container',
+                    className: 'xh-popover__floating',
                     style: floatingStyles,
                     ...getFloatingProps({onKeyDown: onFloatingKeyDown, onClick: onFloatingClick}),
                     ...floatingHoverHandlers
@@ -381,12 +381,9 @@ const popoverInner = hoistCmp.factory<PopoverImplProps>({
                         className: classNames(
                             'xh-popover__content-wrapper',
                             `xh-popover__content-wrapper--${side}`,
-                            'bp6-popover',
-                            `bp6-popover-placement-${side}`,
                             {
                                 'xh-popover__content-wrapper--minimal': minimal,
-                                'xh-popover__content-wrapper--match-target-width bp6-popover-match-target-width':
-                                    matchTargetWidth
+                                'xh-popover__content-wrapper--match-target-width': matchTargetWidth
                             },
                             popoverClassName
                         )
@@ -394,7 +391,7 @@ const popoverInner = hoistCmp.factory<PopoverImplProps>({
                     minimal
                         ? null
                         : popoverArrow(arrowRef, floating.placement, middlewareData.arrow),
-                    h('div', {className: 'xh-popover__content bp6-popover-content'}, content)
+                    h('div', {className: 'xh-popover__content'}, content)
                 )
             );
 
@@ -405,7 +402,7 @@ const popoverInner = hoistCmp.factory<PopoverImplProps>({
                     ? h('div', {
                           ...backdropProps,
                           className: classNames(
-                              'xh-popover__content-overlay bp6-overlay-backdrop bp6-popover-backdrop',
+                              'xh-popover__content-overlay',
                               {'xh-popover__content-overlay--backdrop': backdrop},
                               backdropProps?.className
                           )
@@ -468,9 +465,9 @@ function renderTarget({
             ...wrapperProps,
             ...ariaProps,
             tabIndex,
-            className: classNames(className, 'xh-popover__target-wrapper', 'bp6-popover-target', {
+            className: classNames(className, 'xh-popover__target-wrapper', {
                 'xh-popover__target-wrapper--open': open,
-                'xh-popover__target--active bp6-popover-open bp6-active': isActive
+                'xh-popover__target--active': isActive
             }),
             isOpen: open
         });
@@ -485,9 +482,8 @@ function renderTarget({
         targetTagName,
         {
             ...wrapperProps,
-            className: classNames(className, 'xh-popover__target-wrapper', 'bp6-popover-target', {
-                'xh-popover__target-wrapper--open': open,
-                'bp6-popover-open': open
+            className: classNames(className, 'xh-popover__target-wrapper', {
+                'xh-popover__target-wrapper--open': open
             }),
             [TEST_ID]: testId
         },
@@ -497,7 +493,7 @@ function renderTarget({
             ...ariaProps,
             tabIndex: el.props.tabIndex ?? tabIndex,
             className: classNames(el.props.className, {
-                'xh-popover__target--active bp6-active': isActive
+                'xh-popover__target--active': isActive
             })
         })
     );

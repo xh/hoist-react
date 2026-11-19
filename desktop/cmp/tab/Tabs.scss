@@ -46,7 +46,7 @@
     }
 
     // Tooltip
-    .bp6-popover-target {
+    .xh-popover__target-wrapper {
       width: 100%;
     }
   }
@@ -88,7 +88,7 @@
     padding: var(--xh-tab-switcher-vertical-padding);
 
     // Make overflow button full width
-    .bp6-popover-target {
+    .xh-popover__target-wrapper {
       display: block;
 
       .xh-button {

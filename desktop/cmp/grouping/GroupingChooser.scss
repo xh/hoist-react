@@ -39,12 +39,12 @@
   }
 
   // Outer box is sized via layoutSupport - all nested inner elements should stretch to fill.
-  .bp6-popover-target,
+  .xh-popover__target-wrapper,
   .xh-grouping-chooser-button {
     width: 100%;
   }
 
-  .bp6-popover-target span {
+  .xh-popover__target-wrapper span {
     position: relative;
   }
 

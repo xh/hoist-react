@@ -9,7 +9,7 @@
   display: inline-flex;
 
   // Ensure popover target stretches to fill layout width.
-  > .bp6-popover-target {
+  > .xh-popover__target-wrapper {
     display: flex;
     flex: 1;
   }
@@ -139,14 +139,14 @@
     padding: 3px var(--xh-spacing-half) !important;
   }
 
-  &__popover.bp6-popover {
-    .bp6-popover-content {
+  &__popover.xh-popover__content-wrapper {
+    .xh-popover__content {
       padding: 0;
     }
   }
 
   // Compact mode - popover content (renders in portal, outside root DOM).
-  &__popover--compact.bp6-popover {
+  &__popover--compact.xh-popover__content-wrapper {
     font-size: var(--xh-toolbar-compact-font-size);
 
     .xh-picker__option {

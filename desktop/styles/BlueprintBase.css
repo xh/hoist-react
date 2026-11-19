@@ -3688,93 +3688,20 @@ body.bp6-overlay-open {
     }
 }
 
-.bp6-popover {
-    box-shadow:
-        0 0 0 1px #1114181a,
-        0 20px 25px -5px #0000001a,
-        0 10px 15px -3px #0000001a;
-}
-
-.bp6-popover .bp6-popover-content {
-    background: #fff;
-}
-
 .bp6-popover .bp6-popover-content,
-.bp6-popover .bp6-heading {
+.bp6-popover .bp6-heading,
+.xh-popover__content-wrapper .xh-popover__content,
+.xh-popover__content-wrapper .bp6-heading {
     color: inherit;
-}
-
-@media (forced-colors: active) and (prefers-color-scheme: dark) {
-    .bp6-popover {
-        border: 1px solid buttonborder;
-    }
-}
-
-.bp6-popover {
-    transform: scale(1);
-}
-
-.bp6-popover {
-    border-radius: var(--bp-surface-border-radius);
-    z-index: 20;
-    display: inline-block;
-}
-
-.bp6-popover .bp6-popover-content {
-    border-radius: var(--bp-surface-border-radius);
-    position: relative;
-}
-
-.bp6-popover.bp6-dark,
-.bp6-dark .bp6-popover {
-    box-shadow:
-        0 0 0 1px #5e6064,
-        inset 0 0 0 1px #fff3,
-        0 20px 25px -5px #0000004d,
-        inset 0 0 0.5px #ffffff4d,
-        inset 0 0.5px #ffffff14,
-        0 10px 30px -5px #0000004d;
-}
-
-.bp6-popover.bp6-dark .bp6-popover-content,
-.bp6-dark .bp6-popover .bp6-popover-content {
-    background: #2f343c;
 }
 
 .bp6-popover.bp6-dark .bp6-popover-content,
 .bp6-popover.bp6-dark .bp6-heading,
 .bp6-dark .bp6-popover .bp6-popover-content,
-.bp6-dark .bp6-popover .bp6-heading {
+.bp6-dark .bp6-popover .bp6-heading,
+.xh-dark .xh-popover__content-wrapper .xh-popover__content,
+.xh-dark .xh-popover__content-wrapper .bp6-heading {
     color: inherit;
-}
-
-@media (forced-colors: active) and (prefers-color-scheme: dark) {
-    .bp6-popover.bp6-dark,
-    .bp6-dark .bp6-popover {
-        border: 1px solid buttonborder;
-    }
-
-    .bp6-popover {
-        box-shadow: none;
-        border: 1px solid buttonborder;
-    }
-}
-
-.bp6-popover-transition-container {
-    opacity: 1;
-}
-
-.bp6-popover-transition-container {
-    z-index: 20;
-    display: flex;
-}
-
-.bp6-popover-transition-container:focus {
-    outline: none;
-}
-
-span.bp6-popover-target {
-    display: inline-block;
 }
 
 .bp6-segmented-control {

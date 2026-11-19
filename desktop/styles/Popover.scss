@@ -1,0 +1,707 @@
+/*
+ * This file belongs to Hoist, an application development toolkit
+ * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
+ *
+ * Copyright © 2026 Extremely Heavy Industries Inc.
+ */
+
+// Desktop popover and tooltip styles. Mobile popovers take theirs from cmp/popover/Popover.scss.
+
+//-----------------------------------------------
+// Base popover and tooltip styles
+//-----------------------------------------------
+.xh-popover__content-overlay {
+  inset: 0;
+  position: fixed;
+  opacity: 1;
+}
+.xh-popover__content-overlay {
+  background-color: rgba(17, 20, 24, 0.7);
+  overflow: auto;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  z-index: 20;
+}
+.xh-popover__content-overlay:focus {
+  outline: none;
+}
+.bp6-tree-node-secondary-label .xh-popover__target-wrapper {
+  align-items: center;
+  display: flex;
+}
+.xh-popover__content-wrapper {
+  box-shadow:
+    0 0 0 1px rgba(17, 20, 24, 0.1),
+    0 20px 25px -5px rgba(0, 0, 0, 0.1),
+    0 10px 15px -3px rgba(0, 0, 0, 0.1);
+}
+.xh-popover__content-wrapper .xh-popover__content {
+  background: #ffffff;
+}
+.xh-popover__content-wrapper .xh-popover__arrow-border {
+  fill: #111418;
+  fill-opacity: 0.1;
+}
+.xh-popover__content-wrapper .xh-popover__arrow-fill {
+  fill: #ffffff;
+}
+@media (forced-colors: active) and (prefers-color-scheme: dark) {
+  .xh-popover__content-wrapper .xh-popover__arrow-fill {
+    fill: buttonborder;
+  }
+}
+@media (forced-colors: active) and (prefers-color-scheme: dark) {
+  .xh-popover__content-wrapper {
+    border: 1px solid buttonborder;
+  }
+}
+.xh-popover__content-wrapper {
+  transform: scale(1);
+}
+.bp6-popover-enter > .xh-popover__content-wrapper,
+.bp6-popover-appear > .xh-popover__content-wrapper {
+  transform: scale(0.3);
+}
+.bp6-popover-enter-active > .xh-popover__content-wrapper,
+.bp6-popover-appear-active > .xh-popover__content-wrapper {
+  transform: scale(1);
+  transition-delay: 0;
+  transition-duration: 300ms;
+  transition-property: transform;
+  transition-timing-function: cubic-bezier(0.54, 1.12, 0.38, 1.11);
+}
+.bp6-popover-exit > .xh-popover__content-wrapper {
+  transform: scale(1);
+}
+.bp6-popover-exit-active > .xh-popover__content-wrapper {
+  transform: scale(0.3);
+  transition-delay: 0;
+  transition-duration: 300ms;
+  transition-property: transform;
+  transition-timing-function: cubic-bezier(0.54, 1.12, 0.38, 1.11);
+}
+.xh-popover__content-wrapper {
+  border-radius: var(--bp-surface-border-radius);
+  display: inline-block;
+  z-index: 20;
+}
+.xh-popover__content-wrapper .xh-popover__content {
+  border-radius: var(--bp-surface-border-radius);
+  position: relative;
+}
+.xh-popover__content-wrapper.xh-popover__content-wrapper--minimal {
+  margin: 0 !important;
+}
+.xh-popover__content-wrapper.xh-popover__content-wrapper--minimal.xh-popover__content-wrapper {
+  transform: scale(1);
+}
+.bp6-popover-enter
+  > .xh-popover__content-wrapper.xh-popover__content-wrapper--minimal.xh-popover__content-wrapper,
+.bp6-popover-appear
+  > .xh-popover__content-wrapper.xh-popover__content-wrapper--minimal.xh-popover__content-wrapper {
+  transform: scale(1);
+}
+.bp6-popover-enter-active
+  > .xh-popover__content-wrapper.xh-popover__content-wrapper--minimal.xh-popover__content-wrapper,
+.bp6-popover-appear-active
+  > .xh-popover__content-wrapper.xh-popover__content-wrapper--minimal.xh-popover__content-wrapper {
+  transform: scale(1);
+  transition-delay: 0;
+  transition-duration: 100ms;
+  transition-property: transform;
+  transition-timing-function: cubic-bezier(0.4, 1, 0.75, 0.9);
+}
+.bp6-popover-exit
+  > .xh-popover__content-wrapper.xh-popover__content-wrapper--minimal.xh-popover__content-wrapper {
+  transform: scale(1);
+}
+.bp6-popover-exit-active
+  > .xh-popover__content-wrapper.xh-popover__content-wrapper--minimal.xh-popover__content-wrapper {
+  transform: scale(1);
+  transition-delay: 0;
+  transition-duration: 100ms;
+  transition-property: transform;
+  transition-timing-function: cubic-bezier(0.4, 1, 0.75, 0.9);
+}
+.xh-popover__content-wrapper.xh-popover__content-wrapper--match-target-width {
+  width: 100%;
+}
+.xh-dark .xh-popover__content-wrapper {
+  box-shadow:
+    0 0 0 1px hsl(215, 3%, 38%),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.2),
+    0 20px 25px -5px rgba(0, 0, 0, 0.3),
+    inset 0 0 0.5px 0 rgba(255, 255, 255, 0.3),
+    inset 0 0.5px 0 0 rgba(255, 255, 255, 0.08),
+    0 10px 30px -5px rgba(0, 0, 0, 0.3);
+}
+.xh-dark .xh-popover__content-wrapper .xh-popover__content {
+  background: #2f343c;
+}
+.xh-dark .xh-popover__content-wrapper .xh-popover__arrow-border {
+  fill: #111418;
+  fill-opacity: 0.2;
+}
+.xh-dark .xh-popover__content-wrapper .xh-popover__arrow-fill {
+  fill: #2f343c;
+}
+@media (forced-colors: active) and (prefers-color-scheme: dark) {
+  .xh-dark .xh-popover__content-wrapper .xh-popover__arrow-fill {
+    fill: buttonborder;
+  }
+}
+@media (forced-colors: active) and (prefers-color-scheme: dark) {
+  .xh-dark .xh-popover__content-wrapper {
+    border: 1px solid buttonborder;
+  }
+}
+@media (forced-colors: active) and (prefers-color-scheme: dark) {
+  .xh-popover__content-wrapper {
+    border: 1px solid buttonborder;
+    box-shadow: none;
+  }
+}
+.xh-popover__content-overlay.xh-popover__content-overlay {
+  background: rgba(255, 255, 255, 0);
+}
+.xh-popover__floating {
+  opacity: 1;
+}
+.xh-popover__floating {
+  display: flex;
+  z-index: 20;
+}
+.xh-popover__floating:focus {
+  outline: none;
+}
+span.xh-popover__target-wrapper {
+  display: inline-block;
+}
+.xh-tooltip {
+  box-shadow:
+    0 0 0 1px rgba(17, 20, 24, 0.1),
+    0 20px 25px -5px rgba(0, 0, 0, 0.1),
+    0 10px 15px -3px rgba(0, 0, 0, 0.1);
+}
+.xh-tooltip .xh-popover__content {
+  background: #404854;
+}
+.xh-tooltip .xh-popover__arrow-border {
+  fill: #111418;
+  fill-opacity: 0.1;
+}
+.xh-tooltip .xh-popover__arrow-fill {
+  fill: #404854;
+}
+@media (forced-colors: active) and (prefers-color-scheme: dark) {
+  .xh-tooltip .xh-popover__arrow-fill {
+    fill: buttonborder;
+  }
+}
+@media (forced-colors: active) and (prefers-color-scheme: dark) {
+  .xh-tooltip {
+    border: 1px solid buttonborder;
+  }
+}
+.xh-tooltip {
+  transform: scale(1);
+}
+.bp6-popover-enter > .xh-tooltip,
+.bp6-popover-appear > .xh-tooltip {
+  transform: scale(0.8);
+}
+.bp6-popover-enter-active > .xh-tooltip,
+.bp6-popover-appear-active > .xh-tooltip {
+  transform: scale(1);
+  transition-delay: 0;
+  transition-duration: 100ms;
+  transition-property: transform;
+  transition-timing-function: cubic-bezier(0.4, 1, 0.75, 0.9);
+}
+.bp6-popover-exit > .xh-tooltip {
+  transform: scale(1);
+}
+.bp6-popover-exit-active > .xh-tooltip {
+  transform: scale(0.8);
+  transition-delay: 0;
+  transition-duration: 100ms;
+  transition-property: transform;
+  transition-timing-function: cubic-bezier(0.4, 1, 0.75, 0.9);
+}
+.xh-tooltip {
+  color: var(--bp-typography-color-default-rest);
+}
+.xh-tooltip .bp6-text-disabled {
+  color: rgba(171, 179, 191, 0.6);
+}
+.xh-tooltip .bp6-running-text hr {
+  border-color: rgba(255, 255, 255, 0.2);
+}
+.xh-tooltip a {
+  color: #8abbff;
+}
+.xh-tooltip a:hover {
+  color: #8abbff;
+}
+.xh-tooltip a code {
+  color: inherit;
+}
+.xh-tooltip .bp6-code-block,
+.xh-tooltip .bp6-running-text pre {
+  background: rgba(17, 20, 24, 0.3);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.2);
+  color: #f6f7f9;
+}
+.xh-tooltip .bp6-code-block > code,
+.xh-tooltip .bp6-running-text pre > code {
+  background: none;
+  box-shadow: none;
+  color: inherit;
+}
+.xh-tooltip .xh-popover__content {
+  padding: 8px 12px;
+}
+.xh-tooltip.xh-tooltip--compact .xh-popover__content {
+  line-height: 1rem;
+  padding: 4px 8px;
+}
+.xh-dark .xh-tooltip {
+  box-shadow:
+    0 2px 4px rgba(17, 20, 24, 0.4),
+    0 8px 24px rgba(17, 20, 24, 0.4);
+}
+.xh-dark .xh-tooltip .xh-popover__content {
+  background: #e5e8eb;
+}
+.xh-dark .xh-tooltip .xh-popover__arrow-border {
+  fill: #111418;
+  fill-opacity: 0.2;
+}
+.xh-dark .xh-tooltip .xh-popover__arrow-fill {
+  fill: #e5e8eb;
+}
+@media (forced-colors: active) and (prefers-color-scheme: dark) {
+  .xh-dark .xh-tooltip .xh-popover__arrow-fill {
+    fill: buttonborder;
+  }
+}
+@media (forced-colors: active) and (prefers-color-scheme: dark) {
+  .xh-dark .xh-tooltip {
+    border: 1px solid buttonborder;
+  }
+}
+.xh-dark .xh-tooltip .bp6-text-disabled {
+  color: rgba(95, 107, 124, 0.6);
+}
+.xh-dark .xh-tooltip .bp6-running-text hr {
+  border-color: rgba(17, 20, 24, 0.15);
+}
+.xh-dark .xh-tooltip a {
+  color: #215db0;
+}
+.xh-dark .xh-tooltip a:hover {
+  color: #215db0;
+}
+.xh-dark .xh-tooltip a code {
+  color: inherit;
+}
+.xh-dark .xh-tooltip .bp6-code-block,
+.xh-dark .xh-tooltip .bp6-running-text pre {
+  background: rgba(255, 255, 255, 0.7);
+  box-shadow: inset 0 0 0 1px rgba(17, 20, 24, 0.15);
+  color: #1c2127;
+}
+.xh-dark .xh-tooltip .bp6-code-block > code,
+.xh-dark .xh-tooltip .bp6-running-text pre > code {
+  background: none;
+  box-shadow: none;
+  color: inherit;
+}
+@media (forced-colors: active) and (prefers-color-scheme: dark) {
+  .xh-dark .xh-tooltip .bp6-code-block,
+  .xh-dark .xh-tooltip .bp6-running-text pre {
+    border: 1px solid buttonborder;
+    box-shadow: none;
+  }
+}
+.xh-tooltip.xh-tooltip--intent-primary .xh-popover__content {
+  background: #2d72d2;
+  color: #ffffff;
+}
+.xh-tooltip.xh-tooltip--intent-primary .xh-popover__arrow-fill {
+  fill: #2d72d2;
+}
+@media (forced-colors: active) and (prefers-color-scheme: dark) {
+  .xh-tooltip.xh-tooltip--intent-primary .xh-popover__arrow-fill {
+    fill: buttonborder;
+  }
+}
+.xh-tooltip.xh-tooltip--intent-success .xh-popover__content {
+  background: #238551;
+  color: #ffffff;
+}
+.xh-tooltip.xh-tooltip--intent-success .xh-popover__arrow-fill {
+  fill: #238551;
+}
+@media (forced-colors: active) and (prefers-color-scheme: dark) {
+  .xh-tooltip.xh-tooltip--intent-success .xh-popover__arrow-fill {
+    fill: buttonborder;
+  }
+}
+.xh-tooltip.xh-tooltip--intent-warning .xh-popover__content {
+  background: #c87619;
+  color: #ffffff;
+}
+.xh-tooltip.xh-tooltip--intent-warning .xh-popover__arrow-fill {
+  fill: #c87619;
+}
+@media (forced-colors: active) and (prefers-color-scheme: dark) {
+  .xh-tooltip.xh-tooltip--intent-warning .xh-popover__arrow-fill {
+    fill: buttonborder;
+  }
+}
+.xh-tooltip.xh-tooltip--intent-danger .xh-popover__content {
+  background: #cd4246;
+  color: #ffffff;
+}
+.xh-tooltip.xh-tooltip--intent-danger .xh-popover__arrow-fill {
+  fill: #cd4246;
+}
+@media (forced-colors: active) and (prefers-color-scheme: dark) {
+  .xh-tooltip.xh-tooltip--intent-danger .xh-popover__arrow-fill {
+    fill: buttonborder;
+  }
+}
+.xh-tooltip {
+  box-shadow:
+    0 0 0 1px rgba(17, 20, 24, 0.1),
+    0 20px 25px -5px rgba(0, 0, 0, 0.1),
+    0 10px 15px -3px rgba(0, 0, 0, 0.1);
+}
+.xh-tooltip .xh-popover__content {
+  background: #404854;
+}
+.xh-tooltip .xh-popover__arrow-border {
+  fill: #111418;
+  fill-opacity: 0.1;
+}
+.xh-tooltip .xh-popover__arrow-fill {
+  fill: #404854;
+}
+@media (forced-colors: active) and (prefers-color-scheme: dark) {
+  .xh-tooltip .xh-popover__arrow-fill {
+    fill: buttonborder;
+  }
+}
+@media (forced-colors: active) and (prefers-color-scheme: dark) {
+  .xh-tooltip {
+    border: 1px solid buttonborder;
+  }
+}
+.xh-tooltip {
+  transform: scale(1);
+}
+.bp6-popover-enter > .xh-tooltip,
+.bp6-popover-appear > .xh-tooltip {
+  transform: scale(0.8);
+}
+.bp6-popover-enter-active > .xh-tooltip,
+.bp6-popover-appear-active > .xh-tooltip {
+  transform: scale(1);
+  transition-delay: 0;
+  transition-duration: 100ms;
+  transition-property: transform;
+  transition-timing-function: cubic-bezier(0.4, 1, 0.75, 0.9);
+}
+.bp6-popover-exit > .xh-tooltip {
+  transform: scale(1);
+}
+.bp6-popover-exit-active > .xh-tooltip {
+  transform: scale(0.8);
+  transition-delay: 0;
+  transition-duration: 100ms;
+  transition-property: transform;
+  transition-timing-function: cubic-bezier(0.4, 1, 0.75, 0.9);
+}
+.xh-tooltip {
+  color: var(--bp-typography-color-default-rest);
+}
+.xh-tooltip .bp6-text-disabled {
+  color: rgba(171, 179, 191, 0.6);
+}
+.xh-tooltip .bp6-running-text hr {
+  border-color: rgba(255, 255, 255, 0.2);
+}
+.xh-tooltip a {
+  color: #8abbff;
+}
+.xh-tooltip a:hover {
+  color: #8abbff;
+}
+.xh-tooltip a code {
+  color: inherit;
+}
+.xh-tooltip .bp6-code-block,
+.xh-tooltip .bp6-running-text pre {
+  background: rgba(17, 20, 24, 0.3);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.2);
+  color: #f6f7f9;
+}
+.xh-tooltip .bp6-code-block > code,
+.xh-tooltip .bp6-running-text pre > code {
+  background: none;
+  box-shadow: none;
+  color: inherit;
+}
+.xh-tooltip .xh-popover__content {
+  padding: 8px 12px;
+}
+.xh-tooltip.xh-tooltip--compact .xh-popover__content {
+  line-height: 1rem;
+  padding: 4px 8px;
+}
+.xh-dark .xh-tooltip {
+  box-shadow:
+    0 2px 4px rgba(17, 20, 24, 0.4),
+    0 8px 24px rgba(17, 20, 24, 0.4);
+}
+.xh-dark .xh-tooltip .xh-popover__content {
+  background: #e5e8eb;
+}
+.xh-dark .xh-tooltip .xh-popover__arrow-border {
+  fill: #111418;
+  fill-opacity: 0.2;
+}
+.xh-dark .xh-tooltip .xh-popover__arrow-fill {
+  fill: #e5e8eb;
+}
+@media (forced-colors: active) and (prefers-color-scheme: dark) {
+  .xh-dark .xh-tooltip .xh-popover__arrow-fill {
+    fill: buttonborder;
+  }
+}
+@media (forced-colors: active) and (prefers-color-scheme: dark) {
+  .xh-dark .xh-tooltip {
+    border: 1px solid buttonborder;
+  }
+}
+.xh-dark .xh-tooltip .bp6-text-disabled {
+  color: rgba(95, 107, 124, 0.6);
+}
+.xh-dark .xh-tooltip .bp6-running-text hr {
+  border-color: rgba(17, 20, 24, 0.15);
+}
+.xh-dark .xh-tooltip a {
+  color: #215db0;
+}
+.xh-dark .xh-tooltip a:hover {
+  color: #215db0;
+}
+.xh-dark .xh-tooltip a code {
+  color: inherit;
+}
+.xh-dark .xh-tooltip .bp6-code-block,
+.xh-dark .xh-tooltip .bp6-running-text pre {
+  background: rgba(255, 255, 255, 0.7);
+  box-shadow: inset 0 0 0 1px rgba(17, 20, 24, 0.15);
+  color: #1c2127;
+}
+.xh-dark .xh-tooltip .bp6-code-block > code,
+.xh-dark .xh-tooltip .bp6-running-text pre > code {
+  background: none;
+  box-shadow: none;
+  color: inherit;
+}
+@media (forced-colors: active) and (prefers-color-scheme: dark) {
+  .xh-dark .xh-tooltip .bp6-code-block,
+  .xh-dark .xh-tooltip .bp6-running-text pre {
+    border: 1px solid buttonborder;
+    box-shadow: none;
+  }
+}
+.xh-tooltip.xh-tooltip--intent-primary .xh-popover__content {
+  background: #2d72d2;
+  color: #ffffff;
+}
+.xh-tooltip.xh-tooltip--intent-primary .xh-popover__arrow-fill {
+  fill: #2d72d2;
+}
+@media (forced-colors: active) and (prefers-color-scheme: dark) {
+  .xh-tooltip.xh-tooltip--intent-primary .xh-popover__arrow-fill {
+    fill: buttonborder;
+  }
+}
+.xh-tooltip.xh-tooltip--intent-success .xh-popover__content {
+  background: #238551;
+  color: #ffffff;
+}
+.xh-tooltip.xh-tooltip--intent-success .xh-popover__arrow-fill {
+  fill: #238551;
+}
+@media (forced-colors: active) and (prefers-color-scheme: dark) {
+  .xh-tooltip.xh-tooltip--intent-success .xh-popover__arrow-fill {
+    fill: buttonborder;
+  }
+}
+.xh-tooltip.xh-tooltip--intent-warning .xh-popover__content {
+  background: #c87619;
+  color: #ffffff;
+}
+.xh-tooltip.xh-tooltip--intent-warning .xh-popover__arrow-fill {
+  fill: #c87619;
+}
+@media (forced-colors: active) and (prefers-color-scheme: dark) {
+  .xh-tooltip.xh-tooltip--intent-warning .xh-popover__arrow-fill {
+    fill: buttonborder;
+  }
+}
+.xh-tooltip.xh-tooltip--intent-danger .xh-popover__content {
+  background: #cd4246;
+  color: #ffffff;
+}
+.xh-tooltip.xh-tooltip--intent-danger .xh-popover__arrow-fill {
+  fill: #cd4246;
+}
+@media (forced-colors: active) and (prefers-color-scheme: dark) {
+  .xh-tooltip.xh-tooltip--intent-danger .xh-popover__arrow-fill {
+    fill: buttonborder;
+  }
+}
+.bp6-tree-node-secondary-label .xh-popover__target-wrapper {
+  align-items: center;
+  display: flex;
+}
+
+//-----------------------------------------------
+// Hoist popover and tooltip styles
+//-----------------------------------------------
+// Popovers read the `--xh-popover-*` variables. Blueprint draws the popover border as an outset
+// box-shadow ring rather than a CSS border, so it takes no layout space and the arrow can overlap it.
+// Hoist keeps that ring and adds the drop shadow as its own layer. Selectors match Blueprint's own
+// dark variants, which would otherwise outrank these rules in dark theme.
+.xh-popover__content-wrapper,
+.xh-dark .xh-popover__content-wrapper {
+  border-radius: var(--xh-popover-border-radius);
+  box-shadow:
+    0 0 0 var(--xh-popover-border-width) var(--xh-popover-border-color),
+    var(--xh-popover-box-shadow);
+
+  // Clip content to the rounded corners, so a title bar or other square-cornered child does not
+  // cover the inner curve of the border ring.
+  .xh-popover__content {
+    background: var(--xh-popover-bg);
+    border-radius: var(--xh-popover-border-radius);
+    overflow: hidden;
+  }
+
+  // The arrow fill defaults to the border color. The arrow often meets a title bar or other content
+  // that does not match the popover background. The border path is a filled shape about 1px wide,
+  // so a stroke widens it to match a thicker border.
+  .xh-popover__arrow::before {
+    box-shadow: none;
+  }
+
+  .xh-popover__arrow-border {
+    fill: var(--xh-popover-border-color);
+    fill-opacity: 1;
+    stroke: var(--xh-popover-border-color);
+    stroke-width: calc(var(--xh-popover-border-width) * 2 - 2px);
+  }
+
+  .xh-popover__arrow-fill {
+    fill: var(--xh-popover-arrow-color);
+  }
+}
+
+// Blueprint inverts tooltip colors relative to the theme (dark tooltips in light theme and vice
+// versa), and the popover rules above also match tooltips. Style tooltips from the
+// `--xh-tooltip-*` vars instead, so they follow the theme. The doubled `.xh-tooltip.xh-popover__content-wrapper`
+// selector matches or outranks Blueprint's dark tooltip rules and the popover rules
+// above, and wins ties by coming later. Keep this block below the popover rules.
+.xh-tooltip.xh-popover__content-wrapper {
+  color: var(--xh-tooltip-text-color);
+  border-radius: var(--xh-tooltip-border-radius);
+  box-shadow: 0 0 0 1px var(--xh-tooltip-border-color);
+  // A filter rather than a box-shadow layer, so the shadow follows the arrow and an app can set
+  // `--xh-tooltip-shadow: none` without losing the border ring above.
+  filter: var(--xh-tooltip-shadow);
+
+  .xh-popover__content {
+    color: var(--xh-tooltip-text-color);
+    background: var(--xh-tooltip-bg);
+    border-radius: var(--xh-tooltip-border-radius);
+    font-size: var(--xh-tooltip-font-size);
+    max-width: var(--xh-tooltip-max-width);
+    overflow-wrap: break-word;
+  }
+
+  .bp6-heading {
+    color: inherit;
+  }
+
+  // Arrow border and fill match the tooltip border and background.
+  .xh-popover__arrow::before {
+    box-shadow: none;
+  }
+
+  .xh-popover__arrow-border {
+    fill: var(--xh-tooltip-border-color);
+    fill-opacity: 1;
+    stroke: none;
+  }
+
+  .xh-popover__arrow-fill {
+    fill: var(--xh-tooltip-bg);
+  }
+
+  // BP inverts typography colors within tooltips as well - restyle text, key combos, code, and links
+  // to follow the theme.
+  .bp6-text-muted {
+    color: var(--xh-text-color-muted);
+  }
+
+  .bp6-key {
+    color: var(--xh-tooltip-text-color);
+    background: var(--xh-bg);
+    // Inset, so that a container sized to the key does not clip the ring.
+    box-shadow: inset 0 0 0 1px var(--xh-border-color);
+  }
+
+  .bp6-code {
+    color: var(--xh-tooltip-text-color);
+    background: var(--xh-bg-alt);
+    box-shadow: inset 0 0 0 1px var(--xh-border-color);
+  }
+
+  a,
+  a:hover {
+    color: #215db0;
+
+    .xh-dark & {
+      color: #8abbff;
+    }
+  }
+
+  @each $intent in primary, success, warning, danger {
+    &.xh-tooltip--intent-#{$intent} {
+      box-shadow: 0 0 0 1px var(--xh-intent-#{$intent});
+
+      .xh-popover__content {
+        color: white;
+        background: var(--xh-intent-#{$intent});
+      }
+
+      .xh-popover__arrow-border,
+      .xh-popover__arrow-fill {
+        fill: var(--xh-intent-#{$intent});
+      }
+    }
+  }
+}
+
+// Padding set at Blueprint's own specificity, so that `xh-tooltip--compact` tooltips keep their tighter padding.
+.xh-tooltip .xh-popover__content {
+  padding: var(--xh-tooltip-padding);
+}

@@ -48,7 +48,9 @@ file is the working guide.
 - [x] Menus, submenus and context menus. One approved visual change: pressing a success, primary
       or warning item tints it in its intent color, as danger items already did. List it in the
       CHANGELOG entry.
-- [ ] Popover and tooltip.
+- [x] Popover and tooltip. One approved visual change: compact tooltips take Blueprint's tighter
+      4px 8px padding, as Hoist's override comment intended. List it in the CHANGELOG entry.
+      `PopoverImpl` still accepts `.bp6-disabled` on a target - drop it once no input renders it.
 - [ ] Dialog, overlay and mask.
 - [ ] Toasts.
 - [x] Hotkeys dialog - done on #4995 (`675e3e1e0`), as a Hoist dialog with only `xh-*` classes.
@@ -117,6 +119,7 @@ element already carries the `xh-*` class, so the `bp6-*` class is only dropped.
 | `bp6-submenu` | `xh-menu-item--submenu` on the parent item's `li`, `xh-menu__submenu` on the submenu's popover (-) |
 | `bp6-overlay-backdrop`, `bp6-overlay-content`, `bp6-overlay-scroll-container` | the `xh-dialog__*`, `xh-overlay__*` and `xh-popover__content-overlay` classes already beside them (-) |
 | `bp6-popover` | `xh-popover__content-wrapper` (-) |
+| `bp6-popover-placement-*` | `xh-popover__content-wrapper--top` and the other sides (-) - rendered from a template string, so the inventory misses it |
 | `bp6-popover-open`, `bp6-popover-target` | `xh-popover__target-wrapper--open`, `xh-popover__target-wrapper` (-) |
 | `bp6-radio-group` | `xh-radio-input` (-) |
 | `bp6-slider` and its parts | `xh-slider__body` for the inner element, with `xh-slider__track`, `__progress`, `__handle`, `__label`, `__axis`, and `xh-slider__body--unlabeled` |
@@ -180,6 +183,16 @@ Proposals are hints, not decisions:
   lacked a rule. For menus: Blueprint's `.bp6-popover-open > .bp6-menu-item` highlight outranks
   Hoist's `[aria-expanded]` one, and its headings truncate where Hoist's wrap. The spec drops those.
   Compare forced states, not only screenshots, and ask before keeping a change.
+- Popover lives in shared `cmp/popover`, whose stylesheet also loads on mobile. Its Blueprint rules
+  and Hoist's desktop overrides went to `desktop/styles/Popover.scss`, imported by
+  `desktop/register.ts` right after `BlueprintBase.css`. Do the same for other shared components.
+- The popover arrow is an SVG that floating-ui sizes and places, and an SVG renders no `::before`.
+  Blueprint's rules on the arrow element itself only nudge it 3px into the tooltip, so the spec
+  drops them and keeps the fills.
+- Capture the before and after clients one after the other, not at once. Run together, they share
+  one server user, and pages that persist grid state, such as Admin's Grid Formatter Parity test,
+  differ by timing. Do not commit or edit hoist-react files while a capture runs: the pre-commit
+  hook and Toolbox's docs tab both trigger a rebuild, and the page reloads mid-run.
 - A grid's right-click menu is AG Grid's own, not a Hoist menu. Check Hoist context menus on a
   `contextMenu` panel, such as Toolbox's Panels intro.
 - Check that a `bp6-*` class and the `xh-*` class you map it to are on the same elements. Grid
@@ -222,10 +235,14 @@ see the same server data.
   its submenu, with `:hover`, `:active` and `:focus` forced on each item. It clones a plain item
   for the states Toolbox does not render (primary and warning intents, active, a label). Compare
   two runs with `stylediff.cjs`.
+- `popups.cjs <dir> [scenarioRegex]` - computed styles and screenshots of open popovers: Picker,
+  IconPicker, GroupingChooser, DateRangePicker, a menu button and an app bar tooltip, with cloned
+  intent and compact tooltips. Compare two runs with `stylediff.cjs`.
 - `translate.cjs <spec> <css> <outDir>` - translates the Blueprint rules a spec names onto `xh-*`
   classes, class for class, so specificity is unchanged. `specs/button.cjs` is the Button spec and
   `specs/menu.cjs` the Menu spec. A `contextMap` value can be a function of the compound's
-  classes, and `dropDecls` leaves out properties of a translated rule.
+  classes, `dropDecls` leaves out properties of a translated rule, and `dropSelectors` leaves out
+  translated selectors that match it. `specs/popover.cjs` is the Popover and Tooltip spec.
   Run it on Blueprint's full `blueprint.css` for the component's own rules (`own.css`), and on
   `BlueprintBase.css` for the rules shared with other components (`base.css`, edited in place).
 

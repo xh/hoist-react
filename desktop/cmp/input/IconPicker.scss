@@ -9,7 +9,7 @@
   display: inline-flex;
 
   // Ensure popover target stretches to fill layout width.
-  > .bp6-popover-target {
+  > .xh-popover__target-wrapper {
     display: flex;
     flex: 1;
   }
@@ -68,8 +68,8 @@
 
 // Popover content renders in a portal, outside the root DOM of the control above.
 // Cell size is set inline on the grid list from IconPicker.ts, which needs exact row heights.
-.xh-icon-picker__popover.bp6-popover {
-  .bp6-popover-content {
+.xh-icon-picker__popover.xh-popover__content-wrapper {
+  .xh-popover__content {
     padding: 0;
   }
 

@@ -72,7 +72,7 @@ $drp-transition-dur: 120ms;
     // Outer box is sized via layoutSupport - the trigger stretches to fill, beside any step buttons.
     gap: 2px;
 
-    .bp6-popover-target {
+    .xh-popover__target-wrapper {
       flex: 1;
       min-width: 0;
       display: block;
@@ -177,7 +177,7 @@ $drp-transition-dur: 120ms;
       --xh-date-range-picker-accent-color: var(--xh-intent-danger);
     }
 
-    .bp6-popover-content {
+    .xh-popover__content {
       padding: 0;
     }
 

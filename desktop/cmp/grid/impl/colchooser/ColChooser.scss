@@ -287,9 +287,9 @@
         cursor: pointer;
       }
 
-      // Blueprint's element-qualified `span.bp6-popover-target {display: inline-block}` outranks a lone
-      // class, so chain the popover class here to win and actually center the glyph.
-      &.bp6-popover-target {
+      // The base popover styles' element-qualified `span.xh-popover__target-wrapper` rule outranks a
+      // lone class, so chain the target class here to win and actually center the glyph.
+      &.xh-popover__target-wrapper {
         display: inline-flex;
         align-items: center;
       }
@@ -299,7 +299,7 @@
 
 // The popover portals to the document body, so these rules must live outside .xh-col-chooser.
 // Colors, border and radius come from the standard `--xh-tooltip-*` styling.
-.xh-col-chooser__meta-popover.bp6-tooltip .bp6-popover-content {
+.xh-col-chooser__meta-popover.xh-tooltip .xh-popover__content {
   padding: 0;
 }
 

@@ -58,14 +58,14 @@
           width: 100%;
         }
 
-        &.bp6-popover-target,
-        .bp6-popover-target {
+        &.xh-popover__target-wrapper,
+        .xh-popover__target-wrapper {
           display: flex;
           flex: 1;
         }
       }
 
-      .bp6-popover-target > .bp6-control-group {
+      .xh-popover__target-wrapper > .bp6-control-group {
         display: flex;
         flex: 1;
       }
