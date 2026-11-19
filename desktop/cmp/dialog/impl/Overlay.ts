@@ -11,6 +11,7 @@ import classNames from 'classnames';
 import type {KeyboardEvent, ReactElement, ReactNode} from 'react';
 import {Children, cloneElement, createElement as h, isValidElement, useEffect, useRef} from 'react';
 import {useBodyScrollLock} from './BodyScrollLock';
+import './Overlay.scss';
 
 export interface OverlayProps {
     isOpen?: boolean;

@@ -38,13 +38,22 @@ export function popoverArrow(
             ref,
             'aria-hidden': true,
             className: 'xh-popover__arrow bp6-popover-arrow',
-            style: {position: 'absolute', left: coords?.x, top: coords?.y, ...sideStyle}
+            style: {
+                position: 'absolute',
+                width: POPOVER_ARROW_SIZE,
+                height: POPOVER_ARROW_SIZE,
+                left: coords?.x,
+                top: coords?.y,
+                ...sideStyle
+            }
         },
         h(
             'svg',
             {
+                width: POPOVER_ARROW_SIZE,
+                height: POPOVER_ARROW_SIZE,
                 viewBox: `0 0 ${POPOVER_ARROW_SIZE} ${POPOVER_ARROW_SIZE}`,
-                style: {transform: `rotate(${angle}deg)`}
+                style: {display: 'block', transform: `rotate(${angle}deg)`}
             },
             h('path', {
                 className: 'xh-popover__arrow-border bp6-popover-arrow-border',

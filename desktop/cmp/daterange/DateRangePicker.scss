@@ -286,6 +286,11 @@ $drp-transition-dur: 120ms;
       gap: 8px;
       padding: 0 6px;
       margin-bottom: var(--xh-spacing);
+
+      // The count stepper - a small gap between its buttons and input.
+      .bp6-control-group {
+        gap: 2px;
+      }
     }
 
     &__rel-prefix {

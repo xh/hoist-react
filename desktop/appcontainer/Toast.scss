@@ -10,6 +10,16 @@
     position: absolute;
   }
 
+  // The top and left edges of a toast's position. The Blueprint base styles hold the bottom and
+  // right edges.
+  &.bp6-toast-container-top {
+    top: 0;
+  }
+
+  &.bp6-toast-container-left {
+    align-items: flex-start;
+  }
+
   .xh-toast {
     color: white !important;
     padding-left: var(--xh-spacing-half);

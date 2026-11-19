@@ -69,10 +69,10 @@ export const [ButtonGroup, buttonGroup] = hoistCmp.withFactory<ButtonGroupProps>
             className: classNames(
                 'bp6-button-group',
                 {
-                    'bp6-fill': fill,
-                    'bp6-minimal': minimal,
-                    'bp6-outlined': outlined,
-                    'bp6-vertical': vertical
+                    'xh-button-group--fill bp6-fill': fill,
+                    'xh-button-group--minimal bp6-minimal': minimal,
+                    'xh-button-group--outlined bp6-outlined': outlined,
+                    'xh-button-group--vertical bp6-vertical': vertical
                 },
                 className
             )
