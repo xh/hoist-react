@@ -27,10 +27,12 @@ import {
     useInteractions,
     useMergeRefs
 } from '@floating-ui/react';
+import {XH} from '@xh/hoist/core';
+import {reaction} from '@xh/hoist/mobx';
 import {TEST_ID} from '@xh/hoist/utils/js';
-import {usePortalContainer} from '@xh/hoist/utils/react';
+import {elementFromContent, usePortalContainer} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
-import {isEmpty, isNil, isString} from 'lodash';
+import {isEmpty, isFunction, isNil, isString} from 'lodash';
 import type {
     FC,
     HTMLAttributes,
@@ -61,7 +63,6 @@ const VIEWPORT_PADDING = 8;
 /** Elements whose click closes the popover that holds them. Blueprint's class is still honored. */
 const DISMISS_SELECTOR = '.xh-popover-dismiss, .bp6-popover-dismiss';
 
-/** Nests each popover in a Floating UI tree, so nested popovers dismiss in the right order. */
 /** Options for Hoist's own components built on the popover, beyond the public `PopoverProps`. */
 export interface PopoverImplProps extends PopoverProps {
     /** Point on the page to open at, in place of a target element - e.g. for a context menu. */
@@ -75,8 +76,12 @@ export interface PopoverImplProps extends PopoverProps {
 
     /** ARIA role of the popup - e.g. `tooltip`. */
     popupRole?: string;
+
+    /** CSS position of the popover. Default `absolute`. */
+    strategy?: 'absolute' | 'fixed';
 }
 
+/** Nests each popover in a Floating UI tree, so nested popovers dismiss in the right order. */
 export const PopoverImpl: FC<PopoverImplProps> = props => {
     const parentId = useFloatingParentNodeId(),
         impl = h(PopoverInner, props);
@@ -86,6 +91,7 @@ export const PopoverImpl: FC<PopoverImplProps> = props => {
 const PopoverInner: FC<PopoverImplProps> = props => {
     const {
             anchorPoint,
+            backdrop = false,
             backdropProps,
             popupRole,
             renderTarget: renderTargetFn,
@@ -94,10 +100,9 @@ const PopoverInner: FC<PopoverImplProps> = props => {
             canEscapeKeyClose = true,
             children,
             className,
-            content,
             defaultIsOpen = false,
             disabled = false,
-            hasBackdrop = false,
+            hasBackdrop: hasBackdropProp = false,
             hoverCloseDelay = 300,
             hoverOpenDelay = 150,
             interactionKind = 'click',
@@ -115,6 +120,7 @@ const PopoverInner: FC<PopoverImplProps> = props => {
             popoverRef,
             position = 'auto',
             shouldReturnFocusOnClose = false,
+            strategy = 'absolute',
             targetTagName = 'span',
             testId,
             usePortal = true
@@ -123,7 +129,9 @@ const PopoverInner: FC<PopoverImplProps> = props => {
         offsetMain = props.offset?.mainAxis,
         offsetCross = props.offset?.crossAxis;
 
-    const contextContainer = usePortalContainer(),
+    const content = toContentNode(props.content),
+        hasBackdrop = hasBackdropProp || backdrop,
+        contextContainer = usePortalContainer(),
         // Floating UI treats a null root as one not yet mounted, and renders nothing - so pass
         // undefined, for `document.body`, when no container is set.
         portalContainer = props.portalContainer ?? contextContainer ?? undefined,
@@ -168,6 +176,16 @@ const PopoverInner: FC<PopoverImplProps> = props => {
 
     useEffect(() => clearTimer, []);
 
+    // Close on a route change, so the app does not navigate underneath an open popover - e.g. via
+    // the browser's back button.
+    useEffect(() => {
+        if (!open) return;
+        return reaction(
+            () => XH.routerState,
+            () => setOpen(false)
+        );
+    }, [open, setOpen]);
+
     // Close an uncontrolled popover if it becomes disabled.
     useEffect(() => {
         if (disabled && !isControlled && uncontrolledOpen) setUncontrolledOpen(false);
@@ -198,6 +216,7 @@ const PopoverInner: FC<PopoverImplProps> = props => {
             onOpenChange: (next, e) => setOpen(next, e),
             placement,
             middleware,
+            strategy,
             whileElementsMounted: autoUpdate
         }),
         {context, refs, floatingStyles, middlewareData} = floating;
@@ -367,6 +386,7 @@ const PopoverInner: FC<PopoverImplProps> = props => {
                       ...backdropProps,
                       className: classNames(
                           'xh-popover__content-overlay bp6-overlay-backdrop bp6-popover-backdrop',
+                          {'xh-popover__content-overlay--backdrop': backdrop},
                           backdropProps?.className
                       )
                   })
@@ -387,6 +407,13 @@ const PopoverInner: FC<PopoverImplProps> = props => {
 
     return h(FloatingNode, {id: nodeId}, target, popup);
 };
+
+// A component or function given as content renders as an element.
+function toContentNode(content: PopoverProps['content']): ReactNode {
+    return isFunction(content) || (content as any)?.isHoistComponent
+        ? elementFromContent(content as any)
+        : (content as ReactNode);
+}
 
 //------------------------
 // Target

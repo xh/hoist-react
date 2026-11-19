@@ -7,8 +7,8 @@ the target. Hoist's menus, pickers and choosers open in it. It is built on
 [Floating UI](https://floating-ui.com/docs/react) and takes no model. The props and their defaults
 are documented in `Types.ts`.
 
-Desktop components use this `Popover`. Mobile still has its own, in `mobile/cmp/popover`, until the
-two are merged.
+Desktop and mobile components both use this `Popover`. Any popover closes when the app's route
+changes, so the app does not navigate underneath it.
 
 ## Usage
 
@@ -78,6 +78,16 @@ tooltip({
 For a plain-text label on a button, the button's `tooltip` prop - a native `title` - is often
 enough. Style tooltips with the `--xh-tooltip-*` variables.
 
+## On Mobile
+
+On mobile, a popover has no arrow, is fixed in place, and is covered by a transparent backdrop
+while open. A tap outside it closes it without reaching the element beneath. Set `backdrop: true`
+to dim the page behind it, as mobile's `MenuButton` does. The target sits inside an outer `div`
+that carries the popover's `className`, as with mobile's earlier popover.
+
+`@xh/hoist/mobile/cmp/popover` re-exports this `Popover` for one release. Import it from
+`@xh/hoist/cmp/popover` instead.
+
 ## Falling Back to Blueprint
 
 For one release, an app can render desktop popovers and tooltips with Blueprint's, as before Hoist
@@ -95,5 +105,7 @@ Tooltip.defaults.useBlueprint = true;
 - **App CSS on `bp6-popover*` classes works for one release only.** The popover keeps Blueprint's
   class names next to its own `xh-popover__*` ones until then. Move app CSS to the `xh-popover__*`
   classes.
+- **Changing the route closes popovers.** A popover whose content changes the route closes with
+  the change. Keep route changes out of popover content that should stay open.
 - **`popoverModifiers` on `DateInput` has no effect.** It passed Popper.js options to Blueprint.
   Use `popoverPosition` and `popoverBoundary` instead.

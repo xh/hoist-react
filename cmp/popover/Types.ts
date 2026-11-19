@@ -4,7 +4,7 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import type {HoistProps, Intent, TestSupportProps} from '@xh/hoist/core';
+import type {Content, HoistProps, Intent, TestSupportProps} from '@xh/hoist/core';
 import type {HTMLAttributes, ReactElement, ReactNode, Ref, SyntheticEvent} from 'react';
 
 /**
@@ -45,8 +45,11 @@ export type PopoverBoundary = 'clippingParents' | Element | Element[];
 export type PopoverInteractionKind = 'click' | 'click-target' | 'hover' | 'hover-target';
 
 export interface PopoverProps extends HoistProps, TestSupportProps {
-    /** Content of the popover. Nothing opens while it is null or empty. */
-    content?: ReactNode;
+    /**
+     * Content of the popover - an element, or a component or function that renders one. Nothing
+     * opens while it is null or empty.
+     */
+    content?: ReactNode | Content;
 
     /** Target element the popover opens from - pass exactly one. */
     children?: ReactNode;
@@ -87,8 +90,15 @@ export interface PopoverProps extends HoistProps, TestSupportProps {
     /** True to size the popover to the width of its target. */
     matchTargetWidth?: boolean;
 
-    /** True to cover the page with a transparent backdrop while open, blocking clicks behind it. */
+    /**
+     * True to cover the page with a transparent backdrop while open, blocking clicks behind it.
+     * Default true on mobile, so a tap outside the popover closes it without reaching what lies
+     * behind.
+     */
     hasBackdrop?: boolean;
+
+    /** True to dim the page behind the open popover. Implies `hasBackdrop`. */
+    backdrop?: boolean;
 
     /** CSS class name for the popover element. */
     popoverClassName?: string;

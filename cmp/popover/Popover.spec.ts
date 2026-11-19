@@ -6,9 +6,10 @@
  */
 import {Popover, popover, type PopoverProps} from '@xh/hoist/cmp/popover';
 import {registerLegacyPopover} from '@xh/hoist/cmp/popover/impl/LegacyPopover';
+import {XH} from '@xh/hoist/core';
 import {portalContainerProvider} from '@xh/hoist/utils/react';
 import {initTestAppAsync} from '@xh/hoist/test-support';
-import {fireEvent, render, screen, waitFor} from '@testing-library/react';
+import {act, fireEvent, render, screen, waitFor} from '@testing-library/react';
 import {createElement} from 'react';
 import {afterEach, beforeAll, describe, expect, it, vi} from 'vitest';
 
@@ -36,6 +37,28 @@ describe('Popover', () => {
 
         fireEvent.click(screen.getByText('Open'));
         await waitFor(() => expect(screen.queryByText('Body')).toBeNull());
+    });
+
+    it('closes when the route changes', async () => {
+        render(withPopover());
+        fireEvent.click(screen.getByText('Open'));
+        await screen.findByText('Body');
+
+        // The router does not run in tests - set its state as a navigation would.
+        act(() => XH.routerModel['setCurrentState']({name: 'other', params: {}}));
+        await waitFor(() => expect(screen.queryByText('Body')).toBeNull());
+    });
+
+    it('renders a component given as content', async () => {
+        const content = () => createElement('div', null, 'From function');
+        render(withPopover({content, isOpen: true}));
+        expect(await screen.findByText('From function')).toBeTruthy();
+    });
+
+    it('dims the page behind it with backdrop', async () => {
+        render(withPopover({isOpen: true, backdrop: true}));
+        await screen.findByText('Body');
+        expect(document.querySelector('.xh-popover__content-overlay--backdrop')).not.toBeNull();
     });
 
     it('reports interaction without changing state when controlled', async () => {

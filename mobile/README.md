@@ -293,12 +293,14 @@ menuButton({
 
 Menu items are `MenuItemLike` objects with `text`, `icon`, and `actionFn` properties.
 
-### Popover (`/cmp/popover/`)
+### Popover
 
-Touch-triggered popover for additional content:
+Mobile uses the cross-platform `Popover` from `@xh/hoist/cmp/popover` - see the
+[Popover README](../cmp/popover/README.md#on-mobile). `@xh/hoist/mobile/cmp/popover` re-exports it
+for one release.
 
 ```typescript
-import {popover} from '@xh/hoist/mobile/cmp/popover';
+import {popover} from '@xh/hoist/cmp/popover';
 
 popover({
     children: button({icon: Icon.info()}),

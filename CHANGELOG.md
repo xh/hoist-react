@@ -53,6 +53,11 @@ detailed, step-by-step upgrade instructions with before/after code examples.
   keeps Blueprint's `bp6-toast*` classes alongside `xh-toast*` ones, so app CSS still applies. Set
   `ToastSource.defaults.useBlueprint = true` at startup to fall back to Blueprint's for this
   release. `ToastSource` is exported from `@xh/hoist/desktop/appcontainer` for this purpose.
+* Mobile `Popover` and `MenuButton` now use the cross-platform `Popover` from
+  `@xh/hoist/cmp/popover`. `@xh/hoist/mobile/cmp/popover` re-exports it for one release - import
+  from `@xh/hoist/cmp/popover` instead. Popover content now renders in an `xh-popover__floating`
+  element in a Floating UI portal, not in a `#xh-popover-portal` div. Restyle any app CSS that
+  positions `.xh-popover__content-wrapper`.
 * Desktop hotkeys, from `useHotkeys` and `PanelProps.hotkeys`, and the hotkeys dialog opened by `?`
   now use Hoist's own implementation, not Blueprint's. Combos keep the same syntax. Set
   `HOTKEYS_DEFAULTS.useBlueprint = true`, from `@xh/hoist/desktop/hooks`, at startup to fall back
@@ -72,6 +77,10 @@ detailed, step-by-step upgrade instructions with before/after code examples.
     * Escape now returns focus to the popover's target, so keyboard users keep their place.
     * Added `portalContainerProvider` to `@xh/hoist/utils/react`, to send popovers within it to a
       given container, e.g. a popped-out child window.
+    * It works on mobile too, with no arrow and a transparent backdrop that keeps a tap outside
+      from reaching what lies behind. Set `backdrop` to dim the page behind it on either platform.
+    * Any popover now closes when the app's route changes, as mobile popovers did before.
+    * `content` also takes a component or a function that returns an element.
 * Dialogs now move keyboard focus inside when they open, and return it to where it was when they
   close.
 * Desktop menus now support the keyboard: arrow keys, Home and End move between items, typing
@@ -167,8 +176,8 @@ detailed, step-by-step upgrade instructions with before/after code examples.
     * `ButtonProps` and `ButtonGroupProps` no longer extend Blueprint's props. They keep their
       declared props and all native `<button>` / `<div>` attributes, but drop Blueprint-only props
       such as `loading`, `alignText`, `large` and `small`. `ButtonGroupProps` keeps `fill`.
-    * `MenuButtonProps.popoverProps` now takes the new `MenuButtonPopoverProps`, a subset of
-      Blueprint's popover props.
+    * `MenuButtonProps.popoverProps` now takes `Partial<PopoverProps>`, on desktop and mobile.
+      Mobile `MenuButtonProps.menuPosition` is now typed as `PopoverPosition`.
     * Added a Hoist-owned `HotkeyConfig` to `@xh/hoist/desktop/hooks`, for `PanelProps.hotkeys`
       and `useHotkeys`.
     * Deprecated `DateInputProps.popoverModifiers`, which passes Popper.js modifiers to Blueprint.
@@ -176,6 +185,7 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 
 ### ✨ Styles
 
+* `--xh-popover-backdrop-bg` now applies on desktop too, for a popover shown with `backdrop: true`.
 * Added CSS variables for concerns some components lacked: `--xh-input-border-radius`,
   `--xh-popup-border-radius`, `--xh-title-font-weight` (with `--xh-panel-title-font-weight`,
   `--xh-popup-title-font-weight` and `--xh-card-header-font-weight`), `--xh-tab-font-weight` and
