@@ -78,6 +78,7 @@ export const [ZoneMapper, zoneMapper] = hoistCmp.withFactory<ZoneMapperModel>({
 });
 
 const introText = hoistCmp.factory({
+    model: false,
     render() {
         return div({
             className: 'xh-zone-mapper__intro-text',

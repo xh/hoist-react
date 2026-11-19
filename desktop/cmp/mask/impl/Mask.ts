@@ -18,6 +18,7 @@ import './Mask.scss';
  * @internal
  */
 export const maskImpl = hoistCmp.factory<MaskProps>({
+    model: false,
     render({message, onClick, inline = true, spinner = false, className}) {
         const body = vbox({
             onClick,

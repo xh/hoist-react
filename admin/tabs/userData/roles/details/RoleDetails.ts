@@ -53,7 +53,8 @@ const details = hoistCmp.factory(() =>
     })
 );
 
-const members = hoistCmp.factory<RoleDetailsModel>({
+const members = hoistCmp.factory({
+    model: false,
     render() {
         return panel({
             children: tabContainer()

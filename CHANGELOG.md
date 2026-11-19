@@ -73,6 +73,9 @@ detailed, step-by-step upgrade instructions with before/after code examples.
   `intent`, by its trend, or by the sign of each part, as for profit and loss. Optional
   `markers` dot the first, last, lowest and highest values. An optional `tooltip` for the whole
   sparkline shows on desktop and mounts only when first hovered.
+* `useLocalModel()` now works in a component with `model: false`, with no need for a placeholder
+  model spec. 33 Hoist components now set `model: false`, skipping model resolution and a wrapping
+  component on each render.
 * Added `XH.hasRoute()` to check if a route exists. Call it before `XH.router.buildPath()` or
   `buildUrl()` with a name that may not be registered, as both throw for an unknown route.
 

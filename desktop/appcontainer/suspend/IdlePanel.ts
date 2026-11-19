@@ -21,6 +21,7 @@ import idleImage from './IdlePanelImage.png';
  */
 export const idlePanel = hoistCmp.factory({
     displayName: 'IdlePanel',
+    model: false,
 
     render({onReactivate}) {
         return viewport({
