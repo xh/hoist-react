@@ -4,9 +4,8 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {div} from '@xh/hoist/cmp/layout';
+import {callout} from '@xh/hoist/cmp/callout';
 import {hoistCmp} from '@xh/hoist/core';
-import {createElement} from 'react';
 import type {LeftRightChooserModel} from '../LeftRightChooserModel';
 
 /** @internal */
@@ -18,13 +17,11 @@ export const description = hoistCmp.factory<LeftRightChooserModel>(({model}) => 
 
     if (!hasDescription || !selDescription) return null;
 
-    // Blueprint's callout class names are kept, so its styles and app CSS apply.
-    return div({
-        className:
-            'xh-lr-chooser__description bp6-callout bp6-intent-primary bp6-callout-has-body-content',
-        children: [
-            selText ? createElement('h5', {className: 'bp6-heading'}, selText) : null,
-            selDescription
-        ]
+    return callout({
+        title: selText,
+        className: 'xh-lr-chooser__description',
+        intent: 'primary',
+        icon: null,
+        children: selDescription
     });
 });
