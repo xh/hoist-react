@@ -64,6 +64,7 @@ const SubmenuContext = createContext<{close: () => void}>(null);
 export const menuList = hoistCmp.factory<MenuListProps>({
     displayName: 'MenuList',
     model: false,
+    observer: false,
 
     render({className, children, ulRef, onKeyDown, ...rest}) {
         const submenu = useContext(SubmenuContext),
@@ -134,6 +135,7 @@ export const menuList = hoistCmp.factory<MenuListProps>({
 export const menuItem = hoistCmp.factory<MenuItemElementProps>({
     displayName: 'MenuItem',
     model: false,
+    observer: false,
 
     render(props) {
         const {
@@ -296,6 +298,7 @@ export const menuItem = hoistCmp.factory<MenuItemElementProps>({
 export const menuDivider = hoistCmp.factory<MenuDividerElementProps>({
     displayName: 'MenuDivider',
     model: false,
+    observer: false,
 
     render({className, title}) {
         return h(

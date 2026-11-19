@@ -4,26 +4,16 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import type {ReactNode} from 'react';
-import {createContext, createElement, useContext} from 'react';
-
-const PortalContainerContext = createContext<HTMLElement>(null);
+import {createContext, useContext} from 'react';
 
 /**
- * Render `children` so that Hoist popovers and other overlays within them portal into `container`
- * rather than `document.body` - e.g. to keep them in a popped-out child window.
+ * Holds the element that Hoist popovers and other overlays portal into - set by
+ * `PortalContainerProvider` in `@xh/hoist/cmp/popover`.
+ * @internal
  */
-export function portalContainerProvider({
-    container,
-    children
-}: {
-    container: HTMLElement;
-    children?: ReactNode;
-}): ReactNode {
-    return createElement(PortalContainerContext.Provider, {value: container}, children);
-}
+export const PortalContainerContext = createContext<HTMLElement>(null);
 
-/** The container set by the nearest `portalContainerProvider`, or null for `document.body`. */
+/** The container set by the nearest `PortalContainerProvider`, or null for `document.body`. */
 export function usePortalContainer(): HTMLElement {
     return useContext(PortalContainerContext);
 }

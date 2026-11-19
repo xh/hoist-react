@@ -5,6 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {hframe} from '@xh/hoist/cmp/layout';
+import {portalContainerProvider} from '@xh/hoist/cmp/popover';
 import {creates, hoistCmp, XH} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
@@ -12,7 +13,6 @@ import {Icon} from '@xh/hoist/icon';
 import {InspectorModel} from '@xh/hoist/inspector/InspectorModel';
 import {instancesPanel} from '@xh/hoist/inspector/instances/InstancesPanel';
 import {statsPanel} from '@xh/hoist/inspector/stats/StatsPanel';
-import {portalContainerProvider} from '@xh/hoist/utils/react';
 import {createPortal} from 'react-dom';
 import './Inspector.scss';
 

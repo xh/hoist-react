@@ -36,6 +36,7 @@ export interface OverlayProps {
 export const overlay = hoistCmp.factory<OverlayProps>({
     displayName: 'Overlay',
     model: false,
+    observer: false,
 
     render({
         autoFocus = false,

@@ -267,6 +267,7 @@ interface SegmentedControlImplProps extends HoistProps {
 const segmentedControlImpl = hoistCmp.factory<SegmentedControlImplProps>({
     displayName: 'SegmentedControlImpl',
     model: false,
+    observer: false,
 
     render({options, value, onValueChange, disabled, fill, inline, size, ...rest}) {
         const groupRef = useRef<HTMLDivElement>(null),

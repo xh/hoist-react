@@ -6,4 +6,5 @@
  */
 export type * from './Types';
 export * from './Popover';
+export * from './PortalContainerProvider';
 export * from './Tooltip';

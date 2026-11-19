@@ -31,6 +31,7 @@ export interface TabListProps {
 export const tabList = hoistCmp.factory<TabListProps>({
     displayName: 'TabList',
     model: false,
+    observer: false,
 
     render({id, selectedTabId, vertical, animate, children}) {
         const listRef = useRef<HTMLDivElement>(null),
@@ -126,6 +127,7 @@ export interface TabTitleProps {
 export const tabTitle = hoistCmp.factory<TabTitleProps>({
     displayName: 'TabTitle',
     model: false,
+    observer: false,
 
     render({parentId, id, selected, disabled, style, onSelect, onContextMenu, children}) {
         return h(

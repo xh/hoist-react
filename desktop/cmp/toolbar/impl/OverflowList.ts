@@ -39,6 +39,7 @@ interface PartitionState {
 export const overflowList = hoistCmp.factory<OverflowListProps>({
     displayName: 'OverflowList',
     model: false,
+    observer: false,
 
     render({items, overflowRenderer, collapseFrom = 'start', minVisibleItems = 0}) {
         const listRef = useRef<HTMLDivElement>(null),

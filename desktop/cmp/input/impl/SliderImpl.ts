@@ -43,6 +43,7 @@ export interface SliderImplProps {
 export const sliderImpl = hoistCmp.factory<SliderImplProps>({
     displayName: 'SliderImpl',
     model: false,
+    observer: false,
 
     render(props) {
         const {

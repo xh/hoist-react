@@ -84,6 +84,7 @@ export interface PopoverImplProps extends PopoverProps {
 export const popoverImpl = hoistCmp.factory<PopoverImplProps>({
     displayName: 'PopoverImpl',
     model: false,
+    observer: false,
 
     render(props) {
         const parentId = useFloatingParentNodeId(),
@@ -95,6 +96,7 @@ export const popoverImpl = hoistCmp.factory<PopoverImplProps>({
 const popoverInner = hoistCmp.factory<PopoverImplProps>({
     displayName: 'PopoverInner',
     model: false,
+    observer: false,
 
     render(props) {
         const {

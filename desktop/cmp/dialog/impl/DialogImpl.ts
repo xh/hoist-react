@@ -28,6 +28,7 @@ import {useBodyScrollLock} from './BodyScrollLock';
 export const dialogImpl = hoistCmp.factory<DialogProps>({
     displayName: 'DialogImpl',
     model: false,
+    observer: false,
 
     render(props) {
         const parentId = useFloatingParentNodeId(),
@@ -39,6 +40,7 @@ export const dialogImpl = hoistCmp.factory<DialogProps>({
 const dialogInner = hoistCmp.factory<DialogProps>({
     displayName: 'DialogInner',
     model: false,
+    observer: false,
 
     render(props) {
         const {

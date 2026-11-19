@@ -52,6 +52,7 @@ export interface NumericInputProps {
 export const numericInput = hoistCmp.factory<NumericInputProps>({
     displayName: 'NumericInput',
     model: false,
+    observer: false,
 
     render(props) {
         const {

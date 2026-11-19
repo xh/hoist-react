@@ -41,6 +41,7 @@ export interface InputGroupProps extends InputHTMLAttributes<HTMLInputElement> {
 export const inputGroup = hoistCmp.factory<InputGroupProps>({
     displayName: 'InputGroup',
     model: false,
+    observer: false,
 
     render(props) {
         const {
