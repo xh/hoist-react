@@ -4,7 +4,7 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {tooltip as tooltipCmp} from '@xh/hoist/cmp/popover';
+import {tooltip as tooltipCmp} from '@xh/hoist/cmp/tooltip';
 import type {HoistProps} from '@xh/hoist/core';
 import {hoistCmp} from '@xh/hoist/core';
 import type {HTMLAttributes, ReactElement, Ref} from 'react';

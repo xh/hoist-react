@@ -39,8 +39,10 @@ See [`docs-roadmap.md`](./planning/docs-roadmap.md) for documentation coverage t
 | Select a period or date range (presets, lookbacks, months, custom) | [`/cmp/daterange/`](../cmp/daterange/README.md)                                                                   |
 | Display a PDF document (page nav, zoom, find, download) | [`/cmp/pdfviewer/`](../cmp/pdfviewer/README.md) |
 | Set off a note, caveat or warning within content | [`/cmp/callout/`](../cmp/callout/README.md) |
-| Show progress or usage against a limit as a bar | [`/cmp/progressbar/`](../cmp/progressbar/README.md) |
+| Show progress or usage against a limit as a bar | [`/cmp/tooltip/`](../cmp/tooltip/README.md) | Short label shown beside a target on hover or focus, a hover Popover with tooltip defaults | Tooltip, TooltipProps, content, intent, compact, position, targetTagName |
+| [`/cmp/progressbar/`](../cmp/progressbar/README.md) |
 | Open content beside a target on click or hover | [`/cmp/popover/`](../cmp/popover/README.md) |
+| Show a short label on hover or focus | [`/cmp/tooltip/`](../cmp/tooltip/README.md) |
 | Show a small inline trend chart beside a figure or in a grid cell | [`/cmp/sparkline/`](../cmp/sparkline/README.md) |
 | Use layout containers (Box, HBox, VBox, Frame) | [`/cmp/layout/`](../cmp/layout/README.md)                                                                           |
 | Work with Stores, Records, Fields, or Filters | [`/data/`](../data/README.md)                                                                                       |

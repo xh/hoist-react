@@ -425,7 +425,8 @@ Mobile apps import `popover` from `@xh/hoist/cmp/popover` in place of the remove
 |---|---|
 | `dialog`, `Dialog` | `dialog` from `@xh/hoist/desktop/cmp/dialog` |
 | `dialogBody`, `dialogFooter`, `dialogFooterActions` | The same names from `@xh/hoist/desktop/cmp/dialog` |
-| `popover`, `Popover`, `tooltip`, `Tooltip` | The same names from `@xh/hoist/cmp/popover` |
+| `popover`, `Popover` | The same names from `@xh/hoist/cmp/popover` |
+| `tooltip`, `Tooltip` | The same names from `@xh/hoist/cmp/tooltip` |
 | `menuItem`, `menuDivider` | A `MenuItem` config, and `'-'` or `{heading}` for a divider. Map `onClick` to `actionFn`, `labelElement` to `rightElement`, and `shouldDismissPopover: false` to `keepMenuOpen: true` |
 | `menu` | `menu` or `menuButton` from `@xh/hoist/desktop/cmp/menu`, with `MenuItem` configs |
 | `showContextMenu` | `useContextMenu` from `@xh/hoist/desktop/hooks`, or `PanelProps.contextMenu` |
@@ -456,7 +457,7 @@ tooltip({content: 'Refresh now', position: 'bottom', children: button({icon: Ico
 After:
 
 ```typescript
-import {tooltip} from '@xh/hoist/cmp/popover';
+import {tooltip} from '@xh/hoist/cmp/tooltip';
 import {dialog} from '@xh/hoist/desktop/cmp/dialog';
 
 dialog({title: 'Edit', isOpen: model.isOpen, onClose: () => model.close(), children: form()});

@@ -8,7 +8,7 @@ import type {BaseFormFieldProps, FormContextType} from '@xh/hoist/cmp/form';
 import {FieldModel, FormContext, FormFieldSetContext} from '@xh/hoist/cmp/form';
 import {box, div, label as labelEl, li, span, ul} from '@xh/hoist/cmp/layout';
 import type {PopoverBoundary, PopoverPosition} from '@xh/hoist/cmp/popover';
-import {tooltip} from '@xh/hoist/cmp/popover';
+import {tooltip} from '@xh/hoist/cmp/tooltip';
 import type {DefaultHoistProps, HoistProps, HSide, TestSupportProps} from '@xh/hoist/core';
 import {hoistCmp, uses, XH} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';

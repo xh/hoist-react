@@ -6,7 +6,7 @@
  */
 import type {ColumnSpec, GridConfig, GridModel} from '@xh/hoist/cmp/grid';
 import {div, fragment, hbox, hframe, span, vbox, vframe} from '@xh/hoist/cmp/layout';
-import {tooltip} from '@xh/hoist/cmp/popover';
+import {tooltip} from '@xh/hoist/cmp/tooltip';
 import type {HoistProps} from '@xh/hoist/core';
 import {hoistCmp, type Some} from '@xh/hoist/core';
 import type {StoreRecord, StoreRecordId} from '@xh/hoist/data';

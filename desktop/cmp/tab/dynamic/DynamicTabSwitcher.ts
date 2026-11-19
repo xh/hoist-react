@@ -7,7 +7,7 @@
 import {box, div, hframe} from '@xh/hoist/cmp/layout';
 import {TabContainerModel, TabModel} from '@xh/hoist/cmp/tab';
 import type {TabSwitcherMenuContext, TabSwitcherProps} from '@xh/hoist/cmp/tab/Types';
-import {tooltip as tooltipCmp} from '@xh/hoist/cmp/popover';
+import {tooltip as tooltipCmp} from '@xh/hoist/cmp/tooltip';
 import type {HoistProps, Side} from '@xh/hoist/core';
 import {hoistCmp, HoistModel, useContextModel, useLocalModel, uses} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';

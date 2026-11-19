@@ -42,8 +42,9 @@ detailed, step-by-step upgrade instructions with before/after code examples.
   Step 8 of the upgrade notes. Hoist ships the Blueprint styles its components use, so they look
   the same. The DOM keeps Blueprint's `bp6-*` classes alongside new `xh-*` ones, so app CSS keyed
   to them still applies. Move any direct `@blueprintjs/core` imports onto Hoist's components too.
-    * Popovers and tooltips use the new `Popover` and `Tooltip` in `@xh/hoist/cmp/popover` - see
-      New Features. `DateInputProps.popoverModifiers` no longer has any effect.
+    * Popovers and tooltips use the new `Popover` in `@xh/hoist/cmp/popover` and `Tooltip` in
+      `@xh/hoist/cmp/tooltip` - see New Features. `DateInputProps.popoverModifiers` no longer has
+      any effect.
     * Added `Dialog` to `@xh/hoist/desktop/cmp/dialog`, with `dialogBody`, `dialogFooter` and
       `dialogFooterActions`, and moved all Hoist dialogs, masks and overlays onto it. Import
       `dialog` and its parts from there rather than `@xh/hoist/kit/blueprint`.
@@ -73,6 +74,8 @@ detailed, step-by-step upgrade instructions with before/after code examples.
       from reaching what lies behind. Set `backdrop` to dim the page behind it on either platform.
     * Any popover now closes when the app's route changes, as mobile popovers did before.
     * `content` also takes a component or a function that returns an element.
+* Added `Tooltip` to `@xh/hoist/cmp/tooltip`, a hover `Popover` with tooltip defaults, on desktop
+  and mobile. It takes an `intent` and `compact`, and opens on keyboard focus as well as hover.
 * Dialogs now move keyboard focus inside when they open, and return it to where it was when they
   close.
 * Desktop `Slider` handles now also take Home and End, to jump to either end, and PageUp and

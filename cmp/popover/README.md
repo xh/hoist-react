@@ -5,7 +5,8 @@
 `Popover` shows content that floats beside a target element, opened by clicking or hovering on
 the target. Hoist's menus, pickers and choosers open in it. It is built on
 [Floating UI](https://floating-ui.com/docs/react) and takes no model. The props and their defaults
-are documented in `Types.ts`.
+are documented in `Types.ts`. For a short label on hover, use
+[`Tooltip`](../tooltip/README.md), a hover popover with tooltip defaults.
 
 Desktop and mobile components both use this `Popover`. Any popover closes when the app's route
 changes, so the app does not navigate underneath it.
@@ -58,24 +59,6 @@ page after the popover's.
 A popover renders in a portal on `document.body`, so no clipping ancestor cuts it off. Set
 `usePortal: false` to render it inline, next to its target, or `portalContainer` for a specific
 element.
-
-## Tooltip
-
-`Tooltip` is a popover for a short label. It opens while the pointer rests on its target or the
-target has keyboard focus, and presents itself to assistive tech with the `tooltip` role.
-
-```typescript
-import {tooltip} from '@xh/hoist/cmp/popover';
-
-tooltip({
-    content: 'Net of returns and discounts.',
-    intent: 'primary',
-    children: Icon.info()
-})
-```
-
-For a plain-text label on a button, the button's `tooltip` prop - a native `title` - is often
-enough. Style tooltips with the `--xh-tooltip-*` variables.
 
 ## On Mobile
 

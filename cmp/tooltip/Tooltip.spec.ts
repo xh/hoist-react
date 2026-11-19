@@ -4,7 +4,7 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {tooltip, type TooltipProps} from '@xh/hoist/cmp/popover';
+import {tooltip, type TooltipProps} from '@xh/hoist/cmp/tooltip';
 import {initTestAppAsync} from '@xh/hoist/test-support';
 import {fireEvent, render, screen, waitFor} from '@testing-library/react';
 import {createElement} from 'react';

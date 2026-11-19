@@ -14,7 +14,8 @@ import '@xh/hoist/desktop/register';
 import {contextMenu} from '@xh/hoist/desktop/cmp/contextmenu';
 import {Icon} from '@xh/hoist/icon';
 import {menu} from '@xh/hoist/desktop/cmp/menu';
-import {popover, tooltip as tooltipCmp} from '@xh/hoist/cmp/popover';
+import {popover} from '@xh/hoist/cmp/popover';
+import {tooltip as tooltipCmp} from '@xh/hoist/cmp/tooltip';
 import {showContextMenu} from '@xh/hoist/desktop/cmp/contextmenu/impl/ShowContextMenu';
 import {bindableRef} from '@xh/hoist/mobx';
 import {

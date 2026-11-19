@@ -4,7 +4,7 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import type {Content, HoistProps, Intent, TestSupportProps} from '@xh/hoist/core';
+import type {Content, HoistProps, TestSupportProps} from '@xh/hoist/core';
 import type {HTMLAttributes, ReactElement, ReactNode, Ref, SyntheticEvent} from 'react';
 
 /**
@@ -153,32 +153,3 @@ export type PopoverTargetProps = HTMLAttributes<HTMLElement> & {
     ref: Ref<HTMLElement>;
     isOpen: boolean;
 };
-
-export interface TooltipProps extends Pick<
-    PopoverProps,
-    | 'boundary'
-    | 'children'
-    | 'className'
-    | 'content'
-    | 'defaultIsOpen'
-    | 'disabled'
-    | 'hoverCloseDelay'
-    | 'hoverOpenDelay'
-    | 'isOpen'
-    | 'minimal'
-    | 'onInteraction'
-    | 'openOnTargetFocus'
-    | 'popoverClassName'
-    | 'portalContainer'
-    | 'position'
-    | 'renderTarget'
-    | 'targetTagName'
-    | 'testId'
-    | 'usePortal'
-> {
-    /** Intent to color the tooltip with. */
-    intent?: Intent;
-
-    /** True to draw the tooltip with less padding. */
-    compact?: boolean;
-}

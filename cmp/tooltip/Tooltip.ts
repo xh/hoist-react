@@ -4,10 +4,40 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {hoistCmp} from '@xh/hoist/core';
+import type {PopoverProps} from '@xh/hoist/cmp/popover';
+import {popoverImpl} from '@xh/hoist/cmp/popover/impl/PopoverImpl';
+import {hoistCmp, type Intent} from '@xh/hoist/core';
 import classNames from 'classnames';
-import {popoverImpl} from './impl/PopoverImpl';
-import type {TooltipProps} from './Types';
+
+/** Props for a `Tooltip` - the subset of `PopoverProps` that applies, plus intent and size. */
+export interface TooltipProps extends Pick<
+    PopoverProps,
+    | 'boundary'
+    | 'children'
+    | 'className'
+    | 'content'
+    | 'defaultIsOpen'
+    | 'disabled'
+    | 'hoverCloseDelay'
+    | 'hoverOpenDelay'
+    | 'isOpen'
+    | 'minimal'
+    | 'onInteraction'
+    | 'openOnTargetFocus'
+    | 'popoverClassName'
+    | 'portalContainer'
+    | 'position'
+    | 'renderTarget'
+    | 'targetTagName'
+    | 'testId'
+    | 'usePortal'
+> {
+    /** Intent to color the tooltip with. */
+    intent?: Intent;
+
+    /** True to draw the tooltip with less padding. */
+    compact?: boolean;
+}
 
 /** Gap between a tooltip and its target, which leaves room for its smaller arrow. */
 const TOOLTIP_OFFSET = 11;
