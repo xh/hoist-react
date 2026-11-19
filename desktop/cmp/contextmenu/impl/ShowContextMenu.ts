@@ -4,9 +4,8 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {PopoverImpl} from '@xh/hoist/cmp/popover/impl/PopoverImpl';
+import {popoverImpl} from '@xh/hoist/cmp/popover/impl/PopoverImpl';
 import type {ReactElement} from 'react';
-import {createElement} from 'react';
 import {createRoot, type Root} from 'react-dom/client';
 
 /** Position on the page to open a context menu at, in client pixels. */
@@ -34,7 +33,7 @@ export function showContextMenu(menu: ReactElement, offset?: ContextMenuOffset) 
     const close = () => root.render(null);
 
     root.render(
-        createElement(PopoverImpl, {
+        popoverImpl({
             // A new key for each menu, so it opens with fresh state.
             key: ++menuKey,
             isOpen: true,

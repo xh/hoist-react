@@ -37,8 +37,7 @@ import {
 import classNames from 'classnames';
 import {compact, find, isEmpty, isFinite} from 'lodash';
 import type {CSSProperties, ReactElement, ReactNode, KeyboardEvent} from 'react';
-import {createElement} from 'react';
-import {TabList, TabTitle} from './impl/TabList';
+import {tabList, tabTitle} from './impl/TabList';
 
 /**
  * Component to indicate and control the active tab of a TabContainer.
@@ -143,7 +142,7 @@ export const [TabSwitcher, tabSwitcher] = hoistCmp.withFactory<TabSwitcherProps>
                     });
                 }
             };
-            return createElement(TabTitle, {
+            return tabTitle({
                 ...tabProps,
                 parentId: model.xhId,
                 selected: id === activeTabId,
@@ -180,7 +179,7 @@ export const [TabSwitcher, tabSwitcher] = hoistCmp.withFactory<TabSwitcherProps>
                 div({
                     ref,
                     className: `xh-tab-switcher__scroll`,
-                    children: createElement(TabList, {
+                    children: tabList({
                         id: model.xhId,
                         vertical,
                         animate,

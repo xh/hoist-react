@@ -6,8 +6,7 @@
  */
 import {hoistCmp} from '@xh/hoist/core';
 import classNames from 'classnames';
-import {createElement} from 'react';
-import {PopoverImpl} from './impl/PopoverImpl';
+import {popoverImpl} from './impl/PopoverImpl';
 import type {TooltipProps} from './Types';
 
 /** Gap between a tooltip and its target, which leaves room for its smaller arrow. */
@@ -27,7 +26,7 @@ export const [Tooltip, tooltip] = hoistCmp.withFactory<TooltipProps>({
 
     render(props) {
         const {intent, compact, popoverClassName, ...rest} = props;
-        return createElement(PopoverImpl, {
+        return popoverImpl({
             hoverOpenDelay: 100,
             hoverCloseDelay: 0,
             ...rest,

@@ -8,8 +8,7 @@ import type {HoistProps, StyleProps, TestSupportProps} from '@xh/hoist/core';
 import {hoistCmp} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import type {ReactElement, ReactNode, SyntheticEvent} from 'react';
-import {createElement} from 'react';
-import {DialogImpl} from './impl/DialogImpl';
+import {dialogImpl} from './impl/DialogImpl';
 import './Dialog.scss';
 
 export interface DialogProps extends HoistProps, StyleProps, TestSupportProps {
@@ -64,6 +63,6 @@ export const [Dialog, dialog] = hoistCmp.withFactory<DialogProps>({
     model: false,
 
     render(props) {
-        return createElement(DialogImpl, props);
+        return dialogImpl(props);
     }
 });

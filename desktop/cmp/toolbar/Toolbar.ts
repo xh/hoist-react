@@ -15,8 +15,8 @@ import {filterConsecutiveToolbarSeparators} from '@xh/hoist/utils/impl';
 import {throwIf} from '@xh/hoist/utils/js';
 import classNames from 'classnames';
 import {isEmpty} from 'lodash';
-import {Children, createElement} from 'react';
-import {OverflowList} from './impl/OverflowList';
+import {Children} from 'react';
+import {overflowList} from './impl/OverflowList';
 import './Toolbar.scss';
 import {toolbarSeparator} from './ToolbarSep';
 
@@ -116,8 +116,8 @@ const overflowBox = hoistCmp.factory({
     observer: false,
     memo: false,
     render({children, minVisibleItems, collapseFrom}) {
-        return createElement(OverflowList, {
-            items: Children.toArray(children),
+        return overflowList({
+            $items: Children.toArray(children),
             minVisibleItems,
             collapseFrom,
             overflowRenderer: items => overflowButton(items)

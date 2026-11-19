@@ -4,10 +4,12 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import type {FC, ReactNode} from 'react';
+import type {HoistProps} from '@xh/hoist/core';
+import {hoistCmp} from '@xh/hoist/core';
+import type {ReactNode} from 'react';
 import {createElement as h, useLayoutEffect, useRef, useState} from 'react';
 
-export interface OverflowListProps {
+export interface OverflowListProps extends HoistProps {
     items: ReactNode[];
     /** Renders the items that do not fit - called only when there are some. */
     overflowRenderer: (items: ReactNode[]) => ReactNode;
@@ -34,86 +36,97 @@ interface PartitionState {
  * the row resizes or its items change. Ports Blueprint's `OverflowList`, with its class names.
  * @internal
  */
-export const OverflowList: FC<OverflowListProps> = ({
-    items,
-    overflowRenderer,
-    collapseFrom = 'start',
-    minVisibleItems = 0
-}) => {
-    const listRef = useRef<HTMLDivElement>(null),
-        spacerRef = useRef<HTMLDivElement>(null),
-        [state, setState] = useState<PartitionState>(() => initialState(items)),
-        lastItems = useRef(items);
+export const overflowList = hoistCmp.factory<OverflowListProps>({
+    displayName: 'OverflowList',
+    model: false,
 
-    // Start over whenever the items or settings change.
-    useLayoutEffect(() => {
-        if (lastItems.current === items) return;
-        lastItems.current = items;
-        setState(initialState(items));
-    }, [items, collapseFrom, minVisibleItems]);
+    render({items, overflowRenderer, collapseFrom = 'start', minVisibleItems = 0}) {
+        const listRef = useRef<HTMLDivElement>(null),
+            spacerRef = useRef<HTMLDivElement>(null),
+            [state, setState] = useState<PartitionState>(() => initialState(items)),
+            lastItems = useRef(items);
 
-    const repartition = () => {
-        const spacer = spacerRef.current;
-        if (!spacer) return;
-        setState(s => {
-            const exhausted = s.lastChopSize === 1,
-                shrink = spacer.offsetWidth < 0.9 && s.visible.length > minVisibleItems,
-                grow =
-                    (spacer.offsetWidth >= 1 || s.visible.length < minVisibleItems) &&
-                    s.overflow.length > 0 &&
-                    !exhausted;
+        // Start over whenever the items or settings change.
+        useLayoutEffect(() => {
+            if (lastItems.current === items) return;
+            lastItems.current = items;
+            setState(initialState(items));
+        }, [items, collapseFrom, minVisibleItems]);
 
-            if (!shrink && !grow) {
-                // Settled - return the same state when nothing changes, so this does not re-render.
-                const chopSize = halve(items.length);
-                return s.repartitioning || s.chopSize !== chopSize || s.lastChopSize != null
-                    ? {...s, chopSize, lastChopSize: null, repartitioning: false}
-                    : s;
-            }
+        const repartition = () => {
+            const spacer = spacerRef.current;
+            if (!spacer) return;
+            setState(s => {
+                const exhausted = s.lastChopSize === 1,
+                    shrink = spacer.offsetWidth < 0.9 && s.visible.length > minVisibleItems,
+                    grow =
+                        (spacer.offsetWidth >= 1 || s.visible.length < minVisibleItems) &&
+                        s.overflow.length > 0 &&
+                        !exhausted;
 
-            let visible: ReactNode[], overflow: ReactNode[];
-            if (collapseFrom === 'end') {
-                [visible, overflow] = shift(s.visible, s.overflow, s.chopSize * (shrink ? 1 : -1));
-            } else {
-                [overflow, visible] = shift(s.overflow, s.visible, s.chopSize * (shrink ? -1 : 1));
-            }
-            return {
-                visible,
-                overflow,
-                chopSize: halve(s.chopSize),
-                lastChopSize: s.chopSize,
-                repartitioning: true
-            };
-        });
-    };
+                if (!shrink && !grow) {
+                    // Settled - return the same state when nothing changes, so this does not re-render.
+                    const chopSize = halve(items.length);
+                    return s.repartitioning || s.chopSize !== chopSize || s.lastChopSize != null
+                        ? {...s, chopSize, lastChopSize: null, repartitioning: false}
+                        : s;
+                }
 
-    // Each step of the search renders, then measures again here until it settles. Once settled,
-    // only a resize or new items start it again.
-    useLayoutEffect(() => {
-        if (state.repartitioning) repartition();
-    }, [state]); // eslint-disable-line react-hooks/exhaustive-deps
+                let visible: ReactNode[], overflow: ReactNode[];
+                if (collapseFrom === 'end') {
+                    [visible, overflow] = shift(
+                        s.visible,
+                        s.overflow,
+                        s.chopSize * (shrink ? 1 : -1)
+                    );
+                } else {
+                    [overflow, visible] = shift(
+                        s.overflow,
+                        s.visible,
+                        s.chopSize * (shrink ? -1 : 1)
+                    );
+                }
+                return {
+                    visible,
+                    overflow,
+                    chopSize: halve(s.chopSize),
+                    lastChopSize: s.chopSize,
+                    repartitioning: true
+                };
+            });
+        };
 
-    // Search again when the row resizes, with the latest items and settings.
-    const repartitionRef = useRef(repartition);
-    repartitionRef.current = repartition;
-    useLayoutEffect(() => {
-        const el = listRef.current;
-        if (!el || typeof ResizeObserver === 'undefined') return;
-        const observer = new ResizeObserver(() => repartitionRef.current());
-        observer.observe(el);
-        return () => observer.disconnect();
-    }, []);
+        // Each step of the search renders, then measures again here until it settles. Once settled,
+        // only a resize or new items start it again.
+        useLayoutEffect(() => {
+            if (state.repartitioning) repartition();
+        }, [state]); // eslint-disable-line react-hooks/exhaustive-deps
 
-    const overflow = state.overflow.length ? overflowRenderer(state.overflow.slice()) : null;
-    return h(
-        'div',
-        {ref: listRef, className: 'xh-overflow-list bp6-overflow-list'},
-        collapseFrom === 'start' ? overflow : null,
-        ...state.visible,
-        collapseFrom === 'end' ? overflow : null,
-        h('div', {ref: spacerRef, className: 'xh-overflow-list__spacer bp6-overflow-list-spacer'})
-    );
-};
+        // Search again when the row resizes, with the latest items and settings.
+        const repartitionRef = useRef(repartition);
+        repartitionRef.current = repartition;
+        useLayoutEffect(() => {
+            const el = listRef.current;
+            if (!el || typeof ResizeObserver === 'undefined') return;
+            const observer = new ResizeObserver(() => repartitionRef.current());
+            observer.observe(el);
+            return () => observer.disconnect();
+        }, []);
+
+        const overflow = state.overflow.length ? overflowRenderer(state.overflow.slice()) : null;
+        return h(
+            'div',
+            {ref: listRef, className: 'xh-overflow-list bp6-overflow-list'},
+            collapseFrom === 'start' ? overflow : null,
+            ...state.visible,
+            collapseFrom === 'end' ? overflow : null,
+            h('div', {
+                ref: spacerRef,
+                className: 'xh-overflow-list__spacer bp6-overflow-list-spacer'
+            })
+        );
+    }
+});
 
 //------------------------
 // Implementation

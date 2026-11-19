@@ -14,7 +14,9 @@ import {filterConsecutive} from '../js';
  */
 export function isMenuSeparator(it: any): boolean {
     return (
-        it === '-' || it === 'separator' || (it?.type?.name === 'MenuDivider' && !it.props?.title)
+        it === '-' ||
+        it === 'separator' ||
+        (it?.type?.displayName === 'MenuDivider' && !it.props?.title)
     );
 }
 

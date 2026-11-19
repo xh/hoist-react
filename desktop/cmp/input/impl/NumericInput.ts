@@ -4,19 +4,11 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {elementFactory} from '@xh/hoist/core';
+import {hoistCmp} from '@xh/hoist/core';
 import classNames from 'classnames';
-import type {
-    ChangeEvent,
-    CSSProperties,
-    FC,
-    KeyboardEvent,
-    ReactElement,
-    ReactNode,
-    Ref
-} from 'react';
+import type {ChangeEvent, CSSProperties, KeyboardEvent, ReactElement, ReactNode, Ref} from 'react';
 import {createElement as h, useId, useRef} from 'react';
-import {InputGroup} from './InputGroup';
+import {inputGroup} from './InputGroup';
 
 export interface NumericInputProps {
     /** The value shown, as text. */
@@ -57,77 +49,80 @@ export interface NumericInputProps {
  * min or max, which `NumberInput` checks itself. Renders the same elements and class names.
  * @internal
  */
-export const NumericInput: FC<NumericInputProps> = props => {
-    const {
-            allowNumericCharactersOnly = true,
-            className,
-            locale,
-            majorStepSize: majorProp,
-            minorStepSize,
-            onKeyDown,
-            onValueChange,
-            stepSize: stepProp,
-            value,
-            ...rest
-        } = props,
-        stepSize = stepProp === undefined ? 1 : stepProp,
-        majorStepSize = majorProp === undefined ? 10 : majorProp,
-        id = useId(),
-        pasted = useRef(false);
+export const numericInput = hoistCmp.factory<NumericInputProps>({
+    displayName: 'NumericInput',
+    model: false,
 
-    const emit = (text: string) => onValueChange(Number(toStringNumber(text, locale)), text);
+    render(props) {
+        const {
+                allowNumericCharactersOnly = true,
+                className,
+                locale,
+                majorStepSize: majorProp,
+                minorStepSize,
+                onKeyDown,
+                onValueChange,
+                stepSize: stepProp,
+                value,
+                ...rest
+            } = props,
+            stepSize = stepProp === undefined ? 1 : stepProp,
+            majorStepSize = majorProp === undefined ? 10 : majorProp,
+            id = useId(),
+            pasted = useRef(false);
 
-    const onChange = (e: ChangeEvent<HTMLInputElement>) => {
-        let text = e.target.value;
-        if (allowNumericCharactersOnly && pasted.current) text = sanitize(text, locale);
-        pasted.current = false;
-        emit(text);
-    };
+        const emit = (text: string) => onValueChange(Number(toStringNumber(text, locale)), text);
 
-    const onInputKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
-        if (!props.disabled && !props.readOnly) {
-            const direction = e.key === 'ArrowUp' ? 1 : e.key === 'ArrowDown' ? -1 : 0;
-            if (direction) {
-                e.preventDefault();
-                const step =
-                    e.shiftKey && majorStepSize != null
-                        ? majorStepSize
-                        : e.altKey && minorStepSize != null
-                          ? minorStepSize
-                          : stepSize;
-                const precision = decimalPlaces(minorStepSize ?? stepSize),
-                    next = stepValue(
-                        value === '' ? '0' : value,
-                        direction * step,
-                        precision,
-                        locale
-                    );
-                if (next !== value) emit(next);
-            } else if (allowNumericCharactersOnly && !isNumericKeyEvent(e, locale)) {
-                e.preventDefault();
+        const onChange = (e: ChangeEvent<HTMLInputElement>) => {
+            let text = e.target.value;
+            if (allowNumericCharactersOnly && pasted.current) text = sanitize(text, locale);
+            pasted.current = false;
+            emit(text);
+        };
+
+        const onInputKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
+            if (!props.disabled && !props.readOnly) {
+                const direction = e.key === 'ArrowUp' ? 1 : e.key === 'ArrowDown' ? -1 : 0;
+                if (direction) {
+                    e.preventDefault();
+                    const step =
+                        e.shiftKey && majorStepSize != null
+                            ? majorStepSize
+                            : e.altKey && minorStepSize != null
+                              ? minorStepSize
+                              : stepSize;
+                    const precision = decimalPlaces(minorStepSize ?? stepSize),
+                        next = stepValue(
+                            value === '' ? '0' : value,
+                            direction * step,
+                            precision,
+                            locale
+                        );
+                    if (next !== value) emit(next);
+                } else if (allowNumericCharactersOnly && !isNumericKeyEvent(e, locale)) {
+                    e.preventDefault();
+                }
             }
-        }
-        onKeyDown?.(e);
-    };
+            onKeyDown?.(e);
+        };
 
-    return h(
-        'div',
-        {className: classNames('bp6-control-group', 'bp6-numeric-input', className)},
-        h(InputGroup, {
-            autoComplete: 'off',
-            id,
-            role: allowNumericCharactersOnly ? 'spinbutton' : undefined,
-            ...rest,
-            'aria-valuenow': Number(toStringNumber(value, locale)),
-            value,
-            onChange,
-            onKeyDown: onInputKeyDown,
-            onPaste: () => (pasted.current = true)
-        })
-    );
-};
-
-export const numericInput = elementFactory(NumericInput);
+        return h(
+            'div',
+            {className: classNames('bp6-control-group', 'bp6-numeric-input', className)},
+            inputGroup({
+                autoComplete: 'off',
+                id,
+                role: allowNumericCharactersOnly ? 'spinbutton' : undefined,
+                ...rest,
+                'aria-valuenow': Number(toStringNumber(value, locale)),
+                value,
+                onChange,
+                onKeyDown: onInputKeyDown,
+                onPaste: () => (pasted.current = true)
+            })
+        );
+    }
+});
 
 //------------------------
 // Implementation

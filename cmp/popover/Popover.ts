@@ -6,7 +6,7 @@
  */
 import {hoistCmp, XH} from '@xh/hoist/core';
 import {createElement} from 'react';
-import {PopoverImpl, type PopoverImplProps} from './impl/PopoverImpl';
+import {popoverImpl, type PopoverImplProps} from './impl/PopoverImpl';
 import type {PopoverProps} from './Types';
 import './Popover.scss';
 
@@ -44,15 +44,11 @@ export const [Popover, popover] = hoistCmp.withFactory<PopoverProps>({
     model: false,
 
     render(props) {
-        if (!XH.appSpec?.isMobileApp) return createElement(PopoverImpl, props);
+        if (!XH.appSpec?.isMobileApp) return popoverImpl(props);
 
         // Mobile keeps an outer element carrying the class names around the target wrapper, as
         // mobile's own popover rendered before this shared one replaced it.
         const {className, ...rest} = props;
-        return createElement(
-            'div',
-            {className},
-            createElement(PopoverImpl, {...MOBILE_DEFAULTS, ...rest})
-        );
+        return createElement('div', {className}, popoverImpl({...MOBILE_DEFAULTS, ...rest}));
     }
 });

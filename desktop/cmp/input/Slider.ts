@@ -14,8 +14,8 @@ import {logWarn, withDefault} from '@xh/hoist/utils/js';
 import {composeRefs, getLayoutProps, useOnResize} from '@xh/hoist/utils/react';
 import {isArray, isEmpty, omit, pick} from 'lodash';
 import type {ReactNode} from 'react';
-import {createElement, useLayoutEffect, useRef} from 'react';
-import {SliderImpl, type SliderImplProps} from './impl/SliderImpl';
+import {useLayoutEffect, useRef} from 'react';
+import {sliderImpl, type SliderImplProps} from './impl/SliderImpl';
 import './Slider.scss';
 
 export interface SliderProps extends HoistProps, HoistInputProps, LayoutProps {
@@ -141,7 +141,7 @@ const cmp = hoistCmp.factory<SliderInputModel>(({model, className, ...props}, re
     };
 
     return box({
-        children: createElement(SliderImpl, {
+        children: sliderImpl({
             ...sliderProps,
             handleHtmlProps: isRange ? {start: handleAttrs, end: handleAttrs} : handleAttrs
         }),
