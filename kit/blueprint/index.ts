@@ -15,7 +15,7 @@ import {
     type ToasterPosition,
     useHotkeys
 } from '@blueprintjs/core';
-import '@blueprintjs/core/lib/css/blueprint.css';
+import '@xh/hoist/desktop/styles/BlueprintBase.css';
 import {elementFactory} from '@xh/hoist/core';
 import './styles.scss';
 
