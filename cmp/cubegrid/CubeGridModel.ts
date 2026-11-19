@@ -24,7 +24,7 @@ import {HoistModel, managed} from '@xh/hoist/core';
 import type {Cube, QueryConfig, Store, StoreRecordOrId, View} from '@xh/hoist/data';
 import {action, bindableRef} from '@xh/hoist/mobx';
 import {throwIf} from '@xh/hoist/utils/js';
-import {isEmpty, isEqual, isFunction, keyBy, pick} from 'lodash';
+import {isEmpty, isEqual, isFunction, keyBy, map, pick} from 'lodash';
 import type {CubeGridPivotConfig} from './CubeGridPivotModel';
 import {CubeGridPivotModel} from './CubeGridPivotModel';
 
@@ -201,7 +201,12 @@ export class CubeGridModel extends HoistModel implements GridLikeModel {
     private columnsReaction(): ReactionSpec {
         return {
             equals: 'shallow',
-            track: () => [this.view.result.paths, this.columns, ...this.pivotModel.regionDeps],
+            track: () => [
+                this.view.result.paths,
+                this.columns,
+                this.labelChooserName,
+                ...this.pivotModel.regionDeps
+            ],
             run: () => this.rebuildColumns()
         };
     }
@@ -226,7 +231,12 @@ export class CubeGridModel extends HoistModel implements GridLikeModel {
     // Each row dimension. The root, if any, loads as the summary record, not a tree level. Read on
     // use, so it follows the query.
     private get rowLevelLabels(): string[] {
-        return this.query.dimensions.map(it => it.displayName);
+        return map(this.query.dimensions, 'displayName');
+    }
+
+    // A plain string, unlike the header - tracked by `columnsReaction` so a regroup rebuilds it.
+    private get labelChooserName(): string {
+        return this.rowLevelLabels.join(' › ') || 'Group';
     }
 
     // In a header menu, `expandCollapse` expands the pivot columns, and shows only over them. It
@@ -347,7 +357,8 @@ export class CubeGridModel extends HoistModel implements GridLikeModel {
             field: 'cubeLabel',
             isTreeColumn: true,
             pinned: 'left',
-            headerName: () => this.query.dimensions.map(it => it.displayName).join(' › '),
+            headerName: () => this.rowLevelLabels.join(' › '),
+            chooserName: this.labelChooserName,
             // Sort on the raw value behind the stringified label. A field, not a function, so
             // `GridTransactionManager` can prove a tick leaves row order alone.
             sortValue: 'cubeLabelValue',

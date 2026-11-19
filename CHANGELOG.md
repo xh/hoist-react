@@ -87,6 +87,8 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 
 ### 🐞 Bug Fixes
 
+* Fixed the column chooser listing `CubeGridModel`'s default label column as "Cube Label". It now
+  takes the names of the row dimensions, as the header does, or "Group" when there are none.
 * Fixed mobile `FormField` ignoring the `--xh-form-field-inline-label-*` custom properties for
   inline labels - it referenced stale names left behind by an earlier rename.
 * Fixed `StatCard` titles and values not lining up across a `StatCardStrip` whose cards differ in

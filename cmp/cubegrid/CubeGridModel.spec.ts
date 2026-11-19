@@ -74,6 +74,18 @@ describe('CubeGridModel', () => {
             });
         });
 
+        it('names the label column in the column chooser as its header does, through a regroup', () => {
+            const model = createModel({query: {...PLAIN_QUERY, dimensions: ['region', 'sector']}}),
+                chooserName = () => model.gridModel.getColumn('cubeLabel').chooserName;
+            expect(chooserName()).toBe('Region › Sector');
+
+            model.view.updateQuery({dimensions: ['book']});
+            expect(chooserName()).toBe('Book');
+
+            model.view.updateQuery({dimensions: null, includeLeaves: true});
+            expect(chooserName()).toBe('Group');
+        });
+
         it('lets a fixed tree column replace the default label column', () => {
             const model = createModel({
                 query: PLAIN_QUERY,
