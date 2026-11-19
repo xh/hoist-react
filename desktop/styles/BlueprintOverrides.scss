@@ -482,6 +482,12 @@ textarea.bp6-input,
     color: var(--xh-text-color-muted);
   }
 
+  // Button.scss loads after this file, so its `.xh-button > :last-child` rule would otherwise
+  // remove the margin above from a button's icon.
+  .xh-button > .xh-icon:last-child {
+    margin-right: 7px;
+  }
+
   // Support direct use of a Hoist Icon as input `rightElement` prop - w/o the below, the icon SVG
   // will not be measured (clientWidth == 0) and the input's internal layout won't account for it.
   .bp6-input-action > .xh-icon {

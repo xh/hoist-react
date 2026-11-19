@@ -53,7 +53,7 @@
   }
 
   // Compact mode - trigger button matches compact toolbar button sizing.
-  // .xh-button qualifier needed to beat `.xh-app .xh-button` font-size.
+  // .xh-button qualifier needed to beat `.xh-app .xh-button.xh-button` font-size (0,3,0).
   &--compact &__trigger.xh-button {
     min-height: var(--xh-toolbar-compact-item-height);
     max-height: var(--xh-toolbar-compact-item-height);

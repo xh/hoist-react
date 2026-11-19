@@ -87,7 +87,7 @@
     }
 
     // Extra specificity needed here to overcome the specificity in Button.scss.
-    .xh-button {
+    .xh-button.xh-button {
       &.xh-button--minimal {
         &.xh-button--intent-none {
           &.xh-button--enabled {

@@ -687,13 +687,13 @@ a:hover {
 
 .bp6-button.bp6-align-right,
 .bp6-align-right .bp6-button,
-.bp6-align-right :where(.xh-button) {
+.bp6-align-right .xh-button {
     text-align: right;
 }
 
 .bp6-button.bp6-align-left,
 .bp6-align-left .bp6-button,
-.bp6-align-left :where(.xh-button) {
+.bp6-align-left .xh-button {
     text-align: left;
 }
 
@@ -2533,7 +2533,7 @@ a:hover {
 .bp6-control-group .bp6-html-select,
 .bp6-control-group .bp6-input,
 .bp6-control-group .bp6-select,
-.bp6-control-group :where(.xh-button) {
+.bp6-control-group .xh-button {
     position: relative;
 }
 
@@ -2552,30 +2552,30 @@ a:hover {
 }
 
 .bp6-control-group .bp6-button,
-.bp6-control-group :where(.xh-button) {
+.bp6-control-group .xh-button {
     z-index: 4;
     transform: translateZ(0);
 }
 
 .bp6-control-group .bp6-button:focus,
-.bp6-control-group :where(.xh-button):focus {
+.bp6-control-group .xh-button:focus {
     z-index: 5;
 }
 
 .bp6-control-group .bp6-button:hover,
-.bp6-control-group :where(.xh-button):hover {
+.bp6-control-group .xh-button:hover {
     z-index: 6;
 }
 
 .bp6-control-group .bp6-button:active,
-.bp6-control-group :where(.xh-button):active {
+.bp6-control-group .xh-button:active {
     z-index: 7;
 }
 
 .bp6-control-group .bp6-button:disabled,
 .bp6-control-group .bp6-button.bp6-disabled,
-.bp6-control-group :where(.xh-button):disabled,
-.bp6-control-group :where(.xh-button).xh-button--disabled {
+.bp6-control-group .xh-button:disabled,
+.bp6-control-group .xh-button.xh-button--disabled {
     z-index: 3;
 }
 
@@ -3196,7 +3196,7 @@ a:hover {
 .bp6-input-group > .bp6-input-left-container,
 .bp6-input-group > .bp6-button,
 .bp6-input-group > .bp6-icon,
-.bp6-input-group > :where(.xh-button) {
+.bp6-input-group > .xh-button {
     position: absolute;
     top: 0;
 }
@@ -3205,7 +3205,7 @@ a:hover {
 .bp6-input-group > .bp6-input-left-container:first-child,
 .bp6-input-group > .bp6-button:first-child,
 .bp6-input-group > .bp6-icon:first-child,
-.bp6-input-group > :where(.xh-button):first-child {
+.bp6-input-group > .xh-button:first-child {
     left: 0;
 }
 
@@ -3213,12 +3213,12 @@ a:hover {
 .bp6-input-group > .bp6-input-left-container:last-child,
 .bp6-input-group > .bp6-button:last-child,
 .bp6-input-group > .bp6-icon:last-child,
-.bp6-input-group > :where(.xh-button):last-child {
+.bp6-input-group > .xh-button:last-child {
     right: 0;
 }
 
 .bp6-input-group .bp6-button,
-.bp6-input-group :where(.xh-button) {
+.bp6-input-group .xh-button {
     min-height: calc(var(--bp-surface-spacing) * 6);
     min-width: calc(var(--bp-surface-spacing) * 6);
     margin: calc(var(--bp-surface-spacing) * 0.75);
@@ -3226,7 +3226,7 @@ a:hover {
 }
 
 .bp6-input-group .bp6-button:empty,
-.bp6-input-group :where(.xh-button):empty {
+.bp6-input-group .xh-button:empty {
     padding: 0;
 }
 
@@ -3261,13 +3261,11 @@ a:hover {
     .bp6-input:not(:focus)
     + .bp6-input-action
     .bp6-button.bp6-minimal:not(:hover):not(:focus),
-.bp6-input-group
-    .bp6-input:not(:focus)
-    + :where(.xh-button).xh-button--minimal:not(:hover):not(:focus),
+.bp6-input-group .bp6-input:not(:focus) + .xh-button.xh-button--minimal:not(:hover):not(:focus),
 .bp6-input-group
     .bp6-input:not(:focus)
     + .bp6-input-action
-    :where(.xh-button).xh-button--minimal:not(:hover):not(:focus) {
+    .xh-button.xh-button--minimal:not(:hover):not(:focus) {
     color: var(--bp-typography-color-muted);
 }
 
@@ -3280,12 +3278,12 @@ a:hover {
 .xh-dark
     .bp6-input-group
     .bp6-input:not(:focus)
-    + :where(.xh-button).xh-button--minimal:not(:hover):not(:focus),
+    + .xh-button.xh-button--minimal:not(:hover):not(:focus),
 .xh-dark
     .bp6-input-group
     .bp6-input:not(:focus)
     + .bp6-input-action
-    :where(.xh-button).xh-button--minimal:not(:hover):not(:focus) {
+    .xh-button.xh-button--minimal:not(:hover):not(:focus) {
     color: oklch(from var(--bp-typography-color-muted) calc(l + 0.24) calc(c - 0.011) h);
 }
 
@@ -3336,11 +3334,8 @@ a:hover {
     + .bp6-input-action
     .bp6-button.bp6-minimal:disabled
     .bp6-icon-large,
-.bp6-input-group .bp6-input:not(:focus) + :where(.xh-button).xh-button--minimal:disabled,
-.bp6-input-group
-    .bp6-input:not(:focus)
-    + .bp6-input-action
-    :where(.xh-button).xh-button--minimal:disabled {
+.bp6-input-group .bp6-input:not(:focus) + .xh-button.xh-button--minimal:disabled,
+.bp6-input-group .bp6-input:not(:focus) + .bp6-input-action .xh-button.xh-button--minimal:disabled {
     color: var(--bp-typography-color-default-disabled) !important;
 }
 
@@ -4595,25 +4590,25 @@ span.bp6-popover-target {
 }
 
 .bp6-toast.bp6-intent-primary .bp6-button,
-.bp6-toast.bp6-intent-primary :where(.xh-button) {
+.bp6-toast.bp6-intent-primary .xh-button {
     color: #fff !important;
     background-color: #2d72d2 !important;
 }
 
 .bp6-toast.bp6-intent-primary .bp6-button:hover,
-.bp6-toast.bp6-intent-primary :where(.xh-button):hover {
+.bp6-toast.bp6-intent-primary .xh-button:hover {
     color: #fff !important;
     background-color: #215db0 !important;
 }
 
 .bp6-toast.bp6-intent-primary .bp6-button:active,
-.bp6-toast.bp6-intent-primary :where(.xh-button):active {
+.bp6-toast.bp6-intent-primary .xh-button:active {
     color: #fff !important;
     background-color: #184a90 !important;
 }
 
 .bp6-toast.bp6-intent-primary .bp6-button:focus,
-.bp6-toast.bp6-intent-primary :where(.xh-button):focus {
+.bp6-toast.bp6-intent-primary .xh-button:focus {
     outline-color: #ffffffbf;
 }
 
@@ -4623,25 +4618,25 @@ span.bp6-popover-target {
 }
 
 .bp6-toast.bp6-intent-danger .bp6-button,
-.bp6-toast.bp6-intent-danger :where(.xh-button) {
+.bp6-toast.bp6-intent-danger .xh-button {
     color: #fff !important;
     background-color: #cd4246 !important;
 }
 
 .bp6-toast.bp6-intent-danger .bp6-button:hover,
-.bp6-toast.bp6-intent-danger :where(.xh-button):hover {
+.bp6-toast.bp6-intent-danger .xh-button:hover {
     color: #fff !important;
     background-color: #ac2f33 !important;
 }
 
 .bp6-toast.bp6-intent-danger .bp6-button:active,
-.bp6-toast.bp6-intent-danger :where(.xh-button):active {
+.bp6-toast.bp6-intent-danger .xh-button:active {
     color: #fff !important;
     background-color: #8e292c !important;
 }
 
 .bp6-toast.bp6-intent-danger .bp6-button:focus,
-.bp6-toast.bp6-intent-danger :where(.xh-button):focus {
+.bp6-toast.bp6-intent-danger .xh-button:focus {
     outline-color: #ffffffbf;
 }
 

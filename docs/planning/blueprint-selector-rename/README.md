@@ -162,11 +162,15 @@ Proposals are hints, not decisions:
   `bp6-*` ones. It keeps its place in the cascade, and moves when the outer component does. The
   Dialog and NumericInput commits must also port their button rules that `BlueprintBase.css`
   lacks: `.bp6-dialog-footer-actions .bp6-button` and the numeric input's vertical button group.
-- Hoist's rules often pair classes, as in `.xh-button.bp6-button`. Dropping the `bp6-*` half lowers
-  each by one class, so translated Blueprint rules wrap the root class in `:where()` - `.bp6-button`
-  becomes `:where(.xh-button)` - and lose the same class. Every rule then keeps its rank against
-  every other. Keep `.bp6-dark` in Hoist's dark selectors until the theme toggle step, for the same
-  reason.
+- Hoist's rules often pair classes, as in `.xh-button.bp6-button`. Write these as
+  `.xh-button.xh-button`, not `.xh-button`, so they keep their specificity against component and
+  app rules. PinPad's keys and the grid action column changed when the pilot dropped the class.
+  Translated Blueprint rules then map class for class, with no `:where()`. Keep `.bp6-dark` in
+  Hoist's dark selectors until the theme toggle step, for the same reason.
+- Moved rules load later than they did. A Blueprint rule that lost a specificity tie to
+  `BlueprintOverrides.scss` on source order now wins it from its component stylesheet. The pilot hit
+  this with `.xh-button > :last-child` and the icon margin in `.bp6-input-group .xh-icon`, fixed
+  with a more specific override. Expect more as the overrides move.
 - Check that a `bp6-*` class and the `xh-*` class you map it to are on the same elements. Grid
   action buttons carry `bp6-small`, but `xh-record-action-button` is also on `RecordActionBar`
   buttons, which are not small.

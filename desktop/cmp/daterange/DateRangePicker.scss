@@ -78,14 +78,14 @@ $drp-transition-dur: 120ms;
       display: block;
     }
 
-    &__step-btn.xh-button {
+    &__step-btn.xh-button.xh-button {
       flex: none;
       min-width: 24px;
       padding-left: 4px;
       padding-right: 4px;
     }
 
-    &__trigger.xh-button {
+    &__trigger.xh-button.xh-button {
       width: 100%;
 
       > .xh-button__text {
@@ -350,7 +350,7 @@ $drp-transition-dur: 120ms;
       }
     }
 
-    &__nav-btn.xh-button {
+    &__nav-btn.xh-button.xh-button {
       width: 24px;
       min-width: 24px;
       height: 24px;
