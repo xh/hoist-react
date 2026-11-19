@@ -45,7 +45,9 @@ file is the working guide.
 - [x] Pilot one component end to end - `Button` and `ButtonGroup` - and check the screenshots.
       Done in `66bb6b763` and `2da1c1d7a`: computed styles and screenshots of every route match the
       baseline apart from data.
-- [ ] Menus, submenus and context menus.
+- [x] Menus, submenus and context menus. One approved visual change: pressing a success, primary
+      or warning item tints it in its intent color, as danger items already did. List it in the
+      CHANGELOG entry.
 - [ ] Popover and tooltip.
 - [ ] Dialog, overlay and mask.
 - [ ] Toasts.
@@ -112,6 +114,7 @@ element already carries the `xh-*` class, so the `bp6-*` class is only dropped.
 | `bp6-modifier-key` | `xh-key--modifier` |
 | `bp6-input-left-container`, `bp6-input-action` | `xh-input-group__left-element`, `xh-input-group__right-element`, after the `leftElement` and `rightElement` props |
 | `bp6-menu` | `xh-menu-list` (-) |
+| `bp6-submenu` | `xh-menu-item--submenu` on the parent item's `li`, `xh-menu__submenu` on the submenu's popover (-) |
 | `bp6-overlay-backdrop`, `bp6-overlay-content`, `bp6-overlay-scroll-container` | the `xh-dialog__*`, `xh-overlay__*` and `xh-popover__content-overlay` classes already beside them (-) |
 | `bp6-popover` | `xh-popover__content-wrapper` (-) |
 | `bp6-popover-open`, `bp6-popover-target` | `xh-popover__target-wrapper--open`, `xh-popover__target-wrapper` (-) |
@@ -173,6 +176,12 @@ Proposals are hints, not decisions:
   `BlueprintOverrides.scss` on source order now wins it from its component stylesheet. The pilot hit
   this with `.xh-button > :last-child` and the icon margin in `.bp6-input-group .xh-icon`, fixed
   with a more specific override. Expect more as the overrides move.
+- Blueprint's full file can change states that Hoist renders today, where the coverage-derived base
+  lacked a rule. For menus: Blueprint's `.bp6-popover-open > .bp6-menu-item` highlight outranks
+  Hoist's `[aria-expanded]` one, and its headings truncate where Hoist's wrap. The spec drops those.
+  Compare forced states, not only screenshots, and ask before keeping a change.
+- A grid's right-click menu is AG Grid's own, not a Hoist menu. Check Hoist context menus on a
+  `contextMenu` panel, such as Toolbox's Panels intro.
 - Check that a `bp6-*` class and the `xh-*` class you map it to are on the same elements. Grid
   action buttons carry `bp6-small`, but `xh-record-action-button` is also on `RecordActionBar`
   buttons, which are not small.
@@ -208,8 +217,15 @@ see the same server data.
   Elements are matched by their class context, not document order, which shifts with data.
 - `why.cjs <app> <route> <theme> <selector> <props> [states]` - lists the rules that set the given
   properties on the first matching element, most specific first, with their specificity.
+- `menus.cjs <dir>` - computed styles and screenshots of open menus, light and dark: the Panels
+  menu button with its submenu, the Toolbars menu with headings, and the Panels context menu with
+  its submenu, with `:hover`, `:active` and `:focus` forced on each item. It clones a plain item
+  for the states Toolbox does not render (primary and warning intents, active, a label). Compare
+  two runs with `stylediff.cjs`.
 - `translate.cjs <spec> <css> <outDir>` - translates the Blueprint rules a spec names onto `xh-*`
-  classes, class for class, so specificity is unchanged. `specs/button.cjs` is the Button spec.
+  classes, class for class, so specificity is unchanged. `specs/button.cjs` is the Button spec and
+  `specs/menu.cjs` the Menu spec. A `contextMap` value can be a function of the compound's
+  classes, and `dropDecls` leaves out properties of a translated rule.
   Run it on Blueprint's full `blueprint.css` for the component's own rules (`own.css`), and on
   `BlueprintBase.css` for the rules shared with other components (`base.css`, edited in place).
 

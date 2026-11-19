@@ -146,7 +146,8 @@ describe('MenuButton', () => {
         );
 
         fireEvent.click(screen.getByTestId('series'));
-        const isActive = () => screen.getByTestId('price').classList.contains('bp6-active');
+        const isActive = () =>
+            screen.getByTestId('price').classList.contains('xh-menu-item--active');
         expect(await screen.findByTestId('price')).toBeTruthy();
         expect(isActive()).toBe(false);
 

@@ -1,0 +1,670 @@
+/*
+ * This file belongs to Hoist, an application development toolkit
+ * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
+ *
+ * Copyright © 2026 Extremely Heavy Industries Inc.
+ */
+
+//-----------------------------------------------
+// Base menu styles
+//-----------------------------------------------
+.xh-menu-list {
+  background: #ffffff;
+  border-radius: var(--bp-surface-border-radius);
+  color: #1c2127;
+  list-style: none;
+  margin: 0;
+  min-width: 180px;
+  padding: 4px;
+  text-align: left;
+}
+
+.xh-menu-divider {
+  border-top: 1px solid rgba(17, 20, 24, 0.15);
+  display: block;
+  margin: 4px -4px;
+}
+
+.xh-dark .xh-menu-divider {
+  border-top-color: rgba(255, 255, 255, 0.2);
+}
+
+.xh-menu-item {
+  display: flex;
+  flex-direction: row;
+}
+
+.xh-menu-item > * {
+  flex-grow: 0;
+  flex-shrink: 0;
+}
+
+.xh-menu-item > .xh-menu-item__text {
+  flex-grow: 1;
+  flex-shrink: 1;
+}
+
+.xh-menu-item::before,
+.xh-menu-item > * {
+  margin-right: 8px;
+}
+
+.xh-menu-item:empty::before,
+.xh-menu-item > :last-child {
+  margin-right: 0;
+}
+
+.xh-menu-item {
+  align-items: flex-start;
+  border-radius: var(--bp-surface-border-radius);
+  color: inherit;
+  line-height: 22px;
+  padding: 4px 8px;
+  text-decoration: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+.xh-menu-item > .xh-menu-item__text {
+  // Kept as Blueprint has it - no current keyword behaves the same.
+  // stylelint-disable-next-line declaration-property-value-keyword-no-deprecated
+  word-break: break-word;
+}
+
+.xh-menu-item .xh-menu-item__icon {
+  display: flex;
+  flex-direction: column;
+  height: 22px;
+  justify-content: center;
+}
+
+.xh-menu-item .xh-menu-item__label {
+  color: #5f6b7c;
+}
+
+.xh-menu-item::before,
+.xh-menu-item .xh-menu-item__icon,
+.xh-menu-item .xh-menu-item__submenu-icon {
+  color: #5f6b7c;
+}
+
+.xh-menu-item::before,
+.xh-menu-item .xh-menu-item__submenu-icon {
+  margin-top: 3px;
+}
+
+.xh-menu-item:hover {
+  background-color: rgba(143, 153, 168, 0.15);
+  color: inherit;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.xh-menu-item:active {
+  background-color: rgba(143, 153, 168, 0.3);
+}
+
+.xh-menu-item:active .xh-menu-item__label {
+  color: #1c2127;
+}
+
+.xh-menu-item.xh-menu-item--active .xh-menu-item__label {
+  color: inherit;
+}
+
+.xh-menu-item.xh-menu-item--active {
+  background-color: rgba(45, 114, 210, 0.1);
+  color: #215db0;
+}
+
+.xh-menu-item.xh-menu-item--active::before,
+.xh-menu-item.xh-menu-item--active .xh-menu-item__icon,
+.xh-menu-item.xh-menu-item--active .xh-menu-item__submenu-icon {
+  color: #215db0;
+}
+
+.xh-menu-item.xh-menu-item--active.xh-menu-item--intent-success {
+  background-color: rgba(35, 133, 81, 0.1);
+  color: #1c6e42;
+}
+
+.xh-menu-item.xh-menu-item--active.xh-menu-item--intent-success::before,
+.xh-menu-item.xh-menu-item--active.xh-menu-item--intent-success .xh-menu-item__icon,
+.xh-menu-item.xh-menu-item--active.xh-menu-item--intent-success .xh-menu-item__submenu-icon {
+  color: inherit;
+}
+
+.xh-menu-item.xh-menu-item--active.xh-menu-item--intent-warning {
+  background-color: rgba(200, 118, 25, 0.1);
+  color: #935610;
+}
+
+.xh-menu-item.xh-menu-item--active.xh-menu-item--intent-warning::before,
+.xh-menu-item.xh-menu-item--active.xh-menu-item--intent-warning .xh-menu-item__icon,
+.xh-menu-item.xh-menu-item--active.xh-menu-item--intent-warning .xh-menu-item__submenu-icon {
+  color: inherit;
+}
+
+.xh-menu-item.xh-menu-item--active.xh-menu-item--intent-danger {
+  background-color: rgba(205, 66, 70, 0.1);
+  color: #ac2f33;
+}
+
+.xh-menu-item.xh-menu-item--active.xh-menu-item--intent-danger::before,
+.xh-menu-item.xh-menu-item--active.xh-menu-item--intent-danger .xh-menu-item__icon,
+.xh-menu-item.xh-menu-item--active.xh-menu-item--intent-danger .xh-menu-item__submenu-icon {
+  color: inherit;
+}
+
+@media (forced-colors: active) and (prefers-color-scheme: dark) {
+  .xh-menu-item.xh-menu-item--active {
+    background-color: highlight;
+  }
+}
+
+.xh-menu-item.xh-menu-item--disabled {
+  background-color: inherit !important;
+  color: rgba(95, 107, 124, 0.6) !important;
+  cursor: not-allowed !important;
+  outline: none !important;
+}
+
+.xh-menu-item.xh-menu-item--disabled::before,
+.xh-menu-item.xh-menu-item--disabled .xh-menu-item__icon,
+.xh-menu-item.xh-menu-item--disabled .xh-menu-item__submenu-icon {
+  color: rgba(95, 107, 124, 0.6) !important;
+}
+
+.xh-menu-item.xh-menu-item--disabled .xh-menu-item__label {
+  color: rgba(95, 107, 124, 0.6) !important;
+}
+
+.xh-menu-item.xh-menu-item--intent-primary {
+  color: #215db0;
+}
+
+.xh-menu-item.xh-menu-item--intent-primary::before,
+.xh-menu-item.xh-menu-item--intent-primary .xh-menu-item__icon,
+.xh-menu-item.xh-menu-item--intent-primary .xh-menu-item__submenu-icon,
+.xh-menu-item.xh-menu-item--intent-primary .xh-menu-item__label {
+  color: inherit;
+}
+
+.xh-menu-item.xh-menu-item--intent-primary:hover {
+  background-color: rgba(45, 114, 210, 0.1);
+}
+
+.xh-menu-item.xh-menu-item--intent-primary:active,
+.xh-menu-item.xh-menu-item--intent-primary.xh-menu-item--active {
+  background-color: rgba(45, 114, 210, 0.2);
+  color: #184a90;
+}
+
+.xh-menu-item.xh-menu-item--intent-success {
+  color: #1c6e42;
+}
+
+.xh-menu-item.xh-menu-item--intent-success::before,
+.xh-menu-item.xh-menu-item--intent-success .xh-menu-item__icon,
+.xh-menu-item.xh-menu-item--intent-success .xh-menu-item__submenu-icon,
+.xh-menu-item.xh-menu-item--intent-success .xh-menu-item__label {
+  color: inherit;
+}
+
+.xh-menu-item.xh-menu-item--intent-success:hover {
+  background-color: rgba(35, 133, 81, 0.1);
+}
+
+.xh-menu-item.xh-menu-item--intent-success:active,
+.xh-menu-item.xh-menu-item--intent-success.xh-menu-item--active {
+  background-color: rgba(35, 133, 81, 0.2);
+  color: #165a36;
+}
+
+.xh-menu-item.xh-menu-item--intent-warning {
+  color: #935610;
+}
+
+.xh-menu-item.xh-menu-item--intent-warning::before,
+.xh-menu-item.xh-menu-item--intent-warning .xh-menu-item__icon,
+.xh-menu-item.xh-menu-item--intent-warning .xh-menu-item__submenu-icon,
+.xh-menu-item.xh-menu-item--intent-warning .xh-menu-item__label {
+  color: inherit;
+}
+
+.xh-menu-item.xh-menu-item--intent-warning:hover {
+  background-color: rgba(200, 118, 25, 0.1);
+}
+
+.xh-menu-item.xh-menu-item--intent-warning:active,
+.xh-menu-item.xh-menu-item--intent-warning.xh-menu-item--active {
+  background-color: rgba(200, 118, 25, 0.2);
+  color: #77450d;
+}
+
+.xh-menu-item.xh-menu-item--intent-danger {
+  color: #ac2f33;
+}
+
+.xh-menu-item.xh-menu-item--intent-danger::before,
+.xh-menu-item.xh-menu-item--intent-danger .xh-menu-item__icon,
+.xh-menu-item.xh-menu-item--intent-danger .xh-menu-item__submenu-icon,
+.xh-menu-item.xh-menu-item--intent-danger .xh-menu-item__label {
+  color: inherit;
+}
+
+.xh-menu-item.xh-menu-item--intent-danger:hover {
+  background-color: rgba(205, 66, 70, 0.1);
+}
+
+.xh-menu-item.xh-menu-item--intent-danger:active,
+.xh-menu-item.xh-menu-item--intent-danger.xh-menu-item--active {
+  background-color: rgba(205, 66, 70, 0.2);
+  color: #8e292c;
+}
+
+.xh-menu-item::before {
+  font-family: 'blueprint-icons-16', sans-serif;
+  font-size: 16px;
+  font-style: normal;
+  font-variant: normal;
+  font-weight: 400;
+  height: 16px;
+  line-height: 1;
+  width: 16px;
+  -moz-osx-font-smoothing: grayscale;
+  -webkit-font-smoothing: antialiased;
+  margin-right: 8px;
+}
+
+button.xh-menu-item {
+  background: none;
+  border: none;
+  text-align: left;
+  width: 100%;
+}
+
+.xh-menu-header {
+  border-top: 1px solid rgba(17, 20, 24, 0.15);
+  margin: 4px -4px;
+}
+
+.xh-dark .xh-menu-header {
+  border-top-color: rgba(255, 255, 255, 0.2);
+}
+
+.xh-menu-header {
+  padding-left: 4px;
+}
+
+.xh-menu-header:first-of-type {
+  border-top: none;
+}
+
+.xh-menu-header > h6 {
+  color: #1c2127;
+  font-weight: 600;
+}
+
+.xh-dark .xh-menu-header > h6 {
+  color: #f6f7f9;
+}
+
+.xh-menu-header > h6 {
+  line-height: 17px;
+  margin: 0;
+  padding: 8px 8px 0 8px;
+}
+
+.xh-menu-header:first-of-type > h6 {
+  padding-top: 0;
+}
+
+.xh-dark .xh-menu-list {
+  background: #2f343c;
+  color: #f6f7f9;
+}
+
+.xh-dark .xh-menu-item {
+  color: inherit;
+}
+
+.xh-dark .xh-menu-item .xh-menu-item__label {
+  color: #abb3bf;
+}
+
+.xh-dark .xh-menu-item::before,
+.xh-dark .xh-menu-item .xh-menu-item__icon,
+.xh-dark .xh-menu-item .xh-menu-item__submenu-icon {
+  color: #abb3bf;
+}
+
+.xh-dark .xh-menu-item:hover {
+  color: inherit;
+}
+
+.xh-dark .xh-menu-item:hover .xh-menu-item__icon,
+.xh-dark .xh-menu-item:hover .xh-menu-item__submenu-icon {
+  color: #abb3bf;
+}
+
+.xh-dark .xh-menu-item:active {
+  background-color: rgba(143, 153, 168, 0.3);
+}
+
+.xh-dark .xh-menu-item:active .xh-menu-item__label {
+  color: #f6f7f9;
+}
+
+.xh-dark .xh-menu-item.xh-menu-item--active {
+  background-color: rgba(45, 114, 210, 0.2);
+  color: #8abbff;
+}
+
+.xh-dark .xh-menu-item.xh-menu-item--active::before,
+.xh-dark .xh-menu-item.xh-menu-item--active .xh-menu-item__icon,
+.xh-dark .xh-menu-item.xh-menu-item--active .xh-menu-item__submenu-icon {
+  color: #8abbff;
+}
+
+.xh-dark .xh-menu-item.xh-menu-item--active.xh-menu-item--intent-success {
+  background-color: rgba(35, 133, 81, 0.2);
+  color: #72ca9b;
+}
+
+.xh-dark .xh-menu-item.xh-menu-item--active.xh-menu-item--intent-success::before,
+.xh-dark .xh-menu-item.xh-menu-item--active.xh-menu-item--intent-success .xh-menu-item__icon,
+.xh-dark
+  .xh-menu-item.xh-menu-item--active.xh-menu-item--intent-success
+  .xh-menu-item__submenu-icon {
+  color: inherit;
+}
+
+.xh-dark .xh-menu-item.xh-menu-item--active.xh-menu-item--intent-warning {
+  background-color: rgba(200, 118, 25, 0.2);
+  color: #fbb360;
+}
+
+.xh-dark .xh-menu-item.xh-menu-item--active.xh-menu-item--intent-warning::before,
+.xh-dark .xh-menu-item.xh-menu-item--active.xh-menu-item--intent-warning .xh-menu-item__icon,
+.xh-dark
+  .xh-menu-item.xh-menu-item--active.xh-menu-item--intent-warning
+  .xh-menu-item__submenu-icon {
+  color: inherit;
+}
+
+.xh-dark .xh-menu-item.xh-menu-item--active.xh-menu-item--intent-danger {
+  background-color: rgba(205, 66, 70, 0.2);
+  color: #fa999c;
+}
+
+.xh-dark .xh-menu-item.xh-menu-item--active.xh-menu-item--intent-danger::before,
+.xh-dark .xh-menu-item.xh-menu-item--active.xh-menu-item--intent-danger .xh-menu-item__icon,
+.xh-dark
+  .xh-menu-item.xh-menu-item--active.xh-menu-item--intent-danger
+  .xh-menu-item__submenu-icon {
+  color: inherit;
+}
+
+@media (forced-colors: active) and (prefers-color-scheme: dark) {
+  .xh-dark .xh-menu-item.xh-menu-item--active {
+    background-color: highlight;
+  }
+}
+
+.xh-dark .xh-menu-item.xh-menu-item--disabled {
+  color: rgba(171, 179, 191, 0.6) !important;
+}
+
+.xh-dark .xh-menu-item.xh-menu-item--disabled::before,
+.xh-dark .xh-menu-item.xh-menu-item--disabled .xh-menu-item__icon,
+.xh-dark .xh-menu-item.xh-menu-item--disabled .xh-menu-item__submenu-icon {
+  color: rgba(171, 179, 191, 0.6) !important;
+}
+
+.xh-dark .xh-menu-item.xh-menu-item--disabled .xh-menu-item__label {
+  color: rgba(171, 179, 191, 0.6) !important;
+}
+
+.xh-dark .xh-menu-item.xh-menu-item--intent-primary {
+  color: #8abbff;
+}
+
+.xh-dark .xh-menu-item.xh-menu-item--intent-primary::before,
+.xh-dark .xh-menu-item.xh-menu-item--intent-primary .xh-menu-item__icon,
+.xh-dark .xh-menu-item.xh-menu-item--intent-primary .xh-menu-item__submenu-icon,
+.xh-dark .xh-menu-item.xh-menu-item--intent-primary .xh-menu-item__label {
+  color: inherit;
+}
+
+.xh-dark .xh-menu-item.xh-menu-item--intent-primary:hover {
+  background-color: rgba(45, 114, 210, 0.2);
+}
+
+.xh-dark .xh-menu-item.xh-menu-item--intent-primary:active,
+.xh-dark .xh-menu-item.xh-menu-item--intent-primary.xh-menu-item--active {
+  background-color: rgba(45, 114, 210, 0.3);
+  color: #99c4ff;
+}
+
+.xh-dark .xh-menu-item.xh-menu-item--intent-success {
+  color: #72ca9b;
+}
+
+.xh-dark .xh-menu-item.xh-menu-item--intent-success::before,
+.xh-dark .xh-menu-item.xh-menu-item--intent-success .xh-menu-item__icon,
+.xh-dark .xh-menu-item.xh-menu-item--intent-success .xh-menu-item__submenu-icon,
+.xh-dark .xh-menu-item.xh-menu-item--intent-success .xh-menu-item__label {
+  color: inherit;
+}
+
+.xh-dark .xh-menu-item.xh-menu-item--intent-success:hover {
+  background-color: rgba(35, 133, 81, 0.2);
+}
+
+.xh-dark .xh-menu-item.xh-menu-item--intent-success:active,
+.xh-dark .xh-menu-item.xh-menu-item--intent-success.xh-menu-item--active {
+  background-color: rgba(35, 133, 81, 0.3);
+  color: #7cd7a2;
+}
+
+.xh-dark .xh-menu-item.xh-menu-item--intent-warning {
+  color: #fbb360;
+}
+
+.xh-dark .xh-menu-item.xh-menu-item--intent-warning::before,
+.xh-dark .xh-menu-item.xh-menu-item--intent-warning .xh-menu-item__icon,
+.xh-dark .xh-menu-item.xh-menu-item--intent-warning .xh-menu-item__submenu-icon,
+.xh-dark .xh-menu-item.xh-menu-item--intent-warning .xh-menu-item__label {
+  color: inherit;
+}
+
+.xh-dark .xh-menu-item.xh-menu-item--intent-warning:hover {
+  background-color: rgba(200, 118, 25, 0.2);
+}
+
+.xh-dark .xh-menu-item.xh-menu-item--intent-warning:active,
+.xh-dark .xh-menu-item.xh-menu-item--intent-warning.xh-menu-item--active {
+  background-color: rgba(200, 118, 25, 0.3);
+  color: #f5c186;
+}
+
+.xh-dark .xh-menu-item.xh-menu-item--intent-danger {
+  color: #fa999c;
+}
+
+.xh-dark .xh-menu-item.xh-menu-item--intent-danger::before,
+.xh-dark .xh-menu-item.xh-menu-item--intent-danger .xh-menu-item__icon,
+.xh-dark .xh-menu-item.xh-menu-item--intent-danger .xh-menu-item__submenu-icon,
+.xh-dark .xh-menu-item.xh-menu-item--intent-danger .xh-menu-item__label {
+  color: inherit;
+}
+
+.xh-dark .xh-menu-item.xh-menu-item--intent-danger:hover {
+  background-color: rgba(205, 66, 70, 0.2);
+}
+
+.xh-dark .xh-menu-item.xh-menu-item--intent-danger:active,
+.xh-dark .xh-menu-item.xh-menu-item--intent-danger.xh-menu-item--active {
+  background-color: rgba(205, 66, 70, 0.3);
+  color: #ffa1a4;
+}
+
+.xh-dark .xh-menu-divider,
+.xh-dark .xh-menu-header {
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.xh-dark .xh-menu-header > h6 {
+  color: #f6f7f9;
+}
+
+// Blueprint's generic rule for the ellipsis class a menu item's text carried.
+.xh-menu-item__text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow-wrap: normal;
+}
+
+//-----------------------------------------------
+// Hoist menu styles
+//-----------------------------------------------
+// Blueprint moves the ring and shadow of a submenu onto its content, leaving side padding on the
+// popover itself as a mouse zone. Follow suit.
+.xh-menu__submenu.xh-popover__content-wrapper,
+.xh-dark .xh-menu__submenu.xh-popover__content-wrapper {
+  box-shadow: none;
+
+  > .xh-popover__content {
+    box-shadow:
+      0 0 0 var(--xh-popover-border-width) var(--xh-popover-border-color),
+      var(--xh-popover-box-shadow);
+  }
+}
+
+.xh-dark .xh-menu-list,
+.xh-menu-list {
+  background-color: var(--xh-menu-bg);
+  border: var(--xh-menu-border);
+  color: var(--xh-menu-item-text-color);
+
+  // Constrain menu height to the viewport, for menus with more items than will fit vertically.
+  // Note that this is not perfect - menus are shown relative to their target, and if a menu is
+  // in the middle of the page and forced to render above/below the target, it can still clip.
+  // The 100px offset is designed to account for menus shown from app/tab-level top/bottom toolbars.
+  max-height: calc(100vh - 100px);
+  overflow-y: auto;
+
+  .xh-menu-item {
+    // Default alignment of flex-start leaves Hoist icons shifted up - could target
+    // more specifically if this is a problem in any other contexts.
+    align-items: center;
+    color: var(--xh-menu-item-text-color);
+    padding: 5px 10px;
+
+    .xh-menu-item__icon {
+      color: inherit;
+    }
+
+    // The submenu caret follows the item text color, as the item icons do, in either theme.
+    .xh-menu-item__submenu-icon {
+      color: inherit;
+
+      svg {
+        display: block;
+        fill: currentColor;
+      }
+    }
+
+    // Highlight the focused item, as keyboard focus shows no outline after mouse use. A parent
+    // item stays highlighted while its submenu is open.
+    &:hover,
+    &:focus,
+    &[aria-expanded='true'] {
+      background-color: var(--xh-menu-item-highlight-bg);
+      border-radius: 0;
+    }
+
+    &.xh-menu-item--intent-primary {
+      color: var(--xh-intent-primary);
+    }
+
+    &.xh-menu-item--intent-success {
+      color: var(--xh-intent-success);
+    }
+
+    &.xh-menu-item--intent-warning {
+      color: var(--xh-intent-warning);
+    }
+
+    &.xh-menu-item--intent-danger {
+      color: var(--xh-intent-danger);
+    }
+
+    .xh-dark & {
+      &.xh-menu-item--intent-primary {
+        color: var(--xh-intent-primary-lighter);
+      }
+
+      &.xh-menu-item--intent-success {
+        color: var(--xh-intent-success-lighter);
+      }
+
+      &.xh-menu-item--intent-warning {
+        color: var(--xh-intent-warning-lighter);
+      }
+
+      &.xh-menu-item--intent-danger {
+        color: var(--xh-intent-danger-lighter);
+      }
+    }
+  }
+
+  // Section headings - see MenuHeading, rendered here as a titled Blueprint divider. Label is
+  // aligned with the item text rather than the item icons, matching the grid context menu.
+  .xh-menu-header {
+    // Blueprint puts the rule above its header - Hoist moves it below, tying the label to the
+    // items it introduces and sparing a leading header a stray rule at the top of the menu.
+    border-top: none;
+    border-bottom: var(--xh-menu-heading-border);
+    // Negative side margins cancel the menu's own 4px padding, so the rule runs edge to edge.
+    margin: var(--xh-spacing-half) -4px 0;
+    padding: 0;
+
+    &:first-of-type {
+      margin-top: 0;
+    }
+
+    > h6 {
+      color: var(--xh-menu-heading-text-color);
+      font-size: var(--xh-menu-heading-font-size);
+      font-weight: var(--xh-menu-heading-font-weight);
+      line-height: normal;
+      margin: 0;
+      // Left inset lines the label up with the item icons, not the item text.
+      padding: var(--xh-spacing-half) 10px var(--xh-spacing-half) 14px;
+    }
+  }
+
+  .xh-menu-item--submenu {
+    padding: 0;
+  }
+
+  // The popover target around a parent item fills the row, so the item does too.
+  .xh-menu-item--submenu > .xh-popover__target-wrapper {
+    display: block;
+  }
+}
+
+.xh-dark .xh-menu-divider {
+  border-color: rgba(255, 255, 255, 0.15) !important;
+}
+
+// A menu that fills a popover, such as a context menu or a `MenuButton` menu, takes its frame from
+// the popover border. Drop the menu's own border so the two do not stack.
+.xh-popover__content > .xh-menu-list {
+  border: none;
+}
