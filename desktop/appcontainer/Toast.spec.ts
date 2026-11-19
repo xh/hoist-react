@@ -101,6 +101,34 @@ describe('Toast (desktop)', () => {
         expect(one.isOpen).toBe(false);
         expect(two.isOpen).toBe(false);
     });
+
+    it('dismisses all open toasts on Escape with focus elsewhere on the page', () => {
+        const {show} = renderSource(),
+            one = show({message: 'One'}),
+            two = show({message: 'Two', position: 'top'});
+
+        fireEvent.keyDown(document.body, {key: 'Escape'});
+        expect(one.isOpen).toBe(false);
+        expect(two.isOpen).toBe(false);
+    });
+
+    it('keeps toasts open when another layer consumes Escape', () => {
+        const {show} = renderSource(),
+            toast = show({message: 'One'}),
+            layer = document.createElement('div');
+        document.body.appendChild(layer);
+        onTestFinished(() => layer.remove());
+
+        const stop = (e: Event) => e.stopPropagation();
+        layer.addEventListener('keydown', stop);
+        fireEvent.keyDown(layer, {key: 'Escape'});
+        expect(toast.isOpen).toBe(true);
+
+        layer.removeEventListener('keydown', stop);
+        layer.addEventListener('keydown', e => e.preventDefault());
+        fireEvent.keyDown(layer, {key: 'Escape'});
+        expect(toast.isOpen).toBe(true);
+    });
 });
 
 //------------------
