@@ -133,6 +133,14 @@ export interface NumberFormatOptions extends Omit<FormatOptions<number>, 'toolti
     zeroPad?: ZeroPad;
 }
 
+export interface CompactFormatOptions extends NumberFormatOptions {
+    /**
+     * Decimal places for a value compacted into a unit. Default by the scaled magnitude: 2 under
+     * 10, 1 under 100, else 0. `precision` applies only to a value too small to compact.
+     */
+    compactPrecision?: NumericPrecision;
+}
+
 export interface QuantityFormatOptions extends NumberFormatOptions {
     /** True to compact values \>= 1 million into units of millions (m). Default true. */
     useMillions?: boolean;
@@ -311,11 +319,12 @@ export function fmtBillions(v: number, opts?: NumberFormatOptions): ReactNode {
  * Values under 100,000 render as {@link fmtNumber} does. The unit is the label, and a value that
  * would round up to 1,000 of one unit takes the next: `1M`, not `1,000K`.
  *
- * Defaults to three significant digits with no trailing zeros - `1.23M`, `12.3M`, `123M` - and
- * caller options win.
+ * A compacted value defaults to three significant digits with no trailing zeros - `1.23M`,
+ * `12.3M`, `123M` - or takes `compactPrecision`. `precision` applies only to a value left whole.
  */
-export function fmtCompact(v: number, opts?: NumberFormatOptions): ReactNode {
-    opts = {...opts};
+export function fmtCompact(v: number, opts?: CompactFormatOptions): ReactNode {
+    const {compactPrecision, ...rest} = opts ?? {};
+    opts = rest;
     saveOriginal(v, opts);
     if (isInvalidInput(v)) return fmtNumber(v, opts);
 
@@ -325,11 +334,8 @@ export function fmtCompact(v: number, opts?: NumberFormatOptions): ReactNode {
 
     const scaled = v / unit.size,
         absScaled = Math.abs(scaled);
-    defaults(opts, {
-        precision: absScaled < 10 ? 2 : absScaled < 100 ? 1 : 0,
-        zeroPad: false,
-        label: true
-    });
+    opts.precision = compactPrecision ?? (absScaled < 10 ? 2 : absScaled < 100 ? 1 : 0);
+    defaults(opts, {zeroPad: false, label: true});
     if (opts.label === true) opts.label = unit.label;
     return fmtNumber(scaled, opts);
 }

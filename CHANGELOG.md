@@ -87,7 +87,8 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 * Added `CubeGridConfig.labelColumn`, also settable on `CubeGridModel`, to merge overrides such as a
   `renderer` into the default label column - for example to format a typed dimension value.
 * Added `fmtCompact`, with `compactRenderer` and `compactTextRenderer`, to show a number in the
-  largest unit it fills - K, M, B or T - with three significant digits, such as `48.5B`.
+  largest unit it fills - K, M, B or T - with three significant digits, such as `48.5B`. Its
+  `compactPrecision` sets the places of a compacted value, and `precision` those of a whole one.
 
 ### 🐞 Bug Fixes
 

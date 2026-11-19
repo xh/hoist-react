@@ -7,7 +7,12 @@
 import {throwIf} from '@xh/hoist/utils/js';
 import {forEach, isEmpty, isFinite, isNil, isString} from 'lodash';
 import type {ReactNode} from 'react';
-import type {ColorClassSpec, NumberFormatOptions, QuantityFormatOptions} from './FormatNumber';
+import type {
+    ColorClassSpec,
+    CompactFormatOptions,
+    NumberFormatOptions,
+    QuantityFormatOptions
+} from './FormatNumber';
 import {
     fmtBillions,
     fmtCompact,
@@ -94,6 +99,9 @@ export type NumberTextRendererOptions<O extends NumberFormatOptions = NumberForm
 
 /** Options of {@link quantityTextRenderer}. */
 export type QuantityTextRendererOptions = NumberTextRendererOptions<QuantityFormatOptions>;
+
+/** Options of {@link compactTextRenderer}. */
+export type CompactTextRendererOptions = NumberTextRendererOptions<CompactFormatOptions>;
 
 //---------------
 // Implementation

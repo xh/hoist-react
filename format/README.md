@@ -359,6 +359,7 @@ thresholds are active.
 Scales to the largest unit of thousands, millions, billions or trillions the value fills, with
 three significant digits by default, for headline figures. Values under 100,000 format as
 `fmtNumber` does. Unlike `fmtQuantity`, it uses upper-case units and trims trailing zeros.
+`precision` applies only to a value left whole, and `compactPrecision` to a compacted one.
 
 ```typescript
 fmtCompact(99999)         // "99,999"

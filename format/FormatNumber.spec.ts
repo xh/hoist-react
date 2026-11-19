@@ -427,8 +427,15 @@ describe('fmtCompact', () => {
         expect(fmtCompact(v, strOpts)).toBe(expected);
     });
 
-    it('lets caller options replace its precision, zeroPad and label', () => {
-        expect(fmtCompact(1234567, {...strOpts, precision: 1})).toBe('1.2M');
+    it('applies precision to a value left whole, and compactPrecision to a compacted one', () => {
+        expect(fmtCompact(99999, {...strOpts, precision: 2})).toBe('99,999.00');
+        expect(fmtCompact(1234567, {...strOpts, precision: 2})).toBe('1.23M');
+        expect(fmtCompact(48500000000, {...strOpts, precision: 2})).toBe('48.5B');
+        expect(fmtCompact(1234567, {...strOpts, compactPrecision: 1})).toBe('1.2M');
+        expect(fmtCompact(99999, {...strOpts, compactPrecision: 1})).toBe('99,999');
+    });
+
+    it('lets caller options replace its zeroPad and label', () => {
         expect(fmtCompact(2500000, {...strOpts, zeroPad: true})).toBe('2.50M');
         expect(fmtCompact(-2500000, {...strOpts, ledger: true, forceLedgerAlign: false})).toBe(
             '(2.5M)'
