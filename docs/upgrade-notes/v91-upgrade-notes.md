@@ -6,8 +6,8 @@
 
 Hoist React v91 resets Hoist's CSS custom properties onto a simpler baseline, and moves element
 factories to the standard React `children` key. A codemod automates nearly all of each migration.
-v91 also requires AG Grid 36.3, renders desktop inline masks without a Blueprint overlay, and sends
-a fetch with `params` but no `method` as a GET.
+v91 also removes Blueprint, requires AG Grid 36.3, renders desktop inline masks without an overlay,
+and sends a fetch with `params` but no `method` as a GET.
 
 - **AG Grid 36.3 (required)** - see Step 1.
 - **Inline masks (if your app styles them)** - see Step 5.
@@ -33,6 +33,9 @@ a fetch with `params` but no `method` as a GET.
   will remove them.
 - **`FetchService` default method (review fetches that send `params`)** - see Step 7. A request
   with `params` and no `method` is now a GET, not a POST.
+- **Blueprint removed (required if your app imports from `@xh/hoist/kit/blueprint`)** - see Step 8.
+  Hoist's desktop components no longer use Blueprint, and Hoist no longer loads its stylesheet.
+  Desktop overlays and controls look and behave as before, with keyboard and focus improvements.
 
 The CSS changes also cover the variables added in v90 - the panel splitter (`--xh-panel-splitter-*`,
 `--xh-panel-collapsed-strip-*`), `PdfViewer` (`--xh-pdf-viewer-*`) and `StatCard`
@@ -55,6 +58,9 @@ The most significant impacts are:
   Hoist logs a console warning naming the component. The Step 6 codemod fixes these.
 - **A fetch with `params` and no `method` is now a GET.** Before v91 it was a POST. A server action
   that accepts only POST rejects it, and a password or other sensitive param ends up in the URL.
+- **Imports from `@xh/hoist/kit/blueprint` fail to build.** The package is gone. Blueprint
+  components an app imports directly from `@blueprintjs/core` render unstyled unless the app loads
+  Blueprint's stylesheet itself.
 
 ## Prerequisites
 
@@ -267,9 +273,9 @@ vs. Derived Variables" in [`styles/README.md`](../../styles/README.md#base-vs-de
 
 ### 5. Check Inline Mask Styling
 
-On desktop, an inline `Mask` now renders as a plain `div` with the class `xh-mask--inline`, not a
-Blueprint overlay. Its backdrop is the `::before` pseudo-element of that `div`. Showing a mask no
-longer forces a browser layout. A mask with `inline: false` still uses the Blueprint overlay.
+On desktop, an inline `Mask` now renders as a plain `div` with the class `xh-mask--inline`, not an
+overlay. Its backdrop is the `::before` pseudo-element of that `div`. Showing a mask no longer
+forces a browser layout. A mask with `inline: false` renders in Hoist's own overlay.
 
 App CSS that targets `.bp6-overlay` classes within an inline mask no longer matches. Search for
 Blueprint overlay classes in your styles and check any hit that styles a mask:
@@ -402,7 +408,72 @@ await XH.fetchJson({url: 'api/orders/cancel', method: 'POST', params: {orderId}}
 A unit test that serves one of these reads with `hoistCore.route('POST', ...)` and checks `req.form`
 now needs `route('GET', ...)` and `req.query`.
 
-### 8. Check the Console and the UI
+### 8. Replace Blueprint Imports
+
+Hoist no longer uses Blueprint. Its desktop components render their own markup and behavior,
+`@xh/hoist/kit/blueprint` is gone, and `@blueprintjs/core` is no longer a dependency of Hoist. Find
+the imports to change:
+
+```bash
+grep -rn "@xh/hoist/kit/blueprint\|@blueprintjs" src
+```
+
+Replace each import from `@xh/hoist/kit/blueprint` with Hoist's equivalent:
+
+| Was (`@xh/hoist/kit/blueprint`) | Now |
+|---|---|
+| `dialog`, `Dialog` | `dialog` from `@xh/hoist/desktop/cmp/dialog` |
+| `dialogBody`, `dialogFooter`, `dialogFooterActions` | The same names from `@xh/hoist/desktop/cmp/dialog` |
+| `popover`, `Popover`, `tooltip`, `Tooltip` | The same names from `@xh/hoist/cmp/popover` |
+| `menuItem`, `menuDivider` | The same names from `@xh/hoist/desktop/cmp/menu` |
+| `menu` | `menu` or `menuButton` from `@xh/hoist/desktop/cmp/menu`, with `MenuItem` configs |
+| `showContextMenu` | `useContextMenu` from `@xh/hoist/desktop/hooks`, or `PanelProps.contextMenu` |
+| `useHotkeys`, `HotkeyConfig` | The same names from `@xh/hoist/desktop/hooks` |
+| `OverlayToaster` | `XH.toast()` |
+| `button`, `checkbox`, `inputGroup`, `numericInput`, `slider` and other controls | Hoist's components in `@xh/hoist/desktop/cmp/button` and `@xh/hoist/desktop/cmp/input` |
+| `Position.BOTTOM_LEFT` and other `Position` values | The string, e.g. `'bottom-left'`, typed as `PopoverPosition` from `@xh/hoist/cmp/popover` |
+| `PopoverInteractionKind.HOVER` and other kinds | The string, e.g. `'hover'` |
+| `Classes.*` | The class name string, e.g. `'bp6-text-muted'` |
+
+Before:
+
+```typescript
+import {dialog, tooltip} from '@xh/hoist/kit/blueprint';
+
+dialog({title: 'Edit', isOpen: model.isOpen, onClose: () => model.close(), children: form()});
+tooltip({content: 'Refresh now', position: 'bottom', children: button({icon: Icon.refresh()})});
+```
+
+After:
+
+```typescript
+import {tooltip} from '@xh/hoist/cmp/popover';
+import {dialog} from '@xh/hoist/desktop/cmp/dialog';
+
+dialog({title: 'Edit', isOpen: model.isOpen, onClose: () => model.close(), children: form()});
+tooltip({content: 'Refresh now', position: 'bottom', children: button({icon: Icon.refresh()})});
+```
+
+The props carry over, except Blueprint-only ones. Hoist's `Dialog` always renders in a portal, so
+drop `usePortal`. A `Tooltip` takes `position`, not `placement`, and has no `targetProps` - set
+handlers and classes on its child instead.
+
+An app that uses Blueprint components Hoist does not replace, such as `Tree`, `Card` or
+`EditableText`, can keep them by adding `@blueprintjs/core` as its own dependency. It must then
+also import Blueprint's stylesheet, which Hoist no longer loads:
+
+```typescript
+import '@blueprintjs/core/lib/css/blueprint.css';
+```
+
+Hoist's markup keeps Blueprint's `bp6-*` class names in v91, alongside its own `xh-*` ones, so app
+CSS that targets them still applies. Hoist ships the Blueprint styles its components use, so they
+look as before.
+
+Builds with `@xh/hoist-dev-utils` may log `Could not resolve @blueprintjs/icons - Blueprint icon
+stubs disabled`. With no Blueprint in the app, this is harmless.
+
+### 9. Check the Console and the UI
 
 Start the app in development mode. Hoist logs a warning at startup if any size variable resolves to
 a bare number - almost always an override the codemod could not see, such as one set from
@@ -467,6 +538,8 @@ After completing all steps:
   and a legacy `item` / `items` key.
 - [ ] Each fetch that sets `params` and changes data, sends a sensitive value, or sends large params
   also sets `method: 'POST'` (Step 7).
+- [ ] No imports from `@xh/hoist/kit/blueprint` remain, and any Blueprint components the app keeps
+  are styled (Step 8).
 - [ ] No references to retired CSS variable names remain:
   ```bash
   # Should return nothing

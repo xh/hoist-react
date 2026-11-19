@@ -14,7 +14,7 @@
 
 ## 91.0.0-SNAPSHOT - unreleased
 
-### 💥 Breaking Changes (upgrade difficulty: 🟠 MEDIUM - CSS variables)
+### 💥 Breaking Changes (upgrade difficulty: 🟠 MEDIUM - CSS variables, Blueprint removal)
 
 See [`docs/upgrade-notes/v91-upgrade-notes.md`](docs/upgrade-notes/v91-upgrade-notes.md) for
 detailed, step-by-step upgrade instructions with before/after code examples.
@@ -37,18 +37,20 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 * `Mask` now renders inline desktop masks as a plain `div` with the class `xh-mask--inline`, not a
   Blueprint overlay. Showing a mask no longer forces a browser layout. Restyle any app CSS that
   targets `.bp6-overlay` classes within an inline mask, or use `--xh-mask-bg`.
-* Desktop components now render Hoist's own markup and behavior, not Blueprint's components, and
-  desktop apps no longer load Blueprint's stylesheet. Hoist ships the Blueprint rules its components
-  use, so they look the same. The DOM keeps Blueprint's `bp6-*` classes alongside new `xh-*` ones,
-  so app CSS keyed to them still applies for this release. Markup that relies on other Blueprint
-  classes, such as Blueprint components an app renders itself, loses its Blueprint styling.
+* Removed Blueprint. Desktop components now render Hoist's own markup and behavior, Hoist no longer
+  loads Blueprint's stylesheet, and `@xh/hoist/kit/blueprint` is gone - replace its imports as in
+  Step 8 of the upgrade notes. Hoist ships the Blueprint styles its components use, so they look
+  the same. The DOM keeps Blueprint's `bp6-*` classes alongside new `xh-*` ones, so app CSS keyed
+  to them still applies. An app that keeps other Blueprint components must depend on
+  `@blueprintjs/core` and load its stylesheet itself.
     * Popovers and tooltips use the new `Popover` and `Tooltip` in `@xh/hoist/cmp/popover` - see
       New Features. `DateInputProps.popoverModifiers` no longer has any effect.
     * Added `Dialog` to `@xh/hoist/desktop/cmp/dialog`, with `dialogBody`, `dialogFooter` and
       `dialogFooterActions`, and moved all Hoist dialogs, masks and overlays onto it. Import
       `dialog` and its parts from there rather than `@xh/hoist/kit/blueprint`.
     * Menus, context menus, toasts, hotkeys and the hotkeys dialog opened by `?` are Hoist's own.
-      Hotkey combos keep the same syntax.
+      Hotkey combos keep the same syntax. `menuItem` and `menuDivider` element factories are now
+      exported from `@xh/hoist/desktop/cmp/menu`, e.g. for `ViewManagerModel.viewMenuItemFn`.
     * `Button`, `ButtonGroup`, `Checkbox`, `SwitchInput`, `RadioInput`, `TextInput`, `TextArea`,
       `NumberInput`, `SegmentedControl`, `Slider`, `TabSwitcher`, `Toolbar` overflow and `AppBar`
       render native elements. Button text is now also in an `xh-button__text` span.
@@ -212,6 +214,7 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 
 ### 📚 Libraries
 
+* @blueprintjs/core `removed` - see Breaking Changes.
 * @azure/msal-common `removed` - Hoist used it only for a type. It still installs with
   @azure/msal-browser, which pins its own copy, so apps no longer get a second one.
 * jsdom `30 → 30 || 31` (optional peer)
