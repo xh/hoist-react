@@ -1,0 +1,129 @@
+/*
+ * This file belongs to Hoist, an application development toolkit
+ * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
+ *
+ * Copyright © 2026 Extremely Heavy Industries Inc.
+ */
+
+.xh-property-table {
+  display: grid;
+  // Each column is a label track and a value track. A label track is as wide as its widest label,
+  // up to the max label width and never more than half of the column.
+  grid-template-columns: repeat(
+    var(--xh-property-table-columns, 1),
+    fit-content(
+        min(
+          var(--xh-property-table-label-max-width),
+          calc(50% / var(--xh-property-table-columns, 1))
+        )
+      )
+      minmax(0, 1fr)
+  );
+  column-gap: var(--xh-property-table-column-gap);
+  row-gap: var(--xh-property-table-row-gap);
+  // Fill the width of a block, or of a flex container that does not stretch the list. Unlike
+  // `width: 100%`, this allows for a margin. The prefixed values are for browsers without `stretch`.
+  width: -webkit-fill-available;
+  width: -moz-available;
+  width: stretch;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  font-size: var(--xh-property-table-font-size);
+
+  &--empty {
+    display: block;
+    color: var(--xh-property-table-empty-text-color);
+  }
+
+  // Swaps in the compact variables, so the rules below draw both sizes.
+  &--compact {
+    --xh-property-table-font-size: var(--xh-property-table-compact-font-size);
+    --xh-property-table-row-gap: var(--xh-property-table-compact-row-gap);
+  }
+
+  // Spans the two tracks of its column and lays its label and value out on them, so the labels of
+  // a column line up.
+  &__entry {
+    display: grid;
+    grid-column: span 2;
+    grid-template-columns: subgrid;
+    column-gap: var(--xh-property-table-label-gap);
+    align-items: baseline;
+    min-width: 0;
+  }
+
+  // Text wraps, at any character if it must. Unlike `break-word`, `anywhere` lets a long word
+  // shrink the label track, which is sized to its content.
+  &__label,
+  &__value {
+    min-width: 0;
+    margin: 0;
+    overflow-wrap: anywhere;
+  }
+
+  &__label {
+    font-size: var(--xh-property-table-label-font-size);
+    font-weight: var(--xh-property-table-label-font-weight);
+    color: var(--xh-property-table-label-text-color);
+  }
+
+  &__value {
+    font-weight: var(--xh-property-table-value-font-weight);
+
+    &--null {
+      color: var(--xh-property-table-null-text-color);
+    }
+  }
+
+  &--label-align-right &__label {
+    text-align: right;
+  }
+
+  // Equal-width digits, so the figures in a column of right-aligned values line up.
+  &--value-align-right &__value {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+  }
+
+  // A null value keeps its muted color, not the intent color.
+  &__entry--intent-primary &__value:not(.xh-property-table__value--null) {
+    color: var(--xh-property-table-primary-color);
+  }
+
+  &__entry--intent-success &__value:not(.xh-property-table__value--null) {
+    color: var(--xh-property-table-success-color);
+  }
+
+  &__entry--intent-warning &__value:not(.xh-property-table__value--null) {
+    color: var(--xh-property-table-warning-color);
+  }
+
+  &__entry--intent-danger &__value:not(.xh-property-table__value--null) {
+    color: var(--xh-property-table-danger-color);
+  }
+
+  // Equal-width columns, each entry a label stacked on its value.
+  &--label-top {
+    grid-template-columns: repeat(var(--xh-property-table-columns, 1), minmax(0, 1fr));
+  }
+
+  &--label-top &__entry {
+    display: block;
+    grid-column: auto;
+  }
+
+  // The rule replaces the row gap, with the gap as padding on each side of it.
+  &--dividers {
+    row-gap: 0;
+  }
+
+  &--dividers &__entry {
+    padding: var(--xh-property-table-row-gap) 0;
+    border-bottom: var(--xh-property-table-divider-border);
+
+    &--last-row {
+      border-bottom: none;
+    }
+  }
+}
