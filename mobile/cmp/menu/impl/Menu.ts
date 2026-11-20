@@ -40,6 +40,7 @@ import './Menu.scss';
  */
 export const menu = hoistCmp.factory({
     displayName: 'Menu',
+    model: false,
     className: 'xh-menu',
 
     render({menuItems, context, onDismiss, title, ...props}, ref) {

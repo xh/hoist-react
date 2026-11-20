@@ -123,6 +123,7 @@ to find the minimum hoist-react version for a given core release.
 
 | hoist-core | Min hoist-react | Notes |
 |---|---|---|
+| 45.0 | 91.0 | Agent docs: hoist-core 45 drops its bundled MCP and CLI tools, and its docs are served by Hoist Docs, which an app gets with hoist-react 91. No runtime dependency, but on older hoist-react the agent has no hoist-core reference. |
 | 44.0 | 90.0 recommended | Connection pool purge endpoint, called by the Purge Connections buttons in v90's Admin Console. Older hoist-react does not call it. No hard hoist-react bump. |
 | 43.0 | -- | Grails 8 / Spring Boot 4 / Java 21 server upgrade. No client-facing changes and no hoist-react bump. |
 | 42.0 | 88.0 recommended | `JsonBlobService` limits global blob writes to `xhJsonBlobConfig.globalWriteRoles` and reports `manageGlobal` on `xhView/allData`, consumed by v88's `ViewManagerModel`. Older hoist-react keeps its client-side `manageGlobal`, which the server now also enforces. No hard hoist-react bump. |

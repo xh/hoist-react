@@ -37,6 +37,12 @@ describe('MenuButton', () => {
         expect(screen.getByTestId('group-by-sector').textContent).toBe('Sector');
     });
 
+    // Guards against the model in context reaching the DOM button.
+    it('does not render its model as a DOM attribute', () => {
+        render(host({testId: 'actions', menuItems: [{text: 'Refresh'}]}));
+        expect(screen.getByTestId('actions').hasAttribute('model')).toBe(false);
+    });
+
     it('closes when an item is clicked, unless the item sets keepMenuOpen', async () => {
         const actionFn = vi.fn();
         render(
@@ -98,8 +104,8 @@ class SelectionModel extends HoistModel {
 class HostModel extends HoistModel {}
 
 /**
- * Hosts a MenuButton under a model, as every app view is - MenuButton renders nothing without one
- * in context. Popover transitions are disabled so the menu mounts and unmounts synchronously.
+ * Hosts a MenuButton under a model, as every app view is. Popover transitions are disabled so the
+ * menu mounts and unmounts synchronously.
  */
 const host = hoistCmp.factory<Omit<MenuButtonProps, 'model'> & HoistProps<HostModel>>({
     model: creates(HostModel),

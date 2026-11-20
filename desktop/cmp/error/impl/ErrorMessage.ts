@@ -21,6 +21,7 @@ import '@xh/hoist/desktop/register';
 export const errorMessageImpl = hoistCmp.factory<
     Omit<ErrorMessageProps, 'error' | 'actionFn' | 'detailsFn'>
 >({
+    model: false,
     render({message, title, actionButtonProps, detailsButtonProps}) {
         let buttons = [],
             buttonBar = null;

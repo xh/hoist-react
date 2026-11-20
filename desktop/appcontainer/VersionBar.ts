@@ -12,6 +12,7 @@ import './VersionBar.scss';
 /** @internal */
 export const versionBar = hoistCmp.factory({
     displayName: 'VersionBar',
+    model: false,
     render() {
         if (!isShowing()) return null;
 

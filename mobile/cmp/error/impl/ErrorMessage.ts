@@ -21,6 +21,7 @@ import '@xh/hoist/mobile/register';
 export const errorMessageImpl = hoistCmp.factory<
     Omit<ErrorMessageProps, 'error' | 'actionFn' | 'detailsFn'>
 >({
+    model: false,
     render({message, title, actionButtonProps, detailsButtonProps}) {
         // Stack action buttons vertically and full-width - idiomatic for mobile.
         const buttons = [];

@@ -74,6 +74,7 @@ export interface PopoverProps extends HoistProps {
  */
 export const [Popover, popover] = hoistCmp.withFactory<PopoverProps>({
     displayName: 'Popover',
+    model: false,
     className: 'xh-popover',
 
     render({
