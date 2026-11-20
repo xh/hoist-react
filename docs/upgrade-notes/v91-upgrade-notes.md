@@ -1,15 +1,17 @@
 # Hoist React v91 Upgrade Notes
 
-> **From:** v90.x → v91.0.0 | **Released:** TBD | **Difficulty:** 🟠 MEDIUM
+> **From:** v90.x → v91.0.0 | **Released:** 2026-11-20 | **Difficulty:** 🟠 MEDIUM
 
 ## Overview
 
 Hoist React v91 resets Hoist's CSS custom properties onto a simpler baseline, and moves element
 factories to the standard React `children` key. A codemod automates nearly all of each migration.
-v91 also removes Blueprint, requires AG Grid 36.3, renders desktop inline masks without an overlay,
-sends a fetch with `params` but no `method` as a GET, and moves its MCP server for AI coding agents
-to Hoist Docs.
+v91 also removes Blueprint, requires hoist-core 45 and AG Grid 36.3, renders desktop inline masks
+without an overlay, sends a fetch with `params` but no `method` as a GET, and moves its MCP server
+for AI coding agents to Hoist Docs.
 
+- **hoist-core 45 (required)** - see Step 1. v91 and hoist-core 45 are released together and
+  require each other.
 - **AG Grid 36.3 (required)** - see Step 1.
 - **Inline masks (if your app styles them)** - see Step 5.
 - **CSS variables (required if your app customizes or reads Hoist's CSS variables)** - see Steps
@@ -49,6 +51,8 @@ The CSS changes also cover the variables added in v90 - the panel splitter (`--x
 
 The most significant impacts are:
 
+- **Apps fail at startup on hoist-core 44 or earlier.** Hoist checks the server's hoist-core
+  version at startup and throws below 45.0.0.
 - **Grids fail on AG Grid 36.2 or earlier.** Hoist checks the AG Grid version at startup. On an
   older version it logs an error and disables every grid. AG Grid is not a peer dependency of
   Hoist, so your package manager does not warn.
@@ -72,15 +76,15 @@ Before starting, ensure:
 
 - [ ] Running hoist-react v90.x. An app upgrading from an earlier version should complete the
   prior upgrade notes first. The codemod also migrates v89-era variable names.
-- [ ] **hoist-core** at >= 40.5.0 (unchanged floor). **hoist-core 44.0 is recommended**, as for
-  v90. v91 adds no new server-side requirements. See
-  [Version Compatibility](../version-compatibility.md).
+- [ ] **hoist-core 45.0.0** available to upgrade to, in the same change (Step 1). This is a hard
+  floor, checked at app startup. hoist-core 45 in turn requires hoist-react 91, so upgrade both
+  together. See [Version Compatibility](../version-compatibility.md).
 
 ## Upgrade Steps
 
-### 1. Update `package.json`
+### 1. Update `package.json` and `hoistCoreVersion`
 
-Bump hoist-react to v91 and AG Grid to 36.3. Hoist requires AG Grid 36.3 or later, to avoid a
+Bump hoist-react to v91, hoist-core to v45, and AG Grid to 36.3. Hoist requires AG Grid 36.3 or later, to avoid a
 performance issue in 36.2.
 
 **File:** `client-app/package.json`
@@ -109,6 +113,20 @@ After:
 
 Bump `ag-grid-enterprise` only if your app uses it. Then run `pnpm install`, `yarn install`, or
 `npm install`.
+
+**File:** `gradle.properties`
+
+```properties
+hoistCoreVersion=45.0.0
+```
+
+See the hoist-core 45 changelog for its own upgrade steps. Its breaking change is the removal of
+the `installHoistCoreTools` task, covered in Step 9.
+
+Hoist no longer installs `@modelcontextprotocol/sdk`, `zod`, `commander`, `minisearch`, `tsx` or
+`@azure/msal-common`. An app that imports one of these without declaring it must add it to its own
+`package.json`. `@azure/msal-common` still installs with `@azure/msal-browser`, but only as that
+package's own copy.
 
 ### 2. Run the CSS Variable Codemod
 
@@ -501,6 +519,11 @@ look as before.
 Builds with `@xh/hoist-dev-utils` may log `Could not resolve @blueprintjs/icons - Blueprint icon
 stubs disabled`. With no Blueprint in the app, this is harmless.
 
+The `.xh-border-top`, `-right`, `-bottom` and `-left`, `.xh-pad-none` and `.xh-margin-none`
+utility classes no longer use `!important`. Inline styles, including layout props such as
+`padding`, now win over them, and so does any more specific rule. Check any element that relied on
+one of these classes to override such a style.
+
 ### 9. Switch Agents to Hoist Docs
 
 `node_modules/@xh/hoist/bin/hoist-mcp.mjs` and the `npx hoist-docs` / `npx hoist-ts` commands no
@@ -563,8 +586,7 @@ releases, Sonatype's snapshot repository for snapshots - and cached in `~/.cache
 Behind an organization's Maven mirror, set `HOIST_DOCS_MAVEN_REPO` and
 `HOIST_DOCS_MAVEN_SNAPSHOT_REPO` (with `HOIST_DOCS_MAVEN_USER` and `HOIST_DOCS_MAVEN_PASSWORD` if it
 needs credentials) in the `env` of the `.mcp.json` entry or in your environment. Behind an HTTP
-proxy, also set `NODE_USE_ENV_PROXY=1`. hoist-core ships a docs index from v45; with an earlier
-hoist-core, Hoist Docs serves hoist-react only, and `hoist-ping` says why. Organizations that front
+proxy, also set `NODE_USE_ENV_PROXY=1`. Organizations that front
 MCP servers with a gateway can run the same package over HTTP instead (`hoist-docs --http`); see
 the Hoist Docs README.
 
@@ -579,9 +601,9 @@ Also update:
   under `node_modules/@xh/hoist/docs/` when the tool is not set up.
 - hoist-core's tools were named `hoist-core-*`. Hoist Docs serves one set of `hoist-*` tools for
   both libraries; pass `library: "core"` to scope a call to hoist-core.
-- When you upgrade to hoist-core v45, remove the `hoistCoreCli` configuration and the
-  `installHoistCoreTools` task from `build.gradle`, and delete the `bin/hoist-core-*` launchers it
-  wrote. hoist-core v45 no longer publishes the `io.xh:hoist-core-mcp` artifact they use.
+- Remove the `hoistCoreCli` configuration and the `installHoistCoreTools` task from
+  `build.gradle`, and delete the `bin/hoist-core-*` launchers it wrote. The task fails on hoist-core
+  45, which no longer publishes the `io.xh:hoist-core-mcp` artifact it uses.
 
 Restart the agent after this change, and after any later Hoist upgrade, to pick up the new docs.
 
@@ -632,6 +654,8 @@ background, set the new `--xh-popover-*` variables instead. To change one popove
 After completing all steps:
 
 - [ ] `pnpm install` / `yarn install` / `npm install` completes without errors.
+- [ ] `hoistCoreVersion` is `45.0.0` or later, and the app starts without a hoist-core version
+  error.
 - [ ] AG Grid packages are on `~36.3.0`, and the console shows no AG Grid version error.
 - [ ] `pnpm lint` / `yarn lint` / `npm run lint` passes.
 - [ ] `pnpm typecheck` / `npx tsc --noEmit` passes.

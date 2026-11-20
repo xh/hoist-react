@@ -861,6 +861,10 @@ body {
   --xh-panel-title-font-size: var(--xh-title-font-size);
   --xh-panel-title-font-weight: var(--xh-title-font-weight);
   --xh-panel-title-text-color: var(--xh-title-text-color);
+  // Intent headers (`Panel.headerIntent`) - text color, and minimal and outlined button fills.
+  --xh-panel-title-intent-text-color: white;
+  --xh-panel-title-intent-button-hover-bg: rgba(255, 255, 255, 0.15);
+  --xh-panel-title-intent-button-active-bg: rgba(255, 255, 255, 0.25);
 
   &:where(.xh-mobile) {
     --xh-panel-title-bg: #{mc('blue-grey', '100')};
