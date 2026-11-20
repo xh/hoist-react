@@ -771,42 +771,34 @@ body {
   }
 
   //------------------------
-  // Key Value Displays
+  // Property Tables
   //------------------------
   // Gap between the columns of a multi-column list.
-  --xh-key-value-display-column-gap: var(--xh-spacing-double);
-  --xh-key-value-display-compact-font-size: var(--xh-font-size-small-relative);
-  --xh-key-value-display-compact-row-gap: 2px;
-  --xh-key-value-display-danger-color: var(--xh-intent-danger-text-color);
-  --xh-key-value-display-divider-border: var(--xh-border-solid);
-  --xh-key-value-display-empty-text-color: var(--xh-blue-gray);
-  --xh-key-value-display-font-size: inherit;
-  --xh-key-value-display-label-font-size: inherit;
-  --xh-key-value-display-label-font-weight: normal;
+  --xh-property-table-column-gap: var(--xh-spacing-double);
+  --xh-property-table-compact-font-size: var(--xh-font-size-small-relative);
+  --xh-property-table-compact-row-gap: 2px;
+  --xh-property-table-danger-color: var(--xh-intent-danger-text-color);
+  --xh-property-table-divider-border: var(--xh-border-solid);
+  --xh-property-table-empty-text-color: var(--xh-blue-gray);
+  --xh-property-table-font-size: inherit;
+  --xh-property-table-label-font-size: inherit;
+  --xh-property-table-label-font-weight: normal;
   // Gap between a label and its value, when the label is on the left.
-  --xh-key-value-display-label-gap: var(--xh-spacing);
+  --xh-property-table-label-gap: var(--xh-spacing);
   // Widest a column of labels gets, when the label is on the left. Longer labels wrap.
-  --xh-key-value-display-label-max-width: 16em;
-  --xh-key-value-display-label-text-color: var(--xh-blue-gray);
-  // Labels with `labelVariant: 'muted'`: smaller, and the label color faded toward the background,
-  // so they mute alike in either theme and on any background.
-  --xh-key-value-display-muted-label-font-size: var(--xh-font-size-small-relative);
-  --xh-key-value-display-muted-label-text-color: color-mix(
-    in srgb,
-    var(--xh-key-value-display-label-text-color) 75%,
-    transparent
-  );
-  --xh-key-value-display-null-text-color: var(--xh-text-color-muted);
-  --xh-key-value-display-primary-color: var(--xh-intent-primary-text-color);
-  --xh-key-value-display-row-gap: var(--xh-spacing-half);
-  --xh-key-value-display-success-color: var(--xh-intent-success-text-color);
-  --xh-key-value-display-value-font-weight: normal;
-  --xh-key-value-display-warning-color: var(--xh-intent-warning-text-color);
+  --xh-property-table-label-max-width: 16em;
+  --xh-property-table-label-text-color: var(--xh-blue-gray);
+  --xh-property-table-null-text-color: var(--xh-text-color-muted);
+  --xh-property-table-primary-color: var(--xh-intent-primary-text-color);
+  --xh-property-table-row-gap: var(--xh-spacing-half);
+  --xh-property-table-success-color: var(--xh-intent-success-text-color);
+  --xh-property-table-value-font-weight: normal;
+  --xh-property-table-warning-color: var(--xh-intent-warning-text-color);
 
   // The muted text color is too faint for labels on a light background, but reads well on a dark one.
   &:where(.xh-dark) {
-    --xh-key-value-display-empty-text-color: var(--xh-text-color-muted);
-    --xh-key-value-display-label-text-color: var(--xh-text-color-muted);
+    --xh-property-table-empty-text-color: var(--xh-text-color-muted);
+    --xh-property-table-label-text-color: var(--xh-text-color-muted);
   }
 
   //------------------------

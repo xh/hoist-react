@@ -52,11 +52,7 @@ export interface ParseMenuItemsOptions {
     /** Contextual data passed to each item's `prepareFn` and `actionFn`. */
     context?: MenuContext;
 
-    /**
-     * Props for the popover that hosts a submenu, merged over the Hoist defaults. A menu
-     * anchored at the cursor adds `{usePortal: true}`, because its submenus mis-position without
-     * a portal.
-     */
+    /** Props for the popover that hosts a submenu, merged over the Hoist defaults. */
     submenuPopoverProps?: MenuItemProps['popoverProps'];
 }
 
@@ -79,6 +75,9 @@ export function parseMenuItems(
     const popoverProps = {
         hoverCloseDelay: MENU_DEFAULTS.submenuHoverCloseDelay,
         openOnTargetFocus: false,
+        // A portal keeps a submenu clear of the popover holding its parent menu, which clips its
+        // content to its rounded corners. It also positions correctly in a menu at the cursor.
+        usePortal: true,
         ...submenuPopoverProps
     };
 
