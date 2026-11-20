@@ -200,14 +200,3 @@ lm.utils.filterXss = function( input, keepTags ) {
 			.replace( /</g, '&lt;' );
 	}
 };
-
-/**
- * Removes html tags from a string
- *
- * @param   {String} input
- *
- * @returns {String} input without tags
- */
-lm.utils.stripTags = function( input ) {
-	return input.replace( /(<([^>]+)>)/ig, '' ).trim();
-};

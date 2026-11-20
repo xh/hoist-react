@@ -46,8 +46,8 @@ lm.controls.DragProxy = function( x, y, dragListener, layoutManager, contentItem
 	this.element.style.left = x + 'px';
 	this.element.style.top = y + 'px';
 
-	this.element.querySelector( '.lm_tab' ).title = lm.utils.stripTags( this._contentItem.config.title );
-	this.element.querySelector( '.lm_title' ).innerHTML = this._contentItem.config.title;
+	this.element.querySelector( '.lm_tab' ).title = this._contentItem.config.title;
+	this.element.querySelector( '.lm_title' ).textContent = this._contentItem.config.title;
 	this._childContentNode = this.element.querySelector( '.lm_content' );
 	this._childContentNode.appendChild( contentItem.element );
 
