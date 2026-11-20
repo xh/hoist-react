@@ -93,7 +93,9 @@ const countClasses = text => {
     }
     return ret;
 };
-const baseCounts = countClasses(fs.readFileSync(path.join(ROOT, BASE_CSS), 'utf8')),
+// The base file is deleted once the rename is done - count nothing from it then.
+const baseText = fs.existsSync(path.join(ROOT, BASE_CSS)) ? fs.readFileSync(path.join(ROOT, BASE_CSS), 'utf8') : '',
+    baseCounts = countClasses(baseText),
     scssFiles = walk(ROOT, ['.scss']),
     styledIn = new Map(), // bp6 class -> scss files
     scssTotals = [];
@@ -115,8 +117,7 @@ for (const file of [...scssFiles, ...tsFiles]) {
     const text = fs.readFileSync(path.join(ROOT, file), 'utf8');
     for (const m of text.matchAll(/var\((--bp-[a-z0-9-]+)/g)) add(varUse, m[1], file);
 }
-const baseText = fs.readFileSync(path.join(ROOT, BASE_CSS), 'utf8'),
-    baseVarsDefined = new Set([...baseText.matchAll(/^\s*(--bp[a-z0-9-]*):/gm)].map(m => m[1])),
+const baseVarsDefined = new Set([...baseText.matchAll(/^\s*(--bp[a-z0-9-]*):/gm)].map(m => m[1])),
     baseVarsUsed = new Set([...baseText.matchAll(/var\((--bp[a-z0-9-]*)/g)].map(m => m[1]));
 
 //------------------------

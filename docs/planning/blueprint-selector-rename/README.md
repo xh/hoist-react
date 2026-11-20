@@ -78,14 +78,14 @@ file is the working guide.
       their imports in `desktop/register.ts`. No visual change. The rules that still applied -
       document typography, focus outlines, link colors and react-grid-layout's styles - moved to
       `desktop/styles/Base.scss`.
-- [ ] Add the final `bp6-*` to `xh-*` mapping table to the v91 upgrade notes, Step 8.
-- [ ] Add `docs/codemod/v91/codemod-bp6-classes.mjs` with a spec, modeled on
+- [x] Add the final `bp6-*` to `xh-*` mapping table to the v91 upgrade notes, Step 8.
+- [x] Add `docs/codemod/v91/codemod-bp6-classes.mjs` with a spec, modeled on
       `codemod-css-vars.mjs`. It rewrites the mapped selectors in app `.scss`, `.css` and TS class
       strings, and reports the ones it cannot map, such as combined classes and Blueprint internals
       with no Hoist equivalent.
-- [ ] Add a development-mode warning naming any `bp6-` selector in the loaded stylesheets. Model it
+- [x] Add a development-mode warning naming any `bp6-` selector in the loaded stylesheets. Model it
       on `ThemeModel.warnOnDocumentRootVars()`, which scans `document.styleSheets` the same way.
-- [ ] CHANGELOG entry under Breaking Changes, pointing at the codemod and the mapping table.
+- [x] CHANGELOG entry under Breaking Changes, pointing at the codemod and the mapping table.
 - [ ] hoist-chat-kit: move its 26 `bp6-` references in 14 files to `xh-*`, in a PR in that repo.
 - [ ] Toolbox: move its 5 `bp6-` references in 2 files, on `claude/hoist-no-blueprint` or a branch
       stacked on it.

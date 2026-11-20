@@ -52,5 +52,5 @@ button({
 - **Prefer a desktop button's `tooltip` prop to wrapping it.** `ButtonProps.tooltip` takes a string
   or a config with these props, renders this component with no wrapper element, and opens it on
   disabled buttons too. Set the button's `title` instead for the browser's native tooltip.
-- **Style tooltips with the `--xh-tooltip-*` CSS variables.** App CSS on `bp6-tooltip` classes works
-  for one release only.
+- **Style tooltips with the `--xh-tooltip-*` CSS variables.** App CSS on `bp6-tooltip` classes no
+  longer applies - target `xh-tooltip` instead.
