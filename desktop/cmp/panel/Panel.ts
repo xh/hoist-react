@@ -6,7 +6,7 @@
  */
 import {errorBoundary} from '@xh/hoist/cmp/error/ErrorBoundary';
 import {box, frame, vbox, vframe} from '@xh/hoist/cmp/layout';
-import type {BoxProps, HoistModel, HoistProps, Some, TaskObserver} from '@xh/hoist/core';
+import type {BoxProps, HoistModel, HoistProps, Intent, Some, TaskObserver} from '@xh/hoist/core';
 import {
     hoistCmp,
     refreshContextView,
@@ -41,6 +41,12 @@ export interface PanelProps<M extends PanelModel = PanelModel>
 
     /** CSS class name specific to the panel's header. */
     headerClassName?: string;
+
+    /**
+     * Intent to color the panel's header. The header takes a solid intent background, and its
+     * title, icon, and minimal header buttons render in white. Default is the standard header.
+     */
+    headerIntent?: Intent;
 
     /** Items to be added to the right-side of the panel's header. */
     headerItems?: ReactNode[];
@@ -160,6 +166,7 @@ export const [Panel, panel] = hoistCmp.withFactory<PanelProps, PanelDefaults>({
                 collapsedTitle,
                 collapsedIcon,
                 headerClassName,
+                headerIntent,
                 headerItems,
                 mask: maskProp,
                 loadingIndicator: loadingIndicatorProp,
@@ -256,6 +263,7 @@ export const [Panel, panel] = hoistCmp.withFactory<PanelProps, PanelDefaults>({
                     collapsedTitle,
                     collapsedIcon,
                     className: headerClassName,
+                    intent: headerIntent,
                     headerItems
                 }),
                 coreContents,
