@@ -22,6 +22,16 @@ import {compact, groupBy, isEmpty, isString, mapValues, uniq} from 'lodash';
 import {RoleEditorModel} from './editor/RoleEditorModel';
 import type {DirectoryGroupInfo, HoistRole, RoleModuleConfig} from './Types';
 
+/** Extends HoistRole with synthetic fields added by processRawData and processRolesForTreeGrid. */
+interface RoleGridRow extends HoistRole {
+    /** True for category group rows injected by processRolesForTreeGrid - not real role records. */
+    isGroupRow?: boolean;
+    effectiveUserNames?: string[];
+    effectiveDirectoryGroupNames?: string[];
+    effectiveRoleNames?: string[];
+    inheritedRoleNames?: string[];
+}
+
 export class RoleModel extends HoistModel {
     override telemetryPrefix = 'xh.client.admin.roles';
 
@@ -36,7 +46,7 @@ export class RoleModel extends HoistModel {
 
     override persistWith = RoleModel.PERSIST_WITH;
 
-    @managed gridModel: GridModel;
+    @managed gridModel: GridModel<RoleGridRow>;
     @managed filterChooserModel: FilterChooserModel;
     @managed readonly roleEditorModel = new RoleEditorModel(this);
     @managed recategorizeDialogModel = new RecategorizeDialogModel(this);
@@ -69,7 +79,7 @@ export class RoleModel extends HoistModel {
 
     get selectedRole(): HoistRole {
         const selected = this.gridModel.selectedRecord?.data;
-        if (selected && !selected.isGroupRow) return selected as HoistRole;
+        if (selected && !selected.isGroupRow) return selected;
         return null;
     }
 
@@ -342,8 +352,8 @@ export class RoleModel extends HoistModel {
         return root;
     }
 
-    private createGridModel(): GridModel {
-        return new GridModel({
+    private createGridModel(): GridModel<RoleGridRow> {
+        return new GridModel<RoleGridRow>({
             treeMode: true,
             treeStyle: TreeStyle.HIGHLIGHTS_AND_BORDERS,
             autosizeOptions: {mode: 'managed', includeCollapsedChildren: true},
@@ -417,7 +427,7 @@ export class RoleModel extends HoistModel {
             contextMenu: () => this.getContextMenuItems(),
             onRowDoubleClicked: ({data: record}) => {
                 if (record && !record.data.isGroupRow) {
-                    this.editAsync(record.data as HoistRole);
+                    this.editAsync(record.data);
                 }
             }
         });

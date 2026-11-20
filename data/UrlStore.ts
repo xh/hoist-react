@@ -8,6 +8,7 @@
 import type {Loadable, LoadSpec, LoadSpecConfig, PlainObject, TaskObserver} from '@xh/hoist/core';
 import {LoadSupport, managed, XH} from '@xh/hoist/core';
 
+import type {RecordId, StoreRecordId} from './StoreRecord';
 import type {StoreConfig} from './Store';
 import {Store} from './Store';
 
@@ -22,7 +23,13 @@ export interface UrlStoreConfig extends StoreConfig {
 /**
  * A store with built-in support for loading data from a URL.
  */
-export class UrlStore extends Store implements Loadable {
+export class UrlStore<
+    TData extends PlainObject = PlainObject,
+    TId extends StoreRecordId = RecordId<TData>
+>
+    extends Store<TData, TId>
+    implements Loadable
+{
     url: string;
     dataRoot: string;
 

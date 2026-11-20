@@ -35,6 +35,7 @@ import {HoistModel, managed, TaskObserver, XH} from '@xh/hoist/core';
 import type {
     Field,
     FieldSpec,
+    RecordId,
     StoreConfig,
     StoreRecordId,
     StoreRecordOrId,
@@ -150,7 +151,10 @@ import type {
  * @see GridModel
  * @see ColumnSpec
  */
-export interface GridConfig {
+export interface GridConfig<
+    TData extends PlainObject = PlainObject,
+    TId extends StoreRecordId = RecordId<TData>
+> {
     /** Columns for this grid. */
     columns?: ColumnOrGroupSpec[];
 
@@ -164,7 +168,7 @@ export interface GridConfig {
      * A Store instance, or a config with which to create a Store. If not supplied,
      * store fields will be inferred from columns config.
      */
-    store?: Store | StoreConfig;
+    store?: Store<TData, TId> | StoreConfig;
 
     /** True if grid is a tree grid (default false). */
     treeMode?: boolean;
@@ -502,7 +506,13 @@ export interface GridModelDefaults {
  *
  * @mcpHint model backing all grid components
  */
-export class GridModel extends HoistModel implements GridLikeModel {
+export class GridModel<
+    TData extends PlainObject = PlainObject,
+    TId extends StoreRecordId = RecordId<TData>
+>
+    extends HoistModel
+    implements GridLikeModel
+{
     /**
      * Ceilings (ms) on how long deferred grid work may be held back, calibrated to what going
      * stale costs the user: a deferred sort leaves row order wrong, while a deferred autosize
@@ -574,8 +584,8 @@ export class GridModel extends HoistModel implements GridLikeModel {
     //------------------------
     // Immutable public properties
     //------------------------
-    store: Store;
-    selModel: StoreSelectionModel;
+    store: Store<TData, TId>;
+    selModel: StoreSelectionModel<TData, TId>;
     treeMode: boolean;
     colChooserModel: IColChooserModel;
     rowClassFn: RowClassFn;
@@ -690,7 +700,7 @@ export class GridModel extends HoistModel implements GridLikeModel {
     /** @internal */
     readonly diagnostics = new GridModelDiagnostics(this);
 
-    constructor(config: GridConfig) {
+    constructor(config: GridConfig<TData, TId>) {
         super();
         let {
             store,
@@ -751,7 +761,7 @@ export class GridModel extends HoistModel implements GridLikeModel {
             xhName = null,
             xhImpl,
             ...rest
-        }: GridConfig = config;
+        }: GridConfig<TData, TId> = config;
 
         this.xhImpl = xhImpl;
         this.xhName = xhName;
@@ -1082,12 +1092,12 @@ export class GridModel extends HoistModel implements GridLikeModel {
     }
 
     /** Currently selected records. */
-    get selectedRecords(): StoreRecord[] {
+    get selectedRecords(): StoreRecord<TData, TId>[] {
         return this.selModel.selectedRecords;
     }
 
     /** IDs of currently selected records. */
-    get selectedIds(): StoreRecordId[] {
+    get selectedIds(): TId[] {
         return this.selModel.selectedIds;
     }
 
@@ -1098,7 +1108,7 @@ export class GridModel extends HoistModel implements GridLikeModel {
      * due to store loading or editing.  Applications only interested in the identity
      * of the selection should use {@link selectedId} instead.
      */
-    get selectedRecord(): StoreRecord {
+    get selectedRecord(): StoreRecord<TData, TId> {
         return this.selModel.selectedRecord;
     }
 
@@ -1109,7 +1119,7 @@ export class GridModel extends HoistModel implements GridLikeModel {
      * due to store loading or editing.  Applications also interested in the contents of the
      * selection should use the {@link selectedRecord} getter instead.
      */
-    get selectedId(): StoreRecordId {
+    get selectedId(): TId {
         return this.selModel.selectedId;
     }
 
@@ -1976,7 +1986,7 @@ export class GridModel extends HoistModel implements GridLikeModel {
     // in this case GridModel should work out the required Store fields from column definitions.
     private parseAndSetColumnsAndStore(
         colConfigs: ColumnOrGroupSpec[],
-        storeOrConfig: Store | StoreConfig = {}
+        storeOrConfig: Store<TData, TId> | StoreConfig = {}
     ) {
         // Enhance colConfigs with field-level metadata provided by store, if any.
         colConfigs = this.enhanceColConfigsFromStore(colConfigs, storeOrConfig);
@@ -1985,12 +1995,12 @@ export class GridModel extends HoistModel implements GridLikeModel {
         this.setColumns(colConfigs);
 
         // Set or create Store as needed.
-        let store: Store;
+        let store: Store<TData, TId>;
         if (storeOrConfig instanceof Store) {
             store = storeOrConfig;
         } else {
             storeOrConfig = this.enhanceStoreConfigFromColumns(storeOrConfig);
-            store = new Store({
+            store = new Store<TData, TId>({
                 xhName: this.childXhName('store'),
                 loadTreeData: this.treeMode,
                 ...storeOrConfig
@@ -2227,10 +2237,12 @@ export class GridModel extends HoistModel implements GridLikeModel {
         return sizingMode;
     }
 
-    private parseSelModel(selModel: GridConfig['selModel']): StoreSelectionModel {
+    private parseSelModel(
+        selModel: GridConfig<TData, TId>['selModel']
+    ): StoreSelectionModel<TData, TId> {
         // Return actual instance directly.
         if (selModel instanceof StoreSelectionModel) {
-            return selModel;
+            return selModel as StoreSelectionModel<TData, TId>;
         }
 
         // Default unspecified based on platform, treat explicit null as disabled.

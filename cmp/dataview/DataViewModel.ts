@@ -24,9 +24,11 @@ import {GridModel} from '@xh/hoist/cmp/grid';
 import type {LoadSpec, PlainObject, Some} from '@xh/hoist/core';
 import {HoistModel, managed} from '@xh/hoist/core';
 import type {
+    RecordId,
     Store,
     StoreConfig,
     StoreRecord,
+    StoreRecordId,
     StoreRecordOrId,
     StoreSelectionConfig,
     StoreSelectionModel,
@@ -43,9 +45,12 @@ import type {ReactNode} from 'react';
  *
  * @see DataViewModel
  */
-export interface DataViewConfig {
+export interface DataViewConfig<
+    TData extends PlainObject = PlainObject,
+    TId extends StoreRecordId = RecordId<TData>
+> {
     /** A Store instance, or a config to create one. */
-    store?: Store | StoreConfig;
+    store?: Store<TData, TId> | StoreConfig;
 
     /** Renderer to use for each data row. */
     renderer?: ColumnRenderer;
@@ -156,12 +161,18 @@ export type ItemHeightFn = (params: {
  * @see DataView
  * @see DataViewConfig
  */
-export class DataViewModel extends HoistModel implements GridLikeModel {
-    @managed gridModel: GridModel;
+export class DataViewModel<
+    TData extends PlainObject = PlainObject,
+    TId extends StoreRecordId = RecordId<TData>
+>
+    extends HoistModel
+    implements GridLikeModel
+{
+    @managed gridModel: GridModel<TData, TId>;
     @bindableRef accessor itemHeight: number | ItemHeightFn;
     @bindable accessor groupRowHeight: number;
 
-    constructor(config: DataViewConfig) {
+    constructor(config: DataViewConfig<TData, TId>) {
         super();
         const {
             store,
@@ -211,7 +222,7 @@ export class DataViewModel extends HoistModel implements GridLikeModel {
             rendererIsComplex: true
         });
 
-        this.gridModel = new GridModel({
+        this.gridModel = new GridModel<TData, TId>({
             theme: THEME_PARAMS,
             xhName: this.childXhName('gridModel'),
             store,
@@ -237,7 +248,7 @@ export class DataViewModel extends HoistModel implements GridLikeModel {
     }
 
     // Getters and methods trampolined from GridModel.
-    get store() {
+    get store(): Store<TData, TId> {
         return this.gridModel.store;
     }
     get innerGridModel(): GridModel {
@@ -247,19 +258,19 @@ export class DataViewModel extends HoistModel implements GridLikeModel {
     get empty() {
         return this.gridModel.empty;
     }
-    get selModel() {
+    get selModel(): StoreSelectionModel<TData, TId> {
         return this.gridModel.selModel;
     }
     get hasSelection() {
         return this.gridModel.hasSelection;
     }
-    get selectedRecords() {
+    get selectedRecords(): StoreRecord<TData, TId>[] {
         return this.gridModel.selectedRecords;
     }
-    get selectedRecord() {
+    get selectedRecord(): StoreRecord<TData, TId> {
         return this.gridModel.selectedRecord;
     }
-    get selectedId() {
+    get selectedId(): TId {
         return this.gridModel.selectedId;
     }
     get groupBy() {

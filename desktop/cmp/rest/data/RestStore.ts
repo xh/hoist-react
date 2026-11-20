@@ -6,7 +6,7 @@
  */
 import type {CallContext, LoadSpec, PlainObject} from '@xh/hoist/core';
 import {XH} from '@xh/hoist/core';
-import type {StoreRecord, StoreRecordId, UrlStoreConfig} from '@xh/hoist/data';
+import type {RecordId, StoreRecord, StoreRecordId, UrlStoreConfig} from '@xh/hoist/data';
 import {UrlStore} from '@xh/hoist/data';
 import '@xh/hoist/desktop/register';
 import {filter, isNil, keyBy, mapValues} from 'lodash';
@@ -25,7 +25,10 @@ export interface RestStoreConfig extends UrlStoreConfig {
  * Store with additional support for RestGrid.
  * Provides support for lookups, and CRUD operations on records.
  */
-export class RestStore extends UrlStore {
+export class RestStore<
+    TData extends PlainObject = PlainObject,
+    TId extends StoreRecordId = RecordId<TData>
+> extends UrlStore<TData, TId> {
     override telemetryPrefix = 'xh.client.restStore';
 
     declare fields: RestField[];

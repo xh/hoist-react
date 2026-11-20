@@ -50,7 +50,7 @@ export class ClusterObjectsModel extends HoistModel {
         recordsRequired: true
     };
 
-    @managed gridModel = new GridModel({
+    @managed gridModel = new GridModel<ClusterObjectRecord>({
         selModel: 'multiple',
         treeMode: true,
         expandLevel: 2,
@@ -102,7 +102,7 @@ export class ClusterObjectsModel extends HoistModel {
         contextMenu: [this.clearHibernateCachesAction, '-', ...GridModel.defaults.contextMenu]
     });
 
-    get selectedRecord(): StoreRecord {
+    get selectedRecord(): StoreRecord<ClusterObjectRecord> {
         return this.gridModel.selectedRecord;
     }
 
