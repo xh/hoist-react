@@ -91,9 +91,11 @@ file is the working guide.
       phase-1 behavior, listed in that PR.
 - [x] Toolbox: move its 5 `bp6-` references in 2 files, on `claude/hoist-no-blueprint` or a branch
       stacked on it. Done in xh/toolbox#967, stacked on #965.
-- [ ] Ask whether the `xh:hoist-upgrade` skill, in the hoist-ai plugin, needs a step to run the new
-      codemod.
-- [ ] Update the PR description and the plan's Handoff section as items land.
+- [x] Ask whether the `xh:hoist-upgrade` skill, in the hoist-ai plugin, needs a step to run the new
+      codemod. Answer: a follow-up for hoist-ai's maintainers - add a step that runs
+      `codemod-bp6-classes.mjs` beside the CSS-variable codemod, reviews its report and checks for
+      the development-mode warning.
+- [x] Update the PR description and the plan's Handoff section as items land.
 
 ## Names
 
