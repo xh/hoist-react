@@ -137,6 +137,7 @@ export const [ColChooser, colChooser] = hoistCmp.withFactory<ColChooserProps>({
 // Implementation
 //------------------------
 const columnList = hoistCmp.factory({
+    model: false,
     render({cols, placeholder, className, ...props}, ref) {
         return div({
             className: classNames('xh-col-chooser__list', className),
@@ -150,6 +151,7 @@ const columnList = hoistCmp.factory({
 });
 
 const draggableRow = hoistCmp.factory({
+    model: false,
     render({col, idx}) {
         const {colId, exclude, pinned} = col;
         if (exclude) return null;

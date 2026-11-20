@@ -17,6 +17,7 @@ import {fmtJson, timestampReplacer} from '@xh/hoist/format';
  */
 export const adminJsonDisplay = hoistCmp.factory<JsonInputProps>({
     displayName: 'AdminJsonDisplay',
+    model: false,
     render(props) {
         return jsonInput({
             readonly: true,

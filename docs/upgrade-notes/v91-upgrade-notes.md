@@ -7,7 +7,8 @@
 Hoist React v91 resets Hoist's CSS custom properties onto a simpler baseline, and moves element
 factories to the standard React `children` key. A codemod automates nearly all of each migration.
 v91 also removes Blueprint, requires AG Grid 36.3, renders desktop inline masks without an overlay,
-and sends a fetch with `params` but no `method` as a GET.
+sends a fetch with `params` but no `method` as a GET, and moves its MCP server for AI coding agents
+to Hoist Docs.
 
 - **AG Grid 36.3 (required)** - see Step 1.
 - **Inline masks (if your app styles them)** - see Step 5.
@@ -36,6 +37,10 @@ and sends a fetch with `params` but no `method` as a GET.
 - **Blueprint removed (required if your app imports from `@xh/hoist/kit/blueprint`)** - see Step 8.
   Hoist's desktop components no longer use Blueprint, and Hoist no longer loads its stylesheet.
   Desktop overlays and controls look and behave as before, with keyboard and focus improvements.
+- **MCP server and CLIs removed (required if your agents use them)** - see Step 9. hoist-react no
+  longer ships the stdio MCP server or the `hoist-mcp`, `hoist-docs` and `hoist-ts` CLIs. The same
+  tools come from [Hoist Docs](https://github.com/xh/hoist-docs) (`@xh/hoist-docs`), added as a dev
+  dependency.
 
 The CSS changes also cover the variables added in v90 - the panel splitter (`--xh-panel-splitter-*`,
 `--xh-panel-collapsed-strip-*`), `PdfViewer` (`--xh-pdf-viewer-*`) and `StatCard`
@@ -606,7 +611,91 @@ Blueprint's typography classes - `bp6-code`, `bp6-key`, `bp6-running-text`, `bp6
 | `bp6-heading` | `xh-dialog__title` on a dialog title, `xh-menu-header__title` on a menu heading | |
 | `bp6-button` inside `bp6-segmented-control` | `xh-segmented-control__option` | `bp6-disabled` → `xh-segmented-control__option--disabled`. Blueprint's `bp6-minimal` marked an unselected option - Hoist marks the selected one with `xh-segmented-control__option--selected` |
 
-### 9. Check the Console and the UI
+### 9. Switch Agents to Hoist Docs
+
+`node_modules/@xh/hoist/bin/hoist-mcp.mjs` and the `npx hoist-docs` / `npx hoist-ts` commands no
+longer exist. Hoist Docs serves the same tools - `hoist-search-docs`, `hoist-read-doc`,
+`hoist-search-symbols`, `hoist-get-symbol`, `hoist-get-members` and the rest - for hoist-core as
+well, from one MCP server built on the MCP TypeScript SDK v2 (the 2026-07-28 spec, and the 2025
+handshake older clients use). The agent launches it over stdio, as before, and it answers for the
+Hoist versions your app has installed.
+
+**Add the dependency:**
+
+```bash
+cd client-app && pnpm add -D @xh/hoist-docs
+```
+
+**Find affected config:**
+
+```bash
+grep -rn "hoist-mcp\|hoist-core-mcp\|npx hoist-docs\|npx hoist-ts\|hoist-core-docs\|hoist-core-symbols\|mcp__hoist-react\|mcp__hoist-core" \
+    .mcp.json CLAUDE.md AGENTS.md .claude build.gradle 2>/dev/null
+```
+
+**Before** (`.mcp.json`):
+
+```json
+{
+  "mcpServers": {
+    "hoist-react": {
+      "type": "stdio",
+      "command": "node",
+      "args": ["client-app/node_modules/@xh/hoist/bin/hoist-mcp.mjs"]
+    },
+    "hoist-core": {
+      "command": "./bin/hoist-core-mcp"
+    }
+  }
+}
+```
+
+**After:**
+
+```json
+{
+  "mcpServers": {
+    "hoist-docs": {
+      "type": "stdio",
+      "command": "node",
+      "args": ["client-app/node_modules/@xh/hoist-docs/bin/hoist-docs.mjs"]
+    }
+  }
+}
+```
+
+Point at the package's own launcher, as above, rather than `node_modules/.bin/hoist-docs`, which
+older `@xh/hoist` versions' CLI of the same name can take.
+
+**Where the docs come from.** hoist-react's docs index ships inside `@xh/hoist` itself, so it needs
+no network. hoist-core's is fetched once per `hoistCoreVersion` from Maven - Maven Central for
+releases, Sonatype's snapshot repository for snapshots - and cached in `~/.cache/hoist-docs`.
+Behind an organization's Maven mirror, set `HOIST_DOCS_MAVEN_REPO` and
+`HOIST_DOCS_MAVEN_SNAPSHOT_REPO` (with `HOIST_DOCS_MAVEN_USER` and `HOIST_DOCS_MAVEN_PASSWORD` if it
+needs credentials) in the `env` of the `.mcp.json` entry or in your environment. Behind an HTTP
+proxy, also set `NODE_USE_ENV_PROXY=1`. hoist-core ships a docs index from v45; with an earlier
+hoist-core, Hoist Docs serves hoist-react only, and `hoist-ping` says why. Organizations that front
+MCP servers with a gateway can run the same package over HTTP instead (`hoist-docs --http`); see
+the Hoist Docs README.
+
+Also update:
+
+- Permission allowlists that name the old servers, such as `mcp__hoist-react__*` and
+  `mcp__hoist-core__*` in `.claude/settings.json`, to the new server name (`mcp__hoist-docs__*`),
+  and drop `Bash` permissions for `npx hoist-docs`, `npx hoist-ts` and `./bin/hoist-core-*`.
+- `enabledMcpjsonServers` entries naming `hoist-react` or `hoist-core`.
+- Agent instructions (`CLAUDE.md`, `AGENTS.md`) that tell agents to run `npx hoist-docs`,
+  `npx hoist-ts` or the `bin/hoist-core-*` launchers. Point them at the MCP tools, or at the docs
+  under `node_modules/@xh/hoist/docs/` when the tool is not set up.
+- hoist-core's tools were named `hoist-core-*`. Hoist Docs serves one set of `hoist-*` tools for
+  both libraries; pass `library: "core"` to scope a call to hoist-core.
+- When you upgrade to hoist-core v45, remove the `hoistCoreCli` configuration and the
+  `installHoistCoreTools` task from `build.gradle`, and delete the `bin/hoist-core-*` launchers it
+  wrote. hoist-core v45 no longer publishes the `io.xh:hoist-core-mcp` artifact they use.
+
+Restart the agent after this change, and after any later Hoist upgrade, to pick up the new docs.
+
+### 10. Check the Console and the UI
 
 Start the app in development mode. Hoist logs a warning at startup if any size variable resolves to
 a bare number - almost always an override the codemod could not see, such as one set from
@@ -676,6 +765,9 @@ After completing all steps:
   are styled (Step 8).
 - [ ] The Blueprint class codemod report has been reviewed, and the application loads in
   development mode without the warning about Blueprint classes or variables (Step 8).
+
+- [ ] No config or instructions reference `hoist-mcp.mjs`, `npx hoist-docs` or `npx hoist-ts`.
+- [ ] `hoist-ping` from your agent reports Hoist Docs and your app's Hoist versions.
 - [ ] No references to retired CSS variable names remain:
   ```bash
   # Should return nothing
@@ -775,3 +867,4 @@ handles these; for reference, their v91 variables are:
   spec `children` codemod.
 - [Element Factories](../../core/README.md#element-factories) - the `children` key, the legacy
   aliases, and authoring container components.
+- [Hoist Docs](https://github.com/xh/hoist-docs) - the MCP tool, its design, and gateway deployment.

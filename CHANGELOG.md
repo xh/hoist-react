@@ -69,6 +69,9 @@ detailed, step-by-step upgrade instructions with before/after code examples.
   and `xh-tab-list__tab`. Run `docs/codemod/v91/codemod-bp6-classes.mjs` to rename app selectors
   and class strings - Step 8 of the upgrade notes maps every class. Hoist logs a
   development-mode warning naming any `bp6-*` class or `--bp-*` variable left in a stylesheet.
+* Removed the bundled stdio MCP server and the `hoist-mcp`, `hoist-docs` and `hoist-ts` CLIs. Add
+  [Hoist Docs](https://github.com/xh/hoist-docs) (`@xh/hoist-docs`) as a `client-app` dev
+  dependency and point `.mcp.json` at it instead - see the upgrade notes.
 
 ### 🎁 New Features
 
@@ -115,6 +118,9 @@ detailed, step-by-step upgrade instructions with before/after code examples.
       `@xh/hoist/docs/codemod/v91` folder - see Step 6 of the upgrade notes. It uses the TypeScript
       checker, so `items` keys that hold menu or other data stay unchanged. It also reports
       factory examples in markdown docs such as CLAUDE.md, and edits them only with `--fix-docs`.
+* Added `PropertyTable` to `@xh/hoist/cmp/propertytable`, a display-only list of labeled
+  values, such as the fields of a record in a detail panel. It lays out its `entries` in aligned
+  columns that fit the available width, with each label to the left of or above its value.
 * Added `ProgressBar` to `@xh/hoist/cmp/progressbar`, a cross-platform bar that shows a value
   against a maximum, with an optional label, figure, `intent` and `target` marker. Set
   `indeterminate` for work of unknown length.
@@ -137,6 +143,9 @@ detailed, step-by-step upgrade instructions with before/after code examples.
   `intent`, by its trend, or by the sign of each part, as for profit and loss. Optional
   `markers` dot the first, last, lowest and highest values. An optional `tooltip` for the whole
   sparkline shows on desktop and mounts only when first hovered.
+* `useLocalModel()` now works in a component with `model: false`, with no need for a placeholder
+  model spec. 33 Hoist components now set `model: false`, skipping model resolution and a wrapping
+  component on each render.
 * Added `XH.hasRoute()` to check if a route exists. Call it before `XH.router.buildPath()` or
   `buildUrl()` with a name that may not be registered, as both throw for an unknown route.
 
@@ -146,6 +155,9 @@ detailed, step-by-step upgrade instructions with before/after code examples.
   app, `TabSwitcher` overflow and chooser favorites menus now render through `Menu`, so their
   submenus stay open briefly as the pointer leaves the parent item, and a right-click within them
   no longer shows the browser's context menu.
+* Fixed desktop submenus clipping to the popover that holds their parent menu, as in the
+  `ViewManager` menu and `MenuButton` menus. Submenus now render in a portal, as context menu
+  submenus already did.
 * Fixed mobile `FormField` ignoring the `--xh-form-field-inline-label-*` custom properties for
   inline labels - it referenced stale names left behind by an earlier rename.
 * Fixed `StatCard` titles and values not lining up across a `StatCardStrip` whose cards differ in
@@ -168,6 +180,8 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 * Fixed a component with a `uses()` model crashing with a React hooks error when its model went
   missing between renders, e.g. after a dev-server hot reload of the model class. The component
   now shows its "No model found" placeholder.
+* Fixed `ViewportSizeModel` occasionally throwing at startup in a browser with no orientation API,
+  when it checked orientation before its first measure. It now measures the viewport at once.
 * Fixed `XH.installServicesAsync()` creating and initializing a new instance of a service that was
   already installed, before it threw. It now rejects a duplicate before creating any instance.
 
@@ -244,6 +258,26 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 * Desktop `SegmentedControl` now looks disabled when `disabled`, matching other disabled inputs
   such as `DateInput`. Its tray takes the disabled input fill and its labels fade, while the
   selected option keeps a hairline edge so the current value stays legible.
+
+### 🤖 AI Docs + Tooling
+
+* Moved MCP docs and symbol tooling to [Hoist Docs](https://github.com/xh/hoist-docs)
+  (`@xh/hoist-docs`), one MCP server for hoist-react and hoist-core. Apps add it as a dev
+  dependency; the agent launches it over stdio, and it answers for the app's installed Hoist
+  versions. The same package also runs over HTTP behind an MCP gateway. Tools keep their names and
+  output.
+* Hoist Docs is built on the MCP TypeScript SDK v2 (`@modelcontextprotocol/server`), which
+  implements the 2026-07-28 MCP spec - stateless serving and `server/discover` - while still
+  serving clients on the 2025 `initialize` handshake. The bundled server was on SDK v1, which stops
+  at the 2025-11-25 spec.
+* `@xh/hoist` now ships its Hoist Docs index (`hoist-docs/index.json.gz`, about 1.6 MB), built at
+  publish by `@xh/hoist-docs-builder` and declared by `hoistDocs` in `package.json`. Hoist Docs
+  reads it from the installed package, so every build, snapshots included, carries docs for exactly
+  its own code. Companion libraries can do the same - see
+  [Companion Library Docs](docs/companion-library-docs.md).
+* Removed the MCP-only dependencies `@modelcontextprotocol/sdk`, `zod`, `commander`, `minisearch`
+  and `tsx`. Apps no longer install them. `ts-morph` stays, for the v91 `items` to `children`
+  codemod.
 
 ### 📚 Libraries
 
