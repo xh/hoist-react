@@ -87,6 +87,9 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 * Added `Panel.headerIntent` on desktop and mobile, to give a panel's header a solid intent
   background. Its title, icon and minimal header buttons render in white, set by the new
   `--xh-panel-title-intent-text-color` variable.
+* Added `ViewManager.buttonTextMode` to choose the text of the desktop menu button: the selected
+  view's `name` (default), its `fullPath` (e.g. `My Views › Reports › Monthly`), the pluralized
+  view `type`, or `null` for an icon-only button.
 
 ### 🐞 Bug Fixes
 
