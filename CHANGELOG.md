@@ -107,6 +107,8 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 * Added `KeyedAggregator` to `@xh/hoist/data`, to roll up a value copied onto leaves from a coarser
   key, such as a fund's NAV on each position: shown where a row pins the key, and counted once per
   key at the root.
+* Added `SeriesSumAggregator` to `@xh/hoist/data`, as the `SERIES_SUM` token, to sum series
+  values such as daily P&L point by point, aligned from the end.
 
 ### 🐞 Bug Fixes
 

@@ -33,6 +33,7 @@ export * from './cube/aggregate/MaxAggregator';
 export * from './cube/aggregate/MedianAggregator';
 export * from './cube/aggregate/MinAggregator';
 export * from './cube/aggregate/NullAggregator';
+export * from './cube/aggregate/SeriesSumAggregator';
 export * from './cube/aggregate/SingleAggregator';
 export * from './cube/aggregate/SumAggregator';
 export * from './cube/aggregate/SumIfSameAggregator';

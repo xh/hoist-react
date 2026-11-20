@@ -80,6 +80,7 @@ const cube = new Cube({
 | `'NULL'` | Always null - for fields that should not be aggregated |
 | `'LEAF_COUNT'` | Count of leaf records |
 | `'CHILD_COUNT'` | Count of immediate children |
+| `'SERIES_SUM'` | Series values, such as daily P&L as arrays, summed point by point and aligned from the end |
 | `'SUPPLIED'` | The value supplied to the Cube for the group - see [Supplied Aggregates](#supplied-aggregates) |
 | `WeightedAverageAggregator` | Average weighted by a second field, e.g. price by quantity |
 | `SumIfSameAggregator` | Total only if all leaves with a value share a second field, such as a currency |

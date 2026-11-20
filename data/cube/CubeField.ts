@@ -18,6 +18,7 @@ import {
     MedianAggregator,
     MinAggregator,
     NullAggregator,
+    SeriesSumAggregator,
     SingleAggregator,
     SumAggregator,
     SumStrictAggregator,
@@ -71,6 +72,7 @@ export type AggregatorToken =
     | 'MEDIAN'
     | 'MIN'
     | 'NULL'
+    | 'SERIES_SUM'
     | 'SINGLE'
     | 'SUM'
     | 'SUM_STRICT'
@@ -111,6 +113,7 @@ export class CubeField extends Field {
     static medianAggregator = new MedianAggregator();
     static minAggregator = new MinAggregator();
     static nullAggregator = new NullAggregator();
+    static seriesSumAggregator = new SeriesSumAggregator();
     static singleAggregator = new SingleAggregator();
     static sumAggregator = new SumAggregator();
     static sumStrictAggregator = new SumStrictAggregator();
@@ -157,6 +160,8 @@ export class CubeField extends Field {
                     return CubeField.minAggregator;
                 case 'NULL':
                     return CubeField.nullAggregator;
+                case 'SERIES_SUM':
+                    return CubeField.seriesSumAggregator;
                 case 'SINGLE':
                     return CubeField.singleAggregator;
                 case 'SUM':
