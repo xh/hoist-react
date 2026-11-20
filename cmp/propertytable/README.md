@@ -35,6 +35,9 @@ propertyTable({
 // Labels above their values, in at most three columns, with a rule between rows
 propertyTable({entries, labelSide: 'top', columns: 3, dividers: true, size: 'compact'})
 
+// Up to two columns, filled down the first column before the second
+propertyTable({entries, columns: 2, fillOrder: 'columns'})
+
 // A summary, with each value set at the far side of its column, across from its label
 propertyTable({entries, valueAlign: 'right', dividers: true})
 ```
@@ -43,6 +46,9 @@ A value can be any element, such as a `badge` or a link. A null or undefined val
 list's `nullDisplay`, `-` by default. The list fills the width of its container and fits as
 many columns as that width allows, down to one column in a narrow panel. Use it inside a `card` to
 give a group of values a title.
+
+Entries fill the columns row by row. Set `fillOrder: 'columns'` to fill down each column first,
+which keeps related entries, such as the lines of an address, together in one column.
 
 ## Styling
 
@@ -68,6 +74,9 @@ body.xh-app {
   them.
 - **`columns` is a maximum.** The list drops columns while one would be narrower than
   `minColumnWidth`. Lower `minColumnWidth` to keep more columns in a narrow container.
+- **Filling down columns can use fewer of them.** With `fillOrder: 'columns'`, every column but
+  the last holds the same number of entries. Four entries in up to three columns fill two columns
+  of two. A change of width that changes the column count also moves entries between columns.
 
 ## Related Packages
 

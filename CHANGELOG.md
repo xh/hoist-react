@@ -84,9 +84,12 @@ detailed, step-by-step upgrade instructions with before/after code examples.
   component on each render.
 * Added `XH.hasRoute()` to check if a route exists. Call it before `XH.router.buildPath()` or
   `buildUrl()` with a name that may not be registered, as both throw for an unknown route.
-* Added `ViewManager.showFullPath` to show the selected view's full path in the desktop menu button,
-  e.g. `My Views › Reports › Monthly`. The path starts with `My Views`, the global views label, or
-  the owner of a shared view, followed by the view's groups and name.
+* Added `Panel.headerIntent` on desktop and mobile, to give a panel's header a solid intent
+  background. Its title, icon and minimal header buttons render in white, set by the new
+  `--xh-panel-title-intent-text-color` variable.
+* Added `ViewManager.buttonTextMode` to choose the text of the desktop menu button: the selected
+  view's `name` (default), its `fullPath` (e.g. `My Views › Reports › Monthly`), the pluralized
+  view `type`, or `null` for an icon-only button.
 
 ### 🐞 Bug Fixes
 
