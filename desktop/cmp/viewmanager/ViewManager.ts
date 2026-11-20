@@ -40,8 +40,8 @@ export interface ViewManagerProps extends HoistProps<ViewManagerModel>, TestSupp
     sharedViewIcon?: ReactElement;
     /** Button icon when the selected view is globally shared. Default `Icon.globe`. */
     globalViewIcon?: ReactElement;
-    /** True to show the full path to the selected view in the menu button, not just its name. */
-    showFullPath?: boolean;
+    /** Text for the menu button - see {@link ViewManagerButtonTextMode}. Default 'name'. */
+    buttonTextMode?: ViewManagerButtonTextMode;
 
     /** Default 'whenDirty' */
     showSaveButton?: ViewManagerStateButtonMode;
@@ -68,6 +68,15 @@ export interface ViewManagerProps extends HoistProps<ViewManagerModel>, TestSupp
 export type ViewManagerStateButtonMode = 'whenDirty' | 'always' | 'never';
 
 /**
+ * Text for the ViewManager menu button:
+ *  + 'name' - the selected view's name.
+ *  + 'fullPath' - the selected view's full path, e.g. `My Views › Reports › Monthly`.
+ *  + 'type' - the pluralized view type, e.g. `Views`.
+ *  + null - no text, for an icon-only button.
+ */
+export type ViewManagerButtonTextMode = 'name' | 'fullPath' | 'type' | null;
+
+/**
  * Desktop ViewManager component - a button-based menu for saving and swapping between named
  * bundles of persisted component state (e.g. grid views, dashboards, and similar).
  *
@@ -89,7 +98,7 @@ export const [ViewManager, viewManager] = hoistCmp.withFactory<ViewManagerProps>
         ownedViewIcon = Icon.bookmark(),
         sharedViewIcon = Icon.users(),
         globalViewIcon = Icon.globe(),
-        showFullPath = false,
+        buttonTextMode = 'name',
         showSaveButton = 'whenDirty',
         showRevertButton = 'never',
         buttonSide = 'right',
@@ -113,7 +122,7 @@ export const [ViewManager, viewManager] = hoistCmp.withFactory<ViewManagerProps>
                 disabled: !locModel.isVisible, // Prevent orphaned popover menu
                 children: menuButton({
                     model: locModel,
-                    showFullPath,
+                    textMode: buttonTextMode,
                     icon: buttonIcon({
                         model: locModel,
                         defaultViewIcon,
@@ -163,22 +172,11 @@ export const [ViewManager, viewManager] = hoistCmp.withFactory<ViewManagerProps>
 
 const menuButton = hoistCmp.factory<ViewManagerLocalModel>({
     // Merge className - the popover clones this target with a className of its own.
-    render({model, icon, showFullPath, className, ...rest}) {
-        const {view, defaultDisplayName, typeDisplayName, isLoading} = model.parent;
-        let text: ReactNode = view.name;
-        if (view.isDefault) {
-            text = `${startCase(defaultDisplayName)} ${startCase(typeDisplayName)}`;
-        } else if (showFullPath) {
-            text = groupPathBreadcrumb({
-                path: [getPathRoot(model.parent), ...splitGroupPath(view.group), view.name],
-                inheritColor: true,
-                // Never collapse - showing every group is the point of this mode.
-                maxChars: Infinity
-            });
-        }
+    render({model, icon, textMode, className, ...rest}) {
+        const {isLoading} = model.parent;
         return button({
             className: classNames('xh-view-manager__menu-button', className),
-            text,
+            text: getButtonText(model.parent, textMode),
             icon: !isLoading
                 ? icon
                 : box({
@@ -234,6 +232,26 @@ const revertButton = hoistCmp.factory<ViewManagerLocalModel>({
         });
     }
 });
+
+function getButtonText(model: ViewManagerModel, mode: ViewManagerButtonTextMode): ReactNode {
+    const {view, defaultDisplayName, typeDisplayName} = model;
+    switch (mode) {
+        case null:
+            return null;
+        case 'type':
+            return pluralize(startCase(typeDisplayName));
+    }
+    if (view.isDefault) return `${startCase(defaultDisplayName)} ${startCase(typeDisplayName)}`;
+    if (mode === 'fullPath') {
+        return groupPathBreadcrumb({
+            path: [getPathRoot(model), ...splitGroupPath(view.group), view.name],
+            inheritColor: true,
+            // Never collapse - showing every group is the point of this mode.
+            maxChars: Infinity
+        });
+    }
+    return view.name;
+}
 
 /** Leading segment of a view's full path - the menu section or shared-view owner it sits under. */
 function getPathRoot(model: ViewManagerModel): string {
