@@ -72,11 +72,19 @@ export interface PropertyTableProps
     valueAlign?: HSide;
 
     /**
-     * Most columns to lay the entries out in, filled row by row. The list uses fewer in a
-     * container too narrow to hold them at `minColumnWidth`, and never more than it has entries.
-     * Omit to fit as many columns of at least `minColumnWidth` as the width of the list allows.
+     * Most columns to lay the entries out in. The list uses fewer in a container too narrow to
+     * hold them at `minColumnWidth`, and never more than it has entries. Omit to fit as many
+     * columns of at least `minColumnWidth` as the width of the list allows.
      */
     columns?: number;
+
+    /**
+     * Order in which entries fill the columns. Default `rows`, across each row and then down to
+     * the next. Use `columns` to fill down each column and then across to the next, so related
+     * entries stay together in one column. The columns then hold equal numbers of entries, apart
+     * from the last, so the list can use fewer columns than it has room for.
+     */
+    fillOrder?: 'rows' | 'columns';
 
     /**
      * Narrowest a column gets, in pixels, with or without `columns`. Default 240, or 160 when
@@ -127,6 +135,7 @@ export const [PropertyTable, propertyTable] = hoistCmp.withFactory<PropertyTable
                     labelAlign,
                     valueAlign,
                     columns,
+                    fillOrder,
                     minColumnWidth,
                     nullDisplay,
                     emptyText,
@@ -163,9 +172,17 @@ export const [PropertyTable, propertyTable] = hoistCmp.withFactory<PropertyTable
                 : div({ref, ...rootProps(['xh-property-table--empty']), children: emptyText});
         }
 
-        const maxColumns = Math.min(columns ?? count, count),
-            columnCount = Math.max(Math.min(maxColumns, fitColumns), 1),
-            lastRowStart = count - (count % columnCount || columnCount);
+        const fillColumns = fillOrder === 'columns',
+            maxColumns = Math.max(Math.min(columns ?? count, count, fitColumns), 1),
+            rowCount = Math.ceil(count / maxColumns),
+            // Filling down, the last column may be short. Drop any column it leaves empty.
+            columnCount = fillColumns ? Math.ceil(count / rowCount) : maxColumns,
+            lastRowStart = count - (count % columnCount || columnCount),
+            // Entries with no entry below them, so a divider is not drawn under them.
+            isLast = (idx: number) =>
+                fillColumns
+                    ? idx % rowCount === rowCount - 1 || idx === count - 1
+                    : idx >= lastRowStart;
 
         return dl({
             ref: composedRef,
@@ -175,9 +192,13 @@ export const [PropertyTable, propertyTable] = hoistCmp.withFactory<PropertyTable
                     !labelOnTop && labelAlign === 'right' && 'xh-property-table--label-align-right',
                     !labelOnTop && valueAlign === 'right' && 'xh-property-table--value-align-right',
                     size === 'compact' && 'xh-property-table--compact',
-                    dividers && 'xh-property-table--dividers'
+                    dividers && 'xh-property-table--dividers',
+                    fillColumns && 'xh-property-table--fill-columns'
                 ],
-                {'--xh-property-table-columns': columnCount}
+                {
+                    '--xh-property-table-columns': columnCount,
+                    '--xh-property-table-rows': fillColumns ? rowCount : null
+                }
             ),
             children: visibleEntries.map(({label, value, intent}, idx) => {
                 const isNull = value == null;
@@ -186,7 +207,7 @@ export const [PropertyTable, propertyTable] = hoistCmp.withFactory<PropertyTable
                     className: classNames(
                         'xh-property-table__entry',
                         intent && `xh-property-table__entry--intent-${intent}`,
-                        idx >= lastRowStart && 'xh-property-table__entry--last-row'
+                        isLast(idx) && 'xh-property-table__entry--last-in-column'
                     ),
                     children: [
                         dt({className: 'xh-property-table__label', children: label}),

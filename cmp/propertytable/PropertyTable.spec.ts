@@ -271,11 +271,11 @@ describe('PropertyTable', () => {
         it('marks the entries of the last row, so a divider is not drawn under them', () => {
             setListWidth(1000);
             const {container} = render(propertyTable({entries: fiveEntries(), columns: 2})),
-                lastRow = entries(container).map(it =>
-                    it.classList.contains('xh-property-table__entry--last-row')
+                lastInColumn = entries(container).map(it =>
+                    it.classList.contains('xh-property-table__entry--last-in-column')
                 );
 
-            expect(lastRow).toEqual([false, false, false, false, true]);
+            expect(lastInColumn).toEqual([false, false, false, false, true]);
         });
 
         it('marks a full last row', () => {
@@ -283,11 +283,64 @@ describe('PropertyTable', () => {
             const {container} = render(
                     propertyTable({entries: fiveEntries().slice(0, 4), columns: 2})
                 ),
-                lastRow = entries(container).map(it =>
-                    it.classList.contains('xh-property-table__entry--last-row')
+                lastInColumn = entries(container).map(it =>
+                    it.classList.contains('xh-property-table__entry--last-in-column')
                 );
 
-            expect(lastRow).toEqual([false, false, true, true]);
+            expect(lastInColumn).toEqual([false, false, true, true]);
+        });
+    });
+
+    describe('fillOrder', () => {
+        it('fills row by row by default, with no set row count', () => {
+            setListWidth(1000);
+            const {container} = render(propertyTable({entries: fiveEntries(), columns: 2})),
+                list = container.querySelector<HTMLElement>('.xh-property-table');
+
+            expect(list.classList).not.toContain('xh-property-table--fill-columns');
+            expect(rowCount(container)).toBe('');
+        });
+
+        it('sets the rows each column holds when filling down the columns', () => {
+            setListWidth(1000);
+            const {container} = render(
+                    propertyTable({entries: fiveEntries(), columns: 2, fillOrder: 'columns'})
+                ),
+                list = container.querySelector<HTMLElement>('.xh-property-table');
+
+            expect(list.classList).toContain('xh-property-table--fill-columns');
+            expect(columnCount(container)).toBe('2');
+            expect(rowCount(container)).toBe('3');
+        });
+
+        it('drops a column that filling down leaves empty', () => {
+            setListWidth(2000);
+            const sevenEntries = [...fiveEntries(), ...fiveEntries().slice(0, 2)],
+                {container} = render(
+                    propertyTable({entries: sevenEntries, columns: 3, fillOrder: 'columns'})
+                );
+
+            // Seven entries fill three columns of three rows. Four fill only two columns of two.
+            expect(columnCount(container)).toBe('3');
+            expect(rowCount(container)).toBe('3');
+
+            const four = render(
+                propertyTable({entries: sevenEntries.slice(0, 4), columns: 3, fillOrder: 'columns'})
+            ).container;
+            expect(columnCount(four)).toBe('2');
+            expect(rowCount(four)).toBe('2');
+        });
+
+        it('marks the bottom entry of each column, so a divider is not drawn under it', () => {
+            setListWidth(1000);
+            const {container} = render(
+                    propertyTable({entries: fiveEntries(), columns: 2, fillOrder: 'columns'})
+                ),
+                lastInColumn = entries(container).map(it =>
+                    it.classList.contains('xh-property-table__entry--last-in-column')
+                );
+
+            expect(lastInColumn).toEqual([false, false, true, false, true]);
         });
     });
 });
@@ -311,6 +364,12 @@ function columnCount(container: Element): string {
     return container
         .querySelector<HTMLElement>('.xh-property-table')
         .style.getPropertyValue('--xh-property-table-columns');
+}
+
+function rowCount(container: Element): string {
+    return container
+        .querySelector<HTMLElement>('.xh-property-table')
+        .style.getPropertyValue('--xh-property-table-rows');
 }
 
 /** jsdom has no layout, so stand in for the width of the list. */
