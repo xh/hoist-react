@@ -82,6 +82,8 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 * `useLocalModel()` now works in a component with `model: false`, with no need for a placeholder
   model spec. 33 Hoist components now set `model: false`, skipping model resolution and a wrapping
   component on each render.
+* Added `GridConfig.cellSelection` for Excel-style cell range selection, with ranges readable from
+  the new `GridModel.cellSelectionModel`. Requires ag-Grid Enterprise `CellSelectionModule`.
 * Added `XH.hasRoute()` to check if a route exists. Call it before `XH.router.buildPath()` or
   `buildUrl()` with a name that may not be registered, as both throw for an unknown route.
 * Added `Panel.headerIntent` on desktop and mobile, to give a panel's header a solid intent
@@ -143,6 +145,7 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 
 ### ✨ Styles
 
+* Added `--xh-grid-range-bg` and `--xh-grid-range-border-color` to style selected cell ranges.
 * Added CSS variables for concerns some components lacked: `--xh-input-border-radius`,
   `--xh-popup-border-radius`, `--xh-title-font-weight` (with `--xh-panel-title-font-weight`,
   `--xh-popup-title-font-weight` and `--xh-card-header-font-weight`), `--xh-tab-font-weight` and

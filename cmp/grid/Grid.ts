@@ -4,7 +4,7 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import type {GridApi, AgColumnState} from '@xh/hoist/kit/ag-grid';
+import type {GridApi, AgColumnState, CellSelectionChangedEvent} from '@xh/hoist/kit/ag-grid';
 
 import {agGrid} from '@xh/hoist/cmp/ag-grid';
 import type {ColumnGroupState, ColumnState} from '@xh/hoist/cmp/grid';
@@ -49,7 +49,7 @@ import {shallowEqualArrays} from '@xh/hoist/utils/impl';
 import {consumeEvent, isDisplayed, warnIf} from '@xh/hoist/utils/js';
 import {useComposedRefs, createObservableRef, getLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
-import {compact, debounce, isBoolean, isEmpty, isEqual, isNil, merge} from 'lodash';
+import {compact, debounce, isBoolean, isEmpty, isEqual, isNil, isPlainObject, merge} from 'lodash';
 import type {MouseEvent} from 'react';
 import type {PartialDeep} from 'type-fest';
 import './Grid.scss';
@@ -121,7 +121,8 @@ export const [Grid, grid] = hoistCmp.withFactory<GridProps>({
                 ? `xh-grid--hierarchical xh-grid--max-depth-${maxDepth}`
                 : 'xh-grid--flat',
             treeMode ? getTreeStyleClasses(treeStyle) : null,
-            highlightRowOnClick ? 'xh-grid--highlight-row-on-click' : null
+            highlightRowOnClick ? 'xh-grid--highlight-row-on-click' : null,
+            model.cellSelectionModel?.isEnabled ? 'xh-grid--cell-selection' : null
         );
 
         const gridContainer = frame({
@@ -136,7 +137,9 @@ export const [Grid, grid] = hoistCmp.withFactory<GridProps>({
             ],
             testId,
             onKeyDown: impl.onKeyDown,
+            onKeyDownCapture: impl.onKeyDownCapture,
             onMouseDown: impl.onViewMouseDown,
+            onMouseDownCapture: impl.onMouseDownCapture,
             ref: useComposedRefs(impl.viewRef, model.viewRef, ref)
         });
 
@@ -232,7 +235,8 @@ export class GridLocalModel extends HoistModel {
             this.sizingModeReaction(),
             this.validationDisplayReaction(),
             this.modalReaction(),
-            this.dashContainerReaction()
+            this.dashContainerReaction(),
+            this.cellSelectionReaction()
         );
 
         this.agOptions = merge(this.createDefaultAgOptions(), this.componentProps.agOptions || {});
@@ -288,6 +292,10 @@ export class GridLocalModel extends HoistModel {
             onRowDoubleClicked: this.onRowDoubleClicked,
             onRowGroupOpened: this.onRowGroupOpened,
             onSelectionChanged: this.onSelectionChanged,
+            onCellSelectionChanged: model.cellSelectionModel
+                ? this.onCellSelectionChanged
+                : undefined,
+            onModelUpdated: model.cellSelectionModel ? this.onModelUpdated : undefined,
             onDragStopped: this.onDragStopped,
             onColumnResized: this.onColumnResized,
             onColumnRowGroupChanged: this.onColumnRowGroupChanged,
@@ -371,11 +379,13 @@ export class GridLocalModel extends HoistModel {
             {contextMenu} = model;
         if (!contextMenu || model.isEditing) return [];
 
-        // Manipulate selection if needed.
-        if (model.selModel.isEnabled) {
-            const record = params.node?.data,
-                {selModel} = model;
-
+        // Manipulate selection if needed - but not on a right-click inside a cell range, which
+        // keeps the range and its selected record, as in Excel.
+        const record = params.node?.data,
+            {selModel, cellSelectionModel} = model,
+            colId = params.column?.getColId(),
+            isInCellRange = record && colId && cellSelectionModel?.isCellSelected(record, colId);
+        if (selModel.isEnabled && !isInCellRange) {
             // Adjust selection to target record -- and sync to grid immediately.
             if (record && !selModel.selectedRecords.includes(record)) {
                 selModel.select(record);
@@ -597,6 +607,43 @@ export class GridLocalModel extends HoistModel {
         };
     }
 
+    // Cell selection needs ag-Grid's enterprise CellSelectionModule, which can only be checked once
+    // the grid exists. Turn it on then, with row click selection off - the ranges drive selection.
+    cellSelectionReaction(): ReactionSpec<GridApi> {
+        const {model} = this,
+            {cellSelectionModel} = model;
+        if (!cellSelectionModel) return null;
+
+        return {
+            track: () => model.agApi,
+            run: agApi => {
+                if (!agApi) {
+                    cellSelectionModel.setEnabled(false);
+                    return;
+                }
+                if (!agApi.isModuleRegistered('CellSelectionModule')) {
+                    this.logWarn(
+                        'GridConfig.cellSelection requires ag-Grid Enterprise with CellSelectionModule registered. Cell selection is off.'
+                    );
+                    return;
+                }
+
+                const rowSelection = agApi.getGridOption('rowSelection'),
+                    opts: GridOptions = {cellSelection: true};
+                if (isPlainObject(rowSelection)) {
+                    opts.rowSelection = {
+                        ...(rowSelection as Exclude<GridOptions['rowSelection'], string>),
+                        enableClickSelection: false,
+                        copySelectedRows: false
+                    };
+                }
+                agApi.updateGridOptions(opts);
+                cellSelectionModel.setEnabled(true);
+            },
+            fireImmediately: true
+        };
+    }
+
     dashContainerReaction() {
         // Force Grid to redraw rows when parent DashContainer view ref changes
         const dashContainerViewModel = DashContainerViewModel
@@ -695,6 +742,15 @@ export class GridLocalModel extends HoistModel {
             model.noteAgExpandStateChange();
         }
 
+        const {cellSelectionModel} = model;
+        if (cellSelectionModel) {
+            if (!isEmpty(transaction.add) || !isEmpty(transaction.remove)) {
+                cellSelectionModel.clear();
+            } else if (!isEmpty(transaction.update)) {
+                cellSelectionModel.noteAgRowsChanged();
+            }
+        }
+
         model._syncedRs = newRs;
         this.rowHeightSupport.noteRecordsAdded(transaction.add);
 
@@ -765,6 +821,22 @@ export class GridLocalModel extends HoistModel {
         this.model.noteAgSelectionStateChanged();
         this.syncSelection();
     }, 0);
+
+    onCellSelectionChanged = ({started, finished}: CellSelectionChangedEvent) => {
+        const {cellSelectionModel} = this.model;
+        if (cellSelectionModel?.isEnabled) {
+            cellSelectionModel.noteAgRangesChanged({
+                syncSelection: !this.isSelectingAllCells,
+                started,
+                finished
+            });
+        }
+    };
+
+    // Rows can move on any model refresh, including a deferred re-sort of live updates.
+    onModelUpdated = () => {
+        this.model.cellSelectionModel?.noteAgRowsChanged();
+    };
 
     // Catches column re-ordering, resizing AND pinning via user drag-and-drop interaction.
     onDragStopped = ev => {
@@ -891,6 +963,19 @@ export class GridLocalModel extends HoistModel {
                 fadeDuration: 100
             });
         }
+    };
+
+    // Select all keeps the selected record, as in Excel, rather than moving it to the first row.
+    // ag-Grid reports range changes asynchronously, so hold the flag until the user's next input.
+    // Set in the capture phase, as ag-Grid handles keys and clicks before they bubble.
+    private isSelectingAllCells = false;
+
+    onKeyDownCapture = evt => {
+        this.isSelectingAllCells = (evt.ctrlKey || evt.metaKey) && evt.key === 'a';
+    };
+
+    onMouseDownCapture = () => {
+        this.isSelectingAllCells = false;
     };
 
     onKeyDown = evt => {

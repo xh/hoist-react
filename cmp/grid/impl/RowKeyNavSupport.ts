@@ -41,8 +41,9 @@ export class RowKeyNavSupport {
                     // agGrid can weirdly wrap focus when bottom summary present - prevent that
                     if (isUp !== nextIndex < prevIndex) return previousCellPosition;
 
-                    // If selection is enabled, want to sync up-down movement with that
-                    if (selModel.isEnabled) {
+                    // If selection is enabled, want to sync up-down movement with that - unless
+                    // cell selection is on, where the cell ranges drive the selection instead.
+                    if (selModel.isEnabled && !gridModel.cellSelectionModel?.isEnabled) {
                         const nextNode = this.findNextSelectable(nextIndex, isUp, agApi);
                         if (!nextNode) return previousCellPosition;
 
