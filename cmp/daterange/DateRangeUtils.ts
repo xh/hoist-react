@@ -220,6 +220,11 @@ export function businessDayOnOrBefore(date: LocalDate, ctx: BusinessDayContext):
     return ctx.isBusinessDay(date) ? date : previousBusinessDay(date, ctx);
 }
 
+/** `date` itself if it is a business day, else the nearest business day after it. */
+export function businessDayOnOrAfter(date: LocalDate, ctx: BusinessDayContext): LocalDate {
+    return ctx.isBusinessDay(date) ? date : nextBusinessDay(date, ctx);
+}
+
 type BusinessDayContext = Pick<DateRangeContext, 'isBusinessDay'>;
 
 /**

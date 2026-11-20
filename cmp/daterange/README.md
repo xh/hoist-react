@@ -64,6 +64,11 @@ Resolution is pure: `resolveDateRange(selection, context)` returns `{current, pr
 holds the context as observable state and exposes the resolved ranges as derived values, so they
 update when the value, the anchor date, or the bounds change.
 
+To resolve a selection without a picker, build a context with `dateRangeContext({anchorDate})`. It
+fills the rest as the picker does: today from the browser, `maxDate` at the anchor, weekdays as
+business days, and Hoist's presets. `businessDayOnOrBefore()` and `businessDayOnOrAfter()` move a
+date to the nearest business day in either direction.
+
 ## DateRangePickerModel
 
 ### Basic Usage

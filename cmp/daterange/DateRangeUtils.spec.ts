@@ -5,7 +5,10 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {
+    businessDayOnOrAfter,
+    businessDayOnOrBefore,
     type DateRangeContext,
+    dateRangeContext,
     dateRangePresets,
     type DateRangeSelection,
     getDateRangeLabel,
@@ -233,6 +236,45 @@ describe('DateRangeUtils', () => {
 
             expect(step(monday, -1, bizCtx)).toEqual(custom('2026-05-08', '2026-05-08'));
             expect(step(monday, -1, ctx)).toEqual(custom('2026-05-10', '2026-05-10'));
+        });
+    });
+
+    describe('business days', () => {
+        const weekdays = {isBusinessDay: (d: LocalDate) => d.isWeekday};
+
+        it.each([
+            ['2026-09-02', '2026-09-02', '2026-09-02'],
+            ['2026-09-05', '2026-09-04', '2026-09-07'],
+            ['2026-09-06', '2026-09-04', '2026-09-07']
+        ])('lands %s on %s at or before, and %s at or after', (date, before, after) => {
+            const d = LocalDate.get(date);
+            expect(businessDayOnOrBefore(d, weekdays).isoString).toBe(before);
+            expect(businessDayOnOrAfter(d, weekdays).isoString).toBe(after);
+        });
+    });
+
+    describe('dateRangeContext', () => {
+        it('fills a context for an anchor date with the picker defaults', () => {
+            const ctx = dateRangeContext({anchorDate: LocalDate.get('2026-09-02')});
+            expect(ctx).toMatchObject({minDate: null, businessDayMode: false});
+            expect(ctx.maxDate.isoString).toBe('2026-09-02');
+            expect(ctx.today.isoString).toBe(LocalDate.today().isoString);
+            expect(ctx.presets).toBe(dateRangePresets);
+            expect(ctx.isBusinessDay(LocalDate.get('2026-09-05'))).toBe(false);
+        });
+
+        it('keeps the values given, and resolves selections against them', () => {
+            const ctx = dateRangeContext({
+                anchorDate: LocalDate.get('2026-09-02'),
+                maxDate: LocalDate.get('2026-12-31'),
+                businessDayMode: true
+            });
+            expect(ctx).toMatchObject({businessDayMode: true});
+            expect(ctx.maxDate.isoString).toBe('2026-12-31');
+            expect(resolve({kind: 'relative', count: 2, unit: 'days'}, ctx).current).toEqual([
+                '2026-09-01',
+                '2026-09-02'
+            ]);
         });
     });
 

@@ -4,6 +4,7 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
+export * from './DateRangeContext';
 export * from './DateRangePickerModel';
 export * from './DateRangePresets';
 export * from './DateRangeUtils';
