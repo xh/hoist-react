@@ -84,6 +84,9 @@ detailed, step-by-step upgrade instructions with before/after code examples.
   component on each render.
 * Added `XH.hasRoute()` to check if a route exists. Call it before `XH.router.buildPath()` or
   `buildUrl()` with a name that may not be registered, as both throw for an unknown route.
+* Added `Panel.headerIntent` on desktop and mobile, to give a panel's header a solid intent
+  background. Its title, icon and minimal header buttons render in white, set by the new
+  `--xh-panel-title-intent-text-color` variable.
 
 ### 🐞 Bug Fixes
 

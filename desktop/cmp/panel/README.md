@@ -15,6 +15,7 @@
 | [collapsedTitle / collapsedIcon](#collapsedtitle--collapsedicon) | Identifying collapsed panels with custom titles and icons |
 | [compactHeader](#compactheader) | Reduced-size headers for visual hierarchy |
 | [headerItems](#headeritems) | Inline controls in the panel header |
+| [headerIntent](#headerintent) | Intent-colored headers for major sections |
 | [Persistence](#persistence) | Persisting collapsed state and size across sessions |
 | [Modal Support](#modal-support) | Popping panel content into a near-full-screen dialog |
 | [Configuration Reference](#configuration-reference) | Full Panel props and PanelModel config tables |
@@ -500,6 +501,27 @@ panel({
 Header items are hidden when the panel is collapsed — only the title, icon, and built-in
 collapse/modal toggle buttons are shown in the collapsed header.
 
+## headerIntent
+
+Set `headerIntent` to give the header a solid intent background. Use it to set apart a major
+section of an app, or a panel whose header should signal a state. The title, icon, and minimal or
+outlined header buttons render in white, in both light and dark themes.
+
+```typescript
+panel({
+    title: 'Live Orders',
+    icon: Icon.bolt(),
+    headerIntent: 'primary',
+    headerItems: [button({icon: Icon.refresh(), onClick: () => model.refreshAsync()})],
+    children: grid()
+})
+```
+
+Other header items keep their own styling. A standard button or an input still shows its usual
+background. The white text color comes from `--xh-panel-title-intent-text-color`. The hover and
+pressed fills of minimal and outlined header buttons come from
+`--xh-panel-title-intent-button-hover-bg` and `--xh-panel-title-intent-button-active-bg`.
+
 ## Persistence
 
 `PanelModel` supports persisting collapsed state and size via `persistWith`. This uses Hoist's
@@ -598,6 +620,7 @@ layouts like dashboards.
 | `collapsedIcon` | `ReactElement` | Icon shown when collapsed. Defaults to `icon`. |
 | `compactHeader` | `boolean` | Reduced-size header styling. |
 | `headerItems` | `ReactNode[]` | Items added to the right side of the header. |
+| `headerIntent` | `Intent` | Solid intent background for the header, with white text. See [headerIntent](#headerintent). |
 | `headerClassName` | `string` | CSS class for the header element. |
 | `tbar` | `ReactNode` | Top toolbar. Array auto-wrapped in `toolbar()`. |
 | `bbar` | `ReactNode` | Bottom toolbar. Array auto-wrapped in `toolbar()`. |
