@@ -116,6 +116,8 @@ writes it - must not be summed, or each fund counts once per position. Give the 
   strategy row under a fund. Single-value `=` clauses in the query's filter pin keys too.
 * The root totals the value once per distinct key among its leaves, with `rootAggregator` (`SUM`,
   `AVG`, `MIN`, `MAX` or `UNIQUE`) - the NAV of the funds the View shows. Without one, it is null.
+* With `keyAttributes`, dimensions that have one value per key, such as a fund's `style`, a row
+  grouped only by those and the key fields totals the same way: the NAV of the funds in a style.
 * Any other row is null, such as NAV by sector.
 
 ## Supplied Aggregates

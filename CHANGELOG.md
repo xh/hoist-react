@@ -106,7 +106,7 @@ detailed, step-by-step upgrade instructions with before/after code examples.
   of its latest or earliest leaf by an `orderField`, such as the latest price of each symbol.
 * Added `KeyedAggregator` to `@xh/hoist/data`, to roll up a value copied onto leaves from a coarser
   key, such as a fund's NAV on each position: shown where a row pins the key, and counted once per
-  key at the root.
+  key at the root, or on rows grouped by its `keyAttributes`, such as a fund's style.
 * Added `SeriesSumAggregator` to `@xh/hoist/data`, as the `SERIES_SUM` token, to sum series
   values such as daily P&L point by point, aligned from the end.
 

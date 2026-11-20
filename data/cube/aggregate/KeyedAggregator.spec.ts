@@ -61,6 +61,55 @@ describe('KeyedAggregator', () => {
         expect(navByPath(bySector)).toEqual({Total: 1500, A: 1000, B: 500});
     });
 
+    describe('keyAttributes', () => {
+        const byStyle = {keyAttributes: ['style']};
+
+        it('totals rows grouped by key attributes once per key, as the root does', () => {
+            const view = connectView(createCube(byStyle), {
+                dimensions: ['style', 'fund'],
+                includeRoot: true
+            });
+
+            expect(navByPath(view)).toEqual({
+                Total: 1800,
+                Growth: 1300,
+                'Growth/A': 1000,
+                'Growth/C': 300,
+                Value: 500,
+                'Value/B': 500
+            });
+        });
+
+        it('leaves a row grouped by any other dimension null', () => {
+            const view = connectView(createCube(byStyle), {
+                dimensions: ['style', 'sector'],
+                includeRoot: true
+            });
+
+            expect(navByPath(view)).toMatchObject({
+                Growth: 1300,
+                'Growth/Tech': null,
+                'Growth/Energy': null
+            });
+        });
+
+        it('totals only the keys a filter leaves, as the root does', () => {
+            const view = connectView(createCube(byStyle), {
+                dimensions: ['style'],
+                includeRoot: true,
+                filter: {field: 'sector', op: '=', value: 'Tech'}
+            });
+
+            expect(navByPath(view)).toEqual({Total: 1500, Growth: 1000, Value: 500});
+        });
+
+        it('leaves rows grouped by an attribute null without the option', () => {
+            const view = connectView(createCube(), {dimensions: ['style'], includeRoot: true});
+
+            expect(navByPath(view)).toEqual({Total: 1800, Growth: null, Value: null});
+        });
+    });
+
     it('follows an update to the value in place', async () => {
         const cube = createCube(),
             view = connectView(cube, {dimensions: ['fund'], includeRoot: true});
@@ -97,7 +146,8 @@ describe('KeyedAggregator', () => {
 //------------------
 // Test data
 //------------------
-const NAV = {A: 1000, B: 500, C: 300};
+const NAV = {A: 1000, B: 500, C: 300},
+    STYLE = {A: 'Growth', B: 'Value', C: 'Growth'};
 
 const POSITIONS = [
     position(1, 'A', 'Tech'),
@@ -107,9 +157,9 @@ const POSITIONS = [
     position(5, 'C', 'Energy')
 ];
 
-// A position, with its fund's NAV copied onto it as a join would.
+// A position, with its fund's NAV and style copied onto it as a join would.
 function position(id: number, fund: string, sector: string, nav = NAV[fund]): PlainObject {
-    return {id, fund, sector, nav};
+    return {id, fund, sector, style: STYLE[fund], nav};
 }
 
 function createCube(
@@ -119,6 +169,7 @@ function createCube(
         fields: [
             {name: 'fund', isDimension: true},
             {name: 'sector', isDimension: true},
+            {name: 'style', isDimension: true},
             {
                 name: 'nav',
                 type: 'number',

@@ -18,9 +18,13 @@ export type KeyedRootAggregator = 'SUM' | 'AVG' | 'MIN' | 'MAX' | 'UNIQUE';
  *
  * - A group row that pins every key field - by its own dimensions, or by single-value `=` clauses
  *   in the query's filter - shows the value its leaves share.
- * - The root totals the value once per distinct key among its leaves, with `rootAggregator`: the
- *   NAV of the funds the View shows. Without a `rootAggregator`, the root is null.
+ * - A row grouped only by key fields and `keyAttributes` - the root, or a row by a fund's style -
+ *   totals the value once per distinct key among its leaves, with `rootAggregator`: the NAV of the
+ *   funds it holds. Without a `rootAggregator`, such a row is null.
  * - Any other row is null, such as NAV by sector.
+ *
+ * A key attribute must have one value per key, such as a fund's style, so that a row grouped by it
+ * holds whole keys and its per-key total is exact. A filter only narrows the leaves a row holds.
  *
  * Reads the key fields from each leaf's source record, so they need not be queried. Takes
  * parameters, so instantiate it per field:
@@ -28,18 +32,23 @@ export type KeyedRootAggregator = 'SUM' | 'AVG' | 'MIN' | 'MAX' | 'UNIQUE';
  */
 export class KeyedAggregator extends Aggregator {
     readonly keyFields: string[];
+    readonly keyAttributes: string[];
     readonly rootAggregator: KeyedRootAggregator;
 
     constructor({
         keyFields,
+        keyAttributes = [],
         rootAggregator = null
     }: {
         keyFields: string[];
+        /** Dimensions with one value per key, such as a fund's style. Default none. */
+        keyAttributes?: string[];
         rootAggregator?: KeyedRootAggregator;
     }) {
         super();
         throwIf(isEmpty(keyFields), 'KeyedAggregator requires keyFields.');
         this.keyFields = keyFields;
+        this.keyAttributes = keyAttributes;
         this.rootAggregator = rootAggregator;
     }
 
@@ -61,7 +70,7 @@ export class KeyedAggregator extends Aggregator {
             return values.length === 1 ? values[0] : null;
         }
 
-        return this.rootAggregator && isEmpty((row as AggregateRow).appliedDims)
+        return this.rootAggregator && this.holdsWholeKeys(row as AggregateRow)
             ? this.aggregateKeys(rows, fieldName)
             : null;
     }
@@ -69,6 +78,15 @@ export class KeyedAggregator extends Aggregator {
     //------------------
     // Implementation
     //------------------
+    // True if the row is grouped only by key fields and key attributes - so by nothing that splits
+    // a key's leaves across rows.
+    private holdsWholeKeys(row: AggregateRow): boolean {
+        const {keyFields, keyAttributes} = this;
+        return Object.keys(row.appliedDims).every(
+            it => keyFields.includes(it) || keyAttributes.includes(it)
+        );
+    }
+
     // The value once per distinct key among the leaves, totalled by the root aggregator.
     private aggregateKeys(rows, fieldName): unknown {
         const byKey = new Map<string, unknown>();
