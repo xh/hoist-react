@@ -414,6 +414,23 @@ new DateRangePickerModel({
 On a Saturday this resolves everything as of Friday, and the step buttons walk `anchorDay` from
 Friday to Thursday and back.
 
+### Periods
+
+A period steps a date by a count of units: `parsePeriod('3M')` reads a count and a unit letter -
+`D`, `W`, `M`, `Q` or `Y` - with a leading `+` for forward. `shiftByPeriod(date, period)` gives the
+date it reaches. A look-back period gives the date one period before, where a return over that
+period starts - unlike a relative lookback, which starts the day after.
+
+By default `D` counts business days, and other units land on the nearest business day in the
+period's direction. Pass `{calendar: 'calendar'}` for plain calendar arithmetic, or an
+`isBusinessDay` for a holiday calendar.
+
+```typescript
+shiftByPeriod(LocalDate.get('2026-09-08'), '1M');    // 2026-08-07 - Saturday the 8th lands on Friday
+shiftByPeriod(LocalDate.get('2026-09-07'), '5D');    // 2026-08-31 - five business days back
+shiftByPeriod(LocalDate.get('2026-07-08'), '+1M');   // 2026-08-10 - Saturday the 8th lands on Monday
+```
+
 ## Common Pitfalls
 
 - **`filterField` is required for filters.** The filter getters throw without it. Use

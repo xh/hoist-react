@@ -100,6 +100,8 @@ detailed, step-by-step upgrade instructions with before/after code examples.
   `compactPrecision` sets the places of a compacted value, and `precision` those of a whole one.
 * Added `dateRangeContext()` to `@xh/hoist/cmp/daterange`, to resolve date range selections without
   a `DateRangePickerModel`, and `businessDayOnOrAfter()` beside `businessDayOnOrBefore()`.
+* Added `parsePeriod()` and `shiftByPeriod()` to `@xh/hoist/cmp/daterange`, to step a date by a
+  period such as `3M` or `+5D`, counting business days and landing on one by default.
 
 ### 🐞 Bug Fixes
 

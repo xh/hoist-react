@@ -8,4 +8,5 @@ export * from './DateRangeContext';
 export * from './DateRangePickerModel';
 export * from './DateRangePresets';
 export * from './DateRangeUtils';
+export * from './Period';
 export type * from './Types';
