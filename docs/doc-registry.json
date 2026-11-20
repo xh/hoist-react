@@ -152,6 +152,22 @@
             "keywords": ["PdfViewerModel", "PdfViewer", "PdfSource", "PdfScale", "PdfViewerToolbarToken", "pdfjs-dist", "pdf.js", "PDF", "document preview"]
         },
         {
+            "id": "cmp/propertytable/README.md",
+            "title": "PropertyTable Package",
+            "mcpCategory": "package",
+            "viewerCategory": "components",
+            "description": "Display-only list of labeled values, such as the fields of a record in a detail panel, and when to use it over a read-only Form.",
+            "keywords": ["PropertyTable", "PropertyTableEntry", "key value", "label value", "labeled values", "detail panel", "record fields", "description list", "labelSide", "minColumnWidth", "read-only form"]
+        },
+        {
+            "id": "cmp/callout/README.md",
+            "title": "Callout Package",
+            "mcpCategory": "package",
+            "viewerCategory": "components",
+            "description": "Short note set off within content, with an intent, its icon, an optional title and a body, and when to use it rather than a Banner or a Card.",
+            "keywords": ["Callout", "callout", "admonition", "note", "caveat", "warning", "alert", "intent", "Banner", "Card"]
+        },
+        {
             "id": "cmp/progressbar/README.md",
             "title": "ProgressBar Package",
             "mcpCategory": "package",

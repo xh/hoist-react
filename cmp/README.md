@@ -152,6 +152,7 @@ techniques.
 | `/zoneGrid/` | Multi-zone grid layout for complex record displays |
 | `/cubegrid/` | Cube View as a tree grid, with pivot paths as nested column groups when pivoted. [See README](./cubegrid/README.md) |
 | `/statcard/` | Tiles that call out key figures (StatCard), laid out in equal-width rows (StatCardStrip) |
+| `/propertytable/` | Display-only list of labeled values (PropertyTable), such as the fields of a record in a detail panel. [See README](./propertytable/README.md) |
 | `/sparkline/` | Small inline trend chart in plain SVG (Sparkline), for a stat card or a grid cell. [See README](./sparkline/README.md) |
 
 ### Layout and Containers
@@ -194,6 +195,7 @@ techniques.
 | Sub-package | Description                                              |
 |-------------|----------------------------------------------------------|
 | `/badge/` | Badge component for counts and status indicators         |
+| `/callout/` | Short note set off within content, with an intent, icon and optional title (Callout). [See README](./callout/README.md) |
 | `/loadingindicator/` | Loading state display in a compact and non-blocking form |
 | `/mask/` | Overlay mask for blocking interactions                   |
 | `/progressbar/` | Bar that shows a value against a maximum, or indeterminate progress (ProgressBar). [See README](./progressbar/README.md) |
@@ -343,6 +345,18 @@ CardModel supports `collapsible` state with configurable `renderMode` (`'always'
 **FormFieldSet** (`/cmp/form/formfieldset/`) extends Card to group related `FormField` components,
 displaying their aggregate validation state as intent-colored borders and tooltips. See the
 [Form README](./form/README.md#formfieldset) for details.
+
+### PropertyTable (`/propertytable/`)
+
+A display-only list of labeled values, such as the fields of a record in a detail panel, laid out
+in as many columns as the width allows. See the
+[PropertyTable README](./propertytable/README.md).
+
+### Callout (`/callout/`)
+
+A short note set off within a body of content, with an intent, its icon, an optional title and a
+body. Use it for a caveat or a warning inside content, and a `Banner` for a status strip in panel
+chrome. See the [Callout README](./callout/README.md).
 
 ### ProgressBar (`/progressbar/`)
 

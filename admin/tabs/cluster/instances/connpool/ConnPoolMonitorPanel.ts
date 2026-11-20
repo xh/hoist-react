@@ -88,7 +88,8 @@ const bbar = hoistCmp.factory<ConnPoolMonitorModel>({
     }
 });
 
-const poolConfigPanel = hoistCmp.factory<ConnPoolMonitorModel>({
+const poolConfigPanel = hoistCmp.factory({
+    model: false,
     render() {
         return panel({
             title: 'Pool Configuration',

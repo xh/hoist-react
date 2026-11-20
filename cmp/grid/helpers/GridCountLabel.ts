@@ -42,6 +42,7 @@ export interface GridCountLabelProps extends HoistProps, BoxProps {
  */
 export const [GridCountLabel, gridCountLabel] = hoistCmp.withFactory<GridCountLabelProps>({
     displayName: 'GridCountLabel',
+    model: false,
     className: 'xh-grid-count-label',
 
     render({

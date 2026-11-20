@@ -34,6 +34,7 @@ export interface RecordActionButtonProps extends ButtonProps {
 export const [RecordActionButton, recordActionButton] =
     hoistCmp.withFactory<RecordActionButtonProps>({
         displayName: 'RecordActionButton',
+        model: false,
         className: 'xh-record-action-button',
 
         render(props) {

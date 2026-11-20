@@ -372,6 +372,47 @@ body {
   }
 
   //------------------------
+  // Callouts
+  //------------------------
+  // Width of the bar along the left edge, in the callout's color. Zero for no bar.
+  --xh-callout-accent-width: 3px;
+  // Background, and color of the icon and bar, for a callout with no intent.
+  --xh-callout-bg: color-mix(in srgb, var(--xh-callout-color) 12%, transparent);
+  --xh-callout-color: var(--xh-blue-gray);
+  --xh-callout-border-radius: var(--xh-border-radius);
+  --xh-callout-compact-font-size: var(--xh-font-size-small-relative);
+  --xh-callout-compact-gap: 6px;
+  --xh-callout-compact-line-height: 1.3;
+  --xh-callout-compact-padding: 4px 8px;
+  --xh-callout-danger-bg: var(--xh-intent-danger-trans1);
+  --xh-callout-danger-color: var(--xh-intent-danger-text-color);
+  --xh-callout-font-size: inherit;
+  // Gap between the icon and the text.
+  --xh-callout-gap: var(--xh-spacing);
+  --xh-callout-line-height: 1.4;
+  --xh-callout-padding: var(--xh-spacing);
+  --xh-callout-primary-bg: var(--xh-intent-primary-trans1);
+  --xh-callout-primary-color: var(--xh-intent-primary-text-color);
+  --xh-callout-success-bg: var(--xh-intent-success-trans1);
+  --xh-callout-success-color: var(--xh-intent-success-text-color);
+  --xh-callout-text-color: var(--xh-text-color);
+  --xh-callout-title-font-weight: 600;
+  // Gap between the title and the body.
+  --xh-callout-title-gap: 2px;
+  --xh-callout-title-text-color: var(--xh-callout-text-color);
+  --xh-callout-warning-bg: var(--xh-intent-warning-trans1);
+  // The standard warning color is too light for an icon on the tinted background.
+  --xh-callout-warning-color: var(--xh-intent-warning-darker);
+
+  &:where(.xh-dark) {
+    --xh-callout-color: var(--xh-text-color-muted);
+    // The standard danger tint barely shows on a dark background.
+    --xh-callout-danger-bg: var(--xh-intent-danger-trans2);
+    --xh-callout-warning-color: var(--xh-intent-warning-text-color);
+  }
+
+
+  //------------------------
   // Cards
   //------------------------
   --xh-card-bg: var(--xh-bg);
@@ -727,6 +768,37 @@ body {
 
   &:where(.xh-dark) {
     --xh-date-range-picker-rail-bg: var(--xh-toolbar-bg);
+  }
+
+  //------------------------
+  // Property Tables
+  //------------------------
+  // Gap between the columns of a multi-column list.
+  --xh-property-table-column-gap: var(--xh-spacing-double);
+  --xh-property-table-compact-font-size: var(--xh-font-size-small-relative);
+  --xh-property-table-compact-row-gap: 2px;
+  --xh-property-table-danger-color: var(--xh-intent-danger-text-color);
+  --xh-property-table-divider-border: var(--xh-border-solid);
+  --xh-property-table-empty-text-color: var(--xh-blue-gray);
+  --xh-property-table-font-size: inherit;
+  --xh-property-table-label-font-size: inherit;
+  --xh-property-table-label-font-weight: normal;
+  // Gap between a label and its value, when the label is on the left.
+  --xh-property-table-label-gap: var(--xh-spacing);
+  // Widest a column of labels gets, when the label is on the left. Longer labels wrap.
+  --xh-property-table-label-max-width: 16em;
+  --xh-property-table-label-text-color: var(--xh-blue-gray);
+  --xh-property-table-null-text-color: var(--xh-text-color-muted);
+  --xh-property-table-primary-color: var(--xh-intent-primary-text-color);
+  --xh-property-table-row-gap: var(--xh-spacing-half);
+  --xh-property-table-success-color: var(--xh-intent-success-text-color);
+  --xh-property-table-value-font-weight: normal;
+  --xh-property-table-warning-color: var(--xh-intent-warning-text-color);
+
+  // The muted text color is too faint for labels on a light background, but reads well on a dark one.
+  &:where(.xh-dark) {
+    --xh-property-table-empty-text-color: var(--xh-text-color-muted);
+    --xh-property-table-label-text-color: var(--xh-text-color-muted);
   }
 
   //------------------------

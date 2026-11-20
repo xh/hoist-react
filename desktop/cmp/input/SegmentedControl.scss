@@ -154,4 +154,39 @@
   &.xh-input--info .bp6-segmented-control {
     border: var(--xh-form-field-info-border);
   }
+
+  // Disabled control, styled like other disabled inputs. Must follow the selected and intent rules
+  // above, which have equal specificity. Options disabled individually keep BP's styling.
+  &.xh-input-disabled {
+    &:not(.xh-segmented-control--no-tray-bg) .bp6-segmented-control {
+      background-color: var(--xh-input-disabled-bg);
+    }
+
+    .bp6-segmented-control > .bp6-button {
+      cursor: not-allowed;
+
+      // Unselected options - faded labels.
+      &.bp6-minimal {
+        &,
+        &:hover,
+        &:active {
+          background-color: transparent;
+          box-shadow: none;
+          color: var(--xh-input-disabled-text-color);
+        }
+      }
+
+      // Selected option - its translucent fill reads darker over the tray's, set off by a hairline.
+      &:not(.bp6-minimal) {
+        &,
+        &:hover,
+        &:active {
+          background-color: var(--xh-input-disabled-bg);
+          box-shadow: inset 0 0 0 1px
+            color-mix(in srgb, var(--xh-border-color) 75%, var(--xh-text-color));
+          color: var(--xh-segmented-control-text-color);
+        }
+      }
+    }
+  }
 }

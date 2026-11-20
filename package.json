@@ -138,7 +138,7 @@
     "@types/react-dom": "^19.3.0",
     "@vitest/ui": "^5.1.0",
     "@xh/eslint-config": "^8.1.0",
-    "@xh/hoist-dev-utils": "^16.4.1",
+    "@xh/hoist-dev-utils": "^16.4.2",
     "@xh/hoist-docs-builder": "^1.0.0",
     "ag-grid-community": "~36.3.0",
     "ag-grid-react": "~36.3.0",
