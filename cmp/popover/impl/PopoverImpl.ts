@@ -45,6 +45,7 @@ import {
     Children,
     cloneElement,
     createElement as h,
+    Fragment,
     isValidElement,
     useCallback,
     useEffect,
@@ -477,6 +478,11 @@ function renderTarget({
 
     let child = Children.toArray(children)[0];
     if (child == null) return null;
+    // A fragment cannot take the target props - target its single child, or wrap its children.
+    if (isValidElement(child) && child.type === Fragment) {
+        const fragChildren = Children.toArray((child.props as {children?: ReactNode}).children);
+        child = fragChildren.length === 1 ? fragChildren[0] : h('span', null, fragChildren);
+    }
     if (!isValidElement(child)) child = h('span', null, child);
     const el = child as ReactElement<any>;
 

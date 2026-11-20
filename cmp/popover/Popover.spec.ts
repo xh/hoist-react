@@ -9,7 +9,7 @@ import {portalContainerProvider} from '@xh/hoist/cmp/popover/impl/PortalContaine
 import {XH} from '@xh/hoist/core';
 import {initTestAppAsync} from '@xh/hoist/test-support';
 import {act, fireEvent, render, screen, waitFor} from '@testing-library/react';
-import {createElement} from 'react';
+import {createElement, Fragment} from 'react';
 import {beforeAll, describe, expect, it, vi} from 'vitest';
 
 /**
@@ -47,6 +47,19 @@ describe('Popover', () => {
         render(withPopover({isOpen: true}));
         await screen.findByText('Body');
         expect(isActive()).toBe(false);
+    });
+
+    it('targets the child of a fragment given as its target', async () => {
+        const error = vi.spyOn(console, 'error').mockImplementation(() => {});
+        render(withPopover({children: createElement(Fragment, null, target())}));
+
+        const button = screen.getByText('Open');
+        expect(button.getAttribute('aria-haspopup')).toBe('menu');
+        expect(error).not.toHaveBeenCalled();
+        error.mockRestore();
+
+        fireEvent.click(button);
+        await screen.findByText('Body');
     });
 
     it('closes when the route changes', async () => {
