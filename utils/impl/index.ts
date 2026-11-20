@@ -8,5 +8,4 @@ export * from './Separators';
 export * from './TimeZone';
 export * from './Equals';
 export * from './IsOmitted';
-export * from './ClickableRow';
 export * from './EntriesProp';
