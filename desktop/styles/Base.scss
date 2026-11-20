@@ -28,3 +28,221 @@ body {
     --xh-base-text-color-disabled: oklch(from #abb3bf l c h / 0.6);
   }
 }
+
+//-----------------------------------------------
+// Document and typography
+//-----------------------------------------------
+// Global element styles from the Blueprint base, which desktop apps have always had.
+html {
+  box-sizing: border-box;
+}
+
+*,
+:before,
+:after {
+  box-sizing: inherit;
+}
+
+body {
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--xh-base-text-color);
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.28581;
+  font-family:
+    -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans',
+    'Helvetica Neue', blueprint-icons-16, sans-serif;
+}
+
+p {
+  margin-top: 0;
+  margin-bottom: 8px;
+}
+
+strong {
+  font-weight: 600;
+}
+
+::selection {
+  background: #7dbcff99;
+}
+
+a,
+a:hover {
+  color: #215db0;
+}
+
+a code {
+  color: inherit;
+}
+
+a {
+  text-decoration: none;
+}
+
+a:hover {
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.xh-dark {
+  color: var(--xh-base-text-color);
+}
+
+.xh-dark a,
+.xh-dark a:hover {
+  color: #8abbff;
+}
+
+.xh-dark a code {
+  color: inherit;
+}
+
+:focus {
+  outline-offset: 2px;
+  -moz-outline-radius: 6px;
+  outline: 2px solid #215db0c0;
+}
+
+.xh-dark :focus {
+  outline-color: #8abbffc0;
+}
+
+.xh-focus-disabled :focus {
+  outline: none !important;
+}
+
+.xh-dark {
+  color-scheme: dark;
+}
+
+.xh-appbar__group--right .xh-button {
+  text-align: right;
+}
+
+.xh-appbar__group--left .xh-button {
+  text-align: left;
+}
+
+form {
+  display: block;
+}
+
+.xh-popover__content-wrapper .xh-popover__content {
+  color: inherit;
+}
+
+.xh-dark .xh-popover__content-wrapper .xh-popover__content {
+  color: inherit;
+}
+
+//-----------------------------------------------
+// react-grid-layout
+//-----------------------------------------------
+// The library's own stylesheet, which DashCanvas lays out with.
+.react-grid-layout {
+  transition: height 0.2s;
+  position: relative;
+}
+
+.react-grid-item {
+  transition:
+    left 0.2s,
+    top 0.2s,
+    width 0.2s,
+    height 0.2s;
+}
+
+.react-grid-item img {
+  pointer-events: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+.react-grid-item.cssTransforms {
+  transition-property: transform, width, height;
+}
+
+.react-grid-item > .react-resizable-handle {
+  opacity: 0;
+  width: 20px;
+  height: 20px;
+  position: absolute;
+}
+
+.react-grid-item:hover > .react-resizable-handle {
+  opacity: 1;
+}
+
+.react-grid-item > .react-resizable-handle:after {
+  content: '';
+  border-bottom: 2px solid #0006;
+  border-right: 2px solid #0006;
+  width: 5px;
+  height: 5px;
+  position: absolute;
+  bottom: 3px;
+  right: 3px;
+}
+
+.react-grid-item > .react-resizable-handle.react-resizable-handle-sw {
+  cursor: sw-resize;
+  bottom: 0;
+  left: 0;
+  transform: rotate(90deg);
+}
+
+.react-grid-item > .react-resizable-handle.react-resizable-handle-se {
+  cursor: se-resize;
+  bottom: 0;
+  right: 0;
+}
+
+.react-grid-item > .react-resizable-handle.react-resizable-handle-nw {
+  cursor: nw-resize;
+  top: 0;
+  left: 0;
+  transform: rotate(180deg);
+}
+
+.react-grid-item > .react-resizable-handle.react-resizable-handle-ne {
+  cursor: ne-resize;
+  top: 0;
+  right: 0;
+  transform: rotate(270deg);
+}
+
+.react-grid-item > .react-resizable-handle.react-resizable-handle-w,
+.react-grid-item > .react-resizable-handle.react-resizable-handle-e {
+  cursor: ew-resize;
+  margin-top: -10px;
+  top: 50%;
+}
+
+.react-grid-item > .react-resizable-handle.react-resizable-handle-w {
+  left: 0;
+  transform: rotate(135deg);
+}
+
+.react-grid-item > .react-resizable-handle.react-resizable-handle-e {
+  right: 0;
+  transform: rotate(315deg);
+}
+
+.react-grid-item > .react-resizable-handle.react-resizable-handle-n,
+.react-grid-item > .react-resizable-handle.react-resizable-handle-s {
+  cursor: ns-resize;
+  margin-left: -10px;
+  left: 50%;
+}
+
+.react-grid-item > .react-resizable-handle.react-resizable-handle-n {
+  top: 0;
+  transform: rotate(225deg);
+}
+
+.react-grid-item > .react-resizable-handle.react-resizable-handle-s {
+  bottom: 0;
+  transform: rotate(45deg);
+}

@@ -74,9 +74,10 @@ file is the working guide.
 - [x] No `--bp-*` custom properties left in Hoist's own stylesheets, apart from `BlueprintBase.css`.
       Constant ones are literal values. The six that change with the theme are `--xh-base-*`
       variables in `desktop/styles/Base.scss`, loaded first by `desktop/register.ts`.
-- [ ] Delete `desktop/styles/BlueprintBase.css` and `desktop/styles/BlueprintOverrides.scss`, and
-      their imports in `desktop/register.ts`. Re-run `inventory.mjs` - its class table should be
-      empty.
+- [x] Delete `desktop/styles/BlueprintBase.css` and `desktop/styles/BlueprintOverrides.scss`, and
+      their imports in `desktop/register.ts`. No visual change. The rules that still applied -
+      document typography, focus outlines, link colors and react-grid-layout's styles - moved to
+      `desktop/styles/Base.scss`.
 - [ ] Add the final `bp6-*` to `xh-*` mapping table to the v91 upgrade notes, Step 8.
 - [ ] Add `docs/codemod/v91/codemod-bp6-classes.mjs` with a spec, modeled on
       `codemod-css-vars.mjs`. It rewrites the mapped selectors in app `.scss`, `.css` and TS class
