@@ -104,6 +104,9 @@ detailed, step-by-step upgrade instructions with before/after code examples.
   period such as `3M` or `+5D`, counting business days and landing on one by default.
 * Added `LastAggregator` and `FirstAggregator` to `@xh/hoist/data`, to roll a group up to the value
   of its latest or earliest leaf by an `orderField`, such as the latest price of each symbol.
+* Added `KeyedAggregator` to `@xh/hoist/data`, to roll up a value copied onto leaves from a coarser
+  key, such as a fund's NAV on each position: shown where a row pins the key, and counted once per
+  key at the root.
 
 ### 🐞 Bug Fixes
 

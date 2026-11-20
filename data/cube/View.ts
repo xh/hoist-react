@@ -482,12 +482,20 @@ export class View
      * @internal
      */
     _getSuppliedValue(row: ParentRow, fieldName: string): any {
-        const filterDims = this._suppliedFilterDims;
-        if (!filterDims || !row?.isAggregate) return null;
-        return this.cube._getSuppliedValue(
-            {...filterDims, ...(row as AggregateRow).appliedDims},
-            fieldName
-        );
+        if (!this._suppliedFilterDims) return null;
+        const dims = this._pinnedDims(row);
+        return dims ? this.cube._getSuppliedValue(dims, fieldName) : null;
+    }
+
+    /**
+     * The dimension values that pin a group row's leaves: those applied at the row, plus those the
+     * query's filter fixes, if it can be read that way. Null for a row that is not an aggregate row,
+     * such as a bucket or a pivot cell.
+     * @internal
+     */
+    _pinnedDims(row: ParentRow): PlainObject {
+        if (!row?.isAggregate) return null;
+        return {...this._suppliedFilterDims, ...(row as AggregateRow).appliedDims};
     }
 
     //------------------------

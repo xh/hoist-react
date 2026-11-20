@@ -83,6 +83,7 @@ const cube = new Cube({
 | `'SUPPLIED'` | The value supplied to the Cube for the group - see [Supplied Aggregates](#supplied-aggregates) |
 | `WeightedAverageAggregator` | Average weighted by a second field, e.g. price by quantity |
 | `SumIfSameAggregator` | Total only if all leaves with a value share a second field, such as a currency |
+| `KeyedAggregator` | A value that belongs to a coarser key than its leaves, such as a fund's NAV on each position - see below |
 | `LastAggregator` | The value of the latest leaf by a second field, such as the latest price by date |
 | `FirstAggregator` | The value of the earliest leaf by a second field |
 
@@ -99,6 +100,22 @@ A field is never aggregated at or below the level at which it is applied as a di
 there publish the dimension value, and rows above aggregate over those values, one per grouped row.
 `MIN`, `MAX` and `UNIQUE` remain meaningful for such a field; `SUM` and `AVG` do not. To average a
 field you also group by, add a second measure field over the same value.
+
+## Keyed Values
+
+A value copied onto leaves from a coarser key - a fund's NAV on each of its positions, as a join
+writes it - must not be summed, or each fund counts once per position. Give the field a
+`KeyedAggregator` with the fields that identify its key:
+
+```typescript
+{name: 'nav', aggregator: new KeyedAggregator({keyFields: ['fund'], rootAggregator: 'SUM'})}
+```
+
+* A group row that pins every key field shows the value its leaves share: a fund row, or a
+  strategy row under a fund. Single-value `=` clauses in the query's filter pin keys too.
+* The root totals the value once per distinct key among its leaves, with `rootAggregator` (`SUM`,
+  `AVG`, `MIN`, `MAX` or `UNIQUE`) - the NAV of the funds the View shows. Without one, it is null.
+* Any other row is null, such as NAV by sector.
 
 ## Supplied Aggregates
 
