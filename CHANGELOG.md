@@ -84,6 +84,9 @@ detailed, step-by-step upgrade instructions with before/after code examples.
   component on each render.
 * Added `XH.hasRoute()` to check if a route exists. Call it before `XH.router.buildPath()` or
   `buildUrl()` with a name that may not be registered, as both throw for an unknown route.
+* Added `ViewManager.showFullPath` to show the selected view's full path in the desktop menu button,
+  e.g. `My Views › Reports › Monthly`. The path starts with `My Views`, the global views label, or
+  the owner of a shared view, followed by the view's groups and name.
 
 ### 🐞 Bug Fixes
 

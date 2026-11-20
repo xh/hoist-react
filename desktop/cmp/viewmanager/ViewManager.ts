@@ -9,18 +9,19 @@ import {box, fragment, hbox} from '@xh/hoist/cmp/layout';
 import {spinner} from '@xh/hoist/cmp/spinner';
 import type {HoistProps, MenuItemLike, TestSupportProps} from '@xh/hoist/core';
 import {hoistCmp, useLocalModel, uses} from '@xh/hoist/core';
-import {ViewManagerModel} from '@xh/hoist/cmp/viewmanager';
+import {splitGroupPath, ViewManagerModel} from '@xh/hoist/cmp/viewmanager';
 import type {ButtonProps} from '@xh/hoist/desktop/cmp/button';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {Icon} from '@xh/hoist/icon';
 import {popover} from '@xh/hoist/kit/blueprint';
-import {getTestId} from '@xh/hoist/utils/js';
+import {getTestId, pluralize} from '@xh/hoist/utils/js';
 import {useOnVisibleChange} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import {startCase} from 'lodash';
-import type {ReactElement} from 'react';
+import type {ReactElement, ReactNode} from 'react';
 import {viewMenu} from './ViewMenu';
 import {ViewManagerLocalModel} from './ViewManagerLocalModel';
+import {groupPathBreadcrumb} from './dialog/GroupPathBreadcrumb';
 import {manageDialog} from './dialog/ManageDialog';
 import {saveAsDialog} from './dialog/SaveAsDialog';
 
@@ -39,6 +40,8 @@ export interface ViewManagerProps extends HoistProps<ViewManagerModel>, TestSupp
     sharedViewIcon?: ReactElement;
     /** Button icon when the selected view is globally shared. Default `Icon.globe`. */
     globalViewIcon?: ReactElement;
+    /** True to show the full path to the selected view in the menu button, not just its name. */
+    showFullPath?: boolean;
 
     /** Default 'whenDirty' */
     showSaveButton?: ViewManagerStateButtonMode;
@@ -86,6 +89,7 @@ export const [ViewManager, viewManager] = hoistCmp.withFactory<ViewManagerProps>
         ownedViewIcon = Icon.bookmark(),
         sharedViewIcon = Icon.users(),
         globalViewIcon = Icon.globe(),
+        showFullPath = false,
         showSaveButton = 'whenDirty',
         showRevertButton = 'never',
         buttonSide = 'right',
@@ -109,6 +113,7 @@ export const [ViewManager, viewManager] = hoistCmp.withFactory<ViewManagerProps>
                 disabled: !locModel.isVisible, // Prevent orphaned popover menu
                 children: menuButton({
                     model: locModel,
+                    showFullPath,
                     icon: buttonIcon({
                         model: locModel,
                         defaultViewIcon,
@@ -158,13 +163,22 @@ export const [ViewManager, viewManager] = hoistCmp.withFactory<ViewManagerProps>
 
 const menuButton = hoistCmp.factory<ViewManagerLocalModel>({
     // Merge className - the popover clones this target with a className of its own.
-    render({model, icon, className, ...rest}) {
+    render({model, icon, showFullPath, className, ...rest}) {
         const {view, defaultDisplayName, typeDisplayName, isLoading} = model.parent;
+        let text: ReactNode = view.name;
+        if (view.isDefault) {
+            text = `${startCase(defaultDisplayName)} ${startCase(typeDisplayName)}`;
+        } else if (showFullPath) {
+            text = groupPathBreadcrumb({
+                path: [getPathRoot(model.parent), ...splitGroupPath(view.group), view.name],
+                inheritColor: true,
+                // Never collapse - showing every group is the point of this mode.
+                maxChars: Infinity
+            });
+        }
         return button({
             className: classNames('xh-view-manager__menu-button', className),
-            text: view.isDefault
-                ? `${startCase(defaultDisplayName)} ${startCase(typeDisplayName)}`
-                : view.name,
+            text,
             icon: !isLoading
                 ? icon
                 : box({
@@ -220,6 +234,15 @@ const revertButton = hoistCmp.factory<ViewManagerLocalModel>({
         });
     }
 });
+
+/** Leading segment of a view's full path - the menu section or shared-view owner it sits under. */
+function getPathRoot(model: ViewManagerModel): string {
+    const {view, typeDisplayName, globalDisplayName} = model,
+        pluralName = pluralize(startCase(typeDisplayName));
+    if (view.isOwned) return `My ${pluralName}`;
+    if (view.isGlobal) return `${startCase(globalDisplayName)} ${pluralName}`;
+    return view.info.owner;
+}
 
 function hideStateButton(model: ViewManagerLocalModel, mode: ViewManagerStateButtonMode): boolean {
     const {parent} = model;
