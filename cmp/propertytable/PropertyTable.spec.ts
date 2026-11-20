@@ -271,11 +271,11 @@ describe('PropertyTable', () => {
         it('marks the entries of the last row, so a divider is not drawn under them', () => {
             setListWidth(1000);
             const {container} = render(propertyTable({entries: fiveEntries(), columns: 2})),
-                lastInColumn = entries(container).map(it =>
-                    it.classList.contains('xh-property-table__entry--last-in-column')
+                noDivider = entries(container).map(it =>
+                    it.classList.contains('xh-property-table__entry--no-divider')
                 );
 
-            expect(lastInColumn).toEqual([false, false, false, false, true]);
+            expect(noDivider).toEqual([false, false, false, false, true]);
         });
 
         it('marks a full last row', () => {
@@ -283,11 +283,11 @@ describe('PropertyTable', () => {
             const {container} = render(
                     propertyTable({entries: fiveEntries().slice(0, 4), columns: 2})
                 ),
-                lastInColumn = entries(container).map(it =>
-                    it.classList.contains('xh-property-table__entry--last-in-column')
+                noDivider = entries(container).map(it =>
+                    it.classList.contains('xh-property-table__entry--no-divider')
                 );
 
-            expect(lastInColumn).toEqual([false, false, true, true]);
+            expect(noDivider).toEqual([false, false, true, true]);
         });
     });
 
@@ -336,11 +336,11 @@ describe('PropertyTable', () => {
             const {container} = render(
                     propertyTable({entries: fiveEntries(), columns: 2, fillOrder: 'columns'})
                 ),
-                lastInColumn = entries(container).map(it =>
-                    it.classList.contains('xh-property-table__entry--last-in-column')
+                noDivider = entries(container).map(it =>
+                    it.classList.contains('xh-property-table__entry--no-divider')
                 );
 
-            expect(lastInColumn).toEqual([false, false, true, false, true]);
+            expect(noDivider).toEqual([false, false, true, false, true]);
         });
     });
 });

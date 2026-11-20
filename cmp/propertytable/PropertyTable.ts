@@ -178,8 +178,9 @@ export const [PropertyTable, propertyTable] = hoistCmp.withFactory<PropertyTable
             // Filling down, the last column may be short. Drop any column it leaves empty.
             columnCount = fillColumns ? Math.ceil(count / rowCount) : maxColumns,
             lastRowStart = count - (count % columnCount || columnCount),
-            // Entries with no entry below them, so a divider is not drawn under them.
-            isLast = (idx: number) =>
+            // Entries with no divider under them - the last row when filling by rows, or the bottom
+            // of each column when filling down.
+            noDivider = (idx: number) =>
                 fillColumns
                     ? idx % rowCount === rowCount - 1 || idx === count - 1
                     : idx >= lastRowStart;
@@ -207,7 +208,7 @@ export const [PropertyTable, propertyTable] = hoistCmp.withFactory<PropertyTable
                     className: classNames(
                         'xh-property-table__entry',
                         intent && `xh-property-table__entry--intent-${intent}`,
-                        isLast(idx) && 'xh-property-table__entry--last-in-column'
+                        noDivider(idx) && 'xh-property-table__entry--no-divider'
                     ),
                     children: [
                         dt({className: 'xh-property-table__label', children: label}),

@@ -129,7 +129,7 @@
     padding: var(--xh-property-table-row-gap) 0;
     border-bottom: var(--xh-property-table-divider-border);
 
-    &--last-in-column {
+    &--no-divider {
       border-bottom: none;
     }
   }
