@@ -160,14 +160,6 @@
             "keywords": ["KeyValueDisplay", "KeyValueEntry", "key value", "label value", "labeled values", "detail panel", "record fields", "description list", "totals", "labelSide", "labelVariant", "align", "minColumnWidth", "read-only form"]
         },
         {
-            "id": "cmp/listdisplay/README.md",
-            "title": "ListDisplay Package",
-            "mcpCategory": "package",
-            "viewerCategory": "components",
-            "description": "Short, static list of entries with a title, description, icon and trailing detail, and when to use it over a DataView or Grid.",
-            "keywords": ["ListDisplay", "ListDisplayEntry", "list of items", "alerts", "recent activity", "search results", "numbered list", "ranking", "clickable entries"]
-        },
-        {
             "id": "cmp/callout/README.md",
             "title": "Callout Package",
             "mcpCategory": "package",
