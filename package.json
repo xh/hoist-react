@@ -141,7 +141,6 @@
     "@xh/hoist-dev-utils": "^16.4.2",
     "@xh/hoist-docs-builder": "^1.0.0",
     "ag-grid-community": "~36.3.0",
-    "ag-grid-enterprise": "~36.3.0",
     "ag-grid-react": "~36.3.0",
     "csstype": "^3.2.4",
     "eslint": "^10.15.0",

@@ -36,9 +36,8 @@ let installed = false;
  *
  * Registers the community modules every Hoist app registers (see Toolbox's `Bootstrap.ts`) and
  * provides `AgGridReact` to Hoist, as an app's bootstrap does. Enterprise features - grouping,
- * tree data, menus, clipboard, cell selection - need modules from `ag-grid-enterprise`, which
- * hoist-react installs as a devDependency for tests only. A spec that needs them registers those
- * modules itself.
+ * tree data, menus, clipboard - need `ag-grid-enterprise`, which hoist-react does not depend on.
+ * A spec that needs them registers those modules itself.
  *
  * ag-Grid renders its header, rows and cells in jsdom, which has no layout. Every row and column
  * renders regardless of the viewport, so virtualisation cannot be observed here, and measured
