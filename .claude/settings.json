@@ -34,7 +34,7 @@
       "mcp__github__search_pull_requests",
       "mcp__github__search_repositories",
       "mcp__github__search_users",
-      "mcp__hoist-react__*",
+      "mcp__hoist-docs__*",
       "mcp__ide__getDiagnostics",
       "mcp__idea__analyze_calls",
       "mcp__idea__get_all_open_file_paths",
@@ -55,7 +55,7 @@
     ]
   },
   "enabledMcpjsonServers": [
-    "hoist-react"
+    "hoist-docs"
   ],
   "enabledPlugins": {
     "typescript-lsp@claude-plugins-official": true,

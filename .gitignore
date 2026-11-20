@@ -35,3 +35,6 @@ docs/superpowers/
 .DS_Store?
 ehthumbs.db
 Thumbs.db
+
+# Hoist Docs index, built by prepack to ship in the package
+/hoist-docs/

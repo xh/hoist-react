@@ -59,6 +59,7 @@ export interface MenuButtonProps extends Omit<ButtonProps, 'title'> {
  */
 export const [MenuButton, menuButton] = hoistCmp.withFactory<MenuButtonProps>({
     displayName: 'MenuButton',
+    model: false,
     className: 'xh-menu-button',
 
     render({

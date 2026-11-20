@@ -38,6 +38,7 @@ See [`docs-roadmap.md`](./planning/docs-roadmap.md) for documentation coverage t
 | Save and restore named view configurations | [`/cmp/viewmanager/`](../cmp/viewmanager/README.md)                                                                 |
 | Select a period or date range (presets, lookbacks, months, custom) | [`/cmp/daterange/`](../cmp/daterange/README.md)                                                                   |
 | Display a PDF document (page nav, zoom, find, download) | [`/cmp/pdfviewer/`](../cmp/pdfviewer/README.md) |
+| Show the fields of a record as labeled values | [`/cmp/propertytable/`](../cmp/propertytable/README.md) |
 | Set off a note, caveat or warning within content | [`/cmp/callout/`](../cmp/callout/README.md) |
 | Show progress or usage against a limit as a bar | [`/cmp/tooltip/`](../cmp/tooltip/README.md) | Short label shown beside a target on hover or focus, a hover Popover with tooltip defaults | Tooltip, TooltipProps, content, intent, compact, position, targetTagName |
 | [`/cmp/progressbar/`](../cmp/progressbar/README.md) |
@@ -71,8 +72,7 @@ See [`docs-roadmap.md`](./planning/docs-roadmap.md) for documentation coverage t
 | Set up builds, CI/CD, or deployment | [Build & Publish Hoist React](./build-and-publish.md), [Build & Deploy Apps](./build-and-deploy-app.md) |
 | Configure local development environment | [Development Environment](./development-environment.md)                                                             |
 | Write or run unit tests, in an app or hoist-react | [Unit Testing](./unit-testing.md) |
-| Use MCP tools with AI assistants | [`/mcp/`](../mcp/README.md)                                                                                         |
-| Serve a Hoist library's docs through the MCP tools | [Companion Library Docs](./companion-library-docs.md) |
+| Serve a Hoist library's docs through Hoist Docs | [Companion Library Docs](./companion-library-docs.md) |
 | Customize colors, fonts, spacing, or theme | [`/styles/`](../styles/README.md)                                                                                   |
 | Follow XH coding conventions | [Coding Conventions](./coding-conventions.md)                                                                       |
 | Check hoist-react / hoist-core / hoist-dev-utils version compatibility | [Version Compatibility](./version-compatibility.md)                                              |
@@ -101,6 +101,7 @@ See [`docs-roadmap.md`](./planning/docs-roadmap.md) for documentation coverage t
 | [`/cmp/callout/`](../cmp/callout/README.md) | Short note set off within content, tinted by its intent | Callout, intent, icon, title, Callout or Banner or Card, untrusted text |
 | [`/cmp/layout/`](../cmp/layout/README.md) | Flexbox-based layout containers | Box, VBox, HBox, Frame, Viewport, Separator, LayoutProps, pixel conversion |
 | [`/cmp/popover/`](../cmp/popover/README.md) | Content that floats beside a target, opened by click or hover, built on Floating UI | Popover, PopoverProps, position, interactionKind, isOpen, onInteraction, xh-popover-dismiss |
+| [`/cmp/propertytable/`](../cmp/propertytable/README.md) | Display-only list of labeled values, such as the fields of a record in a detail panel | PropertyTable, PropertyTableEntry, entries, labelSide, columns, minColumnWidth, PropertyTable or read-only Form |
 | [`/cmp/progressbar/`](../cmp/progressbar/README.md) | Bar that shows a value against a maximum, or indeterminate progress | ProgressBar, value, min, max, label, valueRenderer, intent, target, indeterminate |
 | [`/cmp/tab/`](../cmp/tab/README.md) | Tabbed interface system | TabContainerModel, routing integration, render modes, refresh strategies |
 | [`/cmp/viewmanager/`](../cmp/viewmanager/README.md) | Save/load named bundles of component state | ViewManagerModel, views, sharing, pinning, auto-save, JsonBlob persistence |
@@ -171,8 +172,7 @@ for planned coverage:
 
 | Tool | Description |
 |------|-------------|
-| [MCP Server](../mcp/README.md) | Model Context Protocol server providing AI assistants with structured access to documentation, TypeScript types, and code generation prompts |
-| [Companion Library Docs](./companion-library-docs.md) | How a library that builds on Hoist serves its docs through the MCP server and `hoist-docs` CLI, using a `hoist.docRegistry` field in its `package.json` |
+| [Companion Library Docs](./companion-library-docs.md) | How a library that builds on Hoist ships a Hoist Docs index in its npm package, so agents get its docs and API next to Hoist's |
 
 ## Upgrade Notes
 
@@ -187,7 +187,7 @@ breaking changes, before/after code examples, and verification checklists.
 
 | Version | Released | Difficulty | Key Changes |
 |---------|----------|------------|-------------|
-| [v91](./upgrade-notes/v91-upgrade-notes.md) | TBD | 🟠 MEDIUM | CSS custom property overhaul (override hooks removed, units in values, renamed vars), element factory `children` key - both with codemods |
+| [v91](./upgrade-notes/v91-upgrade-notes.md) | TBD | 🟠 MEDIUM | CSS custom property overhaul (override hooks removed, units in values, renamed vars), element factory `children` key - both with codemods, MCP server and `hoist-docs` / `hoist-ts` CLIs moved to Hoist Docs |
 | [v90](./upgrade-notes/v90-upgrade-notes.md) | 2026-11-02 | 🟢 LOW | numbro removed (`formatConfig`), desktop `DateInput` on react-day-picker 10, Onsen UI removed from mobile, `Column.textRenderer` on built-in column specs, panel splitter redesign, renderer import paths, removed libraries |
 | [v89](./upgrade-notes/v89-upgrade-notes.md) | 2026-10-13 | 🟢 LOW | TypeScript 7 (strongly recommended), `GridFilterModelConfig.fieldSpecs` no longer an allow-list |
 | [v88](./upgrade-notes/v88-upgrade-notes.md) | 2026-09-28 | 🔴 HIGH | TC39 decorators (`accessor`, no `makeObservable`) + dev-utils 16 / Rsbuild, MobX 7 named exports, AG Grid 36 + Theming API, React 19.3, v86 scheduled removals |

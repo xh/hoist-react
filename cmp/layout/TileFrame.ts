@@ -57,6 +57,7 @@ export interface TileFrameProps extends HoistProps, BoxProps {
  */
 export const [TileFrame, tileFrame] = hoistCmp.withFactory({
     displayName: 'TileFrame',
+    model: false,
     memo: false,
     observer: false,
     className: 'xh-tile-frame',

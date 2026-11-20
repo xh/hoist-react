@@ -50,8 +50,8 @@ minimumReleaseAgeExclude:
 audit:
   ignore:
     # picomatch ReDoS through crafted extglob patterns. HIGH, and no fixed release exists.
-    # Path: ts-morph > @ts-morph/common > tinyglobby > picomatch@4.0.7, used by the hoist-ts CLI
-    # and MCP tools only.
+    # Path: ts-morph > @ts-morph/common > tinyglobby > picomatch@4.0.7, used by the v91
+    # items-to-children codemod only.
     # Not exploitable here: globs come only from our own tsconfig.json, never from user input.
     # Remove when: a picomatch release above 4.0.7 resolves in pnpm-lock.yaml.
     # Added 2026-11-17.

@@ -16,6 +16,7 @@ import './Mask.scss';
  * @internal
  */
 export const maskImpl = hoistCmp.factory<MaskProps>({
+    model: false,
     render({message, onClick, spinner = false, className}, ref) {
         return div({
             ref,

@@ -524,7 +524,8 @@ The `model` option in `hoistCmp.withFactory` declares how a component finds its 
 
 The `useLocalModel` hook creates a model tied to the lifecycle of a component that will not be
 discoverable to child components. This is useful when a component needs internal state specific to
-a single instance or otherwise irrelevant to the primary model.
+a single instance or otherwise irrelevant to the primary model. It works in any `HoistComponent`,
+including one with `model: false`.
 
 Prefer the name **`impl`** for local models.
 

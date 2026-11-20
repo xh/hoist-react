@@ -32,6 +32,7 @@ interacts with Hoist.
 | `/cmp/daterange/` | 9 | DateRangePicker - period selection as presets, relative lookbacks, months/years, or custom ranges, resolved to dates and filters; desktop component in `/desktop/cmp/daterange/` | [Done](../../cmp/daterange/README.md) |
 | `/cmp/cubegrid/` | 3 | CubeGrid - Cube View as a tree grid with app columns, plus pivot paths as nested column groups, docked summaries, per-measure column config | [Done](../../cmp/cubegrid/README.md) |
 | `/cmp/pdfviewer/` | 6 | PdfViewer - PDF display built on pdf.js, with sources, toolbar tokens, model API, and styling; platform toolbars in `/desktop/cmp/pdfviewer/` and `/mobile/cmp/pdfviewer/` | [Done](../../cmp/pdfviewer/README.md) |
+| `/cmp/propertytable/` | 4 | PropertyTable - display-only labeled values, compared with a read-only Form, with styling and pitfalls | [Done](../../cmp/propertytable/README.md) |
 | `/cmp/callout/` | 4 | Callout - note set off within content, compared with Banner and Card | [Done](../../cmp/callout/README.md) |
 | `/cmp/popover/` | 6 | Popover - floating content opened by click or hover, closing and nesting rules, portals, mobile defaults | 📝 [Draft](../../cmp/popover/README.md) |
 | `/cmp/tooltip/` | 2 | Tooltip - short label on hover or focus, a hover Popover with tooltip defaults | 📝 [Draft](../../cmp/tooltip/README.md) |

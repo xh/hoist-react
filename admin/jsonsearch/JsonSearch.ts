@@ -43,6 +43,7 @@ export interface JsonSearchButtonProps extends HoistProps {
  */
 export const jsonSearchButton = hoistCmp.factory<JsonSearchButtonProps>({
     displayName: 'JsonSearchButton',
+    model: false,
 
     render() {
         const impl = useLocalModel(JsonSearchImplModel);

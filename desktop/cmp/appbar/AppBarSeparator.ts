@@ -13,6 +13,7 @@ import {div} from '@xh/hoist/cmp/layout';
  */
 export const [AppBarSeparator, appBarSeparator] = hoistCmp.withFactory({
     displayName: 'AppBarSeparator',
+    model: false,
 
     render() {
         return div({className: 'xh-appbar-separator bp6-navbar-divider', role: 'separator'});
