@@ -810,6 +810,41 @@ body {
   }
 
   //------------------------
+  // List Displays
+  //------------------------
+  --xh-list-display-accent-width: 3px;
+  --xh-list-display-compact-entry-padding: 2px 0;
+  --xh-list-display-compact-font-size: var(--xh-font-size-small-relative);
+  --xh-list-display-danger-color: var(--xh-intent-danger-text-color);
+  --xh-list-display-description-text-color: var(--xh-blue-gray);
+  --xh-list-display-description-font-size: var(--xh-font-size-small-relative);
+  --xh-list-display-disabled-opacity: 0.5;
+  --xh-list-display-divider-border: var(--xh-border-solid);
+  --xh-list-display-dot-size: 0.5em;
+  --xh-list-display-empty-text-color: var(--xh-blue-gray);
+  // Space between an entry's icon, text and detail.
+  --xh-list-display-entry-gap: var(--xh-spacing);
+  --xh-list-display-entry-padding: var(--xh-spacing-half) 0;
+  --xh-list-display-font-size: inherit;
+  --xh-list-display-hover-bg: var(--xh-bg-alt);
+  --xh-list-display-line-height: 1.4;
+  --xh-list-display-marker-text-color: var(--xh-blue-gray);
+  --xh-list-display-marker-width: 1.25em;
+  --xh-list-display-primary-color: var(--xh-intent-primary-text-color);
+  --xh-list-display-success-color: var(--xh-intent-success-text-color);
+  --xh-list-display-title-font-weight: 500;
+  // Narrowest a title gets beside its detail, before the detail drops to a line of its own.
+  --xh-list-display-title-min-width: 6em;
+  --xh-list-display-warning-color: var(--xh-intent-warning-text-color);
+
+  // The muted text color is too faint for secondary text on a light background, but reads well on a dark one.
+  &:where(.xh-dark) {
+    --xh-list-display-description-text-color: var(--xh-text-color-muted);
+    --xh-list-display-empty-text-color: var(--xh-text-color-muted);
+    --xh-list-display-marker-text-color: var(--xh-text-color-muted);
+  }
+
+  //------------------------
   // Mask + LoadingIndicator
   //------------------------
   --xh-mask-bg: rgba(255, 255, 255, 0.4);

@@ -56,6 +56,9 @@ detailed, step-by-step upgrade instructions with before/after code examples.
   columns that fit the available width, with each label to the left of or above its value. Set
   `align` to size it to its content at one edge, as for a block of totals, and set `labelVariant`
   to `muted` for smaller, lighter labels.
+* Added `ListDisplay` to `@xh/hoist/cmp/listdisplay`, a short, static list of `entries`, such as a
+  few alerts or search results. Each entry has a title, description, icon and trailing detail, and
+  can take an `onClick`. It needs no Store or model. Use `DataView` for long lists.
 * Added `ProgressBar` to `@xh/hoist/cmp/progressbar`, a cross-platform bar that shows a value
   against a maximum, with an optional label, figure, `intent` and `target` marker. Set
   `indeterminate` for work of unknown length.
