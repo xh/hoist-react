@@ -40,6 +40,9 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 * `FetchService` now sends a request with no `method` as a GET, even when it sets `params`. Before,
   `params` made it a POST with a form-encoded body. Set `method: 'POST'` on calls that change data,
   send credentials, or send large params - see Step 7 of the upgrade notes.
+* Removed the bundled stdio MCP server and the `hoist-mcp`, `hoist-docs` and `hoist-ts` CLIs. Add
+  [Hoist Docs](https://github.com/xh/hoist-docs) (`@xh/hoist-docs`) as a `client-app` dev
+  dependency and point `.mcp.json` at it instead - see the upgrade notes.
 
 ### 🎁 New Features
 
@@ -166,6 +169,26 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 * Desktop `SegmentedControl` now looks disabled when `disabled`, matching other disabled inputs
   such as `DateInput`. Its tray takes the disabled input fill and its labels fade, while the
   selected option keeps a hairline edge so the current value stays legible.
+
+### 🤖 AI Docs + Tooling
+
+* Moved MCP docs and symbol tooling to [Hoist Docs](https://github.com/xh/hoist-docs)
+  (`@xh/hoist-docs`), one MCP server for hoist-react and hoist-core. Apps add it as a dev
+  dependency; the agent launches it over stdio, and it answers for the app's installed Hoist
+  versions. The same package also runs over HTTP behind an MCP gateway. Tools keep their names and
+  output.
+* Hoist Docs is built on the MCP TypeScript SDK v2 (`@modelcontextprotocol/server`), which
+  implements the 2026-07-28 MCP spec - stateless serving and `server/discover` - while still
+  serving clients on the 2025 `initialize` handshake. The bundled server was on SDK v1, which stops
+  at the 2025-11-25 spec.
+* `@xh/hoist` now ships its Hoist Docs index (`hoist-docs/index.json.gz`, about 1.6 MB), built at
+  publish by `@xh/hoist-docs-builder` and declared by `hoistDocs` in `package.json`. Hoist Docs
+  reads it from the installed package, so every build, snapshots included, carries docs for exactly
+  its own code. Companion libraries can do the same - see
+  [Companion Library Docs](docs/companion-library-docs.md).
+* Removed the MCP-only dependencies `@modelcontextprotocol/sdk`, `zod`, `commander`, `minisearch`
+  and `tsx`. Apps no longer install them. `ts-morph` stays, for the v91 `items` to `children`
+  codemod.
 
 ### 📚 Libraries
 

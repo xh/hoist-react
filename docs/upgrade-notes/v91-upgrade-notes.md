@@ -6,8 +6,9 @@
 
 Hoist React v91 resets Hoist's CSS custom properties onto a simpler baseline, and moves element
 factories to the standard React `children` key. A codemod automates nearly all of each migration.
-v91 also requires AG Grid 36.3, renders desktop inline masks without a Blueprint overlay, and sends
-a fetch with `params` but no `method` as a GET.
+v91 also requires AG Grid 36.3, renders desktop inline masks without a Blueprint overlay, sends
+a fetch with `params` but no `method` as a GET, and moves its MCP server for AI coding agents to
+Hoist Docs.
 
 - **AG Grid 36.3 (required)** - see Step 1.
 - **Inline masks (if your app styles them)** - see Step 5.
@@ -33,6 +34,10 @@ a fetch with `params` but no `method` as a GET.
   will remove them.
 - **`FetchService` default method (review fetches that send `params`)** - see Step 7. A request
   with `params` and no `method` is now a GET, not a POST.
+- **MCP server and CLIs removed (required if your agents use them)** - see Step 9. hoist-react no
+  longer ships the stdio MCP server or the `hoist-mcp`, `hoist-docs` and `hoist-ts` CLIs. The same
+  tools come from [Hoist Docs](https://github.com/xh/hoist-docs) (`@xh/hoist-docs`), added as a dev
+  dependency.
 
 The CSS changes also cover the variables added in v90 - the panel splitter (`--xh-panel-splitter-*`,
 `--xh-panel-collapsed-strip-*`), `PdfViewer` (`--xh-pdf-viewer-*`) and `StatCard`
@@ -444,6 +449,90 @@ background, set the new `--xh-popover-*` variables instead. To change one popove
 `popoverClassName`. See "Dialogs and Popovers" in
 [`styles/README.md`](../../styles/README.md#dialogs-and-popovers).
 
+### 9. Switch Agents to Hoist Docs
+
+`node_modules/@xh/hoist/bin/hoist-mcp.mjs` and the `npx hoist-docs` / `npx hoist-ts` commands no
+longer exist. Hoist Docs serves the same tools - `hoist-search-docs`, `hoist-read-doc`,
+`hoist-search-symbols`, `hoist-get-symbol`, `hoist-get-members` and the rest - for hoist-core as
+well, from one MCP server built on the MCP TypeScript SDK v2 (the 2026-07-28 spec, and the 2025
+handshake older clients use). The agent launches it over stdio, as before, and it answers for the
+Hoist versions your app has installed.
+
+**Add the dependency:**
+
+```bash
+cd client-app && pnpm add -D @xh/hoist-docs
+```
+
+**Find affected config:**
+
+```bash
+grep -rn "hoist-mcp\|hoist-core-mcp\|npx hoist-docs\|npx hoist-ts\|hoist-core-docs\|hoist-core-symbols\|mcp__hoist-react\|mcp__hoist-core" \
+    .mcp.json CLAUDE.md AGENTS.md .claude build.gradle 2>/dev/null
+```
+
+**Before** (`.mcp.json`):
+
+```json
+{
+  "mcpServers": {
+    "hoist-react": {
+      "type": "stdio",
+      "command": "node",
+      "args": ["client-app/node_modules/@xh/hoist/bin/hoist-mcp.mjs"]
+    },
+    "hoist-core": {
+      "command": "./bin/hoist-core-mcp"
+    }
+  }
+}
+```
+
+**After:**
+
+```json
+{
+  "mcpServers": {
+    "hoist-docs": {
+      "type": "stdio",
+      "command": "node",
+      "args": ["client-app/node_modules/@xh/hoist-docs/bin/hoist-docs.mjs"]
+    }
+  }
+}
+```
+
+Point at the package's own launcher, as above, rather than `node_modules/.bin/hoist-docs`, which
+older `@xh/hoist` versions' CLI of the same name can take.
+
+**Where the docs come from.** hoist-react's docs index ships inside `@xh/hoist` itself, so it needs
+no network. hoist-core's is fetched once per `hoistCoreVersion` from Maven - Maven Central for
+releases, Sonatype's snapshot repository for snapshots - and cached in `~/.cache/hoist-docs`.
+Behind an organization's Maven mirror, set `HOIST_DOCS_MAVEN_REPO` and
+`HOIST_DOCS_MAVEN_SNAPSHOT_REPO` (with `HOIST_DOCS_MAVEN_USER` and `HOIST_DOCS_MAVEN_PASSWORD` if it
+needs credentials) in the `env` of the `.mcp.json` entry or in your environment. Behind an HTTP
+proxy, also set `NODE_USE_ENV_PROXY=1`. hoist-core ships a docs index from v45; with an earlier
+hoist-core, Hoist Docs serves hoist-react only, and `hoist-ping` says why. Organizations that front
+MCP servers with a gateway can run the same package over HTTP instead (`hoist-docs --http`); see
+the Hoist Docs README.
+
+Also update:
+
+- Permission allowlists that name the old servers, such as `mcp__hoist-react__*` and
+  `mcp__hoist-core__*` in `.claude/settings.json`, to the new server name (`mcp__hoist-docs__*`),
+  and drop `Bash` permissions for `npx hoist-docs`, `npx hoist-ts` and `./bin/hoist-core-*`.
+- `enabledMcpjsonServers` entries naming `hoist-react` or `hoist-core`.
+- Agent instructions (`CLAUDE.md`, `AGENTS.md`) that tell agents to run `npx hoist-docs`,
+  `npx hoist-ts` or the `bin/hoist-core-*` launchers. Point them at the MCP tools, or at the docs
+  under `node_modules/@xh/hoist/docs/` when the tool is not set up.
+- hoist-core's tools were named `hoist-core-*`. Hoist Docs serves one set of `hoist-*` tools for
+  both libraries; pass `library: "core"` to scope a call to hoist-core.
+- When you upgrade to hoist-core v45, remove the `hoistCoreCli` configuration and the
+  `installHoistCoreTools` task from `build.gradle`, and delete the `bin/hoist-core-*` launchers it
+  wrote. hoist-core v45 no longer publishes the `io.xh:hoist-core-mcp` artifact they use.
+
+Restart the agent after this change, and after any later Hoist upgrade, to pick up the new docs.
+
 ## Verification Checklist
 
 After completing all steps:
@@ -467,6 +556,8 @@ After completing all steps:
   and a legacy `item` / `items` key.
 - [ ] Each fetch that sets `params` and changes data, sends a sensitive value, or sends large params
   also sets `method: 'POST'` (Step 7).
+- [ ] No config or instructions reference `hoist-mcp.mjs`, `npx hoist-docs` or `npx hoist-ts`.
+- [ ] `hoist-ping` from your agent reports Hoist Docs and your app's Hoist versions.
 - [ ] No references to retired CSS variable names remain:
   ```bash
   # Should return nothing
@@ -566,3 +657,4 @@ handles these; for reference, their v91 variables are:
   spec `children` codemod.
 - [Element Factories](../../core/README.md#element-factories) - the `children` key, the legacy
   aliases, and authoring container components.
+- [Hoist Docs](https://github.com/xh/hoist-docs) - the MCP tool, its design, and gateway deployment.
