@@ -135,6 +135,7 @@ export class ThemeModel extends HoistModel {
         if (XH.isDevelopmentMode) {
             this.warnOnUnitlessLengthVars();
             this.warnOnDocumentRootVars();
+            this.warnOnBlueprintSelectors();
         }
         window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', event => {
             if (XH.getPref('xhTheme') === 'system') {
@@ -233,6 +234,48 @@ export class ThemeModel extends HoistModel {
                 `CSS variables set on :root or html have no effect - Hoist's defaults on body take ` +
                     `precedence. Move these overrides to body.xh-app: ${[...names].join(', ')}. ` +
                     `See docs/upgrade-notes/v91-upgrade-notes.md.`
+            );
+        }
+    }
+
+    /**
+     * Warn about stylesheet rules that target Blueprint's `bp6-*` classes or read its `--bp-*`
+     * variables. Hoist renders neither since v91, so these rules no longer apply - almost always app
+     * CSS not yet migrated with the v91 codemod.
+     */
+    private warnOnBlueprintSelectors() {
+        const classes = new Set<string>(),
+            vars = new Set<string>();
+
+        const scan = (rules: CSSRuleList) => {
+            for (const rule of Array.from(rules)) {
+                if (rule instanceof CSSStyleRule) {
+                    for (const m of rule.selectorText.matchAll(/\.(bp6-[\w-]+)/g))
+                        classes.add(m[1]);
+                    for (const m of rule.style.cssText.matchAll(/var\((--bp6?-[\w-]+)/g))
+                        vars.add(m[1]);
+                }
+                if ('cssRules' in rule) scan((rule as CSSGroupingRule).cssRules);
+            }
+        };
+
+        for (const sheet of Array.from(document.styleSheets)) {
+            try {
+                scan(sheet.cssRules);
+            } catch {
+                // Cross-origin sheets do not expose their rules - skip them.
+            }
+        }
+
+        if (classes.size || vars.size) {
+            const list = (it: Set<string>) => [...it].sort().join(', ');
+            this.logWarn(
+                `Stylesheets target Blueprint classes or variables that Hoist no longer renders or ` +
+                    `defines, so these rules have no effect. ` +
+                    (classes.size ? `Classes: ${list(classes)}. ` : '') +
+                    (vars.size ? `Variables: ${list(vars)}. ` : '') +
+                    `Run docs/codemod/v91/codemod-bp6-classes.mjs - see ` +
+                    `docs/upgrade-notes/v91-upgrade-notes.md.`
             );
         }
     }
