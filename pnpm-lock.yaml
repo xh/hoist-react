@@ -172,8 +172,8 @@ importers:
         specifier: ^16.4.1
         version: 16.4.1(@rspack/core@2.3.3(@swc/helpers@0.5.24))(core-js@3.51.0)(supports-color@10.2.2)
       '@xh/hoist-docs-builder':
-        specifier: next
-        version: 1.0.0-SNAPSHOT.1794931172976
+        specifier: ^1.0.0
+        version: 1.0.0
       ag-grid-community:
         specifier: ~36.3.0
         version: 36.3.0
@@ -1812,8 +1812,8 @@ packages:
     resolution: {integrity: sha512-KmpE53dsdNf8CbgcBJss3t8QJa4YZW7TVBpis9hDVkDJzAT/1jzLDjOBrMkYSSRgbmWowx7zOcMpIdCj4s2Aug==}
     engines: {node: '>=22.15.0'}
 
-  '@xh/hoist-docs-builder@1.0.0-SNAPSHOT.1794931172976':
-    resolution: {integrity: sha512-yHVeMyVcThrwFq8R2abokxNhHFBzjCSzlYCQe2Eb5/hrieBI8DJljc3PoRlZotwdvvSw/veb4Vr63REfuWHnEQ==}
+  '@xh/hoist-docs-builder@1.0.0':
+    resolution: {integrity: sha512-Q57CQ6gYPtZFgzISiW+26H9Nz2LGdmh3Lt32cukyqS68Op7lz1yqjJWJuAlcwlTS4I5SeY/6tWqdFkUEIqqGvg==}
     engines: {node: '>=24'}
     hasBin: true
 
@@ -5531,7 +5531,7 @@ snapshots:
       - jiti
       - supports-color
 
-  '@xh/hoist-docs-builder@1.0.0-SNAPSHOT.1794931172976':
+  '@xh/hoist-docs-builder@1.0.0':
     dependencies:
       ts-morph: 28.0.0
 
