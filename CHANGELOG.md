@@ -53,9 +53,7 @@ detailed, step-by-step upgrade instructions with before/after code examples.
       factory examples in markdown docs such as CLAUDE.md, and edits them only with `--fix-docs`.
 * Added `PropertyTable` to `@xh/hoist/cmp/propertytable`, a display-only list of labeled
   values, such as the fields of a record in a detail panel. It lays out its `entries` in aligned
-  columns that fit the available width, with each label to the left of or above its value. Set
-  `align` to size it to its content at one edge, as for a block of totals, and set `labelVariant`
-  to `muted` for smaller, lighter labels.
+  columns that fit the available width, with each label to the left of or above its value.
 * Added `ProgressBar` to `@xh/hoist/cmp/progressbar`, a cross-platform bar that shows a value
   against a maximum, with an optional label, figure, `intent` and `target` marker. Set
   `indeterminate` for work of unknown length.

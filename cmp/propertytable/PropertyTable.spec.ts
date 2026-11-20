@@ -171,56 +171,7 @@ describe('PropertyTable', () => {
         expect(alignClasses('top')).toEqual([]);
     });
 
-    it('sets itself at an edge with align, and aligns right by default for align right', () => {
-        const entries = [{label: 'A', value: 1}],
-            classes = (props = {}) =>
-                Array.from(
-                    render(propertyTable({entries, ...props})).container.querySelector('dl')
-                        .classList
-                ).filter(it => it.includes('align'));
-
-        expect(classes({align: 'right'})).toEqual([
-            'xh-property-table--align-right',
-            'xh-property-table--label-align-right',
-            'xh-property-table--value-align-right'
-        ]);
-        expect(classes({align: 'right', labelAlign: 'left'})).toEqual([
-            'xh-property-table--align-right',
-            'xh-property-table--value-align-right'
-        ]);
-        expect(classes({align: 'left'})).toEqual(['xh-property-table--align-left']);
-    });
-
-    it('sets its emptyText at the same edge as its entries', () => {
-        const {container} = render(propertyTable({entries: [], emptyText: 'None', align: 'right'}));
-
-        expect(container.firstElementChild.classList).toContain('xh-property-table--align-right');
-    });
-
-    it('mutes its labels with labelVariant muted', () => {
-        const entries = [{label: 'A', value: 1}],
-            hasMuted = (props = {}) =>
-                render(propertyTable({entries, ...props}))
-                    .container.querySelector('dl')
-                    .classList.contains('xh-property-table--label-muted');
-
-        expect(hasMuted({labelVariant: 'muted'})).toBe(true);
-        expect(hasMuted({labelVariant: 'standard'})).toBe(false);
-        expect(hasMuted()).toBe(false);
-    });
-
     describe('columns', () => {
-        it('uses one column with align, or the given columns whatever its width', () => {
-            setListWidth(100);
-            const entries = fiveEntries(),
-                count = (props: object) =>
-                    columnCount(render(propertyTable({entries, ...props})).container);
-
-            expect(count({align: 'right'})).toBe('1');
-            expect(count({align: 'left', columns: 3})).toBe('3');
-            expect(count({align: 'right', columns: 10})).toBe('5');
-        });
-
         it('uses the given number of columns when the width allows', () => {
             setListWidth(500);
             const {container} = render(propertyTable({entries: fiveEntries(), columns: 2}));

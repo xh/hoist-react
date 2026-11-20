@@ -37,19 +37,12 @@ propertyTable({entries, labelSide: 'top', columns: 3, dividers: true, size: 'com
 
 // A summary, with each value set at the far side of its column, across from its label
 propertyTable({entries, valueAlign: 'right', dividers: true})
-
-// A block of totals, sized to its content at the right edge, with labels and values aligned right
-propertyTable({entries: totals, align: 'right'})
-
-// A dense detail panel, with small, muted labels above their values
-propertyTable({entries, labelSide: 'top', labelVariant: 'muted', size: 'compact'})
 ```
 
 A value can be any element, such as a `badge` or a link. A null or undefined value shows the
 list's `nullDisplay`, `-` by default. The list fills the width of its container and fits as
-many columns as that width allows, down to one column in a narrow panel. With `align`, it sizes to
-its content at that edge instead, in one column or in `columns`. Use it inside a `card` to give a
-group of values a title.
+many columns as that width allows, down to one column in a narrow panel. Use it inside a `card` to
+give a group of values a title.
 
 ## Styling
 

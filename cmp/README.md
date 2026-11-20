@@ -349,7 +349,7 @@ displaying their aggregate validation state as intent-colored borders and toolti
 ### PropertyTable (`/propertytable/`)
 
 A display-only list of labeled values, such as the fields of a record in a detail panel, laid out
-in as many columns as the width allows, or sized to its content as a block of totals. See the
+in as many columns as the width allows. See the
 [PropertyTable README](./propertytable/README.md).
 
 ### Callout (`/callout/`)

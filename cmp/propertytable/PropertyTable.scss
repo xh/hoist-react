@@ -36,35 +36,10 @@
     color: var(--xh-property-table-empty-text-color);
   }
 
-  // Sized to its content and set at one edge of its container. Each label track takes its widest
-  // label, up to the max label width, and each value track its widest value.
-  &--align-left,
-  &--align-right {
-    grid-template-columns: repeat(
-      var(--xh-property-table-columns, 1),
-      fit-content(var(--xh-property-table-label-max-width)) auto
-    );
-    width: fit-content;
-  }
-
-  &--align-left {
-    margin-right: auto;
-  }
-
-  &--align-right {
-    margin-left: auto;
-  }
-
   // Swaps in the compact variables, so the rules below draw both sizes.
   &--compact {
     --xh-property-table-font-size: var(--xh-property-table-compact-font-size);
     --xh-property-table-row-gap: var(--xh-property-table-compact-row-gap);
-  }
-
-  // Swaps in the muted label variables, for smaller, lighter labels.
-  &--label-muted {
-    --xh-property-table-label-font-size: var(--xh-property-table-muted-label-font-size);
-    --xh-property-table-label-text-color: var(--xh-property-table-muted-label-text-color);
   }
 
   // Spans the two tracks of its column and lays its label and value out on them, so the labels of
