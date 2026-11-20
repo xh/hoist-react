@@ -86,9 +86,11 @@ file is the working guide.
 - [x] Add a development-mode warning naming any `bp6-` selector in the loaded stylesheets. Model it
       on `ThemeModel.warnOnDocumentRootVars()`, which scans `document.styleSheets` the same way.
 - [x] CHANGELOG entry under Breaking Changes, pointing at the codemod and the mapping table.
-- [ ] hoist-chat-kit: move its 26 `bp6-` references in 14 files to `xh-*`, in a PR in that repo.
-- [ ] Toolbox: move its 5 `bp6-` references in 2 files, on `claude/hoist-no-blueprint` or a branch
-      stacked on it.
+- [x] hoist-chat-kit: move its 26 `bp6-` references in 14 files to `xh-*`, in a PR in that repo.
+      Done in xh/hoist-chat-kit#44, with its `kit/blueprint` imports. Five of its specs fail on
+      phase-1 behavior, listed in that PR.
+- [x] Toolbox: move its 5 `bp6-` references in 2 files, on `claude/hoist-no-blueprint` or a branch
+      stacked on it. Done in xh/toolbox#967, stacked on #965.
 - [ ] Ask whether the `xh:hoist-upgrade` skill, in the hoist-ai plugin, needs a step to run the new
       codemod.
 - [ ] Update the PR description and the plan's Handoff section as items land.
