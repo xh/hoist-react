@@ -12,13 +12,16 @@
   3. Plain ASCII punctuation only. Use " - " for in-sentence breaks, never an em dash.
 -->
 
-## 91.0.0-SNAPSHOT - unreleased
+## 91.0.0 - 2026-11-20
 
 ### 💥 Breaking Changes (upgrade difficulty: 🟠 MEDIUM - CSS variables)
 
 See [`docs/upgrade-notes/v91-upgrade-notes.md`](docs/upgrade-notes/v91-upgrade-notes.md) for
 detailed, step-by-step upgrade instructions with before/after code examples.
 
+* Requires `hoist-core >= 45.0.0`, enforced at startup - apps on an older core fail fast rather
+  than start. hoist-core 45 is released alongside v91 and in turn requires hoist-react 91, so
+  upgrade both together.
 * Overhauled Hoist's CSS custom properties onto a simpler, consistently named baseline. Run
   `docs/codemod/v91/codemod-css-vars.mjs` to migrate app stylesheets and code.
     * Removed the unprefixed override hooks (e.g. `--grid-bg`, `--pad`). Apps now set the `--xh-*`

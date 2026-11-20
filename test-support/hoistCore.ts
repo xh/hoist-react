@@ -582,7 +582,7 @@ function defaultEnvironment(): PlainObject {
         appBuild: XH.appBuild,
         appEnvironment: 'Development',
         grailsVersion: '7.2.2',
-        hoistCoreVersion: '42.1.0',
+        hoistCoreVersion: '45.0.0',
         javaVersion: '25.0.1',
         serverTimeZone: 'UTC',
         appTimeZone: 'America/New_York',
