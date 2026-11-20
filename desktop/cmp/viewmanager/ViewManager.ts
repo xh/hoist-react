@@ -73,6 +73,9 @@ export type ViewManagerStateButtonMode = 'whenDirty' | 'always' | 'never';
  *  + 'fullPath' - the selected view's full path, e.g. `My Views › Reports › Monthly`.
  *  + 'type' - the pluralized view type, e.g. `Views`.
  *  + null - no text, for an icon-only button.
+ *
+ * With 'type' or null, the button does not show the selected view, so it always shows
+ * `defaultViewIcon`.
  */
 export type ViewManagerButtonTextMode = 'name' | 'fullPath' | 'type' | null;
 
@@ -125,6 +128,7 @@ export const [ViewManager, viewManager] = hoistCmp.withFactory<ViewManagerProps>
                     textMode: buttonTextMode,
                     icon: buttonIcon({
                         model: locModel,
+                        textMode: buttonTextMode,
                         defaultViewIcon,
                         ownedViewIcon,
                         sharedViewIcon,
@@ -191,8 +195,9 @@ const menuButton = hoistCmp.factory<ViewManagerLocalModel>({
 });
 
 const buttonIcon = hoistCmp.factory<ViewManagerLocalModel>({
-    render({model, ownedViewIcon, sharedViewIcon, globalViewIcon, defaultViewIcon}) {
+    render({model, textMode, ownedViewIcon, sharedViewIcon, globalViewIcon, defaultViewIcon}) {
         const {view} = model.parent;
+        if (textMode === 'type' || textMode === null) return defaultViewIcon;
         if (view.isOwned) return ownedViewIcon;
         if (view.isShared) return sharedViewIcon;
         if (view.isGlobal) return globalViewIcon;
