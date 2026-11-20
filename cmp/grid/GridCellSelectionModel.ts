@@ -8,7 +8,7 @@ import type {CellRange, GridApi, IRowNode, RowPosition} from '@xh/hoist/kit/ag-g
 import {HoistModel} from '@xh/hoist/core';
 import type {StoreRecord, StoreRecordId} from '@xh/hoist/data';
 import {action, computed, observable, observableRef} from '@xh/hoist/mobx';
-import {compact, isEmpty, isEqual, last, uniqBy} from 'lodash';
+import {compact, isEmpty, isEqual, last} from 'lodash';
 import type {Column} from './columns/Column';
 import type {GridModel} from './GridModel';
 
@@ -18,14 +18,19 @@ import type {GridModel} from './GridModel';
 export interface GridCellRange {
     /**
      * Records of the rows the range covers, in display order. Includes docked summary records.
-     * Group rows in a grid with `groupBy` have no record and are left out.
+     * Group rows in a grid with `groupBy` have no record and are left out, so a range over group
+     * rows only has no records.
      */
     records: StoreRecord[];
 
     /** Columns the range covers, in display order. */
     columns: Column[];
 
-    /** Record of the cell where the range started, or null for a group row. */
+    /**
+     * Record of the cell where the range started. Null if the range started on a group row, which
+     * has no record - the grid then has no selected record. Read the range's cells from `records`
+     * and `columns`, which are set either way.
+     */
     startRecord: StoreRecord;
 
     /** Column of the cell where the range started. */
@@ -77,19 +82,39 @@ export class GridCellSelectionModel extends HoistModel {
     /**
      * Every selected cell, once each, in range order. A cell covered by more than one range is
      * listed once, from the first range that covers it.
+     *
+     * Builds one object per cell, so a select all in a large grid builds hundreds of thousands.
+     * For work over large selections, such as totals, loop over the `records` and `columns` of
+     * each of the `ranges` instead.
      */
     @computed
     get cells(): GridCell[] {
-        const ret = this.ranges.flatMap(({records, columns}) =>
-            records.flatMap(record => columns.map(column => ({record, column})))
-        );
-        return this.ranges.length > 1
-            ? uniqBy(ret, ({record, column}) => `${record.id}\u0000${column.colId}`)
-            : ret;
+        const {ranges, rangeKeys} = this,
+            ret: GridCell[] = [];
+        ranges.forEach(({records, columns}, idx) => {
+            const earlierKeys = rangeKeys.slice(0, idx);
+            records.forEach(record => {
+                const coveringKeys = earlierKeys.filter(it => it.recordIds.has(record.id));
+                columns.forEach(column => {
+                    if (!coveringKeys.some(it => it.colIds.has(column.colId))) {
+                        ret.push({record, column});
+                    }
+                });
+            });
+        });
+        return ret;
     }
 
     // Id of the record the grid should select for the current ranges - see `isSelectionInSync`.
     private anchorSelectionId: StoreRecordId = null;
+
+    // Record and column ids of each of `ranges`, for constant-time lookups.
+    private rangeKeys: RangeKeys[] = [];
+
+    // Ranges as last read from ag-Grid. The same as `ranges`, except during a drag, when `ranges`
+    // is updated only as the drag starts and ends.
+    private agRanges: GridCellRange[] = [];
+    private isDragging = false;
 
     constructor(gridModel: GridModel) {
         super();
@@ -116,12 +141,14 @@ export class GridCellSelectionModel extends HoistModel {
         );
     }
 
-    /** True if the cell at the given record and column is in a selected range. */
+    /**
+     * True if the cell at the given record and column is in a selected range. Takes constant time
+     * per range, so it can be called for each rendered cell.
+     */
     isCellSelected(record: StoreRecord, colId: string): boolean {
-        return this.ranges.some(
-            ({records, columns}) =>
-                records.some(it => it.id === record.id) && columns.some(it => it.colId === colId)
-        );
+        // Read `ranges` through `isEmpty`, so that observers re-run when the ranges change.
+        if (this.isEmpty) return false;
+        return this.rangeKeys.some(it => it.recordIds.has(record.id) && it.colIds.has(colId));
     }
 
     /** Clear all selected ranges. */
@@ -136,18 +163,27 @@ export class GridCellSelectionModel extends HoistModel {
     //------------------------
     /**
      * Read the ranges from ag-Grid and move the selected record to the start cell of the newest
-     * range. Called by `Grid` on each ag-Grid `cellSelectionChanged` event. Pass
-     * `syncSelection: false` to keep the selected record, as for select all.
+     * range. Called by `Grid` on each ag-Grid `cellSelectionChanged` event, passing its `started`
+     * and `finished` flags. Pass `syncSelection: false` to keep the selected record, as for select
+     * all.
      * @internal
      */
     @action
-    noteAgRangesChanged(opts: {syncSelection: boolean}) {
-        const ranges = this.readAgRanges();
+    noteAgRangesChanged(opts: {syncSelection: boolean; started: boolean; finished: boolean}) {
+        const {syncSelection, started, finished} = opts,
+            ranges = this.readAgRanges();
+        this.agRanges = ranges;
+        this.isDragging = !finished;
+
+        // ag-Grid reports each cell crossed during a drag. The drag cannot move the start of the
+        // range, so `ranges` and the selected record are updated only as it starts and ends.
+        if (!started && !finished) return;
+
         this.setRanges(ranges);
         if (isEmpty(ranges)) return;
 
         const {selModel} = this.gridModel;
-        if (!opts.syncSelection) {
+        if (!syncSelection) {
             this.anchorSelectionId = selModel.selectedId;
             return;
         }
@@ -167,12 +203,14 @@ export class GridCellSelectionModel extends HoistModel {
      * @internal
      */
     noteAgRowsChanged() {
-        if (this.isEmpty || !this.isEnabled) return;
+        if (isEmpty(this.agRanges) || !this.isEnabled) return;
         const ranges = this.readAgRanges(),
             toIds = (rs: GridCellRange[]) => rs.map(r => r.records.map(it => it.id));
 
-        if (!isEqual(toIds(ranges), toIds(this.ranges))) {
+        if (!isEqual(toIds(ranges), toIds(this.agRanges))) {
             this.clear();
+        } else if (this.isDragging) {
+            this.agRanges = ranges;
         } else {
             this.setRanges(ranges);
         }
@@ -190,7 +228,12 @@ export class GridCellSelectionModel extends HoistModel {
     //------------------------
     @action
     private setRanges(ranges: GridCellRange[]) {
+        this.agRanges = ranges;
         if (isEmpty(ranges) && isEmpty(this.ranges)) return;
+        this.rangeKeys = ranges.map(({records, columns}) => ({
+            recordIds: new Set(records.map(it => it.id)),
+            colIds: new Set(columns.map(it => it.colId))
+        }));
         this.ranges = ranges;
         if (isEmpty(ranges)) this.anchorSelectionId = null;
     }
@@ -265,4 +308,9 @@ export class GridCellSelectionModel extends HoistModel {
         if (rowPinned === 'bottom') return agApi.getPinnedBottomRow(rowIndex);
         return agApi.getDisplayedRowAtIndex(rowIndex);
     }
+}
+
+interface RangeKeys {
+    recordIds: Set<StoreRecordId>;
+    colIds: Set<string>;
 }

@@ -4,7 +4,7 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import type {GridApi, AgColumnState} from '@xh/hoist/kit/ag-grid';
+import type {GridApi, AgColumnState, CellSelectionChangedEvent} from '@xh/hoist/kit/ag-grid';
 
 import {agGrid} from '@xh/hoist/cmp/ag-grid';
 import type {ColumnGroupState, ColumnState} from '@xh/hoist/cmp/grid';
@@ -822,10 +822,14 @@ export class GridLocalModel extends HoistModel {
         this.syncSelection();
     }, 0);
 
-    onCellSelectionChanged = () => {
+    onCellSelectionChanged = ({started, finished}: CellSelectionChangedEvent) => {
         const {cellSelectionModel} = this.model;
         if (cellSelectionModel?.isEnabled) {
-            cellSelectionModel.noteAgRangesChanged({syncSelection: !this.isSelectingAllCells});
+            cellSelectionModel.noteAgRangesChanged({
+                syncSelection: !this.isSelectingAllCells,
+                started,
+                finished
+            });
         }
     };
 

@@ -217,13 +217,23 @@ const {cellSelectionModel} = gridModel;
 cellSelectionModel.ranges;  // GridCellRange[] - records and columns per range, newest last
 cellSelectionModel.cells;   // GridCell[] - {record, column} for each selected cell, once each
 cellSelectionModel.isEmpty;
+cellSelectionModel.isCellSelected(record, colId);
 cellSelectionModel.clear();
 ```
+
+`cells` builds one object per cell, so a select all in a large grid builds hundreds of thousands.
+For work over large selections, such as totals, loop over the `records` and `columns` of each range.
+`isCellSelected()` takes constant time per range and is safe to call for each rendered cell. During
+a drag, `ranges` holds the cell where the drag started, and is updated once when the drag ends.
 
 The selected record follows the start cell of the newest range, so a detail panel bound to the
 selection stays on one record while the user drags. Ranges never become selected records, and
 `selModel` mode `multiple` is not supported. Ranges and the focused cell are always outlined, as in
 Excel, overriding `showCellFocus: false`.
+
+Group rows have no record, so they are left out of a range's `records`. A range that starts on a
+group row has a null `startRecord`, and the grid has no selected record while it is the newest
+range. Copy writes a group row as a line of empty cells, so the copied lines match the grid's rows.
 
 Ranges are spans of rows, so Hoist clears them whenever the rows they cover could change: on a sort,
 filter, data load, `groupBy` change, tree expand or collapse, rows added or removed, or a re-sort
@@ -234,7 +244,12 @@ keeps it, so the context menu can copy it. A right-click outside selects that re
 In editable grids, Delete clears every editable cell in the ranges, as in Excel. ag-Grid applies
 each column's `editable` check and `setValueFn`, so the cleared values are ordinary Store
 modifications that `store.revert()` can undo. On macOS, Backspace does the same. Grids have no
-Ctrl+Z, so an app that enables both editing and cell selection should offer a way to revert.
+Ctrl+Z, so an app that enables both editing and cell selection should offer a way to revert. Each
+cleared cell is a separate Store modification, so clearing a very large range is slow - a select
+all and Delete on 5,000 rows by 100 columns takes tens of seconds.
+
+In editable grids, an edit that moves rows also clears the ranges. This includes an edit or a paste
+to a sorted column, and an edit to the `groupBy` field that moves a record to another group. The ranges do not yet hold their rows in place through such edits.
 
 ### Filtering
 

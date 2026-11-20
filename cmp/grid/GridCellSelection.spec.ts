@@ -4,13 +4,14 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {grid, type GridConfig, GridModel} from '@xh/hoist/cmp/grid';
+import {grid, type GridConfig, GridModel, type GridProps} from '@xh/hoist/cmp/grid';
 import type {PlainObject} from '@xh/hoist/core';
+import {wait} from '@xh/hoist/promise';
 import {initTestAppAsync} from '@xh/hoist/test-support';
 import {installAgGridForTests} from '@xh/hoist/test-support/agGrid';
 import {act, render, waitFor} from '@testing-library/react';
 import {ModuleRegistry} from 'ag-grid-community';
-import {CellSelectionModule} from 'ag-grid-enterprise';
+import {CellSelectionModule, ClipboardModule, RowGroupingModule} from 'ag-grid-enterprise';
 import {beforeAll, describe, expect, it, onTestFinished} from 'vitest';
 
 /**
@@ -18,14 +19,15 @@ import {beforeAll, describe, expect, it, onTestFinished} from 'vitest';
  * tests pin down how Hoist maps them to records, how the selected record follows the newest
  * range, and when ranges are cleared so they never silently cover different records.
  *
- * Gestures are driven through ag-Grid's range API: jsdom has no layout, so a mouse drag cannot
- * be simulated. A plain click is a cleared selection plus one range, a Ctrl+click adds a range.
+ * Most gestures are driven through ag-Grid's range API. A plain click is a cleared selection plus
+ * one range, a Ctrl+click adds a range. ag-Grid finds the cell under a drag from the event target,
+ * not from layout, so a mouse drag can also be dispatched in jsdom.
  */
 describe('GridCellSelectionModel', () => {
     beforeAll(async () => {
         await initTestAppAsync();
         installAgGridForTests();
-        ModuleRegistry.registerModules([CellSelectionModule]);
+        ModuleRegistry.registerModules([CellSelectionModule, ClipboardModule, RowGroupingModule]);
     });
 
     describe('setup', () => {
@@ -116,6 +118,41 @@ describe('GridCellSelectionModel', () => {
             });
 
             expect(model.ranges[0].records.map(it => it.id)).toEqual([3, 'sum']);
+        });
+
+        it('reports whether a cell is in any range', async () => {
+            const {gridModel} = await renderGridAsync(),
+                model = gridModel.cellSelectionModel,
+                rec = (id: number) => gridModel.store.getById(id);
+
+            await clickAsync(gridModel, {rowStartIndex: 0, rowEndIndex: 0, columns: ['name']});
+            await ctrlClickAsync(gridModel, {rowStartIndex: 2, rowEndIndex: 2, columns: ['qty']});
+
+            expect(model.isCellSelected(rec(1), 'name')).toBe(true);
+            expect(model.isCellSelected(rec(3), 'qty')).toBe(true);
+            expect(model.isCellSelected(rec(1), 'qty')).toBe(false);
+            expect(model.isCellSelected(rec(2), 'name')).toBe(false);
+        });
+
+        // ag-Grid reports every cell crossed during a drag. Observers of `ranges`, such as a
+        // selection summary, run once at the end instead.
+        it('holds still during a drag, and updates when the drag ends', async () => {
+            const {gridModel, container} = await renderGridAsync(),
+                model = gridModel.cellSelectionModel,
+                ids = () => model.ranges.map(r => r.records.map(it => it.id));
+
+            await dragAsync(container, 'mousedown', 0, 'name', 0);
+            await dragAsync(container, 'mousemove', 0, 'name', 10);
+            await dragAsync(container, 'mousemove', 1, 'name', 20);
+            await dragAsync(container, 'mousemove', 2, 'name', 30);
+
+            expect(gridModel.agApi.getCellRanges()[0].endRow.rowIndex).toBeGreaterThan(0);
+            expect(ids()).toEqual([[1]]);
+            expect(gridModel.selModel.selectedId).toBe(1);
+
+            await dragAsync(container, 'mouseup', 2, 'name', 30);
+            await waitFor(() => expect(ids()[0].length).toBeGreaterThan(1));
+            expect(gridModel.selModel.selectedId).toBe(1);
         });
 
         it('clears from the model and from ag-Grid', async () => {
@@ -305,6 +342,78 @@ describe('GridCellSelectionModel', () => {
         });
     });
 
+    // Grouped rows - 0: group A, 1: Alpha, 2: Beta, 3: group B, 4: Gamma.
+    describe('group rows', () => {
+        it('are left out of the records, and the selected record follows the start cell', async () => {
+            const {gridModel} = await renderGroupedGridAsync(),
+                model = gridModel.cellSelectionModel;
+
+            await clickAsync(gridModel, {rowStartIndex: 2, rowEndIndex: 4, columns: ['name']});
+
+            const [range] = model.ranges;
+            expect(range.records.map(it => it.id)).toEqual([2, 3]);
+            expect(range.startRecord.id).toBe(2);
+            expect(gridModel.selModel.selectedId).toBe(2);
+        });
+
+        it('select no record when the newest range starts on one', async () => {
+            const {gridModel} = await renderGroupedGridAsync(),
+                model = gridModel.cellSelectionModel;
+            await clickAsync(gridModel, {rowStartIndex: 1, rowEndIndex: 1, columns: ['name']});
+            expect(gridModel.selModel.selectedId).toBe(1);
+
+            await clickAsync(gridModel, {rowStartIndex: 3, rowEndIndex: 4, columns: ['name']});
+
+            const [range] = model.ranges;
+            expect(range.startRecord).toBeNull();
+            expect(range.startColumn.colId).toBe('name');
+            expect(range.records.map(it => it.id)).toEqual([3]);
+            expect(gridModel.selModel.isEmpty).toBe(true);
+            expect(model.isEmpty).toBe(false);
+        });
+
+        it('copy as a line of empty cells, keeping the lines aligned with the grid', async () => {
+            let copied: string = null;
+            const {gridModel} = await renderGroupedGridAsync({
+                agOptions: {sendToClipboard: ({data}) => (copied = data)}
+            });
+            await clickAsync(gridModel, {
+                rowStartIndex: 2,
+                rowEndIndex: 4,
+                columns: ['name', 'qty']
+            });
+
+            act(() => gridModel.agApi.copySelectedRangeToClipboard());
+
+            expect(copied.split('\r\n')).toEqual(['Beta\t2', '\t', 'Gamma\t3']);
+        });
+
+        it('are skipped when Delete clears a range', async () => {
+            const {gridModel, container} = await renderGroupedGridAsync(),
+                {store} = gridModel;
+            await clickAsync(gridModel, {rowStartIndex: 0, rowEndIndex: 4, columns: ['qty']});
+
+            const cell = container.querySelector('.ag-row[row-id="ag_1"] .ag-cell') as HTMLElement;
+            act(() => {
+                cell.dispatchEvent(new KeyboardEvent('keydown', {key: 'Delete', bubbles: true}));
+            });
+
+            await waitFor(() => expect(store.modifiedRecords.map(it => it.id)).toEqual([1, 2, 3]));
+            expect(store.records.map(it => it.data.qty)).toEqual([null, null, null]);
+        });
+
+        // Not held in place as the sort will be - see the README.
+        it('clear the ranges when an edit moves a record to another group', async () => {
+            const {gridModel} = await renderGroupedGridAsync(),
+                model = gridModel.cellSelectionModel;
+            await clickAsync(gridModel, {rowStartIndex: 1, rowEndIndex: 2, columns: ['qty']});
+
+            act(() => gridModel.store.modifyRecords({id: 2, grp: 'B'}));
+
+            await waitFor(() => expect(model.isEmpty).toBe(true));
+        });
+    });
+
     // Matches Excel, where Delete clears every selected cell. ag-Grid does the clearing, through
     // each Column's editable check and setValueFn, so edits land in the Store as usual.
     describe('Delete key', () => {
@@ -383,6 +492,25 @@ async function changeRangesAsync(gridModel: GridModel, fn: () => void) {
     await waitFor(() => expect(gridModel.cellSelectionModel.ranges).toHaveLength(expected));
 }
 
+// One step of a mouse drag over the cell at a row index and column. ag-Grid starts the drag once
+// the mouse has moved a few pixels, so each step moves it further - pass a growing `offset`.
+async function dragAsync(
+    container: HTMLElement,
+    type: 'mousedown' | 'mousemove' | 'mouseup',
+    rowIndex: number,
+    colId: string,
+    offset: number
+) {
+    const cell = container.querySelector(`.ag-row[row-index="${rowIndex}"] [col-id="${colId}"]`);
+    act(() => {
+        cell.dispatchEvent(
+            new MouseEvent(type, {bubbles: true, button: 0, clientX: offset, clientY: offset})
+        );
+    });
+    // ag-Grid delivers `cellSelectionChanged` asynchronously.
+    await wait(20);
+}
+
 function selectAll(gridModel: GridModel) {
     const {agApi} = gridModel;
     agApi.clearCellSelection();
@@ -393,7 +521,11 @@ function selectAll(gridModel: GridModel) {
     });
 }
 
-async function renderGridAsync(config: GridConfig = {}, data: PlainObject[] = DATA) {
+async function renderGridAsync(
+    config: GridConfig = {},
+    data: PlainObject[] = DATA,
+    props: GridProps = {}
+) {
     const gridModel = new GridModel({
         columns: [{field: 'name'}, {field: 'qty'}],
         cellSelection: true,
@@ -402,10 +534,32 @@ async function renderGridAsync(config: GridConfig = {}, data: PlainObject[] = DA
     onTestFinished(() => gridModel.destroy());
     gridModel.loadData(data);
 
-    const {container} = render(grid({model: gridModel, width: 600, height: 400}));
-    await waitFor(() => expect(container.querySelectorAll('.ag-row')).toHaveLength(data.length));
+    const {container} = render(grid({model: gridModel, width: 600, height: 400, ...props}));
+    await waitFor(() => expect(gridModel.agApi?.getDisplayedRowCount()).toBeGreaterThan(0));
+    const rowCount = gridModel.agApi.getDisplayedRowCount();
+    await waitFor(() => expect(container.querySelectorAll('.ag-row')).toHaveLength(rowCount));
     if (gridModel.cellSelectionModel) {
         await waitFor(() => expect(gridModel.cellSelectionModel.isEnabled).toBe(true));
     }
     return {gridModel, container};
+}
+
+// Grouped by `grp`, with editable `qty` - see the 'group rows' tests for the row layout.
+function renderGroupedGridAsync(props: GridProps = {}) {
+    return renderGridAsync(
+        {
+            columns: [
+                {field: 'grp', hidden: true},
+                {field: 'name'},
+                {field: 'qty', editable: true}
+            ],
+            groupBy: 'grp'
+        },
+        [
+            {id: 1, grp: 'A', name: 'Alpha', qty: 1},
+            {id: 2, grp: 'A', name: 'Beta', qty: 2},
+            {id: 3, grp: 'B', name: 'Gamma', qty: 3}
+        ],
+        props
+    );
 }
