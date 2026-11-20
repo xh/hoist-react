@@ -616,3 +616,11 @@
 - Added a short `Callout` entry to `cmp/README.md`.
 - Indexed in `docs/README.md` (Quick Reference and Components), the roadmap Priority 2 table, and
   `docs/doc-registry.json`.
+
+### 2026-11-20
+- Added a package README for `ListDisplay`. It covers when to use the component over `DataView`
+  and `Grid`, examples, CSS variables and pitfalls. TSDoc holds the props and their defaults, so
+  the README has no prop table.
+- Added a short `ListDisplay` entry to `cmp/README.md`.
+- Indexed in `docs/README.md` (Quick Reference and Components), the roadmap Priority 2 table
+  (Done), and `docs/doc-registry.json`.

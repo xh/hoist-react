@@ -153,6 +153,7 @@ techniques.
 | `/cubegrid/` | Cube View as a tree grid, with pivot paths as nested column groups when pivoted. [See README](./cubegrid/README.md) |
 | `/statcard/` | Tiles that call out key figures (StatCard), laid out in equal-width rows (StatCardStrip) |
 | `/propertytable/` | Display-only list of labeled values (PropertyTable), such as the fields of a record in a detail panel. [See README](./propertytable/README.md) |
+| `/listdisplay/` | Short, static list of entries with a title, description, icon and trailing detail (ListDisplay). [See README](./listdisplay/README.md) |
 | `/sparkline/` | Small inline trend chart in plain SVG (Sparkline), for a stat card or a grid cell. [See README](./sparkline/README.md) |
 
 ### Layout and Containers
@@ -287,6 +288,12 @@ const dataViewModel = new DataViewModel({
     })
 });
 ```
+
+### ListDisplay (`/listdisplay/`)
+
+A short, static list of entries, each with a title, description, icon and trailing detail. It takes
+a plain array, so use `DataView` for many records. See the
+[ListDisplay README](./listdisplay/README.md).
 
 ### TabContainer (`/tab/`)
 
