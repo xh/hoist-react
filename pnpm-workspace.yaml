@@ -45,6 +45,18 @@ savePrefix: '^'
 minimumReleaseAgeExclude:
   - '@xh/*'
 
+# Advisories that `pnpm audit` skips, so they do not fail the CI audit step. Comment each entry with
+# the advisory, its dependency path, why it is not exploitable here, and when to remove it.
+audit:
+  ignore:
+    # picomatch ReDoS through crafted extglob patterns. HIGH, and no fixed release exists.
+    # Path: ts-morph > @ts-morph/common > tinyglobby > picomatch@4.0.7, used by the v91
+    # items-to-children codemod only.
+    # Not exploitable here: globs come only from our own tsconfig.json, never from user input.
+    # Remove when: a picomatch release above 4.0.7 resolves in pnpm-lock.yaml.
+    # Added 2026-11-17.
+    - GHSA-fc5q-39xc-vjpf
+
 # Keep pnpm-lock.yaml a single YAML document. By default pnpm 12 records the pinned pnpm version in
 # a leading lockfile document, and GitHub's dependency graph reads only that first document - so it
 # sees none of our real deps and Dependabot raises no security alerts. With `ignore`, pnpm runs

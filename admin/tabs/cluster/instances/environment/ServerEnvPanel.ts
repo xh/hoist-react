@@ -27,7 +27,7 @@ export const serverEnvPanel = hoistCmp.factory({
                 storeFilterField({matchMode: 'any'}),
                 exportButton()
             ],
-            item: lastLoadException ? errorMessage({error: lastLoadException}) : grid(),
+            children: lastLoadException ? errorMessage({error: lastLoadException}) : grid(),
             mask: 'onLoad',
             ref: model.viewRef
         });

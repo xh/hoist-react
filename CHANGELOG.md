@@ -37,20 +37,61 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 * `Mask` now renders inline desktop masks as a plain `div` with the class `xh-mask--inline`, not a
   Blueprint overlay. Showing a mask no longer forces a browser layout. Restyle any app CSS that
   targets `.bp6-overlay` classes within an inline mask, or use `--xh-mask-bg`.
+* `FetchService` now sends a request with no `method` as a GET, even when it sets `params`. Before,
+  `params` made it a POST with a form-encoded body. Set `method: 'POST'` on calls that change data,
+  send credentials, or send large params - see Step 7 of the upgrade notes.
+* Removed the bundled stdio MCP server and the `hoist-mcp`, `hoist-docs` and `hoist-ts` CLIs. Add
+  [Hoist Docs](https://github.com/xh/hoist-docs) (`@xh/hoist-docs`) as a `client-app` dev
+  dependency and point `.mcp.json` at it instead - see the upgrade notes.
 
 ### 🎁 New Features
 
+* Element factories and `createElement` now take child elements via the standard React `children`
+  key. The `item` and `items` keys still work as aliases, but a future major version will remove
+  them. A factory passes an array of `children` as rest arguments, so the array needs no keys.
+    * If a spec sets `children` and a legacy key, only `children` renders and Hoist logs a warning.
+    * To convert an app, upgrade to v91 and run `codemod-items-to-children.mjs` from the installed
+      `@xh/hoist/docs/codemod/v91` folder - see Step 6 of the upgrade notes. It uses the TypeScript
+      checker, so `items` keys that hold menu or other data stay unchanged. It also reports
+      factory examples in markdown docs such as CLAUDE.md, and edits them only with `--fix-docs`.
+* Added `PropertyTable` to `@xh/hoist/cmp/propertytable`, a display-only list of labeled
+  values, such as the fields of a record in a detail panel. It lays out its `entries` in aligned
+  columns that fit the available width, with each label to the left of or above its value.
+* Added `ProgressBar` to `@xh/hoist/cmp/progressbar`, a cross-platform bar that shows a value
+  against a maximum, with an optional label, figure, `intent` and `target` marker. Set
+  `indeterminate` for work of unknown length.
+* Added `Callout` to `@xh/hoist/cmp/callout`, a cross-platform note set off within content, with
+  an `intent`, its icon, an optional `title`, a body and a `compact` size. Use it inside content,
+  and `Banner` for a status strip in panel chrome.
+* Added `Icon.forIntent()` and the `intentPrimary`, `intentSuccess`, `intentWarning` and
+  `intentDanger` icon aliases. `Banner` and `Callout` use them, so an app can replace an intent's
+  icon via `Icon.register()` with `replace: true`.
+* Added `Separator` to `@xh/hoist/cmp/layout`, a horizontal or `vertical` rule that divides
+  content, with an optional `label` within the rule.
+* Added `scrollIntoViewWithin` to `@xh/hoist/utils/js`, to scroll a container just far enough to
+  show an element inside it, without moving any scrolling panel or page around the container.
+* Added `isBlankNode` to `@xh/hoist/utils/react`, to test whether a node renders no content, such
+  as null, false, a blank string or an array of these.
+* Added `DashCanvasConfig.preventCollision` to block a drag or resize into space taken by another
+  view. Combine with `compact: false` for a free-form canvas where views stay where users put them.
+* Added `Sparkline` to `@xh/hoist/cmp/sparkline`, a small inline trend chart in plain SVG for a
+  `StatCard` or a grid cell. It draws a `line`, `area` or `bar` series, colored with `colorBy` by
+  `intent`, by its trend, or by the sign of each part, as for profit and loss. Optional
+  `markers` dot the first, last, lowest and highest values. An optional `tooltip` for the whole
+  sparkline shows on desktop and mounts only when first hovered.
+* `useLocalModel()` now works in a component with `model: false`, with no need for a placeholder
+  model spec. 33 Hoist components now set `model: false`, skipping model resolution and a wrapping
+  component on each render.
 * Added `GridConfig.cellSelection` for Excel-style cell range selection, with ranges readable from
   the new `GridModel.cellSelectionModel`. Requires ag-Grid Enterprise `CellSelectionModule`.
 * Added `XH.hasRoute()` to check if a route exists. Call it before `XH.router.buildPath()` or
   `buildUrl()` with a name that may not be registered, as both throw for an unknown route.
-* Desktop `Slider` now names its handles for assistive technology. It takes the label of its
-  `FormField`, and puts an `aria-label` or `aria-labelledby` set through `domAttrs` on its handles.
-* Added `SliderProps.intent` to color the track fill. It defaults to `'primary'`, and the fill now
-  uses the `--xh-intent-*` colors rather than Blueprint's own blue.
 
 ### 🐞 Bug Fixes
 
+* Fixed desktop submenus clipping to the popover that holds their parent menu, as in the
+  `ViewManager` menu and `MenuButton` menus. Submenus now render in a portal, as context menu
+  submenus already did.
 * Fixed mobile `FormField` ignoring the `--xh-form-field-inline-label-*` custom properties for
   inline labels - it referenced stale names left behind by an earlier rename.
 * Fixed `StatCard` titles and values not lining up across a `StatCardStrip` whose cards differ in
@@ -63,6 +104,18 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 * Fixed several desktop `Slider` display issues: clipped labels and handles, hangs on extreme
   scales, a missing dark-theme track, and excess height in a standard `Toolbar`.
 * Fixed a crash in a desktop `Toolbar` with `enableOverflowMenu: true` and only one item.
+* Fixed a TypeScript 5.9 type check of Hoist sources failing when `lib` lacks `dom.iterable`, a
+  regression in v90.
+* Fixed desktop `TabSwitcher` with `enableOverflow: true`, and `DynamicTabSwitcher` when its tabs
+  overflow, moving a scrolling panel or page around them to show the active tab. Each now scrolls
+  only its own tab strip.
+* Fixed a component with a `uses()` model crashing with a React hooks error when its model went
+  missing between renders, e.g. after a dev-server hot reload of the model class. The component
+  now shows its "No model found" placeholder.
+* Fixed `ViewportSizeModel` occasionally throwing at startup in a browser with no orientation API,
+  when it checked orientation before its first measure. It now measures the viewport at once.
+* Fixed `XH.installServicesAsync()` creating and initializing a new instance of a service that was
+  already installed, before it threw. It now rejects a duplicate before creating any instance.
 
 ### ⚙️ Technical
 
@@ -75,6 +128,17 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 * `TreeMap` now logs a console warning when Highcharts has no color axis, which leaves every node
   in one default color. Import `highcharts/modules/heatmap` or `highcharts/modules/coloraxis`
   before `highcharts/modules/treemap` in `Bootstrap.ts`.
+* Element factories now log a console warning when passed directly as an array callback
+  (`items.map(span)`), which renders each item's index and the whole array, or when given a spec
+  that is not a plain object, which renders as a child.
+
+### ⚙️ Typescript API Adjustments
+
+* `ElementSpec.children` takes the type of the component's own `children` prop when it declares
+  one, such as a render function.
+* `AppOptionSpec.formField` is now typed as a loose element spec instead of `any`.
+* `ElementFactory` now lists its spec signature last, so a malformed spec reports the real problem
+  (a missing prop, or a misspelled one with a suggested fix) instead of an error about `ReactNode`.
 
 ### ✨ Styles
 
@@ -105,9 +169,34 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 * Desktop `Select` now rounds its corners to match other inputs (4px, up from 3px). A desktop
   `TabSwitcher` placed at the bottom now marks its active tab in the active tab color, as one at
   the top does, rather than in the resting text color.
+* Desktop `SegmentedControl` now looks disabled when `disabled`, matching other disabled inputs
+  such as `DateInput`. Its tray takes the disabled input fill and its labels fade, while the
+  selected option keeps a hairline edge so the current value stays legible.
+
+### 🤖 AI Docs + Tooling
+
+* Moved MCP docs and symbol tooling to [Hoist Docs](https://github.com/xh/hoist-docs)
+  (`@xh/hoist-docs`), one MCP server for hoist-react and hoist-core. Apps add it as a dev
+  dependency; the agent launches it over stdio, and it answers for the app's installed Hoist
+  versions. The same package also runs over HTTP behind an MCP gateway. Tools keep their names and
+  output.
+* Hoist Docs is built on the MCP TypeScript SDK v2 (`@modelcontextprotocol/server`), which
+  implements the 2026-07-28 MCP spec - stateless serving and `server/discover` - while still
+  serving clients on the 2025 `initialize` handshake. The bundled server was on SDK v1, which stops
+  at the 2025-11-25 spec.
+* `@xh/hoist` now ships its Hoist Docs index (`hoist-docs/index.json.gz`, about 1.6 MB), built at
+  publish by `@xh/hoist-docs-builder` and declared by `hoistDocs` in `package.json`. Hoist Docs
+  reads it from the installed package, so every build, snapshots included, carries docs for exactly
+  its own code. Companion libraries can do the same - see
+  [Companion Library Docs](docs/companion-library-docs.md).
+* Removed the MCP-only dependencies `@modelcontextprotocol/sdk`, `zod`, `commander`, `minisearch`
+  and `tsx`. Apps no longer install them. `ts-morph` stays, for the v91 `items` to `children`
+  codemod.
 
 ### 📚 Libraries
 
+* @azure/msal-common `removed` - Hoist used it only for a type. It still installs with
+  @azure/msal-browser, which pins its own copy, so apps no longer get a second one.
 * jsdom `30 → 30 || 31` (optional peer)
 
 ## 90.1.0 - 2026-11-13

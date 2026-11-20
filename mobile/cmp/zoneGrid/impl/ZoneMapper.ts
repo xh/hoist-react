@@ -43,7 +43,7 @@ export const [ZoneMapper, zoneMapper] = hoistCmp.withFactory<ZoneMapperModel>({
             title: 'Customize Fields',
             icon: Icon.gridLarge(),
             className,
-            items: [
+            children: [
                 introText({omit: XH.isLandscape}),
                 zonePicker(),
                 grid({model: impl.gridModel}),
@@ -78,10 +78,11 @@ export const [ZoneMapper, zoneMapper] = hoistCmp.withFactory<ZoneMapperModel>({
 });
 
 const introText = hoistCmp.factory({
+    model: false,
     render() {
         return div({
             className: 'xh-zone-mapper__intro-text',
-            items: [
+            children: [
                 'Tap any of the four quadrants in the sample row below to customize the fields displayed within. Fields will be shown in the order they are selected. The first field within the top zones will always be labelled by the column headers.'
             ]
         });
@@ -95,17 +96,17 @@ const zonePicker = hoistCmp.factory<ZoneMapperModel>({
 
         return vbox({
             className,
-            items: [
+            children: [
                 hbox({
                     className: `${className}__top`,
-                    items: [
+                    children: [
                         zoneCell({zone: 'tl', flex: leftFlex}),
                         zoneCell({zone: 'tr', flex: rightFlex})
                     ]
                 }),
                 hbox({
                     className: `${className}__bottom`,
-                    items: [
+                    children: [
                         zoneCell({zone: 'bl', flex: leftFlex}),
                         zoneCell({zone: 'br', flex: rightFlex})
                     ]
@@ -129,7 +130,7 @@ const zoneCell = hoistCmp.factory<ZoneMapperModel>({
             ),
             style: {flex},
             onClick: () => (model.selectedZone = zone),
-            items: intersperse(samples, span(delimiter))
+            children: intersperse(samples, span(delimiter))
         });
     }
 });
@@ -140,7 +141,7 @@ const sortPicker = hoistCmp.factory<ZoneMapperModel>({
             title: 'Sorting',
             icon: Icon.list(),
             className: 'xh-zone-mapper__sort-picker',
-            items: hframe(
+            children: hframe(
                 select({
                     bind: 'sortByColId',
                     enableFilter: true,

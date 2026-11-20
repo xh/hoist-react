@@ -377,10 +377,10 @@ form({
         inline: true,
         labelWidth: 120
     },
-    items: [
-        formField({field: 'firstName', item: textInput()}),
-        formField({field: 'lastName', item: textInput()}),
-        formField({field: 'age', item: numberInput()})
+    children: [
+        formField({field: 'firstName', children: textInput()}),
+        formField({field: 'lastName', children: textInput()}),
+        formField({field: 'age', children: numberInput()})
     ]
 })
 ```
@@ -417,22 +417,22 @@ import {textInput, numberInput} from '@xh/hoist/desktop/cmp/input';
 
 form({
     model: formModel,
-    items: [
+    children: [
         formFieldSet({
             title: 'Contact Information',
             icon: Icon.user(),
-            items: [
-                formField({field: 'firstName', item: textInput()}),
-                formField({field: 'lastName', item: textInput()}),
-                formField({field: 'email', item: textInput()})
+            children: [
+                formField({field: 'firstName', children: textInput()}),
+                formField({field: 'lastName', children: textInput()}),
+                formField({field: 'email', children: textInput()})
             ]
         }),
         formFieldSet({
             title: 'Employment',
             icon: Icon.briefcase(),
-            items: [
-                formField({field: 'company', item: textInput()}),
-                formField({field: 'salary', item: numberInput()})
+            children: [
+                formField({field: 'company', children: textInput()}),
+                formField({field: 'salary', children: numberInput()})
             ]
         })
     ]
@@ -457,7 +457,7 @@ const contactFieldSetModel = new FormFieldSetModel({
 formFieldSet({
     model: contactFieldSetModel,
     title: 'Contact Information',
-    items: [/* ... */]
+    children: [/* ... */]
 })
 ```
 
@@ -470,9 +470,9 @@ const billingModel = new FormFieldSetModel({disabled: true});
 formFieldSet({
     model: billingModel,
     title: 'Billing (locked)',
-    items: [
-        formField({field: 'cardNumber', item: textInput()}),
-        formField({field: 'expiry', item: textInput()})
+    children: [
+        formField({field: 'cardNumber', children: textInput()}),
+        formField({field: 'expiry', children: textInput()})
     ]
 })
 
@@ -575,7 +575,7 @@ const formModel = new FormModel({
 // In render
 formField({
     field: 'companyName',
-    item: textInput(),
+    children: textInput(),
     omit: formModel.values.accountType !== 'business'
 })
 
@@ -594,12 +594,12 @@ panel({
     tbar: [saveButton(), resetButton()],
     scrollable: true,
     contentBoxProps: {padding: true},
-    item: form({
+    children: form({
         fieldDefaults: {inline: true},
-        items: [
-            formField({field: 'firstName', item: textInput()}),
-            formField({field: 'lastName', item: textInput()}),
-            formField({field: 'email', item: textInput()}),
+        children: [
+            formField({field: 'firstName', children: textInput()}),
+            formField({field: 'lastName', children: textInput()}),
+            formField({field: 'email', children: textInput()}),
             // ... many more fields
         ]
     })

@@ -24,9 +24,9 @@ export const toast = hoistCmp.factory({
 
         return div({
             className: classNames('xh-toast', intent ? `xh-toast--intent-${intent}` : null),
-            item: div({
+            children: div({
                 className: 'xh-toast__content',
-                items: [
+                children: [
                     icon,
                     span(message),
                     button({

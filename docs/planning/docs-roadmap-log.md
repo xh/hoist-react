@@ -587,3 +587,32 @@
 - `data/cube/README.md` no longer documents `View.createStore()`, now `@internal`.
 - Updated the index entries in `docs/README.md`, the roadmap, `cmp/README.md` and
   `docs/doc-registry.json` to the new path and names.
+
+### 2026-11-16
+- Added a package README for `ProgressBar`. It covers when to use the component over its
+  neighbors, examples, CSS variables and pitfalls. TSDoc holds the props and their defaults, so
+  the README has no prop table.
+- Added a `Separator` section to `cmp/layout/README.md`, and short `ProgressBar` and `Separator`
+  entries to `cmp/README.md`.
+- Added a package README for `Sparkline`. It covers when to use the component over a `Chart`,
+  examples in a `StatCard` and a grid column, CSS variables and pitfalls. TSDoc holds the props
+  and their defaults, so the README has no prop table.
+- Added a short `Sparkline` entry to `cmp/README.md`.
+- Indexed in `docs/README.md` (Quick Reference and Components), the roadmap Priority 2 table
+  (Draft), and `docs/doc-registry.json`.
+
+### 2026-11-17
+- Added a package README for `PropertyTable`. It covers when to use the component over a
+  read-only Form, examples, CSS variables and pitfalls. TSDoc holds the props and their defaults,
+  so the README has no prop table.
+- Added a short `PropertyTable` entry to `cmp/README.md`.
+- Indexed in `docs/README.md` (Quick Reference and Components), the roadmap Priority 2 table
+  (Done), and `docs/doc-registry.json`.
+
+### 2026-11-18
+- Added a package README for `Callout`. It covers when to use the component over `Banner` and
+  `Card`, examples, CSS variables and pitfalls. TSDoc holds the props and their defaults, so the
+  README has no prop table.
+- Added a short `Callout` entry to `cmp/README.md`.
+- Indexed in `docs/README.md` (Quick Reference and Components), the roadmap Priority 2 table, and
+  `docs/doc-registry.json`.

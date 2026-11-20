@@ -21,23 +21,24 @@ import '@xh/hoist/mobile/register';
 export const errorMessageImpl = hoistCmp.factory<
     Omit<ErrorMessageProps, 'error' | 'actionFn' | 'detailsFn'>
 >({
+    model: false,
     render({message, title, actionButtonProps, detailsButtonProps}) {
         // Stack action buttons vertically and full-width - idiomatic for mobile.
         const buttons = [];
         if (detailsButtonProps) buttons.push(detailsButton(detailsButtonProps as ButtonProps));
         if (actionButtonProps) buttons.push(actionButton(actionButtonProps as ButtonProps));
-        const buttonBar = buttons.length ? vbox({gap: true, items: buttons}) : null;
+        const buttonBar = buttons.length ? vbox({gap: true, children: buttons}) : null;
 
         return div({
             className: 'xh-error-message__inner',
-            items: [titleCmp({title}), messageCmp({message}), buttonBar]
+            children: [titleCmp({title}), messageCmp({message}), buttonBar]
         });
     }
 });
 
 const titleCmp = hoistCmp.factory(({title}) => {
     if (isValidElement(title)) return title;
-    if (isString(title)) return div({className: 'xh-error-message__title', item: title});
+    if (isString(title)) return div({className: 'xh-error-message__title', children: title});
     return null;
 });
 

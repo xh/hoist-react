@@ -27,7 +27,7 @@ export const gestureRefresh = hoistCmp.factory({
                 onTouchMove: model.onTouchMove,
                 onTouchEnd: model.onTouchEnd,
                 onTouchCancel: model.onTouchEnd,
-                item: children
+                children
             })
         );
     }
@@ -50,6 +50,6 @@ const refreshIndicator = hoistCmp.factory<GestureRefreshModel>(({model}) => {
             left: '50%',
             transform: `translateX(-50%) rotate(${degrees}deg)`
         },
-        item: Icon.refresh()
+        children: Icon.refresh()
     });
 });

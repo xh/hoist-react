@@ -56,19 +56,19 @@ export const [PdfViewer, pdfViewer] = hoistCmp.withFactory<PdfViewerProps>({
             className,
             testId,
             ref,
-            items: [
+            children: [
                 model.toolbar && model.hasSource ? toolbarImpl({model}) : null,
                 box({
                     className: 'xh-pdf-viewer__body',
                     flex: 1,
-                    items: [
+                    children: [
                         // pdf.js requires an absolutely positioned scroll container.
                         div({
                             className: 'xh-pdf-viewer__container',
                             ref: model.containerRef,
                             tabIndex: 0,
                             style: {visibility: model.hasDocument ? 'visible' : 'hidden'},
-                            item: div({className: 'pdfViewer'})
+                            children: div({className: 'pdfViewer'})
                         }),
                         statusCmp(),
                         mask({bind: model.loadObserver, spinner: true})
@@ -85,7 +85,7 @@ const statusCmp = hoistCmp.factory<PdfViewerModel>(({model}) => {
     if (!hasSource) {
         return placeholder({
             className: 'xh-pdf-viewer__placeholder',
-            items: [Icon.filePdf(), emptyText]
+            children: [Icon.filePdf(), emptyText]
         });
     }
 

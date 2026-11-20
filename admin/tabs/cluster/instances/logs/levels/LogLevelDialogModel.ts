@@ -157,7 +157,7 @@ export class LogLevelDialogModel extends HoistModel {
                 {
                     field: 'name',
                     formField: {
-                        item: textInput({
+                        children: textInput({
                             placeholder: 'com.myapp.MyClassWithLogging (or partial path)'
                         }),
                         info: 'Hint - leave in place with no overrides set below to easily adjust again later.'
@@ -167,13 +167,13 @@ export class LogLevelDialogModel extends HoistModel {
                 {
                     field: 'suppressStackTrace',
                     formField: {
-                        item: segmentedControl({options: customBoolSegmentOptions})
+                        children: segmentedControl({options: customBoolSegmentOptions})
                     }
                 },
                 {
                     field: 'includeStartMessages',
                     formField: {
-                        item: segmentedControl({options: customBoolSegmentOptions})
+                        children: segmentedControl({options: customBoolSegmentOptions})
                     }
                 },
                 {field: 'lastUpdated'},

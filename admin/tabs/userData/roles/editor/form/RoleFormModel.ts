@@ -258,9 +258,9 @@ export class RoleFormModel extends HoistModel {
                         const {displayName, error} = record.data;
                         return hbox({
                             alignItems: 'center',
-                            items: [
+                            children: [
                                 box({
-                                    item:
+                                    children:
                                         entity === 'DIRECTORY_GROUP'
                                             ? (displayName ?? RoleModel.fmtDirectoryGroup(v))
                                             : v,
@@ -405,7 +405,7 @@ export class RoleFormModel extends HoistModel {
         return vbox(
             span(opt.label),
             span({
-                item: detail,
+                children: detail,
                 omit: !detail,
                 className: 'xh-text-color-muted xh-font-size-small'
             })

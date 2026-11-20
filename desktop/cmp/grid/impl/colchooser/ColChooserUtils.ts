@@ -223,29 +223,29 @@ export const LibraryColCell = hoistCmp<ChooserCellProps>(
             ? span({
                   ref,
                   className: 'xh-col-chooser__name-cell__drag-handle',
-                  item: Icon.grip({prefix: 'fas'})
+                  children: Icon.grip({prefix: 'fas'})
               })
             : span({
                   className: 'xh-col-chooser__name-cell__lock',
-                  item: Icon.lock()
+                  children: Icon.lock()
               });
 
         return hframe({
             className: 'xh-col-chooser__lib-cell__row',
             alignItems: 'center',
-            items: [
+            children: [
                 dragHandle,
                 vframe({
                     className: 'xh-col-chooser__lib-cell__body',
-                    items: [
+                    children: [
                         span({
                             className: 'xh-col-chooser__lib-cell__name',
-                            item: highlightFilterMatch(name, chooserModel)
+                            children: highlightFilterMatch(name, chooserModel)
                         }),
                         hasDescription
                             ? div({
                                   className: 'xh-col-chooser__lib-cell__desc',
-                                  item: description
+                                  children: description
                               })
                             : null
                     ]
@@ -274,20 +274,20 @@ export const ChooserColName = hoistCmp<ChooserCellProps>(
         const {name, movable, isGroup} = data;
         return hbox({
             alignItems: 'center',
-            items: [
+            children: [
                 movable
                     ? span({
                           ref,
                           className: 'xh-col-chooser__name-cell__drag-handle',
-                          item: Icon.grip({prefix: 'fas'})
+                          children: Icon.grip({prefix: 'fas'})
                       })
                     : span({
                           className: 'xh-col-chooser__name-cell__lock',
-                          item: Icon.lock()
+                          children: Icon.lock()
                       }),
                 span({
                     className: 'xh-col-chooser__name-cell__name',
-                    item: isGroup ? name : highlightFilterMatch(name ?? '', chooserModel)
+                    children: isGroup ? name : highlightFilterMatch(name ?? '', chooserModel)
                 }),
                 columnMetaTooltip(data)
             ]
@@ -304,7 +304,7 @@ function highlightFilterMatch(name: string, chooserModel: ColChooserModel): Reac
     for (const [start, end] of ranges) {
         items.push(
             name.slice(cursor, start),
-            span({className: 'xh-col-chooser__highlight', item: name.slice(start, end)})
+            span({className: 'xh-col-chooser__highlight', children: name.slice(start, end)})
         );
         cursor = end;
     }
@@ -327,23 +327,23 @@ function columnMetaTooltip(data: ColChooserData): ReactNode {
         className: 'xh-col-chooser__name-cell__meta',
         popoverClassName: 'xh-col-chooser__meta-popover',
         minimal: true,
-        item: Icon.info(),
+        children: Icon.info(),
         content: vbox({
             className: 'xh-col-chooser__meta-tip',
-            items: [
+            children: [
                 hbox({
                     className: 'xh-col-chooser__meta-tip__header',
-                    items: [
-                        span({className: 'xh-col-chooser__meta-tip__title', item: name}),
+                    children: [
+                        span({className: 'xh-col-chooser__meta-tip__title', children: name}),
                         hasGroup
                             ? span({
                                   className: 'xh-col-chooser__meta-tip__group',
-                                  item: chooserGroup
+                                  children: chooserGroup
                               })
                             : null
                     ]
                 }),
-                div({className: 'xh-col-chooser__meta-tip__desc', item: description})
+                div({className: 'xh-col-chooser__meta-tip__desc', children: description})
             ]
         })
     });

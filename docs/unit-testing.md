@@ -244,7 +244,7 @@ zone, so date logic gives the same result on every machine.
 ### Components
 
 Most of Hoist's value is in models, so most tests should be model tests. Component tests are for
-the contracts of the component layer itself, such as how `hoistCmp` factories pass `items` and
+the contracts of the component layer itself, such as how `hoistCmp` factories pass `children` and
 resolve models. Use [React Testing Library](https://testing-library.com/react). The setup unmounts
 rendered components after each test.
 
@@ -379,8 +379,8 @@ it('flags orders over the configured limit', () => {
 - A route added in `beforeAll()` or a setup file lasts for the rest of the file. A route added in
   `beforeEach()` or in a test lasts for that test, so a test can override a file's route.
 - `hoistCore.requestsTo('orders/7/approve')` returns the requests a route served.
-- `XH.fetchJson()` with `params` and no `method` sends a form-encoded POST, not a GET. Serve it with
-  `route('POST', ...)` and read the params from `req.form`, not `req.query`.
+- A request with `params` and no `method` is a GET, with the params in `req.query`. A POST or PUT
+  sent with `params` has them in a form-encoded body - read them from `req.form`.
 - A path can also be an absolute URL, for an external API the app calls.
 - A request that the fake does not serve fails the test, and the failure names the URL.
 - A file boots once, so test each role set or user in its own spec file.

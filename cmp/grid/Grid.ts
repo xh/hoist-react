@@ -127,7 +127,7 @@ export const [Grid, grid] = hoistCmp.withFactory<GridProps>({
 
         const gridContainer = frame({
             className,
-            items: [
+            children: [
                 agGrid({
                     model: model.agGridModel,
                     ...getLayoutProps(props),

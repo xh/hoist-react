@@ -24,7 +24,7 @@ export const detailPanel = hoistCmp.factory({
             title: `${objectType} - ${objectName}`,
             icon: getIcon(objectType),
             compactHeader: true,
-            items: [
+            children: [
                 grid({flex: 1}),
                 panel({
                     title: `Instance - ${instanceName}`,
@@ -35,7 +35,7 @@ export const detailPanel = hoistCmp.factory({
                         defaultSize: '80%',
                         collapsible: false
                     },
-                    item: adminJsonDisplay({bind: 'selectedAdminStats'})
+                    children: adminJsonDisplay({bind: 'selectedAdminStats'})
                 })
             ]
         });

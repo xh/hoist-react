@@ -289,7 +289,7 @@ const cmp = hoistCmp.factory<NumberInputModel>(
                 ...layoutProps,
                 width: withDefault(width, null)
             },
-            item: input({
+            children: input({
                 className: 'xh-number-input__input',
                 type: 'text',
                 inputMode,

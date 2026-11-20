@@ -62,7 +62,7 @@ class ToastSourceLocalModel extends HoistModel {
             if (!bpId) {
                 model['bpId'] = toaster.show({
                     className: classNames('xh-toast', `xh-bg-intent-${intent}`),
-                    icon: div({className: 'xh-toast__icon', item: icon}),
+                    icon: div({className: 'xh-toast__icon', children: icon}),
                     action: actionButtonProps,
                     onDismiss: () => wait(0).then(() => model.dismiss()),
                     intent,

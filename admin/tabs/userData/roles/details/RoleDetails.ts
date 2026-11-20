@@ -24,7 +24,7 @@ export const roleDetails = hoistCmp.factory({
         return model.role
             ? vframe({
                   className,
-                  items: [details(), members()]
+                  children: [details(), members()]
               })
             : placeholder(Icon.idBadge(), 'Select a role to view details...');
     }
@@ -33,10 +33,10 @@ export const roleDetails = hoistCmp.factory({
 const details = hoistCmp.factory(() =>
     form({
         fieldDefaults: {readonlyRenderer: valOrNa},
-        item: formFieldSet({
+        children: formFieldSet({
             title: 'Role',
             className: 'xh-admin-role-details__form xh-admin-readonly-form',
-            items: [
+            children: [
                 hbox(formField({field: 'name', flex: 1}), formField({field: 'category', flex: 1})),
                 formField({
                     field: 'notes',
@@ -44,7 +44,7 @@ const details = hoistCmp.factory(() =>
                         frame({
                             style: {overflowY: 'auto'},
                             maxHeight: 80,
-                            item: valOrNa(v)
+                            children: valOrNa(v)
                         })
                 }),
                 formField({field: 'lastUpdated'})
@@ -53,10 +53,11 @@ const details = hoistCmp.factory(() =>
     })
 );
 
-const members = hoistCmp.factory<RoleDetailsModel>({
+const members = hoistCmp.factory({
+    model: false,
     render() {
         return panel({
-            item: tabContainer()
+            children: tabContainer()
         });
     }
 });

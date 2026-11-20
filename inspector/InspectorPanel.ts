@@ -88,13 +88,13 @@ const inspectorView = hoistCmp.factory<InspectorModel>({
                     onClick: () => XH.inspectorService.restoreDefaultsAsync()
                 })
             ],
-            item: hframe(statsPanel(), instancesPanel())
+            children: hframe(statsPanel(), instancesPanel())
         });
 
         // When popped out, redirect Blueprint portals (tooltips, popovers, dialogs) into the
         // child window, alongside the Inspector itself.
         return windowContainer
-            ? portalProvider({portalContainer: windowContainer, item: ret})
+            ? portalProvider({portalContainer: windowContainer, children: ret})
             : ret;
     }
 });

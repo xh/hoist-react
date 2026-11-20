@@ -89,7 +89,7 @@ export const [FormField, formField] = hoistCmp.withFactory<FormFieldProps>({
             requiredIndicator =
                 isRequired && !readonly && requiredStr
                     ? span({
-                          item: ' ' + requiredStr,
+                          children: ' ' + requiredStr,
                           className: 'xh-form-field__required-indicator'
                       })
                     : null,
@@ -152,11 +152,11 @@ export const [FormField, formField] = hoistCmp.withFactory<FormFieldProps>({
             domAttrs: props.domAttrs,
             className: classNames(className, classes),
             ...layoutProps,
-            items: [
+            children: [
                 labelCmp({
                     omit: !label,
                     className: 'xh-form-field__label',
-                    items: [label, requiredIndicator]
+                    children: [label, requiredIndicator]
                 }),
                 div({
                     className: classNames(
@@ -165,22 +165,22 @@ export const [FormField, formField] = hoistCmp.withFactory<FormFieldProps>({
                             ? 'xh-form-field__inner--flex'
                             : 'xh-form-field__inner--block'
                     ),
-                    items: [
+                    children: [
                         childEl,
                         div({
                             omit: !info,
                             className: 'xh-form-field__info-msg',
-                            item: info
+                            children: info
                         }),
                         div({
                             omit: minimal || !isPending || !severityToDisplay,
                             className: `xh-form-field__validation-msg xh-form-field__validation-msg--pending`,
-                            item: 'Validating...'
+                            children: 'Validating...'
                         }),
                         div({
                             omit: minimal || !severityToDisplay,
                             className: `xh-form-field__validation-msg xh-form-field__validation-msg--${severityToDisplay}`,
-                            item: first(validationResultsToDisplay)?.message
+                            children: first(validationResultsToDisplay)?.message
                         })
                     ]
                 })
@@ -201,7 +201,7 @@ const readonlyChild = hoistCmp.factory<ReadonlyChildProps>({
         return div({
             [TEST_ID]: testId,
             className: 'xh-form-field__readonly-display',
-            item: readonlyRenderer(value, model)
+            children: readonlyRenderer(value, model)
         });
     }
 });

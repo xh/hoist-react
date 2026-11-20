@@ -273,7 +273,7 @@ export class LeftRightChooserModel extends HoistModel {
                 groupingEnabled && this._hasGrouping ? 'xh-lr-chooser__group-row' : '';
             return div({
                 className: `xh-lr-chooser__item-row ${groupClass}`,
-                items: [v, record.data.locked ? lockSvg : null]
+                children: [v, record.data.locked ? lockSvg : null]
             });
         };
     }

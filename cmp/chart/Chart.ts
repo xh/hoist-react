@@ -79,7 +79,7 @@ export const [Chart, chart] = hoistCmp.withFactory<ChartProps>({
             className,
             testId,
             ref,
-            item: div({
+            children: div({
                 style: {margin: 'auto'},
                 ref: impl.chartRef
             })

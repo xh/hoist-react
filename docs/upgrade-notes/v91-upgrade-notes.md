@@ -4,11 +4,16 @@
 
 ## Overview
 
-Hoist React v91 resets Hoist's CSS custom properties onto a simpler baseline. A codemod automates
-nearly all of the migration.
+Hoist React v91 resets Hoist's CSS custom properties onto a simpler baseline, and moves element
+factories to the standard React `children` key. A codemod automates nearly all of each migration.
+v91 also requires AG Grid 36.3, renders desktop inline masks without a Blueprint overlay, sends
+a fetch with `params` but no `method` as a GET, and moves its MCP server for AI coding agents to
+Hoist Docs.
 
+- **AG Grid 36.3 (required)** - see Step 1.
+- **Inline masks (if your app styles them)** - see Step 5.
 - **CSS variables (required if your app customizes or reads Hoist's CSS variables)** - see Steps
-  1-4. The new baseline is designed to read the way developers - and AI coding agents - expect CSS
+  2-4. The new baseline is designed to read the way developers - and AI coding agents - expect CSS
   variables to work:
     - **One tier of variables.** The unprefixed override hooks are gone. Previously Hoist defined
       each variable as `--xh-grid-bg: var(--grid-bg, var(--xh-bg))`, with the unprefixed
@@ -23,18 +28,38 @@ nearly all of the migration.
     - **Overrides on `body.xh-app` always win**, in every theme and platform combination.
     - **Three variables that never had any effect were removed.**
 
-The changes also cover the variables added in v90 - the panel splitter (`--xh-panel-splitter-*`,
+- **Element factory `children` (run the codemod)** - see Step 6. Element specs take child elements
+  via `children`, as React does. A type-aware codemod converts app code and reports examples in
+  docs. The legacy `item` and `items` keys still work as aliases in v91, but a future major version
+  will remove them.
+- **`FetchService` default method (review fetches that send `params`)** - see Step 7. A request
+  with `params` and no `method` is now a GET, not a POST.
+- **MCP server and CLIs removed (required if your agents use them)** - see Step 9. hoist-react no
+  longer ships the stdio MCP server or the `hoist-mcp`, `hoist-docs` and `hoist-ts` CLIs. The same
+  tools come from [Hoist Docs](https://github.com/xh/hoist-docs) (`@xh/hoist-docs`), added as a dev
+  dependency.
+
+The CSS changes also cover the variables added in v90 - the panel splitter (`--xh-panel-splitter-*`,
 `--xh-panel-collapsed-strip-*`), `PdfViewer` (`--xh-pdf-viewer-*`) and `StatCard`
 (`--xh-stat-card-*`) sets. Their hooks are gone, `--xh-panel-splitter-hit-size` and
 `--xh-panel-collapsed-strip-size` now hold lengths, and their `-px` companions are removed.
 
 The most significant impacts are:
 
+- **Grids fail on AG Grid 36.2 or earlier.** Hoist checks the AG Grid version at startup. On an
+  older version it logs an error and disables every grid. AG Grid is not a peer dependency of
+  Hoist, so your package manager does not warn.
 - **Old names and unitless values fail silently.** An app still setting `--grid-bg`, `--xh-pad`, or
   `--xh-font-size: 14` loses that customization without an error. Run the codemod, and watch for
   Hoist's development-mode console warning about unitless size variables.
 - **Overrides set on `:root` or `html` no longer apply** - move them to `body.xh-app`. The codemod
   and a development-mode console warning both name any it finds.
+- **A spec that sets both `children` and a legacy key now renders `children`.** Before v91 the
+  legacy key won. The usual case is a container that spreads its props and adds `items`, as in
+  `box({...props, items: [...]})`, where a `children` prop in the spread now hides the `items`.
+  Hoist logs a console warning naming the component. The Step 6 codemod fixes these.
+- **A fetch with `params` and no `method` is now a GET.** Before v91 it was a POST. A server action
+  that accepts only POST rejects it, and a password or other sensitive param ends up in the URL.
 
 ## Prerequisites
 
@@ -48,20 +73,57 @@ Before starting, ensure:
 
 ## Upgrade Steps
 
-### 1. Run the CSS Variable Codemod
+### 1. Update `package.json`
+
+Bump hoist-react to v91 and AG Grid to 36.3. Hoist requires AG Grid 36.3 or later, to avoid a
+performance issue in 36.2.
+
+**File:** `client-app/package.json`
+
+Before:
+
+```json
+"dependencies": {
+    "@xh/hoist": "^90.0.0",
+    "ag-grid-community": "~36.2.0",
+    "ag-grid-enterprise": "~36.2.0",
+    "ag-grid-react": "~36.2.0"
+}
+```
+
+After:
+
+```json
+"dependencies": {
+    "@xh/hoist": "^91.0.0",
+    "ag-grid-community": "~36.3.0",
+    "ag-grid-enterprise": "~36.3.0",
+    "ag-grid-react": "~36.3.0"
+}
+```
+
+Bump `ag-grid-enterprise` only if your app uses it. Then run `pnpm install`, `yarn install`, or
+`npm install`.
+
+### 2. Run the CSS Variable Codemod
 
 From your `client-app` directory, after installing v91:
 
 ```bash
-# Preview first - reports every change without writing.
+# Preview first - lists each file it would change, and the report, without writing.
 node node_modules/@xh/hoist/docs/codemod/v91/codemod-css-vars.mjs --dry src
 
 # Then apply.
 node node_modules/@xh/hoist/docs/codemod/v91/codemod-css-vars.mjs src
 ```
 
+The dry run counts renames, unit fixes, and `calc()` fixes but does not list them. Review those in
+`git diff` after you apply.
+
 The codemod skips `node_modules`. A Hoist package that ships its own styles needs the same
-migration in its own repo, and a new release, before apps on v91 pick it up.
+migration in its own repo, and a new release, before apps on v91 pick it up. To skip other code
+that is not yours, such as a vendored third-party stylesheet, pass `--exclude <path>`. Repeat it for
+each file or folder.
 
 It scans `.scss`, `.css`, `.ts`, `.tsx`, and `.js` files and:
 
@@ -117,18 +179,27 @@ The codemod ends with a report. Work through each section of it:
 
 - **Hook migrations** - every unprefixed name it converted, with file and line. Confirm each was a
   Hoist hook rather than an app variable that happened to share a hook's name (e.g. `--gray`).
+- **Possibly local variables** - hook names that are declared and read only within the same files,
+  as a stylesheet's own variables would be, such as `--white` and `--black` in a vendored template.
+  To keep one as is, run the codemod again on the unmodified files with `--skip-hook <name>`, or
+  `--exclude` the file or folder that holds it.
+- **Comments naming unprefixed hooks** - the codemod never edits comments. Update each one it lists
+  to name the new `--xh-*` variable.
 - **Removed variables still referenced** - delete these usages; the variables never had any effect.
 - **Warnings** - `calc()` expressions that add a bare number to a size variable (add a unit to the
   number) or divide by one, TypeScript assigning a size variable a bare number, and code that
   references a size variable by name. For the last, check whether the code reads the variable's
   value - e.g. via `getComputedStyle(...).getPropertyValue()` - and appends a unit, which now
   doubles up (`41pxpx`). Also any `--xh-*` variable set on `:root` or `html` - move it to
-  `body.xh-app` (Step 3).
+  `body.xh-app` (Step 4). Also any declaration left as written because, once migrated, it would
+  read the variable it declares, such as
+  `--xh-grid-header-lr-pad-px: calc(var(--xh-grid-header-lr-pad) * 1px - 1px)`. A custom property
+  that reads itself is invalid. Set the new variable to a length instead, or remove the line.
 - **Markdown naming old or removed variables** - the codemod never edits `.md` files. Update
   living docs such as a README or `CLAUDE.md` by hand. Leave changelogs and release notes as
   written.
 
-### 2. Review What the Codemod Cannot Migrate
+### 3. Review What the Codemod Cannot Migrate
 
 **Hooks set outside a root-level selector.** An unprefixed hook set on a container never had any
 effect - Hoist read the hooks only on `body` - so the codemod leaves these alone. Search for any that
@@ -137,7 +208,7 @@ remain:
 ```bash
 # Unprefixed custom properties. Add your own app prefix (e.g. --myapp-) to the exclusion list.
 grep -rnE '^\s*--[a-z][a-z0-9-]*\s*:' --include='*.scss' --include='*.css' src \
-  | grep -vE -- '--(xh|ag|bp[0-9]?|fa|myapp)-'
+  | grep -vE -- ':[0-9]+:\s*--(xh|ag|bp[0-9]?|fa|myapp)-'
 ```
 
 For any hit that names a Hoist hook, decide whether you want it at all: renamed to its `--xh-*`
@@ -163,7 +234,7 @@ properly, so setting `--xh-form-field-invalid-border-color` colors both the bord
 shadow. To keep the prior no-shadow appearance, add e.g.
 `--xh-form-field-invalid-box-shadow: none;` alongside the color.
 
-### 3. Check Override Selectors
+### 4. Check Override Selectors
 
 Set overrides on `body.xh-app`. Hoist declares its defaults on `body`, wrapping its dark-theme and
 mobile variants in `:where()` so every framework declaration has the specificity of a bare `body`
@@ -192,14 +263,151 @@ body.xh-app {
 ```
 
 The codemod migrates the name and unit here but leaves the selector, and lists the declaration in
-its warnings. Change `:root` / `html` to `body.xh-app` by hand. Where you want per-theme values, nest an `&.xh-dark` block as in Step 1.
+its warnings. Change `:root` / `html` to `body.xh-app` by hand. Where you want per-theme values, nest an `&.xh-dark` block as in Step 2.
 
 **Scoped overrides** - setting a variable on a container rather than `body.xh-app` - only reach CSS
 that reads that exact variable. Variables derived from it were resolved once on `body`, so
 `.my-panel { --xh-spacing: 4px; }` does not change `--xh-spacing-half` within the panel. See "Base
 vs. Derived Variables" in [`styles/README.md`](../../styles/README.md#base-vs-derived-variables).
 
-### 4. Check the Console and the UI
+### 5. Check Inline Mask Styling
+
+On desktop, an inline `Mask` now renders as a plain `div` with the class `xh-mask--inline`, not a
+Blueprint overlay. Its backdrop is the `::before` pseudo-element of that `div`. Showing a mask no
+longer forces a browser layout. A mask with `inline: false` still uses the Blueprint overlay.
+
+App CSS that targets `.bp6-overlay` classes within an inline mask no longer matches. Search for
+Blueprint overlay classes in your styles and check any hit that styles a mask:
+
+```bash
+grep -rn 'bp6-overlay' --include='*.scss' --include='*.css' src
+```
+
+To change the backdrop color, set `--xh-mask-bg` instead.
+
+### 6. Convert Element Specs to `children`
+
+Element factories and `createElement` now take child elements via the standard React `children`
+key. Run the codemod below to convert your app as part of this upgrade.
+
+The legacy `item` and `items` keys still work as aliases in v91, so this change is not breaking and
+you can defer it. There is no reason to wait. A future major version will remove the aliases and
+force the change. Hoist's docs and examples already use `children` only, and AI coding agents
+follow the patterns your code shows them.
+
+```typescript
+// Before
+panel({
+    title: 'Users',
+    items: [grid(), toolbar()]
+});
+box({flex: 1, item: 'Hello'});
+
+// After
+panel({
+    title: 'Users',
+    children: [grid(), toolbar()]
+});
+box({flex: 1, children: 'Hello'});
+```
+
+A text search cannot tell element specs from data, because `items` is also the key for menu items,
+column groups and similar configs. The codemod loads your TypeScript project and renames a key only
+where the type checker resolves it to Hoist's `ElementSpec`. Keys outside an element spec keep their
+names, such as the `input.item` of an `XH.prompt()` call. Run it from the app root, after installing
+v91, so that it also scans root-level docs such as `CLAUDE.md`:
+
+```bash
+# Preview first - lists each file it would change, and the report, without writing.
+node client-app/node_modules/@xh/hoist/docs/codemod/v91/codemod-items-to-children.mjs --dry
+
+# Then apply, and run your formatter over the changed files.
+node client-app/node_modules/@xh/hoist/docs/codemod/v91/codemod-items-to-children.mjs
+```
+
+The codemod finds `./tsconfig.json` or `./client-app/tsconfig.json`. Pass `--project` to name
+another. It edits source files only under the tsconfig folder, never in `node_modules`. It also
+collapses `children: children` to the `children` shorthand. The preview counts the renames but
+does not list them, so review them in `git diff` after you apply.
+
+Review the report. It lists what the codemod could not convert safely, and changes to check:
+
+- **Conflicts** - a spec with more than one of `children`, `item` and `items`, left unchanged.
+  Merge them by hand. In v91 such a spec renders only `children`, where before v91 the legacy key
+  won.
+- **Not converted** - a likely spec with no type information. An example is an untyped object
+  built in one place and passed to a factory later, or app options from a `getAppOptions()`
+  override with no return type. Add a type, such as `ElementSpec` or `AppOptionSpec[]`, and run
+  the codemod again, or convert by hand.
+- **Worth a review** - most often a key moved after a spread that could carry `children`. Before
+  v91 the legacy key beat a `children` prop in the spread, and `children` does not. So the codemod
+  turns `panel({item: x, ...props})` into `panel({...props, children: x})`, which keeps the old
+  behavior. If a caller's `children` should win instead, move the key back before the spread.
+
+**Docs.** The codemod also scans markdown files, such as `CLAUDE.md`, `AGENTS.md` and READMEs, for
+factory examples, because agents copy them. By default it only reports suggested renames. Pass
+`--fix-docs` to apply them in code blocks that parse cleanly. Pass `--no-docs` to skip markdown.
+
+**Container components.** A component that renders its children inside another factory should
+pass them on as `children`. The codemod makes this change:
+
+```typescript
+// Before
+render({children, ...props}) {
+    return vbox({...props, className: 'my-container', items: children});
+}
+
+// After
+render({children, ...props}) {
+    return vbox({...props, className: 'my-container', children});
+}
+```
+
+A component with its own prop named `items`, such as Blueprint's `OverflowList`, still takes it
+via the `$items` escape hatch. See
+[Authoring a Container Component](../../core/README.md#authoring-a-container-component).
+
+**TypeScript.** Two type changes can surface new compile errors. `AppOptionSpec.formField` is now
+typed as an element spec instead of `any`. `ElementSpec.children` takes the type of the component's
+own `children` prop when it declares one, such as a render function.
+
+Toolbox ran this codemod over its whole client - see
+[xh/toolbox#958](https://github.com/xh/toolbox/pull/958).
+
+### 7. Set `method` on Fetches That Should POST
+
+`FetchService` now sends a request with no `method` as a GET, whatever its `params`. Before v91, a
+request with `params` and no `method` was a POST, with the params in a form-encoded body. This
+applies to `XH.fetch()`, `XH.fetchJson()` and `XH.fetchNdjson()`, the same calls on a `Runner`, and
+a `PdfViewer` source given as `FetchOptions`. `getJson`, `postJson`, `putJson`, `patchJson` and
+`deleteJson` set their own method and are unchanged.
+
+List the calls to check, then look at each one that sets `params` but not `method`:
+
+```bash
+grep -rnE '\.(fetch|fetchJson|fetchNdjson)\(' src
+```
+
+Grails binds controller `params` from the query string and a form body alike, so a read served by a
+Grails action works as a GET without change. Add `method: 'POST'` to a call that:
+
+- changes data on the server.
+- sends a password or other sensitive value, which a GET would put in the URL and server logs.
+- sends large params, such as serialized JSON, which can exceed URL length limits.
+- targets a server action that accepts only POST.
+
+```typescript
+// Before v91 - a POST, because it sets params
+await XH.fetchJson({url: 'api/orders/cancel', params: {orderId}});
+
+// v91 - set the method to keep it a POST
+await XH.fetchJson({url: 'api/orders/cancel', method: 'POST', params: {orderId}});
+```
+
+A unit test that serves one of these reads with `hoistCore.route('POST', ...)` and checks `req.form`
+now needs `route('GET', ...)` and `req.query`.
+
+### 8. Check the Console and the UI
 
 Start the app in development mode. Hoist logs a warning at startup if any size variable resolves to
 a bare number - almost always an override the codemod could not see, such as one set from
@@ -213,14 +421,27 @@ Unitless values found for: --xh-spacing, ...
 The check covers the active theme at startup. Switch themes and reload to check the other.
 
 Hoist also warns if any `--xh-*` variable is set on `:root` or `html`, by a stylesheet or an inline
-style. Move each one it names to `body.xh-app` (Step 3):
+style. Move each one it names to `body.xh-app` (Step 4):
 
 ```
 [ThemeModel] | CSS variables set on :root or html have no effect - Hoist's defaults on body take
 precedence. Move these overrides to body.xh-app: --xh-spacing, ...
 ```
 
+Hoist also warns, once per component, if an element spec sets both `children` and a legacy key.
+Only `children` renders. Fix each one it names as described in Step 6:
+
+```
+Element spec for "Panel" sets both `children` and a legacy `item` / `items` key. Only `children`
+is rendered - use `children` alone.
+```
+
 Then review the app in both light and dark themes, and on mobile if applicable.
+
+`StatCard` now starts its content at the top, so cards in a `StatCardStrip` keep their titles and
+values on the same lines. A card taller than its content no longer centers that content
+vertically. To center it again, set `--xh-stat-card-justify-content: center` - on `body.xh-app` for
+every card, or on a container for the cards within it.
 
 Popovers have a stronger border and shadow in v91, so they stand out from the content beneath them.
 If your app styles `.bp6-popover` or `.bp6-popover-content` directly to change a border, shadow, or
@@ -228,11 +449,96 @@ background, set the new `--xh-popover-*` variables instead. To change one popove
 `popoverClassName`. See "Dialogs and Popovers" in
 [`styles/README.md`](../../styles/README.md#dialogs-and-popovers).
 
+### 9. Switch Agents to Hoist Docs
+
+`node_modules/@xh/hoist/bin/hoist-mcp.mjs` and the `npx hoist-docs` / `npx hoist-ts` commands no
+longer exist. Hoist Docs serves the same tools - `hoist-search-docs`, `hoist-read-doc`,
+`hoist-search-symbols`, `hoist-get-symbol`, `hoist-get-members` and the rest - for hoist-core as
+well, from one MCP server built on the MCP TypeScript SDK v2 (the 2026-07-28 spec, and the 2025
+handshake older clients use). The agent launches it over stdio, as before, and it answers for the
+Hoist versions your app has installed.
+
+**Add the dependency:**
+
+```bash
+cd client-app && pnpm add -D @xh/hoist-docs
+```
+
+**Find affected config:**
+
+```bash
+grep -rn "hoist-mcp\|hoist-core-mcp\|npx hoist-docs\|npx hoist-ts\|hoist-core-docs\|hoist-core-symbols\|mcp__hoist-react\|mcp__hoist-core" \
+    .mcp.json CLAUDE.md AGENTS.md .claude build.gradle 2>/dev/null
+```
+
+**Before** (`.mcp.json`):
+
+```json
+{
+  "mcpServers": {
+    "hoist-react": {
+      "type": "stdio",
+      "command": "node",
+      "args": ["client-app/node_modules/@xh/hoist/bin/hoist-mcp.mjs"]
+    },
+    "hoist-core": {
+      "command": "./bin/hoist-core-mcp"
+    }
+  }
+}
+```
+
+**After:**
+
+```json
+{
+  "mcpServers": {
+    "hoist-docs": {
+      "type": "stdio",
+      "command": "node",
+      "args": ["client-app/node_modules/@xh/hoist-docs/bin/hoist-docs.mjs"]
+    }
+  }
+}
+```
+
+Point at the package's own launcher, as above, rather than `node_modules/.bin/hoist-docs`, which
+older `@xh/hoist` versions' CLI of the same name can take.
+
+**Where the docs come from.** hoist-react's docs index ships inside `@xh/hoist` itself, so it needs
+no network. hoist-core's is fetched once per `hoistCoreVersion` from Maven - Maven Central for
+releases, Sonatype's snapshot repository for snapshots - and cached in `~/.cache/hoist-docs`.
+Behind an organization's Maven mirror, set `HOIST_DOCS_MAVEN_REPO` and
+`HOIST_DOCS_MAVEN_SNAPSHOT_REPO` (with `HOIST_DOCS_MAVEN_USER` and `HOIST_DOCS_MAVEN_PASSWORD` if it
+needs credentials) in the `env` of the `.mcp.json` entry or in your environment. Behind an HTTP
+proxy, also set `NODE_USE_ENV_PROXY=1`. hoist-core ships a docs index from v45; with an earlier
+hoist-core, Hoist Docs serves hoist-react only, and `hoist-ping` says why. Organizations that front
+MCP servers with a gateway can run the same package over HTTP instead (`hoist-docs --http`); see
+the Hoist Docs README.
+
+Also update:
+
+- Permission allowlists that name the old servers, such as `mcp__hoist-react__*` and
+  `mcp__hoist-core__*` in `.claude/settings.json`, to the new server name (`mcp__hoist-docs__*`),
+  and drop `Bash` permissions for `npx hoist-docs`, `npx hoist-ts` and `./bin/hoist-core-*`.
+- `enabledMcpjsonServers` entries naming `hoist-react` or `hoist-core`.
+- Agent instructions (`CLAUDE.md`, `AGENTS.md`) that tell agents to run `npx hoist-docs`,
+  `npx hoist-ts` or the `bin/hoist-core-*` launchers. Point them at the MCP tools, or at the docs
+  under `node_modules/@xh/hoist/docs/` when the tool is not set up.
+- hoist-core's tools were named `hoist-core-*`. Hoist Docs serves one set of `hoist-*` tools for
+  both libraries; pass `library: "core"` to scope a call to hoist-core.
+- When you upgrade to hoist-core v45, remove the `hoistCoreCli` configuration and the
+  `installHoistCoreTools` task from `build.gradle`, and delete the `bin/hoist-core-*` launchers it
+  wrote. hoist-core v45 no longer publishes the `io.xh:hoist-core-mcp` artifact they use.
+
+Restart the agent after this change, and after any later Hoist upgrade, to pick up the new docs.
+
 ## Verification Checklist
 
 After completing all steps:
 
 - [ ] `pnpm install` / `yarn install` / `npm install` completes without errors.
+- [ ] AG Grid packages are on `~36.3.0`, and the console shows no AG Grid version error.
 - [ ] `pnpm lint` / `yarn lint` / `npm run lint` passes.
 - [ ] `pnpm typecheck` / `npx tsc --noEmit` passes.
 - [ ] The application builds and loads without console errors.
@@ -242,7 +548,16 @@ After completing all steps:
   the warning about variables set on `:root` or `html`.
 - [ ] Custom colors, spacing, and typography render correctly in both light and dark themes (and on
   mobile, if applicable).
-- [ ] Form validation styling looks as intended if you override any `-border-color` (Step 2 note).
+- [ ] Inline masks look as intended if your app styles them (Step 5).
+- [ ] Form validation styling looks as intended if you override any `-border-color` (Step 3 note).
+- [ ] The items-to-children codemod report has been reviewed - conflicts, unconverted specs and
+  spreads (Step 6).
+- [ ] The application loads without the console warning about a spec that sets both `children`
+  and a legacy `item` / `items` key.
+- [ ] Each fetch that sets `params` and changes data, sends a sensitive value, or sends large params
+  also sets `method: 'POST'` (Step 7).
+- [ ] No config or instructions reference `hoist-mcp.mjs`, `npx hoist-docs` or `npx hoist-ts`.
+- [ ] `hoist-ping` from your agent reports Hoist Docs and your app's Hoist versions.
 - [ ] No references to retired CSS variable names remain:
   ```bash
   # Should return nothing
@@ -322,9 +637,9 @@ handles these; for reference, their v91 variables are:
 
 | v90 unprefixed hook | v91 variable |
 |---|---|
-| `--form-field-info-border-color` | `--xh-form-field-info-border-color` (see Step 2 note) |
-| `--form-field-invalid-border-color` | `--xh-form-field-invalid-border-color` (see Step 2 note) |
-| `--form-field-warning-border-color` | `--xh-form-field-warning-border-color` (see Step 2 note) |
+| `--form-field-info-border-color` | `--xh-form-field-info-border-color` (see Step 3 note) |
+| `--form-field-invalid-border-color` | `--xh-form-field-invalid-border-color` (see Step 3 note) |
+| `--form-field-warning-border-color` | `--xh-form-field-warning-border-color` (see Step 3 note) |
 | `--grid-cell-bg-highlight` | `--xh-grid-cell-changed-bg` |
 | `--grid-header-cell-lr-pad` | `--xh-grid-header-padding-inline` |
 | `--input-placeholder-color` | `--xh-input-placeholder-text-color` |
@@ -338,3 +653,8 @@ handles these; for reference, their v91 variables are:
 - [`styles/README.md`](../../styles/README.md) - CSS variable system documentation, including
   naming conventions.
 - [`codemod-css-vars.mjs`](../codemod/v91/codemod-css-vars.mjs) - the CSS variable migration codemod.
+- [`codemod-items-to-children.mjs`](../codemod/v91/codemod-items-to-children.mjs) - the element
+  spec `children` codemod.
+- [Element Factories](../../core/README.md#element-factories) - the `children` key, the legacy
+  aliases, and authoring container components.
+- [Hoist Docs](https://github.com/xh/hoist-docs) - the MCP tool, its design, and gateway deployment.

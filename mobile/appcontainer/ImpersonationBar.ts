@@ -27,7 +27,7 @@ export const impersonationBar = hoistCmp.factory({
         if (!isOpen) return null;
         return div({
             className: 'xh-impersonation-bar',
-            items: [
+            children: [
                 Icon.impersonate({size: 'lg'}),
                 select({
                     bind: 'pendingTarget',

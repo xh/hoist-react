@@ -372,6 +372,47 @@ body {
   }
 
   //------------------------
+  // Callouts
+  //------------------------
+  // Width of the bar along the left edge, in the callout's color. Zero for no bar.
+  --xh-callout-accent-width: 3px;
+  // Background, and color of the icon and bar, for a callout with no intent.
+  --xh-callout-bg: color-mix(in srgb, var(--xh-callout-color) 12%, transparent);
+  --xh-callout-color: var(--xh-blue-gray);
+  --xh-callout-border-radius: var(--xh-border-radius);
+  --xh-callout-compact-font-size: var(--xh-font-size-small-relative);
+  --xh-callout-compact-gap: 6px;
+  --xh-callout-compact-line-height: 1.3;
+  --xh-callout-compact-padding: 4px 8px;
+  --xh-callout-danger-bg: var(--xh-intent-danger-trans1);
+  --xh-callout-danger-color: var(--xh-intent-danger-text-color);
+  --xh-callout-font-size: inherit;
+  // Gap between the icon and the text.
+  --xh-callout-gap: var(--xh-spacing);
+  --xh-callout-line-height: 1.4;
+  --xh-callout-padding: var(--xh-spacing);
+  --xh-callout-primary-bg: var(--xh-intent-primary-trans1);
+  --xh-callout-primary-color: var(--xh-intent-primary-text-color);
+  --xh-callout-success-bg: var(--xh-intent-success-trans1);
+  --xh-callout-success-color: var(--xh-intent-success-text-color);
+  --xh-callout-text-color: var(--xh-text-color);
+  --xh-callout-title-font-weight: 600;
+  // Gap between the title and the body.
+  --xh-callout-title-gap: 2px;
+  --xh-callout-title-text-color: var(--xh-callout-text-color);
+  --xh-callout-warning-bg: var(--xh-intent-warning-trans1);
+  // The standard warning color is too light for an icon on the tinted background.
+  --xh-callout-warning-color: var(--xh-intent-warning-darker);
+
+  &:where(.xh-dark) {
+    --xh-callout-color: var(--xh-text-color-muted);
+    // The standard danger tint barely shows on a dark background.
+    --xh-callout-danger-bg: var(--xh-intent-danger-trans2);
+    --xh-callout-warning-color: var(--xh-intent-warning-text-color);
+  }
+
+
+  //------------------------
   // Cards
   //------------------------
   --xh-card-bg: var(--xh-bg);
@@ -732,6 +773,37 @@ body {
   }
 
   //------------------------
+  // Property Tables
+  //------------------------
+  // Gap between the columns of a multi-column list.
+  --xh-property-table-column-gap: var(--xh-spacing-double);
+  --xh-property-table-compact-font-size: var(--xh-font-size-small-relative);
+  --xh-property-table-compact-row-gap: 2px;
+  --xh-property-table-danger-color: var(--xh-intent-danger-text-color);
+  --xh-property-table-divider-border: var(--xh-border-solid);
+  --xh-property-table-empty-text-color: var(--xh-blue-gray);
+  --xh-property-table-font-size: inherit;
+  --xh-property-table-label-font-size: inherit;
+  --xh-property-table-label-font-weight: normal;
+  // Gap between a label and its value, when the label is on the left.
+  --xh-property-table-label-gap: var(--xh-spacing);
+  // Widest a column of labels gets, when the label is on the left. Longer labels wrap.
+  --xh-property-table-label-max-width: 16em;
+  --xh-property-table-label-text-color: var(--xh-blue-gray);
+  --xh-property-table-null-text-color: var(--xh-text-color-muted);
+  --xh-property-table-primary-color: var(--xh-intent-primary-text-color);
+  --xh-property-table-row-gap: var(--xh-spacing-half);
+  --xh-property-table-success-color: var(--xh-intent-success-text-color);
+  --xh-property-table-value-font-weight: normal;
+  --xh-property-table-warning-color: var(--xh-intent-warning-text-color);
+
+  // The muted text color is too faint for labels on a light background, but reads well on a dark one.
+  &:where(.xh-dark) {
+    --xh-property-table-empty-text-color: var(--xh-text-color-muted);
+    --xh-property-table-label-text-color: var(--xh-text-color-muted);
+  }
+
+  //------------------------
   // Mask + LoadingIndicator
   //------------------------
   --xh-mask-bg: rgba(255, 255, 255, 0.4);
@@ -857,6 +929,25 @@ body {
   }
 
   //------------------------
+  // Progress Bars
+  //------------------------
+  --xh-progress-bar-border-radius: calc(var(--xh-progress-bar-height) / 2);
+  --xh-progress-bar-danger-color: var(--xh-intent-danger);
+  // Fill of a bar with no intent.
+  --xh-progress-bar-fill-bg: var(--xh-progress-bar-primary-color);
+  --xh-progress-bar-font-size: inherit;
+  --xh-progress-bar-gap: var(--xh-spacing-half);
+  --xh-progress-bar-height: 8px;
+  --xh-progress-bar-label-text-color: var(--xh-text-color);
+  --xh-progress-bar-primary-color: var(--xh-intent-primary);
+  --xh-progress-bar-success-color: var(--xh-intent-success);
+  --xh-progress-bar-target-bg: var(--xh-text-color);
+  --xh-progress-bar-target-width: 2px;
+  --xh-progress-bar-track-bg: var(--xh-border-color);
+  --xh-progress-bar-value-text-color: var(--xh-text-color);
+  --xh-progress-bar-warning-color: var(--xh-intent-warning);
+
+  //------------------------
   // Resizable splitters
   //------------------------
   --xh-resizable-bg: #{mc('blue-grey', '50')};
@@ -911,6 +1002,51 @@ body {
     --xh-scrollbar-thumb-color: #{mc('blue-grey', '900')};
   }
 
+
+  //------------------------
+  // Separators
+  //------------------------
+  --xh-separator-border-color: var(--xh-border-color);
+  --xh-separator-label-text-color: var(--xh-blue-gray);
+  --xh-separator-label-font-size: var(--xh-font-size-small-relative);
+  // Gap between a label and the rule on each side of it.
+  --xh-separator-label-gap: var(--xh-spacing);
+  --xh-separator-margin: 0;
+  // Shortest a segment of the rule gets beside a label, along the rule.
+  --xh-separator-rule-min-size: 1em;
+  // Thickness of the rule.
+  --xh-separator-border-width: var(--xh-border-width);
+
+  // The muted text color is too faint for labels on a light background, but reads well on a dark one.
+  &:where(.xh-dark) {
+    --xh-separator-label-text-color: var(--xh-text-color-muted);
+  }
+
+  //------------------------
+  // Sparklines
+  //------------------------
+  // The line's color by default. Resolves on the area, so it follows `intent` and `colorBy`.
+  --xh-sparkline-area-color: currentColor;
+  --xh-sparkline-area-opacity: 0.15;
+  --xh-sparkline-baseline-color: var(--xh-text-color-muted);
+  --xh-sparkline-color: var(--xh-blue-gray);
+  --xh-sparkline-danger-color: var(--xh-intent-danger-text-color);
+  --xh-sparkline-dot-size: 5px;
+  --xh-sparkline-height: 24px;
+  --xh-sparkline-line-width: 1.5px;
+  --xh-sparkline-negative-color: var(--xh-neg-val-color);
+  // Space between the box and the plot, so a dot or stroke on the edge of the scale is not cut off.
+  --xh-sparkline-padding: 3px;
+  --xh-sparkline-positive-color: var(--xh-pos-val-color);
+  --xh-sparkline-primary-color: var(--xh-intent-primary-text-color);
+  --xh-sparkline-success-color: var(--xh-intent-success-text-color);
+  --xh-sparkline-warning-color: var(--xh-intent-warning-text-color);
+  --xh-sparkline-width: 80px;
+
+  // The muted text color is too faint for a thin line on a light background, but fine on a dark one.
+  &:where(.xh-dark) {
+    --xh-sparkline-color: var(--xh-text-color-muted);
+  }
 
   //------------------------
   // Spinner

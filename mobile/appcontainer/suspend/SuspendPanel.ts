@@ -56,20 +56,20 @@ export const suspendPanel = hoistCmp.factory<AppContainerModel>({
             testId: 'xh-suspend-panel',
             title,
             icon,
-            items: [
+            children: [
                 vframe({
                     className: 'xh-suspend-panel__content',
-                    items: [
+                    children: [
                         div({
                             className: 'xh-suspend-panel__text-container',
-                            items: [
-                                p({item: message, omit: !message}),
+                            children: [
+                                p({children: message, omit: !message}),
                                 p(`${XH.clientAppName} must be reloaded to continue.`)
                             ]
                         }),
                         div({
                             className: 'xh-suspend-panel__button-container',
-                            items: [
+                            children: [
                                 button({
                                     text: 'Reload Now',
                                     icon: Icon.refresh(),

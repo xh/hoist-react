@@ -7,7 +7,7 @@
 import * as AdminCol from '@xh/hoist/admin/columns';
 import * as Col from '@xh/hoist/admin/columns/Rest';
 import {jsonSearchButton} from '@xh/hoist/admin/jsonsearch/JsonSearch';
-import {filler, fragment, hframe} from '@xh/hoist/cmp/layout';
+import {filler, fragment} from '@xh/hoist/cmp/layout';
 import {creates, hoistCmp} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {recordActionBar} from '@xh/hoist/desktop/cmp/record';
@@ -25,38 +25,36 @@ export const configPanel = hoistCmp.factory({
 
     render({model}) {
         return fragment(
-            hframe(
-                restGrid({
-                    testId: 'config',
-                    formBbar: configFormBbar(),
-                    extraToolbarItems: () => [
-                        button({
-                            icon: Icon.diff(),
-                            text: 'Compare w/ Remote',
-                            onClick: () => model.openDiffer()
-                        }),
-                        toolbarSep(),
-                        jsonSearchButton({
-                            subjectName: 'Config',
-                            docSearchUrl: 'jsonSearch/searchConfigs',
-                            gridModelConfig: {
-                                sortBy: ['groupName', 'name'],
-                                columns: [
-                                    {...AdminCol.groupName},
-                                    {...AdminCol.name},
-                                    {
-                                        field: {name: 'json', type: 'string'},
-                                        hidden: true
-                                    },
-                                    {...Col.lastUpdated}
-                                ]
-                            },
-                            groupByOptions: ['groupName']
-                        })
-                    ]
-                }),
-                configDetailPanel()
-            ),
+            restGrid({
+                testId: 'config',
+                formBbar: configFormBbar(),
+                detailPanel: configDetailPanel(),
+                extraToolbarItems: () => [
+                    button({
+                        icon: Icon.diff(),
+                        text: 'Compare w/ Remote',
+                        onClick: () => model.openDiffer()
+                    }),
+                    toolbarSep(),
+                    jsonSearchButton({
+                        subjectName: 'Config',
+                        docSearchUrl: 'jsonSearch/searchConfigs',
+                        gridModelConfig: {
+                            sortBy: ['groupName', 'name'],
+                            columns: [
+                                {...AdminCol.groupName},
+                                {...AdminCol.name},
+                                {
+                                    field: {name: 'json', type: 'string'},
+                                    hidden: true
+                                },
+                                {...Col.lastUpdated}
+                            ]
+                        },
+                        groupByOptions: ['groupName']
+                    })
+                ]
+            }),
             differ({omit: !model.differModel}),
             regroupDialog()
         );

@@ -31,7 +31,7 @@ export const monitorTab = hoistCmp.factory({
             mask: 'onLoad',
             className: 'xh-monitor-tab',
             tbar: tbar(),
-            items: [body(), monitorEditorDialog()],
+            children: [body(), monitorEditorDialog()],
             ref: model.viewRef
         });
     }
@@ -53,7 +53,7 @@ const body = hoistCmp.factory<MonitorTabModel>(({model}) => {
         desiredRatio: 3,
         minTileWidth: 150,
         minTileHeight: 180,
-        items: results.map(results => tile({results}))
+        children: results.map(results => tile({results}))
     });
 });
 
@@ -84,7 +84,7 @@ const tbar = hoistCmp.factory<MonitorTabModel>(({model}) => {
         }),
         hbox({
             className: getClassName(!failed),
-            items: [
+            children: [
                 toolbarSep(),
                 Icon.error({prefix: 'fas', intent: 'danger'}),
                 label(`${failed} failed`)
@@ -92,7 +92,7 @@ const tbar = hoistCmp.factory<MonitorTabModel>(({model}) => {
         }),
         hbox({
             className: getClassName(!warned),
-            items: [
+            children: [
                 toolbarSep(),
                 Icon.warning({prefix: 'fas', intent: 'warning'}),
                 label(`${warned} warned`)
@@ -100,7 +100,7 @@ const tbar = hoistCmp.factory<MonitorTabModel>(({model}) => {
         }),
         hbox({
             className: getClassName(!passed),
-            items: [
+            children: [
                 toolbarSep(),
                 Icon.checkCircle({prefix: 'fas', intent: 'success'}),
                 label(`${passed} passed`)
@@ -108,7 +108,7 @@ const tbar = hoistCmp.factory<MonitorTabModel>(({model}) => {
         }),
         hbox({
             className: getClassName(!inactive),
-            items: [
+            children: [
                 toolbarSep(),
                 Icon.disabled({prefix: 'fas', className: 'xh-text-color-muted'}),
                 label(`${inactive} inactive`)

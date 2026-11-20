@@ -42,6 +42,7 @@ export interface GridCountLabelProps extends HoistProps, BoxProps {
  */
 export const [GridCountLabel, gridCountLabel] = hoistCmp.withFactory<GridCountLabelProps>({
     displayName: 'GridCountLabel',
+    model: false,
     className: 'xh-grid-count-label',
 
     render({
@@ -85,7 +86,7 @@ export const [GridCountLabel, gridCountLabel] = hoistCmp.withFactory<GridCountLa
 
         return box({
             ...props,
-            item: `${recCountString()} ${selCountString()}`
+            children: `${recCountString()} ${selCountString()}`
         });
     }
 });

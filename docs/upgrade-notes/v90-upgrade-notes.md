@@ -43,6 +43,9 @@ Before starting, ensure:
 - [ ] **hoist-core** at >= 40.5.0 (unchanged floor). **hoist-core 44.0 is recommended.** The new
   Purge Connections buttons in the Admin Console Connection Pool Monitor call an endpoint that
   older cores lack, so they fail there. See [Version Compatibility](../version-compatibility.md).
+- [ ] **TypeScript 5.9 projects** list `dom.iterable` in `lib`. This applies to every
+  `tsconfig.json` that type-checks Hoist sources, including the app and any test suite. Hoist v90
+  iterates a DOM collection, which TypeScript 6 and later allow with plain `dom`.
 
 ## Upgrade Steps
 
@@ -483,11 +486,12 @@ If the app still imports from router5 for anything else, update its own dependen
 router5 8 moved its type files from `types/` to `dist/`, so an import from `router5/types/...` no
 longer resolves. Import those types from `router5` itself.
 
-**Find affected code:**
+**Find affected code.** Search the whole repo, not only `client-app`. A sibling TypeScript project,
+such as an end-to-end test suite, can declare its own `router5` and import its `Route` type.
 
 ```bash
-grep -n '"router5' client-app/package.json
-grep -rnE "from 'router5(-plugin-browser)?['/]" client-app/src/
+grep -rn --include=package.json '"router5' . --exclude-dir=node_modules
+grep -rnE --exclude-dir=node_modules "from 'router5(-plugin-browser)?['/]" .
 ```
 
 **Review deep links with `@`, `=` or `|` in a path parameter.** router5 8 percent-encodes path

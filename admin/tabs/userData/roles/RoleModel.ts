@@ -290,7 +290,8 @@ export class RoleModel extends HoistModel {
         try {
             const {data} = await this.runner()
                 .span('directoryGroupsInfo')
-                .fetchJson({url: 'roleAdmin/directoryGroupsInfo', params: {names}});
+                // POST to send what may be a long list of group names in the body, not the URL.
+                .fetchJson({url: 'roleAdmin/directoryGroupsInfo', method: 'POST', params: {names}});
             this.updateDirectoryGroupInfo(data);
         } catch (e) {
             if (e?.httpStatus === 404) {

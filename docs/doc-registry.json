@@ -117,7 +117,7 @@
             "mcpCategory": "package",
             "viewerCategory": "components",
             "description": "Flexbox-based layout containers.",
-            "keywords": ["Box", "VBox", "HBox", "Frame", "Viewport", "LayoutProps", "pixel conversion"]
+            "keywords": ["Box", "VBox", "HBox", "Frame", "Viewport", "LayoutProps", "pixel conversion", "Separator", "divider"]
         },
         {
             "id": "cmp/tab/README.md",
@@ -150,6 +150,38 @@
             "viewerCategory": "components",
             "description": "PDF document viewer built on pdf.js, with a configurable toolbar and an observable model API for paging, zoom, find, and download.",
             "keywords": ["PdfViewerModel", "PdfViewer", "PdfSource", "PdfScale", "PdfViewerToolbarToken", "pdfjs-dist", "pdf.js", "PDF", "document preview"]
+        },
+        {
+            "id": "cmp/propertytable/README.md",
+            "title": "PropertyTable Package",
+            "mcpCategory": "package",
+            "viewerCategory": "components",
+            "description": "Display-only list of labeled values, such as the fields of a record in a detail panel, and when to use it over a read-only Form.",
+            "keywords": ["PropertyTable", "PropertyTableEntry", "key value", "label value", "labeled values", "detail panel", "record fields", "description list", "labelSide", "minColumnWidth", "read-only form"]
+        },
+        {
+            "id": "cmp/callout/README.md",
+            "title": "Callout Package",
+            "mcpCategory": "package",
+            "viewerCategory": "components",
+            "description": "Short note set off within content, with an intent, its icon, an optional title and a body, and when to use it rather than a Banner or a Card.",
+            "keywords": ["Callout", "callout", "admonition", "note", "caveat", "warning", "alert", "intent", "Banner", "Card"]
+        },
+        {
+            "id": "cmp/progressbar/README.md",
+            "title": "ProgressBar Package",
+            "mcpCategory": "package",
+            "viewerCategory": "components",
+            "description": "Bar that shows a value against a maximum, with an optional target marker, or an indeterminate fill for work of unknown length.",
+            "keywords": ["ProgressBar", "progress", "progress bar", "utilization", "quota", "indeterminate", "target", "valueRenderer"]
+        },
+        {
+            "id": "cmp/sparkline/README.md",
+            "title": "Sparkline Package",
+            "mcpCategory": "package",
+            "viewerCategory": "components",
+            "description": "Small inline trend chart in plain SVG for a StatCard or a grid cell, with shared scales across a grid column, its fixed scope, and when to use a Chart or the AG Grid sparkline instead.",
+            "keywords": ["Sparkline", "sparkline", "trend", "inline chart", "mini chart", "micro chart", "colorBy", "markers", "baseline", "grid column renderer", "shared scale", "scope", "tooltip", "AG Grid sparkline", "agSparklineCellRenderer"]
         },
         {
             "id": "desktop/cmp/dash/README.md",
@@ -288,20 +320,12 @@
             "keywords": ["InspectorPanel", "InspectorModel", "StatsModel", "InstancesModel", "DiagnosticsModel", "property watchlist", "model leak detection"]
         },
         {
-            "id": "mcp/README.md",
-            "title": "MCP Server",
-            "mcpCategory": "package",
-            "viewerCategory": "devops",
-            "description": "Model Context Protocol server providing AI assistants with documentation search, TypeScript type exploration, and code generation prompts.",
-            "keywords": ["MCP", "Model Context Protocol", "AI assistant", "Claude Code", "tools", "resources", "prompts", "search", "symbols", "documentation"]
-        },
-        {
             "id": "docs/companion-library-docs.md",
             "title": "Companion Library Docs",
             "mcpCategory": "devops",
             "viewerCategory": "devops",
-            "description": "How a library that builds on Hoist, such as hoist-chat-kit or a client firm's shared package, serves its docs through the hoist-react MCP server and hoist-docs CLI.",
-            "keywords": ["companion library", "hoist.docRegistry", "docRegistry", "package.json", "client package", "overrides", "sidecar", "HOIST_MCP_APP_ROOT", "package-prefixed doc ids", "library docs"]
+            "description": "How a library that builds on Hoist, such as hoist-chat-kit or a client firm's shared package, ships a Hoist Docs index in its npm package so agents get its docs and API.",
+            "keywords": ["companion library", "hoistDocs", "hoist-docs-build", "@xh/hoist-docs-builder", "prepack", "package.json", "client package", "overrides", "mcpInstructions", "library docs"]
         },
         {
             "id": "docs/lifecycle-app.md",
@@ -580,8 +604,8 @@
             "title": "v91 Upgrade Notes",
             "mcpCategory": "devops",
             "viewerCategory": "upgrade",
-            "description": "Upgrade guide from v90.x to v91.0.0. Medium difficulty. Covers the CSS custom property overhaul - codemod, removed override hooks, renamed variables, and units in size values.",
-            "keywords": ["upgrade", "migration", "breaking changes", "v91", "v90", "css variables", "custom properties", "override hooks", "codemod", "renamed variables", "units", "--xh-"]
+            "description": "Upgrade guide from v90.x to v91.0.0. Medium difficulty. Covers the CSS custom property overhaul - codemod, removed override hooks, renamed variables, and units in size values. Also covers the element factory move from item/items to children, with its codemod, and moving agent configs from the removed stdio MCP server and hoist-docs / hoist-ts CLIs to Hoist Docs.",
+            "keywords": ["upgrade", "migration", "breaking changes", "v91", "v90", "css variables", "custom properties", "override hooks", "codemod", "renamed variables", "units", "--xh-", "MCP", "hoist-mcp", "hoist-docs", "hoist-ts", "Hoist Docs", ".mcp.json"]
         }
     ]
 }

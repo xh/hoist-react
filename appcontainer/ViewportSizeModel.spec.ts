@@ -74,6 +74,24 @@ describe('ViewportSizeModel', () => {
         model.destroy();
     });
 
+    // Guards a startup race fixed in v91. The first measure was debounced, and the first
+    // orientation check, debounced by the same 100ms, could run before it and throw on an unset
+    // size. Fake timers always run the two in order, so check that the size is set at once. The
+    // setup fails a test on a reaction error.
+    it('measures at construction, so it can fall back to the window shape at once', async () => {
+        orientation.type = undefined;
+        Object.assign(window, {innerWidth: 800, innerHeight: 1200});
+        vi.useFakeTimers();
+
+        const model = new ViewportSizeModel();
+        expect(model.size).toEqual({width: 800, height: 1200});
+
+        await vi.advanceTimersByTimeAsync(SETTLE_MS);
+        expect(model.isPortrait).toBe(true);
+
+        model.destroy();
+    });
+
     // Test-support destroys XH's instance before Vitest tears down jsdom at the end of each spec
     // file. `@debounced` drops the pending measure, so it never reads a `window` that is gone.
     it('stops measuring once destroyed, including a measure already pending', async () => {

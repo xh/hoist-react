@@ -1,0 +1,86 @@
+/*
+ * This file belongs to Hoist, an application development toolkit
+ * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
+ *
+ * Copyright © 2026 Extremely Heavy Industries Inc.
+ */
+
+.xh-callout {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--xh-callout-gap);
+  min-width: 0;
+  padding: var(--xh-callout-padding);
+  font-size: var(--xh-callout-font-size);
+  line-height: var(--xh-callout-line-height);
+  color: var(--xh-callout-text-color);
+  background-color: var(--xh-callout-bg);
+  border-left: var(--xh-callout-accent-width) solid var(--xh-callout-color);
+  border-radius: var(--xh-callout-border-radius);
+
+  // Swaps in the compact-size variables, so the rules above draw both sizes.
+  &--compact {
+    --xh-callout-font-size: var(--xh-callout-compact-font-size);
+    --xh-callout-gap: var(--xh-callout-compact-gap);
+    --xh-callout-line-height: var(--xh-callout-compact-line-height);
+    --xh-callout-padding: var(--xh-callout-compact-padding);
+  }
+
+  &--intent-primary {
+    --xh-callout-bg: var(--xh-callout-primary-bg);
+    --xh-callout-color: var(--xh-callout-primary-color);
+  }
+
+  &--intent-success {
+    --xh-callout-bg: var(--xh-callout-success-bg);
+    --xh-callout-color: var(--xh-callout-success-color);
+  }
+
+  &--intent-warning {
+    --xh-callout-bg: var(--xh-callout-warning-bg);
+    --xh-callout-color: var(--xh-callout-warning-color);
+  }
+
+  &--intent-danger {
+    --xh-callout-bg: var(--xh-callout-danger-bg);
+    --xh-callout-color: var(--xh-callout-danger-color);
+  }
+
+  // One line high, so the icon centers on the first line of text, whether title or body.
+  &__icon {
+    display: flex;
+    flex: none;
+    align-items: center;
+    height: 1lh;
+    color: var(--xh-callout-color);
+  }
+
+  &__content {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    gap: var(--xh-callout-title-gap);
+    min-width: 0;
+    // Text breaks between words. Only a word wider than the callout, such as a URL, breaks inside.
+    overflow-wrap: break-word;
+  }
+
+  &__title {
+    font-weight: var(--xh-callout-title-font-weight);
+    color: var(--xh-callout-title-text-color);
+  }
+
+  // Block content, such as the paragraphs of a markdown element, takes no space above its first
+  // block or below its last, here or one level down.
+  &__body {
+    > :first-child,
+    > :first-child > :first-child {
+      margin-top: 0;
+    }
+
+    > :last-child,
+    > :last-child > :last-child {
+      margin-bottom: 0;
+    }
+  }
+}
