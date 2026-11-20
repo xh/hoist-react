@@ -25,6 +25,8 @@ export * from './cube/aggregate/Aggregator';
 export * from './cube/aggregate/AverageAggregator';
 export * from './cube/aggregate/AverageStrictAggregator';
 export * from './cube/aggregate/ChildCountAggregator';
+export * from './cube/aggregate/FirstAggregator';
+export * from './cube/aggregate/LastAggregator';
 export * from './cube/aggregate/LeafCountAggregator';
 export * from './cube/aggregate/MaxAggregator';
 export * from './cube/aggregate/MedianAggregator';

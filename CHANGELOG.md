@@ -102,6 +102,8 @@ detailed, step-by-step upgrade instructions with before/after code examples.
   a `DateRangePickerModel`, and `businessDayOnOrAfter()` beside `businessDayOnOrBefore()`.
 * Added `parsePeriod()` and `shiftByPeriod()` to `@xh/hoist/cmp/daterange`, to step a date by a
   period such as `3M` or `+5D`, counting business days and landing on one by default.
+* Added `LastAggregator` and `FirstAggregator` to `@xh/hoist/data`, to roll a group up to the value
+  of its latest or earliest leaf by an `orderField`, such as the latest price of each symbol.
 
 ### 🐞 Bug Fixes
 

@@ -83,12 +83,17 @@ const cube = new Cube({
 | `'SUPPLIED'` | The value supplied to the Cube for the group - see [Supplied Aggregates](#supplied-aggregates) |
 | `WeightedAverageAggregator` | Average weighted by a second field, e.g. price by quantity |
 | `SumIfSameAggregator` | Total only if all leaves with a value share a second field, such as a currency |
+| `LastAggregator` | The value of the latest leaf by a second field, such as the latest price by date |
+| `FirstAggregator` | The value of the earliest leaf by a second field |
 
 `WeightedAverageAggregator` takes the name of its weight field, so is instantiated per field rather
 than aliased by token: `{name: 'price', aggregator: new WeightedAverageAggregator('qty')}`. It
 reads the weight from each leaf's source record, so the weight field need not be queried, and
 updates incrementally on a change to either field. `SumIfSameAggregator` takes the name of the
 field its leaves must share in the same way: `new SumIfSameAggregator('currency')`.
+`LastAggregator` and `FirstAggregator` take the field that orders the leaves, read from each leaf's
+source record: `new LastAggregator({orderField: 'date'})`. They skip leaves with no value or no
+order, so the latest price of a symbol is its latest known price.
 
 A field is never aggregated at or below the level at which it is applied as a dimension - rows
 there publish the dimension value, and rows above aggregate over those values, one per grouped row.
