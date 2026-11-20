@@ -25,10 +25,10 @@ import {throwIfRowsPassedAsChildren} from '@xh/hoist/utils/impl';
 import {mergeDeep, TEST_ID} from '@xh/hoist/utils/js';
 import {isBlankNode, splitLayoutProps, useComposedRefs, useOnResize} from '@xh/hoist/utils/react';
 
-import './KeyValueDisplay.scss';
+import './PropertyTable.scss';
 
-/** A labeled value in a {@link KeyValueDisplay}. */
-export interface KeyValueEntry {
+/** A labeled value in a {@link PropertyTable}. */
+export interface PropertyTableEntry {
     /** Caption for the value. */
     label: ReactNode;
 
@@ -46,10 +46,10 @@ export interface KeyValueEntry {
     omit?: boolean;
 }
 
-export interface KeyValueDisplayProps
+export interface PropertyTableProps
     extends HoistProps, LayoutProps, TestSupportProps, DomAttrsProps {
     /** Labeled values to show, in order. Null entries are skipped. */
-    entries: KeyValueEntry[];
+    entries: PropertyTableEntry[];
 
     /**
      * Where each label sits against its value. Default `left`, with the labels of a column
@@ -129,13 +129,13 @@ export interface KeyValueDisplayProps
  * needed, so the list never forces horizontal overflow. To truncate a value instead, pass an
  * element that does so.
  */
-export const [KeyValueDisplay, keyValueDisplay] = hoistCmp.withFactory<KeyValueDisplayProps>({
-    displayName: 'KeyValueDisplay',
+export const [PropertyTable, propertyTable] = hoistCmp.withFactory<PropertyTableProps>({
+    displayName: 'PropertyTable',
     model: false,
-    className: 'xh-key-value-display',
+    className: 'xh-property-table',
 
     render(props, ref) {
-        throwIfRowsPassedAsChildren(props.children, 'entries', 'KeyValueDisplay');
+        throwIfRowsPassedAsChildren(props.children, 'entries', 'PropertyTable');
         const [
                 layoutProps,
                 {
@@ -157,7 +157,7 @@ export const [KeyValueDisplay, keyValueDisplay] = hoistCmp.withFactory<KeyValueD
                 }
             ] = splitLayoutProps(props),
             labelOnTop = labelSide === 'top',
-            alignClass = align && `xh-key-value-display--align-${align}`,
+            alignClass = align && `xh-property-table--align-${align}`,
             sideDefault: HSide = align === 'right' ? 'right' : 'left',
             labelsRight = !labelOnTop && (labelAlign ?? sideDefault) === 'right',
             valuesRight = !labelOnTop && (valueAlign ?? sideDefault) === 'right',
@@ -186,7 +186,7 @@ export const [KeyValueDisplay, keyValueDisplay] = hoistCmp.withFactory<KeyValueD
                 ? null
                 : div({
                       ref,
-                      ...rootProps(['xh-key-value-display--empty', alignClass]),
+                      ...rootProps(['xh-property-table--empty', alignClass]),
                       children: emptyText
                   });
         }
@@ -201,30 +201,30 @@ export const [KeyValueDisplay, keyValueDisplay] = hoistCmp.withFactory<KeyValueD
             ...rootProps(
                 [
                     alignClass,
-                    labelOnTop && 'xh-key-value-display--label-top',
-                    labelVariant === 'muted' && 'xh-key-value-display--label-muted',
-                    labelsRight && 'xh-key-value-display--label-align-right',
-                    valuesRight && 'xh-key-value-display--value-align-right',
-                    size === 'compact' && 'xh-key-value-display--compact',
-                    dividers && 'xh-key-value-display--dividers'
+                    labelOnTop && 'xh-property-table--label-top',
+                    labelVariant === 'muted' && 'xh-property-table--label-muted',
+                    labelsRight && 'xh-property-table--label-align-right',
+                    valuesRight && 'xh-property-table--value-align-right',
+                    size === 'compact' && 'xh-property-table--compact',
+                    dividers && 'xh-property-table--dividers'
                 ],
-                {'--xh-key-value-display-columns': columnCount}
+                {'--xh-property-table-columns': columnCount}
             ),
             children: visibleEntries.map(({label, value, intent}, idx) => {
                 const isNull = value == null;
                 return div({
                     key: idx,
                     className: classNames(
-                        'xh-key-value-display__entry',
-                        intent && `xh-key-value-display__entry--intent-${intent}`,
-                        idx >= lastRowStart && 'xh-key-value-display__entry--last-row'
+                        'xh-property-table__entry',
+                        intent && `xh-property-table__entry--intent-${intent}`,
+                        idx >= lastRowStart && 'xh-property-table__entry--last-row'
                     ),
                     children: [
-                        dt({className: 'xh-key-value-display__label', children: label}),
+                        dt({className: 'xh-property-table__label', children: label}),
                         dd({
                             className: classNames(
-                                'xh-key-value-display__value',
-                                isNull && 'xh-key-value-display__value--null'
+                                'xh-property-table__value',
+                                isNull && 'xh-property-table__value--null'
                             ),
                             children: isNull ? (nullDisplay ?? '-') : value
                         })

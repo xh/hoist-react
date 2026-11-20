@@ -51,7 +51,7 @@ detailed, step-by-step upgrade instructions with before/after code examples.
       `@xh/hoist/docs/codemod/v91` folder - see Step 6 of the upgrade notes. It uses the TypeScript
       checker, so `items` keys that hold menu or other data stay unchanged. It also reports
       factory examples in markdown docs such as CLAUDE.md, and edits them only with `--fix-docs`.
-* Added `KeyValueDisplay` to `@xh/hoist/cmp/keyvaluedisplay`, a display-only list of labeled
+* Added `PropertyTable` to `@xh/hoist/cmp/propertytable`, a display-only list of labeled
   values, such as the fields of a record in a detail panel. It lays out its `entries` in aligned
   columns that fit the available width, with each label to the left of or above its value. Set
   `align` to size it to its content at one edge, as for a block of totals, and set `labelVariant`

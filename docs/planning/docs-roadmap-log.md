@@ -602,10 +602,10 @@
   (Draft), and `docs/doc-registry.json`.
 
 ### 2026-11-17
-- Added a package README for `KeyValueDisplay`. It covers when to use the component over a
+- Added a package README for `PropertyTable`. It covers when to use the component over a
   read-only Form, examples, CSS variables and pitfalls. TSDoc holds the props and their defaults,
   so the README has no prop table.
-- Added a short `KeyValueDisplay` entry to `cmp/README.md`.
+- Added a short `PropertyTable` entry to `cmp/README.md`.
 - Indexed in `docs/README.md` (Quick Reference and Components), the roadmap Priority 2 table
   (Done), and `docs/doc-registry.json`.
 

@@ -1,14 +1,14 @@
-# KeyValueDisplay Package
+# PropertyTable Package
 
 ## Overview
 
-`KeyValueDisplay` shows labeled values for display only, such as the fields of a record in a detail
+`PropertyTable` shows labeled values for display only, such as the fields of a record in a detail
 panel. It takes a plain array of entries and no model, and renders an HTML description list. The
-props and their defaults are documented in `KeyValueDisplay.ts`.
+props and their defaults are documented in `PropertyTable.ts`.
 
 Choose it by what the user does with the values:
 
-- **KeyValueDisplay** - the user reads the values. The app formats each one.
+- **PropertyTable** - the user reads the values. The app formats each one.
 - **Read-only `Form`** - the same fields can switch to editing, or the values need the bindings,
   validation or renderers of a `FormModel`. Set `readonly` on the `FormModel`. See the
   [Form README](../form/README.md).
@@ -17,10 +17,10 @@ Choose it by what the user does with the values:
 ## Usage
 
 ```typescript
-import {keyValueDisplay} from '@xh/hoist/cmp/keyvaluedisplay';
+import {propertyTable} from '@xh/hoist/cmp/propertytable';
 import {fmtDate, fmtNumber} from '@xh/hoist/format';
 
-keyValueDisplay({
+propertyTable({
     entries: [
         {label: 'Symbol', value: trade.symbol},
         {label: 'Quantity', value: fmtNumber(trade.quantity, {precision: 0})},
@@ -33,16 +33,16 @@ keyValueDisplay({
 })
 
 // Labels above their values, in at most three columns, with a rule between rows
-keyValueDisplay({entries, labelSide: 'top', columns: 3, dividers: true, size: 'compact'})
+propertyTable({entries, labelSide: 'top', columns: 3, dividers: true, size: 'compact'})
 
 // A summary, with each value set at the far side of its column, across from its label
-keyValueDisplay({entries, valueAlign: 'right', dividers: true})
+propertyTable({entries, valueAlign: 'right', dividers: true})
 
 // A block of totals, sized to its content at the right edge, with labels and values aligned right
-keyValueDisplay({entries: totals, align: 'right'})
+propertyTable({entries: totals, align: 'right'})
 
 // A dense detail panel, with small, muted labels above their values
-keyValueDisplay({entries, labelSide: 'top', labelVariant: 'muted', size: 'compact'})
+propertyTable({entries, labelSide: 'top', labelVariant: 'muted', size: 'compact'})
 ```
 
 A value can be any element, such as a `badge` or a link. A null or undefined value shows the
@@ -53,15 +53,15 @@ group of values a title.
 
 ## Styling
 
-Set the `--xh-key-value-display-*` variables on `body.xh-app` to change the gaps, label width and
-colors. The full set is in the `Key Value Displays` block of
+Set the `--xh-property-table-*` variables on `body.xh-app` to change the gaps, label width and
+colors. The full set is in the `Property Tables` block of
 [`styles/vars.scss`](../../styles/vars.scss). See the [Styles README](../../styles/README.md) for
 how overrides work.
 
 ```scss
 body.xh-app {
-  --xh-key-value-display-label-max-width: 12em;
-  --xh-key-value-display-label-text-color: var(--xh-text-color-muted);
+  --xh-property-table-label-max-width: 12em;
+  --xh-property-table-label-text-color: var(--xh-text-color-muted);
 }
 ```
 

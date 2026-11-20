@@ -5,22 +5,22 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
-.xh-key-value-display {
+.xh-property-table {
   display: grid;
   // Each column is a label track and a value track. A label track is as wide as its widest label,
   // up to the max label width and never more than half of the column.
   grid-template-columns: repeat(
-    var(--xh-key-value-display-columns, 1),
+    var(--xh-property-table-columns, 1),
     fit-content(
         min(
-          var(--xh-key-value-display-label-max-width),
-          calc(50% / var(--xh-key-value-display-columns, 1))
+          var(--xh-property-table-label-max-width),
+          calc(50% / var(--xh-property-table-columns, 1))
         )
       )
       minmax(0, 1fr)
   );
-  column-gap: var(--xh-key-value-display-column-gap);
-  row-gap: var(--xh-key-value-display-row-gap);
+  column-gap: var(--xh-property-table-column-gap);
+  row-gap: var(--xh-property-table-row-gap);
   // Fill the width of a block, or of a flex container that does not stretch the list. Unlike
   // `width: 100%`, this allows for a margin. The prefixed values are for browsers without `stretch`.
   width: -webkit-fill-available;
@@ -29,11 +29,11 @@
   min-width: 0;
   margin: 0;
   padding: 0;
-  font-size: var(--xh-key-value-display-font-size);
+  font-size: var(--xh-property-table-font-size);
 
   &--empty {
     display: block;
-    color: var(--xh-key-value-display-empty-text-color);
+    color: var(--xh-property-table-empty-text-color);
   }
 
   // Sized to its content and set at one edge of its container. Each label track takes its widest
@@ -41,8 +41,8 @@
   &--align-left,
   &--align-right {
     grid-template-columns: repeat(
-      var(--xh-key-value-display-columns, 1),
-      fit-content(var(--xh-key-value-display-label-max-width)) auto
+      var(--xh-property-table-columns, 1),
+      fit-content(var(--xh-property-table-label-max-width)) auto
     );
     width: fit-content;
   }
@@ -57,14 +57,14 @@
 
   // Swaps in the compact variables, so the rules below draw both sizes.
   &--compact {
-    --xh-key-value-display-font-size: var(--xh-key-value-display-compact-font-size);
-    --xh-key-value-display-row-gap: var(--xh-key-value-display-compact-row-gap);
+    --xh-property-table-font-size: var(--xh-property-table-compact-font-size);
+    --xh-property-table-row-gap: var(--xh-property-table-compact-row-gap);
   }
 
   // Swaps in the muted label variables, for smaller, lighter labels.
   &--label-muted {
-    --xh-key-value-display-label-font-size: var(--xh-key-value-display-muted-label-font-size);
-    --xh-key-value-display-label-text-color: var(--xh-key-value-display-muted-label-text-color);
+    --xh-property-table-label-font-size: var(--xh-property-table-muted-label-font-size);
+    --xh-property-table-label-text-color: var(--xh-property-table-muted-label-text-color);
   }
 
   // Spans the two tracks of its column and lays its label and value out on them, so the labels of
@@ -73,7 +73,7 @@
     display: grid;
     grid-column: span 2;
     grid-template-columns: subgrid;
-    column-gap: var(--xh-key-value-display-label-gap);
+    column-gap: var(--xh-property-table-label-gap);
     align-items: baseline;
     min-width: 0;
   }
@@ -88,16 +88,16 @@
   }
 
   &__label {
-    font-size: var(--xh-key-value-display-label-font-size);
-    font-weight: var(--xh-key-value-display-label-font-weight);
-    color: var(--xh-key-value-display-label-text-color);
+    font-size: var(--xh-property-table-label-font-size);
+    font-weight: var(--xh-property-table-label-font-weight);
+    color: var(--xh-property-table-label-text-color);
   }
 
   &__value {
-    font-weight: var(--xh-key-value-display-value-font-weight);
+    font-weight: var(--xh-property-table-value-font-weight);
 
     &--null {
-      color: var(--xh-key-value-display-null-text-color);
+      color: var(--xh-property-table-null-text-color);
     }
   }
 
@@ -112,25 +112,25 @@
   }
 
   // A null value keeps its muted color, not the intent color.
-  &__entry--intent-primary &__value:not(.xh-key-value-display__value--null) {
-    color: var(--xh-key-value-display-primary-color);
+  &__entry--intent-primary &__value:not(.xh-property-table__value--null) {
+    color: var(--xh-property-table-primary-color);
   }
 
-  &__entry--intent-success &__value:not(.xh-key-value-display__value--null) {
-    color: var(--xh-key-value-display-success-color);
+  &__entry--intent-success &__value:not(.xh-property-table__value--null) {
+    color: var(--xh-property-table-success-color);
   }
 
-  &__entry--intent-warning &__value:not(.xh-key-value-display__value--null) {
-    color: var(--xh-key-value-display-warning-color);
+  &__entry--intent-warning &__value:not(.xh-property-table__value--null) {
+    color: var(--xh-property-table-warning-color);
   }
 
-  &__entry--intent-danger &__value:not(.xh-key-value-display__value--null) {
-    color: var(--xh-key-value-display-danger-color);
+  &__entry--intent-danger &__value:not(.xh-property-table__value--null) {
+    color: var(--xh-property-table-danger-color);
   }
 
   // Equal-width columns, each entry a label stacked on its value.
   &--label-top {
-    grid-template-columns: repeat(var(--xh-key-value-display-columns, 1), minmax(0, 1fr));
+    grid-template-columns: repeat(var(--xh-property-table-columns, 1), minmax(0, 1fr));
   }
 
   &--label-top &__entry {
@@ -144,8 +144,8 @@
   }
 
   &--dividers &__entry {
-    padding: var(--xh-key-value-display-row-gap) 0;
-    border-bottom: var(--xh-key-value-display-divider-border);
+    padding: var(--xh-property-table-row-gap) 0;
+    border-bottom: var(--xh-property-table-divider-border);
 
     &--last-row {
       border-bottom: none;

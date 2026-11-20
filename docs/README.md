@@ -38,7 +38,7 @@ See [`docs-roadmap.md`](./planning/docs-roadmap.md) for documentation coverage t
 | Save and restore named view configurations | [`/cmp/viewmanager/`](../cmp/viewmanager/README.md)                                                                 |
 | Select a period or date range (presets, lookbacks, months, custom) | [`/cmp/daterange/`](../cmp/daterange/README.md)                                                                   |
 | Display a PDF document (page nav, zoom, find, download) | [`/cmp/pdfviewer/`](../cmp/pdfviewer/README.md) |
-| Show the fields of a record as labeled values | [`/cmp/keyvaluedisplay/`](../cmp/keyvaluedisplay/README.md) |
+| Show the fields of a record as labeled values | [`/cmp/propertytable/`](../cmp/propertytable/README.md) |
 | Set off a note, caveat or warning within content | [`/cmp/callout/`](../cmp/callout/README.md) |
 | Show progress or usage against a limit as a bar | [`/cmp/progressbar/`](../cmp/progressbar/README.md) |
 | Show a small inline trend chart beside a figure or in a grid cell | [`/cmp/sparkline/`](../cmp/sparkline/README.md) |
@@ -98,7 +98,7 @@ See [`docs-roadmap.md`](./planning/docs-roadmap.md) for documentation coverage t
 | [`/cmp/input/`](../cmp/input/README.md) | Base classes and interfaces for input components | HoistInputModel, change/commit lifecycle, value binding, focus management |
 | [`/cmp/callout/`](../cmp/callout/README.md) | Short note set off within content, tinted by its intent | Callout, intent, icon, title, Callout or Banner or Card, untrusted text |
 | [`/cmp/layout/`](../cmp/layout/README.md) | Flexbox-based layout containers | Box, VBox, HBox, Frame, Viewport, Separator, LayoutProps, pixel conversion |
-| [`/cmp/keyvaluedisplay/`](../cmp/keyvaluedisplay/README.md) | Display-only list of labeled values, such as the fields of a record in a detail panel | KeyValueDisplay, KeyValueEntry, entries, labelSide, labelVariant, align, columns, minColumnWidth, KeyValueDisplay or read-only Form |
+| [`/cmp/propertytable/`](../cmp/propertytable/README.md) | Display-only list of labeled values, such as the fields of a record in a detail panel | PropertyTable, PropertyTableEntry, entries, labelSide, labelVariant, align, columns, minColumnWidth, PropertyTable or read-only Form |
 | [`/cmp/progressbar/`](../cmp/progressbar/README.md) | Bar that shows a value against a maximum, or indeterminate progress | ProgressBar, value, min, max, label, valueRenderer, intent, target, indeterminate |
 | [`/cmp/tab/`](../cmp/tab/README.md) | Tabbed interface system | TabContainerModel, routing integration, render modes, refresh strategies |
 | [`/cmp/viewmanager/`](../cmp/viewmanager/README.md) | Save/load named bundles of component state | ViewManagerModel, views, sharing, pinning, auto-save, JsonBlob persistence |
