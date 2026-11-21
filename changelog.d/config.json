@@ -1,0 +1,14 @@
+{
+    "sections": [
+        "💥 Breaking Changes",
+        "🎁 New Features",
+        "🐞 Bug Fixes",
+        "⚙️ Technical",
+        "⚙️ Typescript API Adjustments",
+        "🤖 AI Docs + Tooling",
+        "✨ Styles",
+        "📚 Libraries"
+    ],
+    "headingFormat": "## {version} - {date}",
+    "maxLineLength": 100
+}

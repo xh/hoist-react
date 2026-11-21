@@ -49,11 +49,12 @@ Analyze the diff to identify documentation-worthy changes:
    - Don't just rely on the diff — read the actual source files to understand what was
      added or changed, including class hierarchies and exported APIs
 
-4. **Cross-reference CHANGELOG.md:**
-   - Check `CHANGELOG.md` for entries related to the commit/PR
-   - The changelog uses categorized sections under version headers:
-     `💥 Breaking Changes`, `🎁 New Features`, `⚙️ Technical`, `🐞 Bug Fixes`
-   - Look for entries in the current SNAPSHOT version that describe the change
+4. **Cross-reference the changelog:**
+   - Check the fragments in `changelog.d/` for entries related to the commit/PR. Unreleased
+     entries live there until a release assembles them into `CHANGELOG.md`
+   - For a change that already shipped, check `CHANGELOG.md` under its release version
+   - Both use categorized sections: `💥 Breaking Changes`, `🎁 New Features`, `⚙️ Technical`,
+     `🐞 Bug Fixes`
    - These provide curated descriptions and are a strong signal of documentation-worthy changes
 
 ## Step 3: Inventory Existing Documentation

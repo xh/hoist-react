@@ -15,6 +15,7 @@
     "lint:all": "pnpm lint:code && pnpm lint:styles",
     "lint:code": "eslint .",
     "lint:styles": "stylelint \"**/*.s?(a|c)ss\"",
+    "changelog": "xh-changelog",
     "check:vendored": "node scripts/check-vendored.mjs",
     "generate:pdfjs-css": "node scripts/generate-pdfjs-css.mjs",
     "typecheck": "tsc --noEmit",
