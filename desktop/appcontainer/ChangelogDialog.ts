@@ -6,6 +6,7 @@
  */
 import {ChangelogDialogModel} from '@xh/hoist/appcontainer/ChangelogDialogModel';
 import {div, filler, h2, h3, li, ul} from '@xh/hoist/cmp/layout';
+import {markdown} from '@xh/hoist/cmp/markdown';
 import {hoistCmp, uses, XH} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
@@ -59,7 +60,18 @@ const version = hoistCmp.factory(({version}) => {
                   className: `xh-changelog__version__category ${
                       catClassName ? 'xh-changelog__version__category--' + catClassName : ''
                   }`,
-                  children: [h3(cat.title), ul(cat.items.map(item => li(item)))]
+                  children: [
+                      h3({omit: cat.title == null, item: cat.title}),
+                      ul(
+                          cat.items.map(item =>
+                              li(
+                                  version.isMarkdown
+                                      ? markdown({content: item, lineBreaks: false})
+                                      : item
+                              )
+                          )
+                      )
+                  ]
               });
           })
         : [

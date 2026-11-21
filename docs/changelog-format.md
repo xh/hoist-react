@@ -203,13 +203,10 @@ Use abbreviated versions where the minor/patch isn't significant (e.g. `6.3` not
 
 ## Application Changelogs
 
-Hoist *application* changelogs (e.g. in app repos that depend on `@xh/hoist`) follow different
-formatting rules than the library changelog described above. Application changelogs are parsed at
-runtime by a Hoist release notes feature that displays them within the app UI.
+Hoist *application* changelogs (e.g. in app repos that depend on `@xh/hoist`) follow the
+conventions above. hoist-dev-utils parses the app's changelog into JSON at build time, and
+`ChangelogDialog` shows it to users as in-app release notes.
 
-**Do NOT hard-wrap list items in application changelogs.** Each bullet point must be a single
-unwrapped line — the release notes parser treats line breaks within a list item as separate entries.
-Let the viewing tool handle display wrapping.
-
-All other conventions (section headers, voice/tense, backtick-wrapped specificity) apply to both
-library and application changelogs.
+Bullets in an application changelog can wrap and can hold sub-bullets, as library entries do. This
+needs a hoist-dev-utils release after 16.5. Older releases keep only the first line of each bullet
+and silently drop the rest. On those releases, write each bullet as a single unwrapped line.

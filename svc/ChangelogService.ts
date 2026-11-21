@@ -10,14 +10,16 @@ import {HoistService, XH} from '@xh/hoist/core';
 import jsonFromMarkdown from '@xh/app-changelog.json';
 import {action, observable} from '@xh/hoist/mobx';
 import {checkMinVersion} from '@xh/hoist/utils/js';
-import {isEmpty, forOwn, includes} from 'lodash';
+import {includes, isArray, isEmpty, map, omit} from 'lodash';
 
 /**
  * Service to display an application changelog (aka release notes) to end users, if so configured.
  *
  * Changelog entries are maintained in a CHANGELOG.md file within the project root, formatted as
  * per https://keepachangelog.com. Requires hoist-dev-utils v5.7+ to parse the markdown source
- * into JSON and make available via the special `@xh/app-changelog.json` import above.
+ * into JSON and make available via the special `@xh/app-changelog.json` import above. Recent
+ * hoist-dev-utils releases also supply each entry's markdown, wrapped lines and sub-bullets
+ * included, which the dialog renders. Older releases supply plain text only.
  *
  * If a changelog is available, the top-level app menu will include an item to view the log in a
  * dialog. If a string pref is defined with key `xhLastReadChangelog`, this service will track the
@@ -123,19 +125,20 @@ export class ChangelogService extends HoistService {
             (changelog.versions ?? [])
                 .filter(v => this.includeVersion(v.version))
                 .forEach(v => {
-                    const categories = [];
-                    // JSON parsed from markdown sets up categories as object keys.
-                    forOwn(v.parsed, (items, title) => {
-                        if (this.includeCategory(title)) {
-                            categories.push({title, items});
-                        }
-                    });
+                    // Prefer markdown `sections` over plain-text `parsed`, the only form older
+                    // hoist-dev-utils supply. `parsed` holds `###` titles as keys, plus an `_`
+                    // catch-all of every entry.
+                    const isMarkdown = isArray(v.sections),
+                        categories: ChangelogCategory[] = isMarkdown
+                            ? v.sections
+                            : map(omit(v.parsed, '_'), (items, title) => ({title, items}));
 
                     versions.push({
                         version: v.version,
                         title: v.title,
                         isCurrentVersion: v.version === XH.appVersion,
-                        categories
+                        isMarkdown,
+                        categories: categories.filter(it => this.includeCategory(it.title))
                     });
                 });
 
@@ -153,10 +156,9 @@ export class ChangelogService extends HoistService {
         return versionStr && !this.config.excludedVersions.includes(versionStr);
     }
 
-    private includeCategory(catTitle) {
-        // Check against '_' is due to catch-all category created by changelog-parser lib.
+    private includeCategory(catTitle: string) {
         return (
-            catTitle !== '_' && !this.config.excludedCategories.find(it => catTitle.includes(it))
+            catTitle == null || !this.config.excludedCategories.some(it => catTitle.includes(it))
         );
     }
 
@@ -176,10 +178,13 @@ export interface ChangelogVersion {
     version: string;
     title: string;
     isCurrentVersion: boolean;
+    /** True if category items are markdown, false if they are plain text. */
+    isMarkdown: boolean;
     categories: ChangelogCategory[];
 }
 
 export interface ChangelogCategory {
+    /** The `###` heading, or null for entries listed above any heading. */
     title: string;
     items: string[];
 }
