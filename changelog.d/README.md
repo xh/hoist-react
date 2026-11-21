@@ -17,11 +17,11 @@ create the file yourself. Write it as you would write the entries in `CHANGELOG.
 same `###` section headings and bullets, but with no version heading:
 
 ```markdown
-### New Features
+### 🎁 New Features
 
 * Added a widget that does a thing.
 
-### Bug Fixes
+### 🐞 Bug Fixes
 
 * Fixed a crash when the widget had no data.
 ```
