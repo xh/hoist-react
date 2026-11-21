@@ -10,7 +10,7 @@
  * outlines are hidden. Pressing Tab clears them, so keyboard users see where focus is. Includes
  * Blueprint's class, for its styles and app CSS keyed to it.
  */
-const FOCUS_DISABLED_CLASSES = ['xh-focus-disabled', 'bp6-focus-disabled'];
+const FOCUS_DISABLED_CLASSES = ['xh-focus-disabled'];
 
 let installed = false;
 

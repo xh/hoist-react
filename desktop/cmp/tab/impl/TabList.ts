@@ -8,8 +8,9 @@ import {hoistCmp} from '@xh/hoist/core';
 import classNames from 'classnames';
 import type {CSSProperties, KeyboardEvent, MouseEvent, ReactNode} from 'react';
 import {createElement as h, useLayoutEffect, useRef, useState} from 'react';
+import './TabList.scss';
 
-const TAB_SELECTOR = '.bp6-tab';
+const TAB_SELECTOR = '.xh-tab-list__tab';
 
 export interface TabListProps {
     /** Id of the switcher, used to build ids for its tabs. */
@@ -85,21 +86,21 @@ export const tabList = hoistCmp.factory<TabListProps>({
 
         return h(
             'div',
-            {className: classNames('bp6-tabs', {'bp6-vertical': vertical})},
+            {className: classNames('xh-tab-list', {'xh-tab-list--vertical': vertical})},
             h(
                 'div',
                 {
                     ref: listRef,
                     role: 'tablist',
-                    className: 'bp6-tab-list',
+                    className: 'xh-tab-list__tabs',
                     onKeyDown,
                     onKeyPress
                 },
                 animate
                     ? h(
                           'div',
-                          {className: 'bp6-tab-indicator-wrapper', style: indicatorStyle},
-                          h('div', {className: 'bp6-tab-indicator'})
+                          {className: 'xh-tab-list__indicator-wrapper', style: indicatorStyle},
+                          h('div', {className: 'xh-tab-list__indicator'})
                       )
                     : null,
                 children
@@ -134,13 +135,13 @@ export const tabTitle = hoistCmp.factory<TabTitleProps>({
             'div',
             {
                 role: 'tab',
-                id: `bp6-tab-title_${parentId}_${id}`,
-                'aria-controls': `bp6-tab-panel_${parentId}_${id}`,
+                id: `xh-tab-title_${parentId}_${id}`,
+                'aria-controls': `xh-tab-panel_${parentId}_${id}`,
                 'aria-disabled': !!disabled,
                 'aria-expanded': selected,
                 'aria-selected': selected,
                 'data-tab-id': id,
-                className: 'bp6-tab',
+                className: 'xh-tab-list__tab',
                 tabIndex: disabled ? undefined : selected ? 0 : -1,
                 style,
                 onClick: disabled ? undefined : () => onSelect(id),

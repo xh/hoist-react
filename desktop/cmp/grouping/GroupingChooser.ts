@@ -10,7 +10,6 @@ import {
     box,
     div,
     filler,
-    fragment,
     frame,
     hbox,
     hframe,
@@ -122,24 +121,22 @@ export const [GroupingChooser, groupingChooser] = hoistCmp.withFactory<GroupingC
                 // Left align editor to keep in place when button changing size when commitOnChange: true
                 position: `${popoverPosition}-left`,
                 minimal: false,
-                children: fragment(
-                    button({
-                        text: label,
-                        title: label,
-                        tabIndex: -1,
-                        className: classNames(
-                            'xh-grouping-chooser-button',
-                            styleButtonAsInput ? 'xh-grouping-chooser-button--as-input' : null
-                        ),
-                        // Input mode relies on the `--as-input` class for its chrome, so renders
-                        // minimal. Button mode renders outlined, to match the ViewManager trigger.
-                        ...(styleButtonAsInput ? {minimal: true} : {outlined: true}),
-                        active: isOpen,
-                        ...buttonProps,
-                        onClick: () => impl.toggleEditor(),
-                        testId
-                    })
-                ),
+                children: button({
+                    text: label,
+                    title: label,
+                    tabIndex: -1,
+                    className: classNames(
+                        'xh-grouping-chooser-button',
+                        styleButtonAsInput ? 'xh-grouping-chooser-button--as-input' : null
+                    ),
+                    // Input mode relies on the `--as-input` class for its chrome, so renders
+                    // minimal. Button mode renders outlined, to match the ViewManager trigger.
+                    ...(styleButtonAsInput ? {minimal: true} : {outlined: true}),
+                    active: isOpen,
+                    ...buttonProps,
+                    onClick: () => impl.toggleEditor(),
+                    testId
+                }),
                 content: popoverCmp({
                     model: impl,
                     editorTitle,

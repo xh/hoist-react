@@ -100,15 +100,13 @@ const instanceSelect = hoistCmp.factory<MemoryMonitorModel>({
         return popover({
             position: 'top-left',
             minimal: true,
-            children: fragment(
-                button({
-                    icon: Icon.history(),
-                    minimal: true,
-                    text: instanceDisplay({instance: pastInstance}),
-                    disabled: isEmpty(pastInstances),
-                    tooltip: 'View past instances'
-                })
-            ),
+            children: button({
+                icon: Icon.history(),
+                minimal: true,
+                text: instanceDisplay({instance: pastInstance}),
+                disabled: isEmpty(pastInstances),
+                tooltip: 'View past instances'
+            }),
             content: panel({
                 icon: Icon.history(),
                 title: 'Past Instances',

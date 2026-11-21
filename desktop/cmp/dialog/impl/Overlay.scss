@@ -5,6 +5,84 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
+//-----------------------------------------------
+// Base overlay styles
+//-----------------------------------------------
+body.xh-overlay-open {
+  overflow: hidden;
+}
+
+:is(.xh-dialog__overlay, .xh-overlay) {
+  inset: 0;
+  position: static;
+  z-index: 20;
+}
+
+:is(.xh-dialog__overlay, .xh-overlay):is(.xh-dialog__overlay, .xh-overlay--scroll-container) {
+  overflow: auto;
+  position: fixed;
+}
+
+:is(.xh-dialog__overlay, .xh-overlay):is(
+    .xh-dialog__overlay,
+    .xh-overlay--scroll-container
+  ).xh-overlay--inline {
+  position: absolute;
+}
+
+:is(.xh-dialog__overlay, .xh-overlay).xh-overlay--inline {
+  display: inline;
+  overflow: visible;
+}
+
+:is(.xh-dialog__container, .xh-overlay__content) {
+  position: fixed;
+  z-index: 20;
+}
+
+.xh-overlay--inline :is(.xh-dialog__container, .xh-overlay__content),
+:is(.xh-dialog__overlay, .xh-overlay--scroll-container)
+  :is(.xh-dialog__container, .xh-overlay__content) {
+  position: absolute;
+}
+
+:is(.xh-dialog__backdrop, .xh-overlay__backdrop) {
+  inset: 0;
+  position: fixed;
+  opacity: 1;
+}
+
+:is(.xh-dialog__backdrop, .xh-overlay__backdrop) {
+  background-color: rgba(17, 20, 24, 0.7);
+  overflow: auto;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  z-index: 20;
+}
+
+:is(.xh-dialog__backdrop, .xh-overlay__backdrop):focus {
+  outline: none;
+}
+
+.xh-overlay--inline :is(.xh-dialog__backdrop, .xh-overlay__backdrop) {
+  position: absolute;
+}
+
+//-----------------------------------------------
+// Hoist overlay styles
+//-----------------------------------------------
+// Customized here for backdrops behind dialogs.
+// Note that masks use their own CSS var, set in Mask.scss.
+:is(.xh-dialog__overlay, .xh-overlay) {
+  transition: none;
+}
+
+:is(.xh-dialog__backdrop, .xh-overlay__backdrop):not(.xh-popover__content-overlay) {
+  background-color: var(--xh-backdrop-bg);
+}
+
 // An overlay rendered in place, without a portal, covers its container rather than the window.
 .xh-overlay.xh-overlay--inline {
   display: inline;

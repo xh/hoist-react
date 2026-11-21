@@ -14,7 +14,6 @@ import {appMenuButton, refreshButton} from '@xh/hoist/desktop/cmp/button';
 import {whatsNewButton} from '@xh/hoist/desktop/cmp/button/WhatsNewButton';
 import '@xh/hoist/desktop/register';
 import {TEST_ID, withDefault} from '@xh/hoist/utils/js';
-import classNames from 'classnames';
 import {isEmpty} from 'lodash';
 import type {ReactElement, ReactNode} from 'react';
 import './AppBar.scss';
@@ -77,12 +76,11 @@ export const [AppBar, appBar] = hoistCmp.withFactory<AppBarProps>({
 
         const title = withDefault(props.title, XH.clientAppName);
 
-        // Blueprint's navbar class names are kept, so its styles and app CSS apply.
         return div({
-            className: classNames('bp6-navbar', className),
+            className,
             children: [
                 div({
-                    className: 'xh-appbar__group bp6-navbar-group bp6-align-left',
+                    className: 'xh-appbar__group xh-appbar__group--left',
                     children: [
                         appMenuButton({
                             omit: hideAppMenuButton || appMenuButtonPosition != 'left',
@@ -95,7 +93,7 @@ export const [AppBar, appBar] = hoistCmp.withFactory<AppBarProps>({
                     ]
                 }),
                 div({
-                    className: 'xh-appbar__group bp6-navbar-group bp6-align-right',
+                    className: 'xh-appbar__group xh-appbar__group--right',
                     children: [
                         ...(rightItems ?? []),
                         whatsNewButton({omit: hideWhatsNewButton}),

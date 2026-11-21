@@ -26,6 +26,7 @@ import {computed} from '@xh/hoist/mobx';
 import type {CSSProperties, ReactElement, Ref} from 'react';
 import {useEffect, useRef} from 'react';
 import {DynamicTabSwitcherModel} from './DynamicTabSwitcherModel';
+import '../impl/TabList.scss';
 import './DynamicTabSwitcher.scss';
 
 /**
@@ -89,9 +90,12 @@ const tabs = hoistCmp.factory<TabsProps>({
                         className: `xh-dynamic-tab-switcher__tabs xh-tab-switcher xh-tab-switcher--${props.orientation}`,
                         ref: composeRefs(provided.innerRef, ref),
                         children: div({
-                            className: classNames('bp6-tabs', isVertical && 'bp6-vertical'),
+                            className: classNames(
+                                'xh-tab-list',
+                                isVertical && 'xh-tab-list--vertical'
+                            ),
                             children: div({
-                                className: 'bp6-tab-list',
+                                className: 'xh-tab-list__tabs',
                                 role: 'tablist',
                                 'aria-orientation': isVertical ? 'vertical' : 'horizontal',
                                 children: [
@@ -180,10 +184,10 @@ const tabCmp = hoistCmp.factory<TabProps>(({tab, index, localModel, model}) => {
                 style: getStyles(isVertical, provided.draggableProps.style),
                 children: [
                     div({
-                        // Styling hooks shared with Blueprint tabs - see Tabs.scss.
+                        // Styling hooks shared with TabList - see Tabs.scss.
                         'aria-selected': isActive,
                         'aria-disabled': disabled,
-                        className: 'bp6-tab',
+                        className: 'xh-tab-list__tab',
                         children: tooltipCmp({
                             content: tooltip as ReactElement,
                             disabled: !tooltip,

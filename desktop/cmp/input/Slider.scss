@@ -5,6 +5,287 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
+//-----------------------------------------------
+// Base slider styles
+//-----------------------------------------------
+.xh-slider__body {
+  height: 40px;
+  min-width: 150px;
+  width: 100%;
+  cursor: default;
+  outline: none;
+  position: relative;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+.xh-slider__body:hover {
+  cursor: pointer;
+}
+.xh-slider__body:active {
+  cursor: grabbing;
+}
+.xh-slider__body.xh-slider__body--disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+.xh-slider__body.xh-slider__body--unlabeled {
+  height: 16px;
+}
+.xh-slider__track,
+.xh-slider__progress {
+  height: 6px;
+  left: 0;
+  right: 0;
+  top: 5px;
+  position: absolute;
+}
+.xh-slider__track {
+  border-radius: 4px;
+  overflow: hidden;
+}
+.xh-slider__progress {
+  background: rgba(95, 107, 124, 0.2);
+}
+.xh-dark .xh-slider__progress {
+  background: rgba(17, 20, 24, 0.5);
+}
+.xh-slider__progress.xh-slider__progress--intent-primary {
+  background-color: #2d72d2;
+}
+.xh-slider__progress.xh-slider__progress--intent-success {
+  background-color: #238551;
+}
+.xh-slider__progress.xh-slider__progress--intent-warning {
+  background-color: #c87619;
+}
+.xh-slider__progress.xh-slider__progress--intent-danger {
+  background-color: #cd4246;
+}
+@media (forced-colors: active) and (prefers-color-scheme: dark) {
+  .xh-slider__progress {
+    background: ButtonText;
+  }
+}
+.xh-slider__handle {
+  background-color: color-mix(in srgb, #5f6b7c 5%, #fff);
+  box-shadow:
+    inset 0 0 0 1px color-mix(in oklch, var(--xh-base-surface-border-color-strong) 90%, #111418),
+    0 1px 2px color-mix(in oklch, #111418 10%, transparent);
+  color: var(--xh-base-text-color);
+}
+.xh-slider__handle:hover {
+  background-clip: padding-box;
+  background-color: color-mix(in srgb, #404854 9%, #fff);
+  box-shadow:
+    inset 0 0 0 1px color-mix(in oklch, var(--xh-base-surface-border-color-strong) 90%, #111418),
+    0 1px 2px color-mix(in oklch, #111418 20%, transparent);
+}
+.xh-slider__handle:active,
+.xh-slider__handle.xh-slider__handle--active {
+  background-color: color-mix(in srgb, #383e47 16%, #fff);
+  box-shadow:
+    inset 0 0 0 1px color-mix(in oklch, var(--xh-base-surface-border-color-strong) 90%, #111418),
+    0 1px 2px color-mix(in oklch, #111418 20%, transparent);
+}
+@media (forced-colors: active) and (prefers-color-scheme: dark) {
+  .xh-slider__handle:active,
+  .xh-slider__handle.xh-slider__handle--active {
+    background: highlight;
+  }
+}
+.xh-slider__handle:disabled {
+  background-color: color-mix(in srgb, #8f99a8 20%, transparent);
+  box-shadow: none;
+  color: var(--xh-base-text-color-disabled);
+  cursor: not-allowed;
+  outline: none;
+}
+.xh-slider__handle:disabled.xh-slider__handle--active,
+.xh-slider__handle:disabled.xh-slider__handle--active:hover {
+  background-color: color-mix(in srgb, #8f99a8 28%, transparent);
+}
+@media (forced-colors: active) and (prefers-color-scheme: dark) {
+  .xh-slider__handle {
+    border: 1px solid buttonborder;
+  }
+}
+.xh-slider__handle {
+  border-radius: 4px;
+  box-shadow:
+    0 0 0 1px rgba(17, 20, 24, 0.5),
+    0 1px 1px rgba(17, 20, 24, 0.5);
+  cursor: pointer;
+  height: 16px;
+  left: 0;
+  position: absolute;
+  top: 0;
+  width: 16px;
+}
+.xh-slider__handle:focus {
+  z-index: 1;
+}
+.xh-slider__handle:hover {
+  background-clip: padding-box;
+  background-color: color-mix(in srgb, #404854 9%, #fff);
+  box-shadow:
+    inset 0 0 0 1px color-mix(in oklch, var(--xh-base-surface-border-color-strong) 90%, #111418),
+    0 1px 2px color-mix(in oklch, #111418 20%, transparent);
+  box-shadow:
+    0 0 0 1px rgba(17, 20, 24, 0.5),
+    0 1px 2px rgba(17, 20, 24, 0.6);
+  cursor: grab;
+  z-index: 2;
+}
+.xh-slider__handle.xh-slider__handle--active {
+  background-color: color-mix(in srgb, #383e47 16%, #fff);
+  box-shadow:
+    inset 0 0 0 1px color-mix(in oklch, var(--xh-base-surface-border-color-strong) 90%, #111418),
+    0 1px 2px color-mix(in oklch, #111418 20%, transparent);
+}
+@media (forced-colors: active) and (prefers-color-scheme: dark) {
+  .xh-slider__handle.xh-slider__handle--active {
+    background: highlight;
+  }
+}
+.xh-slider__handle.xh-slider__handle--active {
+  box-shadow:
+    inset 0 1px 1px rgba(17, 20, 24, 0.1),
+    0 0 0 1px rgba(17, 20, 24, 0.5),
+    0 1px 2px rgba(17, 20, 24, 0.2);
+  cursor: grabbing;
+}
+.xh-slider__body--disabled .xh-slider__handle {
+  background: #c5cbd3;
+  box-shadow: none;
+  pointer-events: none;
+}
+.xh-dark .xh-slider__handle {
+  background-color: #abb3bf;
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.1),
+    0 1px 2px rgba(17, 20, 24, 0.2);
+}
+.xh-dark .xh-slider__handle:hover {
+  background-color: #8f99a8;
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.1),
+    0 1px 2px rgba(17, 20, 24, 0.4);
+}
+.xh-dark .xh-slider__handle.xh-slider__handle--active {
+  background-color: #738091;
+  box-shadow:
+    inset 0 1px 1px rgba(17, 20, 24, 0.1),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.1),
+    0 1px 2px rgba(17, 20, 24, 0.4);
+}
+.xh-dark .xh-slider__body--disabled .xh-slider__handle {
+  background: #5f6b7c;
+  border-color: #5f6b7c;
+  box-shadow: none;
+}
+.xh-slider__handle .xh-slider__label {
+  background: #404854;
+  border-radius: 4px;
+  box-shadow:
+    0 0 0 1px rgba(17, 20, 24, 0.1),
+    0 20px 25px -5px rgba(0, 0, 0, 0.1),
+    0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  color: #f6f7f9;
+  margin-left: 8px;
+}
+.xh-dark .xh-slider__handle .xh-slider__label {
+  background: #e5e8eb;
+  box-shadow:
+    0 2px 4px rgba(17, 20, 24, 0.4),
+    0 8px 24px rgba(17, 20, 24, 0.4);
+  color: #404854;
+}
+.xh-slider__body--disabled .xh-slider__handle .xh-slider__label {
+  box-shadow: none;
+}
+.xh-slider__handle.xh-slider__handle--start,
+.xh-slider__handle.xh-slider__handle--end {
+  width: 8px;
+}
+.xh-slider__handle.xh-slider__handle--start {
+  border-bottom-right-radius: 0;
+  border-top-right-radius: 0;
+}
+.xh-slider__handle.xh-slider__handle--end {
+  border-bottom-left-radius: 0;
+  border-top-left-radius: 0;
+  margin-left: 8px;
+}
+.xh-slider__handle.xh-slider__handle--end .xh-slider__label {
+  margin-left: 0;
+}
+.xh-slider__label {
+  transform: translate(-50%, 20px);
+  display: inline-block;
+  font-size: 12px;
+  line-height: 1;
+  padding: 2px 4px;
+  position: absolute;
+  vertical-align: top;
+}
+.xh-slider__body.xh-slider__body--vertical {
+  height: 150px;
+  min-width: 40px;
+  width: 40px;
+}
+.xh-slider__body.xh-slider__body--vertical .xh-slider__track,
+.xh-slider__body.xh-slider__body--vertical .xh-slider__progress {
+  bottom: 0;
+  height: auto;
+  left: 5px;
+  top: 0;
+  width: 6px;
+}
+.xh-slider__body.xh-slider__body--vertical .xh-slider__progress {
+  top: auto;
+}
+.xh-slider__body.xh-slider__body--vertical .xh-slider__label {
+  transform: translate(20px, 50%);
+}
+.xh-slider__body.xh-slider__body--vertical .xh-slider__handle {
+  top: auto;
+}
+.xh-slider__body.xh-slider__body--vertical .xh-slider__handle .xh-slider__label {
+  margin-left: 0;
+  margin-top: -8px;
+}
+.xh-slider__body.xh-slider__body--vertical .xh-slider__handle.xh-slider__handle--end,
+.xh-slider__body.xh-slider__body--vertical .xh-slider__handle.xh-slider__handle--start {
+  height: 8px;
+  margin-left: 0;
+  width: 16px;
+}
+.xh-slider__body.xh-slider__body--vertical .xh-slider__handle.xh-slider__handle--start {
+  border-bottom-right-radius: 4px;
+  border-top-left-radius: 0;
+}
+.xh-slider__body.xh-slider__body--vertical
+  .xh-slider__handle.xh-slider__handle--start
+  .xh-slider__label {
+  transform: translate(20px);
+}
+.xh-slider__body.xh-slider__body--vertical .xh-slider__handle.xh-slider__handle--end {
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+  border-top-left-radius: 4px;
+  margin-bottom: 8px;
+}
+
+//-----------------------------------------------
+// Hoist slider styles
+//-----------------------------------------------
+.xh-slider__handle:focus {
+  outline: unset; // override browser default styles
+  box-shadow: var(--xh-slider-handle-focused-box-shadow);
+}
+
 .xh-slider {
   // Blueprint draws the handle flush with the top of the slider, and the wrapper clips its
   // content. Leave room for the handle's focus ring and shadow.
@@ -13,25 +294,25 @@
 
   // The filled part, in the Hoist intent colors rather than Blueprint's.
   @each $intent in (primary, success, warning, danger) {
-    .bp6-slider-progress.bp6-intent-#{$intent} {
+    .xh-slider__progress.xh-slider__progress--intent-#{$intent} {
       background: var(--xh-intent-#{$intent});
     }
   }
 
   // The empty part of the track. Blueprint's dark theme color for it does not show against the
   // Hoist dark background. A filled part carries an intent class and keeps its color.
-  .bp6-slider-progress:not([class*='bp6-intent-']) {
+  .xh-slider__progress:not([class*='xh-slider__progress--intent-']) {
     background: var(--xh-slider-track-bg);
   }
 
   // A vertical slider, for `SliderProps.vertical`. The track runs bottom to top, filling the height
   // of the wrapper within its padding, with labels to its right.
-  .bp6-slider.bp6-vertical {
+  .xh-slider__body.xh-slider__body--vertical {
     width: 40px;
     min-width: 40px;
     height: 100%;
 
-    .bp6-slider-track {
+    .xh-slider__track {
       top: 0;
       bottom: 0;
       left: 5px;
@@ -39,50 +320,50 @@
       height: auto;
     }
 
-    .bp6-slider-progress {
+    .xh-slider__progress {
       width: 6px;
       height: auto;
     }
 
-    .bp6-slider-label {
+    .xh-slider__label {
       transform: translate(20px, 50%);
     }
 
-    .bp6-slider-handle {
+    .xh-slider__handle {
       top: auto;
 
-      .bp6-slider-label {
+      .xh-slider__label {
         margin-left: 0;
         margin-top: -8px;
       }
 
       // Range handles are half-height, each flush against its value.
-      &.bp6-start,
-      &.bp6-end {
+      &.xh-slider__handle--start,
+      &.xh-slider__handle--end {
         width: 16px;
         height: 8px;
         margin-left: 0;
       }
 
-      &.bp6-start {
+      &.xh-slider__handle--start {
         border-top-left-radius: 0;
-        border-bottom-right-radius: var(--bp-surface-border-radius);
+        border-bottom-right-radius: 4px;
 
-        .bp6-slider-label {
+        .xh-slider__label {
           transform: translate(20px);
         }
       }
 
-      &.bp6-end {
+      &.xh-slider__handle--end {
         margin-bottom: 8px;
-        border-top-left-radius: var(--bp-surface-border-radius);
+        border-top-left-radius: 4px;
         border-bottom-left-radius: 0;
         border-bottom-right-radius: 0;
       }
     }
   }
 
-  .bp6-slider-label {
+  .xh-slider__label {
     white-space: nowrap;
   }
 
@@ -94,13 +375,13 @@
   .xh-toolbar:not(.xh-toolbar--vertical):not(.xh-toolbar--compact) & {
     padding-top: 1px;
 
-    .bp6-slider:not(.bp6-vertical) {
+    .xh-slider__body:not(.xh-slider__body--vertical) {
       // Toolbar min-size less its padding and border, less this slider's own padding.
-      &:not(.bp6-slider-unlabeled) {
+      &:not(.xh-slider__body--unlabeled) {
         height: calc(var(--xh-toolbar-min-size) - var(--xh-spacing-half) * 2 - 1px - 3px);
       }
 
-      .bp6-slider-label {
+      .xh-slider__label {
         transform: translate(-50%, 15px);
         padding: 1px 4px;
       }
@@ -109,7 +390,7 @@
 
   // A compact toolbar caps inputs at its item height, which hides the labels of a labeled slider.
   // Center an unlabeled one, which is 16px, less the 2px top padding above.
-  .xh-toolbar--compact & .bp6-slider-unlabeled {
+  .xh-toolbar--compact & .xh-slider__body--unlabeled {
     margin-top: calc((var(--xh-toolbar-compact-item-height) - 16px) / 2 - 2px);
   }
 }

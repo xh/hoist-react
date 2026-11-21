@@ -43,14 +43,14 @@ export function showContextMenu(menu: ReactElement, offset?: ContextMenuOffset) 
             minimal: true,
             hasBackdrop: true,
             backdropProps: {
-                className: 'xh-context-menu__backdrop bp6-context-menu-backdrop',
+                className: 'xh-context-menu__backdrop',
                 // A right-click outside the menu closes it, without the browser's own menu.
                 onContextMenu: e => {
                     e.preventDefault();
                     close();
                 }
             },
-            popoverClassName: 'xh-context-menu bp6-context-menu-popover',
+            popoverClassName: 'xh-context-menu',
             content: menu
         })
     );

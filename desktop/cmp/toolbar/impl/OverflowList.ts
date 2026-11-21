@@ -33,7 +33,7 @@ interface PartitionState {
  *
  * A one-pixel spacer ends the row. While it is squeezed to nothing, items overflow, so a binary
  * search moves items to or from the overflow until the rest just fit. The search runs again when
- * the row resizes or its items change. Renders Blueprint's `OverflowList` class names.
+ * the row resizes or its items change.
  * @internal
  */
 export const overflowList = hoistCmp.factory<OverflowListProps>({
@@ -117,13 +117,13 @@ export const overflowList = hoistCmp.factory<OverflowListProps>({
         const overflow = state.overflow.length ? overflowRenderer(state.overflow.slice()) : null;
         return h(
             'div',
-            {ref: listRef, className: 'xh-overflow-list bp6-overflow-list'},
+            {ref: listRef, className: 'xh-overflow-list'},
             collapseFrom === 'start' ? overflow : null,
             ...state.visible,
             collapseFrom === 'end' ? overflow : null,
             h('div', {
                 ref: spacerRef,
-                className: 'xh-overflow-list__spacer bp6-overflow-list-spacer'
+                className: 'xh-overflow-list__spacer'
             })
         );
     }

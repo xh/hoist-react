@@ -1,0 +1,178 @@
+/*
+ * This file belongs to Hoist, an application development toolkit
+ * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
+ *
+ * Copyright © 2026 Extremely Heavy Industries Inc.
+ */
+
+//-----------------------------------------------
+// Base tab list styles
+//-----------------------------------------------
+.xh-tab-list.xh-tab-list--vertical {
+  display: flex;
+}
+.xh-tab-list.xh-tab-list--vertical > .xh-tab-list__tabs {
+  align-items: flex-start;
+  flex-direction: column;
+}
+.xh-tab-list.xh-tab-list--vertical > .xh-tab-list__tabs .xh-tab-list__tab {
+  align-items: center;
+  border-radius: 4px;
+  display: flex;
+  padding: 0 8px;
+  width: 100%;
+}
+.xh-tab-list.xh-tab-list--vertical > .xh-tab-list__tabs .xh-tab-list__tab[aria-selected='true'] {
+  background-color: rgba(45, 114, 210, 0.2);
+  box-shadow: none;
+}
+@media (forced-colors: active) and (prefers-color-scheme: dark) {
+  .xh-tab-list.xh-tab-list--vertical > .xh-tab-list__tabs .xh-tab-list__tab[aria-selected='true'] {
+    background-color: highlight;
+    color: #111418;
+  }
+}
+.xh-tab-list.xh-tab-list--vertical
+  > .xh-tab-list__tabs
+  .xh-tab-list__indicator-wrapper
+  .xh-tab-list__indicator {
+  background-color: rgba(45, 114, 210, 0.2);
+  border-radius: 4px;
+  height: auto;
+  inset: 0;
+}
+.xh-tab-list__tabs {
+  align-items: flex-end;
+  border: none;
+  -moz-column-gap: 20px;
+  column-gap: 20px;
+  display: flex;
+  flex: 0 0 auto;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  position: relative;
+}
+.xh-tab-list__tab {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow-wrap: normal;
+  align-items: center;
+  align-self: stretch;
+  color: #1c2127;
+  cursor: pointer;
+  display: flex;
+  flex: 0 0 auto;
+  font-size: 14px;
+  line-height: 30px;
+  max-width: 100%;
+  position: relative;
+  vertical-align: top;
+}
+.xh-tab-list__tab a {
+  color: inherit;
+  display: block;
+  text-decoration: none;
+}
+.xh-tab-list__indicator-wrapper ~ .xh-tab-list__tab {
+  background-color: transparent !important;
+  box-shadow: none !important;
+}
+.xh-tab-list__tab[aria-disabled='true'] {
+  color: rgba(95, 107, 124, 0.6);
+  cursor: not-allowed;
+}
+@media (forced-colors: active) and (prefers-color-scheme: dark) {
+  .xh-tab-list__tab[aria-disabled='true'] {
+    color: graytext;
+  }
+}
+.xh-tab-list__tab[aria-selected='true'] {
+  border-radius: 0;
+  box-shadow: inset 0 -3px 0 #215db0;
+}
+.xh-tab-list__tab[aria-selected='true'],
+.xh-tab-list__tab:not([aria-disabled='true']):hover {
+  color: #215db0;
+}
+@media (forced-colors: active) and (prefers-color-scheme: dark) {
+  .xh-tab-list__tab[aria-selected='true'],
+  .xh-tab-list__tab:not([aria-disabled='true']):hover {
+    color: highlight;
+  }
+}
+.xh-tab-list__tab:focus {
+  -moz-outline-radius: 0;
+}
+.xh-tab-list__indicator-wrapper {
+  left: 0;
+  pointer-events: none;
+  position: absolute;
+  top: 0;
+  transform: translateX(0), translateY(0);
+  transition: height, transform, width;
+  transition-duration: 200ms;
+  transition-timing-function: cubic-bezier(0.4, 1, 0.75, 0.9);
+}
+.xh-tab-list__indicator-wrapper .xh-tab-list__indicator {
+  background-color: #215db0;
+  bottom: 0;
+  height: 3px;
+  left: 0;
+  position: absolute;
+  right: 0;
+}
+@media (forced-colors: active) and (prefers-color-scheme: dark) {
+  .xh-tab-list__indicator-wrapper .xh-tab-list__indicator {
+    background-color: highlight;
+  }
+}
+.xh-tab-list:not(.xh-tab-list--vertical) .xh-tab-list__indicator-wrapper {
+  height: 100%;
+}
+.xh-dark .xh-tab-list__tab {
+  color: #f6f7f9;
+}
+.xh-dark .xh-tab-list__tab[aria-disabled='true'] {
+  color: rgba(171, 179, 191, 0.6);
+}
+@media (forced-colors: active) and (prefers-color-scheme: dark) {
+  .xh-dark .xh-tab-list__tab[aria-disabled='true'] {
+    color: graytext;
+  }
+}
+.xh-dark .xh-tab-list__tab[aria-selected='true'] {
+  box-shadow: inset 0 -3px 0 #8abbff;
+}
+.xh-dark .xh-tab-list__tab[aria-selected='true'],
+.xh-dark .xh-tab-list__tab:not([aria-disabled='true']):hover {
+  color: #8abbff;
+}
+@media (forced-colors: active) and (prefers-color-scheme: dark) {
+  .xh-dark .xh-tab-list__tab[aria-selected='true'],
+  .xh-dark .xh-tab-list__tab:not([aria-disabled='true']):hover {
+    color: highlight;
+  }
+}
+.xh-dark .xh-tab-list__indicator {
+  background-color: #8abbff;
+}
+@media (forced-colors: active) and (prefers-color-scheme: dark) {
+  .xh-dark .xh-tab-list__indicator {
+    background-color: highlight;
+  }
+}
+
+//-----------------------------------------------
+// Hoist tab list styles
+//-----------------------------------------------
+// Spacing between a tab's icon and its title.
+.xh-tab-list__tab > svg:first-child {
+  margin-right: var(--xh-spacing-half);
+}
+
+// Vertical tab lists fill their width
+.xh-tab-list.xh-tab-list--vertical .xh-tab-list__tabs {
+  flex: 1;
+}

@@ -52,6 +52,6 @@ describe('Popover (mobile)', () => {
         await screen.findByText('Body');
         const floating = document.querySelector<HTMLElement>('.xh-popover__floating');
         expect(floating.style.position).toBe('fixed');
-        expect(document.querySelector('.xh-popover__arrow, .bp6-popover-arrow')).toBeNull();
+        expect(document.querySelector('.xh-popover__arrow')).toBeNull();
     });
 });

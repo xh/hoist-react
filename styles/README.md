@@ -248,8 +248,7 @@ Hoist switches to its dark theme by toggling a CSS class on the `<body>` element
 
 1. `ThemeModel` (in `/appcontainer/`) manages the active theme. The `xhTheme` preference persists
    it, with the values `'light'`, `'dark'`, and `'system'`.
-2. When dark mode activates, `ThemeModel` adds the class `xh-dark` to `document.body`. It also adds
-   `bp6-dark`, for CSS keyed to Blueprint's class names.
+2. When dark mode activates, `ThemeModel` adds the class `xh-dark` to `document.body`.
 3. In `vars.scss`, `&:where(.xh-dark) { ... }` blocks override the relevant `--xh-*` variables
    with dark values.
 4. All component styles adapt automatically, because they read CSS vars, not static colors.

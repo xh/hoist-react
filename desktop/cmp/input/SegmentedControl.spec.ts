@@ -29,10 +29,12 @@ describe('SegmentedControl (desktop)', () => {
             'true',
             'false'
         ]);
-        expect(radios.map(it => it.classList.contains('bp6-minimal'))).toEqual([true, false, true]);
+        expect(
+            radios.map(it => it.classList.contains('xh-segmented-control__option--selected'))
+        ).toEqual([false, true, false]);
         expect(radios.map(it => it.tabIndex)).toEqual([-1, 0, -1]);
         expect((radios[2] as HTMLButtonElement).disabled).toBe(true);
-        expect(screen.getByRole('radiogroup').classList).toContain('bp6-segmented-control');
+        expect(screen.getByRole('radiogroup').classList).toContain('xh-segmented-control__options');
     });
 
     it('selects an option on click', () => {
@@ -59,7 +61,7 @@ describe('SegmentedControl (desktop)', () => {
         renderBound(null, {options: [{value: 'a', icon: Icon.add()}]});
         const radio = screen.getByRole('radio');
         expect(radio.querySelector('svg')).not.toBeNull();
-        expect(radio.querySelector('.bp6-button-text')).toBeNull();
+        expect(radio.querySelector('.xh-segmented-control__option-text')).toBeNull();
     });
 });
 

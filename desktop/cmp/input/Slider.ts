@@ -81,7 +81,7 @@ class SliderInputModel extends HoistInputModel {
     override xhImpl = true;
 
     get sliderHandle(): HTMLElement {
-        return this.domEl?.querySelector('.bp6-slider-handle');
+        return this.domEl?.querySelector('.xh-slider__handle');
     }
 
     override blur() {
@@ -185,14 +185,14 @@ function fitLabels(el: HTMLElement) {
     if (!el) return;
 
     const labels = [
-        el.querySelector<HTMLElement>('.bp6-slider-axis > .bp6-slider-label:first-child'),
-        el.querySelector<HTMLElement>('.bp6-slider-axis > .bp6-slider-label:last-child'),
-        ...Array.from(el.querySelectorAll<HTMLElement>('.bp6-slider-handle .bp6-slider-label'))
+        el.querySelector<HTMLElement>('.xh-slider__axis > .xh-slider__label:first-child'),
+        el.querySelector<HTMLElement>('.xh-slider__axis > .xh-slider__label:last-child'),
+        ...Array.from(el.querySelectorAll<HTMLElement>('.xh-slider__handle .xh-slider__label'))
     ];
 
     // Reset every label before measuring, so that no shift is measured as part of a label.
     labels.forEach(label => label?.style.removeProperty('translate'));
-    if (el.querySelector('.bp6-slider.bp6-vertical')) return;
+    if (el.querySelector('.xh-slider__body.xh-slider__body--vertical')) return;
 
     const {left, right} = el.getBoundingClientRect();
     labels.forEach(label => {

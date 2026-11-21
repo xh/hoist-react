@@ -136,7 +136,6 @@ export const [Button, button] = hoistCmp.withFactory<ButtonProps, ButtonDefaults
             ...rest
         };
 
-        // Blueprint's class names are kept, so its styles and app CSS keyed to them apply.
         const hasText = !isEmptyNode(text) || !isEmptyNode(children),
             tooltipConfig = isString(tooltip) ? {content: tooltip} : tooltip;
 
@@ -159,27 +158,11 @@ export const [Button, button] = hoistCmp.withFactory<ButtonProps, ButtonDefaults
                     ...(targetProps ? targetHandlers(targetProps, nativeProps) : null),
                     tabIndex: disabled ? -1 : nativeProps.tabIndex,
                     ref: targetProps ? composeRefs(ref as Ref<HTMLElement>, targetProps.ref) : ref,
-                    className: classNames(
-                        'bp6-button',
-                        {
-                            'bp6-active': active,
-                            'bp6-disabled': disabled,
-                            [`bp6-intent-${intent}`]: intent,
-                            'bp6-minimal': minimal,
-                            'bp6-outlined': outlined
-                        },
-                        className,
-                        classes
-                    )
+                    className: classNames(className, classes)
                 },
                 icon ?? null,
                 hasText
-                    ? createElement(
-                          'span',
-                          {className: 'xh-button__text bp6-button-text'},
-                          text,
-                          children
-                      )
+                    ? createElement('span', {className: 'xh-button__text'}, text, children)
                     : null,
                 rightIcon ?? null
             );

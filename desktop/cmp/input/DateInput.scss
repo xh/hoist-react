@@ -6,11 +6,11 @@
  */
 
 .xh-date-input__wrapper {
-  .bp6-input-action {
+  .xh-input-group__right-element {
     height: 100%;
   }
 
-  .bp6-input-action .xh-icon {
+  .xh-input-group__right-element .xh-icon {
     position: relative;
     margin: 0 !important;
   }
@@ -24,7 +24,7 @@
         cursor: pointer !important;
       }
 
-      .bp6-input-group.bp6-disabled {
+      .xh-input-group.xh-input-group--disabled {
         cursor: pointer !important;
       }
     }

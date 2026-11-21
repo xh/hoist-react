@@ -83,17 +83,17 @@ describe('Slider', () => {
     describe('track fill', () => {
         it('fills the track with the primary intent by default', () => {
             renderSlider(5);
-            expect(trackFillIntents()).toEqual(['bp6-intent-primary']);
+            expect(trackFillIntents()).toEqual(['xh-slider__progress--intent-primary']);
         });
 
         it('fills the track with the given intent', () => {
             renderSlider(5, {intent: 'danger'});
-            expect(trackFillIntents()).toEqual(['bp6-intent-danger']);
+            expect(trackFillIntents()).toEqual(['xh-slider__progress--intent-danger']);
         });
 
         it('fills the track between the handles of a range with the given intent', () => {
             renderSlider([2, 8], {intent: 'success'});
-            expect(trackFillIntents()).toEqual(['bp6-intent-success']);
+            expect(trackFillIntents()).toEqual(['xh-slider__progress--intent-success']);
         });
     });
 
@@ -247,7 +247,7 @@ const SCALE_TIMEOUT = 2000;
 
 /** Text of the labels along the axis, without the label on each handle. */
 function axisLabels(): string[] {
-    const labels = document.querySelectorAll('.bp6-slider-axis .bp6-slider-label');
+    const labels = document.querySelectorAll('.xh-slider__axis .xh-slider__label');
     return Array.from(labels).map(it => it.textContent);
 }
 
@@ -264,9 +264,11 @@ function wrapper(): HTMLElement {
 
 /** Intent classes on the filled parts of the track. */
 function trackFillIntents(): string[] {
-    const fills = document.querySelectorAll('.bp6-slider-progress[class*="bp6-intent-"]');
+    const fills = document.querySelectorAll(
+        '.xh-slider__progress[class*="xh-slider__progress--intent-"]'
+    );
     return Array.from(fills).flatMap(it =>
-        Array.from(it.classList).filter(cls => cls.startsWith('bp6-intent-'))
+        Array.from(it.classList).filter(cls => cls.startsWith('xh-slider__progress--intent-'))
     );
 }
 

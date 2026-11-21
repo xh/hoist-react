@@ -11,7 +11,6 @@ import {hoistCmp} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {TEST_ID, withDefault} from '@xh/hoist/utils/js';
 import {useComposedRefs, getLayoutProps} from '@xh/hoist/utils/react';
-import classNames from 'classnames';
 import type {Ref} from 'react';
 import {createElement} from 'react';
 import './TextArea.scss';
@@ -112,11 +111,10 @@ const cmp = hoistCmp.factory<TextAreaInputModel>(({model, className, ...props}, 
         onKeyDown: model.onKeyDown
     };
 
-    // Blueprint's class names are kept, so its styles and app CSS keyed to them apply.
     const {inputRef, ...rest} = textareaProps;
     return createElement('textarea', {
         ...rest,
         ref: inputRef,
-        className: classNames('bp6-input', 'bp6-text-area', className)
+        className
     });
 });

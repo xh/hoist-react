@@ -33,8 +33,8 @@
     &__bottom {
       margin-top: var(--xh-spacing-half);
 
-      .bp6-popover-target,
-      .bp6-input-group {
+      .xh-popover__target-wrapper,
+      .xh-input-group {
         width: 100%;
       }
     }

@@ -299,10 +299,7 @@ const segmentedControlImpl = hoistCmp.factory<SegmentedControlImplProps>({
                 ref: groupRef,
                 role: 'radiogroup',
                 onKeyDown,
-                className: classNames('bp6-segmented-control', {
-                    'bp6-fill': fill,
-                    'bp6-inline': inline
-                })
+                className: 'xh-segmented-control__options'
             },
             ...options.map(
                 (
@@ -326,11 +323,10 @@ const segmentedControlImpl = hoistCmp.factory<SegmentedControlImplProps>({
                                     : -1,
                             disabled: isDisabled,
                             className: classNames(
-                                'bp6-button',
+                                'xh-segmented-control__option',
                                 {
-                                    'bp6-disabled': isDisabled,
-                                    'bp6-small': size === 'small',
-                                    'bp6-minimal': !isSelected
+                                    'xh-segmented-control__option--disabled': isDisabled,
+                                    'xh-segmented-control__option--selected': isSelected
                                 },
                                 className
                             ),
@@ -339,7 +335,7 @@ const segmentedControlImpl = hoistCmp.factory<SegmentedControlImplProps>({
                         icon ?? null,
                         text == null || text === ''
                             ? null
-                            : h('span', {className: 'bp6-button-text'}, text)
+                            : h('span', {className: 'xh-segmented-control__option-text'}, text)
                     );
                 }
             )

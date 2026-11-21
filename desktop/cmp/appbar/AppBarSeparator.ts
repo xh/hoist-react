@@ -16,6 +16,6 @@ export const [AppBarSeparator, appBarSeparator] = hoistCmp.withFactory({
     model: false,
 
     render() {
-        return div({className: 'xh-appbar-separator bp6-navbar-divider', role: 'separator'});
+        return div({className: 'xh-appbar-separator', role: 'separator'});
     }
 });

@@ -20,8 +20,8 @@ describe('NumberInput (desktop)', () => {
     it('renders a text input with Blueprint class names', () => {
         const {input} = renderBound(null, {});
         expect(input.type).toBe('text');
-        expect(input.classList).toContain('bp6-input');
-        expect(input.closest('.bp6-numeric-input').classList).toContain('xh-number-input');
+        expect(input.classList).toContain('xh-input-group__input');
+        expect(input.closest('.xh-numeric-input').classList).toContain('xh-number-input');
     });
 
     it('commits typed digits on Enter', () => {

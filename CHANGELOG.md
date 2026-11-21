@@ -45,8 +45,7 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 * Removed Blueprint. Desktop components now render Hoist's own markup and behavior, Hoist no longer
   loads Blueprint's stylesheet, and `@xh/hoist/kit/blueprint` is gone - replace its imports as in
   Step 8 of the upgrade notes. Hoist ships the Blueprint styles its components use, so they look
-  the same. The DOM keeps Blueprint's `bp6-*` classes alongside new `xh-*` ones, so app CSS keyed
-  to them still applies. Move any direct `@blueprintjs/core` imports onto Hoist's components too.
+  the same. Move any direct `@blueprintjs/core` imports onto Hoist's components too.
     * Popovers and tooltips use the new `Popover` in `@xh/hoist/cmp/popover` and `Tooltip` in
       `@xh/hoist/cmp/tooltip` - see New Features. `DateInputProps.popoverModifiers` no longer has
       any effect.
@@ -70,6 +69,11 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 * `FetchService` now sends a request with no `method` as a GET, even when it sets `params`. Before,
   `params` made it a POST with a form-encoded body. Set `method: 'POST'` on calls that change data,
   send credentials, or send large params - see Step 7 of the upgrade notes.
+* Removed Blueprint's `bp6-*` class names from Hoist's markup and stylesheets, and its `--bp-*` CSS
+  variables. Each component now renders BEM `xh-*` classes only, such as `xh-menu-item--active`
+  and `xh-tab-list__tab`. Run `docs/codemod/v91/codemod-bp6-classes.mjs` to rename app selectors
+  and class strings - Step 8 of the upgrade notes maps every class. Hoist logs a
+  development-mode warning naming any `bp6-*` class or `--bp-*` variable left in a stylesheet.
 * Removed the bundled stdio MCP server and the `hoist-mcp`, `hoist-docs` and `hoist-ts` CLIs. Add
   [Hoist Docs](https://github.com/xh/hoist-docs) (`@xh/hoist-docs`) as a `client-app` dev
   dependency and point `.mcp.json` at it instead - see the upgrade notes.
@@ -232,6 +236,9 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 
 ### ✨ Styles
 
+* Pressing a success, primary or warning menu item now tints it in its intent color, as danger items
+  already did.
+* Compact tooltips now take their tighter 4px 8px padding, as Hoist's styles always intended.
 * `--xh-popover-backdrop-bg` now applies on desktop too, for a popover shown with `backdrop: true`.
 * Added CSS variables for concerns some components lacked: `--xh-input-border-radius`,
   `--xh-popup-border-radius`, `--xh-title-font-weight` (with `--xh-panel-title-font-weight`,

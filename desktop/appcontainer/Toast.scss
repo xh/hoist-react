@@ -5,6 +5,174 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
+//-----------------------------------------------
+// Base toast styles
+//-----------------------------------------------
+.xh-toast {
+  align-items: flex-start;
+  background-color: #ffffff;
+  border-radius: 4px;
+  box-shadow:
+    inset 0 0 0 1px rgba(17, 20, 24, 0.2),
+    0 2px 4px rgba(17, 20, 24, 0.2),
+    0 8px 24px rgba(17, 20, 24, 0.2);
+  display: flex;
+  margin: 20px 0 0;
+  max-width: min(500px, 100%);
+  min-width: min(300px, 100%);
+  pointer-events: all;
+  position: relative !important;
+}
+.xh-toast .xh-button-group {
+  flex: 0 0 auto;
+  padding: 5px;
+  padding-left: 0;
+}
+.xh-dark .xh-toast {
+  background-color: #383e47;
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.2),
+    0 20px 25px -5px rgba(0, 0, 0, 0.3),
+    inset 0 0 0.5px 0 rgba(255, 255, 255, 0.3),
+    inset 0 0.5px 0 0 rgba(255, 255, 255, 0.08),
+    0 10px 30px -5px rgba(0, 0, 0, 0.3);
+}
+.xh-toast:is(
+    .xh-toast--intent-primary,
+    .xh-toast--intent-success,
+    .xh-toast--intent-warning,
+    .xh-toast--intent-danger
+  )
+  a {
+  color: rgba(255, 255, 255, 0.7);
+}
+.xh-toast:is(
+    .xh-toast--intent-primary,
+    .xh-toast--intent-success,
+    .xh-toast--intent-warning,
+    .xh-toast--intent-danger
+  )
+  a:hover {
+  color: #ffffff;
+}
+.xh-toast.xh-toast--intent-primary {
+  background-color: #2d72d2;
+  color: #ffffff;
+}
+.xh-toast.xh-toast--intent-primary .xh-button {
+  background-color: #2d72d2 !important;
+  color: #ffffff !important;
+}
+.xh-toast.xh-toast--intent-primary .xh-button:hover {
+  background-color: #215db0 !important;
+  color: #ffffff !important;
+}
+.xh-toast.xh-toast--intent-primary .xh-button:active {
+  background-color: #184a90 !important;
+  color: #ffffff !important;
+}
+.xh-toast.xh-toast--intent-primary .xh-button:focus {
+  outline-color: rgba(255, 255, 255, 0.75);
+}
+.xh-toast.xh-toast--intent-success {
+  background-color: #238551;
+  color: #ffffff;
+}
+.xh-toast.xh-toast--intent-success .xh-button {
+  background-color: #238551 !important;
+  color: #ffffff !important;
+}
+.xh-toast.xh-toast--intent-success .xh-button:hover {
+  background-color: #1c6e42 !important;
+  color: #ffffff !important;
+}
+.xh-toast.xh-toast--intent-success .xh-button:active {
+  background-color: #165a36 !important;
+  color: #ffffff !important;
+}
+.xh-toast.xh-toast--intent-success .xh-button:focus {
+  outline-color: rgba(255, 255, 255, 0.75);
+}
+.xh-toast.xh-toast--intent-warning {
+  background-color: #fbb360;
+  color: #1c2127;
+}
+.xh-toast.xh-toast--intent-warning .xh-button {
+  background-color: #fbb360 !important;
+  color: #1c2127 !important;
+}
+.xh-toast.xh-toast--intent-warning .xh-button:hover {
+  background-color: #ec9a3c !important;
+  color: #1c2127 !important;
+}
+.xh-toast.xh-toast--intent-warning .xh-button:active {
+  background-color: #c87619 !important;
+  color: #1c2127 !important;
+}
+.xh-toast.xh-toast--intent-warning .xh-button:focus {
+  outline-color: rgba(28, 33, 39, 0.75);
+}
+.xh-toast.xh-toast--intent-danger {
+  background-color: #cd4246;
+  color: #ffffff;
+}
+.xh-toast.xh-toast--intent-danger .xh-button {
+  background-color: #cd4246 !important;
+  color: #ffffff !important;
+}
+.xh-toast.xh-toast--intent-danger .xh-button:hover {
+  background-color: #ac2f33 !important;
+  color: #ffffff !important;
+}
+.xh-toast.xh-toast--intent-danger .xh-button:active {
+  background-color: #8e292c !important;
+  color: #ffffff !important;
+}
+.xh-toast.xh-toast--intent-danger .xh-button:focus {
+  outline-color: rgba(255, 255, 255, 0.75);
+}
+.xh-toast__message {
+  flex: 1 1 auto;
+  padding: 11px;
+  // Kept as Blueprint has it - no current keyword behaves the same.
+  // stylelint-disable-next-line declaration-property-value-keyword-no-deprecated
+  word-break: break-word;
+}
+.xh-toast-container {
+  align-items: center;
+  display: flex !important;
+  flex-direction: column;
+  left: 0;
+  overflow: hidden;
+  padding: 0 20px 20px;
+  pointer-events: none;
+  right: 0;
+  z-index: 40;
+}
+.xh-toast-container.xh-toast-container--portal {
+  position: fixed;
+}
+.xh-toast-container.xh-toast-container--anchored {
+  position: absolute;
+}
+.xh-toast-container.xh-toast-container--top {
+  top: 0;
+}
+.xh-toast-container.xh-toast-container--bottom {
+  bottom: 0;
+  flex-direction: column-reverse;
+  top: auto;
+}
+.xh-toast-container.xh-toast-container--left {
+  align-items: flex-start;
+}
+.xh-toast-container.xh-toast-container--right {
+  align-items: flex-end;
+}
+
+//-----------------------------------------------
+// Hoist toast styles
+//-----------------------------------------------
 .xh-toast-container {
   &--anchored {
     position: absolute;
@@ -12,11 +180,11 @@
 
   // The top and left edges of a toast's position. The Blueprint base styles hold the bottom and
   // right edges.
-  &.bp6-toast-container-top {
+  &.xh-toast-container--top {
     top: 0;
   }
 
-  &.bp6-toast-container-left {
+  &.xh-toast-container--left {
     align-items: flex-start;
   }
 
@@ -47,18 +215,14 @@
     }
 
     .xh-toast__message,
-    .bp6-toast-message {
+    .xh-toast__message {
       overflow-wrap: break-word;
     }
 
-    // High level of specificity here required to override built-in BP styles
-    &.bp6-toast .bp6-button {
+    // High level of specificity here required to override the base button styles
+    &.xh-toast .xh-button {
       background: none !important;
       color: white !important;
-
-      .bp6-icon {
-        color: white !important;
-      }
     }
   }
 }
@@ -75,7 +239,7 @@
     }
   }
 
-  &.bp6-toast-container-bottom {
+  &.xh-toast-container--bottom {
     --xh-toast-enter-offset: 60px;
   }
 }

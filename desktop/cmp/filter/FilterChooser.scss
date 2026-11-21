@@ -6,7 +6,7 @@
  */
 
 .xh-filter-chooser {
-  .bp6-popover-target {
+  .xh-popover__target-wrapper {
     display: flex;
     flex: 1;
   }
@@ -17,7 +17,7 @@
   }
 
   // Popover mode - collapsed trigger expands into an overlaid popover.
-  &--popover > .bp6-popover-target {
+  &--popover > .xh-popover__target-wrapper {
     display: flex;
     flex: 1;
   }
@@ -31,22 +31,22 @@
   // Override the default styles of the popover, scoped by our own `popoverClassName`. The expanded
   // input stands in for the trigger, so it drops the popover border and shadow. Its bg is opaque to
   // occlude the trigger and page beneath (--xh-input-bg is translucent in dark mode).
-  &__popover.bp6-popover {
+  &__popover.xh-popover__content-wrapper {
     --xh-popover-bg: var(--xh-bg);
     --xh-popover-border-width: 0px;
     --xh-popover-box-shadow: 0 0 transparent;
 
     // Overlay the expanded input onto the collapsed 30px trigger. Offset follows Blueprint's
     // resolved placement, which flips (bottom-anchored) near the viewport's bottom edge.
-    &.bp6-popover-placement-bottom {
+    &.xh-popover__content-wrapper--bottom {
       margin-top: -30px !important;
     }
-    &.bp6-popover-placement-top {
+    &.xh-popover__content-wrapper--top {
       margin-bottom: -30px !important;
     }
 
     // Content is portaled out of .xh-filter-chooser - restate the flex rule so it fills the width.
-    .bp6-popover-target {
+    .xh-popover__target-wrapper {
       display: flex;
       flex: 1;
     }

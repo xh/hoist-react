@@ -39,7 +39,7 @@ describe('Button', () => {
         expect(screen.getByTestId('add').querySelector('.xh-button__text')).toBeNull();
     });
 
-    it('keeps Blueprint class names for its style, intent and state', () => {
+    it('sets Hoist class names for its style, intent and state, and no Blueprint ones', () => {
         render(
             button({text: 'Go', intent: 'primary', active: true, outlined: true, minimal: false})
         );
@@ -47,18 +47,18 @@ describe('Button', () => {
         [
             'xh-button',
             'xh-button--outlined',
-            'bp6-button',
-            'bp6-intent-primary',
-            'bp6-active',
-            'bp6-outlined'
+            'xh-button--intent-primary',
+            'xh-button--active',
+            'xh-button--enabled'
         ].forEach(cls => expect(classList).toContain(cls));
-        expect(classList).not.toContain('bp6-minimal');
+        expect(classList).not.toContain('xh-button--minimal');
+        expect([...classList].filter(it => it.startsWith('bp6-'))).toEqual([]);
     });
 
     it('defaults to minimal, and sets title as its native tooltip', () => {
         render(button({text: 'Go', title: 'Run it'}));
         const el = screen.getByRole('button');
-        expect(el.classList).toContain('bp6-minimal');
+        expect(el.classList).toContain('xh-button--minimal');
         expect(el.getAttribute('title')).toBe('Run it');
     });
 
@@ -179,7 +179,7 @@ describe('Button', () => {
         rerender(button({text: 'Go', onClick, disabled: true}));
         const el = screen.getByRole('button');
         expect(el.hasAttribute('disabled')).toBe(true);
-        expect(el.classList).toContain('bp6-disabled');
+        expect(el.classList).toContain('xh-button--disabled');
         fireEvent.click(el);
         expect(onClick).toHaveBeenCalledOnce();
     });
@@ -193,7 +193,7 @@ describe('Button', () => {
         expect(ref.current).toBe(el);
     });
 
-    it('groups buttons in a div with Blueprint group classes', () => {
+    it('groups buttons in a div with Hoist group classes', () => {
         render(
             buttonGroup({
                 testId: 'group',
@@ -204,9 +204,10 @@ describe('Button', () => {
         );
         const el = screen.getByTestId('group');
         expect(el.tagName).toBe('DIV');
-        ['xh-button-group', 'bp6-button-group', 'bp6-fill', 'bp6-vertical'].forEach(cls =>
+        ['xh-button-group', 'xh-button-group--fill', 'xh-button-group--vertical'].forEach(cls =>
             expect(el.classList).toContain(cls)
         );
+        expect([...el.classList].filter(it => it.startsWith('bp6-'))).toEqual([]);
         expect(el.querySelectorAll('button')).toHaveLength(2);
     });
 });

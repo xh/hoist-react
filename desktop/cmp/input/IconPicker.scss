@@ -9,7 +9,7 @@
   display: inline-flex;
 
   // Ensure popover target stretches to fill layout width.
-  > .bp6-popover-target {
+  > .xh-popover__target-wrapper {
     display: flex;
     flex: 1;
   }
@@ -17,7 +17,7 @@
   &__trigger {
     justify-content: flex-start;
 
-    .bp6-button-text {
+    .xh-button__text {
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
@@ -25,13 +25,13 @@
       text-align: left;
     }
 
-    &--empty .bp6-button-text {
+    &--empty .xh-button__text {
       color: var(--xh-input-placeholder-text-color);
     }
   }
 
-  // Selector needs parent .xh-icon-picker class for specificity (0,3,0) to beat Blueprint's
-  // `.bp6-dark .bp6-button.bp6-minimal { box-shadow: none }` - see Picker.scss for the same
+  // Selector needs parent .xh-icon-picker class for specificity (0,3,0) to beat the base
+  // `.xh-dark .xh-button.xh-button--minimal { box-shadow: none }` - see Picker.scss for the same
   // treatment on its trigger.
   .xh-icon-picker__trigger--as-input.xh-button {
     background-color: var(--xh-input-bg) !important;
@@ -46,14 +46,14 @@
     }
 
     &:active,
-    &.bp6-active {
+    &.xh-popover__target--active {
       background-color: color-mix(in srgb, var(--xh-input-bg) 88%, gray) !important;
       box-shadow: var(--xh-form-field-box-shadow) !important;
     }
   }
 
   // Compact mode - trigger button matches compact toolbar button sizing.
-  // .xh-button qualifier needed to beat `.xh-app .xh-button.bp6-button` font-size (0,3,0).
+  // .xh-button qualifier needed to beat `.xh-app .xh-button.xh-button` font-size (0,3,0).
   &--compact &__trigger.xh-button {
     min-height: var(--xh-toolbar-compact-item-height);
     max-height: var(--xh-toolbar-compact-item-height);
@@ -68,8 +68,8 @@
 
 // Popover content renders in a portal, outside the root DOM of the control above.
 // Cell size is set inline on the grid list from IconPicker.ts, which needs exact row heights.
-.xh-icon-picker__popover.bp6-popover {
-  .bp6-popover-content {
+.xh-icon-picker__popover.xh-popover__content-wrapper {
+  .xh-popover__content {
     padding: 0;
   }
 
