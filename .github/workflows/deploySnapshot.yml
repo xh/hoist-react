@@ -102,6 +102,10 @@ jobs:
           with:
               version: ${{ inputs.version }}
 
+        # List the unreleased changelog fragments in the published CHANGELOG.md. Not committed.
+        - name: Add unreleased changelog entries
+          run: pnpm changelog snapshot
+
         # `--no-git-checks` disables pnpm's own publish guards, which do not fit this workflow:
         # snapshots publish from develop rather than pnpm's expected master/main (which prompts
         # interactively, hanging a non-TTY runner), and the shallow checkout above reads as

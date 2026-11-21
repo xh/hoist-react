@@ -2,14 +2,41 @@
 
 Reference for writing and reviewing CHANGELOG entries in the **hoist-react library** `CHANGELOG.md`.
 
+## Where Entries Go
+
+Write new entries in a **changelog fragment**, not in `CHANGELOG.md`. Each pull request adds a
+markdown file in [`changelog.d/`](../changelog.d/README.md), named for its branch. The fragment holds
+the release body without its `##` heading: the same `###` section headers and bullets described
+below. A release assembles every fragment into `CHANGELOG.md` under the real version number, so pull
+requests never conflict over `CHANGELOG.md` and a late merge cannot land under a shipped version.
+
+```markdown
+### 🎁 New Features
+
+* Added `Callout.dismissible`, which shows a close button. The dismissed state persists with
+  `persistWith`.
+```
+
+- `pnpm changelog new` creates `changelog.d/<branch>.md`. `pnpm changelog check` validates it, and
+  CI runs the same check on each pull request.
+- A fragment uses only the section headers listed in `changelog.d/config.json`.
+- Leave release-level content out of fragments: the `(upgrade difficulty: ...)` suffix, the
+  upgrade-notes sentence, and `####` topic groups. The release curator adds them.
+- To change an unreleased entry, edit its fragment, even one that another pull request added. To
+  correct a released entry, edit `CHANGELOG.md`.
+- `pnpm changelog preview` prints the next release as it will be assembled.
+
+The `xh-changelog` command behind these scripts ships with `@xh/hoist-dev-utils`. See its README
+section "Changelog fragments".
+
 > **Library vs. Application changelogs:** This guide applies to hoist-react and other Hoist library
 > packages. Hoist *application* changelogs have different formatting requirements — see the
 > [Application Changelogs](#application-changelogs) section at the end of this document.
 
 ## Entry Structure
 
-Every major version entry should use this structure. Minor/patch releases use whichever sections
-apply.
+Every major version entry in `CHANGELOG.md` should use this structure once the release is curated.
+Minor/patch releases use whichever sections apply.
 
 ```markdown
 ## {VERSION} - {YYYY-MM-DD}
@@ -53,10 +80,9 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 * {Library} `{old} → {new}`
 ```
 
-On `develop`, the top entry is the next major version as a snapshot:
-`## {N}.0.0-SNAPSHOT - unreleased`. New entries go under that heading. A minor or patch release
-changes the heading to the release version for the release, then the snapshot heading goes back on
-top. See [Versioning](./build-and-publish.md#versioning) for the full policy.
+On `develop`, the top heading is the next major version as a snapshot:
+`## {N}.0.0-SNAPSHOT - unreleased`. It stays empty. Entries wait in `changelog.d/` until a release
+assembles them below it. See [Versioning](./build-and-publish.md#versioning) for the release steps.
 
 ## Section Headers
 

@@ -62,12 +62,19 @@ How it works:
 `develop` always holds the next major version as a snapshot, in the Maven style. For example,
 `develop` stays on `90.0.0-SNAPSHOT` while 89.x releases ship. All XH libraries follow this policy.
 
-- After a major release, bump `package.json` on `develop` to the next major `-SNAPSHOT`. Add a
-  matching `## N.0.0-SNAPSHOT - unreleased` heading to the top of `CHANGELOG.md`.
-- A release without breaking changes goes out as the next minor or patch from the latest tag.
-  For the release, change the snapshot changelog heading to that version and date. Keep
-  `package.json` on the snapshot, because Deploy Release sets the published version. After the
-  release, put the snapshot heading back on top of the changelog.
+- Before any release, run `pnpm changelog release <version>`. It assembles the fragments in
+  `changelog.d/` into a new `## <version> - <date>` block in `CHANGELOG.md` and deletes them.
+  Review and curate the block, then commit it. See
+  [Changelog Entry Format](./changelog-format.md#where-entries-go).
+- A release without breaking changes goes out as the next minor or patch from the latest tag. Keep
+  `package.json` on the snapshot, because Deploy Release sets the published version. The
+  `## N.0.0-SNAPSHOT - unreleased` heading stays on top of the changelog. `release` refuses a
+  minor or patch while a fragment has a `💥 Breaking Changes` section.
+- A major release rolls the changelog's snapshot heading forward to the next major. Then bump
+  `package.json` on `develop` to match.
+- A hotfix to an older line adds its fragment on the hotfix branch and runs `release` there, which
+  places the block in version order. When the hotfix merges back to `develop`, delete the matching
+  fragment on `develop` if the same fix landed there, or the next release lists it twice.
 
 ## Deploy Release (`deployRelease.yml`)
 
