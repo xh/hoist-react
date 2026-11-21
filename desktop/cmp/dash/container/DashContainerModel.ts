@@ -28,6 +28,7 @@ import {
     startCase
 } from 'lodash';
 import {createRoot} from 'react-dom/client';
+import type {Root} from 'react-dom/client';
 import type {DashConfig} from '../';
 import {DashModel} from '../';
 import type {DashViewState} from '../DashViewModel';
@@ -459,6 +460,9 @@ export class DashContainerModel
     }
 
     private onItemDestroyed(item) {
+        const menuRoot: Root = item._xhMenuRoot;
+        if (menuRoot) wait().then(() => menuRoot.unmount());
+
         if (!item.isComponent || this.isDestroyingGoldenLayout) return;
         const id = getViewModelId(item);
         if (id) this.removeViewModel(id);
@@ -522,6 +526,7 @@ export class DashContainerModel
 
         const menuRoot = createRoot(menuContainerEl);
         menuRoot.render(dashContainerMenuButton({dashContainerModel: this, stack}));
+        stack._xhMenuRoot = menuRoot;
 
         // Add context menu listener for adding components.
         // Replace any handler set by a previous render so we never stack handlers.

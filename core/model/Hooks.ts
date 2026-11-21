@@ -88,6 +88,18 @@ export function useModelLinker(model: HoistModel, modelLookup: ModelLookup, prop
     }
 
     // 2) Linking async work: call afterLinked(), and wire up loadSupport
+    useAfterLinked(model, isLinking, modelLookup);
+
+    // 3) Subsequent renders: update props (async to avoid triggering synchronous state changes)
+    useEffect(() => {
+        if (!isLinking) model?.setComponentProps(props);
+    }, [props]);
+
+    // 4) Destroy on unmount
+    useDestroyOnUnmount(model);
+}
+
+function useAfterLinked(model: HoistModel, isLinking: boolean, modelLookup: ModelLookup) {
     useEffect(() => {
         if (isLinking) {
             model.afterLinked();
@@ -103,13 +115,9 @@ export function useModelLinker(model: HoistModel, modelLookup: ModelLookup, prop
             }
         }
     }, []);
+}
 
-    // 3) Subsequent renders: update props (async to avoid triggering synchronous state changes)
-    useEffect(() => {
-        if (!isLinking) model?.setComponentProps(props);
-    }, [props]);
-
-    // 4) Destroy on unmount
+function useDestroyOnUnmount(model: HoistModel) {
     useOnUnmount(() => XH.safeDestroy(model));
 }
 
