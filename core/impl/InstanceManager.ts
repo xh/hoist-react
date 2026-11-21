@@ -96,9 +96,6 @@ export const instanceManager = new InstanceManager();
 
 /**
  * Register a component's model for lookup by testId while it is mounted.
- *
- * Call this hook in place of separate mount/unmount callbacks. A closure created inside a render
- * function would capture that render's whole scope, including props, and pin it until unmount.
  * @internal
  */
 export function useTestIdRegistration(testId: string, model: HoistModel) {
