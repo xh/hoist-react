@@ -25,7 +25,7 @@ export const [OptionsButton, optionsButton] = hoistCmp.withFactory<OptionsButton
         return button({
             ref,
             icon: Icon.gear(),
-            title: 'Options',
+            tooltip: props.title ? null : 'Options',
             onClick: () => XH.showOptionsDialog(),
             ...props
         });

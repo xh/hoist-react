@@ -6,7 +6,7 @@
 usage against a limit. It can also animate for work of unknown length. It takes no model and works
 on desktop and mobile. The props and their defaults are documented in `ProgressBar.ts`.
 
-Hoist does not wrap the Blueprint progress bar. Choose between this bar and the loading
+Choose between this bar and the loading
 components by where the status belongs:
 
 - **ProgressBar** - a value the user reads in the layout, such as a quota, a fill rate or the

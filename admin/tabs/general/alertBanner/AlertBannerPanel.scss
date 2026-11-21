@@ -57,6 +57,11 @@
     }
   }
 
+  &__preset-menu {
+    max-height: 400px;
+    overflow-y: auto;
+  }
+
   &__menu-item {
     width: 360px;
     min-width: 0;

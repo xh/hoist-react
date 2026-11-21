@@ -491,7 +491,7 @@ closure that does the same job.
 | `shallowEqualObjects(a, b)` | True if both objects have the same keys with identical (`===`) values |
 | `isOmitted(obj)` | Resolve an `omit` flag or thunk on a config object |
 | `isMenuSeparator(it)` | True if a menu entry is a textless separator, in any supported form |
-| `filterConsecutiveMenuSeparators()` | `Array.filter()` function dropping consecutive separators in Blueprint and AG Grid menus |
+| `filterConsecutiveMenuSeparators()` | `Array.filter()` function dropping consecutive separators in Hoist and AG Grid menus |
 | `filterConsecutiveToolbarSeparators()` | `Array.filter()` function dropping consecutive toolbar separators |
 | `fmtTimeZone(name, offset)` | Format a time zone name with its UTC offset |
 

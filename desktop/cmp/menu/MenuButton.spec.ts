@@ -9,6 +9,7 @@ import {menuButton, type MenuButtonProps} from '@xh/hoist/desktop/cmp/menu';
 import {bindable} from '@xh/hoist/mobx';
 import {initTestAppAsync} from '@xh/hoist/test-support';
 import {act, fireEvent, render, screen, waitFor} from '@testing-library/react';
+import {createElement} from 'react';
 import {beforeAll, describe, expect, it, onTestFinished, vi} from 'vitest';
 
 /**
@@ -37,6 +38,41 @@ describe('MenuButton', () => {
         expect(screen.getByTestId('group-by-sector').textContent).toBe('Sector');
     });
 
+    it('takes arrow and typeahead keys as soon as it opens', async () => {
+        const items = [
+            {text: 'Region', testId: 'region'},
+            {text: 'Sector', testId: 'sector'},
+            {text: 'Trader', testId: 'trader'}
+        ];
+        render(host({testId: 'group-by', menuItems: items}));
+        const open = async () => {
+            fireEvent.click(screen.getByTestId('group-by'));
+            await screen.findByTestId('group-by-menu');
+            // The popover takes focus itself on opening, ahead of any item.
+            await waitFor(() =>
+                expect(document.activeElement.classList).toContain('xh-popover__floating')
+            );
+        };
+        const close = async () => {
+            fireEvent.keyDown(document.activeElement, {key: 'Escape'});
+            await waitFor(() => expect(screen.queryByTestId('group-by-menu')).toBeNull());
+        };
+
+        await open();
+        fireEvent.keyDown(document.activeElement, {key: 's'});
+        expect(document.activeElement).toBe(screen.getByTestId('sector'));
+        await close();
+
+        await open();
+        fireEvent.keyDown(document.activeElement, {key: 'ArrowUp'});
+        expect(document.activeElement).toBe(screen.getByTestId('trader'));
+        await close();
+
+        await open();
+        fireEvent.keyDown(document.activeElement, {key: 'ArrowDown'});
+        expect(document.activeElement).toBe(screen.getByTestId('region'));
+    });
+
     // Guards against the model in context reaching the DOM button.
     it('does not render its model as a DOM attribute', () => {
         render(host({testId: 'actions', menuItems: [{text: 'Refresh'}]}));
@@ -63,6 +99,38 @@ describe('MenuButton', () => {
         fireEvent.click(screen.getByTestId('done'));
         await waitFor(() => expect(screen.queryByTestId('series-menu')).toBeNull());
         expect(actionFn).toHaveBeenCalledTimes(2);
+    });
+
+    it('leaves a click on a control in rightElement to that control', async () => {
+        const actionFn = vi.fn(),
+            onDelete = vi.fn();
+        render(
+            host({
+                testId: 'favs',
+                menuItems: [
+                    {
+                        text: 'Favorite',
+                        testId: 'fav',
+                        actionFn,
+                        rightElement: createElement(
+                            'button',
+                            {'data-testid': 'fav-delete', onClick: onDelete},
+                            'x'
+                        )
+                    }
+                ]
+            })
+        );
+
+        fireEvent.click(screen.getByTestId('favs'));
+        fireEvent.click(await screen.findByTestId('fav-delete'));
+        expect(onDelete).toHaveBeenCalledTimes(1);
+        expect(screen.getByTestId('favs-menu')).toBeTruthy();
+
+        // A click on the item itself still runs its action and closes the menu.
+        fireEvent.click(screen.getByTestId('fav'));
+        await waitFor(() => expect(screen.queryByTestId('favs-menu')).toBeNull());
+        expect(actionFn).toHaveBeenCalledTimes(1);
     });
 
     it('re-runs prepareFn while open when the state it reads changes', async () => {
@@ -104,12 +172,12 @@ class SelectionModel extends HoistModel {
 class HostModel extends HoistModel {}
 
 /**
- * Hosts a MenuButton under a model, as every app view is. Popover transitions are disabled so the
- * menu mounts and unmounts synchronously.
+ * Hosts a MenuButton under a model, as every app view is. Hoist's popover has transitions off, so
+ * the menu mounts and unmounts synchronously.
  */
 const host = hoistCmp.factory<Omit<MenuButtonProps, 'model'> & HoistProps<HostModel>>({
     model: creates(HostModel),
     render({model, ...props}) {
-        return menuButton({...props, popoverProps: {transitionDuration: 0}});
+        return menuButton(props);
     }
 });

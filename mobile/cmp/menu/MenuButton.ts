@@ -15,8 +15,8 @@ import {
 import {Icon} from '@xh/hoist/icon';
 import type {ButtonProps} from '@xh/hoist/mobile/cmp/button';
 import {button} from '@xh/hoist/mobile/cmp/button';
-import type {PopoverProps} from '@xh/hoist/mobile/cmp/popover';
-import {popover} from '@xh/hoist/mobile/cmp/popover';
+import type {PopoverPosition, PopoverProps} from '@xh/hoist/cmp/popover';
+import {popover} from '@xh/hoist/cmp/popover';
 import '@xh/hoist/mobile/register';
 import {bindable, bindableRef} from '@xh/hoist/mobx';
 import {executeIfFunction, getTestId} from '@xh/hoist/utils/js';
@@ -40,21 +40,8 @@ export interface MenuButtonProps extends Omit<ButtonProps, 'title'> {
      */
     context?: Thunkable<MenuContext>;
 
-    /** Position of menu relative to button */
-    menuPosition?:
-        | 'top-left'
-        | 'top'
-        | 'top-right'
-        | 'right-top'
-        | 'right'
-        | 'right-bottom'
-        | 'bottom-right'
-        | 'bottom'
-        | 'bottom-left'
-        | 'left-bottom'
-        | 'left'
-        | 'left-top'
-        | 'auto';
+    /** Position of menu relative to button. Default 'auto'. */
+    menuPosition?: PopoverPosition;
 
     /** Optional title to display above the menu. */
     title?: ReactNode;

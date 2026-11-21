@@ -7,13 +7,13 @@
 import type {GridLikeModel} from '@xh/hoist/cmp/grid';
 import {isGridLikeModel} from '@xh/hoist/cmp/grid/impl/GridLikeModel';
 import {div, vbox} from '@xh/hoist/cmp/layout';
+import type {PopoverPosition} from '@xh/hoist/cmp/popover';
+import {popover} from '@xh/hoist/cmp/popover';
 import {hoistCmp, useContextModel} from '@xh/hoist/core';
 import {colChooser} from '@xh/hoist/desktop/cmp/grid/impl/colchooser/ColChooser';
 import type {ModalColChooserModel} from '@xh/hoist/desktop/cmp/grid/impl/colchooser/ModalColChooserModel';
 import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
-import type {Position} from '@xh/hoist/kit/blueprint';
-import {popover} from '@xh/hoist/kit/blueprint';
 import {logError, stopPropagation, withDefault} from '@xh/hoist/utils/js';
 import type {ButtonProps} from '../Button';
 import {button} from '../Button';
@@ -33,10 +33,10 @@ export interface ColChooserButtonProps extends ButtonProps {
     modalTarget?: 'dialog' | 'popover';
 
     /**
-     * Position for chooser popover, as per Blueprint docs. Only applies when `modalTarget` is
-     * 'popover'.
+     * Position of the chooser popover, relative to the button. Default 'auto'. Only applies when
+     * `modalTarget` is 'popover'.
      */
-    popoverPosition?: Position;
+    popoverPosition?: PopoverPosition;
 }
 
 /**
@@ -56,6 +56,7 @@ export const [ColChooserButton, colChooserButton] = hoistCmp.withFactory<ColChoo
             className,
             icon,
             title,
+            tooltip,
             gridModel: boundModel,
             modalTarget,
             popoverPosition,
@@ -73,7 +74,9 @@ export const [ColChooserButton, colChooserButton] = hoistCmp.withFactory<ColChoo
             isDocked = chooserModel?.mode === 'docked';
 
         icon = withDefault(icon, Icon.gridPanel());
-        title = withDefault(title, isDocked ? 'Toggle column panel' : 'Choose grid columns...');
+        if (!title && !tooltip) {
+            tooltip = isDocked ? 'Toggle column panel' : 'Choose grid columns...';
+        }
 
         // Return a plain disabled button rather than falling through - the popover config below
         // dereferences chooserModel.
@@ -84,7 +87,7 @@ export const [ColChooserButton, colChooserButton] = hoistCmp.withFactory<ColChoo
                     : 'ColChooser not enabled on bound GridModel - button will be disabled.',
                 ColChooserButton
             );
-            return button({ref, icon, title, className, disabled: true, ...rest});
+            return button({ref, icon, title, tooltip, className, disabled: true, ...rest});
         }
 
         if (isDocked || modalTarget === 'dialog') {
@@ -92,6 +95,7 @@ export const [ColChooserButton, colChooserButton] = hoistCmp.withFactory<ColChoo
                 ref,
                 icon,
                 title,
+                tooltip,
                 className,
                 disabled,
                 onClick: e => {
@@ -110,6 +114,7 @@ export const [ColChooserButton, colChooserButton] = hoistCmp.withFactory<ColChoo
             children: button({
                 icon,
                 title,
+                tooltip,
                 className,
                 disabled,
                 active: modalModel.isPopoverOpen,

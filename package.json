@@ -35,7 +35,6 @@
     "./mobile/register.ts",
     "./icon/index.ts",
     "./mobx/index.ts",
-    "./kit/blueprint/index.ts",
     "./kit/golden-layout/index.js",
     "./kit/golden-layout/impl/js/**",
     "./core/persist/index.ts",
@@ -55,7 +54,6 @@
   "dependencies": {
     "@auth0/auth0-spa-js": "~2.30.0",
     "@azure/msal-browser": "~5.29.1",
-    "@blueprintjs/core": "^6.23.2",
     "@codemirror/commands": "^6.11.1",
     "@codemirror/language": "^6.13.1",
     "@codemirror/language-data": "^6.5.2",

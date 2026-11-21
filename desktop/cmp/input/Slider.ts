@@ -4,22 +4,18 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import type {
-    RangeSliderProps as BpRangeSliderProps,
-    SliderProps as BpSliderProps
-} from '@blueprintjs/core';
 import type {HoistInputProps} from '@xh/hoist/cmp/input';
 import {HoistInputModel, useHoistInputModel} from '@xh/hoist/cmp/input';
 import {box} from '@xh/hoist/cmp/layout';
 import type {HoistProps, Intent, LayoutProps, Some} from '@xh/hoist/core';
 import {hoistCmp, XH} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
-import {rangeSlider as bpRangeSlider, slider as bpSlider} from '@xh/hoist/kit/blueprint';
 import {logWarn, withDefault} from '@xh/hoist/utils/js';
 import {composeRefs, getLayoutProps, useOnResize} from '@xh/hoist/utils/react';
 import {isArray, isEmpty, omit, pick} from 'lodash';
 import type {ReactNode} from 'react';
 import {useLayoutEffect, useRef} from 'react';
+import {sliderImpl, type SliderImplProps} from './impl/SliderImpl';
 import './Slider.scss';
 
 export interface SliderProps extends HoistProps, HoistInputProps, LayoutProps {
@@ -53,17 +49,21 @@ export interface SliderProps extends HoistProps, HoistInputProps, LayoutProps {
      */
     showTrackFill?: boolean;
 
-    /** True to render in a vertical orientation. */
+    /**
+     * True to render in a vertical orientation. The track fills the slider's `height`, default
+     * 200px, as a horizontal track fills its `width`.
+     */
     vertical?: boolean;
 }
 
 /**
  * A slider input to edit either a single number or an array of two (for a range).
  *
- * Blueprint hangs or throws on some scales, so the slider adjusts them. It uses 1 for a `stepSize`
- * of zero or less, and raises a `stepSize` too small for the range. It shows a label at each end
- * only for a `labelStepSize` of zero or less, or one that gives over 1,000 labels. With a `max` not
- * above `min`, it renders disabled. It logs a warning for each change in development mode.
+ * Some scales cannot be drawn, or would take too long to, so the slider adjusts them. It uses 1
+ * for a `stepSize` of zero or less, and raises a `stepSize` too small for the range. It shows a
+ * label at each end only for a `labelStepSize` of zero or less, or one that gives over 1,000
+ * labels. With a `max` not above `min`, it renders disabled. It logs a warning for each change in
+ * development mode.
  */
 export const [Slider, slider] = hoistCmp.withFactory<SliderProps>({
     displayName: 'Slider',
@@ -106,7 +106,7 @@ const cmp = hoistCmp.factory<SliderInputModel>(({model, className, ...props}, re
     const {width, ...layoutProps} = getLayoutProps(props),
         scale = getSafeScale(props),
         boxRef = useRef<HTMLElement>(null),
-        // Blueprint places the handles once it has measured its track, after this effect runs.
+        // The slider places its handles once it has measured them, after this effect runs.
         resizeRef = useOnResize(() => fitLabels(boxRef.current));
 
     // Runs after every render, so a handle label follows its handle as it moves.
@@ -114,9 +114,14 @@ const cmp = hoistCmp.factory<SliderInputModel>(({model, className, ...props}, re
 
     model.warnOfScaleChanges(scale.changes);
 
-    // Set default left / right padding. Slider.scss sets the top and bottom padding.
+    // Default padding, so the box does not clip the end handles and labels where they run past the
+    // ends of the track. Slider.scss sets the top and bottom padding of a horizontal slider.
     if (!layoutProps.padding && !layoutProps.paddingLeft) layoutProps.paddingLeft = 20;
     if (!layoutProps.padding && !layoutProps.paddingRight) layoutProps.paddingRight = 20;
+    if (props.vertical) {
+        if (!layoutProps.padding && !layoutProps.paddingTop) layoutProps.paddingTop = 12;
+        if (!layoutProps.padding && !layoutProps.paddingBottom) layoutProps.paddingBottom = 12;
+    }
 
     // The handles hold the `slider` role, so they take the accessible name from `domAttrs`. With
     // none, they point at the label FormField renders with an id derived from the input's id.
@@ -126,7 +131,7 @@ const cmp = hoistCmp.factory<SliderInputModel>(({model, className, ...props}, re
             ? {'aria-labelledby': props.id ? `${props.id}-label` : null}
             : nameAttrs;
 
-    const sliderProps: BpRangeSliderProps | BpSliderProps = {
+    const sliderProps: SliderImplProps = {
         value: model.renderValue,
 
         disabled: props.disabled || scale.disabled,
@@ -145,18 +150,15 @@ const cmp = hoistCmp.factory<SliderInputModel>(({model, className, ...props}, re
     };
 
     return box({
-        children: isRange
-            ? bpRangeSlider({
-                  ...(sliderProps as BpRangeSliderProps),
-                  handleHtmlProps: {start: handleAttrs, end: handleAttrs}
-              })
-            : bpSlider({
-                  ...(sliderProps as BpSliderProps),
-                  handleHtmlProps: handleAttrs
-              }),
+        children: sliderImpl({
+            ...sliderProps,
+            handleHtmlProps: isRange ? {start: handleAttrs, end: handleAttrs} : handleAttrs
+        }),
 
         ...layoutProps,
+        // The track fills the wrapper along its length - its width, or its height when vertical.
         width: withDefault(width, 200),
+        height: props.vertical ? withDefault(layoutProps.height, 200) : layoutProps.height,
         className,
         testId: props.testId,
         domAttrs: omit(props.domAttrs, HANDLE_NAME_ATTRS),
@@ -174,10 +176,10 @@ const HANDLE_NAME_ATTRS = ['aria-label', 'aria-labelledby'];
 // Labels
 //-----------------------
 /**
- * Shift each label that crosses an edge of the slider back inside it. Blueprint centers a label on
- * its tick or handle, so a long label at either end of the track runs past the side padding. Only
- * the end labels of the axis and the handle labels can reach an edge. A label that fits keeps its
- * centered place.
+ * Shift each label that crosses an edge of the slider back inside it. The slider centers a label
+ * on its tick or handle, so a long label at either end of the track runs past the side padding.
+ * Only the end labels of the axis and the handle labels can reach an edge. A label that fits keeps
+ * its centered place.
  */
 function fitLabels(el: HTMLElement) {
     if (!el) return;
@@ -214,14 +216,14 @@ const MIN_STEP_RATIO = 1e-12;
 /** Most decimal places for a default label. Number precision gives out before this. */
 const MAX_LABEL_PRECISION = 20;
 
-/** Blueprint draws a label at each step from `min` until it passes `max` by this much. */
+/** The slider draws a label at each step from `min` until it passes `max` by this much. */
 const LABEL_TOLERANCE = 0.00001;
 
 interface SliderScale {
     min: number;
     max: number;
     stepSize: number;
-    /** Undefined when `labelValues` is set - Blueprint takes one or the other. */
+    /** Undefined when `labelValues` is set - the slider takes one or the other. */
     labelStepSize: number;
     labelValues: number[];
     labelPrecision: number;
@@ -232,10 +234,10 @@ interface SliderScale {
 }
 
 /**
- * The scale to hand to Blueprint. Blueprint throws on a step of zero or less, and reads the decimal
- * places of `stepSize` in a loop that never ends for a number too small. It draws a label for each
+ * The scale to hand to the slider. A step of zero or less never advances, and the decimal places
+ * of a `stepSize` too small take too long to count. The slider draws a label for each
  * `labelStepSize` in the range, however many, and divides by the range. Returns the props as given
- * for any scale that Blueprint draws.
+ * for any scale the slider can draw.
  */
 function getSafeScale(props: SliderProps): SliderScale {
     const changes: string[] = [],
@@ -291,8 +293,8 @@ function getSafeScale(props: SliderProps): SliderScale {
 }
 
 /**
- * Decimal places in a number, as Blueprint counts them to format a default label, but with a
- * limit. Blueprint's own count never ends for a number below about 1e-308.
+ * Decimal places in a number, to format a default label, with a limit - an unlimited count never
+ * ends for a number below about 1e-308.
  */
 function countDecimalPlaces(num: number): number {
     let e = 1,

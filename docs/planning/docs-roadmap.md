@@ -34,6 +34,8 @@ interacts with Hoist.
 | `/cmp/pdfviewer/` | 6 | PdfViewer - PDF display built on pdf.js, with sources, toolbar tokens, model API, and styling; platform toolbars in `/desktop/cmp/pdfviewer/` and `/mobile/cmp/pdfviewer/` | [Done](../../cmp/pdfviewer/README.md) |
 | `/cmp/propertytable/` | 4 | PropertyTable - display-only labeled values, compared with a read-only Form, with styling and pitfalls | [Done](../../cmp/propertytable/README.md) |
 | `/cmp/callout/` | 4 | Callout - note set off within content, compared with Banner and Card | [Done](../../cmp/callout/README.md) |
+| `/cmp/popover/` | 6 | Popover - floating content opened by click or hover, closing and nesting rules, portals, mobile defaults | 📝 [Draft](../../cmp/popover/README.md) |
+| `/cmp/tooltip/` | 2 | Tooltip - short label on hover or focus, a hover Popover with tooltip defaults | 📝 [Draft](../../cmp/tooltip/README.md) |
 | `/cmp/progressbar/` | 4 | ProgressBar - value against a maximum or indeterminate progress, compared with masks and loading indicators | [Done](../../cmp/progressbar/README.md) |
 | `/cmp/sparkline/` | 6 | Sparkline - inline SVG trend chart, compared with Chart, in a StatCard and a grid column with a shared scale | 📝 [Draft](../../cmp/sparkline/README.md) |
 | `/mobile/` | 131 | Mobile-specific components and app container | [Done](../../mobile/README.md) |
@@ -59,7 +61,6 @@ Smaller packages that provide important but more specialized functionality.
 | `/icon/` | 5 | Icon system and FontAwesome integration | [Done](../../icon/README.md) |
 | `/security/` | 7 | OAuth clients (Auth0, MSAL) | [Done](../../security/README.md) |
 | `/kit/` | 18 | Third-party library wrappers (ag-grid, blueprint, highcharts, etc.) | 📝 [Draft](../../kit/README.md) |
-| `/kit/blueprint/` | 5 | Blueprint integration - wrappers, factories, build-time icon stubbing, upgrade checklist | [Done](../../kit/blueprint/README.md) |
 | `/inspector/` | 6 | Development tools for debugging Hoist instances | 📝 [Draft](../../inspector/README.md) |
 | `/styles/` | 3 | CSS custom properties, theming (dark/light), BEM naming, SCSS conventions, utility classes | [Done](../../styles/README.md) |
 

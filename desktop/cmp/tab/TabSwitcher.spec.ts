@@ -21,6 +21,65 @@ import {beforeAll, describe, expect, it, onTestFinished, vi} from 'vitest';
 describe('TabSwitcher', () => {
     beforeAll(() => initTestAppAsync());
 
+    describe('tab strip', () => {
+        const renderStrip = () => {
+            const model = new TabContainerModel({
+                tabs: [
+                    {id: 'alpha', title: 'Alpha', content: () => null},
+                    {id: 'beta', title: 'Beta', content: () => null, disabled: true},
+                    {id: 'gamma', title: 'Gamma', content: () => null}
+                ]
+            });
+            onTestFinished(() => model.destroy());
+            render(tabSwitcher({model}));
+            return {model, tabs: screen.getAllByRole('tab')};
+        };
+
+        it('renders a tablist of tabs, with only the active one in the tab order', () => {
+            const {model, tabs} = renderStrip();
+            expect(screen.getByRole('tablist')).toBeTruthy();
+            expect(tabs.map(it => it.getAttribute('data-tab-id'))).toEqual([
+                'alpha',
+                'beta',
+                'gamma'
+            ]);
+            expect(tabs.map(it => it.getAttribute('aria-selected'))).toEqual([
+                'true',
+                'false',
+                'false'
+            ]);
+            expect(tabs.map(it => it.getAttribute('aria-disabled'))).toEqual([
+                'false',
+                'true',
+                'false'
+            ]);
+            expect(tabs[0].tabIndex).toBe(0);
+            expect(tabs[2].tabIndex).toBe(-1);
+            expect(tabs[0].id).toBe(`bp6-tab-title_${model.xhId}_alpha`);
+        });
+
+        it('activates a tab on click, but not a disabled one', () => {
+            const {model, tabs} = renderStrip();
+            fireEvent.click(tabs[1]);
+            expect(model.activeTabId).toBe('alpha');
+            fireEvent.click(tabs[2]);
+            expect(model.activeTabId).toBe('gamma');
+        });
+
+        it('moves focus with the arrow keys, skipping disabled tabs', () => {
+            const {tabs} = renderStrip();
+            tabs[0].focus();
+            fireEvent.keyDown(tabs[0], {key: 'ArrowRight'});
+            expect(document.activeElement).toBe(tabs[2]);
+        });
+
+        it('activates the focused tab on Enter', () => {
+            const {model, tabs} = renderStrip();
+            fireEvent.keyPress(tabs[2], {key: 'Enter', charCode: 13});
+            expect(model.activeTabId).toBe('gamma');
+        });
+    });
+
     describe('with enableOverflow', () => {
         // Guards #4982: a scrolling panel around the switcher jumped on every tab change.
         it('scrolls its tab strip just far enough to show a newly active tab', async () => {

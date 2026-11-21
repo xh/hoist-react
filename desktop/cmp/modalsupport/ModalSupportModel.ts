@@ -37,7 +37,7 @@ export interface ModalSupportConfig {
  * dialog) display while preserving all component state.
  *
  * Uses a React portal to move a single persistent DOM host node between an inline container
- * and a Blueprint Dialog. Because the child component is rendered into the host node once
+ * and a Dialog. Because the child component is rendered into the host node once
  * and the node is physically relocated (not re-mounted), all React component state, MobX
  * subscriptions, and DOM state (scroll position, focus, ag-Grid state, etc.) are preserved
  * across toggles.

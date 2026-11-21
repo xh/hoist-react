@@ -12,7 +12,7 @@ import {slider} from '@xh/hoist/desktop/cmp/input';
 import type {SliderProps} from '@xh/hoist/desktop/cmp/input';
 import {bindableRef} from '@xh/hoist/mobx';
 import {initTestAppAsync} from '@xh/hoist/test-support';
-import {render, screen} from '@testing-library/react';
+import {fireEvent, render, screen} from '@testing-library/react';
 import {beforeAll, describe, expect, it, onTestFinished, vi} from 'vitest';
 
 /**
@@ -78,9 +78,8 @@ describe('Slider', () => {
         });
     });
 
-    // Blueprint does not guard its scale. A step too small for a number hangs the render, a step
-    // of zero throws, and a label step too small for the range floods the page with labels. A
-    // scale can come from data, so the slider must draw something for each. Fixed in v91.
+    // A scale can come from data, so the slider must draw something for a step too small for a
+    // number, a step of zero, and a label step too small for the range.
     describe('track fill', () => {
         it('fills the track with the primary intent by default', () => {
             renderSlider(5);
@@ -95,6 +94,41 @@ describe('Slider', () => {
         it('fills the track between the handles of a range with the given intent', () => {
             renderSlider([2, 8], {intent: 'success'});
             expect(trackFillIntents()).toEqual(['bp6-intent-success']);
+        });
+    });
+
+    describe('padding', () => {
+        // The end handles and labels run past the ends of the track, and the wrapper clips.
+        it('pads a horizontal slider at its left and right ends', () => {
+            renderSlider(5);
+            expect(wrapper().style.paddingLeft).toBe('20px');
+            expect(wrapper().style.paddingRight).toBe('20px');
+            expect(wrapper().style.paddingTop).toBe('');
+        });
+
+        it('pads a vertical slider at its top and bottom ends too', () => {
+            renderSlider(5, {vertical: true});
+            expect(wrapper().style.paddingTop).toBe('12px');
+            expect(wrapper().style.paddingBottom).toBe('12px');
+            expect(wrapper().style.paddingLeft).toBe('20px');
+        });
+    });
+
+    describe('size', () => {
+        // The track fills the wrapper along its length, so these set the length of the track.
+        it('defaults the width of a horizontal slider, and leaves its height to its content', () => {
+            renderSlider(5);
+            expect(wrapper().style.width).toBe('200px');
+            expect(wrapper().style.height).toBe('');
+        });
+
+        it('defaults the height of a vertical slider, and takes a given height', () => {
+            const {unmount} = renderSlider(5, {vertical: true});
+            expect(wrapper().style.height).toBe('200px');
+            unmount();
+
+            renderSlider(5, {vertical: true, height: 160});
+            expect(wrapper().style.height).toBe('160px');
         });
     });
 
@@ -153,6 +187,41 @@ describe('Slider', () => {
             expect(warn).toHaveBeenCalledTimes(XH.isDevelopmentMode ? 1 : 0);
         });
     });
+
+    describe('keyboard', () => {
+        it('steps with the arrow keys, and jumps with Page keys, Home and End', () => {
+            const {model} = renderSlider(50, {min: 0, max: 100, stepSize: 5, labelStepSize: 25});
+            const handle = screen.getByRole('slider');
+
+            fireEvent.keyDown(handle, {key: 'ArrowRight'});
+            expect(model.value).toBe(55);
+            fireEvent.keyDown(handle, {key: 'ArrowDown'});
+            expect(model.value).toBe(50);
+            fireEvent.keyDown(handle, {key: 'PageUp'});
+            expect(model.value).toBe(75);
+            fireEvent.keyDown(handle, {key: 'End'});
+            expect(model.value).toBe(100);
+            fireEvent.keyDown(handle, {key: 'Home'});
+            expect(model.value).toBe(0);
+        });
+
+        it('stops a range handle at the other handle', () => {
+            const {model} = renderSlider([40, 50], {min: 0, max: 100, stepSize: 10});
+            const [start] = screen.getAllByRole('slider');
+
+            fireEvent.keyDown(start, {key: 'ArrowRight'});
+            expect(model.value).toEqual([50, 50]);
+            fireEvent.keyDown(start, {key: 'ArrowRight'});
+            expect(model.value).toEqual([50, 50]);
+            expect(start.getAttribute('aria-valuemax')).toBe('50');
+        });
+
+        it('ignores keys while disabled', () => {
+            const {model} = renderSlider(5, {min: 0, max: 10, disabled: true});
+            fireEvent.keyDown(screen.getByRole('slider'), {key: 'ArrowRight'});
+            expect(model.value).toBe(5);
+        });
+    });
 });
 
 //------------------
@@ -188,7 +257,7 @@ function spyOnWarn() {
     return spy;
 }
 
-/** The element that takes the slider's `domAttrs`, around the Blueprint slider. */
+/** The element that takes the slider's `domAttrs`, around the inner slider. */
 function wrapper(): HTMLElement {
     return document.querySelector('.xh-slider');
 }

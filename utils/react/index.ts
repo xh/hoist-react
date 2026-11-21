@@ -9,3 +9,4 @@ export * from './ReactUtils';
 export * from './LayoutPropUtils';
 export * from './ObservableRef';
 export * from './Hooks';
+export * from './PortalContainer';

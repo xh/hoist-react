@@ -9,10 +9,12 @@ import {HoistInputModel, useHoistInputModel} from '@xh/hoist/cmp/input';
 import type {HoistProps, HSide} from '@xh/hoist/core';
 import {hoistCmp} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
-import {radio, radioGroup} from '@xh/hoist/kit/blueprint';
 import {computed} from '@xh/hoist/mobx';
 import {getTestId, TEST_ID, withDefault} from '@xh/hoist/utils/js';
+import classNames from 'classnames';
 import {filter, isObject} from 'lodash';
+import {createElement, useId} from 'react';
+import {control} from './impl/Control';
 import './RadioInput.scss';
 
 export interface RadioInputProps extends HoistProps, HoistInputProps {
@@ -87,30 +89,38 @@ class RadioInputModel extends HoistInputModel {
 
 // Note: we don't use the `ref` here, but the presence of a second argument is required.
 const cmp = hoistCmp.factory<RadioInputModel>(({model, className, ...props}, ref) => {
-    const {normalizedOptions} = model,
-        labelSide = withDefault(props.labelSide, 'right');
+    const {normalizedOptions, renderValue} = model,
+        labelSide = withDefault(props.labelSide, 'right'),
+        alignIndicator = labelSide === 'left' ? 'right' : 'left',
+        name = useId();
 
-    const radios = normalizedOptions.map(opt => {
-        return radio({
-            alignIndicator: labelSide === 'left' ? 'right' : 'left',
-            disabled: opt.disabled,
-            label: opt.label,
-            value: opt.value,
-            className: 'xh-radio-input-option',
-            [TEST_ID]: getTestId(props.testId, `${opt.value}`),
-            onFocus: model.onFocus,
-            onBlur: model.onBlur
-        });
-    });
-
-    return radioGroup({
-        className,
-        disabled: props.disabled,
-        inline: props.inline,
-        selectedValue: model.renderValue,
-        onChange: model.onChange,
-        [TEST_ID]: props.testId,
-        ...props.domAttrs,
-        children: radios
-    });
+    // Blueprint's class names are kept, so its styles and app CSS keyed to them apply.
+    return createElement(
+        'div',
+        {
+            role: 'radiogroup',
+            [TEST_ID]: props.testId,
+            ...props.domAttrs,
+            className: classNames('bp6-radio-group', className)
+        },
+        ...normalizedOptions.map(opt =>
+            control({
+                kind: 'radio',
+                alignIndicator,
+                inline: props.inline,
+                label: opt.label,
+                className: 'xh-radio-input-option',
+                inputProps: {
+                    name,
+                    value: opt.value,
+                    checked: opt.value === renderValue,
+                    disabled: opt.disabled || props.disabled,
+                    [TEST_ID]: getTestId(props.testId, `${opt.value}`),
+                    onChange: model.onChange,
+                    onFocus: model.onFocus,
+                    onBlur: model.onBlur
+                }
+            })
+        )
+    );
 });

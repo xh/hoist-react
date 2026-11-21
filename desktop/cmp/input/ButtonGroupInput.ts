@@ -150,7 +150,7 @@ const cmp = hoistCmp.factory<ButtonGroupInputModel>(({model, className, ...props
             outlined: withDefault(outlined, false),
             disabled: withDefault(btnDisabled, false),
             onClick: () => model.onButtonClick(value),
-            // Workaround for https://github.com/palantir/blueprint/issues/3971
+            // Remount a button when it becomes active, so `autoFocus` moves focus to it.
             key: `${isActive} ${value}`,
             autoFocus: isActive && model.hasFocus
         } as ButtonGroupProps);

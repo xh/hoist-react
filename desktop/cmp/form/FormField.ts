@@ -4,10 +4,11 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import type {PopoverPosition, PopperBoundary} from '@blueprintjs/core';
 import type {BaseFormFieldProps, FormContextType} from '@xh/hoist/cmp/form';
 import {FieldModel, FormContext, FormFieldSetContext} from '@xh/hoist/cmp/form';
 import {box, div, label as labelEl, li, span, ul} from '@xh/hoist/cmp/layout';
+import type {PopoverBoundary, PopoverPosition} from '@xh/hoist/cmp/popover';
+import {tooltip} from '@xh/hoist/cmp/tooltip';
 import type {DefaultHoistProps, HoistProps, HSide, TestSupportProps} from '@xh/hoist/core';
 import {hoistCmp, uses, XH} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
@@ -16,7 +17,6 @@ import type {ValidationResult} from '@xh/hoist/data';
 import {maxSeverity} from '@xh/hoist/data';
 import {fmtDate, fmtDateTime, fmtJson, fmtNumber} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
-import {tooltip} from '@xh/hoist/kit/blueprint';
 import {isLocalDate} from '@xh/hoist/utils/datetime';
 import {errorIf, getTestId, logWarn, TEST_ID, throwIf, withDefault} from '@xh/hoist/utils/js';
 import {
@@ -74,15 +74,9 @@ export interface FormFieldProps extends BaseFormFieldProps {
      */
     minimal?: boolean;
 
-    /**
-     * Minimal validation tooltip will try to fit within the corresponding boundary.
-     * @see https://blueprintjs.com/docs/#core/components/popover
-     */
-    tooltipBoundary?: PopperBoundary;
-    /**
-     * Position for minimal validation tooltip.
-     * @see https://blueprintjs.com/docs/#core/components/popover
-     */
+    /** Area the minimal validation tooltip stays within. */
+    tooltipBoundary?: PopoverBoundary;
+    /** Position of the minimal validation tooltip, relative to the field. Default 'right'. */
     tooltipPosition?: PopoverPosition;
 }
 
@@ -421,15 +415,8 @@ function getValidChild(children) {
 }
 
 function getValidationTooltipContent(validationResults: ValidationResult[]): ReactElement | string {
-    // If no ValidationResults, something other than null must be returned.
-    // If null is returned, as of Blueprint v5, the Blueprint Tooltip component causes deep re-renders of its target
-    // when content changes from null <-> not null.
-    // In `formField` `minimal:true` mode with `commitonchange:true`, this causes the
-    // TextInput component to lose focus when its validation state changes, which is undesirable.
-    // It is not clear if this is a bug or intended behavior in BP v5, but this workaround prevents the issue.
-    // `Tooltip:content` has been a required prop since at least BP v4, but something about the way it is used in BP v5 changed.
     if (isEmpty(validationResults)) {
-        return 'Is Valid';
+        return null;
     } else if (validationResults.length === 1) {
         return first(validationResults).message;
     } else {

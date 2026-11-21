@@ -7,11 +7,11 @@
 import type {HoistInputProps} from '@xh/hoist/cmp/input';
 import {HoistInputModel, useHoistInputModel} from '@xh/hoist/cmp/input';
 import {box, div, fragment, hbox, span} from '@xh/hoist/cmp/layout';
+import {tooltip} from '@xh/hoist/cmp/tooltip';
 import type {Awaitable, HoistProps, LayoutProps, PlainObject, SelectOption} from '@xh/hoist/core';
 import {createElement, hoistCmp, XH} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
-import {tooltip} from '@xh/hoist/kit/blueprint';
 import {
     reactAsyncCreatableSelect,
     reactAsyncSelect,

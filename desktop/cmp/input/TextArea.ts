@@ -9,10 +9,11 @@ import {getPasswordManagerAttrs, HoistInputModel, useHoistInputModel} from '@xh/
 import type {HoistProps, LayoutProps, StyleProps} from '@xh/hoist/core';
 import {hoistCmp} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
-import {textArea as bpTextarea} from '@xh/hoist/kit/blueprint';
 import {TEST_ID, withDefault} from '@xh/hoist/utils/js';
 import {useComposedRefs, getLayoutProps} from '@xh/hoist/utils/react';
+import classNames from 'classnames';
 import type {Ref} from 'react';
+import {createElement} from 'react';
 import './TextArea.scss';
 
 export interface TextAreaProps
@@ -84,7 +85,7 @@ class TextAreaInputModel extends HoistInputModel {
 const cmp = hoistCmp.factory<TextAreaInputModel>(({model, className, ...props}, ref) => {
     const {width, height, flex, ...layoutProps} = getLayoutProps(props);
 
-    return bpTextarea({
+    const textareaProps = {
         value: model.renderValue || '',
 
         autoFocus: props.autoFocus,
@@ -109,5 +110,13 @@ const cmp = hoistCmp.factory<TextAreaInputModel>(({model, className, ...props}, 
         onChange: model.onChange,
         onFocus: model.onFocus,
         onKeyDown: model.onKeyDown
+    };
+
+    // Blueprint's class names are kept, so its styles and app CSS keyed to them apply.
+    const {inputRef, ...rest} = textareaProps;
+    return createElement('textarea', {
+        ...rest,
+        ref: inputRef,
+        className: classNames('bp6-input', 'bp6-text-area', className)
     });
 });

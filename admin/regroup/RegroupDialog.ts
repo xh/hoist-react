@@ -10,7 +10,7 @@ import {button} from '@xh/hoist/desktop/cmp/button';
 import {select} from '@xh/hoist/desktop/cmp/input';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {Icon} from '@xh/hoist/icon';
-import {dialog, dialogBody} from '@xh/hoist/kit/blueprint';
+import {dialog, dialogBody} from '@xh/hoist/desktop/cmp/dialog';
 
 import {RegroupDialogModel} from './RegroupDialogModel';
 

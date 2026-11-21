@@ -610,6 +610,12 @@
   (Done), and `docs/doc-registry.json`.
 
 ### 2026-11-18
+- Added a package README for `Popover`, Hoist's own popover in `/cmp/popover/`. It covers usage,
+  how a popover closes and nests, portals, and the Blueprint fallback. TSDoc holds the props and
+  their defaults, so the README has no prop table.
+- Updated the `/popover/` entry in `cmp/README.md`.
+- Indexed in `docs/README.md` (Quick Reference and Components), the roadmap Priority 2 table
+  (Draft), and `docs/doc-registry.json`.
 - Added a package README for `Callout`. It covers when to use the component over `Banner` and
   `Card`, examples, CSS variables and pitfalls. TSDoc holds the props and their defaults, so the
   README has no prop table.

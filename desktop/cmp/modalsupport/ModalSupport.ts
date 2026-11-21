@@ -8,7 +8,7 @@
 import {box, fragment} from '@xh/hoist/cmp/layout';
 import {hoistCmp, uses} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
-import {dialog} from '@xh/hoist/kit/blueprint';
+import {dialog} from '@xh/hoist/desktop/cmp/dialog';
 import type {ReactPortal} from 'react';
 import {Children} from 'react';
 import {createPortal} from 'react-dom';

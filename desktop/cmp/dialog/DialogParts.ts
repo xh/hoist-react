@@ -7,12 +7,10 @@
 import {div} from '@xh/hoist/cmp/layout';
 import {hoistCmp} from '@xh/hoist/core';
 
-/**
- * Dialog Body for Blueprint, wrapped as a Hoist Component.
- */
+/** Padded content area of a dialog, between its header and footer. */
 export const [DialogBody, dialogBody] = hoistCmp.withFactory({
     displayName: 'DialogBody',
-    className: 'bp6-dialog-body',
+    className: 'xh-dialog__body bp6-dialog-body',
     observer: false,
     model: false,
     memo: false,
@@ -22,12 +20,10 @@ export const [DialogBody, dialogBody] = hoistCmp.withFactory({
     }
 });
 
-/**
- * Dialog Footer for Blueprint, wrapped as Hoist Component.
- */
+/** Footer of a dialog, below its body. */
 export const [DialogFooter, dialogFooter] = hoistCmp.withFactory({
     displayName: 'DialogFooter',
-    className: 'bp6-dialog-footer',
+    className: 'xh-dialog__footer bp6-dialog-footer',
     observer: false,
     model: false,
     memo: false,
@@ -37,12 +33,10 @@ export const [DialogFooter, dialogFooter] = hoistCmp.withFactory({
     }
 });
 
-/**
- * Dialog Footer Actions for Blueprint, wrapped as HoistComponent.
- */
+/** Right-aligned row of buttons within a dialog footer. */
 export const [DialogFooterActions, dialogFooterActions] = hoistCmp.withFactory({
     displayName: 'DialogFooterActions',
-    className: 'bp6-dialog-footer-actions',
+    className: 'xh-dialog__footer-actions bp6-dialog-footer-actions',
     observer: false,
     model: false,
     memo: false,

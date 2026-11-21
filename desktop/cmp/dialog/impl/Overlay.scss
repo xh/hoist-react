@@ -1,0 +1,17 @@
+/*
+ * This file belongs to Hoist, an application development toolkit
+ * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
+ *
+ * Copyright © 2026 Extremely Heavy Industries Inc.
+ */
+
+// An overlay rendered in place, without a portal, covers its container rather than the window.
+.xh-overlay.xh-overlay--inline {
+  display: inline;
+  overflow: visible;
+
+  &.xh-overlay--scroll-container,
+  .xh-overlay__backdrop {
+    position: absolute;
+  }
+}

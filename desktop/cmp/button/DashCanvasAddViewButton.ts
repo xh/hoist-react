@@ -4,12 +4,12 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
+import {popover} from '@xh/hoist/cmp/popover';
 import {hoistCmp, useContextModel} from '@xh/hoist/core';
 import {contextMenu} from '@xh/hoist/desktop/cmp/contextmenu';
 import {DashCanvasModel} from '@xh/hoist/desktop/cmp/dash';
 import {createViewMenuItems} from '@xh/hoist/desktop/cmp/dash/canvas/impl/utils';
 import {Icon} from '@xh/hoist/icon';
-import {popover} from '@xh/hoist/kit/blueprint';
 import {errorIf, withDefault} from '@xh/hoist/utils/js';
 import type {ButtonProps} from './Button';
 import {button} from './Button';

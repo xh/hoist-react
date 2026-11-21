@@ -11,7 +11,7 @@ used by Hoist. It serves two purposes:
    `installHighcharts()` functions that applications call during bootstrap to register these
    libraries with Hoist, along with version constraints to ensure compatibility.
 
-2. **Re-exported component libraries** — Blueprint, react-select, GoldenLayout, and several
+2. **Re-exported component libraries** — react-select, GoldenLayout, and several
    other UI libraries are imported by Kit, wrapped as needed (with element factories, prop
    stripping, transition disabling, etc.), and re-exported for use by Hoist's own components. Apps
    typically do not import from Kit directly — they use Hoist's higher-level component wrappers
@@ -22,7 +22,6 @@ used by Hoist. It serves two purposes:
 ```
 kit/
 ├── ag-grid/              # ag-Grid install function + type re-exports
-├── blueprint/            # Blueprint 6 wrappers, element factories, disabled transitions
 ├── golden-layout/        # GoldenLayout v1.5.9 with React 18 patches
 ├── highcharts/           # Highcharts install function with default config
 ├── pdfjs/                # Lazy loader for pdf.js (optional peer dependency)
@@ -85,23 +84,6 @@ These libraries are imported and wrapped by Kit for use by Hoist's component pac
 should generally import Hoist components (from `/desktop/`, `/mobile/`, or `/cmp/`) rather than
 these Kit wrappers directly.
 
-### Blueprint
-
-[Blueprint](https://blueprintjs.com/) (v6) provides the foundation for many desktop components —
-buttons, menus, popovers, dialogs, form controls, and more.
-
-Kit wraps Blueprint components to:
-- **Disable transitions** — `Dialog` and `Popover` are wrapped to set `transitionDuration: 0` by
-  default, avoiding visual jitter in Hoist's snappy UI
-- **Provide element factories** — All major Blueprint components are exported as both React
-  components and Hoist element factory functions (e.g. `button()`, `menuItem()`, `popover()`)
-- **Initialize focus management** — `FocusStyleManager.onlyShowFocusOnTabs()` is called on import
-  to avoid focus outlines on mouse click
-
-See [`/kit/blueprint/`](./blueprint/README.md) for full coverage, including the build-time icon
-stubbing shared with `@xh/hoist-dev-utils` and the checklist for re-verifying Blueprint's
-built-in icons when upgrading the library.
-
 ### react-select
 
 [react-select](https://react-select.com/) powers Hoist's `Select` input component. Kit re-exports
@@ -163,20 +145,11 @@ Hoist's own component packages import from Kit. Application code should almost n
 
 ```typescript
 // ✅ Do: Import Hoist's component wrappers
-import {button} from '@xh/hoist/desktop/cmp/button';
+import {select} from '@xh/hoist/desktop/cmp/input';
 
 // ❌ Don't: Import from Kit directly in application code
-import {button} from '@xh/hoist/kit/blueprint';
+import {reactSelect} from '@xh/hoist/kit/react-select';
 ```
-
-The notable exception is **Blueprint's `dialog`** — Hoist does not yet provide its own Dialog
-component wrapper ([#861](https://github.com/xh/hoist-react/issues/861)), so applications import
-`dialog` directly from `@xh/hoist/kit/blueprint` for custom modal dialogs. This is the
-established pattern used throughout the framework and applications. See the
-[Dialogs section](../desktop/README.md#dialogs) of the desktop README for usage guidance.
-
-Other Blueprint or library components that Hoist does not wrap (e.g. `Tree`, `EditableText`)
-can also be imported from Kit when needed.
 
 ## Common Pitfalls
 
@@ -185,19 +158,6 @@ can also be imported from Kit when needed.
 Both `installAgGrid()` and `installHighcharts()` enforce version ranges. If you see an error like
 "This version of Hoist requires an ag-Grid version between X and Y," upgrade or downgrade the
 library to match Hoist's required range.
-
-### Importing Libraries Directly vs. Through Kit
-
-When Hoist wraps a library (e.g. Blueprint's `Dialog` with transitions disabled), importing the
-unwrapped version directly can cause inconsistent behavior:
-
-```typescript
-// ✅ Do: Use Kit's wrapped Dialog (transitions disabled)
-import {dialog} from '@xh/hoist/kit/blueprint';
-
-// ❌ Don't: Import Blueprint Dialog directly (default transitions enabled)
-import {Dialog} from '@blueprintjs/core';
-```
 
 ### GoldenLayout jQuery Dependency
 
@@ -210,5 +170,5 @@ for jQuery resolution guidance.
 - [`/cmp/grid/`](../cmp/grid/README.md) — Grid system built on ag-Grid (installed via Kit)
 - [`/desktop/cmp/dash/`](../desktop/cmp/dash/README.md) — Dashboard system built on GoldenLayout
   (imported via Kit)
-- [`/desktop/`](../desktop/README.md) — Desktop components built on Blueprint (imported via Kit)
+- [`/desktop/`](../desktop/README.md) — Desktop components
 - [`/mobile/`](../mobile/README.md) — Mobile components, built on native elements with no Kit library

@@ -6,9 +6,9 @@
 
 Hoist React v91 resets Hoist's CSS custom properties onto a simpler baseline, and moves element
 factories to the standard React `children` key. A codemod automates nearly all of each migration.
-v91 also requires hoist-core 45 and AG Grid 36.3, renders desktop inline masks without a Blueprint overlay, sends
-a fetch with `params` but no `method` as a GET, and moves its MCP server for AI coding agents to
-Hoist Docs.
+v91 also removes Blueprint, requires hoist-core 45 and AG Grid 36.3, renders desktop inline masks
+without an overlay, sends a fetch with `params` but no `method` as a GET, and moves its MCP server
+for AI coding agents to Hoist Docs.
 
 - **hoist-core 45 (required)** - see Step 1. v91 and hoist-core 45 are released together and
   require each other.
@@ -36,6 +36,9 @@ Hoist Docs.
   will remove them.
 - **`FetchService` default method (review fetches that send `params`)** - see Step 7. A request
   with `params` and no `method` is now a GET, not a POST.
+- **Blueprint removed (required if your app imports from `@xh/hoist/kit/blueprint`)** - see Step 8.
+  Hoist's desktop components no longer use Blueprint, and Hoist no longer loads its stylesheet.
+  Desktop overlays and controls look and behave as before, with keyboard and focus improvements.
 - **MCP server and CLIs removed (required if your agents use them)** - see Step 9. hoist-react no
   longer ships the stdio MCP server or the `hoist-mcp`, `hoist-docs` and `hoist-ts` CLIs. The same
   tools come from [Hoist Docs](https://github.com/xh/hoist-docs) (`@xh/hoist-docs`), added as a dev
@@ -64,6 +67,8 @@ The most significant impacts are:
   Hoist logs a console warning naming the component. The Step 6 codemod fixes these.
 - **A fetch with `params` and no `method` is now a GET.** Before v91 it was a POST. A server action
   that accepts only POST rejects it, and a password or other sensitive param ends up in the URL.
+- **Imports from `@xh/hoist/kit/blueprint` fail to build.** The package is gone. Blueprint
+  components an app imports directly from `@blueprintjs/core` also need replacing - see Step 8.
 
 ## Prerequisites
 
@@ -290,9 +295,9 @@ vs. Derived Variables" in [`styles/README.md`](../../styles/README.md#base-vs-de
 
 ### 5. Check Inline Mask Styling
 
-On desktop, an inline `Mask` now renders as a plain `div` with the class `xh-mask--inline`, not a
-Blueprint overlay. Its backdrop is the `::before` pseudo-element of that `div`. Showing a mask no
-longer forces a browser layout. A mask with `inline: false` still uses the Blueprint overlay.
+On desktop, an inline `Mask` now renders as a plain `div` with the class `xh-mask--inline`, not an
+overlay. Its backdrop is the `::before` pseudo-element of that `div`. Showing a mask no longer
+forces a browser layout. A mask with `inline: false` renders in Hoist's own overlay.
 
 App CSS that targets `.bp6-overlay` classes within an inline mask no longer matches. Search for
 Blueprint overlay classes in your styles and check any hit that styles a mask:
@@ -425,47 +430,94 @@ await XH.fetchJson({url: 'api/orders/cancel', method: 'POST', params: {orderId}}
 A unit test that serves one of these reads with `hoistCore.route('POST', ...)` and checks `req.form`
 now needs `route('GET', ...)` and `req.query`.
 
-### 8. Check the Console and the UI
+### 8. Replace Blueprint Imports
 
-Start the app in development mode. Hoist logs a warning at startup if any size variable resolves to
-a bare number - almost always an override the codemod could not see, such as one set from
-TypeScript or built with interpolation:
+Hoist no longer uses Blueprint. Its desktop components render their own markup and behavior,
+`@xh/hoist/kit/blueprint` is gone, and `@blueprintjs/core` is no longer a dependency of Hoist. Find
+the imports to change:
 
-```
-[ThemeModel] | CSS size variables must include a unit as of Hoist v91 (e.g. '8px', not '8').
-Unitless values found for: --xh-spacing, ...
-```
-
-The check covers the active theme at startup. Switch themes and reload to check the other.
-
-Hoist also warns if any `--xh-*` variable is set on `:root` or `html`, by a stylesheet or an inline
-style. Move each one it names to `body.xh-app` (Step 4):
-
-```
-[ThemeModel] | CSS variables set on :root or html have no effect - Hoist's defaults on body take
-precedence. Move these overrides to body.xh-app: --xh-spacing, ...
+```bash
+grep -rn "@xh/hoist/kit/blueprint\|@blueprintjs\|@xh/hoist/mobile/cmp/popover" src
 ```
 
-Hoist also warns, once per component, if an element spec sets both `children` and a legacy key.
-Only `children` renders. Fix each one it names as described in Step 6:
+Mobile apps import `popover` from `@xh/hoist/cmp/popover` in place of the removed
+`@xh/hoist/mobile/cmp/popover`. Replace each Blueprint component, whether from
+`@xh/hoist/kit/blueprint` or `@blueprintjs/core`, with Hoist's equivalent:
 
+| Was (Blueprint) | Now |
+|---|---|
+| `dialog`, `Dialog` | `dialog` from `@xh/hoist/desktop/cmp/dialog` |
+| `dialogBody`, `dialogFooter`, `dialogFooterActions` | The same names from `@xh/hoist/desktop/cmp/dialog` |
+| `popover`, `Popover` | The same names from `@xh/hoist/cmp/popover` |
+| `tooltip`, `Tooltip` | The same names from `@xh/hoist/cmp/tooltip` |
+| `menuItem`, `menuDivider` | A `MenuItem` config, and `'-'` or `{heading}` for a divider. Map `onClick` to `actionFn`, `labelElement` to `rightElement`, and `shouldDismissPopover: false` to `keepMenuOpen: true` |
+| `menu` | `menu` or `menuButton` from `@xh/hoist/desktop/cmp/menu`, with `MenuItem` configs |
+| `showContextMenu` | `useContextMenu` from `@xh/hoist/desktop/hooks`, or `PanelProps.contextMenu` |
+| `useHotkeys`, `HotkeyConfig` | The same names from `@xh/hoist/desktop/hooks` |
+| `OverlayToaster` | `XH.toast()` |
+| `alert` | `XH.message()`, `XH.alert()` or `XH.confirm()` |
+| `callout` | `callout` from `@xh/hoist/cmp/callout` |
+| `bpCard` | `card` from `@xh/hoist/cmp/card` |
+| `switchControl` | `switchInput` from `@xh/hoist/desktop/cmp/input` |
+| `radio`, `radioGroup` | `radioInput` from `@xh/hoist/desktop/cmp/input` |
+| `textArea` | `textArea` from `@xh/hoist/desktop/cmp/input` |
+| `rangeSlider` | `slider` from `@xh/hoist/desktop/cmp/input`, with a two-number array as its value |
+| `tag` | No standalone equivalent. For tags in a grid cell, `tagsRenderer` from `@xh/hoist/cmp/grid` |
+| `button`, `checkbox`, `inputGroup`, `numericInput`, `slider` and other controls | Hoist's components in `@xh/hoist/desktop/cmp/button` and `@xh/hoist/desktop/cmp/input` |
+| `Position.BOTTOM_LEFT` and other `Position` values | The string, e.g. `'bottom-left'`, typed as `PopoverPosition` from `@xh/hoist/cmp/popover` |
+| `PopoverInteractionKind.HOVER` and other kinds | The string, e.g. `'hover'` |
+| `Classes.*` | The class name string, e.g. `'bp6-text-muted'` |
+
+Before:
+
+```typescript
+import {dialog, tooltip} from '@xh/hoist/kit/blueprint';
+
+dialog({title: 'Edit', isOpen: model.isOpen, onClose: () => model.close(), children: form()});
+tooltip({content: 'Refresh now', position: 'bottom', children: button({icon: Icon.refresh()})});
 ```
-Element spec for "Panel" sets both `children` and a legacy `item` / `items` key. Only `children`
-is rendered - use `children` alone.
+
+After:
+
+```typescript
+import {tooltip} from '@xh/hoist/cmp/tooltip';
+import {dialog} from '@xh/hoist/desktop/cmp/dialog';
+
+dialog({title: 'Edit', isOpen: model.isOpen, onClose: () => model.close(), children: form()});
+tooltip({content: 'Refresh now', position: 'bottom', children: button({icon: Icon.refresh()})});
+
+// Or, for a desktop button, pass the tooltip to the button itself
+button({icon: Icon.refresh(), tooltip: {content: 'Refresh now', position: 'bottom'}});
 ```
 
-Then review the app in both light and dark themes, and on mobile if applicable.
+Desktop `ButtonProps.tooltip` now shows a Hoist `Tooltip` rather than setting the native `title`.
+Test automation that finds buttons by title (e.g. Playwright's `getByTitle`) no longer matches
+buttons that set `tooltip` - set `title` on those buttons, or find them by `testId`.
 
-`StatCard` now starts its content at the top, so cards in a `StatCardStrip` keep their titles and
-values on the same lines. A card taller than its content no longer centers that content
-vertically. To center it again, set `--xh-stat-card-justify-content: center` - on `body.xh-app` for
-every card, or on a container for the cards within it.
+The props carry over, except Blueprint-only ones. Hoist's `Dialog` always renders in a portal, so
+drop `usePortal`. A `Tooltip` takes `position`, not `placement`, and has no `targetProps` - set
+handlers and classes on its child instead.
 
-Popovers have a stronger border and shadow in v91, so they stand out from the content beneath them.
-If your app styles `.bp6-popover` or `.bp6-popover-content` directly to change a border, shadow, or
-background, set the new `--xh-popover-*` variables instead. To change one popover, set them on its
-`popoverClassName`. See "Dialogs and Popovers" in
-[`styles/README.md`](../../styles/README.md#dialogs-and-popovers).
+A popover no longer takes Popper.js `modifiers`, including in `MenuButtonProps.popoverProps`. Set
+`offset` for the distance from the target:
+
+```typescript
+// Before
+menuButton({popoverProps: {modifiers: {offset: {enabled: true, options: {offset: [0, 4]}}}}});
+
+// After
+menuButton({popoverProps: {offset: {mainAxis: 4}}});
+```
+
+Do not add `@blueprintjs/core` to an app to keep a Blueprint component. Move it onto Hoist's
+nearest component, such as a tree-mode `Grid` for a `Tree` or a `textInput` for `EditableText`.
+
+Hoist's markup keeps Blueprint's `bp6-*` class names in v91, alongside its own `xh-*` ones, so app
+CSS that targets them still applies. Hoist ships the Blueprint styles its components use, so they
+look as before.
+
+Builds with `@xh/hoist-dev-utils` may log `Could not resolve @blueprintjs/icons - Blueprint icon
+stubs disabled`. With no Blueprint in the app, this is harmless.
 
 The `.xh-border-top`, `-right`, `-bottom` and `-left`, `.xh-pad-none` and `.xh-margin-none`
 utility classes no longer use `!important`. Inline styles, including layout props such as
@@ -555,6 +607,48 @@ Also update:
 
 Restart the agent after this change, and after any later Hoist upgrade, to pick up the new docs.
 
+### 10. Check the Console and the UI
+
+Start the app in development mode. Hoist logs a warning at startup if any size variable resolves to
+a bare number - almost always an override the codemod could not see, such as one set from
+TypeScript or built with interpolation:
+
+```
+[ThemeModel] | CSS size variables must include a unit as of Hoist v91 (e.g. '8px', not '8').
+Unitless values found for: --xh-spacing, ...
+```
+
+The check covers the active theme at startup. Switch themes and reload to check the other.
+
+Hoist also warns if any `--xh-*` variable is set on `:root` or `html`, by a stylesheet or an inline
+style. Move each one it names to `body.xh-app` (Step 4):
+
+```
+[ThemeModel] | CSS variables set on :root or html have no effect - Hoist's defaults on body take
+precedence. Move these overrides to body.xh-app: --xh-spacing, ...
+```
+
+Hoist also warns, once per component, if an element spec sets both `children` and a legacy key.
+Only `children` renders. Fix each one it names as described in Step 6:
+
+```
+Element spec for "Panel" sets both `children` and a legacy `item` / `items` key. Only `children`
+is rendered - use `children` alone.
+```
+
+Then review the app in both light and dark themes, and on mobile if applicable.
+
+`StatCard` now starts its content at the top, so cards in a `StatCardStrip` keep their titles and
+values on the same lines. A card taller than its content no longer centers that content
+vertically. To center it again, set `--xh-stat-card-justify-content: center` - on `body.xh-app` for
+every card, or on a container for the cards within it.
+
+Popovers have a stronger border and shadow in v91, so they stand out from the content beneath them.
+If your app styles `.bp6-popover` or `.bp6-popover-content` directly to change a border, shadow, or
+background, set the new `--xh-popover-*` variables instead. To change one popover, set them on its
+`popoverClassName`. See "Dialogs and Popovers" in
+[`styles/README.md`](../../styles/README.md#dialogs-and-popovers).
+
 ## Verification Checklist
 
 After completing all steps:
@@ -580,6 +674,8 @@ After completing all steps:
   and a legacy `item` / `items` key.
 - [ ] Each fetch that sets `params` and changes data, sends a sensitive value, or sends large params
   also sets `method: 'POST'` (Step 7).
+- [ ] No imports from `@xh/hoist/kit/blueprint` remain, and any Blueprint components the app keeps
+  are styled (Step 8).
 - [ ] No config or instructions reference `hoist-mcp.mjs`, `npx hoist-docs` or `npx hoist-ts`.
 - [ ] `hoist-ping` from your agent reports Hoist Docs and your app's Hoist versions.
 - [ ] No references to retired CSS variable names remain:

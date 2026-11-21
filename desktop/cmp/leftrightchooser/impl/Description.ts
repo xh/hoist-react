@@ -4,8 +4,8 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
+import {callout} from '@xh/hoist/cmp/callout';
 import {hoistCmp} from '@xh/hoist/core';
-import {callout} from '@xh/hoist/kit/blueprint';
 import type {LeftRightChooserModel} from '../LeftRightChooserModel';
 
 /** @internal */

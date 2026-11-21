@@ -1,0 +1,60 @@
+/*
+ * This file belongs to Hoist, an application development toolkit
+ * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
+ *
+ * Copyright © 2026 Extremely Heavy Industries Inc.
+ */
+
+.xh-hotkeys-dialog {
+  &__list {
+    max-height: 70vh;
+    overflow-y: auto;
+  }
+
+  // Group headings match the section headings in menus.
+  &__group {
+    margin: var(--xh-spacing-double) 0 var(--xh-spacing-half);
+    padding-bottom: var(--xh-spacing-half);
+    font-size: var(--xh-menu-heading-font-size);
+    font-weight: var(--xh-menu-heading-font-weight);
+    color: var(--xh-menu-heading-text-color);
+    border-bottom: var(--xh-menu-heading-border);
+
+    &:first-child {
+      margin-top: 0;
+    }
+  }
+
+  &__hotkey {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--xh-spacing-double);
+    padding: var(--xh-spacing-half) 0;
+  }
+
+  &__label {
+    flex: 1;
+  }
+}
+
+.xh-key-combo {
+  display: inline-flex;
+  gap: 4px;
+}
+
+.xh-key {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  min-width: 22px;
+  height: 22px;
+  padding: 0 6px;
+  font-family: var(--xh-font-family-mono);
+  font-size: var(--xh-font-size-small);
+  color: var(--xh-text-color);
+  background-color: var(--xh-bg-alt);
+  border: var(--xh-border-solid);
+  border-radius: var(--xh-border-radius);
+}

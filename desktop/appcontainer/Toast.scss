@@ -10,6 +10,16 @@
     position: absolute;
   }
 
+  // The top and left edges of a toast's position. The Blueprint base styles hold the bottom and
+  // right edges.
+  &.bp6-toast-container-top {
+    top: 0;
+  }
+
+  &.bp6-toast-container-left {
+    align-items: flex-start;
+  }
+
   .xh-toast {
     color: white !important;
     padding-left: var(--xh-spacing-half);
@@ -36,6 +46,7 @@
       margin: 0 0 0 var(--xh-spacing-half);
     }
 
+    .xh-toast__message,
     .bp6-toast-message {
       overflow-wrap: break-word;
     }
@@ -49,5 +60,31 @@
         color: white !important;
       }
     }
+  }
+}
+
+// New toasts slide in from the edge they are shown along.
+.xh-toast-container {
+  --xh-toast-enter-offset: -40px;
+
+  .xh-toast {
+    animation: xh-toast-enter 0.3s cubic-bezier(0.54, 1.12, 0.38, 1.11);
+
+    @media (prefers-reduced-motion: reduce) {
+      animation: none;
+    }
+  }
+
+  &.bp6-toast-container-bottom {
+    --xh-toast-enter-offset: 60px;
+  }
+}
+
+@keyframes xh-toast-enter {
+  from {
+    transform: translateY(var(--xh-toast-enter-offset));
+  }
+  to {
+    transform: translateY(0);
   }
 }

@@ -168,6 +168,22 @@
             "keywords": ["Callout", "callout", "admonition", "note", "caveat", "warning", "alert", "intent", "Banner", "Card"]
         },
         {
+            "id": "cmp/popover/README.md",
+            "title": "Popover Package",
+            "mcpCategory": "package",
+            "viewerCategory": "components",
+            "description": "Popover - floating content opened from a target by click or hover, built on Floating UI - how it closes and nests, portals, and mobile defaults.",
+            "keywords": ["Popover", "popover", "PopoverProps", "interactionKind", "onInteraction", "xh-popover-dismiss", "Floating UI"]
+        },
+        {
+            "id": "cmp/tooltip/README.md",
+            "title": "Tooltip Package",
+            "mcpCategory": "package",
+            "viewerCategory": "components",
+            "description": "Tooltip - short label shown beside a target on hover or focus, a hover Popover with tooltip defaults, intents and compact sizing.",
+            "keywords": ["Tooltip", "tooltip", "TooltipProps", "hover", "intent", "compact", "title", "Popover"]
+        },
+        {
             "id": "cmp/progressbar/README.md",
             "title": "ProgressBar Package",
             "mcpCategory": "package",
@@ -301,15 +317,7 @@
             "mcpCategory": "package",
             "viewerCategory": "components",
             "description": "Centralized wrappers for third-party libraries used by Hoist.",
-            "keywords": ["installAgGrid", "installHighcharts", "Blueprint", "GoldenLayout", "react-select"]
-        },
-        {
-            "id": "kit/blueprint/README.md",
-            "title": "Blueprint",
-            "mcpCategory": "package",
-            "viewerCategory": "supporting",
-            "description": "Hoist's BlueprintJS integration - wrapped components and element factories, plus the build-time icon stubbing (via @xh/hoist-dev-utils) and the checklist for re-verifying Blueprint's built-in icons on library upgrades.",
-            "keywords": ["blueprint", "blueprintjs", "kit", "popover", "dialog", "menu", "blueprint icons", "icon stubs", "loadAllBlueprintJsIcons", "requiredBlueprintIcons", "bundle size"]
+            "keywords": ["installAgGrid", "installHighcharts", "GoldenLayout", "react-select"]
         },
         {
             "id": "inspector/README.md",

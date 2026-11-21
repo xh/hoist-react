@@ -20,7 +20,8 @@ import {TEST_ID} from '@xh/hoist/utils/js';
 import {
     filterMenuHeadings,
     isVisibleMenuEntry,
-    resolveMenuHeading
+    resolveMenuHeading,
+    stopRightElementControlEvent
 } from '@xh/hoist/cmp/menu/impl/Menus';
 import classNames from 'classnames';
 import {clone, isEmpty} from 'lodash';
@@ -107,8 +108,17 @@ class MenuLocalModel extends HoistModel {
                 if (!isMenuItem(item)) return item;
 
                 // Process items
-                const {text, icon, className, actionFn, hidden, active, keepMenuOpen, testId} =
-                        item,
+                const {
+                        text,
+                        icon,
+                        className,
+                        actionFn,
+                        hidden,
+                        active,
+                        keepMenuOpen,
+                        rightElement,
+                        testId
+                    } = item,
                     labelItems = icon ? [icon, hspacer(10), text] : [text];
 
                 return div({
@@ -119,10 +129,19 @@ class MenuLocalModel extends HoistModel {
                         active ? 'xh-menu__list__item--active' : null,
                         className
                     ),
-                    children: div({
-                        className: 'xh-menu__list__item__content',
-                        children: labelItems
-                    }),
+                    children: [
+                        div({
+                            className: 'xh-menu__list__item__content',
+                            children: labelItems
+                        }),
+                        div({
+                            omit: rightElement == null,
+                            className: 'xh-menu__list__item__right',
+                            onClick: stopRightElementControlEvent,
+                            onTouchStart: stopRightElementControlEvent,
+                            children: rightElement
+                        })
+                    ],
                     omit: hidden,
                     [TEST_ID]: testId,
                     onTouchStart: () => (this.pressedIdx = idx),

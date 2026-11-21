@@ -14,6 +14,7 @@ import type {
     CallContextLike,
     ExceptionHandlerOptions,
     LoadSpec,
+    MenuItem,
     PlainObject,
     Thunkable
 } from '@xh/hoist/core';
@@ -159,10 +160,11 @@ export interface ViewManagerConfig {
     typeDisplayName?: string;
 
     /**
-     * Optional render function to customize the BlueprintJS `menuItem` shown for each view in the
-     * ViewManager menu.
+     * Optional function to customize the item shown for each view in the desktop ViewManager menu.
+     * Return a {@link MenuItem} config, with an `actionFn` that calls `model.selectViewAsync(view)`,
+     * or an element to render in the item's place.
      */
-    viewMenuItemFn?: (view: ViewInfo, model: ViewManagerModel) => ReactNode;
+    viewMenuItemFn?: (view: ViewInfo, model: ViewManagerModel) => MenuItem | ReactNode;
 
     /** See {@link HoistBase.xhName}. */
     xhName?: string;
@@ -217,7 +219,7 @@ export class ViewManagerModel<T = PlainObject> extends HoistModel {
     readonly typeDisplayName: string;
     readonly defaultDisplayName: string;
     readonly globalDisplayName: string;
-    readonly viewMenuItemFn: (view: ViewInfo, model: ViewManagerModel) => ReactNode;
+    readonly viewMenuItemFn: (view: ViewInfo, model: ViewManagerModel) => MenuItem | ReactNode;
     readonly enableAutoSave: boolean;
     readonly enableDefault: boolean;
     readonly enableGlobal: boolean;

@@ -195,8 +195,10 @@ Use `Icon.placeholder()` to create an empty element that uses the same space as 
 align items in menus or lists where only some items have icons:
 
 ```typescript
-menuItem({icon: Icon.check(), text: 'Option A'}),
-menuItem({icon: Icon.placeholder(), text: 'Option B'})  // aligned with A
+menuItems: [
+    {icon: Icon.check(), text: 'Option A'},
+    {icon: Icon.placeholder(), text: 'Option B'} // aligned with A
+]
 ```
 
 ## Registering Custom Icons
@@ -496,7 +498,7 @@ Icon.icon({faName: 'file-invoice-dollar'})
 ### Using Non-FontAwesome Icon Libraries
 
 Always use FontAwesome icons, through Hoist's `Icon` singleton or an app-level `Icons.ts` of
-registered icons. Do not take icons from other libraries, such as Blueprint or Material icons,
+registered icons. Do not take icons from other libraries, such as Material icons,
 unless the app explicitly says to. Mixing icon libraries breaks the consistent visual language that
 FA provides. FontAwesome Pro's catalog is large enough to cover almost any use case. If you cannot
 find the right icon in Hoist's set, register a custom one from the FA Pro packages. Do not use a

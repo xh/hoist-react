@@ -70,7 +70,6 @@ function renderTables() {
                 row('Hoist React', hrVersion),
                 row('React', get('reactVersion')),
                 row('ag-Grid', get('agGridVersion')),
-                row('Blueprint Core', get('blueprintCoreVersion')),
                 row('MobX', get('mobxVersion'))
             )
         })

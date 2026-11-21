@@ -4,14 +4,8 @@
   .roles-renderer {
     align-items: center;
 
-    &__role {
-      &:not(:last-child) {
-        margin-right: var(--xh-spacing-half);
-      }
-
-      &--effective {
-        cursor: pointer;
-      }
+    &__role--effective {
+      cursor: pointer;
     }
   }
 }

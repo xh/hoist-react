@@ -4,4 +4,5 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-export * from './Popover';
+export * from './Dialog';
+export * from './DialogParts';
