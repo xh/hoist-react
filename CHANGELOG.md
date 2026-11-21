@@ -16,9 +16,9 @@
 
 ### 🐞 Bug Fixes
 
-* Fixed a memory leak where a Hoist component kept its first-render props until it unmounted. A
-  component that stayed mounted while a prop changed, such as `gridCountLabel` given a new
-  `gridModel`, held the old object in memory. `FormField` had the same issue.
+* Fixed a memory leak where a Hoist component kept its first-render props until it unmounted.
+  Passing a mounted component a new object in a prop other than `model` - e.g. a new `gridModel`
+  to `gridCountLabel` - left the old object in memory.
 
 ## 91.0.0 - 2026-11-20
 
