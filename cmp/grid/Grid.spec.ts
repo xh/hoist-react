@@ -207,6 +207,79 @@ describe('Grid', () => {
         expect(qtyCell('ag_2').textContent).toBe('-2');
         expect(qtyCell('ag_2').classList.contains('xh-neg-val')).toBe(true);
     });
+
+    describe('cellStyle and rowStyle', () => {
+        const cell = (container: HTMLElement, rowId: string, idx: number) =>
+                container.querySelectorAll<HTMLElement>(`.ag-row[row-id="${rowId}"] .ag-cell`)[idx],
+            row = (container: HTMLElement, rowId: string) =>
+                container.querySelector<HTMLElement>(`.ag-row[row-id="${rowId}"]`);
+
+        it("styles each cell with a column's cellStyle object", async () => {
+            const {container} = await renderGridAsync({
+                columns: [{field: 'name', cellStyle: {fontWeight: 'bold'}}, {field: 'qty'}]
+            });
+
+            expect(cell(container, 'ag_1', 0).style.fontWeight).toBe('bold');
+            expect(cell(container, 'ag_1', 1).style.fontWeight).toBe('');
+        });
+
+        it('styles each cell from a cellStyle function of its value and record', async () => {
+            const {container} = await renderGridAsync({
+                columns: [
+                    {field: 'name'},
+                    {
+                        field: 'qty',
+                        cellStyle: (v, {record}) => ({
+                            color: v > 1 ? 'red' : null,
+                            fontStyle: record.data.name === 'Alpha' ? 'italic' : null
+                        })
+                    }
+                ]
+            });
+
+            expect(cell(container, 'ag_1', 1).style.fontStyle).toBe('italic');
+            expect(cell(container, 'ag_1', 1).style.color).toBe('');
+            expect(cell(container, 'ag_2', 1).style.color).toBe('red');
+        });
+
+        it('clears a property a cellStyle function leaves out when the cell refreshes', async () => {
+            let limit = 1;
+            const {container, gridModel} = await renderGridAsync({
+                columns: [
+                    {field: 'name'},
+                    {field: 'qty', cellStyle: v => (v > limit ? {color: 'red'} : {})}
+                ]
+            });
+            expect(cell(container, 'ag_2', 1).style.color).toBe('red');
+
+            limit = 5;
+            await act(async () => gridModel.agApi.refreshCells({force: true}));
+
+            expect(cell(container, 'ag_2', 1).style.color).toBe('');
+        });
+
+        it('styles each row from rowStyle, and clears a property it sets to null when the row refreshes', async () => {
+            let limit = 1;
+            const {container, gridModel} = await renderGridAsync({
+                rowStyle: record => ({fontWeight: record.data.qty > limit ? 'bold' : null})
+            });
+            expect(row(container, 'ag_2').style.fontWeight).toBe('bold');
+            expect(row(container, 'ag_1').style.fontWeight).toBe('');
+
+            limit = 5;
+            await act(async () => {
+                const node = gridModel.agApi.getRowNode('ag_2');
+                node.setData(node.data);
+            });
+
+            expect(row(container, 'ag_2').style.fontWeight).toBe('');
+        });
+
+        it('takes a fixed rowStyle object', async () => {
+            const {container} = await renderGridAsync({rowStyle: {fontStyle: 'italic'}});
+            expect(row(container, 'ag_1').style.fontStyle).toBe('italic');
+        });
+    });
 });
 
 // Stands in for ag-Grid Enterprise row grouping: hide each grouped column, re-show each ungrouped.

@@ -4,7 +4,7 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import type {GridApi, AgColumnState} from '@xh/hoist/kit/ag-grid';
+import type {GridApi, AgColumnState, RowStyle} from '@xh/hoist/kit/ag-grid';
 
 import {agGrid} from '@xh/hoist/cmp/ag-grid';
 import type {ColumnGroupState, ColumnState} from '@xh/hoist/cmp/grid';
@@ -49,7 +49,7 @@ import {shallowEqualArrays} from '@xh/hoist/utils/impl';
 import {consumeEvent, isDisplayed, warnIf} from '@xh/hoist/utils/js';
 import {useComposedRefs, createObservableRef, getLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
-import {compact, debounce, isBoolean, isEmpty, isEqual, isNil, merge} from 'lodash';
+import {compact, debounce, isBoolean, isEmpty, isEqual, isFunction, isNil, merge} from 'lodash';
 import type {MouseEvent} from 'react';
 import type {PartialDeep} from 'type-fest';
 import './Grid.scss';
@@ -58,6 +58,7 @@ import {columnGroupHeader} from './impl/ColumnGroupHeader';
 import {columnHeader} from './impl/ColumnHeader';
 import {RowHeightSupport} from './impl/RowHeightSupport';
 import {RowKeyNavSupport} from './impl/RowKeyNavSupport';
+import type {RowStyleFn} from './Types';
 
 /**
  * Deep-partial ag-Grid options. DOM-typed options are excluded from the recursion - TS 6+ cannot
@@ -279,6 +280,11 @@ export class GridLocalModel extends HoistModel {
             tooltipShowDelay: 0,
             getRowClass: model.rowClassFn ? ({data}) => model.rowClassFn(data) : undefined,
             rowClassRules: model.rowClassRules,
+            ...(isFunction(model.rowStyle)
+                ? {getRowStyle: ({data}) => (model.rowStyle as RowStyleFn)(data) as RowStyle}
+                : model.rowStyle
+                  ? {rowStyle: model.rowStyle as RowStyle}
+                  : {}),
             noRowsOverlayComponent: observer(() => div(this.emptyText)),
             onCellContextMenu: model.onCellContextMenu,
             onCellClicked: model.onCellClicked,

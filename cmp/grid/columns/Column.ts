@@ -33,7 +33,7 @@ import {
     keysIn,
     toString
 } from 'lodash';
-import type {FunctionComponent, ReactElement, ReactNode} from 'react';
+import type {CSSProperties, FunctionComponent, ReactElement, ReactNode} from 'react';
 import {createElement, forwardRef, isValidElement, useLayoutEffect, useRef} from 'react';
 import type {GridModel} from '../GridModel';
 import {GridSorter} from '../GridSorter';
@@ -41,6 +41,7 @@ import {getAgHeaderClassFn, withErrorCell} from '../impl/Utils';
 import type {
     ColumnCellClassFn,
     ColumnCellClassRuleFn,
+    ColumnCellStyleFn,
     ColumnCellFlagFn,
     ColumnComparator,
     ColumnEditableFn,
@@ -155,6 +156,13 @@ export interface ColumnSpec {
      * See Ag-Grid docs on "cell styles" for details.
      */
     cellClassRules?: Record<string, ColumnCellClassRuleFn>;
+
+    /**
+     * Inline styles for each cell in the column, or a function of the cell's value to produce them.
+     * The grid re-applies them as the cell refreshes, and clears a property a later call leaves
+     * out or sets to null.
+     */
+    cellStyle?: CSSProperties | ColumnCellStyleFn;
 
     /**
      * Render a small triangular flag in the top-right corner of each cell, in the color of the
@@ -525,6 +533,7 @@ export class Column {
     headerClass: ColumnHeaderClassFn | Some<string>;
     cellClass: ColumnCellClassFn | Some<string>;
     cellClassRules: Record<string, ColumnCellClassRuleFn>;
+    cellStyle: CSSProperties | ColumnCellStyleFn;
     cellFlag: ColumnCellFlagFn;
     align: HAlign;
     hidden: boolean;
@@ -602,6 +611,7 @@ export class Column {
             headerClass,
             cellClass,
             cellClassRules,
+            cellStyle,
             cellFlag,
             hidden,
             groupShowMode,
@@ -687,6 +697,7 @@ export class Column {
 
         this.cellClass = cellClass;
         this.cellClassRules = {...(renderer ?? textRenderer)?.cellClassRules, ...cellClassRules};
+        this.cellStyle = cellStyle;
         this.cellFlag = cellFlag;
 
         this.align = align;
@@ -931,6 +942,21 @@ export class Column {
                   ...fixedClasses
               ]
             : [...(cellClass ? castArray(cellClass) : []), ...fixedClasses];
+
+        const {cellStyle} = this;
+        if (cellStyle) {
+            ret.cellStyle = (
+                isFunction(cellStyle)
+                    ? agParams =>
+                          cellStyle(agParams.value, {
+                              record: agParams.data,
+                              column: this,
+                              gridModel,
+                              agParams
+                          })
+                    : cellStyle
+            ) as ColDef['cellStyle'];
+        }
 
         if (this.flex) {
             ret.resizable = false;

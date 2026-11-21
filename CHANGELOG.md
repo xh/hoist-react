@@ -109,6 +109,9 @@ detailed, step-by-step upgrade instructions with before/after code examples.
   key at the root, or on rows grouped by its `keyAttributes`, such as a fund's style.
 * Added `SeriesSumAggregator` to `@xh/hoist/data`, as the `SERIES_SUM` token, to sum series
   values such as daily P&L point by point, aligned from the end.
+* Added `ColumnSpec.cellStyle` and `GridConfig.rowStyle`: inline styles for each cell or row, fixed
+  or from a function of the value or record. A property a later call leaves out, or sets to null,
+  is cleared.
 
 ### 🐞 Bug Fixes
 

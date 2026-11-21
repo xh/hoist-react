@@ -286,6 +286,10 @@ columns: [
 
 - **Styling by value** - a text renderer or renderer can carry `cellClassRules`, as the text
   renderer factories do for `colorSpec` and ledger alignment. `Column` applies them beneath its own.
+- **Inline styles** - `cellStyle` on a column, and `rowStyle` on the `GridModel`, take a fixed
+  style object or a function of the value or record. Prefer classes for anything a theme should
+  control. The grid re-applies a function's styles as the cell or row refreshes, and clears a
+  property it leaves out or sets to null.
 - **Other record fields** - a text renderer that reads them needs `rendererIsComplex`, as a
   renderer does. Autosize relies on it to measure each row's own text.
 - **Group rows** - a group row's label shows its raw group value, as with a renderer. Set
@@ -466,7 +470,7 @@ Key categories of `ColumnSpec` properties:
 | Editing | `editable`, `editor`, `editorIsPopup`                                                                        |
 | Export | `exportName`, `exportValue`, `excludeFromExport`, `excelFormat`, `excelWidth`                                |
 | Chooser | `chooserName`, `chooserGroup`, `chooserDescription`\*, `excludeFromChooser`, `hideable`                      |
-| Rendering | `textRenderer`, `renderer`, `rendererIsComplex`, `tooltip`, `cellClass`, `cellClassRules`, `cellFlag`        |
+| Rendering | `textRenderer`, `renderer`, `rendererIsComplex`, `tooltip`, `cellClass`, `cellClassRules`, `cellStyle`, `cellFlag` |
 | Tree | `isTreeColumn`, `headerHasExpandCollapse`                                                                    |
 | Autosize | `autosizable`, `autosizeIncludeHeader`, `autosizeIncludeHeaderIcons`, `autosizeMinWidth`, `autosizeMaxWidth` |
 

@@ -28,7 +28,7 @@ import type {
     RowClassParams,
     ValueSetterParams
 } from '@xh/hoist/kit/ag-grid';
-import type {ReactElement, ReactNode} from 'react';
+import type {CSSProperties, ReactElement, ReactNode} from 'react';
 import type {Column, ColumnSpec} from './columns/Column';
 import type {ColumnGroup, ColumnGroupSpec} from './columns/ColumnGroup';
 import type {GridFilterFieldSpecConfig} from './filter/GridFilterFieldSpec';
@@ -161,6 +161,12 @@ export type RowClassFn = (record: StoreRecord) => Some<string>;
  *      it should be removed.
  */
 export type RowClassRuleFn = (agParams: RowClassParams) => boolean;
+
+/**
+ * Function to produce inline styles for a grid row, via the `rowStyle` config.
+ * @returns styles to apply. A property a later call leaves out, or sets to null, is cleared.
+ */
+export type RowStyleFn = (record: StoreRecord) => CSSProperties;
 
 export interface GridModelPersistOptions extends PersistOptions {
     /** True (default) to include column state or provide column-specific PersistOptions. */
@@ -488,6 +494,17 @@ export type ColumnCellClassFn<T = any> = (
  *      it should be removed.
  */
 export type ColumnCellClassRuleFn = (agParams: CellClassParams) => boolean;
+
+/**
+ * Function to produce inline styles for a grid cell, via the `cellStyle` config.
+ * @param value - cell data value (column + row).
+ * @param context - additional data about the column, row and GridModel.
+ * @returns styles to apply. A property a later call leaves out, or sets to null, is cleared.
+ */
+export type ColumnCellStyleFn<T = any> = (
+    value: T,
+    context: CellContext & {agParams: CellClassParams}
+) => CSSProperties;
 
 /**
  * Function to determine the corner flag, if any, to render on a grid cell's top-right corner.

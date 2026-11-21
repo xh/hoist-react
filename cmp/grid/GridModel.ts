@@ -110,7 +110,7 @@ import {
     take,
     uniqBy
 } from 'lodash';
-import type {ReactNode, RefObject} from 'react';
+import type {CSSProperties, ReactNode, RefObject} from 'react';
 import {createRef} from 'react';
 import type {GridAutosizeOptions} from './GridAutosizeOptions';
 import {GridModelDiagnostics} from './impl/GridModelDiagnostics';
@@ -137,7 +137,8 @@ import type {
     GridSelectOptions,
     GroupRowRenderer,
     RowClassFn,
-    RowClassRuleFn
+    RowClassRuleFn,
+    RowStyleFn
 } from './Types';
 
 /**
@@ -280,6 +281,13 @@ export interface GridConfig {
      * removed from the row. See Ag-Grid docs on "row styles" for details.
      */
     rowClassRules?: Record<string, RowClassRuleFn>;
+
+    /**
+     * Inline styles for each row, or a function of the row's record to produce them. The grid
+     * re-applies them as the row refreshes, and clears a property a later call leaves out or sets
+     * to null.
+     */
+    rowStyle?: CSSProperties | RowStyleFn;
 
     /** Height (in px) of a group row. Note that this will override `sizingMode` for group rows. */
     groupRowHeight?: number;
@@ -580,6 +588,7 @@ export class GridModel extends HoistModel implements GridLikeModel {
     colChooserModel: IColChooserModel;
     rowClassFn: RowClassFn;
     rowClassRules: Record<string, RowClassRuleFn>;
+    rowStyle: CSSProperties | RowStyleFn;
     contextMenu: GridContextMenuSpec;
     headerContextMenu: GridHeaderContextMenuSpec;
     groupRowHeight: number;
@@ -719,6 +728,7 @@ export class GridModel extends HoistModel implements GridLikeModel {
             rowBorders = GridModel.defaults.rowBorders ?? XH.isMobileApp,
             rowClassFn = null,
             rowClassRules = {},
+            rowStyle = null,
             cellBorders = GridModel.defaults.cellBorders,
             treeStyle = GridModel.defaults.treeStyle,
             stripeRows = GridModel.defaults.stripeRows ?? (!treeMode || treeStyle === 'none'),
@@ -772,6 +782,7 @@ export class GridModel extends HoistModel implements GridLikeModel {
         this.headerMenuDisplay = headerMenuDisplay;
         this.rowClassFn = rowClassFn;
         this.rowClassRules = rowClassRules;
+        this.rowStyle = rowStyle;
         this.groupRowHeight = groupRowHeight;
         this.groupRowRenderer = withErrorCell(groupRowRenderer, 'GROUP_ROW');
         this.groupSortFn = withDefault(groupSortFn, this.defaultGroupSortFn);
