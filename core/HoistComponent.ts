@@ -24,7 +24,7 @@ import {
     formatSelector
 } from './model';
 import {logError, throwIf, warnIf, withDefault} from '@xh/hoist/utils/js';
-import {getLayoutProps, useOnMount, useOnUnmount} from '@xh/hoist/utils/react';
+import {getLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import {isFunction, isPlainObject, isObject} from 'lodash';
 import {observer, untracked} from '../mobx';
@@ -342,8 +342,7 @@ function wrapWithModel(render: RenderFn, cfg: Config): RenderFn {
             props.model = model;
             delete props.modelRef;
             delete props.modelConfig;
-            useOnMount(() => instanceManager.registerModelWithTestId(props.testId, model));
-            useOnUnmount(() => instanceManager.unregisterModelWithTestId(props.testId));
+            useTestIdRegistration(props.testId, model);
             return withLocalModelContext(props, insertLookup.current ?? modelLookup, () =>
                 render(props, ref)
             );
@@ -460,6 +459,20 @@ function createCmpHost(cfg: Config): FunctionComponent<any> {
     ret = cfg.isObserver ? observer(ret) : ret;
     ret.displayName = cfg.displayName + 'Host';
     return ret;
+}
+
+/**
+ * Register a component's model for lookup by testId while it is mounted.
+ *
+ * Kept in its own function so the effect closes over only `testId` and `model`. A closure inside
+ * the render would capture the whole first-render `props` and pin them until unmount.
+ */
+function useTestIdRegistration(testId: string, model: HoistModel) {
+    useEffect(() => {
+        if (!testId) return;
+        instanceManager.registerModelWithTestId(testId, model);
+        return () => instanceManager.unregisterModelWithTestId(testId);
+    }, [testId, model]);
 }
 
 /**
