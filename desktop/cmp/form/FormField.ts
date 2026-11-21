@@ -11,7 +11,7 @@ import {box, div, label as labelEl, li, span, ul} from '@xh/hoist/cmp/layout';
 import type {DefaultHoistProps, HoistProps, HSide, TestSupportProps} from '@xh/hoist/core';
 import {hoistCmp, uses, XH} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
-import {instanceManager} from '@xh/hoist/core/impl/InstanceManager';
+import {useTestIdRegistration} from '@xh/hoist/core/impl/InstanceManager';
 import type {ValidationResult} from '@xh/hoist/data';
 import {maxSeverity} from '@xh/hoist/data';
 import {fmtDate, fmtDateTime, fmtJson, fmtNumber} from '@xh/hoist/format';
@@ -19,13 +19,7 @@ import {Icon} from '@xh/hoist/icon';
 import {tooltip} from '@xh/hoist/kit/blueprint';
 import {isLocalDate} from '@xh/hoist/utils/datetime';
 import {errorIf, getTestId, logWarn, TEST_ID, throwIf, withDefault} from '@xh/hoist/utils/js';
-import {
-    getLayoutProps,
-    getReactElementName,
-    useComposedRefs,
-    useOnMount,
-    useOnUnmount
-} from '@xh/hoist/utils/react';
+import {getLayoutProps, getReactElementName, useComposedRefs} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import {
     first,
@@ -201,8 +195,7 @@ export const [FormField, formField] = hoistCmp.withFactory<FormFieldProps>({
 
         // Test ID handling
         const testId = getFormFieldTestId(props, formContext, model?.name);
-        useOnMount(() => instanceManager.registerModelWithTestId(testId, model));
-        useOnUnmount(() => instanceManager.unregisterModelWithTestId(testId));
+        useTestIdRegistration(testId, model);
 
         // Generate actual element child to render
         let childEl: ReactElement =

@@ -18,7 +18,8 @@
 
 * Fixed a memory leak where a mounted Hoist component kept its first-render props until unmount.
   A component whose resolved model never changes, such as `gridCountLabel` given a `gridModel`
-  prop, held the first object it received even after the app replaced it.
+  prop, held the first object it received even after the app replaced it. `FormField` had the
+  same issue on desktop and mobile.
 
 ## 91.0.0 - 2026-11-20
 

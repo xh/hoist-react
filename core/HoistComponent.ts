@@ -4,7 +4,7 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {instanceManager} from '@xh/hoist/core/impl/InstanceManager';
+import {useTestIdRegistration} from '@xh/hoist/core/impl/InstanceManager';
 import type {
     HoistProps,
     DefaultHoistProps,
@@ -459,20 +459,6 @@ function createCmpHost(cfg: Config): FunctionComponent<any> {
     ret = cfg.isObserver ? observer(ret) : ret;
     ret.displayName = cfg.displayName + 'Host';
     return ret;
-}
-
-/**
- * Register a component's model for lookup by testId while it is mounted.
- *
- * Kept in its own function so the effect closes over only `testId` and `model`. A closure inside
- * the render would capture the whole first-render `props` and pin them until unmount.
- */
-function useTestIdRegistration(testId: string, model: HoistModel) {
-    useEffect(() => {
-        if (!testId) return;
-        instanceManager.registerModelWithTestId(testId, model);
-        return () => instanceManager.unregisterModelWithTestId(testId);
-    }, [testId, model]);
 }
 
 /**

@@ -10,6 +10,7 @@ import {isNil} from 'lodash';
 import type {Cube, Store, View} from '@xh/hoist/data';
 import {observableShallow} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
+import {useEffect} from 'react';
 
 /**
  * Generic singleton object for cataloging global models and services.
@@ -92,3 +93,18 @@ class InstanceManager {
     }
 }
 export const instanceManager = new InstanceManager();
+
+/**
+ * Register a component's model for lookup by testId while it is mounted.
+ *
+ * Call this hook in place of separate mount/unmount callbacks. A closure created inside a render
+ * function would capture that render's whole scope, including props, and pin it until unmount.
+ * @internal
+ */
+export function useTestIdRegistration(testId: string, model: HoistModel) {
+    useEffect(() => {
+        if (!testId) return;
+        instanceManager.registerModelWithTestId(testId, model);
+        return () => instanceManager.unregisterModelWithTestId(testId);
+    }, [testId, model]);
+}
