@@ -91,17 +91,14 @@ class InstanceManager {
     getModelByTestId(testId: string): HoistModel {
         return this.modelsByTestId.get(testId);
     }
+
+    /** Hook to register a component's model for lookup by testId while it is mounted. */
+    useTestIdRegistration(testId: string, model: HoistModel) {
+        useEffect(() => {
+            if (!testId) return;
+            this.registerModelWithTestId(testId, model);
+            return () => this.unregisterModelWithTestId(testId);
+        }, [testId, model]);
+    }
 }
 export const instanceManager = new InstanceManager();
-
-/**
- * Register a component's model for lookup by testId while it is mounted.
- * @internal
- */
-export function useTestIdRegistration(testId: string, model: HoistModel) {
-    useEffect(() => {
-        if (!testId) return;
-        instanceManager.registerModelWithTestId(testId, model);
-        return () => instanceManager.unregisterModelWithTestId(testId);
-    }, [testId, model]);
-}

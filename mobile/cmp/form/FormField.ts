@@ -9,7 +9,7 @@ import {FieldModel, FormContext, FormFieldSetContext} from '@xh/hoist/cmp/form';
 import {box, div, span} from '@xh/hoist/cmp/layout';
 import type {DefaultHoistProps, HoistProps, TestSupportProps} from '@xh/hoist/core';
 import {hoistCmp, uses, XH} from '@xh/hoist/core';
-import {useTestIdRegistration} from '@xh/hoist/core/impl/InstanceManager';
+import {instanceManager} from '@xh/hoist/core/impl/InstanceManager';
 import {maxSeverity} from '@xh/hoist/data';
 import {fmtDate, fmtDateTime, fmtNumber} from '@xh/hoist/format';
 import {label as labelCmp} from '@xh/hoist/mobile/cmp/input';
@@ -124,7 +124,7 @@ export const [FormField, formField] = hoistCmp.withFactory<FormFieldProps>({
 
         // Test ID handling
         const testId = getFormFieldTestId(props, formContext, model?.name);
-        useTestIdRegistration(testId, model);
+        instanceManager.useTestIdRegistration(testId, model);
 
         let childEl =
             readonly || !child

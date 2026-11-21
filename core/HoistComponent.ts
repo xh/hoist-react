@@ -4,7 +4,7 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {useTestIdRegistration} from '@xh/hoist/core/impl/InstanceManager';
+import {instanceManager} from '@xh/hoist/core/impl/InstanceManager';
 import type {
     HoistProps,
     DefaultHoistProps,
@@ -342,7 +342,7 @@ function wrapWithModel(render: RenderFn, cfg: Config): RenderFn {
             props.model = model;
             delete props.modelRef;
             delete props.modelConfig;
-            useTestIdRegistration(props.testId, model);
+            instanceManager.useTestIdRegistration(props.testId, model);
             return withLocalModelContext(props, insertLookup.current ?? modelLookup, () =>
                 render(props, ref)
             );

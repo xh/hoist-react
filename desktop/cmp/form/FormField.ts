@@ -11,7 +11,7 @@ import {box, div, label as labelEl, li, span, ul} from '@xh/hoist/cmp/layout';
 import type {DefaultHoistProps, HoistProps, HSide, TestSupportProps} from '@xh/hoist/core';
 import {hoistCmp, uses, XH} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
-import {useTestIdRegistration} from '@xh/hoist/core/impl/InstanceManager';
+import {instanceManager} from '@xh/hoist/core/impl/InstanceManager';
 import type {ValidationResult} from '@xh/hoist/data';
 import {maxSeverity} from '@xh/hoist/data';
 import {fmtDate, fmtDateTime, fmtJson, fmtNumber} from '@xh/hoist/format';
@@ -195,7 +195,7 @@ export const [FormField, formField] = hoistCmp.withFactory<FormFieldProps>({
 
         // Test ID handling
         const testId = getFormFieldTestId(props, formContext, model?.name);
-        useTestIdRegistration(testId, model);
+        instanceManager.useTestIdRegistration(testId, model);
 
         // Generate actual element child to render
         let childEl: ReactElement =
