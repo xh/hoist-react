@@ -94,7 +94,6 @@ class InstanceManager {
 
     useTestIdRegistration(testId: string, model: HoistModel) {
         useEffect(() => {
-            if (!testId) return;
             this.registerModelWithTestId(testId, model);
             return () => this.unregisterModelWithTestId(testId);
         }, [testId, model]);
