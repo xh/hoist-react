@@ -87,16 +87,28 @@ export function useModelLinker(model: HoistModel, modelLookup: ModelLookup, prop
         untracked(() => model.onLinked());
     }
 
-    // 2) async linking work
-    useAsyncLinking(model, isLinking, modelLookup);
+    // 2) Linking async work: call afterLinked(), and wire up loadSupport
+    useEffect(() => {
+        if (isLinking) {
+            model.afterLinked();
+            if (model.loadSupport) {
+                model.loadAsync();
+                const refreshContext = modelLookup?.lookupModel(
+                    RefreshContextModel
+                ) as RefreshContextModel;
+                if (refreshContext) {
+                    refreshContext.register(model);
+                    return () => refreshContext.unregister(model);
+                }
+            }
+        }
+    }, []);
 
     // 3) Subsequent renders: update props (async to avoid triggering synchronous state changes)
-    useEffect(() => {
-        if (!isLinking) model?.setComponentProps(props);
-    }, [props]);
+    useUpdateProps(model, isLinking, props);
 
-    // 4) Cleanup
-    useDestroyOnUnmount(model);
+    // 4) Destroy on unmount
+    useOnUnmount(() => XH.safeDestroy(model));
 }
 
 /**
@@ -135,24 +147,9 @@ const localModelContext = {
     }
 };
 
-function useAsyncLinking(model: HoistModel, isLinking: boolean, modelLookup: ModelLookup) {
+// Kept out of useModelLinker, so the long-lived closures there do not retain the first props.
+function useUpdateProps(model: HoistModel, isLinking: boolean, props: object) {
     useEffect(() => {
-        if (isLinking) {
-            model.afterLinked();
-            if (model.loadSupport) {
-                model.loadAsync();
-                const refreshContext = modelLookup?.lookupModel(
-                    RefreshContextModel
-                ) as RefreshContextModel;
-                if (refreshContext) {
-                    refreshContext.register(model);
-                    return () => refreshContext.unregister(model);
-                }
-            }
-        }
-    }, []);
-}
-
-function useDestroyOnUnmount(model: HoistModel) {
-    useOnUnmount(() => XH.safeDestroy(model));
+        if (!isLinking) model?.setComponentProps(props);
+    }, [props]);
 }
