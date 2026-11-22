@@ -8,6 +8,7 @@
   color: var(--xh-panel-title-text-color);
 
   &__title {
+    flex: 1 1 0%;
     text-overflow: ellipsis;
     white-space: nowrap;
     font-family: var(--xh-panel-title-font-family);

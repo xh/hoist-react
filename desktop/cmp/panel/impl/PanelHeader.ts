@@ -102,7 +102,6 @@ export const panelHeader = hoistCmp.factory({
                     displayedTitle
                         ? box({
                               className: titleCls,
-                              flex: 1,
                               children: span({
                                   className: `${titleCls}__inner`,
                                   children: displayedTitle
@@ -125,7 +124,6 @@ export const panelHeader = hoistCmp.factory({
                 displayedTitle
                     ? box({
                           className: titleCls,
-                          flex: 1,
                           children: span({
                               className: `${titleCls}__inner`,
                               children: displayedTitle
