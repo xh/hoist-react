@@ -14,6 +14,13 @@
 
 ## 92.0.0-SNAPSHOT - unreleased
 
+### 🐞 Bug Fixes
+
+* Fixed a memory leak where each opening of a grid column header filter left models behind that
+  were never released. They kept the grid alive, with all its data, after the grid itself was gone.
+* Fixed a memory leak in the mobile `Navigator`, where each route change left the pages it replaced
+  in memory.
+
 ## 91.0.0 - 2026-11-20
 
 ### 💥 Breaking Changes (upgrade difficulty: 🟠 MEDIUM - CSS variables)

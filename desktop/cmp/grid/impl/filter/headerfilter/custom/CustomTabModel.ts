@@ -4,7 +4,7 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {HoistModel, XH} from '@xh/hoist/core';
+import {HoistModel, managed, XH} from '@xh/hoist/core';
 import type {
     CompoundFilterOperator,
     FieldFilterOperator,
@@ -13,7 +13,17 @@ import type {
 } from '@xh/hoist/data';
 import {FieldFilter} from '@xh/hoist/data';
 import {action, bindable, observableRef, computedStruct} from '@xh/hoist/mobx';
-import {compact, first, flatMap, forEach, groupBy, isArray, isEmpty, uniq} from 'lodash';
+import {
+    compact,
+    difference,
+    first,
+    flatMap,
+    forEach,
+    groupBy,
+    isArray,
+    isEmpty,
+    uniq
+} from 'lodash';
 import type {HeaderFilterModel} from '../HeaderFilterModel';
 
 import {CustomRowModel, usesMultiValueInput} from './CustomRowModel';
@@ -27,7 +37,7 @@ export class CustomTabModel extends HoistModel {
     headerFilterModel: HeaderFilterModel;
 
     @bindable accessor op: CompoundFilterOperator = 'AND';
-    @observableRef accessor rowModels: CustomRowModel[] = [];
+    @managed @observableRef accessor rowModels: CustomRowModel[] = [];
 
     /** Filter config output by this model. */
     @computedStruct
@@ -71,19 +81,17 @@ export class CustomTabModel extends HoistModel {
 
     @action
     reset() {
-        XH.safeDestroy(this.rowModels);
-        this.rowModels = [new CustomRowModel(this)];
+        this.setRowModels([new CustomRowModel(this)]);
     }
 
     @action
     addEmptyRow() {
-        this.rowModels = [...this.rowModels, new CustomRowModel(this)];
+        this.setRowModels([...this.rowModels, new CustomRowModel(this)]);
     }
 
     @action
     removeRow(model) {
-        this.rowModels = this.rowModels.filter(it => it.xhId !== model.xhId);
-        XH.safeDestroy(model);
+        this.setRowModels(this.rowModels.filter(it => it.xhId !== model.xhId));
     }
 
     //-------------------
@@ -97,7 +105,7 @@ export class CustomTabModel extends HoistModel {
 
         if (!this.isRepresentable) {
             this.logWarn('Filter cannot be edited in the custom tab; leaving it unchanged');
-            this.rowModels = null;
+            this.setRowModels(null);
             return;
         }
 
@@ -119,7 +127,15 @@ export class CustomTabModel extends HoistModel {
             rowModels.push(new CustomRowModel(this));
         }
 
+        this.setRowModels(rowModels);
+    }
+
+    // Replace rowModels, destroying any rows dropped.
+    @action
+    private setRowModels(rowModels: CustomRowModel[]) {
+        const dropped = difference(this.rowModels ?? [], rowModels ?? []);
         this.rowModels = rowModels;
+        XH.safeDestroy(dropped);
     }
 
     // Whether a multi-value clause must be expanded to one row per value (vs held by a multi-select).
