@@ -6,7 +6,8 @@
  */
 import {observeResize, observeVisibleChange} from '@xh/hoist/utils/js';
 /* eslint-disable react-hooks/exhaustive-deps */
-import {useCallback, useEffect, useRef} from 'react';
+import {useCallback, useEffect, useLayoutEffect, useRef} from 'react';
+import type {RefObject} from 'react';
 
 /**
  * Hook to run a function once after component has been mounted.
@@ -37,15 +38,17 @@ export function useOnResize(
     fn: (rect: DOMRect) => any,
     opts: {debounce?: number} = {}
 ): (node: any) => void {
-    const observer = useRef(null);
+    const {debounce} = opts,
+        latestFn = useLatestFn(fn),
+        observer = useRef<ResizeObserver>(null);
     useOnUnmount(() => observer.current?.disconnect());
 
     return useCallback(
         node => {
             observer.current?.disconnect();
-            if (node) observer.current = observeResize(fn, node, opts);
+            observer.current = node ? observeResize(latestFn, node, {debounce}) : null;
         },
-        [opts.debounce]
+        [debounce]
     );
 }
 
@@ -58,12 +61,13 @@ export function useOnResize(
  * @returns callback ref to be placed on target component
  */
 export function useOnVisibleChange(fn: (visible: boolean) => any): (node: any) => void {
-    const observer = useRef(null);
+    const latestFn = useLatestFn(fn),
+        observer = useRef<ResizeObserver>(null);
     useOnUnmount(() => observer.current?.disconnect());
 
     return useCallback(node => {
         observer.current?.disconnect();
-        if (node) observer.current = observeVisibleChange(fn, node);
+        observer.current = node ? observeVisibleChange(latestFn, node) : null;
     }, []);
 }
 
@@ -74,8 +78,13 @@ export function useOnVisibleChange(fn: (visible: boolean) => any): (node: any) =
  * @returns callback ref to be placed on target component
  */
 export function useOnScroll(fn: (ev: Event) => any): (node: any) => void {
+    const latestFn = useLatestFn(fn),
+        target = useRef<EventTarget>(null);
+
     return useCallback(node => {
-        node?.addEventListener('scroll', fn);
+        target.current?.removeEventListener('scroll', latestFn);
+        target.current = node;
+        node?.addEventListener('scroll', latestFn);
     }, []);
 }
 
@@ -96,4 +105,22 @@ export function useCached<T>(value: T, equalsFn: (prev: T, curr: T) => boolean):
         cache.current = value;
     }
     return cache.current;
+}
+
+//------------------
+// Implementation
+//------------------
+// Returns a stable function that always calls the latest `fn`, so long-lived observers and
+// listeners neither call nor retain a stale one.
+function useLatestFn<A extends any[]>(fn: (...args: A) => any): (...args: A) => any {
+    const ref = useRef(fn);
+    useLayoutEffect(() => {
+        ref.current = fn;
+    });
+    return useCaller(ref);
+}
+
+// Separate from useLatestFn, so the stable function does not share a scope with `fn`.
+function useCaller<A extends any[]>(ref: RefObject<(...args: A) => any>): (...args: A) => any {
+    return useCallback((...args: A) => ref.current(...args), [ref]);
 }
