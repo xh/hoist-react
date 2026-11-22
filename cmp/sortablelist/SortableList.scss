@@ -29,9 +29,13 @@
     border-radius: var(--xh-sortable-list-item-border-radius);
 
     // The item lifted by a drag, in the browser's top layer.
+    // The ring sits in the shadow, so it adds no size to the lifted item.
     &[data-dnd-dragging] {
       background-color: var(--xh-sortable-list-drag-bg);
-      box-shadow: var(--xh-sortable-list-drag-shadow);
+      border-radius: var(--xh-sortable-list-item-border-radius);
+      box-shadow:
+        0 0 0 var(--xh-border-width) var(--xh-sortable-list-drag-border-color),
+        var(--xh-sortable-list-drag-shadow);
       rotate: var(--xh-sortable-list-drag-rotate);
     }
 
