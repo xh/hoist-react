@@ -7,7 +7,7 @@
 import type {HoistProps} from '@xh/hoist/core';
 import {hoistCmp} from '@xh/hoist/core';
 import {tooltip as bpTooltip} from '@xh/hoist/kit/blueprint';
-import type {HTMLAttributes, ReactElement, Ref, RefObject} from 'react';
+import type {HTMLAttributes, ReactElement, Ref} from 'react';
 import {useEffect, useRef, useState} from 'react';
 
 /** Props for the element that shows the tooltip, to spread onto it. */
@@ -46,7 +46,7 @@ export const sparklineTooltipImpl = hoistCmp.factory<SparklineTooltipImplProps>(
             cancel = () => window.clearTimeout(timer.current);
 
         latestGetContent.current = getContent;
-        useClearTimeoutOnUnmount(timer);
+        useEffect(() => cancel, []);
 
         if (!armed) {
             return renderTarget({
@@ -75,10 +75,6 @@ export const sparklineTooltipImpl = hoistCmp.factory<SparklineTooltipImplProps>(
         });
     }
 });
-
-function useClearTimeoutOnUnmount(timer: RefObject<number>) {
-    useEffect(() => () => window.clearTimeout(timer.current), [timer]);
-}
 
 function contentOf(getContent: () => ReactElement | string): ReactElement | string {
     const content = getContent();

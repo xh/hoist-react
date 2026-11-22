@@ -19,8 +19,6 @@
 * Fixed a memory leak where a Hoist component kept its first-render props until it unmounted.
   Passing a mounted component a new object in any prop - e.g. a new `model` to `grid` or a new
   `gridModel` to `gridFindField` - left the old object in memory.
-* Fixed similar leaks of the same kind in DashContainer, `Sparkline` tooltips and windowed
-  `Select` menus.
 
 ## 91.0.0 - 2026-11-20
 
