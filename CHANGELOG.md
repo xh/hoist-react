@@ -16,8 +16,8 @@
 
 ### 🐞 Bug Fixes
 
-* Fixed minor memory leaks in `Sparkline` tooltips and windowed `Select` menus, where long-lived
-  callbacks kept objects from a component's first render.
+* Fixed a minor memory leak in `Sparkline` tooltips, where an unmount cleanup kept the first
+  render's props.
 * Fixed `useOnResize`, `useOnVisibleChange` and `useOnScroll` calling the function passed on a
   component's first render rather than the latest one. `useOnScroll` also no longer leaves its
   listener attached to a replaced element.

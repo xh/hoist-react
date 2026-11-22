@@ -86,7 +86,13 @@ export function WindowedMenuList(props: MenuListProps) {
         if (focusedIdx >= 0) list?.scrollToRow({index: focusedIdx, align: 'auto'});
     }, [list, focusedIdx, rows]);
 
-    const setListRef = useListRef(setList, innerRef);
+    const setListRef = useCallback(
+        (api: ListImperativeAPI) => {
+            setList(api);
+            assignRef(innerRef, api?.element ?? null);
+        },
+        [innerRef]
+    );
 
     const menuListStyles = getStyles('menuList', props),
         paddingTop = toPx(menuListStyles.paddingTop),
@@ -113,16 +119,6 @@ export function WindowedMenuList(props: MenuListProps) {
             borderBottom: `${paddingBottom}px solid transparent`
         }
     });
-}
-
-function useListRef(setList: (api: ListImperativeAPI) => void, innerRef: Ref<HTMLElement>) {
-    return useCallback(
-        (api: ListImperativeAPI) => {
-            setList(api);
-            assignRef(innerRef, api?.element ?? null);
-        },
-        [setList, innerRef]
-    );
 }
 
 function windowedRow({index, style, rows}: any) {
