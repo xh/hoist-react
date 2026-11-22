@@ -50,6 +50,18 @@ describe('SegmentedControl', () => {
             expect(model.value).toBe(false);
         });
 
+        // jsdom doesn't turn Space or Enter into a click on a focused button, as browsers do, so
+        // this checks what they rely on: the selected segment is the tab stop, and its click flips.
+        it('keeps the selected segment as the only tab stop, for Space and Enter to flip', () => {
+            const {model, el} = renderControl(true, {toggleOnClick: true}),
+                stops = Array.from(el.querySelectorAll('button')).filter(b => b.tabIndex === 0);
+
+            expect(stops).toEqual([segment(el, 'On')]);
+            fireEvent.click(stops[0]);
+            expect(model.value).toBe(false);
+            expect(document.querySelector('button[tabindex="0"]')).toBe(segment(el, 'Off'));
+        });
+
         it('does not toggle without the prop, with three options, or when disabled', () => {
             const plain = renderControl(true, {});
             fireEvent.click(segment(plain.el, 'On'));
