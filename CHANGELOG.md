@@ -19,8 +19,7 @@
 * Fixed a minor memory leak in `Sparkline` tooltips, where an unmount cleanup kept the first
   render's props.
 * Fixed `useOnResize`, `useOnVisibleChange` and `useOnScroll` calling the function passed on a
-  component's first render rather than the latest one. `useOnScroll` also no longer leaves its
-  listener attached to a replaced element.
+  component's first render rather than the latest one.
 
 ## 91.0.0 - 2026-11-20
 
