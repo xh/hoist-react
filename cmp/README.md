@@ -195,6 +195,7 @@ techniques.
 | Sub-package | Description                                              |
 |-------------|----------------------------------------------------------|
 | `/badge/` | Badge component for counts and status indicators         |
+| `/chip/` | Compact label for a status, category or value - clickable, toggleable and removable (Chip). [See README](./chip/README.md) |
 | `/callout/` | Short note set off within content, with an intent, icon and optional title (Callout). [See README](./callout/README.md) |
 | `/loadingindicator/` | Loading state display in a compact and non-blocking form |
 | `/mask/` | Overlay mask for blocking interactions                   |
@@ -357,6 +358,12 @@ in as many columns as the width allows. See the
 A short note set off within a body of content, with an intent, its icon, an optional title and a
 body. Use it for a caveat or a warning inside content, and a `Banner` for a status strip in panel
 chrome. See the [Callout README](./callout/README.md).
+
+### Chip (`/chip/`)
+
+A compact label for a status, a category or a value, in filled, minimal or outlined style. It can be
+clickable, a toggle, or removable. Use a `Badge` for a count attached to other content. See the
+[Chip README](./chip/README.md).
 
 ### ProgressBar (`/progressbar/`)
 

@@ -20,6 +20,7 @@ import {getLayoutProps, splitLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import {isEmpty, sortBy} from 'lodash';
 import {badge} from '@xh/hoist/cmp/badge';
+import {chip} from '@xh/hoist/cmp/chip';
 import type {ReactElement} from 'react';
 import {cloneElement} from 'react';
 import './FilterChooser.scss';
@@ -392,7 +393,16 @@ const favoriteMenuItem = hoistCmp.factory<
 >({
     render({model, value, labels}) {
         return menuItem({
-            text: hbox(labels.map(label => favoriteTag({label}))),
+            text: hbox(
+                labels.map(label =>
+                    chip({
+                        className: 'xh-filter-chooser-favorite__tag',
+                        minimal: true,
+                        size: 'compact',
+                        children: label
+                    })
+                )
+            ),
             className: 'xh-filter-chooser-favorite',
             onClick: () => model.setValue(value),
             labelElement: button({
@@ -402,16 +412,6 @@ const favoriteMenuItem = hoistCmp.factory<
                     e.stopPropagation();
                 }
             })
-        });
-    }
-});
-
-const favoriteTag = hoistCmp.factory({
-    model: false,
-    render({label}) {
-        return div({
-            className: 'xh-filter-chooser-favorite__tag',
-            children: label
         });
     }
 });

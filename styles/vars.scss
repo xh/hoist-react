@@ -456,6 +456,33 @@ body {
 
 
   //------------------------
+  // Chips
+  //------------------------
+  // Fill and text color of a filled chip with no intent.
+  --xh-chip-bg: var(--xh-intent-neutral);
+  --xh-chip-border-radius: var(--xh-border-radius);
+  --xh-chip-compact-font-size: 0.85em;
+  --xh-chip-compact-height: 1.65em;
+  --xh-chip-disabled-opacity: 0.5;
+  --xh-chip-font-size: 0.9em;
+  --xh-chip-font-weight: 500;
+  // Gap between icons and text.
+  --xh-chip-gap: 0.4em;
+  // In units of the chip's own font size.
+  --xh-chip-height: 1.85em;
+  --xh-chip-hover-bg: var(--xh-intent-neutral-darker);
+  --xh-chip-large-font-size: 1em;
+  --xh-chip-large-height: 2em;
+  // Background of a minimal chip with no intent.
+  --xh-chip-minimal-bg: var(--xh-bg-alt);
+  --xh-chip-minimal-hover-bg: var(--xh-intent-neutral-darker);
+  --xh-chip-outlined-border-color: var(--xh-border-color);
+  --xh-chip-padding: #{0 0.6em};
+  --xh-chip-round-border-radius: 999px;
+  --xh-chip-text-color: var(--xh-text-color);
+
+
+  //------------------------
   // Focus
   //------------------------
   // Focus indicator outline for interactive components - apps can set `--xh-focus-outline: 0;` to

@@ -1,0 +1,165 @@
+/*
+ * This file belongs to Hoist, an application development toolkit
+ * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
+ *
+ * Copyright © 2026 Extremely Heavy Industries Inc.
+ */
+
+// Each color variant sets the `--chip-*` palette below; the style modifiers then pick from it.
+.xh-chip {
+  --chip-fill: var(--xh-chip-bg);
+  --chip-fill-hover: var(--xh-chip-hover-bg);
+  --chip-fill-text: var(--xh-chip-text-color);
+  --chip-text: var(--xh-text-color);
+  --chip-wash: var(--xh-chip-minimal-bg);
+  --chip-wash-hover: var(--xh-chip-minimal-hover-bg);
+  --chip-line: var(--xh-chip-outlined-border-color);
+
+  display: inline-flex;
+  vertical-align: middle;
+  align-items: center;
+  gap: var(--xh-chip-gap);
+  box-sizing: border-box;
+  min-width: 0;
+  max-width: 100%;
+  height: var(--xh-chip-height);
+  padding: var(--xh-chip-padding);
+  font-size: var(--xh-chip-font-size);
+  font-weight: var(--xh-chip-font-weight);
+  line-height: 1;
+  white-space: nowrap;
+  color: var(--chip-fill-text);
+  background-color: var(--chip-fill);
+  border: var(--xh-border-width) solid transparent;
+  border-radius: var(--xh-chip-border-radius);
+
+  &__text {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  > .xh-icon {
+    flex: none;
+  }
+
+  @each $intent in primary, success, warning, danger {
+    &--intent-#{$intent} {
+      --chip-fill: var(--xh-intent-#{$intent}-darker);
+      --chip-fill-hover: var(--xh-intent-#{$intent}-darkest);
+      --chip-fill-text: var(--xh-white);
+      --chip-text: var(--xh-intent-#{$intent}-text-color);
+      --chip-wash: var(--xh-intent-#{$intent}-trans1);
+      --chip-wash-hover: var(--xh-intent-#{$intent}-trans2);
+      --chip-line: var(--xh-intent-#{$intent}-text-color);
+    }
+  }
+
+  // Mixed toward the text color so one value reads in both themes.
+  &--custom {
+    --chip-fill: var(--xh-chip-color);
+    --chip-fill-hover: color-mix(in srgb, var(--xh-chip-color) 85%, black);
+    --chip-fill-text: var(--xh-white);
+    --chip-text: color-mix(in oklab, var(--xh-chip-color) 65%, var(--xh-text-color));
+    --chip-wash: color-mix(in srgb, var(--xh-chip-color) 15%, transparent);
+    --chip-wash-hover: color-mix(in srgb, var(--xh-chip-color) 30%, transparent);
+    --chip-line: var(--chip-text);
+  }
+
+  &--minimal {
+    color: var(--chip-text);
+    background-color: var(--chip-wash);
+  }
+
+  &--outlined {
+    color: var(--chip-text);
+    background-color: transparent;
+    border-color: var(--chip-line);
+  }
+
+  &--active {
+    color: var(--chip-fill-text);
+    background-color: var(--chip-fill);
+    border-color: transparent;
+  }
+
+  &--clickable {
+    cursor: pointer;
+    user-select: none;
+
+    &:hover {
+      background-color: var(--chip-fill-hover);
+    }
+
+    &.xh-chip--minimal:not(.xh-chip--active):hover {
+      background-color: var(--chip-wash-hover);
+    }
+
+    &.xh-chip--outlined:not(.xh-chip--active):hover {
+      background-color: var(--chip-wash);
+    }
+
+    &:focus-visible {
+      outline: var(--xh-focus-outline);
+    }
+  }
+
+  &--disabled {
+    opacity: var(--xh-chip-disabled-opacity);
+    cursor: not-allowed;
+  }
+
+  &--compact {
+    --xh-chip-font-size: var(--xh-chip-compact-font-size);
+    --xh-chip-height: var(--xh-chip-compact-height);
+  }
+
+  &--large {
+    --xh-chip-font-size: var(--xh-chip-large-font-size);
+    --xh-chip-height: var(--xh-chip-large-height);
+  }
+
+  &--round {
+    border-radius: var(--xh-chip-round-border-radius);
+  }
+
+  &__remove {
+    position: relative;
+    display: inline-flex;
+    flex: none;
+    align-items: center;
+    justify-content: center;
+    width: 1.3em;
+    height: 1.3em;
+    margin: 0 -0.3em 0 0;
+    padding: 0;
+    font-size: inherit;
+    color: inherit;
+    background: none;
+    border: none;
+    border-radius: 2px;
+    cursor: pointer;
+    opacity: 0.75;
+
+    // Widens the hit area for touch without growing the chip.
+    &::after {
+      content: '';
+      position: absolute;
+      inset: -4px;
+    }
+
+    &:hover:not(:disabled) {
+      opacity: 1;
+      background-color: color-mix(in srgb, currentColor 18%, transparent);
+    }
+
+    &:focus-visible {
+      opacity: 1;
+      outline: var(--xh-focus-outline);
+    }
+
+    &:disabled {
+      cursor: not-allowed;
+    }
+  }
+}

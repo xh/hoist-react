@@ -39,7 +39,9 @@ See [`docs-roadmap.md`](./planning/docs-roadmap.md) for documentation coverage t
 | Select a period or date range (presets, lookbacks, months, custom) | [`/cmp/daterange/`](../cmp/daterange/README.md)                                                                   |
 | Display a PDF document (page nav, zoom, find, download) | [`/cmp/pdfviewer/`](../cmp/pdfviewer/README.md) |
 | Show the fields of a record as labeled values | [`/cmp/propertytable/`](../cmp/propertytable/README.md) |
-| Set off a note, caveat or warning within content | [`/cmp/callout/`](../cmp/callout/README.md) |
+| Label a status, category or value, or show removable or toggle chips | [`/cmp/chip/`](../cmp/chip/README.md) |
+| Set off a note, caveat or warning within content | [`/cmp/chip/`](../cmp/chip/README.md) | Compact label for a status, category or value | Chip, intent, color, minimal, outlined, active, onRemove, Chip or Badge, keyboard |
+| [`/cmp/callout/`](../cmp/callout/README.md) |
 | Show progress or usage against a limit as a bar | [`/cmp/progressbar/`](../cmp/progressbar/README.md) |
 | Show a small inline trend chart beside a figure or in a grid cell | [`/cmp/sparkline/`](../cmp/sparkline/README.md) |
 | Use layout containers (Box, HBox, VBox, Frame) | [`/cmp/layout/`](../cmp/layout/README.md)                                                                           |

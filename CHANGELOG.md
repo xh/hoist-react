@@ -14,6 +14,17 @@
 
 ## 92.0.0-SNAPSHOT - unreleased
 
+### 🎁 New Features
+
+* Added `Chip`, a compact label for a status, category or value. It supports intents and custom
+  colors, filled, `minimal` and `outlined` styles, three sizes, and clickable, toggle (`active`)
+  and removable (`onRemove`) variants. See [`cmp/chip/README.md`](cmp/chip/README.md).
+
+### ✨ Styles
+
+* Added `--xh-chip-*` variables for the new `Chip`.
+* `FilterChooser` favorites now show their filter labels as minimal `Chip`s.
+
 ## 91.0.0 - 2026-11-20
 
 ### 💥 Breaking Changes (upgrade difficulty: 🟠 MEDIUM - CSS variables)

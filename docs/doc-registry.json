@@ -160,6 +160,14 @@
             "keywords": ["PropertyTable", "PropertyTableEntry", "key value", "label value", "labeled values", "detail panel", "record fields", "description list", "labelSide", "minColumnWidth", "read-only form"]
         },
         {
+            "id": "cmp/chip/README.md",
+            "title": "Chip Package",
+            "mcpCategory": "package",
+            "viewerCategory": "components",
+            "description": "Compact label for a status, category or value - filled, minimal or outlined, clickable, toggleable and removable - and when to use it rather than a Badge.",
+            "keywords": ["Chip", "chip", "tag", "pill", "label", "status", "category", "removable", "toggle", "filter chip", "intent", "color", "Badge"]
+        },
+        {
             "id": "cmp/callout/README.md",
             "title": "Callout Package",
             "mcpCategory": "package",
