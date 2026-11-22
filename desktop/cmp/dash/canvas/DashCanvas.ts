@@ -257,8 +257,9 @@ function useRglLayoutChangeHandler(model: DashCanvasModel) {
  * hidden browser tab, where ResizeObserver callbacks are deferred), then on every resize. Zero
  * widths (e.g. while hidden) are skipped, but unlike `useOnResize()` a zero height is not - an
  * empty canvas in an unsized parent must still measure.
+ * @internal
  */
-function useContentWidth(): [number, (node: HTMLElement) => () => void] {
+export function useContentWidth(): [number, (node: HTMLElement) => () => void] {
     const [width, setWidth] = useState<number>(null),
         ref = useCallback((node: HTMLElement) => {
             if (!node) return;
@@ -279,8 +280,9 @@ function useContentWidth(): [number, (node: HTMLElement) => () => void] {
 /**
  * Height RGL will render for the given props - mirrors its internal calculation, including the
  * bounds correction and compaction it applies to the layout on first render.
+ * @internal
  */
-function expectedGridHeight({layout, compactor, gridConfig}: GridLayoutProps): number {
+export function expectedGridHeight({layout, compactor, gridConfig}: GridLayoutProps): number {
     const {cols, rowHeight, margin, containerPadding} = gridConfig,
         // Clone first - `correctBounds()` mutates the layout it is given.
         rows = bottom(compactor.compact(correctBounds(cloneLayout(layout), {cols}), cols)),
