@@ -239,5 +239,8 @@ conventions above. hoist-dev-utils parses the app's changelog into JSON at build
 `ChangelogDialog` shows it to users as in-app release notes.
 
 Bullets in an application changelog can wrap and can hold sub-bullets, as library entries do. This
-needs a hoist-dev-utils release after 16.5. Older releases keep only the first line of each bullet
+needs `@xh/hoist-dev-utils` 17 or later. Older releases keep only the first line of each bullet
 and silently drop the rest. On those releases, write each bullet as a single unwrapped line.
+
+An app on `@xh/hoist-dev-utils` 17 can also use changelog fragments. Run `xh-changelog init` from
+its `client-app/` folder.
