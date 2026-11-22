@@ -14,6 +14,11 @@
 
 ## 92.0.0-SNAPSHOT - unreleased
 
+### 🐞 Bug Fixes
+
+* Fixed minor memory leaks in model linking, `Sparkline` tooltips and windowed `Select` menus, where
+  long-lived callbacks kept objects from a component's first render.
+
 ## 91.0.0 - 2026-11-20
 
 ### 💥 Breaking Changes (upgrade difficulty: 🟠 MEDIUM - CSS variables)
