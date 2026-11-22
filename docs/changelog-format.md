@@ -17,9 +17,14 @@ requests never conflict over `CHANGELOG.md` and a late merge cannot land under a
   `persistWith`.
 ```
 
-- `pnpm changelog new` creates `changelog.d/<branch>.md`. `pnpm changelog check` validates it, and
-  CI runs the same check on each pull request.
-- A fragment uses only the section headers listed in `changelog.d/config.json`.
+- `pnpm changelog add fix "<text>"` adds a one-line entry to `changelog.d/<branch>.md`. It finds
+  the section from a short name, such as `fix`, `feature`, `tech` or `breaking`, and wraps the line.
+- `pnpm changelog new` creates an empty `changelog.d/<branch>.md` for a longer entry. Or create the
+  file yourself.
+- `pnpm changelog check` validates the fragments. CI runs the same check on each pull request, and
+  shows the entries that the pull request adds in the job summary.
+- A fragment uses only the section headers listed in `changelog.d/config.json`. You can leave the
+  emoji off a header. The release adds it.
 - Leave release-level content out of fragments: the `(upgrade difficulty: ...)` suffix, the
   upgrade-notes sentence, and `####` topic groups. The release curator adds them.
 - To change an unreleased entry, edit its fragment, even one that another pull request added. To

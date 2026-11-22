@@ -430,10 +430,12 @@ bind while you work there. Read it before writing to that repo; the harness only
 entries go, section headers, voice, the issue/PR-link policy, and breaking-change requirements. Do
 not rely on the summary below alone.
 
-The essentials: new entries go in a fragment file in `changelog.d/` (`pnpm changelog new`), never
-in `CHANGELOG.md`. A release assembles the fragments into `CHANGELOG.md`. Fragments use the
+The essentials: new entries go in a fragment file in `changelog.d/`, never in `CHANGELOG.md`.
+`pnpm changelog add fix "<text>"` adds a one-line entry, and `pnpm changelog new` creates an empty
+fragment for a longer one. A release assembles the fragments into `CHANGELOG.md`. Fragments use the
 emoji-prefixed section headers listed in `changelog.d/config.json` (e.g. `### 🎁 New Features`,
-`### 🐞 Bug Fixes`) and no version heading. Run `pnpm changelog check` before you commit one. Use past-tense, action-driven
+`### 🐞 Bug Fixes`) and no version heading. Run `pnpm changelog check` before you commit one. Use
+past-tense, action-driven
 language and name specific classes, methods, and config keys in backticks. Keep entries concise —
 one bullet per change, 1-3 lines max. Upgrade notes provide granular detail when needed; the
 changelog should not. Do not add GitHub issue or PR links to entries by default — include one only
