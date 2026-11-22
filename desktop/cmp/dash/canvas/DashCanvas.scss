@@ -97,8 +97,11 @@
       }
     }
 
+    // react-grid-layout dims its placeholder to 0.2 opacity, which would hide this translucent fill.
     &.react-grid-placeholder {
-      background-color: var(--xh-intent-primary);
+      background-color: var(--xh-intent-primary-trans1);
+      border: 1px dashed var(--xh-intent-primary);
+      opacity: 1;
     }
 
     > .xh-panel {

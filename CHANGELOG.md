@@ -50,6 +50,11 @@
 * Fixed the column chooser listing `CubeGridModel`'s default label column as "Cube Label". It now
   takes the names of the row dimensions, as the header does, or "Group" when there are none.
 
+### ✨ Styles
+
+* `DashCanvas` now draws its drop placeholder as a translucent primary fill with a dashed primary
+  border, in place of a solid block of the primary color.
+
 ## 91.0.0 - 2026-11-20
 
 ### 💥 Breaking Changes (upgrade difficulty: 🟠 MEDIUM - CSS variables)
