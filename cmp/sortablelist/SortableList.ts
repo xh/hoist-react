@@ -1,0 +1,349 @@
+/*
+ * This file belongs to Hoist, an application development toolkit
+ * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
+ *
+ * Copyright © 2026 Extremely Heavy Industries Inc.
+ */
+import classNames from 'classnames';
+import {isFunction, isNil, uniq} from 'lodash';
+import type {KeyboardEvent as ReactKeyboardEvent, ReactNode} from 'react';
+import {useRef, useState} from 'react';
+
+import {div} from '@xh/hoist/cmp/layout';
+import type {BoxProps, HoistModel, HoistProps} from '@xh/hoist/core';
+import {hoistCmp, uses} from '@xh/hoist/core';
+import {Icon} from '@xh/hoist/icon';
+import type {DragEndEvent, DragStartEvent} from '@xh/hoist/kit/dnd-kit';
+import {dragDropProvider, isSortable, useSortable} from '@xh/hoist/kit/dnd-kit';
+import {TEST_ID, mergeDeep, throwIf} from '@xh/hoist/utils/js';
+import {splitLayoutProps} from '@xh/hoist/utils/react';
+
+import {DND_PLUGINS, DND_SENSORS, DND_TRANSITION} from './impl/DndDefaults';
+import './SortableList.scss';
+
+export interface SortableListProps<T = any> extends HoistProps<HoistModel>, BoxProps {
+    /**
+     * Items in display order. Omit when using `bind`. Named `value`, not `items`, which Hoist's
+     * element factories reserve as an alias for `children`.
+     */
+    value?: T[];
+
+    /** Model property holding the items, written with the new order on each reorder. */
+    bind?: string;
+
+    /** Property name or function giving each item a stable, unique key. Default 'id'. */
+    itemKey?: string | ((item: T) => string | number);
+
+    /** Renders one item's content. The list adds the handle and drag behavior around it. */
+    renderItem: (item: T, ctx: SortableItemContext) => ReactNode;
+
+    /** Content drawn under an item's row at the list's full width, e.g. an editor. Null for none. */
+    renderDetail?: (item: T) => ReactNode;
+
+    /** Called once per completed reorder - never mid-drag, on cancel, or for a drop in place. */
+    onReorder?: (e: SortableReorderEvent<T>) => void;
+
+    /** Default 'vertical'. */
+    orientation?: 'vertical' | 'horizontal';
+
+    /** Horizontal only - true to wrap items onto multiple rows. */
+    wrap?: boolean;
+
+    /**
+     * Where users grab an item. 'item' makes the whole item the handle - pointerdown on a button,
+     * input or link inside it never starts a drag. 'custom' places no handle; pass
+     * `ctx.handleRef` to the element users should grab. Default 'start'.
+     */
+    handle?: 'start' | 'end' | 'item' | 'custom';
+
+    /** Items that can't be picked up. Other items still move past them. */
+    isItemDisabled?: (item: T) => boolean;
+
+    /** True to disable all reordering. */
+    disabled?: boolean;
+
+    /** True for a 24px minimum item height, rather than 30px. */
+    compact?: boolean;
+
+    /** Name of an item in screen reader announcements. Default: its key. */
+    getItemLabel?: (item: T) => string;
+}
+
+export interface SortableItemContext {
+    index: number;
+
+    /** True for the item being dragged. */
+    isDragging: boolean;
+
+    isDisabled: boolean;
+
+    /** For `handle: 'custom'` - the ref for the element users should grab. */
+    handleRef: (el: Element) => void;
+}
+
+export interface SortableReorderEvent<T = any> {
+    item: T;
+    fromIndex: number;
+    toIndex: number;
+
+    /** All items in their new order. */
+    items: T[];
+
+    source: 'pointer' | 'keyboard';
+}
+
+/**
+ * A list users reorder by dragging an item, or with the keyboard. The caller renders each item; the
+ * list supplies the handle, the lifted item, the drop placeholder, auto-scrolling and screen reader
+ * announcements.
+ *
+ * The list is controlled. It never keeps its own order: on each completed reorder it writes the new
+ * order to `bind`, if set, and calls `onReorder`. A caller with neither sees the item settle back.
+ *
+ * Keyboard: Space or Enter on a handle lifts the item, arrow keys move it, Space or Enter drops it
+ * and Escape cancels. Alt with an arrow key moves the focused item one place at once. Keys the list
+ * handles stop propagating.
+ */
+export const [SortableList, sortableList] = hoistCmp.withFactory<SortableListProps>({
+    displayName: 'SortableList',
+    // Context model, if any, is only read for `bind`.
+    model: uses('*', {optional: true, publishMode: 'none'}),
+    className: 'xh-sortable-list',
+
+    render(props, ref) {
+        const [
+                layoutProps,
+                {
+                    model,
+                    className,
+                    style,
+                    value,
+                    bind,
+                    itemKey = 'id',
+                    renderItem,
+                    renderDetail,
+                    onReorder,
+                    orientation = 'vertical',
+                    wrap,
+                    handle = 'start',
+                    isItemDisabled,
+                    disabled,
+                    compact,
+                    getItemLabel,
+                    testId,
+                    domAttrs,
+                    ...restProps
+                }
+            ] = splitLayoutProps(props),
+            items: any[] = (model && bind ? model[bind] : value) ?? [],
+            keys = items.map(it => (isFunction(itemKey) ? itemKey(it) : it?.[itemKey])),
+            horizontal = orientation === 'horizontal',
+            [keyboardDrag, setKeyboardDrag] = useState(false),
+            dragSource = useRef<SortableReorderEvent['source']>('pointer');
+
+        throwIf(keys.some(isNil), 'SortableList requires a key for every item - see `itemKey`.');
+        throwIf(uniq(keys).length !== keys.length, 'SortableList item keys must be unique.');
+
+        const reorder = (
+            fromIndex: number,
+            toIndex: number,
+            source: SortableReorderEvent['source']
+        ) => {
+            if (fromIndex === toIndex) return;
+            const next = [...items],
+                [item] = next.splice(fromIndex, 1);
+            next.splice(toIndex, 0, item);
+            if (model && bind) model.setBindable(bind, next);
+            onReorder?.({item, fromIndex, toIndex, items: next, source});
+        };
+
+        const onDragStart = (e: DragStartEvent) => {
+            const kb = e.nativeEvent instanceof KeyboardEvent;
+            dragSource.current = kb ? 'keyboard' : 'pointer';
+            setKeyboardDrag(kb);
+        };
+
+        const onDragEnd = (e: DragEndEvent) => {
+            setKeyboardDrag(false);
+            const {source} = e.operation;
+            if (e.canceled || !isSortable(source)) return;
+            reorder(source.initialIndex, source.index, dragSource.current);
+        };
+
+        const divProps = mergeDeep(
+            {
+                className: classNames(
+                    className,
+                    `xh-sortable-list--${orientation}`,
+                    `xh-sortable-list--handle-${handle}`,
+                    horizontal && wrap && 'xh-sortable-list--wrap',
+                    compact && 'xh-sortable-list--compact',
+                    keyboardDrag && 'xh-sortable-list--keyboard-drag',
+                    disabled && 'xh-sortable-list--disabled'
+                )
+            },
+            {style: {...style, ...layoutProps}},
+            {[TEST_ID]: testId, ...domAttrs},
+            restProps
+        );
+
+        return dragDropProvider({
+            sensors: DND_SENSORS,
+            plugins: DND_PLUGINS,
+            onDragStart,
+            onDragEnd,
+            children: div({
+                ref,
+                role: 'list',
+                ...divProps,
+                children: items.map((item, index) => {
+                    const key = keys[index];
+                    return sortableItem({
+                        key,
+                        listItem: item,
+                        itemKey: key,
+                        index,
+                        count: items.length,
+                        label: getItemLabel ? getItemLabel(item) : String(key),
+                        handle,
+                        horizontal,
+                        itemDisabled: !!isItemDisabled?.(item),
+                        listDisabled: !!disabled,
+                        keyboardDrag,
+                        renderItem,
+                        renderDetail,
+                        onMove: (to: number) => reorder(index, to, 'keyboard')
+                    });
+                })
+            })
+        });
+    }
+});
+
+//------------------
+// Implementation
+//------------------
+interface SortableItemProps extends HoistProps {
+    listItem: any;
+    itemKey: string | number;
+    index: number;
+    count: number;
+    label: string;
+    handle: SortableListProps['handle'];
+    horizontal: boolean;
+    itemDisabled: boolean;
+    listDisabled: boolean;
+    keyboardDrag: boolean;
+    renderItem: SortableListProps['renderItem'];
+    renderDetail: SortableListProps['renderDetail'];
+    onMove: (toIndex: number) => void;
+}
+
+const sortableItem = hoistCmp.factory<SortableItemProps>({
+    displayName: 'SortableItem',
+    model: false,
+    observer: false,
+
+    render({
+        listItem: item,
+        itemKey,
+        index,
+        count,
+        label,
+        handle,
+        horizontal,
+        itemDisabled,
+        listDisabled,
+        keyboardDrag,
+        renderItem,
+        renderDetail,
+        onMove
+    }) {
+        const isDisabled = itemDisabled || listDisabled,
+            activator = useRef<Element>(null),
+            sortable = useSortable({
+                id: itemKey,
+                index,
+                data: {label, count},
+                disabled: isDisabled ? {draggable: true, droppable: false} : false,
+                transition: DND_TRANSITION
+            }),
+            handleRef = (el: Element) => {
+                activator.current = el;
+                sortable.handleRef(el);
+            },
+            itemRef = (el: Element) => {
+                if (handle === 'item') activator.current = el;
+                sortable.ref(el);
+            };
+
+        const onKeyDown = (e: ReactKeyboardEvent<HTMLDivElement>) => {
+            if (e.target !== activator.current) return;
+            const {key} = e,
+                fwd = horizontal ? 'ArrowRight' : 'ArrowDown',
+                back = horizontal ? 'ArrowLeft' : 'ArrowUp';
+
+            if (e.altKey && !keyboardDrag && (key === fwd || key === back)) {
+                e.preventDefault();
+                if (!isDisabled) {
+                    const to = key === fwd ? index + 1 : index - 1;
+                    if (to >= 0 && to < count) onMove(to);
+                }
+            } else if (
+                !isDisabled &&
+                (key === ' ' ||
+                    key === 'Enter' ||
+                    (keyboardDrag && (key === 'Escape' || key.startsWith('Arrow'))))
+            ) {
+                // Handled by the keyboard sensor - keep it from ancestor shortcuts.
+            } else {
+                return;
+            }
+            e.stopPropagation();
+        };
+
+        const ctx: SortableItemContext = {
+                index,
+                isDragging: sortable.isDragging,
+                isDisabled,
+                handleRef
+            },
+            showHandle = handle === 'start' || handle === 'end',
+            grip = showHandle
+                ? div({
+                      ref: handleRef,
+                      className: 'xh-sortable-list__handle',
+                      'aria-label': label,
+                      children: itemDisabled ? Icon.lock() : Icon.gripVertical()
+                  })
+                : null,
+            detail = renderDetail?.(item);
+
+        return div({
+            ref: itemRef,
+            role: 'listitem',
+            className: classNames(
+                'xh-sortable-list__item',
+                sortable.isDragging && 'xh-sortable-list__item--dragging',
+                itemDisabled && 'xh-sortable-list__item--disabled'
+            ),
+            onKeyDown,
+            children: [
+                div({
+                    className: 'xh-sortable-list__row',
+                    children: [
+                        handle === 'start' ? grip : null,
+                        div({
+                            className: 'xh-sortable-list__content',
+                            children: renderItem(item, ctx)
+                        }),
+                        handle === 'end' ? grip : null
+                    ]
+                }),
+                isNil(detail)
+                    ? null
+                    : div({className: 'xh-sortable-list__detail', children: detail})
+            ]
+        });
+    }
+});

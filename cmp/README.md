@@ -152,6 +152,7 @@ techniques.
 | `/zoneGrid/` | Multi-zone grid layout for complex record displays |
 | `/cubegrid/` | Cube View as a tree grid, with pivot paths as nested column groups when pivoted. [See README](./cubegrid/README.md) |
 | `/statcard/` | Tiles that call out key figures (StatCard), laid out in equal-width rows (StatCardStrip) |
+| `/sortablelist/` | List users reorder by drag or keyboard, with caller-rendered items (SortableList). [See README](./sortablelist/README.md) |
 | `/propertytable/` | Display-only list of labeled values (PropertyTable), such as the fields of a record in a detail panel. [See README](./propertytable/README.md) |
 | `/sparkline/` | Small inline trend chart in plain SVG (Sparkline), for a stat card or a grid cell. [See README](./sparkline/README.md) |
 
@@ -352,6 +353,12 @@ displaying their aggregate validation state as intent-colored borders and toolti
 A display-only list of labeled values, such as the fields of a record in a detail panel, laid out
 in as many columns as the width allows. See the
 [PropertyTable README](./propertytable/README.md).
+
+### SortableList (`/sortablelist/`)
+
+A list users reorder by dragging an item or with the keyboard. The caller renders each item; the list
+supplies handles, the drop placeholder, auto-scrolling and screen reader announcements, and reports
+each completed move once. See the [SortableList README](./sortablelist/README.md).
 
 ### Callout (`/callout/`)
 

@@ -1052,6 +1052,33 @@ body {
   }
 
   //------------------------
+  // Sortable Lists
+  //------------------------
+  --xh-sortable-list-compact-item-min-height: 24px;
+  // Background of the item lifted by a drag.
+  --xh-sortable-list-drag-bg: var(--xh-bg);
+  --xh-sortable-list-drag-rotate: 1deg;
+  --xh-sortable-list-drag-shadow: 0 4px 14px rgba(38, 50, 56, 0.2), 0 1px 3px rgba(38, 50, 56, 0.15);
+  // Gap between items.
+  --xh-sortable-list-gap: 0;
+  // Opacity of a grip handle until its item is hovered or the handle is focused.
+  --xh-sortable-list-handle-opacity: 0.55;
+  // Items draw no box of their own - the caller's content does.
+  --xh-sortable-list-item-bg: transparent;
+  --xh-sortable-list-item-border: none;
+  --xh-sortable-list-item-border-radius: var(--xh-border-radius);
+  --xh-sortable-list-item-min-height: 30px;
+  // The dragged item's slot, outlined where it will drop.
+  --xh-sortable-list-placeholder-bg: var(--xh-intent-primary-trans1);
+  --xh-sortable-list-placeholder-border-color: var(--xh-intent-primary-text-color);
+  // Gap between the handle and the content.
+  --xh-sortable-list-row-gap: 6px;
+
+  &:where(.xh-dark) {
+    --xh-sortable-list-drag-shadow: 0 4px 16px rgba(0, 0, 0, 0.6), 0 1px 3px rgba(0, 0, 0, 0.5);
+  }
+
+  //------------------------
   // Sparklines
   //------------------------
   // The line's color by default. Resolves on the area, so it follows `intent` and `colorBy`.

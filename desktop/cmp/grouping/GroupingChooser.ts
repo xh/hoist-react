@@ -6,6 +6,7 @@
  */
 import {GroupingChooserModel} from '@xh/hoist/cmp/grouping';
 import {GroupingChooserLocalModel} from '@xh/hoist/cmp/grouping/impl/GroupingChooserLocalModel';
+import {sortableList} from '@xh/hoist/cmp/sortablelist';
 import {
     box,
     div,
@@ -28,7 +29,6 @@ import '@xh/hoist/desktop/register';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {Icon} from '@xh/hoist/icon';
 import {menu, menuItem, popover} from '@xh/hoist/kit/blueprint';
-import {dragDropContext, draggable, droppable} from '@xh/hoist/kit/react-beautiful-dnd';
 import {elemWithin, getTestId} from '@xh/hoist/utils/js';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
@@ -116,7 +116,6 @@ export const [GroupingChooser, groupingChooser] = hoistCmp.withFactory<GroupingC
             ...layoutProps,
             children: popover({
                 isOpen,
-                popoverRef: impl.popoverRef,
                 popoverClassName: `xh-grouping-chooser-popover xh-grouping-chooser-popover--${favesClassNameMod}`,
                 // Left align editor to keep in place when button changing size when commitOnChange: true
                 position: `${popoverPosition}-left`,
@@ -247,104 +246,51 @@ const dimensionList = hoistCmp.factory<GroupingChooserLocalModel>({
                 : null;
         }
 
-        return dragDropContext({
-            onDragEnd: result => model.onDragEnd(result),
-            children: droppable({
-                droppableId: 'dimension-list',
-                children: dndProps =>
-                    div({
-                        ref: dndProps.innerRef,
-                        className: 'xh-grouping-chooser__list',
-                        children: [
-                            ...model.pendingValue.map((dimension, idx) =>
-                                dimensionRow({dimension, idx})
-                            ),
-                            dndProps.placeholder
-                        ]
-                    })
-            })
+        return sortableList({
+            className: 'xh-grouping-chooser__list',
+            value: model.pendingValue,
+            itemKey: dim => dim,
+            handle: 'custom',
+            getItemLabel: dim => model.parentModel.getDimDisplayName(dim),
+            onReorder: e => model.movePendingDimToIndex(e.item, e.toIndex),
+            renderItem: (dimension, {index, handleRef}) =>
+                dimensionRow({dimension, idx: index, handleRef})
         });
     }
 });
 
 const dimensionRow = hoistCmp.factory<GroupingChooserLocalModel>({
-    render({model, dimension, idx}) {
+    render({model, dimension, idx, handleRef}) {
         // The options for this select include its current value
         const options = model.getDimSelectOpts([...model.availableDims, dimension]);
 
-        return draggable({
-            key: dimension,
-            draggableId: dimension,
-            index: idx,
-            children: (dndProps, dndState) => {
-                // Because the popover uses css transforms to position itself,
-                // we need to adjust the draggable's transform to account for this.
-                //
-                // The below workaround is based on approaches discussed on this thread:
-                // https://github.com/atlassian/react-beautiful-dnd/issues/128
-                let transform = dndProps.draggableProps.style.transform;
-                if (dndState.isDragging || dndState.isDropAnimating) {
-                    let rowValues = parseTransform(transform),
-                        pPos = model.popoverRef.current.getBoundingClientRect(),
-                        popoverValues = {
-                            x: pPos.left,
-                            y: pPos.top
-                        };
-
-                    // Account for drop animation
-                    if (dndState.isDropAnimating) {
-                        const {x, y} = dndState.dropAnimation.moveTo;
-                        rowValues = [x, y];
-                    }
-
-                    // Subtract the popover's X / Y translation from the row's
-                    if (!isEmpty(rowValues)) {
-                        const x = rowValues[0] - popoverValues.x,
-                            y = rowValues[1] - popoverValues.y;
-                        transform = `translate(${x}px, ${y}px)`;
-                    }
-                }
-
-                return div({
-                    key: dimension,
-                    className: classNames(
-                        'xh-grouping-chooser__row',
-                        dndState.isDragging ? 'xh-grouping-chooser__row--dragging' : null
-                    ),
-                    children: [
-                        div({
-                            className: 'xh-grouping-chooser__row__grabber',
-                            children: Icon.grip({prefix: 'fal'}),
-                            ...dndProps.dragHandleProps,
-                            tabIndex: -1
-                        }),
-                        div({
-                            className: 'xh-grouping-chooser__row__select',
-                            children: select({
-                                options,
-                                value: dimension,
-                                flex: 1,
-                                width: null,
-                                hideDropdownIndicator: true,
-                                onChange: newDim => model.replacePendingDimAtIdx(newDim, idx)
-                            })
-                        }),
-                        button({
-                            icon: Icon.delete(),
-                            intent: 'danger',
-                            tabIndex: -1,
-                            className: 'xh-grouping-chooser__row__remove-btn',
-                            onClick: () => model.removePendingDimAtIdx(idx)
-                        })
-                    ],
-                    ref: dndProps.innerRef,
-                    ...dndProps.draggableProps,
-                    style: {
-                        ...dndProps.draggableProps.style,
-                        transform
-                    }
-                });
-            }
+        return div({
+            className: 'xh-grouping-chooser__row',
+            children: [
+                div({
+                    ref: handleRef,
+                    className: 'xh-grouping-chooser__row__grabber',
+                    children: Icon.grip({prefix: 'fal'})
+                }),
+                div({
+                    className: 'xh-grouping-chooser__row__select',
+                    children: select({
+                        options,
+                        value: dimension,
+                        flex: 1,
+                        width: null,
+                        hideDropdownIndicator: true,
+                        onChange: newDim => model.replacePendingDimAtIdx(newDim, idx)
+                    })
+                }),
+                button({
+                    icon: Icon.delete(),
+                    intent: 'danger',
+                    tabIndex: -1,
+                    className: 'xh-grouping-chooser__row__remove-btn',
+                    onClick: () => model.removePendingDimAtIdx(idx)
+                })
+            ]
         });
     }
 });
@@ -382,12 +328,6 @@ const addDimensionControl = hoistCmp.factory<GroupingChooserLocalModel>({
  * Extract integer values from CSS transform string. Works for both `translate` and `translate3d`.
  * e.g. `translate3d(250px, 150px, 0px) -> [250, 150, 0]`
  */
-function parseTransform(transformStr: string): number[] {
-    return transformStr
-        ?.replace('3d', '')
-        .match(/[-]{0,1}[\d]*[.]{0,1}[\d]+/g)
-        ?.map(it => parseInt(it));
-}
 
 //------------------
 // Favorites

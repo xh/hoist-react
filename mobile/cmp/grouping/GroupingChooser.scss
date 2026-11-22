@@ -34,6 +34,8 @@
       align-items: center;
       justify-content: center;
       width: 30px;
+      cursor: grab;
+      touch-action: none;
     }
 
     &__select {
@@ -43,13 +45,6 @@
       .xh-select {
         border: none;
       }
-    }
-
-    &--dragging {
-      top: unset !important;
-      left: unset !important;
-      border: var(--xh-border-solid);
-      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
     }
   }
 

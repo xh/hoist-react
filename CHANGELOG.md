@@ -14,16 +14,34 @@
 
 ## 92.0.0-SNAPSHOT - unreleased
 
+### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW - drag-and-drop kit)
+
+See [`docs/upgrade-notes/v92-upgrade-notes.md`](docs/upgrade-notes/v92-upgrade-notes.md) for
+detailed, step-by-step upgrade instructions with before/after code examples.
+
+* Replaced `DynamicTabSwitcherModel.onDragEnd()` with `moveTab(fromIndex, toIndex)`.
+
 ### 🎁 New Features
 
 * Added `Chip`, a compact label for a status, category or value. It supports intents and custom
   colors, filled, `minimal` and `outlined` styles, three sizes, and clickable, toggle (`active`)
   and removable (`onRemove`) variants. See [`cmp/chip/README.md`](cmp/chip/README.md).
+* Added `SortableList`, a list users reorder by dragging or with the keyboard. Callers render each
+  item, and the list supplies handles, the drop placeholder, auto-scrolling and screen reader
+  announcements, then reports each completed move once via `bind` or `onReorder`. See
+  [`cmp/sortablelist/README.md`](cmp/sortablelist/README.md).
+* `GroupingChooser` and the mobile column chooser can now be reordered with the keyboard, and
+  `GroupingChooser` drags no longer drift inside its popover.
 
 ### ✨ Styles
 
-* Added `--xh-chip-*` variables for the new `Chip`.
+* Added `--xh-chip-*` variables for the new `Chip`, and `--xh-sortable-list-*` variables for the
+  new `SortableList`.
 * `FilterChooser` favorites now show their filter labels as minimal `Chip`s.
+
+### 📚 Libraries
+
+* @dnd-kit/react + @dnd-kit/dom `added` at `0.5.3`
 
 ## 91.0.0 - 2026-11-20
 

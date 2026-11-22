@@ -1,0 +1,128 @@
+/*
+ * This file belongs to Hoist, an application development toolkit
+ * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
+ *
+ * Copyright © 2026 Extremely Heavy Industries Inc.
+ */
+
+.xh-sortable-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--xh-sortable-list-gap);
+  min-width: 0;
+
+  &--horizontal {
+    flex-direction: row;
+  }
+
+  &--wrap {
+    flex-wrap: wrap;
+  }
+
+  &__item {
+    display: flex;
+    flex-direction: column;
+    flex: none;
+    min-width: 0;
+    background-color: var(--xh-sortable-list-item-bg);
+    border: var(--xh-sortable-list-item-border);
+    border-radius: var(--xh-sortable-list-item-border-radius);
+
+    // The item lifted by a drag, in the browser's top layer.
+    &[data-dnd-dragging] {
+      background-color: var(--xh-sortable-list-drag-bg);
+      box-shadow: var(--xh-sortable-list-drag-shadow);
+      rotate: var(--xh-sortable-list-drag-rotate);
+    }
+
+    // Its slot in the list, outlined where it will drop. Outranks dnd-kit's `visibility: hidden`.
+    .xh-sortable-list &[data-dnd-placeholder] {
+      visibility: visible;
+      background-color: var(--xh-sortable-list-placeholder-bg);
+      outline: var(--xh-border-width) dashed var(--xh-sortable-list-placeholder-border-color);
+      outline-offset: -1px;
+
+      > * {
+        visibility: hidden;
+      }
+    }
+
+    &--disabled {
+      color: var(--xh-text-color-muted);
+    }
+  }
+
+  &--keyboard-drag &__item[data-dnd-dragging] {
+    rotate: none;
+    outline: var(--xh-border-width) solid var(--xh-intent-primary-text-color);
+  }
+
+  &__row {
+    display: flex;
+    align-items: center;
+    gap: var(--xh-sortable-list-row-gap);
+    min-height: var(--xh-sortable-list-item-min-height);
+  }
+
+  &--handle-start &__row {
+    padding-left: 2px;
+  }
+
+  &--handle-end &__row {
+    padding-right: 2px;
+  }
+
+  &--compact &__row {
+    min-height: var(--xh-sortable-list-compact-item-min-height);
+  }
+
+  &__content {
+    flex: 1;
+    min-width: 0;
+  }
+
+  &__handle {
+    display: inline-flex;
+    flex: none;
+    align-items: center;
+    justify-content: center;
+    align-self: stretch;
+    width: 20px;
+    color: var(--xh-text-color-muted);
+    border-radius: 2px;
+    cursor: grab;
+    opacity: var(--xh-sortable-list-handle-opacity);
+    touch-action: none;
+
+    &:focus-visible {
+      opacity: 1;
+      outline: var(--xh-focus-outline);
+    }
+  }
+
+  &__item:hover &__handle {
+    opacity: 1;
+  }
+
+  &--handle-item &__item {
+    cursor: grab;
+    touch-action: none;
+
+    &:focus-visible {
+      outline: var(--xh-focus-outline);
+    }
+  }
+
+  &__item--disabled &__handle,
+  &--disabled &__handle,
+  &--handle-item &__item--disabled,
+  &--handle-item.xh-sortable-list--disabled &__item {
+    cursor: not-allowed;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    &__item[data-dnd-dragging] {
+      rotate: none;
+    }
+  }
+}

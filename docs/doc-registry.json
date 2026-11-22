@@ -160,6 +160,14 @@
             "keywords": ["PropertyTable", "PropertyTableEntry", "key value", "label value", "labeled values", "detail panel", "record fields", "description list", "labelSide", "minColumnWidth", "read-only form"]
         },
         {
+            "id": "cmp/sortablelist/README.md",
+            "title": "SortableList Package",
+            "mcpCategory": "package",
+            "viewerCategory": "components",
+            "description": "List users reorder by dragging or with the keyboard: caller-rendered items, handles, bind or onReorder, detail rows, and the dnd-kit wrapper underneath.",
+            "keywords": ["SortableList", "sortable", "reorder", "drag and drop", "dnd", "dnd-kit", "onReorder", "drag handle", "keyboard reorder", "renderDetail", "useSortable"]
+        },
+        {
             "id": "cmp/chip/README.md",
             "title": "Chip Package",
             "mcpCategory": "package",

@@ -6,17 +6,16 @@
  */
 import {GroupingChooserModel} from '@xh/hoist/cmp/grouping';
 import {GroupingChooserLocalModel} from '@xh/hoist/cmp/grouping/impl/GroupingChooserLocalModel';
+import {sortableList} from '@xh/hoist/cmp/sortablelist';
 import {box, div, filler, hbox, placeholder, span} from '@xh/hoist/cmp/layout';
 import {hoistCmp, useLocalModel, uses} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
-import {dragDropContext, draggable, droppable} from '@xh/hoist/kit/react-beautiful-dnd';
 import type {ButtonProps} from '@xh/hoist/mobile/cmp/button';
 import {button} from '@xh/hoist/mobile/cmp/button';
 import {select} from '@xh/hoist/mobile/cmp/input';
 import '@xh/hoist/mobile/register';
 import {dialogPanel, panel} from '@xh/hoist/mobile/cmp/panel';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
-import classNames from 'classnames';
 import {isEmpty} from 'lodash';
 
 import './GroupingChooser.scss';
@@ -119,70 +118,50 @@ const dimensionList = hoistCmp.factory<GroupingChooserLocalModel>({
                 : null;
         }
 
-        return dragDropContext({
-            onDragEnd: result => model.onDragEnd(result),
-            children: droppable({
-                droppableId: 'dimension-list',
-                children: dndProps =>
-                    div({
-                        ref: dndProps.innerRef,
-                        className: 'xh-grouping-chooser__list',
-                        children: [
-                            ...model.pendingValue.map((dimension, idx) =>
-                                dimensionRow({dimension, idx})
-                            ),
-                            dndProps.placeholder
-                        ]
-                    })
-            })
+        return sortableList({
+            className: 'xh-grouping-chooser__list',
+            value: model.pendingValue,
+            itemKey: dim => dim,
+            handle: 'custom',
+            getItemLabel: dim => model.parentModel.getDimDisplayName(dim),
+            onReorder: e => model.movePendingDimToIndex(e.item, e.toIndex),
+            renderItem: (dimension, {index, handleRef}) =>
+                dimensionRow({dimension, idx: index, handleRef})
         });
     }
 });
 
 const dimensionRow = hoistCmp.factory<GroupingChooserLocalModel>({
-    render({model, dimension, idx}) {
+    render({model, dimension, idx, handleRef}) {
         // The options for this select include its current value
         const options = model.getDimSelectOpts([...model.availableDims, dimension]);
 
-        return draggable({
-            key: dimension,
-            draggableId: dimension,
-            index: idx,
-            children: (dndProps, dndState) => {
-                return div({
-                    key: dimension,
-                    className: classNames(
-                        'xh-grouping-chooser__row',
-                        dndState.isDragging ? 'xh-grouping-chooser__row--dragging' : null
-                    ),
-                    children: [
-                        div({
-                            className: 'xh-grouping-chooser__row__grabber',
-                            children: Icon.grip({prefix: 'fal'}),
-                            ...dndProps.dragHandleProps
-                        }),
-                        div({
-                            className: 'xh-grouping-chooser__row__select',
-                            children: select({
-                                options,
-                                value: dimension,
-                                flex: 1,
-                                width: null,
-                                hideDropdownIndicator: true,
-                                onChange: newDim => model.replacePendingDimAtIdx(newDim, idx)
-                            })
-                        }),
-                        button({
-                            icon: Icon.delete(),
-                            className: 'xh-grouping-chooser__row__remove-btn',
-                            minimal: true,
-                            onClick: () => model.removePendingDimAtIdx(idx)
-                        })
-                    ],
-                    ref: dndProps.innerRef,
-                    ...dndProps.draggableProps
-                });
-            }
+        return div({
+            className: 'xh-grouping-chooser__row',
+            children: [
+                div({
+                    ref: handleRef,
+                    className: 'xh-grouping-chooser__row__grabber',
+                    children: Icon.grip({prefix: 'fal'})
+                }),
+                div({
+                    className: 'xh-grouping-chooser__row__select',
+                    children: select({
+                        options,
+                        value: dimension,
+                        flex: 1,
+                        width: null,
+                        hideDropdownIndicator: true,
+                        onChange: newDim => model.replacePendingDimAtIdx(newDim, idx)
+                    })
+                }),
+                button({
+                    icon: Icon.delete(),
+                    className: 'xh-grouping-chooser__row__remove-btn',
+                    minimal: true,
+                    onClick: () => model.removePendingDimAtIdx(idx)
+                })
+            ]
         });
     }
 });
