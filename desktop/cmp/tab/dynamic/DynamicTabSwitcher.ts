@@ -17,10 +17,17 @@ import {Icon} from '@xh/hoist/icon';
 import {tooltip as bpTooltip, showContextMenu} from '@xh/hoist/kit/blueprint';
 import {
     DND_PLUGINS,
-    DND_SENSORS,
+    DND_SPACE_LIFT_SENSORS,
     DND_TRANSITION
 } from '@xh/hoist/cmp/sortablelist/impl/DndDefaults';
-import {dragDropProvider, isSortable, useSortable} from '@xh/hoist/kit/dnd-kit';
+import {stopDragKeys} from '@xh/hoist/cmp/sortablelist/impl/DndUtils';
+import {
+    dragDropProvider,
+    isSortable,
+    RestrictToHorizontalAxis,
+    RestrictToVerticalAxis,
+    useSortable
+} from '@xh/hoist/kit/dnd-kit';
 import {wait} from '@xh/hoist/promise';
 import {consumeEvent, getTestId, scrollIntoViewWithin} from '@xh/hoist/utils/js';
 import {composeRefs, getLayoutProps} from '@xh/hoist/utils/react';
@@ -83,8 +90,9 @@ const tabs = hoistCmp.factory<TabsProps>({
             {isVertical, props} = localModel,
             layoutProps = getLayoutProps(props);
         return dragDropProvider({
-            sensors: DND_SENSORS,
+            sensors: DND_SPACE_LIFT_SENSORS,
             plugins: DND_PLUGINS,
+            modifiers: [isVertical ? RestrictToVerticalAxis : RestrictToHorizontalAxis],
             onDragEnd: e => {
                 const {source} = e.operation;
                 if (!e.canceled && isSortable(source)) {
@@ -181,6 +189,9 @@ const tabCmp = hoistCmp.factory<TabProps>(({tab, index, count, localModel, model
         testId: tabTestId,
         // The tab itself is the focusable drag handle, keeping its `tab` role.
         role: 'tab',
+        onKeyDown: e => {
+            if (e.key !== 'Enter') stopDragKeys(e, sortable.isDragging);
+        },
         'aria-selected': isActive,
         'aria-disabled': disabled,
         children: [

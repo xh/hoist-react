@@ -63,6 +63,7 @@
     "@codemirror/state": "^6.7.6",
     "@codemirror/view": "^6.43.15",
     "@daypicker/react": "^10.0.2",
+    "@dnd-kit/abstract": "0.5.3",
     "@dnd-kit/dom": "0.5.3",
     "@dnd-kit/react": "0.5.3",
     "@floating-ui/react": "^0.27.20",

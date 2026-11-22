@@ -196,6 +196,9 @@ importers:
       '@daypicker/react':
         specifier: ^10.0.2
         version: 10.0.2(@types/react@19.3.0)(react@19.3.1)
+      '@dnd-kit/abstract':
+        specifier: 0.5.3
+        version: 0.5.3
       '@dnd-kit/dom':
         specifier: 0.5.3
         version: 0.5.3

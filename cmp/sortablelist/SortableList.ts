@@ -6,19 +6,21 @@
  */
 import classNames from 'classnames';
 import {isFunction, isNil, uniq} from 'lodash';
-import type {KeyboardEvent as ReactKeyboardEvent, ReactNode} from 'react';
-import {useRef, useState} from 'react';
+import type {KeyboardEvent as ReactKeyboardEvent, MutableRefObject, ReactNode} from 'react';
+import {useLayoutEffect, useRef, useState} from 'react';
 
 import {div} from '@xh/hoist/cmp/layout';
 import type {BoxProps, HoistModel, HoistProps} from '@xh/hoist/core';
 import {hoistCmp, uses} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
-import type {DragEndEvent, DragStartEvent} from '@xh/hoist/kit/dnd-kit';
-import {dragDropProvider, isSortable, useSortable} from '@xh/hoist/kit/dnd-kit';
+import type {DragEndEvent, DragOverEvent, DragStartEvent} from '@xh/hoist/kit/dnd-kit';
+import {dragDropProvider, useSortable} from '@xh/hoist/kit/dnd-kit';
 import {TEST_ID, mergeDeep, throwIf} from '@xh/hoist/utils/js';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
 
 import {DND_PLUGINS, DND_SENSORS, DND_TRANSITION} from './impl/DndDefaults';
+import type {SortableKey} from './impl/DndUtils';
+import {moveItem, stopDragKeys} from './impl/DndUtils';
 import './SortableList.scss';
 
 export interface SortableListProps<T = any> extends HoistProps<HoistModel>, BoxProps {
@@ -97,8 +99,9 @@ export interface SortableReorderEvent<T = any> {
  * list supplies the handle, the lifted item, the drop placeholder, auto-scrolling and screen reader
  * announcements.
  *
- * The list is controlled. It never keeps its own order: on each completed reorder it writes the new
- * order to `bind`, if set, and calls `onReorder`. A caller with neither sees the item settle back.
+ * The list is controlled. It shows the live order only while a drag is in progress. On each completed
+ * reorder it writes the new order to `bind`, if set, and calls `onReorder`. A caller that applies
+ * neither sees the item return to its place.
  *
  * Keyboard: Space or Enter on a handle lifts the item, arrow keys move it, Space or Enter drops it
  * and Escape cancels. Alt with an arrow key moves the focused item one place at once. Keys the list
@@ -136,11 +139,18 @@ export const [SortableList, sortableList] = hoistCmp.withFactory<SortableListPro
                 }
             ] = splitLayoutProps(props),
             items: any[] = (model && bind ? model[bind] : value) ?? [],
-            keys = items.map(it => (isFunction(itemKey) ? itemKey(it) : it?.[itemKey])),
+            keys: SortableKey[] = items.map(it =>
+                isFunction(itemKey) ? itemKey(it) : it?.[itemKey]
+            ),
             horizontal = orientation === 'horizontal',
             [keyboardDrag, setKeyboardDrag] = useState(false),
-            dragSource = useRef<SortableReorderEvent['source']>('pointer');
+            // Live order during a drag - React renders it, so dnd-kit never moves the DOM itself.
+            [pendingKeys, setPendingKeys] = useState<SortableKey[]>(null),
+            dragSource = useRef<SortableReorderEvent['source']>('pointer'),
+            focusKey = useRef<SortableKey>(null),
+            latest = useRef({keys, pendingKeys});
 
+        latest.current = {keys, pendingKeys};
         throwIf(keys.some(isNil), 'SortableList requires a key for every item - see `itemKey`.');
         throwIf(uniq(keys).length !== keys.length, 'SortableList item keys must be unique.');
 
@@ -149,7 +159,7 @@ export const [SortableList, sortableList] = hoistCmp.withFactory<SortableListPro
             toIndex: number,
             source: SortableReorderEvent['source']
         ) => {
-            if (fromIndex === toIndex) return;
+            if (fromIndex === toIndex || fromIndex < 0 || toIndex < 0) return;
             const next = [...items],
                 [item] = next.splice(fromIndex, 1);
             next.splice(toIndex, 0, item);
@@ -163,11 +173,22 @@ export const [SortableList, sortableList] = hoistCmp.withFactory<SortableListPro
             setKeyboardDrag(kb);
         };
 
+        const onDragOver = (e: DragOverEvent) => {
+            e.preventDefault();
+            const {source, target} = e.operation;
+            if (!source || !target) return;
+            const order = latest.current.pendingKeys ?? latest.current.keys,
+                next = moveItem({order}, source.id, 'order', target.id).order;
+            if (next !== order) setPendingKeys(next);
+        };
+
         const onDragEnd = (e: DragEndEvent) => {
+            const {keys, pendingKeys} = latest.current,
+                key = e.operation.source?.id;
             setKeyboardDrag(false);
-            const {source} = e.operation;
-            if (e.canceled || !isSortable(source)) return;
-            reorder(source.initialIndex, source.index, dragSource.current);
+            setPendingKeys(null);
+            if (e.canceled || !pendingKeys) return;
+            reorder(keys.indexOf(key), pendingKeys.indexOf(key), dragSource.current);
         };
 
         const divProps = mergeDeep(
@@ -187,32 +208,38 @@ export const [SortableList, sortableList] = hoistCmp.withFactory<SortableListPro
             restProps
         );
 
+        const shownKeys = pendingKeys ?? keys;
         return dragDropProvider({
             sensors: DND_SENSORS,
             plugins: DND_PLUGINS,
             onDragStart,
+            onDragOver,
             onDragEnd,
             children: div({
                 ref,
                 role: 'list',
                 ...divProps,
-                children: items.map((item, index) => {
-                    const key = keys[index];
+                children: shownKeys.map((key, index) => {
+                    const item = items[keys.indexOf(key)];
                     return sortableItem({
                         key,
                         listItem: item,
                         itemKey: key,
                         index,
-                        count: items.length,
+                        count: shownKeys.length,
                         label: getItemLabel ? getItemLabel(item) : String(key),
                         handle,
                         horizontal,
                         itemDisabled: !!isItemDisabled?.(item),
                         listDisabled: !!disabled,
                         keyboardDrag,
+                        focusKey,
                         renderItem,
                         renderDetail,
-                        onMove: (to: number) => reorder(index, to, 'keyboard')
+                        onMove: (to: number) => {
+                            focusKey.current = key;
+                            reorder(index, to, 'keyboard');
+                        }
                     });
                 })
             })
@@ -225,7 +252,7 @@ export const [SortableList, sortableList] = hoistCmp.withFactory<SortableListPro
 //------------------
 interface SortableItemProps extends HoistProps {
     listItem: any;
-    itemKey: string | number;
+    itemKey: SortableKey;
     index: number;
     count: number;
     label: string;
@@ -234,6 +261,8 @@ interface SortableItemProps extends HoistProps {
     itemDisabled: boolean;
     listDisabled: boolean;
     keyboardDrag: boolean;
+    /** Key of the item to refocus once it renders in its new place - React's move drops focus. */
+    focusKey: MutableRefObject<SortableKey>;
     renderItem: SortableListProps['renderItem'];
     renderDetail: SortableListProps['renderDetail'];
     onMove: (toIndex: number) => void;
@@ -242,7 +271,6 @@ interface SortableItemProps extends HoistProps {
 const sortableItem = hoistCmp.factory<SortableItemProps>({
     displayName: 'SortableItem',
     model: false,
-    observer: false,
 
     render({
         listItem: item,
@@ -255,6 +283,7 @@ const sortableItem = hoistCmp.factory<SortableItemProps>({
         itemDisabled,
         listDisabled,
         keyboardDrag,
+        focusKey,
         renderItem,
         renderDetail,
         onMove
@@ -270,12 +299,19 @@ const sortableItem = hoistCmp.factory<SortableItemProps>({
             }),
             handleRef = (el: Element) => {
                 activator.current = el;
+                if (el && !el.hasAttribute('aria-label')) el.setAttribute('aria-label', label);
                 sortable.handleRef(el);
             },
             itemRef = (el: Element) => {
                 if (handle === 'item') activator.current = el;
                 sortable.ref(el);
             };
+
+        useLayoutEffect(() => {
+            if (focusKey.current !== itemKey) return;
+            focusKey.current = null;
+            (activator.current as HTMLElement)?.focus();
+        });
 
         const onKeyDown = (e: ReactKeyboardEvent<HTMLDivElement>) => {
             if (e.target !== activator.current) return;
@@ -285,21 +321,14 @@ const sortableItem = hoistCmp.factory<SortableItemProps>({
 
             if (e.altKey && !keyboardDrag && (key === fwd || key === back)) {
                 e.preventDefault();
+                e.stopPropagation();
                 if (!isDisabled) {
                     const to = key === fwd ? index + 1 : index - 1;
                     if (to >= 0 && to < count) onMove(to);
                 }
-            } else if (
-                !isDisabled &&
-                (key === ' ' ||
-                    key === 'Enter' ||
-                    (keyboardDrag && (key === 'Escape' || key.startsWith('Arrow'))))
-            ) {
-                // Handled by the keyboard sensor - keep it from ancestor shortcuts.
-            } else {
-                return;
+            } else if (!isDisabled) {
+                stopDragKeys(e, keyboardDrag);
             }
-            e.stopPropagation();
         };
 
         const ctx: SortableItemContext = {
@@ -314,6 +343,7 @@ const sortableItem = hoistCmp.factory<SortableItemProps>({
                       ref: handleRef,
                       className: 'xh-sortable-list__handle',
                       'aria-label': label,
+                      tabIndex: isDisabled ? -1 : 0,
                       children: itemDisabled ? Icon.lock() : Icon.gripVertical()
                   })
                 : null,

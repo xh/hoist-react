@@ -8,9 +8,9 @@ import {div, input, span} from '@xh/hoist/cmp/layout';
 import {sortableList} from '@xh/hoist/cmp/sortablelist';
 import type {SortableListProps} from '@xh/hoist/cmp/sortablelist';
 import {HoistModel} from '@xh/hoist/core';
-import {action, observableRef} from '@xh/hoist/mobx';
+import {action, observable, observableRef} from '@xh/hoist/mobx';
 import {initTestAppAsync} from '@xh/hoist/test-support';
-import {fireEvent, render} from '@testing-library/react';
+import {act, fireEvent, render} from '@testing-library/react';
 import {beforeAll, describe, expect, it, vi} from 'vitest';
 
 /**
@@ -137,6 +137,43 @@ describe('SortableList', () => {
         expect(items(el)[1].contains(details[0])).toBe(true);
     });
 
+    // Rows read model state - an expanded row, a renamed item - so they must re-render on change.
+    it('re-renders an item when observable state read by renderItem or renderDetail changes', () => {
+        const model = new DimsModel(),
+            el = renderList({
+                value: DIMS,
+                renderItem: it => span(model.expandedId === it.id ? `${it.name} (open)` : it.name),
+                renderDetail: it => (model.expandedId === it.id ? span('Details') : null)
+            });
+
+        expect(el.querySelector('.xh-sortable-list__detail')).toBeNull();
+        act(() => model.setExpandedId('sector'));
+        expect(items(el)[1].textContent).toContain('Sector (open)');
+        expect(items(el)[1].querySelector('.xh-sortable-list__detail')).not.toBeNull();
+    });
+
+    // jsdom keeps focus on a node React moves, so this can't catch the browser's focus loss.
+    it('leaves focus on the moved item handle after Alt+Arrow', () => {
+        const model = new DimsModel(),
+            el = renderList({model, bind: 'dims'});
+
+        handles(el)[0].focus();
+        fireEvent.keyDown(handles(el)[0], {key: 'ArrowDown', altKey: true});
+        expect(document.activeElement).toBe(handles(el)[1]);
+        expect(document.activeElement.getAttribute('aria-label')).toBe('region');
+    });
+
+    it('names a custom handle after its item', () => {
+        const el = renderList({
+            value: DIMS,
+            handle: 'custom',
+            getItemLabel: it => it.name,
+            renderItem: (it, {handleRef}) => div({ref: handleRef, className: 'my-grip'})
+        });
+
+        expect(el.querySelector('.my-grip').getAttribute('aria-label')).toBe('Region');
+    });
+
     it('throws for a duplicate or missing item key', () => {
         vi.spyOn(console, 'error').mockImplementation(() => {});
         expect(() => renderList({value: [DIMS[0], {...DIMS[0]}]})).toThrow(/unique/);
@@ -152,7 +189,14 @@ class DimsModel extends HoistModel {
         {id: 'fund', name: 'Fund'}
     ];
 
+    @observable accessor expandedId: string = null;
+
     setCount = 0;
+
+    @action
+    setExpandedId(id: string) {
+        this.expandedId = id;
+    }
 
     @action
     setDims(dims) {

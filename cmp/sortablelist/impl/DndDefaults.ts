@@ -23,14 +23,21 @@ import {
  */
 export const DND_TRANSITION = {duration: 180, easing: 'cubic-bezier(0.2, 0, 0, 1)'};
 
-export const DND_SENSORS: DragDropProviderProps['sensors'] = [
-    PointerSensor.configure({
-        activationConstraints: (e: PointerEvent) =>
-            e.pointerType === 'touch'
-                ? [new PointerActivationConstraints.Delay({value: 200, tolerance: 5})]
-                : [new PointerActivationConstraints.Distance({value: 4})]
-    }),
-    KeyboardSensor
+const POINTER_SENSOR = PointerSensor.configure({
+    activationConstraints: (e: PointerEvent) =>
+        e.pointerType === 'touch'
+            ? [new PointerActivationConstraints.Delay({value: 200, tolerance: 5})]
+            : [new PointerActivationConstraints.Distance({value: 4})]
+});
+
+export const DND_SENSORS: DragDropProviderProps['sensors'] = [POINTER_SENSOR, KeyboardSensor];
+
+/** For items whose Enter key has its own job, such as tabs - only Space lifts them. */
+export const DND_SPACE_LIFT_SENSORS: DragDropProviderProps['sensors'] = [
+    POINTER_SENSOR,
+    KeyboardSensor.configure({
+        keyboardCodes: {...KeyboardSensor.defaults.keyboardCodes, start: ['Space']}
+    })
 ];
 
 export const DND_PLUGINS: DragDropProviderProps['plugins'] = [
