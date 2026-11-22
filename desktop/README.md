@@ -114,7 +114,7 @@ Desktop form inputs with Blueprint styling:
 | `RadioCardInput` | Radio group of cards, each with a visual preview - e.g. a theme or layout picker |
 | `Slider` | Range slider |
 | `ButtonGroupInput` | Segmented button selection |
-| `SegmentedControl` | Toggle group for mutually exclusive options with strong visual differentiation of the active selection |
+| `SegmentedControl` | Toggle group for mutually exclusive options with strong visual differentiation of the active selection. With two options and `toggleOnClick`, an On / Off toggle in place of a switch |
 | `IntentInput` | Compact swatch row for selecting a Hoist `Intent`, with optional intent names |
 | `CodeInput` | Code editor with syntax highlighting |
 | `JsonInput` | JSON editor with validation |

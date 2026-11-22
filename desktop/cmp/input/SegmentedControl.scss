@@ -190,3 +190,8 @@
     }
   }
 }
+
+// A two-option toggle flips on a click anywhere on it.
+.xh-segmented-control--toggle {
+  cursor: pointer;
+}

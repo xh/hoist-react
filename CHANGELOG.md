@@ -34,6 +34,9 @@ detailed, step-by-step upgrade instructions with before/after code examples.
   [`cmp/sortablelist/README.md`](cmp/sortablelist/README.md).
 * `GroupingChooser` and the mobile column chooser can now be reordered with the keyboard.
 * Added `Icon.gripVertical()`.
+* Added `SegmentedControl.toggleOnClick` (desktop and mobile). A two-option control becomes a
+  toggle - a click anywhere on it, or Space or Enter on its focused segment, flips the value - for
+  an On / Off choice in place of a switch.
 
 ### 🐞 Bug Fixes
 
@@ -42,7 +45,8 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 ### ✨ Styles
 
 * Added `--xh-chip-*` variables for the new `Chip`, and `--xh-sortable-list-*` variables for the
-  new `SortableList`.
+  new `SortableList`. The item lifted by a drag has a border and a shadow, set by
+  `--xh-sortable-list-drag-border-color` and `--xh-sortable-list-drag-shadow`.
 * `FilterChooser` favorites now show their filter labels as minimal `Chip`s.
 * Removed the `xh-grouping-chooser__row--dragging` class. A dragged row is styled by `SortableList`.
 
