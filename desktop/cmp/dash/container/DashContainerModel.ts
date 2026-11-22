@@ -746,27 +746,7 @@ export class DashContainerModel
                     model.setViewState(viewState);
                     model.title = title;
                 } else {
-                    model = new DashContainerViewModel({
-                        id: viewModelId,
-                        viewSpec,
-                        title,
-                        viewState,
-                        containerModel: this
-                    });
-
-                    model.addReaction({
-                        track: () => model.fullTitle,
-                        run: () => {
-                            // Item lookup requires a mounted react component and can miss during
-                            // a GL (re)build - the viewModels reaction in the constructor covers it.
-                            const item = this.getItemByViewModel(viewModelId);
-                            if (!item?.tab) return;
-
-                            this.getTitleElement(item.tab.element).textContent = model.fullTitle;
-                        }
-                    });
-
-                    this.addViewModel(model);
+                    model = this.createViewModel(viewModelId, viewSpec, title, viewState);
                 }
 
                 return frame({className: 'xh-dash-tab', ref: model.viewRef});
@@ -778,6 +758,36 @@ export class DashContainerModel
         ret.on('stackCreated', stack => this.onStackCreated(stack));
         ret.init();
         return ret;
+    }
+
+    private createViewModel(
+        viewModelId: string,
+        viewSpec: DashContainerViewSpec,
+        title: string,
+        viewState: PlainObject
+    ): DashContainerViewModel {
+        const model = new DashContainerViewModel({
+            id: viewModelId,
+            viewSpec,
+            title,
+            viewState,
+            containerModel: this
+        });
+
+        model.addReaction({
+            track: () => model.fullTitle,
+            run: () => {
+                // Item lookup requires a mounted react component and can miss during
+                // a GL (re)build - the viewModels reaction in the constructor covers it.
+                const item = this.getItemByViewModel(viewModelId);
+                if (!item?.tab) return;
+
+                this.getTitleElement(item.tab.element).textContent = model.fullTitle;
+            }
+        });
+
+        this.addViewModel(model);
+        return model;
     }
 
     private getTitleElement(tabEl: HTMLElement): HTMLElement {
