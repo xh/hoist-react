@@ -46,7 +46,7 @@ const changelogContents = hoistCmp.factory<ChangelogDialogModel>(({model}) => {
     return panel({
         children: div({
             className: 'xh-changelog__inner',
-            children: versions.map(it => version({version: it, key: it.version}))
+            children: versions.map(it => version({version: it, key: it.title}))
         }),
         bbar: [
             filler(),
@@ -72,7 +72,8 @@ const version = hoistCmp.factory<HoistProps & {version: ChangelogVersion}>(({ver
             div({
                 className: 'xh-changelog__version__header',
                 children: [
-                    h2(version.version),
+                    // A heading with no version number shows as written.
+                    h2(version.version ?? version.title),
                     versionTag({omit: !isUnreleased, text: 'Unreleased'}),
                     versionTag({omit: !isCurrentVersion, text: 'Current'}),
                     filler(),
