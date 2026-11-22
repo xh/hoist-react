@@ -5,7 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {isEmpty} from 'lodash';
-import {box} from '@xh/hoist/cmp/layout';
+import {box, span} from '@xh/hoist/cmp/layout';
 import {hoistCmp, type MenuItemLike, uses} from '@xh/hoist/core';
 import {contextMenu} from '@xh/hoist/desktop/cmp/contextmenu';
 import {createViewMenuItems} from '@xh/hoist/desktop/cmp/dash/canvas/impl/utils';
@@ -34,12 +34,23 @@ export const dashCanvasView = hoistCmp.factory({
     model: uses(DashCanvasViewModel, {publishMode: 'limited'}),
 
     render({model, className}) {
-        const {viewSpec, ref, hidePanelHeader, headerItems, autoHeight, fullTitle, icon} = model,
+        const {viewSpec, ref, hidePanelHeader, headerItems, autoHeight, title, titleDetails, icon} =
+                model,
             headerProps = hidePanelHeader
                 ? {}
                 : {
                       compactHeader: true,
-                      title: fullTitle,
+                      title:
+                          titleDetails == null
+                              ? title
+                              : [
+                                    span({key: 'title', children: title}),
+                                    span({
+                                        key: 'details',
+                                        className: 'xh-dash-tab__title-details',
+                                        children: titleDetails
+                                    })
+                                ],
                       icon,
                       headerItems: [...headerItems, headerMenu({model})]
                   };

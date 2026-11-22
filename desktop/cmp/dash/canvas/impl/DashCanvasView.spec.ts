@@ -4,6 +4,7 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
+import {span} from '@xh/hoist/cmp/layout';
 import {DashCanvasModel, type DashCanvasConfig} from '@xh/hoist/desktop/cmp/dash';
 import {initTestAppAsync} from '@xh/hoist/test-support';
 import {fireEvent, render, screen} from '@testing-library/react';
@@ -27,6 +28,16 @@ describe('DashCanvasView', () => {
         expect(screen.getByText('Duplicate')).toBeTruthy();
     });
 
+    it('shows title details as their own element after the title, so they style apart', () => {
+        const model = viewModel();
+        model.titleDetails = span({className: 'my-details', children: '3 open'});
+        const {container} = render(dashCanvasView({model}));
+
+        const details = container.querySelector('.xh-dash-tab__title-details');
+        expect(details.querySelector('.my-details').textContent).toBe('3 open');
+        expect(details.previousElementSibling.textContent).toBe('Chart');
+    });
+
     it('omits the header menu when locks hide every item', () => {
         const {container} = renderView({contentLocked: true, renameLocked: true});
 
@@ -39,13 +50,17 @@ describe('DashCanvasView', () => {
 // Test support
 //------------------
 function renderView(config: Partial<DashCanvasConfig> = {}) {
+    return render(dashCanvasView({model: viewModel(config)}));
+}
+
+function viewModel(config: Partial<DashCanvasConfig> = {}) {
     const canvas = new DashCanvasModel({
         viewSpecs: [{id: 'chart', title: 'Chart', content: () => null}],
         initialState: [{layout: {x: 0, y: 0, w: 6, h: 5}, viewSpecId: 'chart'}],
         ...config
     });
     onTestFinished(() => canvas.destroy());
-    return render(dashCanvasView({model: canvas.viewModels[0]}));
+    return canvas.viewModels[0];
 }
 
 function menuButton(container: HTMLElement): HTMLElement {

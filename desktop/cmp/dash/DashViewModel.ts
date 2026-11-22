@@ -5,8 +5,8 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {createObservableRef} from '@xh/hoist/utils/react';
-import {isNil, remove} from 'lodash';
-import type {ReactElement} from 'react';
+import {isNil, isNumber, isString, remove} from 'lodash';
+import type {ReactElement, ReactNode} from 'react';
 import type {MenuItemLike, PlainObject, RefreshMode, RenderMode} from '@xh/hoist/core';
 import {
     type DashViewProvider,
@@ -50,12 +50,17 @@ export abstract class DashViewModel<T extends DashViewSpec = DashViewSpec> exten
     /**
      * Additional info that will be displayed after the title.
      * Applications can bind to this property to provide dynamic title details.
+     * A `DashCanvas` view shows it in its own element, `xh-dash-tab__title-details`, so it can be
+     * styled apart from the title. A `DashContainer` tab shows only a string or number.
      * Value is not persisted.
      */
-    @bindable accessor titleDetails: string;
+    @bindableRef accessor titleDetails: ReactNode;
 
+    /** The title and any string or number details, as plain text. */
     get fullTitle(): string {
-        return [this.title, this.titleDetails].filter(it => !isNil(it)).join(' ');
+        const {title, titleDetails} = this,
+            details = isString(titleDetails) || isNumber(titleDetails) ? titleDetails : null;
+        return [title, details].filter(it => !isNil(it)).join(' ');
     }
 
     /** Icon with which to initialize the view. */
