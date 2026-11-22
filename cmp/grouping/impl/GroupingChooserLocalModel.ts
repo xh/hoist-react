@@ -8,7 +8,6 @@
 import type {SelectOption} from '@xh/hoist/core';
 import {HoistModel, lookup} from '@xh/hoist/core';
 import {action, computed, observable, observableRef} from '@xh/hoist/mobx';
-import {createObservableRef} from '@xh/hoist/utils/react';
 import {compact, difference, isEmpty, isEqual, sortBy} from 'lodash';
 import {GroupingChooserModel} from '../GroupingChooserModel';
 
@@ -27,9 +26,6 @@ export class GroupingChooserLocalModel extends HoistModel {
 
     @observableRef accessor pendingValue: string[] = [];
     @observable accessor editorIsOpen: boolean = false;
-
-    /** Used by desktop for DnD transform correction. */
-    popoverRef = createObservableRef<HTMLElement>();
 
     override onLinked() {
         this.addReaction({
@@ -148,14 +144,5 @@ export class GroupingChooserLocalModel extends HoistModel {
     @action
     addPendingAsFavorite() {
         this.parentModel.addFavorite(this.pendingValue);
-    }
-
-    //--------------------
-    // Drag Drop
-    //--------------------
-    onDragEnd(result) {
-        const {draggableId, destination} = result;
-        if (!destination) return;
-        this.movePendingDimToIndex(draggableId, destination.index);
     }
 }

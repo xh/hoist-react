@@ -15,12 +15,24 @@ import {scroller} from '@xh/hoist/desktop/cmp/tab/dynamic/scroller/Scroller';
 import {ScrollerModel} from '@xh/hoist/desktop/cmp/tab/dynamic/scroller/ScrollerModel';
 import {Icon} from '@xh/hoist/icon';
 import {tooltip as bpTooltip, showContextMenu} from '@xh/hoist/kit/blueprint';
-import {dragDropContext, draggable, droppable} from '@xh/hoist/kit/react-beautiful-dnd';
+import {
+    DND_PLUGINS,
+    DND_SPACE_LIFT_SENSORS,
+    DND_TRANSITION
+} from '@xh/hoist/cmp/sortablelist/impl/DndDefaults';
+import {stopDragKeys} from '@xh/hoist/cmp/sortablelist/impl/DndUtils';
+import {
+    dragDropProvider,
+    isSortable,
+    RestrictToHorizontalAxis,
+    RestrictToVerticalAxis,
+    useSortable
+} from '@xh/hoist/kit/dnd-kit';
 import {wait} from '@xh/hoist/promise';
 import {consumeEvent, getTestId, scrollIntoViewWithin} from '@xh/hoist/utils/js';
 import {composeRefs, getLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
-import {first, isFinite, last} from 'lodash';
+import {isFinite, isString} from 'lodash';
 import {computed} from '@xh/hoist/mobx';
 import type {CSSProperties, ReactElement, Ref} from 'react';
 import {useEffect, useRef} from 'react';
@@ -77,31 +89,37 @@ const tabs = hoistCmp.factory<TabsProps>({
         const {visibleTabs} = model,
             {isVertical, props} = localModel,
             layoutProps = getLayoutProps(props);
-        return dragDropContext({
-            onDragEnd: result => model.onDragEnd(result),
-            children: droppable({
-                droppableId: model.xhId,
-                direction: isVertical ? 'vertical' : 'horizontal',
-                children: provided =>
-                    box({
-                        ...layoutProps,
-                        className: `xh-dynamic-tab-switcher__tabs xh-tab-switcher xh-tab-switcher--${props.orientation}`,
-                        ref: composeRefs(provided.innerRef, ref),
-                        children: div({
-                            className: classNames('bp6-tabs', isVertical && 'bp6-vertical'),
-                            children: div({
-                                className: 'bp6-tab-list',
-                                role: 'tablist',
-                                'aria-orientation': isVertical ? 'vertical' : 'horizontal',
-                                children: [
-                                    visibleTabs.map((tab, index) =>
-                                        tabCmp({key: tab.id, localModel, tab, index})
-                                    ),
-                                    provided.placeholder
-                                ]
+        return dragDropProvider({
+            sensors: DND_SPACE_LIFT_SENSORS,
+            plugins: DND_PLUGINS,
+            modifiers: [isVertical ? RestrictToVerticalAxis : RestrictToHorizontalAxis],
+            onDragEnd: e => {
+                const {source} = e.operation;
+                if (!e.canceled && isSortable(source)) {
+                    model.moveTab(source.initialIndex, source.index);
+                }
+            },
+            children: box({
+                ...layoutProps,
+                className: `xh-dynamic-tab-switcher__tabs xh-tab-switcher xh-tab-switcher--${props.orientation}`,
+                ref,
+                children: div({
+                    className: classNames('bp6-tabs', isVertical && 'bp6-vertical'),
+                    children: div({
+                        className: 'bp6-tab-list',
+                        role: 'tablist',
+                        'aria-orientation': isVertical ? 'vertical' : 'horizontal',
+                        children: visibleTabs.map((tab, index) =>
+                            tabCmp({
+                                key: tab.id,
+                                localModel,
+                                tab,
+                                index,
+                                count: visibleTabs.length
                             })
-                        })
+                        )
                     })
+                })
             })
         });
     }
@@ -110,10 +128,11 @@ const tabs = hoistCmp.factory<TabsProps>({
 interface TabProps extends HoistProps<DynamicTabSwitcherModel> {
     tab: TabModel;
     index: number;
+    count: number;
     localModel: DynamicTabSwitcherLocalModel;
 }
 
-const tabCmp = hoistCmp.factory<TabProps>(({tab, index, localModel, model}) => {
+const tabCmp = hoistCmp.factory<TabProps>(({tab, index, count, localModel, model}) => {
     const isActive = model.isTabActive(tab.id),
         isCloseable =
             tab.disabled ||
@@ -125,7 +144,13 @@ const tabCmp = hoistCmp.factory<TabProps>(({tab, index, localModel, model}) => {
         isFavorite = model.isTabFavorite(tab.id),
         {isVertical, props} = localModel,
         {tabWidth, tabMinWidth, tabMaxWidth} = props,
-        tabTestId = getTestId(props, tab.id);
+        tabTestId = getTestId(props, tab.id),
+        sortable = useSortable({
+            id: tab.id,
+            index,
+            data: {label: isString(tab.title) ? tab.title : tab.id, count},
+            transition: DND_TRANSITION
+        });
 
     // Handle tab sizing props
     const tabStyle: CSSProperties = {};
@@ -141,98 +166,75 @@ const tabCmp = hoistCmp.factory<TabProps>(({tab, index, localModel, model}) => {
         }
     }, [isActive, showScrollButtons, contentRef]);
 
-    return draggable({
-        key: tab.id,
-        draggableId: tab.id,
-        index,
-        children: (provided, snapshot) =>
-            hframe({
-                className: classNames(
-                    'xh-dynamic-tab-switcher__tabs__tab',
-                    isActive && 'xh-dynamic-tab-switcher__tabs__tab--active',
-                    isFavorite && 'xh-dynamic-tab-switcher__tabs__tab--favorite',
-                    snapshot.isDragging && 'xh-dynamic-tab-switcher__tabs__tab--dragging'
-                ),
-                onClick: () => {
-                    if (!disabled) model.activate(tab.id);
-                },
-                onContextMenu: e => {
-                    const domRect = e.currentTarget.getBoundingClientRect(),
-                        context: TabSwitcherMenuContext = {contextMenuEvent: e, tab};
-                    consumeEvent(e);
-                    showContextMenu(
-                        contextMenu({menuItems: model.getContextMenuItems(tab), context}),
-                        {
-                            left: props.orientation === 'left' ? domRect.right : domRect.left,
-                            top: props.orientation === 'top' ? domRect.bottom : domRect.top
-                        }
-                    );
-                },
-                ref: composeRefs(provided.innerRef, tabRef),
-                testId: tabTestId,
-                ...provided.draggableProps,
-                ...provided.dragHandleProps,
-                // Focusable drag handle is the tab itself - override dnd's default `button` role.
-                role: 'tab',
+    return hframe({
+        className: classNames(
+            'xh-dynamic-tab-switcher__tabs__tab',
+            isActive && 'xh-dynamic-tab-switcher__tabs__tab--active',
+            isFavorite && 'xh-dynamic-tab-switcher__tabs__tab--favorite',
+            sortable.isDragging && 'xh-dynamic-tab-switcher__tabs__tab--dragging'
+        ),
+        onClick: () => {
+            if (!disabled) model.activate(tab.id);
+        },
+        onContextMenu: e => {
+            const domRect = e.currentTarget.getBoundingClientRect(),
+                context: TabSwitcherMenuContext = {contextMenuEvent: e, tab};
+            consumeEvent(e);
+            showContextMenu(contextMenu({menuItems: model.getContextMenuItems(tab), context}), {
+                left: props.orientation === 'left' ? domRect.right : domRect.left,
+                top: props.orientation === 'top' ? domRect.bottom : domRect.top
+            });
+        },
+        ref: composeRefs(sortable.ref, tabRef),
+        testId: tabTestId,
+        // The tab itself is the focusable drag handle, keeping its `tab` role.
+        role: 'tab',
+        onKeyDown: e => {
+            if (e.key !== 'Enter') stopDragKeys(e, sortable.isDragging);
+        },
+        'aria-selected': isActive,
+        'aria-disabled': disabled,
+        children: [
+            div({
+                // Styling hooks shared with Blueprint tabs - see Tabs.scss.
                 'aria-selected': isActive,
                 'aria-disabled': disabled,
-                style: getStyles(isVertical, provided.draggableProps.style),
-                children: [
-                    div({
-                        // Styling hooks shared with Blueprint tabs - see Tabs.scss.
-                        'aria-selected': isActive,
-                        'aria-disabled': disabled,
-                        className: 'bp6-tab',
-                        children: bpTooltip({
-                            content: tooltip as ReactElement,
-                            disabled: !tooltip,
-                            hoverOpenDelay: 1000,
-                            position: flipOrientation(props.orientation),
-                            children: hframe({
-                                className: 'xh-tab-switcher__tab',
-                                style: tabStyle,
-                                tabIndex: -1,
-                                children: [
-                                    div({
-                                        className: 'xh-dynamic-tab-switcher__tabs__tab__icon',
-                                        children: icon,
-                                        omit: !icon
-                                    }),
-                                    tab.title,
-                                    button({
-                                        className:
-                                            'xh-dynamic-tab-switcher__tabs__tab__close-button',
-                                        testId: getTestId(tabTestId, 'remove-btn'),
-                                        icon: Icon.x({size: 'sm'}),
-                                        title: 'Remove Tab',
-                                        minimal: true,
-                                        onClick: e => {
-                                            consumeEvent(e);
-                                            model.hide(tab.id);
-                                        },
-                                        omit: isFavorite || !isCloseable
-                                    })
-                                ]
+                className: 'bp6-tab',
+                children: bpTooltip({
+                    content: tooltip as ReactElement,
+                    disabled: !tooltip,
+                    hoverOpenDelay: 1000,
+                    position: flipOrientation(props.orientation),
+                    children: hframe({
+                        className: 'xh-tab-switcher__tab',
+                        style: tabStyle,
+                        tabIndex: -1,
+                        children: [
+                            div({
+                                className: 'xh-dynamic-tab-switcher__tabs__tab__icon',
+                                children: icon,
+                                omit: !icon
+                            }),
+                            tab.title,
+                            button({
+                                className: 'xh-dynamic-tab-switcher__tabs__tab__close-button',
+                                testId: getTestId(tabTestId, 'remove-btn'),
+                                icon: Icon.x({size: 'sm'}),
+                                title: 'Remove Tab',
+                                minimal: true,
+                                onClick: e => {
+                                    consumeEvent(e);
+                                    model.hide(tab.id);
+                                },
+                                omit: isFavorite || !isCloseable
                             })
-                        })
+                        ]
                     })
-                ]
+                })
             })
+        ]
     });
 });
-
-const getStyles = (isVertical: boolean, style: CSSProperties): CSSProperties => {
-    const {transform} = style;
-    if (!transform) return style;
-
-    return {
-        ...style,
-        // Only drag in one axis
-        transform: isVertical
-            ? `translate(0, ${last(transform.split(','))}`
-            : `${first(transform.split(','))}, 0)`
-    };
-};
 
 function flipOrientation(orientation: Side) {
     switch (orientation) {

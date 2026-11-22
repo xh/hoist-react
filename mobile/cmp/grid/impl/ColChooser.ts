@@ -8,14 +8,22 @@ import {div, filler, placeholder as placeholderCmp} from '@xh/hoist/cmp/layout';
 import type {HoistProps} from '@xh/hoist/core';
 import {hoistCmp, HoistModel, lookup, useLocalModel, uses} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
-import {dragDropContext, draggable, droppable} from '@xh/hoist/kit/react-beautiful-dnd';
+import {action, observableRef} from '@xh/hoist/mobx';
+import {
+    DND_PLUGINS,
+    DND_SENSORS,
+    DND_TRANSITION
+} from '@xh/hoist/cmp/sortablelist/impl/DndDefaults';
+import {moveIndexForOrder, moveItem, stopDragKeys} from '@xh/hoist/cmp/sortablelist/impl/DndUtils';
+import type {DragEndEvent, DragOverEvent} from '@xh/hoist/kit/dnd-kit';
+import {dragDropProvider, isSortable, useSortable} from '@xh/hoist/kit/dnd-kit';
 import {button} from '@xh/hoist/mobile/cmp/button';
 import {checkboxButton} from '@xh/hoist/mobile/cmp/input';
 import {dialogPanel, panel} from '@xh/hoist/mobile/cmp/panel';
 import '@xh/hoist/mobile/register';
 import classNames from 'classnames';
 import './ColChooser.scss';
-import {isEmpty} from 'lodash';
+import {isEmpty, isString, keyBy} from 'lodash';
 import {ColChooserModel} from './ColChooserModel';
 
 export interface ColChooserProps extends HoistProps<ColChooserModel> {}
@@ -40,15 +48,9 @@ export const [ColChooser, colChooser] = hoistCmp.withFactory<ColChooserProps>({
     className: 'xh-col-chooser',
 
     render({model, className}) {
-        const {
-                isOpen,
-                gridModel,
-                pinnedColumn,
-                visibleColumns,
-                hiddenColumns,
-                showRestoreDefaults
-            } = model,
-            impl = useLocalModel(ColChooserLocalModel);
+        const {isOpen, gridModel, pinnedColumn, showRestoreDefaults} = model,
+            impl = useLocalModel(ColChooserLocalModel),
+            {visibleColumns, hiddenColumns} = impl;
 
         return dialogPanel({
             isOpen,
@@ -57,7 +59,10 @@ export const [ColChooser, colChooser] = hoistCmp.withFactory<ColChooserProps>({
             className,
             children: div({
                 className: 'xh-col-chooser__internal',
-                children: dragDropContext({
+                children: dragDropProvider({
+                    sensors: DND_SENSORS,
+                    plugins: DND_PLUGINS,
+                    onDragOver: impl.onDragOver,
                     onDragEnd: impl.onDragEnd,
                     children: [
                         panel({
@@ -65,16 +70,11 @@ export const [ColChooser, colChooser] = hoistCmp.withFactory<ColChooserProps>({
                             scrollable: true,
                             children: [
                                 row({col: pinnedColumn, model: impl}),
-                                droppable({
-                                    droppableId: 'visible-columns',
-                                    children: dndProps =>
-                                        columnList({
-                                            model: impl,
-                                            cols: visibleColumns,
-                                            className: 'visible-columns',
-                                            ref: dndProps.innerRef,
-                                            placeholder: dndProps.placeholder
-                                        })
+                                columnList({
+                                    model: impl,
+                                    cols: visibleColumns,
+                                    group: 'visible',
+                                    className: 'visible-columns'
                                 })
                             ]
                         }),
@@ -88,17 +88,11 @@ export const [ColChooser, colChooser] = hoistCmp.withFactory<ColChooserProps>({
                             title: 'Available Columns',
                             className: 'xh-col-chooser__section',
                             scrollable: true,
-                            children: droppable({
-                                droppableId: 'hidden-columns',
-                                isDropDisabled: true,
-                                children: dndProps =>
-                                    columnList({
-                                        model: impl,
-                                        cols: hiddenColumns,
-                                        className: 'hidden-columns',
-                                        ref: dndProps.innerRef,
-                                        placeholder: dndProps.placeholder
-                                    })
+                            children: columnList({
+                                model: impl,
+                                cols: hiddenColumns,
+                                group: 'hidden',
+                                className: 'hidden-columns'
                             })
                         })
                     ]
@@ -138,37 +132,41 @@ export const [ColChooser, colChooser] = hoistCmp.withFactory<ColChooserProps>({
 //------------------------
 const columnList = hoistCmp.factory({
     model: false,
-    render({cols, placeholder, className, ...props}, ref) {
+    render({cols, group, className}) {
         return div({
             className: classNames('xh-col-chooser__list', className),
-            ...props,
             children: isEmpty(cols)
                 ? placeholderCmp('All columns have been added to the grid.')
-                : [...cols.map((col, idx) => draggableRow({col, idx})), placeholder],
-            ref
+                : cols.map((col, idx) =>
+                      sortableRow({key: col.colId, col, idx, group, count: cols.length})
+                  )
         });
     }
 });
 
-const draggableRow = hoistCmp.factory({
+// Visible columns reorder among themselves. Hidden columns can be dragged into the visible list,
+// but nothing drops into the hidden list.
+const sortableRow = hoistCmp.factory({
     model: false,
-    render({col, idx}) {
-        const {colId, exclude, pinned} = col;
-        if (exclude) return null;
-        return draggable({
-            key: colId,
-            draggableId: colId,
-            index: idx,
-            isDragDisabled: !!pinned,
-            children: (dndProps, dndState) =>
-                row({
-                    key: colId,
-                    col,
-                    isDragging: dndState.isDragging,
-                    ref: dndProps.innerRef,
-                    ...dndProps.dragHandleProps,
-                    ...dndProps.draggableProps
-                })
+    render({col, idx, group, count}) {
+        const {colId, pinned, text} = col,
+            hiddenGroup = group === 'hidden',
+            sortable = useSortable({
+                id: colId,
+                index: idx,
+                group,
+                type: 'column',
+                accept: 'column',
+                data: {label: isString(text) ? text : colId, count},
+                disabled: hiddenGroup ? {droppable: true} : {draggable: !!pinned},
+                transition: DND_TRANSITION
+            });
+
+        return row({
+            col,
+            isDragging: sortable.isDragging,
+            ref: sortable.ref,
+            onKeyDown: e => stopDragKeys(e, sortable.isDragging)
         });
     }
 });
@@ -222,24 +220,47 @@ class ColChooserLocalModel extends HoistModel {
     override xhImpl = true;
     @lookup(ColChooserModel) model: ColChooserModel;
 
-    onDragEnd = result => {
-        const {model} = this,
-            {pinFirst, columns} = model,
-            {draggableId, destination} = result;
+    /** Live order of both lists during a drag - React renders it, so dnd-kit never moves the DOM. */
+    @observableRef accessor pending: {visible: string[]; hidden: string[]} = null;
 
-        if (!destination) return; // dropped outside of a droppable list
+    get visibleColumns() {
+        return this.columnsFor('visible', this.model.visibleColumns);
+    }
 
-        // Set hidden based on drop destination
-        const {droppableId} = destination,
-            hide = droppableId === 'hidden-columns';
+    get hiddenColumns() {
+        return this.columnsFor('hidden', this.model.hiddenColumns);
+    }
 
-        // Move to correct idx within list of columns
-        let toIdx = destination.index;
-        if (pinFirst) toIdx++;
-        if (hide) toIdx = columns.length;
+    @action
+    onDragOver = (e: DragOverEvent) => {
+        e.preventDefault();
+        const {source, target} = e.operation;
+        // The hidden list accepts no drops.
+        if (!source || !isSortable(target) || target.group !== 'visible') return;
 
-        model.setHidden(draggableId, hide);
-        model.moveToIndex(draggableId, toIdx);
+        const lists = this.pending ?? {
+                visible: this.model.visibleColumns.filter(it => !it.exclude).map(it => it.colId),
+                hidden: this.model.hiddenColumns.filter(it => !it.exclude).map(it => it.colId)
+            },
+            next = moveItem(lists, source.id, 'visible', target.id);
+        if (next !== lists) this.pending = next;
+    };
+
+    @action
+    onDragEnd = (e: DragEndEvent) => {
+        const {pending, model} = this,
+            colId = String(e.operation.source?.id);
+        this.pending = null;
+        if (e.canceled || !pending?.visible.includes(colId)) return;
+
+        model.setHidden(colId, false);
+        const toIdx = moveIndexForOrder(
+            model.columns.map(it => it.colId),
+            colId,
+            // Ahead of the pinned column, which renders outside the list.
+            model.pinnedColumn ? [model.pinnedColumn.colId, ...pending.visible] : pending.visible
+        );
+        if (toIdx >= 0) model.moveToIndex(colId, toIdx);
     };
 
     onHiddenToggleClick = (colId, hide) => {
@@ -254,4 +275,11 @@ class ColChooserLocalModel extends HoistModel {
         model.moveToIndex(colId, toIdx);
         model.setHidden(colId, hide);
     };
+
+    private columnsFor(group: 'visible' | 'hidden', cols) {
+        const ids = this.pending?.[group];
+        if (!ids) return cols.filter(it => !it.exclude);
+        const byId = keyBy(this.model.columns, 'colId');
+        return ids.map(id => byId[id]);
+    }
 }

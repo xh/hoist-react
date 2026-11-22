@@ -616,3 +616,11 @@
 - Added a short `Callout` entry to `cmp/README.md`.
 - Indexed in `docs/README.md` (Quick Reference and Components), the roadmap Priority 2 table, and
   `docs/doc-registry.json`.
+
+### 2026-11-22
+- Added package READMEs for `Chip` and `SortableList`, and the v92 upgrade notes for the removal
+  of `kit/react-beautiful-dnd`.
+- Added short entries for both components to `cmp/README.md`, and a `kit/dnd-kit` row to
+  `kit/README.md`.
+- Indexed in `docs/README.md` (Quick Reference, Components and Upgrade Notes), the roadmap Priority
+  2 table, and `docs/doc-registry.json`.

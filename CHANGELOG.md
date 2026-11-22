@@ -14,6 +14,15 @@
 
 ## 92.0.0-SNAPSHOT - unreleased
 
+### 💥 Breaking Changes (upgrade difficulty: 🟢 LOW - drag-and-drop kit)
+
+See [`docs/upgrade-notes/v92-upgrade-notes.md`](docs/upgrade-notes/v92-upgrade-notes.md) for
+detailed, step-by-step upgrade instructions with before/after code examples.
+
+* Removed `@xh/hoist/kit/react-beautiful-dnd` and the `@hello-pangea/dnd` dependency. Use the new
+  `SortableList` for reorderable lists, or `@xh/hoist/kit/dnd-kit` for custom drag-and-drop.
+* Replaced `DynamicTabSwitcherModel.onDragEnd()` with `moveTab(fromIndex, toIndex)`.
+
 ### 🎁 New Features
 
 * Added `DashCanvasModel.setViewSpecs()` to replace a canvas's view specs at any time. It removes
@@ -44,11 +53,21 @@
 * Added `ColumnSpec.cellStyle` and `GridConfig.rowStyle`: inline styles for each cell or row, fixed
   or from a function of the value or record. A property a later call leaves out, or sets to null,
   is cleared.
+* Added `Chip`, a compact label for a status, category or value. It supports intents and custom
+  colors, filled, `minimal` and `outlined` styles, three sizes, and clickable, toggle (`active`)
+  and removable (`onRemove`) variants. See [`cmp/chip/README.md`](cmp/chip/README.md).
+* Added `SortableList`, a list users reorder by dragging or with the keyboard. Callers render each
+  item, and the list supplies handles, the drop placeholder, auto-scrolling and screen reader
+  announcements, then reports each completed move once via `bind` or `onReorder`. See
+  [`cmp/sortablelist/README.md`](cmp/sortablelist/README.md).
+* `GroupingChooser` and the mobile column chooser can now be reordered with the keyboard.
+* Added `Icon.gripVertical()`.
 
 ### 🐞 Bug Fixes
 
 * Fixed the column chooser listing `CubeGridModel`'s default label column as "Cube Label". It now
   takes the names of the row dimensions, as the header does, or "Group" when there are none.
+* Fixed `GroupingChooser` rows drifting away from the pointer while dragged inside its popover.
 
 ### ⚙️ Typescript API Adjustments
 
@@ -64,10 +83,16 @@
   style it apart from the title.
 * `DashCanvas` now draws its drop placeholder as a translucent primary fill with a dashed primary
   border, in place of a solid block of the primary color.
+* Added `--xh-chip-*` variables for the new `Chip`, and `--xh-sortable-list-*` variables for the
+  new `SortableList`.
+* `FilterChooser` favorites now show their filter labels as minimal `Chip`s.
+* Removed the `xh-grouping-chooser__row--dragging` class. A dragged row is styled by `SortableList`.
 
 ### 📚 Libraries
 
-* react-resizable-panels `new → 4.21` - split panes, through `kit/react-resizable-panels`.
+* react-resizable-panels `added` at `4.21` - split panes, through `kit/react-resizable-panels`.
+* @dnd-kit/react, @dnd-kit/dom and @dnd-kit/abstract `added` at `0.5.3`
+* @hello-pangea/dnd `removed`
 
 ## 91.0.0 - 2026-11-20
 

@@ -124,12 +124,12 @@ export class DynamicTabSwitcherModel extends HoistModel implements IDynamicTabSw
         this.visibleTabState = visibleTabState;
     }
 
+    /** Move the visible tab at `fromIndex` to `toIndex`. */
     @action
-    onDragEnd(result) {
-        if (!result.destination) return;
+    moveTab(fromIndex: number, toIndex: number) {
         const visibleTabState = [...this.visibleTabState],
-            [removed] = visibleTabState.splice(result.source.index, 1);
-        visibleTabState.splice(result.destination.index, 0, removed);
+            [removed] = visibleTabState.splice(fromIndex, 1);
+        visibleTabState.splice(toIndex, 0, removed);
         this.visibleTabState = visibleTabState;
     }
 

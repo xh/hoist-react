@@ -554,6 +554,9 @@ export const iconFactories = {
     grip(p?: IconProps) {
         return Icon.icon({...p, faName: 'grip-horizontal'});
     },
+    gripVertical(p?: IconProps) {
+        return Icon.icon({...p, faName: 'grip-dots-vertical'});
+    },
     hand(p?: IconProps) {
         return Icon.icon({...p, faName: 'hand-paper'});
     },

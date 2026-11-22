@@ -38,7 +38,9 @@ See [`docs-roadmap.md`](./planning/docs-roadmap.md) for documentation coverage t
 | Save and restore named view configurations | [`/cmp/viewmanager/`](../cmp/viewmanager/README.md)                                                                 |
 | Select a period or date range (presets, lookbacks, months, custom) | [`/cmp/daterange/`](../cmp/daterange/README.md)                                                                   |
 | Display a PDF document (page nav, zoom, find, download) | [`/cmp/pdfviewer/`](../cmp/pdfviewer/README.md) |
+| Let users reorder a list by drag or keyboard | [`/cmp/sortablelist/`](../cmp/sortablelist/README.md) |
 | Show the fields of a record as labeled values | [`/cmp/propertytable/`](../cmp/propertytable/README.md) |
+| Label a status, category or value, or show removable or toggle chips | [`/cmp/chip/`](../cmp/chip/README.md) |
 | Set off a note, caveat or warning within content | [`/cmp/callout/`](../cmp/callout/README.md) |
 | Show progress or usage against a limit as a bar | [`/cmp/progressbar/`](../cmp/progressbar/README.md) |
 | Show a small inline trend chart beside a figure or in a grid cell | [`/cmp/sparkline/`](../cmp/sparkline/README.md) |
@@ -95,8 +97,10 @@ See [`docs-roadmap.md`](./planning/docs-roadmap.md) for documentation coverage t
 | [`/cmp/cubegrid/`](../cmp/cubegrid/README.md) | Cube View rendered as a tree grid with the app's columns, plus pivot paths as nested column groups and docked summaries | CubeGridModel, CubeGrid, CubeGridPivotModel, cube, pivot, PivotSpec, measures, cellFields, pivotConfig, PivotDimensionSpec, PivotMeasureSpec, measuresOutermost |
 | [`/cmp/form/`](../cmp/form/README.md) | Form infrastructure for data entry with validation | FormModel, FieldModel, SubformsFieldModel, validation rules, data binding |
 | [`/cmp/input/`](../cmp/input/README.md) | Base classes and interfaces for input components | HoistInputModel, change/commit lifecycle, value binding, focus management |
+| [`/cmp/chip/`](../cmp/chip/README.md) | Compact label for a status, category or value | Chip, intent, color, minimal, outlined, active, onRemove, Chip or Badge, keyboard |
 | [`/cmp/callout/`](../cmp/callout/README.md) | Short note set off within content, tinted by its intent | Callout, intent, icon, title, Callout or Banner or Card, untrusted text |
 | [`/cmp/layout/`](../cmp/layout/README.md) | Flexbox-based layout containers | Box, VBox, HBox, Frame, Viewport, Separator, LayoutProps, pixel conversion |
+| [`/cmp/sortablelist/`](../cmp/sortablelist/README.md) | List users reorder by drag or keyboard, with caller-rendered items | SortableList, onReorder, bind, value, itemKey, handle, renderDetail, keyboard reorder, dnd-kit |
 | [`/cmp/propertytable/`](../cmp/propertytable/README.md) | Display-only list of labeled values, such as the fields of a record in a detail panel | PropertyTable, PropertyTableEntry, entries, labelSide, columns, minColumnWidth, PropertyTable or read-only Form |
 | [`/cmp/progressbar/`](../cmp/progressbar/README.md) | Bar that shows a value against a maximum, or indeterminate progress | ProgressBar, value, min, max, label, valueRenderer, intent, target, indeterminate |
 | [`/cmp/tab/`](../cmp/tab/README.md) | Tabbed interface system | TabContainerModel, routing integration, render modes, refresh strategies |
@@ -184,6 +188,7 @@ breaking changes, before/after code examples, and verification checklists.
 
 | Version | Released | Difficulty | Key Changes |
 |---------|----------|------------|-------------|
+| [v92](./upgrade-notes/v92-upgrade-notes.md) | unreleased | 🟢 LOW | `kit/react-beautiful-dnd` and `@hello-pangea/dnd` removed in favor of `SortableList` and `kit/dnd-kit`, `DynamicTabSwitcherModel.moveTab()` |
 | [v91](./upgrade-notes/v91-upgrade-notes.md) | 2026-11-20 | 🟠 MEDIUM | hoist-core >= 45.0.0, CSS custom property overhaul (override hooks removed, units in values, renamed vars), element factory `children` key - both with codemods, AG Grid 36.3 required, inline masks without a Blueprint overlay, `params`-only fetches sent as GET, MCP server and `hoist-docs` / `hoist-ts` CLIs moved to Hoist Docs |
 | [v90](./upgrade-notes/v90-upgrade-notes.md) | 2026-11-02 | 🟢 LOW | numbro removed (`formatConfig`), desktop `DateInput` on react-day-picker 10, Onsen UI removed from mobile, `Column.textRenderer` on built-in column specs, panel splitter redesign, renderer import paths, removed libraries |
 | [v89](./upgrade-notes/v89-upgrade-notes.md) | 2026-10-13 | 🟢 LOW | TypeScript 7 (strongly recommended), `GridFilterModelConfig.fieldSpecs` no longer an allow-list |

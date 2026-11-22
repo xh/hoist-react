@@ -456,6 +456,33 @@ body {
 
 
   //------------------------
+  // Chips
+  //------------------------
+  // Fill and text color of a filled chip with no intent.
+  --xh-chip-bg: var(--xh-intent-neutral);
+  --xh-chip-border-radius: var(--xh-border-radius);
+  --xh-chip-compact-font-size: 0.85em;
+  --xh-chip-compact-height: 1.65em;
+  --xh-chip-disabled-opacity: 0.5;
+  --xh-chip-font-size: 0.9em;
+  --xh-chip-font-weight: 500;
+  // Gap between icons and text.
+  --xh-chip-gap: 0.4em;
+  // In units of the chip's own font size.
+  --xh-chip-height: 1.85em;
+  --xh-chip-hover-bg: var(--xh-intent-neutral-darker);
+  --xh-chip-large-font-size: 1em;
+  --xh-chip-large-height: 2em;
+  // Background of a minimal chip with no intent.
+  --xh-chip-minimal-bg: var(--xh-bg-alt);
+  --xh-chip-minimal-hover-bg: var(--xh-intent-neutral-darker);
+  --xh-chip-outlined-border-color: var(--xh-border-color);
+  --xh-chip-padding: #{0 0.6em};
+  --xh-chip-round-border-radius: 999px;
+  --xh-chip-text-color: var(--xh-text-color);
+
+
+  //------------------------
   // Focus
   //------------------------
   // Focus indicator outline for interactive components - apps can set `--xh-focus-outline: 0;` to
@@ -1022,6 +1049,33 @@ body {
   // The muted text color is too faint for labels on a light background, but reads well on a dark one.
   &:where(.xh-dark) {
     --xh-separator-label-text-color: var(--xh-text-color-muted);
+  }
+
+  //------------------------
+  // Sortable Lists
+  //------------------------
+  --xh-sortable-list-compact-item-min-height: 24px;
+  // Background of the item lifted by a drag.
+  --xh-sortable-list-drag-bg: var(--xh-bg);
+  --xh-sortable-list-drag-rotate: 1deg;
+  --xh-sortable-list-drag-shadow: 0 4px 14px rgba(38, 50, 56, 0.2), 0 1px 3px rgba(38, 50, 56, 0.15);
+  // Gap between items.
+  --xh-sortable-list-gap: 0;
+  // Opacity of a grip handle until its item is hovered or the handle is focused.
+  --xh-sortable-list-handle-opacity: 0.55;
+  // Items draw no box of their own - the caller's content does.
+  --xh-sortable-list-item-bg: transparent;
+  --xh-sortable-list-item-border: none;
+  --xh-sortable-list-item-border-radius: var(--xh-border-radius);
+  --xh-sortable-list-item-min-height: 30px;
+  // The dragged item's slot, outlined where it will drop.
+  --xh-sortable-list-placeholder-bg: var(--xh-intent-primary-trans1);
+  --xh-sortable-list-placeholder-border-color: var(--xh-intent-primary-text-color);
+  // Gap between the handle and the content.
+  --xh-sortable-list-row-gap: 6px;
+
+  &:where(.xh-dark) {
+    --xh-sortable-list-drag-shadow: 0 4px 16px rgba(0, 0, 0, 0.6), 0 1px 3px rgba(0, 0, 0, 0.5);
   }
 
   //------------------------
