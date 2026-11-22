@@ -7,3 +7,8 @@
   "Current" or "Unreleased" tag, with a header that stays in view while its notes scroll. Section
   headings show an icon and intent color, and links open in a new tab. `ChangelogVersion` adds
   `date` and `isUnreleased`.
+
+### 🐞 Bug Fixes
+
+* Fixed `ChangelogService` showing the "What's New" prompt for an unreleased SNAPSHOT version, which
+  a user could never mark as read. The prompt now tracks the latest released version.

@@ -55,8 +55,9 @@ export class ChangelogService extends HoistService {
     versions: ChangelogVersion[];
 
     /**
-     * True if an entry exists for the current app version which the user has
-     * yet to view (and the required user preference has been created).
+     * True if the latest released version with notes is one the user has yet to view (and the
+     * required user preference has been created). An unreleased SNAPSHOT version never counts: its
+     * notes are still changing, and it cannot be marked as read.
      */
     @observable accessor currentVersionIsUnread: boolean;
 
@@ -88,22 +89,19 @@ export class ChangelogService extends HoistService {
         this.updateUnreadStatus();
     }
 
+    /** Record that the user has viewed the notes, up to the latest released version. */
     markLatestAsRead() {
-        const {latestAvailableVersion, LAST_READ_PREF_KEY} = this;
+        const {LAST_READ_PREF_KEY} = this,
+            latestReleased = this.enabled ? this.releasedVersions[0]?.version : null;
 
-        if (includes(latestAvailableVersion, 'SNAPSHOT')) {
-            this.logWarn('Unable to mark changelog as read when latest version is SNAPSHOT.');
-            return;
-        }
-
-        if (!latestAvailableVersion || !XH.prefService.hasKey(LAST_READ_PREF_KEY)) {
+        if (!latestReleased || !XH.prefService.hasKey(LAST_READ_PREF_KEY)) {
             this.logWarn(
-                'Unable to mark changelog as read - latest version or required pref not found.'
+                'Unable to mark changelog as read - released version or required pref not found.'
             );
             return;
         }
 
-        XH.setPref(LAST_READ_PREF_KEY, latestAvailableVersion);
+        XH.setPref(LAST_READ_PREF_KEY, latestReleased);
         this.updateUnreadStatus();
     }
 
@@ -117,6 +115,11 @@ export class ChangelogService extends HoistService {
             excludedCategories: [],
             limitToRoles: []
         });
+    }
+
+    // Versions that have shipped. A snapshot build also lists the version in development.
+    private get releasedVersions(): ChangelogVersion[] {
+        return this.versions.filter(it => !it.isUnreleased);
     }
 
     private parseVersions(changelog): ChangelogVersion[] {
@@ -166,13 +169,14 @@ export class ChangelogService extends HoistService {
 
     @action
     private updateUnreadStatus() {
-        const {enabled, latestNonEmptyVersion} = this,
+        const {enabled} = this,
+            latestWithNotes = this.releasedVersions.find(it => !isEmpty(it.categories))?.version,
             lastReadVersion = XH.getPref(this.LAST_READ_PREF_KEY, null);
         this.currentVersionIsUnread =
             enabled &&
-            latestNonEmptyVersion &&
-            lastReadVersion &&
-            !checkMinVersion(lastReadVersion, latestNonEmptyVersion);
+            !!latestWithNotes &&
+            !!lastReadVersion &&
+            !checkMinVersion(lastReadVersion, latestWithNotes);
     }
 }
 

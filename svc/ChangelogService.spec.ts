@@ -20,8 +20,8 @@ const CHANGELOG = {
             version: '3.0-SNAPSHOT',
             title: 'v3.0-SNAPSHOT - unreleased',
             date: null,
-            parsed: {_: []},
-            sections: []
+            parsed: {_: ['Added Qux.'], 'New Features': ['Added Qux.']},
+            sections: [{title: 'New Features', items: ['Added `Qux`.']}]
         },
         {
             version: '2.0.0',
@@ -85,6 +85,17 @@ describe('ChangelogService', () => {
             {title: 'New Features', items: ['Added Foo.']},
             {title: 'Bug Fixes', items: ['Fixed Bar.']}
         ]);
+    });
+
+    it('prompts for the latest released notes, not for unreleased ones, until marked read', () => {
+        const svc = XH.changelogService;
+        expect(svc.latestAvailableVersion).toBe('3.0-SNAPSHOT');
+        expect(svc.currentVersionIsUnread).toBe(true);
+
+        svc.markLatestAsRead();
+
+        expect(XH.getPref('xhLastReadChangelog')).toBe('2.0.0');
+        expect(svc.currentVersionIsUnread).toBe(false);
     });
 
     it('reads the release date and flags a SNAPSHOT version as unreleased', () => {
