@@ -34,6 +34,8 @@ interacts with Hoist.
 | `/cmp/pdfviewer/` | 6 | PdfViewer - PDF display built on pdf.js, with sources, toolbar tokens, model API, and styling; platform toolbars in `/desktop/cmp/pdfviewer/` and `/mobile/cmp/pdfviewer/` | [Done](../../cmp/pdfviewer/README.md) |
 | `/cmp/propertytable/` | 4 | PropertyTable - display-only labeled values, compared with a read-only Form, with styling and pitfalls | [Done](../../cmp/propertytable/README.md) |
 | `/cmp/callout/` | 4 | Callout - note set off within content, compared with Banner and Card | [Done](../../cmp/callout/README.md) |
+| `/cmp/chip/` | 4 | Chip - compact label for a status, category or value, compared with Badge | [Done](../../cmp/chip/README.md) |
+| `/cmp/sortablelist/` | 4 | SortableList - drag and keyboard reordering with caller-rendered items, and the dnd-kit wrapper | [Done](../../cmp/sortablelist/README.md) |
 | `/cmp/progressbar/` | 4 | ProgressBar - value against a maximum or indeterminate progress, compared with masks and loading indicators | [Done](../../cmp/progressbar/README.md) |
 | `/cmp/sparkline/` | 6 | Sparkline - inline SVG trend chart, compared with Chart, in a StatCard and a grid column with a shared scale | 📝 [Draft](../../cmp/sparkline/README.md) |
 | `/mobile/` | 131 | Mobile-specific components and app container | [Done](../../mobile/README.md) |

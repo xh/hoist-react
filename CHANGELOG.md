@@ -32,18 +32,23 @@ detailed, step-by-step upgrade instructions with before/after code examples.
   item, and the list supplies handles, the drop placeholder, auto-scrolling and screen reader
   announcements, then reports each completed move once via `bind` or `onReorder`. See
   [`cmp/sortablelist/README.md`](cmp/sortablelist/README.md).
-* `GroupingChooser` and the mobile column chooser can now be reordered with the keyboard, and
-  `GroupingChooser` drags no longer drift inside its popover.
+* `GroupingChooser` and the mobile column chooser can now be reordered with the keyboard.
+* Added `Icon.gripVertical()`.
+
+### 🐞 Bug Fixes
+
+* Fixed `GroupingChooser` rows drifting away from the pointer while dragged inside its popover.
 
 ### ✨ Styles
 
 * Added `--xh-chip-*` variables for the new `Chip`, and `--xh-sortable-list-*` variables for the
   new `SortableList`.
 * `FilterChooser` favorites now show their filter labels as minimal `Chip`s.
+* Removed the `xh-grouping-chooser__row--dragging` class. A dragged row is styled by `SortableList`.
 
 ### 📚 Libraries
 
-* @dnd-kit/react + @dnd-kit/dom `added` at `0.5.3`
+* @dnd-kit/react, @dnd-kit/dom and @dnd-kit/abstract `added` at `0.5.3`
 * @hello-pangea/dnd `removed`
 
 ## 91.0.0 - 2026-11-20

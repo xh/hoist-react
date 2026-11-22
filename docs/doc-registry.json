@@ -622,6 +622,14 @@
             "viewerCategory": "upgrade",
             "description": "Upgrade guide from v90.x to v91.0.0. Medium difficulty. Requires hoist-core 45. Covers the CSS custom property overhaul - codemod, removed override hooks, renamed variables, and units in size values. Also covers the element factory move from item/items to children, with its codemod, the AG Grid 36.3 requirement, inline masks rendered without a Blueprint overlay, fetches with params and no method sent as GET, the libraries Hoist no longer installs, and moving agent configs from the removed stdio MCP server and hoist-docs / hoist-ts CLIs to Hoist Docs.",
             "keywords": ["upgrade", "migration", "breaking changes", "v91", "v90", "css variables", "custom properties", "override hooks", "codemod", "renamed variables", "units", "--xh-", "MCP", "hoist-mcp", "hoist-docs", "hoist-ts", "Hoist Docs", ".mcp.json", "children", "items", "ag-grid", "mask", "xh-mask--inline", "FetchService", "method", "GET", "msal-common", "hoist-core 45", "hoistCoreVersion"]
+        },
+        {
+            "id": "docs/upgrade-notes/v92-upgrade-notes.md",
+            "title": "v92 Upgrade Notes",
+            "mcpCategory": "devops",
+            "viewerCategory": "upgrade",
+            "description": "Upgrade guide from v91.x to v92.0.0. Low difficulty. Covers replacing the removed kit/react-beautiful-dnd and @hello-pangea/dnd with SortableList or kit/dnd-kit, including lists with drags between them, and DynamicTabSwitcherModel.moveTab replacing onDragEnd.",
+            "keywords": ["upgrade", "migration", "breaking changes", "v92", "v91", "react-beautiful-dnd", "hello-pangea", "dnd-kit", "drag and drop", "SortableList", "dragDropContext", "draggable", "droppable", "DynamicTabSwitcherModel", "moveTab", "onDragEnd"]
         }
     ]
 }
