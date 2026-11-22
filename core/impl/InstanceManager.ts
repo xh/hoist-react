@@ -14,12 +14,12 @@ import {wait} from '@xh/hoist/promise';
 /**
  * Generic singleton object for cataloging global models and services.
  *
- * Models, stores, cubes and views are held weakly, so cataloging one never keeps it in memory.
- * One that is never destroyed is still collected once nothing else references it.
+ * Everything is held weakly, so cataloging an object never keeps it in memory. One that is never
+ * destroyed is still collected once nothing else references it.
  * @internal
  */
 class InstanceManager {
-    @observableShallow accessor services: Set<HoistService> = new Set();
+    readonly services = new WeakCollection<HoistService>();
 
     readonly models = new WeakCollection<HoistModel>();
 
