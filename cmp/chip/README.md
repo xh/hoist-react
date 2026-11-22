@@ -70,7 +70,8 @@ rounded ends. For monospace text, add the `xh-font-family-mono` class.
   clickable chip gets `aria-pressed`. Toggle chips should start minimal or outlined, since `active`
   changes nothing visible on a filled chip.
 - **`onRemove`** adds a remove button, named "Remove {text}" for screen readers. A click on it never
-  fires `onClick`. Backspace or Delete on the focused chip or its button also call `onRemove`.
+  fires `onClick`. Backspace or Delete on the focused chip or its button also call `onRemove`. On a
+  clickable chip the button is for pointers only, so the chip stays a single tab stop.
 - **`disabled`** dims the chip and ignores all interaction.
 
 Any key the chip handles stops propagating, so a chip inside a widget doesn't also trigger an

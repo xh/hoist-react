@@ -60,7 +60,8 @@ export interface ChipProps extends HoistProps, BoxProps {
 
     /**
      * Shows a remove button, which never also fires `onClick`. Backspace or Delete on the focused
-     * chip or its button also call this handler, and stop propagating once handled.
+     * chip or its button also call this handler, and stop propagating once handled. On a clickable
+     * chip the button is pointer-only, leaving the chip as the one tab stop.
      */
     onRemove?: (e: ChipEvent) => void;
 
@@ -174,6 +175,9 @@ export const [Chip, chip] = hoistCmp.withFactory<ChipProps>({
                           type: 'button',
                           className: 'xh-chip__remove',
                           'aria-label': removeLabel(children, props.title),
+                          // A clickable chip is the one tab stop - Backspace or Delete remove it.
+                          'aria-hidden': clickable || undefined,
+                          tabIndex: clickable ? -1 : undefined,
                           disabled,
                           onClick: handleRemoveClick,
                           children: Icon.x()

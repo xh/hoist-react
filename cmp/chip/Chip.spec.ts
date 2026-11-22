@@ -108,6 +108,15 @@ describe('Chip', () => {
             expect(docKeyDown).not.toHaveBeenCalled();
         });
 
+        it('leaves a clickable, removable chip as one tab stop, with a pointer-only button', () => {
+            const el = renderChip({onClick: vi.fn(), onRemove: vi.fn(), children: 'Rates'}),
+                remove = part(el, 'remove');
+
+            expect(el.tabIndex).toBe(0);
+            expect(remove.tabIndex).toBe(-1);
+            expect(remove.getAttribute('aria-hidden')).toBe('true');
+        });
+
         it('keeps a removable chip with no onClick out of the tab order - its button is the stop', () => {
             const el = renderChip({onRemove: vi.fn(), children: 'Rates'});
 
