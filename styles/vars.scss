@@ -1055,8 +1055,9 @@ body {
   // Sortable Lists
   //------------------------
   --xh-sortable-list-compact-item-min-height: 24px;
-  // Background of the item lifted by a drag.
+  // Background and border of the item lifted by a drag.
   --xh-sortable-list-drag-bg: var(--xh-bg);
+  --xh-sortable-list-drag-border-color: var(--xh-border-color);
   --xh-sortable-list-drag-rotate: 1deg;
   --xh-sortable-list-drag-shadow: 0 4px 14px rgba(38, 50, 56, 0.2), 0 1px 3px rgba(38, 50, 56, 0.15);
   // Gap between items.
@@ -1075,6 +1076,8 @@ body {
   --xh-sortable-list-row-gap: 6px;
 
   &:where(.xh-dark) {
+    // The standard border barely shows against a dark page behind the lifted item.
+    --xh-sortable-list-drag-border-color: var(--xh-blue-gray);
     --xh-sortable-list-drag-shadow: 0 4px 16px rgba(0, 0, 0, 0.6), 0 1px 3px rgba(0, 0, 0, 0.5);
   }
 

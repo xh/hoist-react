@@ -11,6 +11,7 @@ import type {
     SegmentedControlOption
 } from '@xh/hoist/cmp/input';
 import {HoistInputModel, useHoistInputModel} from '@xh/hoist/cmp/input';
+import {isToggle, resolveSegmentKey} from '@xh/hoist/cmp/input/impl/SegmentedControlToggle';
 import {hbox, span} from '@xh/hoist/cmp/layout';
 import type {HoistProps, Intent} from '@xh/hoist/core';
 import {hoistCmp} from '@xh/hoist/core';
@@ -19,6 +20,7 @@ import '@xh/hoist/mobile/register';
 import {computed} from '@xh/hoist/mobx';
 import {getLayoutProps, getNonLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
+import type {MouseEvent} from 'react';
 import {filter, isObject} from 'lodash';
 import './SegmentedControl.scss';
 
@@ -73,6 +75,13 @@ export interface SegmentedControlProps extends HoistProps, HoistInputProps {
      * the tray offers no other cue that its options are separate and selectable.
      */
     showOptionDividers?: boolean | 'auto';
+
+    /**
+     * True to make a two-option control a toggle, for an On / Off or Show / Hide choice. A tap
+     * anywhere on it selects the option not selected. Ignored unless there are exactly two
+     * options, both enabled.
+     */
+    toggleOnClick?: boolean;
 }
 
 /**
@@ -144,9 +153,27 @@ class SegmentedControlModel extends HoistInputModel {
         return filter(btns, (b: HTMLButtonElement) => !b.disabled) as HTMLButtonElement[];
     }
 
+    get isToggle(): boolean {
+        return isToggle(this.normalizedOptions, this.componentProps.toggleOnClick);
+    }
+
     onValueChange = (key: string) => {
-        const match = this.normalizedOptions.find(o => o._key === key);
+        const {normalizedOptions, selectedKey} = this,
+            resolved = resolveSegmentKey(
+                normalizedOptions,
+                selectedKey,
+                key,
+                this.componentProps.toggleOnClick
+            ),
+            match = normalizedOptions.find(o => o._key === resolved);
         if (match) this.noteValueChange(match.value);
+    };
+
+    /** A toggle flips on a tap on its tray, outside the segments. */
+    onTrayClick = (e: MouseEvent) => {
+        const {isToggle, selectedKey} = this;
+        if (!isToggle || selectedKey == null || this.componentProps.disabled) return;
+        if (!(e.target as Element).closest('button')) this.onValueChange(selectedKey);
     };
 
     override blur() {
@@ -169,6 +196,7 @@ const cmp = hoistCmp.factory<SegmentedControlModel>(({model, className, ...props
         value,
         commitOnChange,
         options,
+        toggleOnClick,
         // Consumed by this component
         equalSegmentWidths = true,
         fill = true,
@@ -221,8 +249,10 @@ const cmp = hoistCmp.factory<SegmentedControlModel>(({model, className, ...props
             !showTrayBackground && 'xh-segmented-control--no-tray-bg',
             dividers && 'xh-segmented-control--dividers',
             fill && 'xh-segmented-control--fill',
-            fill && equalSegmentWidths && 'xh-segmented-control--equal-widths'
+            fill && equalSegmentWidths && 'xh-segmented-control--equal-widths',
+            model.isToggle && 'xh-segmented-control--toggle'
         ),
+        onClick: model.onTrayClick,
         ref,
         onFocus: model.onFocus,
         onBlur: model.onBlur,
