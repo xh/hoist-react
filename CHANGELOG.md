@@ -65,6 +65,10 @@
 * `DashCanvas` now draws its drop placeholder as a translucent primary fill with a dashed primary
   border, in place of a solid block of the primary color.
 
+### 📚 Libraries
+
+* react-resizable-panels `new → 4.21` - split panes, through `kit/react-resizable-panels`.
+
 ## 91.0.0 - 2026-11-20
 
 ### 💥 Breaking Changes (upgrade difficulty: 🟠 MEDIUM - CSS variables)
