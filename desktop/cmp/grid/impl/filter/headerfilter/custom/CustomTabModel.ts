@@ -13,17 +13,7 @@ import type {
 } from '@xh/hoist/data';
 import {FieldFilter} from '@xh/hoist/data';
 import {action, bindable, observableRef, computedStruct} from '@xh/hoist/mobx';
-import {
-    compact,
-    difference,
-    first,
-    flatMap,
-    forEach,
-    groupBy,
-    isArray,
-    isEmpty,
-    uniq
-} from 'lodash';
+import {compact, first, flatMap, forEach, groupBy, isArray, isEmpty, uniq} from 'lodash';
 import type {HeaderFilterModel} from '../HeaderFilterModel';
 
 import {CustomRowModel, usesMultiValueInput} from './CustomRowModel';
@@ -81,17 +71,19 @@ export class CustomTabModel extends HoistModel {
 
     @action
     reset() {
-        this.setRowModels([new CustomRowModel(this)]);
+        XH.safeDestroy(this.rowModels);
+        this.rowModels = [new CustomRowModel(this)];
     }
 
     @action
     addEmptyRow() {
-        this.setRowModels([...this.rowModels, new CustomRowModel(this)]);
+        this.rowModels = [...this.rowModels, new CustomRowModel(this)];
     }
 
     @action
     removeRow(model) {
-        this.setRowModels(this.rowModels.filter(it => it.xhId !== model.xhId));
+        this.rowModels = this.rowModels.filter(it => it.xhId !== model.xhId);
+        XH.safeDestroy(model);
     }
 
     //-------------------
@@ -99,13 +91,14 @@ export class CustomTabModel extends HoistModel {
     //-------------------
     @action
     private doSyncWithFilter() {
+        XH.safeDestroy(this.rowModels);
         const {columnCompoundFilter} = this,
             op = this.deriveOp();
         this.op = op;
 
         if (!this.isRepresentable) {
             this.logWarn('Filter cannot be edited in the custom tab; leaving it unchanged');
-            this.setRowModels(null);
+            this.rowModels = null;
             return;
         }
 
@@ -127,15 +120,7 @@ export class CustomTabModel extends HoistModel {
             rowModels.push(new CustomRowModel(this));
         }
 
-        this.setRowModels(rowModels);
-    }
-
-    // Replace rowModels, destroying any rows dropped.
-    @action
-    private setRowModels(rowModels: CustomRowModel[]) {
-        const dropped = difference(this.rowModels ?? [], rowModels ?? []);
         this.rowModels = rowModels;
-        XH.safeDestroy(dropped);
     }
 
     // Whether a multi-value clause must be expanded to one row per value (vs held by a multi-select).

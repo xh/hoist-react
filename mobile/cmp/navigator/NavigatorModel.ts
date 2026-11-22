@@ -281,7 +281,6 @@ export class NavigatorModel extends HoistModel {
                     newRouteName = completedRouteParts.map(it => it.id).join('.'),
                     newRouteParams = mergeDeep({}, ...completedRouteParts.map(it => it.props));
 
-                XH.safeDestroy(difference(stack, this.stack));
                 XH.navigate(newRouteName, newRouteParams, {replace: true});
                 return;
             }
@@ -325,7 +324,6 @@ export class NavigatorModel extends HoistModel {
 
             // Don't update the stack yet. Instead, wait until after the animation has
             // completed in onPageChange().
-            XH.safeDestroy(difference(stack, this.stack));
             this._swiper.slidePrev(transitionMs);
         } else {
             // Otherwise, update the stack immediately and navigate to the new page.
