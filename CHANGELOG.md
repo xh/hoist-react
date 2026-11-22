@@ -14,6 +14,12 @@
 
 ## 92.0.0-SNAPSHOT - unreleased
 
+### 🐞 Bug Fixes
+
+* Fixed a memory leak in `DashContainer` where each rebuild of the layout left the old layout,
+  including its DOM, in memory. The menu button in each stack header was rendered into a React root
+  that was never unmounted.
+
 ## 91.0.0 - 2026-11-20
 
 ### 💥 Breaking Changes (upgrade difficulty: 🟠 MEDIUM - CSS variables)
