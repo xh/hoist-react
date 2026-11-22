@@ -61,6 +61,14 @@ jobs:
               version: ${{ inputs.version }}
               is-hotfix: ${{ inputs.is-hotfix }}
 
+        # Fails unless CHANGELOG.md holds this version and no changelog fragments are left, so a
+        # release cannot start before `pnpm changelog release` has run.
+        # Pin to a commit SHA of xh/hoist-dev-utils master once check-changelog is released there.
+        - name: Check changelog
+          uses: xh/hoist-dev-utils/.github/actions/check-changelog@master
+          with:
+              release: ${{ inputs.version }}
+
         # Installs the pnpm version pinned via the packageManager field in package.json.
         - name: Setup pnpm
           uses: pnpm/setup@v3

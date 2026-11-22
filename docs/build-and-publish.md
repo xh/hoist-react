@@ -65,7 +65,8 @@ How it works:
 - Before any release, run `pnpm changelog release <version>`. It assembles the fragments in
   `changelog.d/` into a new `## <version> - <date>` block in `CHANGELOG.md` and deletes them.
   Review and curate the block, then commit it. See
-  [Changelog Entry Format](./changelog-format.md#where-entries-go).
+  [Changelog Entry Format](./changelog-format.md#where-entries-go). Deploy Release fails if
+  `CHANGELOG.md` lacks the version or fragments are left over.
 - A release without breaking changes goes out as the next minor or patch from the latest tag. Keep
   `package.json` on the snapshot, because Deploy Release sets the published version. The
   `## N.0.0-SNAPSHOT - unreleased` heading stays on top of the changelog. `release` refuses a
