@@ -87,7 +87,7 @@ export function useModelLinker(model: HoistModel, modelLookup: ModelLookup, prop
         untracked(() => model.onLinked());
     }
 
-    // 2) Linking async work: call afterLinked(), and wire up loadSupport
+    // 2) async linking work
     useAsyncLinking(model, isLinking, modelLookup);
 
     // 3) Subsequent renders: update props (async to avoid triggering synchronous state changes)
@@ -95,7 +95,7 @@ export function useModelLinker(model: HoistModel, modelLookup: ModelLookup, prop
         if (!isLinking) model?.setComponentProps(props);
     }, [props]);
 
-    // 4) Destroy on unmount
+    // 4) Cleanup
     useDestroyOnUnmount(model);
 }
 
@@ -120,6 +120,10 @@ export function withLocalModelContext(
     }
 }
 
+//------------------
+// Implementation
+//------------------
+
 // Context for useLocalModel(), set by withLocalModelContext() while a HoistComponent renders.
 const localModelContext = {
     props: null as object,
@@ -131,9 +135,6 @@ const localModelContext = {
     }
 };
 
-//------------------
-// Implementation
-//------------------
 function useAsyncLinking(model: HoistModel, isLinking: boolean, modelLookup: ModelLookup) {
     useEffect(() => {
         if (isLinking) {
