@@ -88,7 +88,7 @@ export function useModelLinker(model: HoistModel, modelLookup: ModelLookup, prop
     }
 
     // 2) Linking async work: call afterLinked(), and wire up loadSupport
-    useAfterLinked(model, isLinking, modelLookup);
+    useAsyncLinking(model, isLinking, modelLookup);
 
     // 3) Subsequent renders: update props (async to avoid triggering synchronous state changes)
     useEffect(() => {
@@ -134,7 +134,7 @@ const localModelContext = {
 //------------------
 // Implementation
 //------------------
-function useAfterLinked(model: HoistModel, isLinking: boolean, modelLookup: ModelLookup) {
+function useAsyncLinking(model: HoistModel, isLinking: boolean, modelLookup: ModelLookup) {
     useEffect(() => {
         if (isLinking) {
             model.afterLinked();
