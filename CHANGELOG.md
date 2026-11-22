@@ -19,6 +19,8 @@
 See [`docs/upgrade-notes/v92-upgrade-notes.md`](docs/upgrade-notes/v92-upgrade-notes.md) for
 detailed, step-by-step upgrade instructions with before/after code examples.
 
+* Removed `@xh/hoist/kit/react-beautiful-dnd` and the `@hello-pangea/dnd` dependency. Use the new
+  `SortableList` for reorderable lists, or `@xh/hoist/kit/dnd-kit` for custom drag-and-drop.
 * Replaced `DynamicTabSwitcherModel.onDragEnd()` with `moveTab(fromIndex, toIndex)`.
 
 ### 🎁 New Features
@@ -42,6 +44,7 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 ### 📚 Libraries
 
 * @dnd-kit/react + @dnd-kit/dom `added` at `0.5.3`
+* @hello-pangea/dnd `removed`
 
 ## 91.0.0 - 2026-11-20
 

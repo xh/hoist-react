@@ -24,7 +24,6 @@ kit/
 ├── ag-grid/              # ag-Grid install function + type re-exports
 ├── blueprint/            # Blueprint 6 wrappers, element factories, disabled transitions
 ├── dnd-kit/              # Drag-and-drop provider and sortable hooks from @dnd-kit/react
-├── react-beautiful-dnd/  # Drag-and-drop re-exports with element factories
 ├── golden-layout/        # GoldenLayout v1.5.9 with React 18 patches
 ├── highcharts/           # Highcharts install function with default config
 ├── pdfjs/                # Lazy loader for pdf.js (optional peer dependency)
@@ -137,7 +136,6 @@ with several patches applied directly to GoldenLayout's internal classes:
 |---------|-----------------|---------|---------|
 | pdf.js (`pdfjs-dist`) | `pdfjs/` | PdfViewer | Loaded on first use. Optional peer - apps add it to opt in. See [`/cmp/pdfviewer/`](../cmp/pdfviewer/README.md) |
 | dnd-kit (`@dnd-kit/react`, `@dnd-kit/dom`) | `dnd-kit/` | SortableList, DynamicTabSwitcher, GroupingChooser, mobile ColChooser | `dragDropProvider` and `useSortable`. Prefer `SortableList` - see [`/cmp/sortablelist/`](../cmp/sortablelist/README.md) |
-| react-beautiful-dnd | `react-beautiful-dnd/` | No Hoist component - kept for apps | `@hello-pangea/dnd` re-exports: `DragDropContext`, `Droppable`, `Draggable` |
 | react-day-picker | `react-day-picker/` | Desktop and mobile DateInput | `DayPicker` calendar (v10) and the stylesheet that themes it for both platforms |
 | react-dropzone | `react-dropzone/` | FileChooser | File drop zone via `Dropzone` component |
 | react-markdown | `react-markdown/` | Markdown display | `ReactMarkdown` component for rendering markdown content |
