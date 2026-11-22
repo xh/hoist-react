@@ -46,7 +46,7 @@ export function useOnResize(
     return useCallback(
         node => {
             observer.current?.disconnect();
-            observer.current = node ? observeResize(latestFn, node, {debounce}) : null;
+            if (node) observer.current = observeResize(latestFn, node, {debounce});
         },
         [debounce]
     );
@@ -67,7 +67,7 @@ export function useOnVisibleChange(fn: (visible: boolean) => any): (node: any) =
 
     return useCallback(node => {
         observer.current?.disconnect();
-        observer.current = node ? observeVisibleChange(latestFn, node) : null;
+        if (node) observer.current = observeVisibleChange(latestFn, node);
     }, []);
 }
 
