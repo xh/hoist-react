@@ -99,28 +99,6 @@ export function useModelLinker(model: HoistModel, modelLookup: ModelLookup, prop
     useDestroyOnUnmount(model);
 }
 
-function useAfterLinked(model: HoistModel, isLinking: boolean, modelLookup: ModelLookup) {
-    useEffect(() => {
-        if (isLinking) {
-            model.afterLinked();
-            if (model.loadSupport) {
-                model.loadAsync();
-                const refreshContext = modelLookup?.lookupModel(
-                    RefreshContextModel
-                ) as RefreshContextModel;
-                if (refreshContext) {
-                    refreshContext.register(model);
-                    return () => refreshContext.unregister(model);
-                }
-            }
-        }
-    }, []);
-}
-
-function useDestroyOnUnmount(model: HoistModel) {
-    useOnUnmount(() => XH.safeDestroy(model));
-}
-
 /**
  * Run a HoistComponent's render with the context for useLocalModel() set.
  * @param modelLookup - the component's own lookup, or null to inherit one from context.
@@ -152,3 +130,28 @@ const localModelContext = {
         return (this.lookup ??= use(ModelLookupContext));
     }
 };
+
+//------------------
+// Implementation
+//------------------
+function useAfterLinked(model: HoistModel, isLinking: boolean, modelLookup: ModelLookup) {
+    useEffect(() => {
+        if (isLinking) {
+            model.afterLinked();
+            if (model.loadSupport) {
+                model.loadAsync();
+                const refreshContext = modelLookup?.lookupModel(
+                    RefreshContextModel
+                ) as RefreshContextModel;
+                if (refreshContext) {
+                    refreshContext.register(model);
+                    return () => refreshContext.unregister(model);
+                }
+            }
+        }
+    }, []);
+}
+
+function useDestroyOnUnmount(model: HoistModel) {
+    useOnUnmount(() => XH.safeDestroy(model));
+}
