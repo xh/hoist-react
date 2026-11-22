@@ -28,7 +28,6 @@ import {
     startCase
 } from 'lodash';
 import {createRoot} from 'react-dom/client';
-import type {Root} from 'react-dom/client';
 import type {DashConfig} from '../';
 import {DashModel} from '../';
 import type {DashViewState} from '../DashViewModel';
@@ -460,7 +459,7 @@ export class DashContainerModel
     }
 
     private onItemDestroyed(item) {
-        const menuRoot: Root = item._xhMenuRoot;
+        const menuRoot = item._xhMenuRoot;
         if (menuRoot) wait().then(() => menuRoot.unmount());
 
         if (!item.isComponent || this.isDestroyingGoldenLayout) return;
