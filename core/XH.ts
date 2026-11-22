@@ -861,7 +861,8 @@ export class XHApi {
 
     /**
      * Get a collection of Models currently 'active' in the app, returned in creation-time order.
-     * This will include all models that have not yet had `destroy()` called on them.
+     * This will include all models that have not yet had `destroy()` called on them and are still
+     * in memory. A model that was never destroyed drops out once it is garbage collected.
      */
     getModels<T extends HoistModel>(selector: ModelSelector = '*'): T[] {
         const ret = [];

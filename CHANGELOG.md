@@ -14,6 +14,13 @@
 
 ## 92.0.0-SNAPSHOT - unreleased
 
+### ⚙️ Technical
+
+* `InstanceManager` now holds models, stores, cubes and views weakly. A model that is never
+  destroyed is collected once nothing else references it, instead of staying in memory for the
+  life of the app. `XH.getModels()` and the Inspector no longer list such a model once it has been
+  collected.
+
 ## 91.0.0 - 2026-11-20
 
 ### 💥 Breaking Changes (upgrade difficulty: 🟠 MEDIUM - CSS variables)
