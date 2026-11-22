@@ -14,6 +14,11 @@
 
 ## 92.0.0-SNAPSHOT - unreleased
 
+### ✨ Styles
+
+* `PanelHeader` now sizes its title with `flex` from `.xh-panel-header__title` in the stylesheet,
+  not inline, so app CSS can size the title against the header's items.
+
 ## 91.0.0 - 2026-11-20
 
 ### 💥 Breaking Changes (upgrade difficulty: 🟠 MEDIUM - CSS variables)
