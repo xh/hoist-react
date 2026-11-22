@@ -8,6 +8,7 @@ import {XH} from '@xh/hoist/core';
 import {hoistCore, initTestAppAsync} from '@xh/hoist/test-support';
 // @ts-ignore - written by hoist-dev-utils at build time, and an empty object in tests.
 import changelogJson from '@xh/app-changelog.json';
+import {find} from 'lodash';
 import {beforeAll, describe, expect, it} from 'vitest';
 
 // The changelog JSON that hoist-dev-utils writes from the app's CHANGELOG.md. Recent releases add
@@ -16,8 +17,16 @@ const CHANGELOG = {
     title: 'Changelog',
     versions: [
         {
+            version: '3.0-SNAPSHOT',
+            title: 'v3.0-SNAPSHOT - unreleased',
+            date: null,
+            parsed: {_: []},
+            sections: []
+        },
+        {
             version: '2.0.0',
             title: 'v2.0.0 - 2026-11-01',
+            date: '2026-11-01',
             parsed: {
                 _: ['Added Foo.', 'Upgraded Bar. • Removed Baz.', 'Hoist React v91.0'],
                 'New Features': ['Added Foo.'],
@@ -32,6 +41,7 @@ const CHANGELOG = {
         {
             version: '1.0.0',
             title: 'v1.0.0 - 2026-10-01',
+            date: '2026-10-01',
             parsed: {
                 _: ['Added Foo.', 'Fixed Bar.'],
                 'New Features': ['Added Foo.'],
@@ -58,7 +68,7 @@ describe('ChangelogService', () => {
     });
 
     it('reads markdown sections when the build supplies them, minus excluded categories', () => {
-        const [latest] = XH.changelogService.versions;
+        const latest = getVersion('2.0.0');
 
         expect(latest.isMarkdown).toBe(true);
         expect(latest.categories).toEqual([
@@ -68,7 +78,7 @@ describe('ChangelogService', () => {
     });
 
     it('falls back to plain-text items, without the catch-all, from an older build', () => {
-        const [, older] = XH.changelogService.versions;
+        const older = getVersion('1.0.0');
 
         expect(older.isMarkdown).toBe(false);
         expect(older.categories).toEqual([
@@ -76,4 +86,13 @@ describe('ChangelogService', () => {
             {title: 'Bug Fixes', items: ['Fixed Bar.']}
         ]);
     });
+
+    it('reads the release date and flags a SNAPSHOT version as unreleased', () => {
+        expect(getVersion('3.0-SNAPSHOT')).toMatchObject({date: null, isUnreleased: true});
+        expect(getVersion('2.0.0')).toMatchObject({date: '2026-11-01', isUnreleased: false});
+    });
 });
+
+function getVersion(version: string) {
+    return find(XH.changelogService.versions, {version});
+}

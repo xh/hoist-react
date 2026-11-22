@@ -136,7 +136,9 @@ export class ChangelogService extends HoistService {
                     versions.push({
                         version: v.version,
                         title: v.title,
+                        date: v.date ?? null,
                         isCurrentVersion: v.version === XH.appVersion,
+                        isUnreleased: includes(v.version, 'SNAPSHOT'),
                         isMarkdown,
                         categories: categories.filter(it => this.includeCategory(it.title))
                     });
@@ -176,8 +178,13 @@ export class ChangelogService extends HoistService {
 
 export interface ChangelogVersion {
     version: string;
+    /** The full `##` heading, e.g. `v2.0.0 - 2026-11-01`. */
     title: string;
+    /** Release date from the heading, as `YYYY-MM-DD`, or null if not dated. */
+    date: string;
     isCurrentVersion: boolean;
+    /** True for a SNAPSHOT version that has not yet been released. */
+    isUnreleased: boolean;
     /** True if category items are markdown, false if they are plain text. */
     isMarkdown: boolean;
     categories: ChangelogCategory[];
