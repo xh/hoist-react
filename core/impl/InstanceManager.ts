@@ -92,7 +92,6 @@ class InstanceManager {
         return this.modelsByTestId.get(testId);
     }
 
-    /** Hook to register a component's model for lookup by testId while it is mounted. */
     useTestIdRegistration(testId: string, model: HoistModel) {
         useEffect(() => {
             if (!testId) return;
