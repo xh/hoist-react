@@ -5,7 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
-import type {HoistService, HoistModel} from '../';
+import type {HoistBase, HoistService, HoistModel} from '../';
 import {isNil} from 'lodash';
 import type {Cube, Store, View} from '@xh/hoist/data';
 import {observableShallow, runInAction} from '@xh/hoist/mobx';
@@ -99,12 +99,12 @@ class InstanceManager {
  * An observable, insertion-ordered collection that holds its members weakly. Members are dropped
  * when deleted, or when garbage collected.
  */
-class WeakCollection<T extends object> {
-    @observableShallow private accessor refs: Set<WeakRef<T>> = new Set();
+class WeakCollection<T extends HoistBase> {
+    @observableShallow private accessor refs: Map<string, WeakRef<T>> = new Map();
 
-    private refByMember = new WeakMap<T, WeakRef<T>>();
-    private registry = new FinalizationRegistry<WeakRef<T>>(ref => {
-        runInAction(() => this.refs.delete(ref));
+    // Called with a member's xhId after the member is garbage collected.
+    private registry = new FinalizationRegistry<string>(xhId => {
+        runInAction(() => this.refs.delete(xhId));
     });
 
     /** Number of members, including any collected but not yet finalized. */
@@ -113,19 +113,19 @@ class WeakCollection<T extends object> {
     }
 
     add(member: T) {
-        if (this.refByMember.has(member)) return;
+        const {xhId} = member;
+        if (this.refs.has(xhId)) return;
         const ref = new WeakRef(member);
-        this.refByMember.set(member, ref);
-        this.registry.register(member, ref, ref);
-        this.refs.add(ref);
+        this.registry.register(member, xhId, ref);
+        this.refs.set(xhId, ref);
     }
 
     delete(member: T) {
-        const ref = this.refByMember.get(member);
+        const {xhId} = member,
+            ref = this.refs.get(xhId);
         if (!ref) return;
-        this.refByMember.delete(member);
         this.registry.unregister(ref);
-        this.refs.delete(ref);
+        this.refs.delete(xhId);
     }
 
     forEach(fn: (member: T) => void) {
@@ -133,7 +133,7 @@ class WeakCollection<T extends object> {
     }
 
     *[Symbol.iterator](): Iterator<T> {
-        for (const ref of this.refs) {
+        for (const ref of this.refs.values()) {
             const member = ref.deref();
             if (member) yield member;
         }
