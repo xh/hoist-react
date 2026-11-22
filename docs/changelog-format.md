@@ -238,7 +238,7 @@ Hoist *application* changelogs (e.g. in app repos that depend on `@xh/hoist`) fo
 formatting rules than the library changelog described above. Application changelogs are parsed at
 build time by a Hoist release notes feature that displays them within the app UI.
 
-An app on `@xh/hoist-dev-utils` 17 or later parses its changelog with the same parser as
+An app on `@xh/hoist-dev-utils` 16.6 or later parses its changelog with the same parser as
 `xh-changelog`. Its bullets can wrap and hold sub-bullets, as in a library changelog. Such an app
 can also use changelog fragments: run `xh-changelog init` from its `client-app/` folder.
 
