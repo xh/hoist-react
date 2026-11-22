@@ -59,7 +59,7 @@ describe('SegmentedControl', () => {
             expect(stops).toEqual([segment(el, 'On')]);
             fireEvent.click(stops[0]);
             expect(model.value).toBe(false);
-            expect(document.querySelector('button[tabindex="0"]')).toBe(segment(el, 'Off'));
+            expect(el.querySelector('button[tabindex="0"]')).toBe(segment(el, 'Off'));
         });
 
         it('does not toggle without the prop, with three options, or when disabled', () => {
