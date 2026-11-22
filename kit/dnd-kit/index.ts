@@ -12,6 +12,7 @@ import type {SetOptional} from 'type-fest';
 import {DragDropProvider} from '@dnd-kit/react';
 
 export {DragDropProvider};
+export {useDroppable} from '@dnd-kit/react';
 export {isSortable, useSortable} from '@dnd-kit/react/sortable';
 export {
     Accessibility,
