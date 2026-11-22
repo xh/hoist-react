@@ -10,7 +10,7 @@ import {GridBackground, type GridBackgroundProps} from 'react-grid-layout/extras
 import 'react-grid-layout/css/styles.css';
 
 export {ReactGridLayout, GridBackground};
-export {bottom, cloneLayout, getCompactor, getLayoutItem, moveElement, noCompactor} from 'react-grid-layout';
+export {bottom, cloneLayout, getCompactor, noCompactor} from 'react-grid-layout';
 export {correctBounds} from 'react-grid-layout/core';
 export {wrapCompactor} from 'react-grid-layout/extras';
 export type {Compactor, Layout, LayoutItem} from 'react-grid-layout';
