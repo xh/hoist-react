@@ -4,19 +4,21 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import ReactGridLayout, {
-    type LayoutItem,
-    type GridLayoutProps,
+import {
     bottom,
     cloneLayout,
-    getCompactor
-} from 'react-grid-layout';
-import {correctBounds} from 'react-grid-layout/core';
-import {GridBackground, type GridBackgroundProps, wrapCompactor} from 'react-grid-layout/extras';
+    correctBounds,
+    getCompactor,
+    gridBackground,
+    type GridLayoutProps,
+    type LayoutItem,
+    reactGridLayout,
+    wrapCompactor
+} from '@xh/hoist/kit/react-grid-layout';
 import {useComposedRefs, useOnResize} from '@xh/hoist/utils/react';
 import {div, vbox, vspacer} from '@xh/hoist/cmp/layout';
 import type {HoistProps, TestSupportProps} from '@xh/hoist/core';
-import {elementFactory, hoistCmp, refreshContextView, uses} from '@xh/hoist/core';
+import {hoistCmp, refreshContextView, uses} from '@xh/hoist/core';
 import {dashCanvasAddViewButton} from '@xh/hoist/desktop/cmp/button/DashCanvasAddViewButton';
 import '@xh/hoist/desktop/register';
 import {Classes, overlay, showContextMenu} from '@xh/hoist/kit/blueprint';
@@ -27,7 +29,6 @@ import {DashCanvasModel} from './DashCanvasModel';
 import {dashCanvasContextMenu} from './impl/DashCanvasContextMenu';
 import {dashCanvasView} from './impl/DashCanvasView';
 
-import 'react-grid-layout/css/styles.css';
 import './DashCanvas.scss';
 
 export interface DashCanvasProps extends HoistProps<DashCanvasModel>, TestSupportProps {
@@ -290,6 +291,3 @@ export function expectedGridHeight({layout, compactor, gridConfig}: GridLayoutPr
         padY = (containerPadding ?? margin)[1];
     return Math.max(0, rows * rowHeight + (rows - 1) * margin[1] + 2 * padY);
 }
-
-const reactGridLayout = elementFactory<GridLayoutProps>(ReactGridLayout);
-const gridBackground = elementFactory<GridBackgroundProps>(GridBackground);

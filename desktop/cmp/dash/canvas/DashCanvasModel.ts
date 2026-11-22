@@ -5,7 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {wait} from '@xh/hoist/promise';
-import type {LayoutItem} from 'react-grid-layout';
+import type {LayoutItem} from '@xh/hoist/kit/react-grid-layout';
 import type {Persistable} from '@xh/hoist/core';
 import {PersistableState, PersistenceProvider, XH} from '@xh/hoist/core';
 import {required} from '@xh/hoist/data';
