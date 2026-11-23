@@ -68,7 +68,7 @@
   &__list {
     --xh-sortable-list-item-padding: #{0 var(--xh-spacing-half)};
 
-    margin-bottom: var(--xh-spacing-half);
+    margin-block: var(--xh-spacing-half);
     background-color: var(--xh-bg-alt);
 
     .xh-sortable-list__row {
