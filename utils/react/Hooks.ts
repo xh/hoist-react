@@ -105,8 +105,8 @@ export function useCached<T>(value: T, equalsFn: (prev: T, curr: T) => boolean):
 // Implementation
 //------------------
 // A stable function that calls the latest `fn`, for long-lived observers and listeners.
-function useLatestFn<A extends any[]>(fn: (...args: A) => any): (...args: A) => any {
+function useLatestFn(fn: (...args: any[]) => any) {
     const ref = useRef(fn);
     ref.current = fn;
-    return useCallback((...args: A) => ref.current(...args), []);
+    return useCallback((...args: any[]) => ref.current(...args), []);
 }
