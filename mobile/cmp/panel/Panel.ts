@@ -11,7 +11,8 @@ import type {
     Some,
     HoistProps,
     ElementFactory,
-    HoistModel
+    HoistModel,
+    Intent
 } from '@xh/hoist/core';
 import {useContextModel, hoistCmp} from '@xh/hoist/core';
 import {loadingIndicator} from '@xh/hoist/cmp/loadingindicator';
@@ -44,6 +45,12 @@ export interface PanelProps extends HoistProps, Omit<BoxProps, 'title'> {
 
     /** CSS class name specific to the panel's header. */
     headerClassName?: string;
+
+    /**
+     * Intent to color the panel's header. The header takes a solid intent background, and its
+     * title, icon, and minimal header buttons render in white. Default is the standard header.
+     */
+    headerIntent?: Intent;
 
     /** Items to be added to the right-side of the panel's header. */
     headerItems?: ReactNode[];
@@ -110,6 +117,7 @@ export const [Panel, panel] = hoistCmp.withFactory<PanelProps>({
             title,
             icon,
             headerClassName,
+            headerIntent,
             headerItems,
             mask: maskProp,
             loadingIndicator: loadingIndicatorProp,
@@ -135,7 +143,13 @@ export const [Panel, panel] = hoistCmp.withFactory<PanelProps>({
             className,
             // Keyed via toArray so a banner appearing or hiding does not remount the content frame.
             children: Children.toArray([
-                panelHeader({title, icon, className: headerClassName, headerItems}),
+                panelHeader({
+                    title,
+                    icon,
+                    className: headerClassName,
+                    intent: headerIntent,
+                    headerItems
+                }),
                 parseToolbar(tbar),
                 banners.top,
                 frame({

@@ -61,7 +61,7 @@ Verified against both hoist-react and hoist-core changelogs.
 
 | hoist-react | Min Core Required | Recommended Core | Max Core Tested | Notes | Upgrade |
 |---|---|---|---|---|---|
-| 91.0 | -- | 44.0 | 44.1 | CSS variable override hooks removed (client-only) - no new server-side pairing requirements | [Notes](./upgrade-notes/v91-upgrade-notes.md) |
+| 91.0 | 45.0.0 | 45.0 | 45.0 | Released together with hoist-core 45, which requires hoist-react 91. Agent docs for both come from Hoist Docs, which reads hoist-core's docs index from 45 on | [Notes](./upgrade-notes/v91-upgrade-notes.md) |
 | 90.0 | -- | 44.0 | 44.1 | Admin Console Connection Pool Monitor purge buttons call a core 44 endpoint and fail on older cores | [Notes](./upgrade-notes/v90-upgrade-notes.md) |
 | 89.0 | -- | 42.0 | 43.0 | No new server-side pairing requirements | [Notes](./upgrade-notes/v89-upgrade-notes.md) |
 | 88.1 | -- | 42.0 | 42.0 | Use 88.1.2 or later - earlier 88 releases drop `MsalClient` defaults. `ViewManagerModel.manageGlobal` derived from server `globalWriteRoles` (42, degrades gracefully). TC39 decorators are client-only - requires hoist-dev-utils 16 | [Notes](./upgrade-notes/v88-upgrade-notes.md) |
