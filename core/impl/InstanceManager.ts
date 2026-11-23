@@ -10,6 +10,7 @@ import {isNil} from 'lodash';
 import type {Cube, Store, View} from '@xh/hoist/data';
 import {observableShallow} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
+import {useEffect} from 'react';
 
 /**
  * Generic singleton object for cataloging global models and services.
@@ -89,6 +90,13 @@ class InstanceManager {
 
     getModelByTestId(testId: string): HoistModel {
         return this.modelsByTestId.get(testId);
+    }
+
+    useTestIdRegistration(testId: string, model: HoistModel) {
+        useEffect(() => {
+            this.registerModelWithTestId(testId, model);
+            return () => this.unregisterModelWithTestId(testId);
+        }, [testId, model]);
     }
 }
 export const instanceManager = new InstanceManager();
