@@ -7,7 +7,7 @@
 import type {PlainObject} from '@xh/hoist/core';
 import {Cube, KeyedAggregator, type QueryConfig, type View, type ViewRowData} from '@xh/hoist/data';
 import {initTestAppAsync} from '@xh/hoist/test-support';
-import {beforeAll, describe, expect, it, onTestFinished} from 'vitest';
+import {beforeAll, describe, expect, it, onTestFinished, vi} from 'vitest';
 
 /**
  * `KeyedAggregator` rolls up a value that belongs to a coarser key than the leaves carry it on,
@@ -31,6 +31,19 @@ describe('KeyedAggregator', () => {
             C: 300,
             'C/Energy': 300
         });
+    });
+
+    it('aggregates each row once in a bulk update, not once per changed position', async () => {
+        const cube = createCube(),
+            view = connectView(cube, {dimensions: ['fund', 'sector'], includeRoot: true}),
+            aggregate = vi.spyOn(KeyedAggregator.prototype, 'aggregate');
+        onTestFinished(() => aggregate.mockRestore());
+
+        await cube.updateDataAsync(POSITIONS.map(it => ({...it, nav: it.nav * 2})));
+
+        // The root, three funds and four fund-sector rows, once each.
+        expect(aggregate).toHaveBeenCalledTimes(8);
+        expect(navByPath(view)).toMatchObject({Total: 3600, A: 2000, 'B/Tech': 1000});
     });
 
     it('leaves rows that do not pin the key blank', () => {
