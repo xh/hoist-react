@@ -68,8 +68,10 @@ auto-scrolls itself, any scrolling ancestors and the window when a dragged item 
 
 ### Expandable rows
 
-Set `renderDetail` to make items expandable. Each item gets a chevron at the end of its row, which
-opens a detail under the row at the list's full width - an editor, say - and closes it again. The
+Set `renderDetail` to make items expandable. Each item gets a chevron, which opens a detail under the
+row at the list's full width - an editor, say - and closes it again. The chevron always follows
+everything `renderItem` draws, and precedes an end handle, so chevrons line up in one column even
+when rows have different trailing controls. The
 chevron is a button with `aria-expanded`, and the detail is a region named for its item. The list
 calls `renderDetail` only for open items, and the detail moves with its item when the list
 reorders.
