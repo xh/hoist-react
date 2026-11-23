@@ -38,7 +38,7 @@ import type {PivotCellField, PivotPath} from './pivot/PivotPath';
 import {BaseRow} from './row/BaseRow';
 import type {LeafRow, LeafUpdateChanges} from './row/LeafRow';
 import {ExposedLeafRow, HiddenLeafRow} from './row/LeafRow';
-import {AggregateRow, BucketRow} from './row/ParentRow';
+import {AggregateRow, BucketRow, type ParentRow} from './row/ParentRow';
 import type {RecordSet, RecordSetDelta} from '../impl/RecordSet';
 
 /**
@@ -217,6 +217,11 @@ export class View
     _canAggregateFnFieldsByDepth: CubeField[][] = null;
     _complexAggFieldsByDepth: CubeField[][] = null;
     _aggContext: AggregationContext = null;
+    /**
+     * During a value-only update, the fields each row must aggregate again once every leaf is in,
+     * for aggregators with no incremental replace. Null otherwise.
+     */
+    _deferredAggs: Map<ParentRow, Set<CubeField>> = null;
     _rowCache: RowCache = null;
 
     /** @internal - applications should use {@link Cube.createView} */
@@ -533,9 +538,15 @@ export class View
                 : fields;
 
         // `_records` left stale by design - simple updates never touch filter/dim/bucket fields.
-        updates.forEach(rec => {
-            _leafMap.get(rec.id)?.applyLeafDataUpdate(rec, checkFields, changed);
-        });
+        this._deferredAggs = new Map();
+        try {
+            updates.forEach(rec => {
+                _leafMap.get(rec.id)?.applyLeafDataUpdate(rec, checkFields, changed);
+            });
+            this.applyDeferredAggs();
+        } finally {
+            this._deferredAggs = null;
+        }
 
         changed.rows.forEach(row => BaseRow.assignDigest(row.data as ViewRowData));
 
@@ -548,6 +559,19 @@ export class View
         this.loadUpdatedRows(rows, changed.fields);
         this.updateResults();
         this.diagnostics.noteUpdate('dataOnly', start);
+    }
+
+    // Re-aggregate each row a bulk update deferred, once, after any deferred rows below it.
+    private applyDeferredAggs() {
+        const deferred = this._deferredAggs,
+            settle = (row: BaseRow) => {
+                const fields = deferred.get(row as ParentRow);
+                if (!fields) return;
+                deferred.delete(row as ParentRow);
+                row.children.forEach(settle);
+                (row as ParentRow).reaggregate(fields);
+            };
+        [...deferred.keys()].forEach(settle);
     }
 
     // Rows left untouched, but deciding that meant testing the changes against the query.

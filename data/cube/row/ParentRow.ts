@@ -109,11 +109,23 @@ export abstract class ParentRow extends BaseRow {
     applyDataUpdate(childUpdates: RowUpdate[], updatedRows: Set<BaseRow>) {
         const {parent, pivotParent, data, children, canAggResults, aggFieldNames, view} = this,
             ctx = view._aggContext,
+            deferred = view._deferredAggs,
             myUpdates = [];
         childUpdates.forEach(update => {
             const {field} = update,
                 {name} = field;
             if (aggFieldNames.has(name) && canAggResults?.[name] !== false) {
+                // In a bulk update, a full re-aggregation waits until every leaf is in. The first
+                // update marks this row and its ancestors, and later ones stop here.
+                if (deferred && !field.aggregator.hasIncrementalReplace) {
+                    let fields = deferred.get(this);
+                    if (!fields) deferred.set(this, (fields = new Set()));
+                    if (!fields.has(field)) {
+                        fields.add(field);
+                        myUpdates.push(update);
+                    }
+                    return;
+                }
                 const oldValue = data[name],
                     newValue = ctx.replace(children, oldValue, update, this);
                 update.oldValue = oldValue;
@@ -127,6 +139,13 @@ export abstract class ParentRow extends BaseRow {
             updatedRows.add(this);
             propagateUpdate(parent, pivotParent, myUpdates, updatedRows);
         }
+    }
+
+    /** Aggregate fields again, as a bulk update deferred them. See {@link View._deferredAggs}. */
+    reaggregate(fields: Set<CubeField>) {
+        const {data, children, view} = this,
+            ctx = view._aggContext;
+        fields.forEach(field => (data[field.name] = ctx.aggregate(children, field, this)));
     }
 
     //-------------------

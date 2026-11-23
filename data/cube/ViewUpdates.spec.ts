@@ -5,7 +5,14 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import type {PlainObject} from '@xh/hoist/core';
-import {Cube, type QueryConfig, Store, type View, type ViewRowData} from '@xh/hoist/data';
+import {
+    Aggregator,
+    Cube,
+    type QueryConfig,
+    Store,
+    type View,
+    type ViewRowData
+} from '@xh/hoist/data';
 import {initTestAppAsync} from '@xh/hoist/test-support';
 import {pick, sortBy} from 'lodash';
 import {beforeAll, describe, expect, it, onTestFinished} from 'vitest';
@@ -119,6 +126,31 @@ describe('View', () => {
             await cube.updateDataAsync([trade(2, 'US', 'Tech', 5)]);
             expectInPlaceUpdate(view);
             expect(rowAt(view)).toMatchObject({sumStrict: 12, avgStrict: 4});
+        });
+
+        it('re-aggregates each group once in a bulk update, for an aggregator with no incremental replace', async () => {
+            // A full re-aggregation per leaf, as before, scanned every leaf below each ancestor once
+            // for each leaf updated - a bulk update froze the browser for over a minute.
+            const counting = new CountingSum(),
+                cube = autoDestroy(
+                    new Cube({
+                        fields: [
+                            {name: 'region', isDimension: true},
+                            {name: 'sector', isDimension: true},
+                            {name: 'qty', type: 'int', aggregator: counting}
+                        ],
+                        data: bulkTrades(1)
+                    })
+                ),
+                view = connectView(cube);
+            counting.calls = 0;
+            await cube.updateDataAsync(bulkTrades(2));
+
+            // The grand total, two regions and four region-sector groups, once each.
+            expect(counting.calls).toBe(7);
+            expect(rowAt(view).qty).toBe(2 * 48);
+            expect(rowAt(view, 'US', 'Tech').qty).toBe(2 * 12);
+            expectInPlaceUpdate(view);
         });
 
         it('applies edits made via modifyRecordsAsync', async () => {
@@ -355,4 +387,28 @@ function normalizeRows(rows: ViewRowData[], fieldNames: string[]): PlainObject[]
         ...pick(row, ['id', 'cubeRowType', 'cubeLabel', 'cubeDimension', ...fieldNames]),
         children: normalizeRows(row.children, fieldNames)
     }));
+}
+
+/** 48 trades, spread evenly over two regions and two sectors, each of the given qty. */
+function bulkTrades(qty: number): PlainObject[] {
+    return Array.from({length: 48}, (_, i) => ({
+        id: i + 1,
+        region: i % 2 ? 'EU' : 'US',
+        sector: i % 4 < 2 ? 'Tech' : 'Energy',
+        qty
+    }));
+}
+
+/** A SUM over every leaf below, with no incremental replace, that counts its aggregations. */
+class CountingSum extends Aggregator {
+    calls = 0;
+
+    override aggregate(rows, fieldName) {
+        this.calls++;
+        let ret = 0;
+        this.forEachLeaf(rows, leaf => {
+            ret += leaf.data[fieldName];
+        });
+        return ret;
+    }
 }

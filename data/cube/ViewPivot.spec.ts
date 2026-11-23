@@ -5,7 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import type {PlainObject} from '@xh/hoist/core';
-import {Cube, type QueryConfig, type View, type ViewRowData} from '@xh/hoist/data';
+import {Aggregator, Cube, type QueryConfig, type View, type ViewRowData} from '@xh/hoist/data';
 import {initTestAppAsync} from '@xh/hoist/test-support';
 import {pick, sortBy, sumBy} from 'lodash';
 import {beforeAll, describe, expect, it, onTestFinished} from 'vitest';
@@ -139,6 +139,31 @@ describe('View', () => {
             expect(rowAt(view)).toMatchObject({sum: 20, 'Tech>>sum': 17});
             expect(view.result.paths).toBe(pathsBefore);
             expectMatchesFresh(view);
+        });
+
+        it('updates rows and cells in place for a bulk tick, under an aggregator with no incremental replace', async () => {
+            // Each leaf has a row parent and a cell parent, and both re-aggregate once, deferred.
+            const cube = autoDestroy(
+                    new Cube({
+                        fields: [
+                            {name: 'region', isDimension: true},
+                            {name: 'sector', isDimension: true},
+                            {name: 'book', isDimension: true},
+                            {name: 'qty', type: 'int'},
+                            {name: 'sum', type: 'int', aggregator: new LeafSum()}
+                        ],
+                        data: TRADES
+                    })
+                ),
+                query = {...QUERY, pivot: {dimensions: ['sector'], measures: ['sum']}},
+                view = autoDestroy(cube.createView({query, connect: true}));
+
+            await cube.updateDataAsync(TRADES.map(it => ({...it, sum: it.sum * 10})));
+
+            expect(view.diagnostics.update.last.type).toBe('dataOnly');
+            expect(rowAt(view, 'US')).toMatchObject({sum: 60, 'Tech>>sum': 30, 'Energy>>sum': 30});
+            expect(rowAt(view)).toMatchObject({sum: 100, 'Tech>>sum': 70});
+            expectMatchesFresh(view, query);
         });
 
         it('rebuilds when a record moves to another pivot path, clearing the vacated cell', async () => {
@@ -353,4 +378,15 @@ function normalizeRows(rows: ViewRowData[], fieldNames: string[]): PlainObject[]
         ...pick(row, ['id', 'cubeRowType', 'cubeLabel', ...fieldNames]),
         children: normalizeRows(row.children, fieldNames)
     }));
+}
+
+/** A SUM over every leaf below, with no incremental replace. */
+class LeafSum extends Aggregator {
+    override aggregate(rows, fieldName) {
+        let ret = 0;
+        this.forEachLeaf(rows, leaf => {
+            ret += leaf.data[fieldName];
+        });
+        return ret;
+    }
 }
