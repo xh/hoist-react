@@ -80,6 +80,10 @@ lifted item's background, shadow and slight tilt, and the dashed placeholder. Se
 `--xh-sortable-list-*` variables on `body.xh-app` to change them. The full set is in the
 `Sortable Lists` block of [`styles/vars.scss`](../../styles/vars.scss):
 
+Each row has horizontal padding around its handle and content, `--xh-sortable-list-item-padding`,
+Hoist's half spacing by default. Set it to `0` on a list whose rows draw their own padding or a
+full-width background.
+
 ```scss
 body.xh-app {
   --xh-sortable-list-gap: 4px;

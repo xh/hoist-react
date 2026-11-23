@@ -65,14 +65,7 @@
     align-items: center;
     gap: var(--xh-sortable-list-row-gap);
     min-height: var(--xh-sortable-list-item-min-height);
-  }
-
-  &--handle-start &__row {
-    padding-left: 2px;
-  }
-
-  &--handle-end &__row {
-    padding-right: 2px;
+    padding: var(--xh-sortable-list-item-padding);
   }
 
   &--compact &__row {
