@@ -66,8 +66,9 @@ doesn't also trigger an ancestor's shortcuts.
 
 Set `orientation: 'horizontal'` for a row of items, and `wrap: true` to let it wrap.
 
-Give the list a `height` or `maxHeight`, or a `flex` in a sized container, and its items scroll
-inside it once they outgrow it. The Add row stays in view below them. During a drag the list
+Give the list a `maxHeight` and it fits its items up to that height, then scrolls them, with the
+Add row pinned below. A fixed `height`, or a `flex` in a sized container, scrolls the same way, but
+keeps its full height when the items are fewer - they and the Add row sit at the top. During a drag the list
 auto-scrolls its items, any scrolling ancestors and the window when the dragged item nears an edge.
 `scrollAcceleration` sets how fast - 15 by default, below dnd-kit's own 25.
 

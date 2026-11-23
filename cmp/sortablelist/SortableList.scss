@@ -12,9 +12,10 @@
   min-height: 0;
 
   // Scrolls once the list is given less room than its items need, keeping the Add row in view.
+  // Never grows, so the Add row sits right under the last item in a taller list.
   &__items {
     display: flex;
-    flex: 1 1 auto;
+    flex: 0 1 auto;
     flex-direction: column;
     gap: var(--xh-sortable-list-gap);
     min-width: 0;
