@@ -1079,10 +1079,10 @@ body {
   --xh-sortable-list-placeholder-bg: var(--xh-intent-primary-trans1);
   --xh-sortable-list-placeholder-border-color: var(--xh-intent-primary-text-color);
   // Gap between the handle and the content.
-  --xh-sortable-list-row-gap: 6px;
+  --xh-sortable-list-row-gap: var(--xh-spacing-half);
   // Hover tint on a row that opens its detail on click.
   --xh-sortable-list-row-hover-bg: var(--xh-grid-row-hover-bg);
-  --xh-sortable-list-spaced-gap: 4px;
+  --xh-sortable-list-spaced-gap: var(--xh-spacing-half);
 
   &:where(.xh-dark) {
     // The standard border barely shows against a dark page behind the lifted item.
