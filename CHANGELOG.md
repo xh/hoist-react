@@ -79,6 +79,7 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 * Fixed `GroupingChooser` rows drifting away from the pointer while dragged inside its popover.
 * Fixed `Chart` leaving one Highcharts resize observer behind on each rebuild, such as a change to
   `highchartsConfig`. Each one ran on every resize for as long as the chart was mounted.
+* Fixed `TabSwitcher` tab and group-header icons sitting about 2px above the center of their label.
 
 ### ⚙️ Typescript API Adjustments
 

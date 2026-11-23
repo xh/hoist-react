@@ -146,7 +146,9 @@
     font-size: var(--xh-tab-font-size);
     user-select: none;
 
+    // A flex item, the icon loses its inline vertical-align, so baseline alignment sets it high.
     & > svg:first-child {
+      align-self: center;
       margin: 0 0.4em 0 0;
       min-width: 0;
     }
@@ -188,6 +190,11 @@
     white-space: nowrap;
     user-select: none;
     cursor: default;
+
+    // As in a tab, a flex item's icon would sit high on the baseline.
+    & > svg:first-child {
+      align-self: center;
+    }
 
     // Rule line centered in the gap above each group after the first. Drawn outside the header
     // box, so a header background never touches the rule or skews the header's own padding.
