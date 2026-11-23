@@ -632,7 +632,7 @@ const sortableItem = hoistCmp.factory<SortableItemProps>({
                       className: 'xh-sortable-list__handle',
                       'aria-label': label,
                       tabIndex: isDisabled ? -1 : 0,
-                      children: itemFixed ? Icon.lock() : Icon.gripVertical()
+                      children: itemFixed ? Icon.lock() : Icon.gripVertical({prefix: 'fas'})
                   })
                 : null,
             expander = expandable
