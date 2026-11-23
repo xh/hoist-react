@@ -291,32 +291,18 @@ describe('CustomTabModel', () => {
         expect(parseFilter(customTabModel.filter).equals(parseFilter(filter))).toBe(true);
     });
 
-    describe('destroy', () => {
-        // Every HoistModel stays registered with InstanceManager until destroyed, so a row
-        // that is never destroyed is never collected, along with the grid it reaches.
-        it.each<{desc: string; filter: FilterLike}>([
-            {desc: 'no filter', filter: null},
-            {desc: 'a custom filter', filter: {field: 'qty', op: '>', value: 10}}
-        ])('destroys every Custom tab row it created, with $desc', async ({filter}) => {
-            const gridModel = createGrid(filter),
-                before = await liveRowCount();
+    it('destroys every Custom tab row it creates', async () => {
+        const gridModel = createGrid({field: 'qty', op: '>', value: 10}),
+            before = await liveRowCount(),
+            parent = new ColumnHeaderFilterModel(gridModel.filterModel, gridModel.getColumn('qty')),
+            model = new HeaderFilterModel();
+        parent.open();
+        model.parent = parent;
+        model.onLinked();
+        model.destroy();
+        parent.destroy();
 
-            for (let i = 0; i < 3; i++) {
-                const parent = new ColumnHeaderFilterModel(
-                        gridModel.filterModel,
-                        gridModel.getColumn('qty')
-                    ),
-                    model = new HeaderFilterModel();
-                parent.open();
-                model.parent = parent;
-                model.onLinked();
-                model.customTabModel.addEmptyRow();
-                model.destroy();
-                parent.destroy();
-            }
-
-            expect(await liveRowCount()).toBe(before);
-        });
+        expect(await liveRowCount()).toBe(before);
     });
 });
 

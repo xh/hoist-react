@@ -342,7 +342,6 @@ export class NavigatorModel extends HoistModel {
         }
     }
 
-    // Replace the stack, destroying any pages dropped.
     @action
     private replaceStack(stack: PageModel[]) {
         const dropped = difference(this.stack, stack);
