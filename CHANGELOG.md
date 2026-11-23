@@ -58,7 +58,8 @@ detailed, step-by-step upgrade instructions with before/after code examples.
   and removable (`onRemove`) variants. See [`cmp/chip/README.md`](cmp/chip/README.md).
 * Added `SortableList`, a list users reorder by dragging or with the keyboard. Callers render each
   item, and the list supplies handles, the drop placeholder, auto-scrolling and screen reader
-  announcements, then reports each completed move once via `bind` or `onReorder`. See
+  announcements, then reports each completed move once via `bind` or `onReorder`. Items can expand
+  to show a detail under their row, opened by a chevron or a click on the row. See
   [`cmp/sortablelist/README.md`](cmp/sortablelist/README.md).
 * `GroupingChooser` and the mobile column chooser can now be reordered with the keyboard.
 * Added `Icon.gripVertical()`.
