@@ -44,8 +44,17 @@ export const DND_SPACE_LIFT_SENSORS: DragDropProviderProps['sensors'] = [
     })
 ];
 
-export const DND_PLUGINS: DragDropProviderProps['plugins'] = [
-    Accessibility.configure({
+/** Hoist's auto-scroll speed - below dnd-kit's default of 25. */
+export const DND_SCROLL_ACCELERATION = 15;
+
+/** Hoist's plugins, with auto-scroll at `scrollAcceleration`. */
+export function dndPlugins(
+    scrollAcceleration: number = DND_SCROLL_ACCELERATION
+): DragDropProviderProps['plugins'] {
+    return [ACCESSIBILITY, AutoScroller.configure({acceleration: scrollAcceleration}), ...REST];
+}
+
+const ACCESSIBILITY = Accessibility.configure({
         announcements: {
             dragstart: ({operation: {source}}) =>
                 isSortable(source)
@@ -70,8 +79,6 @@ export const DND_PLUGINS: DragDropProviderProps['plugins'] = [
                 'moves it one place.'
         }
     }),
-    AutoScroller,
-    Cursor,
-    Feedback.configure({dropAnimation: DND_TRANSITION}),
-    PreventSelection
-];
+    REST = [Cursor, Feedback.configure({dropAnimation: DND_TRANSITION}), PreventSelection];
+
+export const DND_PLUGINS = dndPlugins();

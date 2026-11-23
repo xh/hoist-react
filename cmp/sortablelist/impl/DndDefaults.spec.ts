@@ -4,8 +4,8 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {DND_SENSORS} from '@xh/hoist/cmp/sortablelist/impl/DndDefaults';
-import {PointerActivationConstraints} from '@xh/hoist/kit/dnd-kit';
+import {DND_PLUGINS, DND_SENSORS, dndPlugins} from '@xh/hoist/cmp/sortablelist/impl/DndDefaults';
+import {AutoScroller, PointerActivationConstraints} from '@xh/hoist/kit/dnd-kit';
 import {describe, expect, it} from 'vitest';
 
 /**
@@ -31,5 +31,16 @@ describe('DND_SENSORS', () => {
         const constraints = constraintsFor('touch');
         expect(constraints).toHaveLength(1);
         expect(constraints[0]).toBeInstanceOf(PointerActivationConstraints.Delay);
+    });
+});
+
+/** Hoist's auto-scroll runs slower than dnd-kit's default acceleration of 25. */
+describe('dndPlugins', () => {
+    const acceleration = (plugins: any[]) =>
+        plugins.find(it => it.plugin === AutoScroller)?.options.acceleration;
+
+    it('sets the auto-scroll acceleration, defaulting to 15', () => {
+        expect(acceleration(DND_PLUGINS as any[])).toBe(15);
+        expect(acceleration(dndPlugins(8) as any[])).toBe(8);
     });
 });

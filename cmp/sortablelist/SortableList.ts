@@ -12,7 +12,7 @@ import type {
     MutableRefObject,
     ReactNode
 } from 'react';
-import {useId, useLayoutEffect, useRef, useState} from 'react';
+import {useId, useLayoutEffect, useMemo, useRef, useState} from 'react';
 
 import {div, htmlButton, span} from '@xh/hoist/cmp/layout';
 import type {BoxProps, HoistModel, HoistProps} from '@xh/hoist/core';
@@ -23,7 +23,7 @@ import {dragDropProvider, useSortable} from '@xh/hoist/kit/dnd-kit';
 import {TEST_ID, mergeDeep, throwIf} from '@xh/hoist/utils/js';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
 
-import {DND_PLUGINS, DND_SENSORS, DND_TRANSITION} from './impl/DndDefaults';
+import {DND_SCROLL_ACCELERATION, DND_SENSORS, DND_TRANSITION, dndPlugins} from './impl/DndDefaults';
 import type {SortableKey} from './impl/DndUtils';
 import {moveItem, stopDragKeys} from './impl/DndUtils';
 import './SortableList.scss';
@@ -101,6 +101,12 @@ export interface SortableListProps<T = any> extends HoistProps<HoistModel>, BoxP
 
     /** True for a 24px minimum item height, rather than 30px. */
     compact?: boolean;
+
+    /**
+     * Speed of the auto-scroll while a dragged item is near the edge of the list or a scrolling
+     * container. Default 15 - higher is faster.
+     */
+    scrollAcceleration?: number;
 
     /**
      * How the list frames its items. 'plain' (default) draws nothing - the caller's content does.
@@ -211,6 +217,7 @@ export const [SortableList, sortableList] = hoistCmp.withFactory<SortableListPro
                     isItemMovable,
                     disabled,
                     compact,
+                    scrollAcceleration = DND_SCROLL_ACCELERATION,
                     variant = 'plain',
                     getItemLabel,
                     onRemove,
@@ -240,7 +247,8 @@ export const [SortableList, sortableList] = hoistCmp.withFactory<SortableListPro
             [announcement, setAnnouncement] = useState(''),
             addRef = useRef<HTMLButtonElement>(null),
             focusAdd = useRef(false),
-            latest = useRef({keys, pendingKeys, openKeys});
+            latest = useRef({keys, pendingKeys, openKeys}),
+            plugins = useMemo(() => dndPlugins(scrollAcceleration), [scrollAcceleration]);
 
         latest.current = {keys, pendingKeys, openKeys};
         throwIf(keys.some(isNil), 'SortableList requires a key for every item - see `itemKey`.');
@@ -360,7 +368,7 @@ export const [SortableList, sortableList] = hoistCmp.withFactory<SortableListPro
         const shownKeys = pendingKeys ?? keys;
         return dragDropProvider({
             sensors: DND_SENSORS,
-            plugins: DND_PLUGINS,
+            plugins,
             onDragStart,
             onDragOver,
             onDragEnd,

@@ -69,6 +69,7 @@ Set `orientation: 'horizontal'` for a row of items, and `wrap: true` to let it w
 Give the list a `height` or `maxHeight`, or a `flex` in a sized container, and its items scroll
 inside it once they outgrow it. The Add row stays in view below them. During a drag the list
 auto-scrolls its items, any scrolling ancestors and the window when the dragged item nears an edge.
+`scrollAcceleration` sets how fast - 15 by default, below dnd-kit's own 25.
 
 ### Removing and adding items
 
