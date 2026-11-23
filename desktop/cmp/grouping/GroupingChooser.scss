@@ -75,6 +75,11 @@
     .xh-sortable-list__row {
       background-color: var(--xh-bg);
     }
+
+    // The zero row gap brings the name to the grip; the remove button keeps some room.
+    .xh-sortable-list__remove {
+      margin-left: var(--xh-spacing-half);
+    }
   }
 
   &__row {
