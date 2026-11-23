@@ -13,6 +13,7 @@ import {
     type View,
     type ViewRowData
 } from '@xh/hoist/data';
+import {autorun} from '@xh/hoist/mobx';
 import {initTestAppAsync} from '@xh/hoist/test-support';
 import {LocalDate} from '@xh/hoist/utils/datetime';
 import {beforeAll, describe, expect, it, onTestFinished} from 'vitest';
@@ -106,6 +107,23 @@ describe('Cube supplied aggregates', () => {
         ]);
 
         expect(rowAt(view, 'US', 'Tech')).toMatchObject({mktVal: 1019, var95: 48});
+    });
+
+    it('changes an observed result only inside an action, on a load and on an update', async () => {
+        const cube = createCube(),
+            view = connectView(cube),
+            results = [];
+        // Observed, so MobX's strict mode flags a change outside an action, which fails the test.
+        const dispose = autorun(() => results.push(view.result));
+        onTestFinished(dispose);
+
+        await cube.loadDataAsync(POSITIONS, {}, AGGREGATES);
+        await cube.updateDataAsync([], {}, [
+            {dims: {region: 'US', sector: 'Tech'}, values: {var95: 48}}
+        ]);
+
+        expect(rowAt(view, 'US', 'Tech').var95).toBe(48);
+        expect(results.length).toBeGreaterThan(1);
     });
 
     it('replaces all values on a load, clearing them when none are given', async () => {

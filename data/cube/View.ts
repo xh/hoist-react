@@ -456,6 +456,7 @@ export class View
      * connected stores.
      * @internal - called by Cube when its supplied aggregates change.
      */
+    @action
     noteSuppliedAggregatesChanged() {
         const {_suppliedFields, _rootRows} = this;
         if (isEmpty(_suppliedFields) || isEmpty(_rootRows) || this.result?.exception) return;
