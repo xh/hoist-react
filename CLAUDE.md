@@ -40,58 +40,10 @@ signature, docs, and a member summary, and `hoist-get-members` with `filter` giv
 Prefer the package barrel import path when one is shown. `impl/` and `admin/` code is excluded
 unless you pass `includeInternal: true`.
 
-### GitHub MCP Server (opt-in)
+### GitHub
 
-A Docker-based server providing GitHub API tools (issues, PRs, code search, etc.) via the
-official `github-mcp-server` image. Configured in `.mcp.json` but **not enabled by default** —
-it requires Docker and an authenticated GitHub CLI, which not every developer keeps running.
-
-**To enable:**
-
-1. Install and start **Docker**.
-2. Install the **GitHub CLI** (`brew install gh`) and authenticate with `gh auth login`. The
-   server invokes `gh auth token` at startup to fetch a token from the macOS Keychain (or
-   `gh`'s credential store on other platforms), so no plaintext token needs to live in your
-   shell environment.
-3. Add `"github"` to `enabledMcpjsonServers` in `.claude/settings.local.json` (local settings
-   merge with the shared `settings.json` — enabling locally does not affect other developers):
-   ```json
-   {
-     "enabledMcpjsonServers": ["hoist-docs", "github"]
-   }
-   ```
-
-If Docker is not running or `gh` is not authenticated when the server is enabled, Claude Code
-may show errors on startup — remove `"github"` from your local settings to resolve.
-
-**Fallback when not enabled:** The `gh` CLI provides functionally equivalent access to the same
-operations (`gh pr view`, `gh issue list`, `gh api`, `gh pr create`, etc.). Prefer `gh` over
-crafting raw `curl` calls to the GitHub API.
-
-### JetBrains IntelliJ MCP Server (`idea`)
-
-IntelliJ registers its own MCP server in `.mcp.json` under the name `idea`, providing tools for
-interacting with the IDE (file navigation, code inspections, refactoring, terminal commands, etc.).
-It requires a running IDE instance with the MCP server enabled in IntelliJ's settings.
-
-**Not enabled by default** - the server fails to connect when no IDE is running, which shows as a
-startup error. Add `"idea"` to `enabledMcpjsonServers` in `.claude/settings.local.json` to enable it
-for yourself (local settings merge with the shared `settings.json`):
-
-```json
-{
-  "enabledMcpjsonServers": ["hoist-docs", "idea"]
-}
-```
-
-A read-only subset of its tools (search, read, symbol lookup, inspections) is pre-approved in the
-shared permissions allowlist, so no extra local config is needed once the server is on. Write and
-execute tools - `apply_patch`, `execute_terminal_command`, `execute_sql_query`, the `xdebug_*`
-family - are deliberately left out and still prompt.
-
-IntelliJ rewrites its own entry in `.mcp.json` on startup. Take its changes rather than reverting
-them, or it will keep prompting. Note that it hardcodes the default port `64342`, so a second IDE
-instance on another port needs a local override.
+Use the GitHub CLI (`gh`) for GitHub operations: `gh pr view`, `gh issue list`, `gh pr create`,
+and `gh api` for anything else. Prefer it over raw `curl` calls to the GitHub API.
 
 ### Chrome DevTools MCP Server (`chrome-devtools`)
 
