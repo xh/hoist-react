@@ -83,6 +83,8 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 * Fixed a bulk `Cube.updateDataAsync()` re-aggregating every group once per changed leaf for an
   aggregator with no incremental `replace()`, such as an app's own. A large update could freeze the
   browser. Such a field now aggregates each group once.
+* Fixed dialogs, popovers, menus and toasts showing Blueprint's system font in place of the app's
+  `--xh-font-family`.
 
 ### ⚙️ Typescript API Adjustments
 
