@@ -134,6 +134,12 @@ export interface SortableListProps<T = any> extends HoistProps<HoistModel>, BoxP
     /** True to let users remove items, as `onRemove` does - for a list that only needs `bind`. */
     removable?: boolean;
 
+    /**
+     * True to show remove buttons only while their item is hovered or holds keyboard focus, for a
+     * quieter list. Always shown on touch devices, which have no hover.
+     */
+    showRemoveOnHover?: boolean;
+
     /** Items that can be removed. Default: every item, when `removable` or `onRemove` is set. */
     isItemRemovable?: (item: T) => boolean;
 
@@ -241,6 +247,7 @@ export const [SortableList, sortableList] = hoistCmp.withFactory<SortableListPro
                     getItemLabel,
                     onRemove,
                     removable,
+                    showRemoveOnHover,
                     isItemRemovable,
                     onAdd,
                     addText = 'Add...',
@@ -378,6 +385,7 @@ export const [SortableList, sortableList] = hoistCmp.withFactory<SortableListPro
                     horizontal && wrap && 'xh-sortable-list--wrap',
                     compact && 'xh-sortable-list--compact',
                     keyboardDrag && 'xh-sortable-list--keyboard-drag',
+                    showRemoveOnHover && 'xh-sortable-list--remove-on-hover',
                     disabled && 'xh-sortable-list--disabled'
                 )
             },

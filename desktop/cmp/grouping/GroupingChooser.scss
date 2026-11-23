@@ -64,8 +64,7 @@
     }
   }
 
-  // Rows carry their own padding and background. The list's remove button sits beside the row, so
-  // it shares the row's background, and shows on hover or focus.
+  // The list's row carries the background, so the remove button beside the select shares it.
   &__list {
     --xh-sortable-list-item-padding: #{0 var(--xh-spacing-half)};
 
@@ -74,15 +73,6 @@
 
     .xh-sortable-list__row {
       background-color: var(--xh-bg);
-    }
-
-    .xh-sortable-list__remove {
-      opacity: 0;
-    }
-
-    .xh-sortable-list__item:hover .xh-sortable-list__remove,
-    .xh-sortable-list__remove:focus-visible {
-      opacity: 1;
     }
   }
 
@@ -93,7 +83,7 @@
     background-color: var(--xh-bg);
     height: 30px;
 
-    // Reads as a dropdown: a chevron, and a tint on hover.
+    // Reads as a dropdown on hover - a tint, and its chevron - and while focused or open.
     &__select {
       flex: 1;
 
@@ -114,6 +104,13 @@
 
       .xh-select__dropdown-indicator {
         color: var(--xh-text-color-muted);
+        opacity: 0;
+      }
+
+      &:hover .xh-select__dropdown-indicator,
+      .xh-select__control--is-focused .xh-select__dropdown-indicator,
+      .xh-select__control--menu-is-open .xh-select__dropdown-indicator {
+        opacity: 1;
       }
     }
 

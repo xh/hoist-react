@@ -76,7 +76,8 @@ auto-scrolls its items, any scrolling ancestors and the window when the dragged 
 
 Set `removable: true`, or `onRemove`, to give each item a remove button, after its content and any chevron, so the
 buttons line up in one column. Delete or Backspace on an item's handle removes it too.
-`isItemRemovable` limits which items have one. With `bind`, the list writes the list without the
+`isItemRemovable` limits which items have one. Set `showRemoveOnHover` to show the buttons only
+while their item is hovered or focused - they always show on touch devices. With `bind`, the list writes the list without the
 item and then calls `onRemove({item, index, items})`, if set, for any other work the removal needs.
 Without `bind`, apply `items` yourself.
 

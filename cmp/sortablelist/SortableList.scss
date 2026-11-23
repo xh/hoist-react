@@ -184,6 +184,17 @@
     }
   }
 
+  @media (hover: hover) {
+    &--remove-on-hover &__remove {
+      opacity: 0;
+    }
+
+    &--remove-on-hover &__item:hover &__remove,
+    &--remove-on-hover &__item:focus-within &__remove {
+      opacity: 1;
+    }
+  }
+
   // The Add row lines up with the items' rows.
   &__add {
     display: flex;

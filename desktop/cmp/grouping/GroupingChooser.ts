@@ -253,6 +253,7 @@ const dimensionList = hoistCmp.factory<GroupingChooserLocalModel>({
             getItemLabel: dim => model.parentModel.getDimDisplayName(dim),
             onReorder: e => model.movePendingDimToIndex(e.item, e.toIndex),
             onRemove: e => model.removePendingDimAtIdx(e.index),
+            showRemoveOnHover: true,
             renderItem: (dimension, {index}) => dimensionRow({dimension, idx: index})
         });
     }
