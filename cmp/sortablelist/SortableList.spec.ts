@@ -385,15 +385,26 @@ describe('SortableList', () => {
             expect(pressed(el)).toEqual([false, false, false]);
         });
 
-        it('ignores a press on the row body, on a disabled item, or with handle: item', () => {
+        it('ignores a press on the row body beside a handle, or on a disabled item', () => {
             const el = renderList({value: DIMS, isItemDisabled: it => it.id === 'fund'});
             fireEvent.pointerDown(row(el, 0), {button: 0});
             fireEvent.pointerDown(handles(el)[2], {button: 0});
             expect(pressed(el)).toEqual([false, false, false]);
+        });
 
-            const itemHandle = renderList({value: DIMS, handle: 'item'});
-            fireEvent.pointerDown(items(itemHandle)[0], {button: 0});
-            expect(pressed(itemHandle)).toEqual([false, false, false]);
+        it('marks a press anywhere on an item with handle: item, except on a control in it', () => {
+            const el = renderList({
+                value: DIMS,
+                handle: 'item',
+                renderItem: it =>
+                    it.id === 'fund' ? input({className: 'name-input'}) : span(it.name)
+            });
+
+            fireEvent.pointerDown(el.querySelector('.name-input'), {button: 0});
+            expect(pressed(el)).toEqual([false, false, false]);
+
+            fireEvent.pointerDown(items(el)[0].querySelector('span'), {button: 0});
+            expect(pressed(el)).toEqual([true, false, false]);
         });
     });
 

@@ -1055,8 +1055,10 @@ body {
   // Sortable Lists
   //------------------------
   --xh-sortable-list-compact-item-min-height: 24px;
-  // Background and border of the item lifted by a drag.
+  // Background, border and corners of the item while pressed on its handle, lifted by a drag, and
+  // of its placeholder. Items at rest have none of these.
   --xh-sortable-list-drag-bg: var(--xh-bg);
+  --xh-sortable-list-drag-border-radius: var(--xh-border-radius);
   --xh-sortable-list-drag-border-color: var(--xh-border-color);
   --xh-sortable-list-drag-rotate: 1deg;
   --xh-sortable-list-drag-shadow: 0 4px 14px rgba(38, 50, 56, 0.2), 0 1px 3px rgba(38, 50, 56, 0.15);
@@ -1073,7 +1075,6 @@ body {
   // Items draw no box of their own - the caller's content does.
   --xh-sortable-list-item-bg: transparent;
   --xh-sortable-list-item-border: none;
-  --xh-sortable-list-item-border-radius: var(--xh-border-radius);
   --xh-sortable-list-item-min-height: 30px;
   // Padding of each row, around its handle and content. Set 0 for content that draws its own.
   --xh-sortable-list-item-padding: #{0 var(--xh-spacing-half)};

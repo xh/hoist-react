@@ -317,6 +317,11 @@ function fixedDetail(item: any, renderDetail: SortableListProps['renderDetail'])
     return isNil(detail) ? null : div({className: 'xh-sortable-list__detail', children: detail});
 }
 
+// Controls that a press on never starts a drag - dnd-kit's own list.
+const DRAG_BLOCKING =
+    'input:not([disabled]), select:not([disabled]), textarea:not([disabled]), ' +
+    'button:not([disabled]), a[href], [contenteditable]:not([contenteditable="false"])';
+
 // Pointer travel between press and click beyond which the click ended a drag, not a tap.
 const DRAG_DISTANCE = 4;
 
@@ -416,8 +421,8 @@ const sortableItem = hoistCmp.factory<SortableItemProps>({
         // Cues a press on a handle, before the pointer moves far enough to lift the item.
         const onItemPointerDown = (e: ReactPointerEvent<HTMLDivElement>) => {
             const target = e.target as Element;
-            if (e.button !== 0 || handle === 'item' || isDisabled) return;
-            if (!activator.current?.contains(target)) return;
+            if (e.button !== 0 || isDisabled || !activator.current?.contains(target)) return;
+            if (handle === 'item' && target.closest(DRAG_BLOCKING)) return;
             setPressed(true);
             const release = () => {
                 setPressed(false);
