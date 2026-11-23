@@ -31,11 +31,13 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 * Added `SortableList`, a list users reorder by dragging or with the keyboard. Callers render each
   item, and the list supplies handles, the drop placeholder, auto-scrolling and screen reader
   announcements, then reports each completed move once via `bind` or `onReorder`. A `variant`
-  frames the items - plain, divided or spaced. A drag starts on a short hold or, with a mouse, as
+  frames the items - plain, divided or spaced. `onRemove` and `onAdd` add remove buttons and an Add
+  row, with focus and announcements handled. A drag starts on a short hold or, with a mouse, as
   soon as it moves. Items can expand to show a detail under their row, opened by a chevron or a
   click on the row. See
   [`cmp/sortablelist/README.md`](cmp/sortablelist/README.md).
-* `GroupingChooser` and the mobile column chooser can now be reordered with the keyboard.
+* `GroupingChooser` and the mobile column chooser can now be reordered with the keyboard, and
+  `GroupingChooser` dimensions can be removed with Delete or Backspace on their handle.
 * Added `Icon.gripVertical()`.
 * Added `SegmentedControl.toggleOnClick` (desktop and mobile). A two-option control becomes a
   toggle - a click anywhere on it, or Space or Enter on its focused segment, flips the value - for

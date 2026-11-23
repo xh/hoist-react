@@ -25,6 +25,11 @@
   // Rows carry their own padding and background.
   &__list {
     --xh-sortable-list-item-padding: 0;
+
+    .xh-sortable-list__row {
+      padding-right: var(--xh-spacing-half);
+      background-color: var(--xh-bg);
+    }
   }
 
   &__row {

@@ -67,6 +67,21 @@ doesn't also trigger an ancestor's shortcuts.
 Set `orientation: 'horizontal'` for a row of items, and `wrap: true` to let it wrap. The list
 auto-scrolls itself, any scrolling ancestors and the window when a dragged item nears an edge.
 
+### Removing and adding items
+
+Set `onRemove` to give each item a remove button, after its content and any chevron, so the
+buttons line up in one column. Delete or Backspace on an item's handle removes it too.
+`isItemRemovable` limits which items have one. With `bind`, the list writes the list without the
+item and then calls `onRemove({item, index, items})`, for any other work the removal needs.
+Without `bind`, apply `items` yourself.
+
+Set `onAdd` to show an Add row after the items, labelled by `addText`. The list cannot build your
+data, so `onAdd` returns the new item, or a promise of it, or null to add nothing. With `bind` the
+list appends it. Either way it then focuses the new item and opens its detail, if it has one.
+
+After a removal, focus moves to the item that took its place, or the one before it, or the Add row
+once the list is empty. Screen readers hear "Removed {item}." and "Added {item}.".
+
 ### Expandable rows
 
 Set `renderDetail` to make items expandable. Each item gets a chevron, which opens a detail under the

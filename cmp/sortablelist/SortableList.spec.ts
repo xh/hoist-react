@@ -371,6 +371,131 @@ describe('SortableList', () => {
         });
     });
 
+    describe('remove', () => {
+        it('shows a named remove button only on removable items', () => {
+            const el = renderList({
+                value: DIMS,
+                onRemove: vi.fn(),
+                isItemRemovable: it => it.id !== 'fund'
+            });
+
+            expect(removeButton(el, 0).getAttribute('aria-label')).toBe('Remove region');
+            expect(removeButton(el, 2)).toBeNull();
+            expect(renderList({value: DIMS}).querySelector('.xh-sortable-list__remove')).toBeNull();
+        });
+
+        it('writes the list without the item through bind, then calls onRemove', () => {
+            const model = new DimsModel(),
+                onRemove = vi.fn(),
+                el = renderList({model, bind: 'dims', onRemove});
+
+            fireEvent.click(removeButton(el, 1));
+            expect(model.dims.map(it => it.id)).toEqual(['region', 'fund']);
+            expect(onRemove).toHaveBeenCalledWith({
+                item: DIMS[1],
+                index: 1,
+                items: [DIMS[0], DIMS[2]]
+            });
+        });
+
+        it('leaves a list without bind to the caller', () => {
+            const onRemove = vi.fn(),
+                el = renderList({value: DIMS, onRemove});
+
+            fireEvent.click(removeButton(el, 0));
+            expect(onRemove).toHaveBeenCalledTimes(1);
+            expect(items(el)).toHaveLength(3);
+        });
+
+        it('removes on Delete or Backspace on a handle, keeping the key from ancestors', () => {
+            const model = new DimsModel(),
+                ancestorKeyDown = vi.fn(),
+                el = render(
+                    div({
+                        onKeyDown: ancestorKeyDown,
+                        children: sortableList({
+                            model,
+                            bind: 'dims',
+                            onRemove: () => {},
+                            renderItem: it => span(it.name)
+                        })
+                    })
+                ).container.querySelector<HTMLElement>('.xh-sortable-list');
+
+            fireEvent.keyDown(handles(el)[0], {key: 'Delete'});
+            fireEvent.keyDown(handles(el)[0], {key: 'Backspace'});
+            expect(model.dims.map(it => it.id)).toEqual(['fund']);
+            expect(ancestorKeyDown).not.toHaveBeenCalled();
+        });
+
+        it('moves focus to the next item, or the previous one after the last, and announces it', () => {
+            const model = new DimsModel(),
+                el = renderList({model, bind: 'dims', onRemove: () => {}});
+
+            fireEvent.click(removeButton(el, 1));
+            expect(document.activeElement).toBe(handles(el)[1]);
+            expect(handles(el)[1].getAttribute('aria-label')).toBe('fund');
+            expect(status(el).textContent).toBe('Removed sector.');
+
+            fireEvent.click(removeButton(el, 1));
+            expect(document.activeElement).toBe(handles(el)[0]);
+        });
+    });
+
+    describe('add', () => {
+        const newDim = {id: 'book', name: 'Book'};
+
+        it('shows an Add row only with onAdd, labelled by addText', () => {
+            expect(addRow(renderList({value: DIMS}))).toBeNull();
+            expect(addRow(renderList({value: DIMS, onAdd: vi.fn()})).textContent).toBe('Add...');
+            expect(
+                addRow(renderList({value: DIMS, onAdd: vi.fn(), addText: 'Add level'})).textContent
+            ).toBe('Add level');
+        });
+
+        it('appends the item onAdd returns through bind, focuses it and opens its detail', async () => {
+            const model = new DimsModel(),
+                el = renderList({
+                    model,
+                    bind: 'dims',
+                    onAdd: () => newDim,
+                    renderDetail: it => span(`${it.name} settings`)
+                });
+
+            await act(async () => fireEvent.click(addRow(el)));
+            expect(model.dims.map(it => it.id)).toEqual(['region', 'sector', 'fund', 'book']);
+            expect(document.activeElement).toBe(handles(el)[3]);
+            expect(openRows(el)).toEqual([3]);
+            expect(status(el).textContent).toBe('Added book.');
+        });
+
+        it('waits for an async onAdd, and adds nothing when it returns null', async () => {
+            const model = new DimsModel(),
+                el = renderList({model, bind: 'dims', onAdd: async () => newDim}),
+                none = renderList({model: new DimsModel(), bind: 'dims', onAdd: () => null});
+
+            await act(async () => fireEvent.click(addRow(el)));
+            expect(model.dims).toHaveLength(4);
+
+            await act(async () => fireEvent.click(addRow(none)));
+            expect(items(none)).toHaveLength(3);
+        });
+
+        it('focuses the Add row once the last item is removed', () => {
+            const el = renderList({
+                model: new DimsModel(),
+                bind: 'dims',
+                onRemove: () => {},
+                onAdd: () => null
+            });
+
+            fireEvent.click(removeButton(el, 2));
+            fireEvent.click(removeButton(el, 1));
+            fireEvent.click(removeButton(el, 0));
+            expect(document.activeElement).toBe(addRow(el));
+        });
+    });
+
     it('throws for a duplicate or missing item key', () => {
         vi.spyOn(console, 'error').mockImplementation(() => {});
         expect(() => renderList({value: [DIMS[0], {...DIMS[0]}]})).toThrow(/unique/);
@@ -432,4 +557,16 @@ function openRows(el: HTMLElement): number[] {
     return items(el)
         .map((it, idx) => (it.querySelector('.xh-sortable-list__detail') ? idx : -1))
         .filter(idx => idx >= 0);
+}
+
+function removeButton(el: HTMLElement, idx: number): HTMLElement {
+    return items(el)[idx].querySelector('.xh-sortable-list__remove');
+}
+
+function addRow(el: HTMLElement): HTMLElement {
+    return el.querySelector('.xh-sortable-list__add');
+}
+
+function status(el: HTMLElement): HTMLElement {
+    return el.querySelector('.xh-sortable-list__status');
 }

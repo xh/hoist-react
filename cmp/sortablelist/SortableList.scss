@@ -8,14 +8,21 @@
 .xh-sortable-list {
   display: flex;
   flex-direction: column;
-  gap: var(--xh-sortable-list-gap);
   min-width: 0;
 
-  &--horizontal {
+  &__items {
+    display: flex;
+    flex-direction: column;
+    gap: var(--xh-sortable-list-gap);
+    min-width: 0;
+  }
+
+  &--horizontal,
+  &--horizontal &__items {
     flex-direction: row;
   }
 
-  &--wrap {
+  &--wrap &__items {
     flex-wrap: wrap;
   }
 
@@ -85,8 +92,23 @@
     border-left: none;
   }
 
-  &--spaced {
+  &--spaced,
+  &--spaced &__items {
     gap: var(--xh-sortable-list-spaced-gap);
+  }
+
+  &--divided &__items:not(:empty) + &__add {
+    border-top: var(--xh-border-width) solid var(--xh-sortable-list-border-color);
+  }
+
+  &--divided#{&}--horizontal &__items:not(:empty) + &__add {
+    border-top: none;
+    border-left: var(--xh-border-width) solid var(--xh-sortable-list-border-color);
+  }
+
+  &--spaced &__add {
+    border: var(--xh-border-width) dashed var(--xh-sortable-list-border-color);
+    border-radius: var(--xh-sortable-list-border-radius);
   }
 
   &--spaced &__item {
@@ -117,7 +139,8 @@
     min-width: 0;
   }
 
-  &__expander {
+  &__expander,
+  &__remove {
     display: inline-flex;
     flex: none;
     align-items: center;
@@ -125,11 +148,18 @@
     width: 20px;
     height: 20px;
     padding: 0;
-    color: var(--xh-text-color-muted);
     background: none;
     border: none;
     border-radius: 2px;
     cursor: pointer;
+
+    &:focus-visible {
+      outline: var(--xh-focus-outline);
+    }
+  }
+
+  &__expander {
+    color: var(--xh-text-color-muted);
 
     .xh-icon {
       transition: rotate var(--xh-sortable-list-expander-transition);
@@ -142,10 +172,55 @@
     &:hover {
       color: var(--xh-text-color);
     }
+  }
+
+  &__remove {
+    color: var(--xh-intent-danger-text-color);
+
+    &:hover {
+      background-color: var(--xh-intent-danger-trans1);
+    }
+  }
+
+  // The Add row lines up with the items' rows.
+  &__add {
+    display: flex;
+    align-items: center;
+    gap: var(--xh-sortable-list-row-gap);
+    min-height: var(--xh-sortable-list-item-min-height);
+    padding: var(--xh-sortable-list-item-padding);
+    font: inherit;
+    color: var(--xh-text-color-muted);
+    text-align: start;
+    background: none;
+    border: none;
+    cursor: pointer;
+
+    &:hover:not(:disabled) {
+      color: var(--xh-text-color);
+      background-color: var(--xh-sortable-list-row-hover-bg);
+    }
 
     &:focus-visible {
       outline: var(--xh-focus-outline);
     }
+
+    &:disabled {
+      cursor: not-allowed;
+    }
+  }
+
+  &--compact &__add {
+    min-height: var(--xh-sortable-list-compact-item-min-height);
+  }
+
+  &__status {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
   }
 
   &__item--row-toggle > &__row {

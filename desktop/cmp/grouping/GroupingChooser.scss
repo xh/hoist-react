@@ -64,12 +64,27 @@
     }
   }
 
-  // Rows carry their own padding and background.
+  // Rows carry their own padding and background. The list's remove button sits beside the row, so
+  // it shares the row's background, and shows on hover or focus.
   &__list {
     --xh-sortable-list-item-padding: 0;
 
     margin-bottom: var(--xh-spacing-half);
     background-color: var(--xh-bg-alt);
+
+    .xh-sortable-list__row {
+      padding-right: var(--xh-spacing-half);
+      background-color: var(--xh-bg);
+    }
+
+    .xh-sortable-list__remove {
+      opacity: 0;
+    }
+
+    .xh-sortable-list__item:hover .xh-sortable-list__remove,
+    .xh-sortable-list__remove:focus-visible {
+      opacity: 1;
+    }
   }
 
   &__row {
@@ -109,14 +124,6 @@
 
     &__text {
       flex: 1;
-    }
-
-    &__remove-btn {
-      opacity: 0;
-    }
-
-    &:hover .xh-grouping-chooser__row__remove-btn {
-      opacity: 1;
     }
   }
 

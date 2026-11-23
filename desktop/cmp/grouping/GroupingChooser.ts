@@ -253,6 +253,7 @@ const dimensionList = hoistCmp.factory<GroupingChooserLocalModel>({
             handle: 'custom',
             getItemLabel: dim => model.parentModel.getDimDisplayName(dim),
             onReorder: e => model.movePendingDimToIndex(e.item, e.toIndex),
+            onRemove: e => model.removePendingDimAtIdx(e.index),
             renderItem: (dimension, {index, handleRef}) =>
                 dimensionRow({dimension, idx: index, handleRef})
         });
@@ -282,13 +283,6 @@ const dimensionRow = hoistCmp.factory<GroupingChooserLocalModel>({
                         hideDropdownIndicator: true,
                         onChange: newDim => model.replacePendingDimAtIdx(newDim, idx)
                     })
-                }),
-                button({
-                    icon: Icon.delete(),
-                    intent: 'danger',
-                    tabIndex: -1,
-                    className: 'xh-grouping-chooser__row__remove-btn',
-                    onClick: () => model.removePendingDimAtIdx(idx)
                 })
             ]
         });
