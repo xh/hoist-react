@@ -54,7 +54,7 @@ describe('Sparkline', () => {
             );
         });
 
-        it('shows on hover in a Blueprint tooltip on desktop, built once from the data', async () => {
+        it('shows on hover in a Blueprint tooltip on desktop, built from the data', async () => {
             const tooltip = vi.fn((data: number[]) =>
                     span({className: 'custom-tip', children: `${data.length} days`})
                 ),
@@ -63,7 +63,7 @@ describe('Sparkline', () => {
             fireEvent.mouseEnter(root);
             expect((await screen.findByText('2 days')).className).toBe('custom-tip');
             expect(root.hasAttribute('title')).toBe(false);
-            expect(tooltip).toHaveBeenCalledTimes(1);
+            expect(tooltip).toHaveBeenCalledWith([1, 2]);
         });
 
         it('keeps the sparkline as the tooltip target, with its layout and ref', async () => {

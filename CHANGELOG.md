@@ -16,6 +16,10 @@
 
 ### 🐞 Bug Fixes
 
+* Fixed a minor memory leak in `Sparkline` tooltips, where an unmount cleanup kept the first
+  render's props.
+* Fixed `useOnResize`, `useOnVisibleChange` and `useOnScroll` calling the function passed on a
+  component's first render rather than the latest one.
 * Fixed a memory leak in `DashContainer` where each rebuild of the layout left the old layout,
   including its DOM, in memory. The menu button in each stack header was rendered into a React root
   that was never unmounted.
