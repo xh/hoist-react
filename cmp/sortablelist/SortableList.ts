@@ -90,8 +90,11 @@ export interface SortableListProps<T = any> extends HoistProps<HoistModel>, BoxP
      */
     handle?: 'start' | 'end' | 'item' | 'custom';
 
-    /** Items that can't be picked up. Other items still move past them. */
-    isItemDisabled?: (item: T) => boolean;
+    /**
+     * Items that can be dragged. Default: every item. Others show a lock in place of their grip,
+     * and items that can move still move past them.
+     */
+    isItemMovable?: (item: T) => boolean;
 
     /** True to disable all reordering. */
     disabled?: boolean;
@@ -111,12 +114,15 @@ export interface SortableListProps<T = any> extends HoistProps<HoistModel>, BoxP
 
     /**
      * Called when a user removes an item, by its remove button or Delete or Backspace on its
-     * handle. Setting it shows those controls. With `bind`, the list writes the shortened list
+     * handle. Setting it, or `removable`, shows those controls. With `bind`, the list writes the shortened list
      * first; otherwise apply `e.items` yourself.
      */
     onRemove?: (e: SortableRemoveEvent<T>) => void;
 
-    /** Items that can be removed. Default: every item, when `onRemove` is set. */
+    /** True to let users remove items, as `onRemove` does - for a list that only needs `bind`. */
+    removable?: boolean;
+
+    /** Items that can be removed. Default: every item, when `removable` or `onRemove` is set. */
     isItemRemovable?: (item: T) => boolean;
 
     /**
@@ -136,7 +142,8 @@ export interface SortableItemContext {
     /** True for the item being dragged. */
     isDragging: boolean;
 
-    isDisabled: boolean;
+    /** False for an item that can't be dragged, or any item in a disabled list. */
+    isMovable: boolean;
 
     /** For `handle: 'custom'` - the ref for the element users should grab. */
     handleRef: (el: Element) => void;
@@ -201,12 +208,13 @@ export const [SortableList, sortableList] = hoistCmp.withFactory<SortableListPro
                     orientation = 'vertical',
                     wrap,
                     handle = 'start',
-                    isItemDisabled,
+                    isItemMovable,
                     disabled,
                     compact,
                     variant = 'plain',
                     getItemLabel,
                     onRemove,
+                    removable,
                     isItemRemovable,
                     onAdd,
                     addText = 'Add...',
@@ -283,7 +291,7 @@ export const [SortableList, sortableList] = hoistCmp.withFactory<SortableListPro
             }
             if (model && bind) model.setBindable(bind, next);
             setAnnouncement(`Removed ${labelOf(item)}.`);
-            onRemove({item, index, items: next});
+            onRemove?.({item, index, items: next});
         };
 
         const add = async () => {
@@ -375,7 +383,7 @@ export const [SortableList, sortableList] = hoistCmp.withFactory<SortableListPro
                                 label: labelOf(item),
                                 handle,
                                 horizontal,
-                                itemDisabled: !!isItemDisabled?.(item),
+                                itemFixed: isItemMovable ? !isItemMovable(item) : false,
                                 listDisabled: !!disabled,
                                 keyboardDrag,
                                 focusKey,
@@ -387,7 +395,7 @@ export const [SortableList, sortableList] = hoistCmp.withFactory<SortableListPro
                                 rowToggle: expandable && toggleOnRowClick && handle !== 'item',
                                 onToggle: () => toggleExpanded(key),
                                 removable:
-                                    !!onRemove &&
+                                    (removable || !!onRemove) &&
                                     !disabled &&
                                     (isItemRemovable ? isItemRemovable(item) : true),
                                 onRemove: () => remove(key),
@@ -445,7 +453,8 @@ interface SortableItemProps extends HoistProps {
     label: string;
     handle: SortableListProps['handle'];
     horizontal: boolean;
-    itemDisabled: boolean;
+    /** True for an item that can't be dragged. */
+    itemFixed: boolean;
     listDisabled: boolean;
     keyboardDrag: boolean;
     /** Key of the item to refocus once it renders in its new place - React's move drops focus. */
@@ -476,7 +485,7 @@ const sortableItem = hoistCmp.factory<SortableItemProps>({
         label,
         handle,
         horizontal,
-        itemDisabled,
+        itemFixed,
         listDisabled,
         keyboardDrag,
         focusKey,
@@ -491,7 +500,7 @@ const sortableItem = hoistCmp.factory<SortableItemProps>({
         onRemove,
         onMove
     }) {
-        const isDisabled = itemDisabled || listDisabled,
+        const isDisabled = itemFixed || listDisabled,
             activator = useRef<Element>(null),
             pointerDown = useRef<{x: number; y: number}>(null),
             detailId = useId(),
@@ -563,7 +572,7 @@ const sortableItem = hoistCmp.factory<SortableItemProps>({
         const ctx: SortableItemContext = {
                 index,
                 isDragging: sortable.isDragging,
-                isDisabled,
+                isMovable: !isDisabled,
                 handleRef
             },
             showHandle = handle === 'start' || handle === 'end',
@@ -573,7 +582,7 @@ const sortableItem = hoistCmp.factory<SortableItemProps>({
                       className: 'xh-sortable-list__handle',
                       'aria-label': label,
                       tabIndex: isDisabled ? -1 : 0,
-                      children: itemDisabled ? Icon.lock() : Icon.gripVertical()
+                      children: itemFixed ? Icon.lock() : Icon.gripVertical()
                   })
                 : null,
             expander = expandable
@@ -606,7 +615,7 @@ const sortableItem = hoistCmp.factory<SortableItemProps>({
             className: classNames(
                 'xh-sortable-list__item',
                 sortable.isDragging && 'xh-sortable-list__item--dragging',
-                itemDisabled && 'xh-sortable-list__item--disabled',
+                itemFixed && 'xh-sortable-list__item--fixed',
                 rowToggle && 'xh-sortable-list__item--row-toggle'
             ),
             onKeyDown,

@@ -31,8 +31,9 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 * Added `SortableList`, a list users reorder by dragging or with the keyboard. Callers render each
   item, and the list supplies handles, the drop placeholder, auto-scrolling and screen reader
   announcements, then reports each completed move once via `bind` or `onReorder`. A `variant`
-  frames the items - plain, divided or spaced. `onRemove` and `onAdd` add remove buttons and an Add
-  row, with focus and announcements handled. A drag starts on a short hold or, with a mouse, as
+  frames the items - plain, divided or spaced. `removable` (or `onRemove`) and `onAdd` add remove
+  buttons and an Add row, with focus and announcements handled. `isItemMovable` and
+  `isItemRemovable` exempt individual items. A drag starts on a short hold or, with a mouse, as
   soon as it moves. Items can expand to show a detail under their row, opened by a chevron or a
   click on the row. See
   [`cmp/sortablelist/README.md`](cmp/sortablelist/README.md).

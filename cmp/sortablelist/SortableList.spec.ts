@@ -94,9 +94,9 @@ describe('SortableList', () => {
             expect(onReorder).not.toHaveBeenCalled();
         });
 
-        it('does not move a disabled item, or any item in a disabled list', () => {
+        it('does not move an item isItemMovable rejects, or any item in a disabled list', () => {
             const onReorder = vi.fn(),
-                el = renderList({value: DIMS, onReorder, isItemDisabled: it => it.id === 'region'});
+                el = renderList({value: DIMS, onReorder, isItemMovable: it => it.id !== 'region'});
 
             fireEvent.keyDown(handles(el)[0], {key: 'ArrowDown', altKey: true});
             expect(onReorder).not.toHaveBeenCalled();
@@ -396,6 +396,14 @@ describe('SortableList', () => {
                 index: 1,
                 items: [DIMS[0], DIMS[2]]
             });
+        });
+
+        it('is turned on by removable alone, writing through bind', () => {
+            const model = new DimsModel(),
+                el = renderList({model, bind: 'dims', removable: true});
+
+            fireEvent.click(removeButton(el, 0));
+            expect(model.dims.map(it => it.id)).toEqual(['sector', 'fund']);
         });
 
         it('leaves a list without bind to the caller', () => {

@@ -56,10 +56,6 @@
         visibility: hidden;
       }
     }
-
-    &--disabled {
-      color: var(--xh-text-color-muted);
-    }
   }
 
   //------------------------
@@ -263,9 +259,9 @@
     }
   }
 
-  &__item--disabled &__handle,
+  &__item--fixed &__handle,
   &--disabled &__handle,
-  &--handle-item &__item--disabled,
+  &--handle-item &__item--fixed,
   &--handle-item.xh-sortable-list--disabled &__item {
     cursor: not-allowed;
   }

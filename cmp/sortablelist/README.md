@@ -69,10 +69,10 @@ auto-scrolls itself, any scrolling ancestors and the window when a dragged item 
 
 ### Removing and adding items
 
-Set `onRemove` to give each item a remove button, after its content and any chevron, so the
+Set `removable: true`, or `onRemove`, to give each item a remove button, after its content and any chevron, so the
 buttons line up in one column. Delete or Backspace on an item's handle removes it too.
 `isItemRemovable` limits which items have one. With `bind`, the list writes the list without the
-item and then calls `onRemove({item, index, items})`, for any other work the removal needs.
+item and then calls `onRemove({item, index, items})`, if set, for any other work the removal needs.
 Without `bind`, apply `items` yourself.
 
 Set `onAdd` to show an Add row after the items, labelled by `addText`. The list cannot build your
@@ -108,7 +108,7 @@ reorders.
   `toggleOnRowClick: false` for rows that are mostly controls. Row clicks never toggle with
   `handle: 'item'`, where a press on the row starts a drag - use the chevron.
 
-`isItemDisabled` marks items that can't be picked up. Other items still move past them, so render
+`isItemMovable` limits which items can be picked up - the rest show a lock in place of their grip. Other items still move past them, so render
 items that must keep a fixed position, such as pinned columns, outside the list. `disabled`
 disables all reordering.
 
