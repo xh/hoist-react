@@ -80,6 +80,9 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 * Fixed `Chart` leaving one Highcharts resize observer behind on each rebuild, such as a change to
   `highchartsConfig`. Each one ran on every resize for as long as the chart was mounted.
 * Fixed `TabSwitcher` tab and group-header icons sitting about 2px above the center of their label.
+* Fixed a bulk `Cube.updateDataAsync()` re-aggregating every group once per changed leaf for an
+  aggregator with no incremental `replace()`, such as an app's own. A large update could freeze the
+  browser. Such a field now aggregates each group once.
 
 ### ⚙️ Typescript API Adjustments
 
