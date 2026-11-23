@@ -22,6 +22,11 @@
     }
   }
 
+  // Rows carry their own padding and background.
+  &__list {
+    --xh-sortable-list-item-padding: 0;
+  }
+
   &__row {
     display: flex;
     align-items: center;

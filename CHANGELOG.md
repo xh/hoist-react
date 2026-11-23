@@ -88,7 +88,8 @@ detailed, step-by-step upgrade instructions with before/after code examples.
   border, in place of a solid block of the primary color.
 * Added `--xh-chip-*` variables for the new `Chip`, and `--xh-sortable-list-*` variables for the
   new `SortableList`. The item lifted by a drag has a border and a shadow, set by
-  `--xh-sortable-list-drag-border-color` and `--xh-sortable-list-drag-shadow`.
+  `--xh-sortable-list-drag-border-color` and `--xh-sortable-list-drag-shadow`. Each row has
+  horizontal padding from `--xh-sortable-list-item-padding`, Hoist's half spacing by default.
 * `FilterChooser` favorites now show their filter labels as minimal `Chip`s.
 * Removed the `xh-grouping-chooser__row--dragging` class. A dragged row is styled by `SortableList`.
 
