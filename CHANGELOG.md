@@ -17,9 +17,6 @@
 ### 🐞 Bug Fixes
 
 * Fixed `TabSwitcher` tab and group-header icons sitting about 2px above the center of their label.
-
-### 🐞 Bug Fixes
-
 * Addressed potential memory leaks:
     * Grid column header filters could retain models after closing.
     * Mobile `Navigator` could retain pages replaced by a route change.
