@@ -72,6 +72,8 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 * Fixed the column chooser listing `CubeGridModel`'s default label column as "Cube Label". It now
   takes the names of the row dimensions, as the header does, or "Group" when there are none.
 * Fixed `GroupingChooser` rows drifting away from the pointer while dragged inside its popover.
+* Fixed `Chart` leaving one Highcharts resize observer behind on each rebuild, such as a change to
+  `highchartsConfig`. Each one ran on every resize for as long as the chart was mounted.
 
 ### ⚙️ Typescript API Adjustments
 
