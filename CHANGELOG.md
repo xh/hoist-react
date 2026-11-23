@@ -20,6 +20,16 @@
   were never released. They kept the grid alive, with all its data, after the grid itself was gone.
 * Fixed a memory leak in the mobile `Navigator`, where each route change left the pages it replaced
   in memory.
+* Fixed a minor memory leak in `Sparkline` tooltips, where an unmount cleanup kept the first
+  render's props.
+* Fixed `useOnResize`, `useOnVisibleChange` and `useOnScroll` calling the function passed on a
+  component's first render rather than the latest one.
+* Fixed a memory leak in `DashContainer` where each rebuild of the layout left the old layout,
+  including its DOM, in memory. The menu button in each stack header was rendered into a React root
+  that was never unmounted.
+* Fixed a memory leak where a Hoist component kept its first-render props until it unmounted.
+  Passing a mounted component a new object in any prop - e.g. a new `model` to `grid` or a new
+  `gridModel` to `gridFindField` - left the old object in memory.
 
 ## 91.0.0 - 2026-11-20
 
