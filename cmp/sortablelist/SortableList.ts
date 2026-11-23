@@ -5,7 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import classNames from 'classnames';
-import {isFunction, isNil, uniq} from 'lodash';
+import {isFunction, isNil, over, uniq} from 'lodash';
 import type {
     KeyboardEvent as ReactKeyboardEvent,
     MouseEvent as ReactMouseEvent,
@@ -18,7 +18,13 @@ import {div, htmlButton, span} from '@xh/hoist/cmp/layout';
 import type {BoxProps, HoistModel, HoistProps} from '@xh/hoist/core';
 import {hoistCmp, uses} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
-import type {DragEndEvent, DragOverEvent, DragStartEvent} from '@xh/hoist/kit/dnd-kit';
+import type {
+    DragDropProviderProps,
+    DragEndEvent,
+    DragOverEvent,
+    DragStartEvent,
+    UseSortableInput
+} from '@xh/hoist/kit/dnd-kit';
 import {dragDropProvider, useSortable} from '@xh/hoist/kit/dnd-kit';
 import {TEST_ID, mergeDeep, throwIf} from '@xh/hoist/utils/js';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
@@ -140,6 +146,19 @@ export interface SortableListProps<T = any> extends HoistProps<HoistModel>, BoxP
 
     /** Label of the Add row. Default 'Add...'. */
     addText?: ReactNode;
+
+    /**
+     * Escape-hatch props for dnd-kit's `DragDropProvider`, for options this component doesn't map.
+     * `sensors`, `plugins` and `modifiers` here replace Hoist's. Drag event handlers run after
+     * Hoist's own. Use with care - they can interfere with the list's behavior.
+     */
+    dndProviderProps?: Partial<DragDropProviderProps>;
+
+    /**
+     * Escape-hatch options for each item's dnd-kit `useSortable`, such as `collisionDetector`. The
+     * list's own `id`, `index`, `data` and `disabled` always win.
+     */
+    sortableProps?: Partial<UseSortableInput>;
 }
 
 export interface SortableItemContext {
@@ -225,6 +244,8 @@ export const [SortableList, sortableList] = hoistCmp.withFactory<SortableListPro
                     isItemRemovable,
                     onAdd,
                     addText = 'Add...',
+                    dndProviderProps,
+                    sortableProps,
                     testId,
                     domAttrs,
                     ...restProps
@@ -369,9 +390,10 @@ export const [SortableList, sortableList] = hoistCmp.withFactory<SortableListPro
         return dragDropProvider({
             sensors: DND_SENSORS,
             plugins,
-            onDragStart,
-            onDragOver,
-            onDragEnd,
+            ...dndProviderProps,
+            onDragStart: chain(onDragStart, dndProviderProps?.onDragStart),
+            onDragOver: chain(onDragOver, dndProviderProps?.onDragOver),
+            onDragEnd: chain(onDragEnd, dndProviderProps?.onDragEnd),
             children: div({
                 ref,
                 ...divProps,
@@ -396,6 +418,7 @@ export const [SortableList, sortableList] = hoistCmp.withFactory<SortableListPro
                                 keyboardDrag,
                                 focusKey,
                                 dragging,
+                                sortableProps,
                                 renderItem,
                                 renderDetail,
                                 expandable,
@@ -439,6 +462,14 @@ export const [SortableList, sortableList] = hoistCmp.withFactory<SortableListPro
 //------------------
 // Implementation
 //------------------
+/** Hoist's handler, then the app's, if set. */
+function chain<A extends unknown[]>(
+    own: NoInfer<(...args: A) => void>,
+    app: (...args: A) => void
+): (...args: A) => void {
+    return app ? over([own, app]) : own;
+}
+
 // A click on one of these, inside a row, does its own job and never toggles the row.
 const ROW_CLICK_IGNORED =
     'button, a, input, select, textarea, [role=button], [role=combobox], [role=listbox], ' +
@@ -469,6 +500,7 @@ interface SortableItemProps extends HoistProps {
     focusKey: MutableRefObject<SortableKey>;
     /** True during a drag, and until just after it ends. */
     dragging: MutableRefObject<boolean>;
+    sortableProps: Partial<UseSortableInput>;
     renderItem: SortableListProps['renderItem'];
     renderDetail: SortableListProps['renderDetail'];
     expandable: boolean;
@@ -498,6 +530,7 @@ const sortableItem = hoistCmp.factory<SortableItemProps>({
         keyboardDrag,
         focusKey,
         dragging,
+        sortableProps,
         renderItem,
         renderDetail,
         expandable,
@@ -513,11 +546,12 @@ const sortableItem = hoistCmp.factory<SortableItemProps>({
             pointerDown = useRef<{x: number; y: number}>(null),
             detailId = useId(),
             sortable = useSortable({
+                transition: DND_TRANSITION,
+                ...sortableProps,
                 id: itemKey,
                 index,
                 data: {label, count},
-                disabled: isDisabled ? {draggable: true, droppable: false} : false,
-                transition: DND_TRANSITION
+                disabled: isDisabled ? {draggable: true, droppable: false} : false
             }),
             handleRef = (el: Element) => {
                 activator.current = el;

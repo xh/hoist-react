@@ -141,6 +141,15 @@ body.xh-app {
 }
 ```
 
+## dnd-kit Options
+
+For anything dnd-kit supports that the list doesn't map to its own props, pass
+`dndProviderProps` to its `DragDropProvider`, or `sortableProps` to each item's `useSortable`.
+`sensors`, `plugins` and `modifiers` in `dndProviderProps` replace Hoist's own, and its drag
+handlers run after Hoist's. The list's own `id`, `index`, `data` and `disabled` always win over
+`sortableProps`. Both can interfere with the list's behavior, so prefer a mapped prop where one
+exists.
+
 ## Common Pitfalls
 
 - **Pass the list as `value`, not `items`.** Hoist's element factories treat `items` as an alias
