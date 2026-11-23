@@ -16,6 +16,9 @@
 
 ### 🐞 Bug Fixes
 
+* Fixed a memory leak in `DashContainer` where each rebuild of the layout left the old layout,
+  including its DOM, in memory. The menu button in each stack header was rendered into a React root
+  that was never unmounted.
 * Fixed a memory leak where a Hoist component kept its first-render props until it unmounted.
   Passing a mounted component a new object in any prop - e.g. a new `model` to `grid` or a new
   `gridModel` to `gridFindField` - left the old object in memory.
