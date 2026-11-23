@@ -9,12 +9,17 @@
   display: flex;
   flex-direction: column;
   min-width: 0;
+  min-height: 0;
 
+  // Scrolls once the list is given less room than its items need, keeping the Add row in view.
   &__items {
     display: flex;
+    flex: 1 1 auto;
     flex-direction: column;
     gap: var(--xh-sortable-list-gap);
     min-width: 0;
+    min-height: 0;
+    overflow: auto;
   }
 
   &--horizontal,
@@ -181,6 +186,7 @@
   // The Add row lines up with the items' rows.
   &__add {
     display: flex;
+    flex: none;
     align-items: center;
     gap: var(--xh-sortable-list-row-gap);
     min-height: var(--xh-sortable-list-item-min-height);

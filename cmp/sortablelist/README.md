@@ -64,8 +64,11 @@ doesn't also trigger an ancestor's shortcuts.
 
 ### Layout
 
-Set `orientation: 'horizontal'` for a row of items, and `wrap: true` to let it wrap. The list
-auto-scrolls itself, any scrolling ancestors and the window when a dragged item nears an edge.
+Set `orientation: 'horizontal'` for a row of items, and `wrap: true` to let it wrap.
+
+Give the list a `height` or `maxHeight`, or a `flex` in a sized container, and its items scroll
+inside it once they outgrow it. The Add row stays in view below them. During a drag the list
+auto-scrolls its items, any scrolling ancestors and the window when the dragged item nears an edge.
 
 ### Removing and adding items
 
