@@ -16,6 +16,8 @@
 
 ### 🐞 Bug Fixes
 
+* Fixed dialogs, popovers, menus and toasts showing Blueprint's system font in place of the app's
+  `--xh-font-family`.
 * Addressed potential memory leaks:
     * Grid column header filters could retain models after closing.
     * Mobile `Navigator` could retain pages replaced by a route change.
