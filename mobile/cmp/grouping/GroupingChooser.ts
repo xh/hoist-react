@@ -122,29 +122,22 @@ const dimensionList = hoistCmp.factory<GroupingChooserLocalModel>({
             className: 'xh-grouping-chooser__list',
             value: model.pendingValue,
             itemKey: dim => dim,
-            handle: 'custom',
             getItemLabel: dim => model.parentModel.getDimDisplayName(dim),
             onReorder: e => model.movePendingDimToIndex(e.item, e.toIndex),
             onRemove: e => model.removePendingDimAtIdx(e.index),
-            renderItem: (dimension, {index, handleRef}) =>
-                dimensionRow({dimension, idx: index, handleRef})
+            renderItem: (dimension, {index}) => dimensionRow({dimension, idx: index})
         });
     }
 });
 
 const dimensionRow = hoistCmp.factory<GroupingChooserLocalModel>({
-    render({model, dimension, idx, handleRef}) {
+    render({model, dimension, idx}) {
         // The options for this select include its current value
         const options = model.getDimSelectOpts([...model.availableDims, dimension]);
 
         return div({
             className: 'xh-grouping-chooser__row',
             children: [
-                div({
-                    ref: handleRef,
-                    className: 'xh-grouping-chooser__row__grabber',
-                    children: Icon.grip({prefix: 'fal'})
-                }),
                 div({
                     className: 'xh-grouping-chooser__row__select',
                     children: select({

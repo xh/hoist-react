@@ -67,13 +67,12 @@
   // Rows carry their own padding and background. The list's remove button sits beside the row, so
   // it shares the row's background, and shows on hover or focus.
   &__list {
-    --xh-sortable-list-item-padding: 0;
+    --xh-sortable-list-item-padding: #{0 var(--xh-spacing-half)};
 
     margin-bottom: var(--xh-spacing-half);
     background-color: var(--xh-bg-alt);
 
     .xh-sortable-list__row {
-      padding-right: var(--xh-spacing-half);
       background-color: var(--xh-bg);
     }
 
@@ -88,37 +87,33 @@
   }
 
   &__row {
-    padding: var(--xh-spacing-half) 0 var(--xh-spacing-half) var(--xh-spacing-half);
+    padding: var(--xh-spacing-half) 0;
     display: flex;
     align-items: center;
     background-color: var(--xh-bg);
     height: 30px;
 
-    &__grabber {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      height: 20px;
-      width: 20px;
-      cursor: grab;
-      touch-action: none;
-    }
-
+    // Reads as a dropdown: a chevron, and a tint on hover.
     &__select {
       flex: 1;
 
       .xh-select__control {
         cursor: pointer;
         background: none;
+        border-radius: var(--xh-border-radius);
         box-shadow: none;
+      }
+
+      .xh-select__control:hover {
+        background-color: var(--xh-sortable-list-row-hover-bg);
       }
 
       .xh-select__single-value {
         color: var(--xh-input-text-color);
       }
 
-      &:hover {
-        border-bottom: var(--xh-border-solid);
+      .xh-select__dropdown-indicator {
+        color: var(--xh-text-color-muted);
       }
     }
 

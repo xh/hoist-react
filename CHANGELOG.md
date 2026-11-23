@@ -56,6 +56,8 @@ detailed, step-by-step upgrade instructions with before/after code examples.
   horizontal padding from `--xh-sortable-list-item-padding`, Hoist's half spacing by default.
 * `FilterChooser` favorites now show their filter labels as minimal `Chip`s.
 * Removed the `xh-grouping-chooser__row--dragging` class. A dragged row is styled by `SortableList`.
+* `GroupingChooser` rows use `SortableList`'s grip handle, and its desktop dimension selects show a
+  dropdown chevron and a hover tint. Removed the `xh-grouping-chooser__row__grabber` class.
 
 ### 📚 Libraries
 
