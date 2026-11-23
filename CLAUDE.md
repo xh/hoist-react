@@ -76,8 +76,12 @@ profile. To check that the port is open, run `curl -s http://127.0.0.1:9222/json
 ### hoist-ai plugin (`xh@hoist-ai`)
 
 The shared `.claude/settings.json` enables XH's `xh@hoist-ai` plugin, the same plugin that Hoist
-applications install. Claude Code offers to install it on your first session here. Three of its
-skills apply in this repo:
+applications use. Enabling it does not install it. Each developer should install it once per
+machine at user scope, which covers every repo and worktree and auto-updates. If no `xh:` skills
+appear in your available skills, tell the developer the plugin is missing and give them the
+command `claude plugin install xh@hoist-ai --scope user`. Offer to run it for them.
+
+Three of its skills apply in this repo:
 
 - `xh:clear-writing` - house style for CHANGELOG entries, PR descriptions, docs, and comments.
   Prose written here follows its rules. Lint a draft with its script before you commit it.
