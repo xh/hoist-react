@@ -50,8 +50,9 @@ throws if a key is missing or repeated.
 - **`'custom'`** - the list draws nothing. Pass `ctx.handleRef` from `renderItem` to the element
   users should grab.
 
-A drag starts after the pointer moves 4px, so a click on a handle or row still clicks. On touch it
-starts after a 200ms press, so a finger can still scroll the list.
+A drag starts when a pointer holds a handle for 200ms, or when a mouse moves 4px, whichever comes
+first. Either way the item lifts at once, which is the cue that it is held. A quick click on a
+handle or row still clicks. On touch only the hold starts a drag, so a finger can still scroll the list.
 
 ### Keyboard
 
@@ -98,20 +99,26 @@ disables all reordering.
 
 ## Styling
 
-Items draw no box of their own; style the rows you render. The list adds only the drag chrome: the
-lifted item's background, shadow and slight tilt, and the dashed placeholder. Set the
-`--xh-sortable-list-*` variables on `body.xh-app` to change them. The full set is in the
-`Sortable Lists` block of [`styles/vars.scss`](../../styles/vars.scss):
+Pick a frame for the items with `variant`:
 
-Each row has horizontal padding around its handle and content, `--xh-sortable-list-item-padding`,
-Hoist's half spacing by default. Set it to `0` on a list whose rows draw their own padding or a
-full-width background.
+- **`'plain'`** (default) - no frame. Your rows draw their own, as in `GroupingChooser`.
+- **`'divided'`** - one rounded border around the list, and a line between items, which sit flush.
+- **`'spaced'`** - items set apart by a gap, each in its own rounded border.
+
+The list also draws the drag chrome: the lifted item's background, border, shadow and slight tilt,
+and the dashed placeholder, which takes the shape of the slot it marks - square in a divided list,
+rounded in a spaced one. Each row has horizontal padding around its handle and content,
+`--xh-sortable-list-item-padding`, Hoist's half spacing by default. Set it to `0` for rows that
+draw their own padding or a full-width background.
+
+Set the `--xh-sortable-list-*` variables on `body.xh-app` to change any of these. The full set is in
+the `Sortable Lists` block of [`styles/vars.scss`](../../styles/vars.scss):
 
 ```scss
 body.xh-app {
-  --xh-sortable-list-gap: 4px;
+  --xh-sortable-list-border-radius: 2px;
+  --xh-sortable-list-spaced-gap: 6px;
   --xh-sortable-list-drag-rotate: 0deg;
-  --xh-sortable-list-item-border: var(--xh-border-solid);
 }
 ```
 

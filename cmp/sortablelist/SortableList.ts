@@ -9,7 +9,6 @@ import {isFunction, isNil, uniq} from 'lodash';
 import type {
     KeyboardEvent as ReactKeyboardEvent,
     MouseEvent as ReactMouseEvent,
-    PointerEvent as ReactPointerEvent,
     MutableRefObject,
     ReactNode
 } from 'react';
@@ -100,6 +99,13 @@ export interface SortableListProps<T = any> extends HoistProps<HoistModel>, BoxP
     /** True for a 24px minimum item height, rather than 30px. */
     compact?: boolean;
 
+    /**
+     * How the list frames its items. 'plain' (default) draws nothing - the caller's content does.
+     * 'divided' draws one rounded border around the list and lines between items, which sit flush.
+     * 'spaced' sets the items apart, each in its own rounded border.
+     */
+    variant?: 'plain' | 'divided' | 'spaced';
+
     /** Name of an item in screen reader announcements. Default: its key. */
     getItemLabel?: (item: T) => string;
 }
@@ -170,6 +176,7 @@ export const [SortableList, sortableList] = hoistCmp.withFactory<SortableListPro
                     isItemDisabled,
                     disabled,
                     compact,
+                    variant = 'plain',
                     getItemLabel,
                     testId,
                     domAttrs,
@@ -186,6 +193,8 @@ export const [SortableList, sortableList] = hoistCmp.withFactory<SortableListPro
             [pendingKeys, setPendingKeys] = useState<SortableKey[]>(null),
             dragSource = useRef<SortableReorderEvent['source']>('pointer'),
             focusKey = useRef<SortableKey>(null),
+            // Set from the start of a drag until just after it ends, so its closing click is ignored.
+            dragging = useRef(false),
             [ownExpandedKeys, setOwnExpandedKeys] = useState<SortableKey[]>([]),
             openKeys = expandedKeys ?? ownExpandedKeys,
             latest = useRef({keys, pendingKeys});
@@ -218,6 +227,7 @@ export const [SortableList, sortableList] = hoistCmp.withFactory<SortableListPro
         };
 
         const onDragStart = (e: DragStartEvent) => {
+            dragging.current = true;
             const kb = e.nativeEvent instanceof KeyboardEvent;
             dragSource.current = kb ? 'keyboard' : 'pointer';
             setKeyboardDrag(kb);
@@ -237,6 +247,7 @@ export const [SortableList, sortableList] = hoistCmp.withFactory<SortableListPro
                 key = e.operation.source?.id;
             setKeyboardDrag(false);
             setPendingKeys(null);
+            setTimeout(() => (dragging.current = false));
             if (e.canceled || !pendingKeys) return;
             reorder(keys.indexOf(key), pendingKeys.indexOf(key), dragSource.current);
         };
@@ -246,6 +257,7 @@ export const [SortableList, sortableList] = hoistCmp.withFactory<SortableListPro
                 className: classNames(
                     className,
                     `xh-sortable-list--${orientation}`,
+                    `xh-sortable-list--${variant}`,
                     `xh-sortable-list--handle-${handle}`,
                     horizontal && wrap && 'xh-sortable-list--wrap',
                     compact && 'xh-sortable-list--compact',
@@ -286,6 +298,7 @@ export const [SortableList, sortableList] = hoistCmp.withFactory<SortableListPro
                         listDisabled: !!disabled,
                         keyboardDrag,
                         focusKey,
+                        dragging,
                         renderItem,
                         renderDetail,
                         expandable,
@@ -317,11 +330,6 @@ function fixedDetail(item: any, renderDetail: SortableListProps['renderDetail'])
     return isNil(detail) ? null : div({className: 'xh-sortable-list__detail', children: detail});
 }
 
-// Controls that a press on never starts a drag - dnd-kit's own list.
-const DRAG_BLOCKING =
-    'input:not([disabled]), select:not([disabled]), textarea:not([disabled]), ' +
-    'button:not([disabled]), a[href], [contenteditable]:not([contenteditable="false"])';
-
 // Pointer travel between press and click beyond which the click ended a drag, not a tap.
 const DRAG_DISTANCE = 4;
 
@@ -338,6 +346,8 @@ interface SortableItemProps extends HoistProps {
     keyboardDrag: boolean;
     /** Key of the item to refocus once it renders in its new place - React's move drops focus. */
     focusKey: MutableRefObject<SortableKey>;
+    /** True during a drag, and until just after it ends. */
+    dragging: MutableRefObject<boolean>;
     renderItem: SortableListProps['renderItem'];
     renderDetail: SortableListProps['renderDetail'];
     expandable: boolean;
@@ -364,6 +374,7 @@ const sortableItem = hoistCmp.factory<SortableItemProps>({
         listDisabled,
         keyboardDrag,
         focusKey,
+        dragging,
         renderItem,
         renderDetail,
         expandable,
@@ -375,7 +386,6 @@ const sortableItem = hoistCmp.factory<SortableItemProps>({
         const isDisabled = itemDisabled || listDisabled,
             activator = useRef<Element>(null),
             pointerDown = useRef<{x: number; y: number}>(null),
-            [pressed, setPressed] = useState(false),
             detailId = useId(),
             sortable = useSortable({
                 id: itemKey,
@@ -418,21 +428,6 @@ const sortableItem = hoistCmp.factory<SortableItemProps>({
             }
         };
 
-        // Cues a press on a handle, before the pointer moves far enough to lift the item.
-        const onItemPointerDown = (e: ReactPointerEvent<HTMLDivElement>) => {
-            const target = e.target as Element;
-            if (e.button !== 0 || isDisabled || !activator.current?.contains(target)) return;
-            if (handle === 'item' && target.closest(DRAG_BLOCKING)) return;
-            setPressed(true);
-            const release = () => {
-                setPressed(false);
-                window.removeEventListener('pointerup', release, true);
-                window.removeEventListener('pointercancel', release, true);
-            };
-            window.addEventListener('pointerup', release, true);
-            window.addEventListener('pointercancel', release, true);
-        };
-
         const onRowClick = (e: ReactMouseEvent<HTMLDivElement>) => {
             const target = e.target as Element,
                 start = pointerDown.current,
@@ -440,6 +435,7 @@ const sortableItem = hoistCmp.factory<SortableItemProps>({
             pointerDown.current = null;
             if (
                 !rowToggle ||
+                dragging.current ||
                 // React carries a click from a portal - a select's menu, a popover - up to the row.
                 !e.currentTarget.contains(target) ||
                 target.closest(ROW_CLICK_IGNORED) ||
@@ -490,10 +486,8 @@ const sortableItem = hoistCmp.factory<SortableItemProps>({
                 'xh-sortable-list__item',
                 sortable.isDragging && 'xh-sortable-list__item--dragging',
                 itemDisabled && 'xh-sortable-list__item--disabled',
-                rowToggle && 'xh-sortable-list__item--row-toggle',
-                pressed && !sortable.isDragging && 'xh-sortable-list__item--pressed'
+                rowToggle && 'xh-sortable-list__item--row-toggle'
             ),
-            onPointerDown: onItemPointerDown,
             onKeyDown,
             children: [
                 div({

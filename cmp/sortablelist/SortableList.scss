@@ -24,13 +24,12 @@
     flex-direction: column;
     flex: none;
     min-width: 0;
-    background-color: var(--xh-sortable-list-item-bg);
-    border: var(--xh-sortable-list-item-border);
 
     // The item lifted by a drag, in the browser's top layer.
     // The ring sits in the shadow, so it adds no size to the lifted item.
     &[data-dnd-dragging] {
       background-color: var(--xh-sortable-list-drag-bg);
+      border-color: transparent;
       border-radius: var(--xh-sortable-list-drag-border-radius);
       box-shadow:
         0 0 0 var(--xh-border-width) var(--xh-sortable-list-drag-border-color),
@@ -38,11 +37,11 @@
       rotate: var(--xh-sortable-list-drag-rotate);
     }
 
-    // Its slot in the list, outlined where it will drop. Outranks dnd-kit's `visibility: hidden`.
+    // Its slot in the list, outlined where it will drop, in the slot's own shape. Outranks
+    // dnd-kit's `visibility: hidden`.
     .xh-sortable-list &[data-dnd-placeholder] {
       visibility: visible;
       background-color: var(--xh-sortable-list-placeholder-bg);
-      border-radius: var(--xh-sortable-list-drag-border-radius);
       outline: var(--xh-border-width) dashed var(--xh-sortable-list-placeholder-border-color);
       outline-offset: -1px;
 
@@ -54,6 +53,46 @@
     &--disabled {
       color: var(--xh-text-color-muted);
     }
+  }
+
+  //------------------------
+  // Variants
+  //------------------------
+  &--divided {
+    border: var(--xh-border-width) solid var(--xh-sortable-list-border-color);
+    border-radius: var(--xh-sortable-list-border-radius);
+    overflow: clip;
+  }
+
+  &--divided &__item,
+  &--spaced &__item {
+    background-color: var(--xh-sortable-list-bg);
+  }
+
+  // Dividers go between items only. The lifted item floats outside the list, so its placeholder
+  // takes its divider - none if it is first.
+  &--divided &__item:not(:first-child, [data-dnd-dragging]) {
+    border-top: var(--xh-border-width) solid var(--xh-sortable-list-border-color);
+  }
+
+  &--divided#{&}--horizontal &__item:not(:first-child, [data-dnd-dragging]) {
+    border-top: none;
+    border-left: var(--xh-border-width) solid var(--xh-sortable-list-border-color);
+  }
+
+  &--divided &__item[data-dnd-dragging]:first-child + &__item {
+    border-top: none;
+    border-left: none;
+  }
+
+  &--spaced {
+    gap: var(--xh-sortable-list-spaced-gap);
+  }
+
+  &--spaced &__item {
+    overflow: clip;
+    border: var(--xh-border-width) solid var(--xh-sortable-list-border-color);
+    border-radius: var(--xh-sortable-list-border-radius);
   }
 
   &--keyboard-drag &__item[data-dnd-dragging] {
@@ -138,21 +177,6 @@
 
   &__item:hover &__handle {
     opacity: 1;
-  }
-
-  // A press on a handle, before the pointer moves far enough to lift the item.
-  // Raised so flush neighbours don't paint over its ring.
-  &__item--pressed:not([data-dnd-dragging]) {
-    position: relative;
-    z-index: 1;
-    background-color: var(--xh-sortable-list-drag-bg);
-    border-radius: var(--xh-sortable-list-drag-border-radius);
-    box-shadow: var(--xh-sortable-list-pressed-shadow);
-    cursor: grabbing;
-
-    @media (prefers-reduced-motion: no-preference) {
-      transition: box-shadow var(--xh-sortable-list-pressed-transition);
-    }
   }
 
   &--handle-item &__item {
