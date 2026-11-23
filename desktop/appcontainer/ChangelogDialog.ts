@@ -5,7 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import classNames from 'classnames';
-import {find, isEmpty, lowerCase, words} from 'lodash';
+import {isEmpty, lowerCase} from 'lodash';
 import type {ReactElement} from 'react';
 
 import {ChangelogDialogModel} from '@xh/hoist/appcontainer/ChangelogDialogModel';
@@ -145,26 +145,24 @@ const EMOJI_START = /^\p{Extended_Pictographic}/u;
 const externalLink = ({node, ...props}) =>
     a({...props, target: '_blank', rel: 'noopener noreferrer'});
 
-// Style for common category titles. A title matches if any of its words starts with a keyword, so
-// that variants such as "Fixes" or "Technical Notes" also apply. Each style sets a CSS-safe class
-// name modifier and an icon.
+// Styles for the standard category titles, keyed by lowercase title without its emoji. Each style
+// sets a CSS-safe class name modifier and an icon. Other titles get no style.
 interface CategoryStyle {
-    keywords: string[];
     className: string;
     icon: () => ReactElement;
 }
 
-const CATEGORY_STYLES: CategoryStyle[] = [
-    {keywords: ['breaking'], className: 'breaking-changes', icon: () => Icon.warning()},
-    {keywords: ['feature', 'new', 'added'], className: 'new-features', icon: () => Icon.gift()},
-    {keywords: ['bug', 'fix'], className: 'bug-fixes', icon: () => Icon.wrench()},
-    {keywords: ['technical'], className: 'technical', icon: () => Icon.gears()},
-    {keywords: ['librar', 'dependenc'], className: 'libraries', icon: () => Icon.books()}
-];
+const CATEGORY_STYLES: Record<string, CategoryStyle> = {
+    'breaking changes': {className: 'breaking-changes', icon: () => Icon.warning()},
+    'new features': {className: 'new-features', icon: () => Icon.gift()},
+    'bug fixes': {className: 'bug-fixes', icon: () => Icon.wrench()},
+    technical: {className: 'technical', icon: () => Icon.gears()},
+    libraries: {className: 'libraries', icon: () => Icon.books()}
+};
+
+// An emoji can be followed by a variation selector or joined to another, as in "⚙️ Technical".
+const LEADING_EMOJI = /^[\p{Extended_Pictographic}\u{FE0F}\u{200D}]+/u;
 
 function getCategoryStyle(title: string): CategoryStyle {
-    const titleWords = words(lowerCase(title));
-    return find(CATEGORY_STYLES, ({keywords}) =>
-        titleWords.some(word => keywords.some(k => word.startsWith(k)))
-    );
+    return CATEGORY_STYLES[title.replace(LEADING_EMOJI, '').trim().toLowerCase()] ?? null;
 }
