@@ -1063,6 +1063,11 @@ body {
   // Gap between items.
   --xh-sortable-list-gap: 0;
   --xh-sortable-list-expander-transition: 150ms ease;
+  // Item pressed on its handle, before the pointer moves far enough to lift it.
+  --xh-sortable-list-pressed-shadow:
+    0 0 0 var(--xh-border-width) var(--xh-sortable-list-drag-border-color),
+    0 1px 4px rgba(38, 50, 56, 0.15);
+  --xh-sortable-list-pressed-transition: 100ms ease;
   // Opacity of a grip handle until its item is hovered or the handle is focused.
   --xh-sortable-list-handle-opacity: 0.55;
   // Items draw no box of their own - the caller's content does.
@@ -1084,6 +1089,9 @@ body {
     // The standard border barely shows against a dark page behind the lifted item.
     --xh-sortable-list-drag-border-color: var(--xh-blue-gray);
     --xh-sortable-list-drag-shadow: 0 4px 16px rgba(0, 0, 0, 0.6), 0 1px 3px rgba(0, 0, 0, 0.5);
+    --xh-sortable-list-pressed-shadow:
+      0 0 0 var(--xh-border-width) var(--xh-sortable-list-drag-border-color),
+      0 1px 4px rgba(0, 0, 0, 0.5);
   }
 
   //------------------------

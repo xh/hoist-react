@@ -380,6 +380,8 @@ const sortableItem = hoistCmp.factory<SortableItemProps>({
             handleRef = (el: Element) => {
                 activator.current = el;
                 if (el && !el.hasAttribute('aria-label')) el.setAttribute('aria-label', label);
+                // Marks built-in and custom handles alike, for the pressed style.
+                el?.classList.add('xh-sortable-list__activator');
                 sortable.handleRef(el);
             },
             itemRef = (el: Element) => {
