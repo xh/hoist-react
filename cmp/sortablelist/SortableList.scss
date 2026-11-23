@@ -8,14 +8,27 @@
 .xh-sortable-list {
   display: flex;
   flex-direction: column;
-  gap: var(--xh-sortable-list-gap);
   min-width: 0;
+  min-height: 0;
 
-  &--horizontal {
+  // Scrolls once the list is given less room than its items need, keeping the Add row in view.
+  // Never grows, so the Add row sits right under the last item in a taller list.
+  &__items {
+    display: flex;
+    flex: 0 1 auto;
+    flex-direction: column;
+    gap: var(--xh-sortable-list-gap);
+    min-width: 0;
+    min-height: 0;
+    overflow: auto;
+  }
+
+  &--horizontal,
+  &--horizontal &__items {
     flex-direction: row;
   }
 
-  &--wrap {
+  &--wrap &__items {
     flex-wrap: wrap;
   }
 
@@ -24,21 +37,21 @@
     flex-direction: column;
     flex: none;
     min-width: 0;
-    background-color: var(--xh-sortable-list-item-bg);
-    border: var(--xh-sortable-list-item-border);
-    border-radius: var(--xh-sortable-list-item-border-radius);
 
     // The item lifted by a drag, in the browser's top layer.
     // The ring sits in the shadow, so it adds no size to the lifted item.
     &[data-dnd-dragging] {
       background-color: var(--xh-sortable-list-drag-bg);
+      border-color: transparent;
+      border-radius: var(--xh-sortable-list-drag-border-radius);
       box-shadow:
         0 0 0 var(--xh-border-width) var(--xh-sortable-list-drag-border-color),
         var(--xh-sortable-list-drag-shadow);
       rotate: var(--xh-sortable-list-drag-rotate);
     }
 
-    // Its slot in the list, outlined where it will drop. Outranks dnd-kit's `visibility: hidden`.
+    // Its slot in the list, outlined where it will drop, in the slot's own shape. Outranks
+    // dnd-kit's `visibility: hidden`.
     .xh-sortable-list &[data-dnd-placeholder] {
       visibility: visible;
       background-color: var(--xh-sortable-list-placeholder-bg);
@@ -49,10 +62,61 @@
         visibility: hidden;
       }
     }
+  }
 
-    &--disabled {
-      color: var(--xh-text-color-muted);
-    }
+  //------------------------
+  // Variants
+  //------------------------
+  &--divided {
+    border: var(--xh-border-width) solid var(--xh-sortable-list-border-color);
+    border-radius: var(--xh-sortable-list-border-radius);
+    overflow: clip;
+  }
+
+  &--divided &__item,
+  &--spaced &__item {
+    background-color: var(--xh-sortable-list-bg);
+  }
+
+  // Dividers go between items only. The lifted item floats outside the list, so its placeholder
+  // takes its divider - none if it is first.
+  &--divided &__item:not(:first-child, [data-dnd-dragging]) {
+    border-top: var(--xh-border-width) solid var(--xh-sortable-list-border-color);
+  }
+
+  &--divided#{&}--horizontal &__item:not(:first-child, [data-dnd-dragging]) {
+    border-top: none;
+    border-left: var(--xh-border-width) solid var(--xh-sortable-list-border-color);
+  }
+
+  &--divided &__item[data-dnd-dragging]:first-child + &__item {
+    border-top: none;
+    border-left: none;
+  }
+
+  &--spaced,
+  &--spaced &__items {
+    gap: var(--xh-sortable-list-spaced-gap);
+  }
+
+  &--divided &__items:not(:empty) + &__add {
+    border-top: var(--xh-border-width) solid var(--xh-sortable-list-border-color);
+  }
+
+  &--divided#{&}--horizontal &__items:not(:empty) + &__add {
+    border-top: none;
+    border-left: var(--xh-border-width) solid var(--xh-sortable-list-border-color);
+  }
+
+  &--spaced &__add {
+    border: var(--xh-border-width) dashed var(--xh-sortable-list-border-color);
+    border-radius: var(--xh-sortable-list-border-radius);
+  }
+
+  &--spaced &__item {
+    overflow: clip;
+    border: var(--xh-border-width) solid var(--xh-sortable-list-border-color);
+    border-radius: var(--xh-sortable-list-border-radius);
   }
 
   &--keyboard-drag &__item[data-dnd-dragging] {
@@ -77,7 +141,8 @@
     min-width: 0;
   }
 
-  &__expander {
+  &__expander,
+  &__remove {
     display: inline-flex;
     flex: none;
     align-items: center;
@@ -85,11 +150,18 @@
     width: 20px;
     height: 20px;
     padding: 0;
-    color: var(--xh-text-color-muted);
     background: none;
     border: none;
     border-radius: 2px;
     cursor: pointer;
+
+    &:focus-visible {
+      outline: var(--xh-focus-outline);
+    }
+  }
+
+  &__expander {
+    color: var(--xh-text-color-muted);
 
     .xh-icon {
       transition: rotate var(--xh-sortable-list-expander-transition);
@@ -102,10 +174,67 @@
     &:hover {
       color: var(--xh-text-color);
     }
+  }
+
+  &__remove {
+    color: var(--xh-intent-danger-text-color);
+
+    &:hover {
+      background-color: var(--xh-intent-danger-trans1);
+    }
+  }
+
+  @media (hover: hover) {
+    &--remove-on-hover &__remove {
+      opacity: 0;
+    }
+
+    &--remove-on-hover &__item:hover &__remove,
+    &--remove-on-hover &__item:focus-within &__remove {
+      opacity: 1;
+    }
+  }
+
+  // The Add row lines up with the items' rows.
+  &__add {
+    display: flex;
+    flex: none;
+    align-items: center;
+    gap: var(--xh-sortable-list-row-gap);
+    min-height: var(--xh-sortable-list-item-min-height);
+    padding: var(--xh-sortable-list-item-padding);
+    font: inherit;
+    color: var(--xh-text-color-muted);
+    text-align: start;
+    background: none;
+    border: none;
+    cursor: pointer;
+
+    &:hover:not(:disabled) {
+      color: var(--xh-text-color);
+      background-color: var(--xh-sortable-list-row-hover-bg);
+    }
 
     &:focus-visible {
       outline: var(--xh-focus-outline);
     }
+
+    &:disabled {
+      cursor: not-allowed;
+    }
+  }
+
+  &--compact &__add {
+    min-height: var(--xh-sortable-list-compact-item-min-height);
+  }
+
+  &__status {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
   }
 
   &__item--row-toggle > &__row {
@@ -148,9 +277,9 @@
     }
   }
 
-  &__item--disabled &__handle,
+  &__item--fixed &__handle,
   &--disabled &__handle,
-  &--handle-item &__item--disabled,
+  &--handle-item &__item--fixed,
   &--handle-item.xh-sortable-list--disabled &__item {
     cursor: not-allowed;
   }

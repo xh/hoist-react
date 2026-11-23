@@ -5,25 +5,31 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import classNames from 'classnames';
-import {isFunction, isNil, uniq} from 'lodash';
+import {isFunction, isNil, over, uniq} from 'lodash';
 import type {
     KeyboardEvent as ReactKeyboardEvent,
     MouseEvent as ReactMouseEvent,
     MutableRefObject,
     ReactNode
 } from 'react';
-import {useId, useLayoutEffect, useRef, useState} from 'react';
+import {useId, useLayoutEffect, useMemo, useRef, useState} from 'react';
 
-import {div, htmlButton} from '@xh/hoist/cmp/layout';
+import {div, htmlButton, span} from '@xh/hoist/cmp/layout';
 import type {BoxProps, HoistModel, HoistProps} from '@xh/hoist/core';
 import {hoistCmp, uses} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
-import type {DragEndEvent, DragOverEvent, DragStartEvent} from '@xh/hoist/kit/dnd-kit';
+import type {
+    DragDropProviderProps,
+    DragEndEvent,
+    DragOverEvent,
+    DragStartEvent,
+    UseSortableInput
+} from '@xh/hoist/kit/dnd-kit';
 import {dragDropProvider, useSortable} from '@xh/hoist/kit/dnd-kit';
 import {TEST_ID, mergeDeep, throwIf} from '@xh/hoist/utils/js';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
 
-import {DND_PLUGINS, DND_SENSORS, DND_TRANSITION} from './impl/DndDefaults';
+import {DND_SCROLL_ACCELERATION, DND_SENSORS, DND_TRANSITION, dndPlugins} from './impl/DndDefaults';
 import type {SortableKey} from './impl/DndUtils';
 import {moveItem, stopDragKeys} from './impl/DndUtils';
 import './SortableList.scss';
@@ -90,8 +96,11 @@ export interface SortableListProps<T = any> extends HoistProps<HoistModel>, BoxP
      */
     handle?: 'start' | 'end' | 'item' | 'custom';
 
-    /** Items that can't be picked up. Other items still move past them. */
-    isItemDisabled?: (item: T) => boolean;
+    /**
+     * Items that can be dragged. Default: every item. Others show a lock in place of their grip,
+     * and items that can move still move past them.
+     */
+    isItemMovable?: (item: T) => boolean;
 
     /** True to disable all reordering. */
     disabled?: boolean;
@@ -99,8 +108,63 @@ export interface SortableListProps<T = any> extends HoistProps<HoistModel>, BoxP
     /** True for a 24px minimum item height, rather than 30px. */
     compact?: boolean;
 
+    /**
+     * Speed of the auto-scroll while a dragged item is near the edge of the list or a scrolling
+     * container. Default 15 - higher is faster.
+     */
+    scrollAcceleration?: number;
+
+    /**
+     * How the list frames its items. 'plain' (default) draws nothing - the caller's content does.
+     * 'divided' draws one rounded border around the list and lines between items, which sit flush.
+     * 'spaced' sets the items apart, each in its own rounded border.
+     */
+    variant?: 'plain' | 'divided' | 'spaced';
+
     /** Name of an item in screen reader announcements. Default: its key. */
     getItemLabel?: (item: T) => string;
+
+    /**
+     * Called when a user removes an item, by its remove button or Delete or Backspace on its
+     * handle. Setting it, or `removable`, shows those controls. With `bind`, the list writes the shortened list
+     * first; otherwise apply `e.items` yourself.
+     */
+    onRemove?: (e: SortableRemoveEvent<T>) => void;
+
+    /** True to let users remove items, as `onRemove` does - for a list that only needs `bind`. */
+    removable?: boolean;
+
+    /**
+     * True to show remove buttons only while their item is hovered or holds keyboard focus, for a
+     * quieter list. Always shown on touch devices, which have no hover.
+     */
+    showRemoveOnHover?: boolean;
+
+    /** Items that can be removed. Default: every item, when `removable` or `onRemove` is set. */
+    isItemRemovable?: (item: T) => boolean;
+
+    /**
+     * Called when a user clicks the Add row, which setting it shows. Return the new item, or a
+     * promise of it - the list appends it through `bind`, focuses it and opens its detail. Without
+     * `bind`, add it to `value` yourself. Return null to add nothing.
+     */
+    onAdd?: () => T | Promise<T>;
+
+    /** Label of the Add row. Default 'Add...'. */
+    addText?: ReactNode;
+
+    /**
+     * Escape-hatch props for dnd-kit's `DragDropProvider`, for options this component doesn't map.
+     * `sensors`, `plugins` and `modifiers` here replace Hoist's. Drag event handlers run after
+     * Hoist's own. Use with care - they can interfere with the list's behavior.
+     */
+    dndProviderProps?: Partial<DragDropProviderProps>;
+
+    /**
+     * Escape-hatch options for each item's dnd-kit `useSortable`, such as `collisionDetector`. The
+     * list's own `id`, `index`, `data` and `disabled` always win.
+     */
+    sortableProps?: Partial<UseSortableInput>;
 }
 
 export interface SortableItemContext {
@@ -109,10 +173,19 @@ export interface SortableItemContext {
     /** True for the item being dragged. */
     isDragging: boolean;
 
-    isDisabled: boolean;
+    /** False for an item that can't be dragged, or any item in a disabled list. */
+    isMovable: boolean;
 
     /** For `handle: 'custom'` - the ref for the element users should grab. */
     handleRef: (el: Element) => void;
+}
+
+export interface SortableRemoveEvent<T = any> {
+    item: T;
+    index: number;
+
+    /** All items, without the removed one. */
+    items: T[];
 }
 
 export interface SortableReorderEvent<T = any> {
@@ -166,30 +239,46 @@ export const [SortableList, sortableList] = hoistCmp.withFactory<SortableListPro
                     orientation = 'vertical',
                     wrap,
                     handle = 'start',
-                    isItemDisabled,
+                    isItemMovable,
                     disabled,
                     compact,
+                    scrollAcceleration = DND_SCROLL_ACCELERATION,
+                    variant = 'plain',
                     getItemLabel,
+                    onRemove,
+                    removable,
+                    showRemoveOnHover,
+                    isItemRemovable,
+                    onAdd,
+                    addText = 'Add...',
+                    dndProviderProps,
+                    sortableProps,
                     testId,
                     domAttrs,
                     ...restProps
                 }
             ] = splitLayoutProps(props),
             items: any[] = (model && bind ? model[bind] : value) ?? [],
-            keys: SortableKey[] = items.map(it =>
-                isFunction(itemKey) ? itemKey(it) : it?.[itemKey]
-            ),
+            keyOf = (it: any): SortableKey => (isFunction(itemKey) ? itemKey(it) : it?.[itemKey]),
+            labelOf = (it: any): string => (getItemLabel ? getItemLabel(it) : String(keyOf(it))),
+            keys: SortableKey[] = items.map(keyOf),
             horizontal = orientation === 'horizontal',
             [keyboardDrag, setKeyboardDrag] = useState(false),
             // Live order during a drag - React renders it, so dnd-kit never moves the DOM itself.
             [pendingKeys, setPendingKeys] = useState<SortableKey[]>(null),
             dragSource = useRef<SortableReorderEvent['source']>('pointer'),
             focusKey = useRef<SortableKey>(null),
+            // Set from the start of a drag until just after it ends, so its closing click is ignored.
+            dragging = useRef(false),
             [ownExpandedKeys, setOwnExpandedKeys] = useState<SortableKey[]>([]),
             openKeys = expandedKeys ?? ownExpandedKeys,
-            latest = useRef({keys, pendingKeys});
+            [announcement, setAnnouncement] = useState(''),
+            addRef = useRef<HTMLButtonElement>(null),
+            focusAdd = useRef(false),
+            latest = useRef({keys, pendingKeys, openKeys}),
+            plugins = useMemo(() => dndPlugins(scrollAcceleration), [scrollAcceleration]);
 
-        latest.current = {keys, pendingKeys};
+        latest.current = {keys, pendingKeys, openKeys};
         throwIf(keys.some(isNil), 'SortableList requires a key for every item - see `itemKey`.');
         throwIf(uniq(keys).length !== keys.length, 'SortableList item keys must be unique.');
 
@@ -206,17 +295,62 @@ export const [SortableList, sortableList] = hoistCmp.withFactory<SortableListPro
             onReorder?.({item, fromIndex, toIndex, items: next, source});
         };
 
-        const toggleExpanded = (key: SortableKey) => {
-            const next = openKeys.includes(key)
-                ? openKeys.filter(it => it !== key)
-                : multiExpand
-                  ? [...openKeys, key]
-                  : [key];
+        const setOpenKeys = (next: SortableKey[]) => {
             if (expandedKeys === undefined) setOwnExpandedKeys(next);
             onExpandedChange?.(next);
         };
 
+        const toggleExpanded = (key: SortableKey) => {
+            const {openKeys} = latest.current;
+            setOpenKeys(
+                openKeys.includes(key)
+                    ? openKeys.filter(it => it !== key)
+                    : multiExpand
+                      ? [...openKeys, key]
+                      : [key]
+            );
+        };
+
+        const isExpandable = (it: any) =>
+            !!renderDetail && (isItemExpandable ? isItemExpandable(it) : true);
+
+        // Focus goes to the item that takes the removed one's place, else the one before it.
+        const remove = (key: SortableKey) => {
+            const index = keys.indexOf(key),
+                item = items[index],
+                next = items.filter((_, idx) => idx !== index),
+                neighbor = keys[index + 1] ?? keys[index - 1];
+            if (neighbor != null) {
+                focusKey.current = neighbor;
+            } else {
+                focusAdd.current = true;
+            }
+            if (model && bind) model.setBindable(bind, next);
+            setAnnouncement(`Removed ${labelOf(item)}.`);
+            onRemove?.({item, index, items: next});
+        };
+
+        const add = async () => {
+            const added = await onAdd();
+            if (added == null) return;
+            const key = keyOf(added),
+                {openKeys} = latest.current;
+            focusKey.current = key;
+            if (isExpandable(added) && !openKeys.includes(key)) {
+                setOpenKeys(multiExpand ? [...openKeys, key] : [key]);
+            }
+            if (model && bind) model.setBindable(bind, [...(model[bind] ?? []), added]);
+            setAnnouncement(`Added ${labelOf(added)}.`);
+        };
+
+        useLayoutEffect(() => {
+            if (!focusAdd.current) return;
+            focusAdd.current = false;
+            addRef.current?.focus();
+        });
+
         const onDragStart = (e: DragStartEvent) => {
+            dragging.current = true;
             const kb = e.nativeEvent instanceof KeyboardEvent;
             dragSource.current = kb ? 'keyboard' : 'pointer';
             setKeyboardDrag(kb);
@@ -236,6 +370,7 @@ export const [SortableList, sortableList] = hoistCmp.withFactory<SortableListPro
                 key = e.operation.source?.id;
             setKeyboardDrag(false);
             setPendingKeys(null);
+            setTimeout(() => (dragging.current = false));
             if (e.canceled || !pendingKeys) return;
             reorder(keys.indexOf(key), pendingKeys.indexOf(key), dragSource.current);
         };
@@ -245,10 +380,12 @@ export const [SortableList, sortableList] = hoistCmp.withFactory<SortableListPro
                 className: classNames(
                     className,
                     `xh-sortable-list--${orientation}`,
+                    `xh-sortable-list--${variant}`,
                     `xh-sortable-list--handle-${handle}`,
                     horizontal && wrap && 'xh-sortable-list--wrap',
                     compact && 'xh-sortable-list--compact',
                     keyboardDrag && 'xh-sortable-list--keyboard-drag',
+                    showRemoveOnHover && 'xh-sortable-list--remove-on-hover',
                     disabled && 'xh-sortable-list--disabled'
                 )
             },
@@ -260,43 +397,71 @@ export const [SortableList, sortableList] = hoistCmp.withFactory<SortableListPro
         const shownKeys = pendingKeys ?? keys;
         return dragDropProvider({
             sensors: DND_SENSORS,
-            plugins: DND_PLUGINS,
-            onDragStart,
-            onDragOver,
-            onDragEnd,
+            plugins,
+            ...dndProviderProps,
+            onDragStart: chain(onDragStart, dndProviderProps?.onDragStart),
+            onDragOver: chain(onDragOver, dndProviderProps?.onDragOver),
+            onDragEnd: chain(onDragEnd, dndProviderProps?.onDragEnd),
             children: div({
                 ref,
-                role: 'list',
                 ...divProps,
-                children: shownKeys.map((key, index) => {
-                    const item = items[keys.indexOf(key)],
-                        expandable =
-                            !!renderDetail && (isItemExpandable ? isItemExpandable(item) : true);
-                    return sortableItem({
-                        key,
-                        listItem: item,
-                        itemKey: key,
-                        index,
-                        count: shownKeys.length,
-                        label: getItemLabel ? getItemLabel(item) : String(key),
-                        handle,
-                        horizontal,
-                        itemDisabled: !!isItemDisabled?.(item),
-                        listDisabled: !!disabled,
-                        keyboardDrag,
-                        focusKey,
-                        renderItem,
-                        renderDetail,
-                        expandable,
-                        expanded: expandable && openKeys.includes(key),
-                        rowToggle: expandable && toggleOnRowClick && handle !== 'item',
-                        onToggle: () => toggleExpanded(key),
-                        onMove: (to: number) => {
-                            focusKey.current = key;
-                            reorder(index, to, 'keyboard');
-                        }
-                    });
-                })
+                children: [
+                    div({
+                        role: 'list',
+                        className: 'xh-sortable-list__items',
+                        children: shownKeys.map((key, index) => {
+                            const item = items[keys.indexOf(key)],
+                                expandable = isExpandable(item);
+                            return sortableItem({
+                                key,
+                                listItem: item,
+                                itemKey: key,
+                                index,
+                                count: shownKeys.length,
+                                label: labelOf(item),
+                                handle,
+                                horizontal,
+                                itemFixed: isItemMovable ? !isItemMovable(item) : false,
+                                listDisabled: !!disabled,
+                                keyboardDrag,
+                                focusKey,
+                                dragging,
+                                sortableProps,
+                                renderItem,
+                                renderDetail,
+                                expandable,
+                                expanded: expandable && openKeys.includes(key),
+                                rowToggle: expandable && toggleOnRowClick && handle !== 'item',
+                                onToggle: () => toggleExpanded(key),
+                                removable:
+                                    (removable || !!onRemove) &&
+                                    !disabled &&
+                                    (isItemRemovable ? isItemRemovable(item) : true),
+                                onRemove: () => remove(key),
+                                onMove: (to: number) => {
+                                    focusKey.current = key;
+                                    reorder(index, to, 'keyboard');
+                                }
+                            });
+                        })
+                    }),
+                    onAdd
+                        ? htmlButton({
+                              ref: addRef,
+                              type: 'button',
+                              className: 'xh-sortable-list__add',
+                              disabled,
+                              onClick: add,
+                              children: [Icon.add(), span(addText)]
+                          })
+                        : null,
+                    div({
+                        className: 'xh-sortable-list__status',
+                        role: 'status',
+                        'aria-live': 'polite',
+                        children: announcement
+                    })
+                ]
             })
         });
     }
@@ -305,6 +470,14 @@ export const [SortableList, sortableList] = hoistCmp.withFactory<SortableListPro
 //------------------
 // Implementation
 //------------------
+/** Hoist's handler, then the app's, if set. */
+function chain<A extends unknown[]>(
+    own: NoInfer<(...args: A) => void>,
+    app: (...args: A) => void
+): (...args: A) => void {
+    return app ? over([own, app]) : own;
+}
+
 // A click on one of these, inside a row, does its own job and never toggles the row.
 const ROW_CLICK_IGNORED =
     'button, a, input, select, textarea, [role=button], [role=combobox], [role=listbox], ' +
@@ -327,11 +500,15 @@ interface SortableItemProps extends HoistProps {
     label: string;
     handle: SortableListProps['handle'];
     horizontal: boolean;
-    itemDisabled: boolean;
+    /** True for an item that can't be dragged. */
+    itemFixed: boolean;
     listDisabled: boolean;
     keyboardDrag: boolean;
     /** Key of the item to refocus once it renders in its new place - React's move drops focus. */
     focusKey: MutableRefObject<SortableKey>;
+    /** True during a drag, and until just after it ends. */
+    dragging: MutableRefObject<boolean>;
+    sortableProps: Partial<UseSortableInput>;
     renderItem: SortableListProps['renderItem'];
     renderDetail: SortableListProps['renderDetail'];
     expandable: boolean;
@@ -339,6 +516,8 @@ interface SortableItemProps extends HoistProps {
     /** True to open and close the item on a click on its row. */
     rowToggle: boolean;
     onToggle: () => void;
+    removable: boolean;
+    onRemove: () => void;
     onMove: (toIndex: number) => void;
 }
 
@@ -354,28 +533,33 @@ const sortableItem = hoistCmp.factory<SortableItemProps>({
         label,
         handle,
         horizontal,
-        itemDisabled,
+        itemFixed,
         listDisabled,
         keyboardDrag,
         focusKey,
+        dragging,
+        sortableProps,
         renderItem,
         renderDetail,
         expandable,
         expanded,
         rowToggle,
         onToggle,
+        removable,
+        onRemove,
         onMove
     }) {
-        const isDisabled = itemDisabled || listDisabled,
+        const isDisabled = itemFixed || listDisabled,
             activator = useRef<Element>(null),
             pointerDown = useRef<{x: number; y: number}>(null),
             detailId = useId(),
             sortable = useSortable({
+                transition: DND_TRANSITION,
+                ...sortableProps,
                 id: itemKey,
                 index,
                 data: {label, count},
-                disabled: isDisabled ? {draggable: true, droppable: false} : false,
-                transition: DND_TRANSITION
+                disabled: isDisabled ? {draggable: true, droppable: false} : false
             }),
             handleRef = (el: Element) => {
                 activator.current = el;
@@ -399,7 +583,11 @@ const sortableItem = hoistCmp.factory<SortableItemProps>({
                 fwd = horizontal ? 'ArrowRight' : 'ArrowDown',
                 back = horizontal ? 'ArrowLeft' : 'ArrowUp';
 
-            if (e.altKey && !keyboardDrag && (key === fwd || key === back)) {
+            if (removable && !keyboardDrag && (key === 'Delete' || key === 'Backspace')) {
+                e.preventDefault();
+                e.stopPropagation();
+                onRemove();
+            } else if (e.altKey && !keyboardDrag && (key === fwd || key === back)) {
                 e.preventDefault();
                 e.stopPropagation();
                 if (!isDisabled) {
@@ -418,6 +606,7 @@ const sortableItem = hoistCmp.factory<SortableItemProps>({
             pointerDown.current = null;
             if (
                 !rowToggle ||
+                dragging.current ||
                 // React carries a click from a portal - a select's menu, a popover - up to the row.
                 !e.currentTarget.contains(target) ||
                 target.closest(ROW_CLICK_IGNORED) ||
@@ -433,7 +622,7 @@ const sortableItem = hoistCmp.factory<SortableItemProps>({
         const ctx: SortableItemContext = {
                 index,
                 isDragging: sortable.isDragging,
-                isDisabled,
+                isMovable: !isDisabled,
                 handleRef
             },
             showHandle = handle === 'start' || handle === 'end',
@@ -443,7 +632,7 @@ const sortableItem = hoistCmp.factory<SortableItemProps>({
                       className: 'xh-sortable-list__handle',
                       'aria-label': label,
                       tabIndex: isDisabled ? -1 : 0,
-                      children: itemDisabled ? Icon.lock() : Icon.gripVertical()
+                      children: itemFixed ? Icon.lock() : Icon.gripVertical({prefix: 'fas'})
                   })
                 : null,
             expander = expandable
@@ -459,6 +648,15 @@ const sortableItem = hoistCmp.factory<SortableItemProps>({
                       onClick: onToggle,
                       children: Icon.chevronDown()
                   })
+                : null,
+            remover = removable
+                ? htmlButton({
+                      type: 'button',
+                      className: 'xh-sortable-list__remove',
+                      'aria-label': `Remove ${label}`,
+                      onClick: onRemove,
+                      children: Icon.delete()
+                  })
                 : null;
 
         return div({
@@ -467,7 +665,7 @@ const sortableItem = hoistCmp.factory<SortableItemProps>({
             className: classNames(
                 'xh-sortable-list__item',
                 sortable.isDragging && 'xh-sortable-list__item--dragging',
-                itemDisabled && 'xh-sortable-list__item--disabled',
+                itemFixed && 'xh-sortable-list__item--fixed',
                 rowToggle && 'xh-sortable-list__item--row-toggle'
             ),
             onKeyDown,
@@ -483,6 +681,7 @@ const sortableItem = hoistCmp.factory<SortableItemProps>({
                             children: renderItem(item, ctx)
                         }),
                         expander,
+                        remover,
                         handle === 'end' ? grip : null
                     ]
                 }),

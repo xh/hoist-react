@@ -14,6 +14,7 @@ import {DragDropProvider} from '@dnd-kit/react';
 export {DragDropProvider};
 export {useDroppable} from '@dnd-kit/react';
 export {isSortable, useSortable} from '@dnd-kit/react/sortable';
+export type {UseSortableInput} from '@dnd-kit/react/sortable';
 export {
     Accessibility,
     AutoScroller,

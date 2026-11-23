@@ -23,11 +23,15 @@ import {
  */
 export const DND_TRANSITION = {duration: 180, easing: 'cubic-bezier(0.2, 0, 0, 1)'};
 
+// A drag starts on a 200ms hold - the lifted item is the cue that it's held - or, for a mouse, as
+// soon as it moves 4px, whichever comes first. Touch waits for the hold so a finger can scroll.
 const POINTER_SENSOR = PointerSensor.configure({
-    activationConstraints: (e: PointerEvent) =>
-        e.pointerType === 'touch'
-            ? [new PointerActivationConstraints.Delay({value: 200, tolerance: 5})]
-            : [new PointerActivationConstraints.Distance({value: 4})]
+    activationConstraints: (e: PointerEvent) => {
+        const hold = new PointerActivationConstraints.Delay({value: 200, tolerance: 5});
+        return e.pointerType === 'touch'
+            ? [hold]
+            : [hold, new PointerActivationConstraints.Distance({value: 4})];
+    }
 });
 
 export const DND_SENSORS: DragDropProviderProps['sensors'] = [POINTER_SENSOR, KeyboardSensor];
@@ -40,8 +44,17 @@ export const DND_SPACE_LIFT_SENSORS: DragDropProviderProps['sensors'] = [
     })
 ];
 
-export const DND_PLUGINS: DragDropProviderProps['plugins'] = [
-    Accessibility.configure({
+/** Hoist's auto-scroll speed - below dnd-kit's default of 25. */
+export const DND_SCROLL_ACCELERATION = 15;
+
+/** Hoist's plugins, with auto-scroll at `scrollAcceleration`. */
+export function dndPlugins(
+    scrollAcceleration: number = DND_SCROLL_ACCELERATION
+): DragDropProviderProps['plugins'] {
+    return [ACCESSIBILITY, AutoScroller.configure({acceleration: scrollAcceleration}), ...REST];
+}
+
+const ACCESSIBILITY = Accessibility.configure({
         announcements: {
             dragstart: ({operation: {source}}) =>
                 isSortable(source)
@@ -66,8 +79,6 @@ export const DND_PLUGINS: DragDropProviderProps['plugins'] = [
                 'moves it one place.'
         }
     }),
-    AutoScroller,
-    Cursor,
-    Feedback.configure({dropAnimation: DND_TRANSITION}),
-    PreventSelection
-];
+    REST = [Cursor, Feedback.configure({dropAnimation: DND_TRANSITION}), PreventSelection];
+
+export const DND_PLUGINS = dndPlugins();

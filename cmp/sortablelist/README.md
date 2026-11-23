@@ -50,8 +50,9 @@ throws if a key is missing or repeated.
 - **`'custom'`** - the list draws nothing. Pass `ctx.handleRef` from `renderItem` to the element
   users should grab.
 
-A drag starts after the pointer moves 4px, so a click on a handle or row still clicks. On touch it
-starts after a 200ms press, so a finger can still scroll the list.
+A drag starts when a pointer holds a handle for 200ms, or when a mouse moves 4px, whichever comes
+first. Either way the item lifts at once, which is the cue that it is held. A quick click on a
+handle or row still clicks. On touch only the hold starts a drag, so a finger can still scroll the list.
 
 ### Keyboard
 
@@ -63,8 +64,29 @@ doesn't also trigger an ancestor's shortcuts.
 
 ### Layout
 
-Set `orientation: 'horizontal'` for a row of items, and `wrap: true` to let it wrap. The list
-auto-scrolls itself, any scrolling ancestors and the window when a dragged item nears an edge.
+Set `orientation: 'horizontal'` for a row of items, and `wrap: true` to let it wrap.
+
+Give the list a `maxHeight` and it fits its items up to that height, then scrolls them, with the
+Add row pinned below. A fixed `height`, or a `flex` in a sized container, scrolls the same way, but
+keeps its full height when the items are fewer - they and the Add row sit at the top. During a drag the list
+auto-scrolls its items, any scrolling ancestors and the window when the dragged item nears an edge.
+`scrollAcceleration` sets how fast - 15 by default, below dnd-kit's own 25.
+
+### Removing and adding items
+
+Set `removable: true`, or `onRemove`, to give each item a remove button, after its content and any chevron, so the
+buttons line up in one column. Delete or Backspace on an item's handle removes it too.
+`isItemRemovable` limits which items have one. Set `showRemoveOnHover` to show the buttons only
+while their item is hovered or focused - they always show on touch devices. With `bind`, the list writes the list without the
+item and then calls `onRemove({item, index, items})`, if set, for any other work the removal needs.
+Without `bind`, apply `items` yourself.
+
+Set `onAdd` to show an Add row after the items, labelled by `addText`. The list cannot build your
+data, so `onAdd` returns the new item, or a promise of it, or null to add nothing. With `bind` the
+list appends it. Either way it then focuses the new item and opens its detail, if it has one.
+
+After a removal, focus moves to the item that took its place, or the one before it, or the Add row
+once the list is empty. Screen readers hear "Removed {item}." and "Added {item}.".
 
 ### Expandable rows
 
@@ -92,28 +114,43 @@ reorders.
   `toggleOnRowClick: false` for rows that are mostly controls. Row clicks never toggle with
   `handle: 'item'`, where a press on the row starts a drag - use the chevron.
 
-`isItemDisabled` marks items that can't be picked up. Other items still move past them, so render
+`isItemMovable` limits which items can be picked up - the rest show a lock in place of their grip. Other items still move past them, so render
 items that must keep a fixed position, such as pinned columns, outside the list. `disabled`
 disables all reordering.
 
 ## Styling
 
-Items draw no box of their own; style the rows you render. The list adds only the drag chrome: the
-lifted item's background, shadow and slight tilt, and the dashed placeholder. Set the
-`--xh-sortable-list-*` variables on `body.xh-app` to change them. The full set is in the
-`Sortable Lists` block of [`styles/vars.scss`](../../styles/vars.scss):
+Pick a frame for the items with `variant`:
 
-Each row has horizontal padding around its handle and content, `--xh-sortable-list-item-padding`,
-Hoist's half spacing by default. Set it to `0` on a list whose rows draw their own padding or a
-full-width background.
+- **`'plain'`** (default) - no frame. Your rows draw their own, as in `GroupingChooser`.
+- **`'divided'`** - one rounded border around the list, and a line between items, which sit flush.
+- **`'spaced'`** - items set apart by a gap, each in its own rounded border.
+
+The list also draws the drag chrome: the lifted item's background, border, shadow and slight tilt,
+and the dashed placeholder, which takes the shape of the slot it marks - square in a divided list,
+rounded in a spaced one. Each row has horizontal padding around its handle and content,
+`--xh-sortable-list-item-padding`, Hoist's half spacing by default. Set it to `0` for rows that
+draw their own padding or a full-width background.
+
+Set the `--xh-sortable-list-*` variables on `body.xh-app` to change any of these. The full set is in
+the `Sortable Lists` block of [`styles/vars.scss`](../../styles/vars.scss):
 
 ```scss
 body.xh-app {
-  --xh-sortable-list-gap: 4px;
+  --xh-sortable-list-border-radius: 2px;
+  --xh-sortable-list-spaced-gap: 6px;
   --xh-sortable-list-drag-rotate: 0deg;
-  --xh-sortable-list-item-border: var(--xh-border-solid);
 }
 ```
+
+## dnd-kit Options
+
+For anything dnd-kit supports that the list doesn't map to its own props, pass
+`dndProviderProps` to its `DragDropProvider`, or `sortableProps` to each item's `useSortable`.
+`sensors`, `plugins` and `modifiers` in `dndProviderProps` replace Hoist's own, and its drag
+handlers run after Hoist's. The list's own `id`, `index`, `data` and `disabled` always win over
+`sortableProps`. Both can interfere with the list's behavior, so prefer a mapped prop where one
+exists.
 
 ## Common Pitfalls
 

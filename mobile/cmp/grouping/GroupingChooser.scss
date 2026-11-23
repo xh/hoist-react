@@ -24,7 +24,11 @@
 
   // Rows carry their own padding and background.
   &__list {
-    --xh-sortable-list-item-padding: 0;
+    --xh-sortable-list-item-padding: #{0 var(--xh-spacing-half)};
+
+    .xh-sortable-list__row {
+      background-color: var(--xh-bg);
+    }
   }
 
   &__row {
@@ -33,15 +37,6 @@
     background-color: var(--xh-bg);
     height: 45px;
     flex-shrink: 0;
-
-    &__grabber {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      width: 30px;
-      cursor: grab;
-      touch-action: none;
-    }
 
     &__select {
       flex: 1;

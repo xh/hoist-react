@@ -58,10 +58,15 @@ detailed, step-by-step upgrade instructions with before/after code examples.
   and removable (`onRemove`) variants. See [`cmp/chip/README.md`](cmp/chip/README.md).
 * Added `SortableList`, a list users reorder by dragging or with the keyboard. Callers render each
   item, and the list supplies handles, the drop placeholder, auto-scrolling and screen reader
-  announcements, then reports each completed move once via `bind` or `onReorder`. Items can expand
-  to show a detail under their row, opened by a chevron or a click on the row. See
+  announcements, then reports each completed move once via `bind` or `onReorder`. A `variant`
+  frames the items - plain, divided or spaced. `removable` (or `onRemove`) and `onAdd` add remove
+  buttons and an Add row, with focus and announcements handled. `isItemMovable` and
+  `isItemRemovable` exempt individual items. A drag starts on a short hold or, with a mouse, as
+  soon as it moves. Items can expand to show a detail under their row, opened by a chevron or a
+  click on the row. See
   [`cmp/sortablelist/README.md`](cmp/sortablelist/README.md).
-* `GroupingChooser` and the mobile column chooser can now be reordered with the keyboard.
+* `GroupingChooser` and the mobile column chooser can now be reordered with the keyboard, and
+  `GroupingChooser` dimensions can be removed with Delete or Backspace on their handle.
 * Added `Icon.gripVertical()`.
 * Added `SegmentedControl.toggleOnClick` (desktop and mobile). A two-option control becomes a
   toggle - a click anywhere on it, or Space or Enter on its focused segment, flips the value - for
@@ -95,6 +100,8 @@ detailed, step-by-step upgrade instructions with before/after code examples.
   horizontal padding from `--xh-sortable-list-item-padding`, Hoist's half spacing by default.
 * `FilterChooser` favorites now show their filter labels as minimal `Chip`s.
 * Removed the `xh-grouping-chooser__row--dragging` class. A dragged row is styled by `SortableList`.
+* `GroupingChooser` rows use `SortableList`'s grip handle, and its desktop dimension selects show a
+  dropdown chevron and a hover tint. Removed the `xh-grouping-chooser__row__grabber` class.
 
 ### 📚 Libraries
 

@@ -250,17 +250,17 @@ const dimensionList = hoistCmp.factory<GroupingChooserLocalModel>({
             className: 'xh-grouping-chooser__list',
             value: model.pendingValue,
             itemKey: dim => dim,
-            handle: 'custom',
             getItemLabel: dim => model.parentModel.getDimDisplayName(dim),
             onReorder: e => model.movePendingDimToIndex(e.item, e.toIndex),
-            renderItem: (dimension, {index, handleRef}) =>
-                dimensionRow({dimension, idx: index, handleRef})
+            onRemove: e => model.removePendingDimAtIdx(e.index),
+            showRemoveOnHover: true,
+            renderItem: (dimension, {index}) => dimensionRow({dimension, idx: index})
         });
     }
 });
 
 const dimensionRow = hoistCmp.factory<GroupingChooserLocalModel>({
-    render({model, dimension, idx, handleRef}) {
+    render({model, dimension, idx}) {
         // The options for this select include its current value
         const options = model.getDimSelectOpts([...model.availableDims, dimension]);
 
@@ -268,27 +268,14 @@ const dimensionRow = hoistCmp.factory<GroupingChooserLocalModel>({
             className: 'xh-grouping-chooser__row',
             children: [
                 div({
-                    ref: handleRef,
-                    className: 'xh-grouping-chooser__row__grabber',
-                    children: Icon.grip({prefix: 'fal'})
-                }),
-                div({
                     className: 'xh-grouping-chooser__row__select',
                     children: select({
                         options,
                         value: dimension,
                         flex: 1,
                         width: null,
-                        hideDropdownIndicator: true,
                         onChange: newDim => model.replacePendingDimAtIdx(newDim, idx)
                     })
-                }),
-                button({
-                    icon: Icon.delete(),
-                    intent: 'danger',
-                    tabIndex: -1,
-                    className: 'xh-grouping-chooser__row__remove-btn',
-                    onClick: () => model.removePendingDimAtIdx(idx)
                 })
             ]
         });
@@ -305,7 +292,7 @@ const addDimensionControl = hoistCmp.factory<GroupingChooserLocalModel>({
             children: [
                 div({
                     className: 'xh-grouping-chooser__add-control__icon',
-                    children: Icon.grip({prefix: 'fal'})
+                    children: Icon.add()
                 }),
                 select({
                     // By changing the key each time the options change, we can
