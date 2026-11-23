@@ -14,6 +14,12 @@
 
 ## 92.0.0-SNAPSHOT - unreleased
 
+### 🐞 Bug Fixes
+
+* Fixed a memory leak where a Hoist component kept its first-render props until it unmounted.
+  Passing a mounted component a new object in any prop - e.g. a new `model` to `grid` or a new
+  `gridModel` to `gridFindField` - left the old object in memory.
+
 ## 91.0.0 - 2026-11-20
 
 ### 💥 Breaking Changes (upgrade difficulty: 🟠 MEDIUM - CSS variables)
