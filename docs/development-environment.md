@@ -91,14 +91,21 @@ been found to work better in some corporate environments with intensive workstat
 network-level antimalware and other file scanning.)
 
 Projects should pin their package manager version via the `packageManager` field in `package.json`.
-Node's bundled [corepack](https://nodejs.org/api/corepack.html) can then provision the pinned
-version automatically:
+Any recent pnpm reads this pin and downloads and runs the exact version it names, so the version
+you install globally does not need to match. Node no longer bundles corepack from Node 25, so do not
+rely on it to provision pnpm.
 
-- Run `corepack enable pnpm` (or `corepack enable yarn`) once to put a corepack-managed shim on
-  your PATH, then verify with `pnpm --version` from within the project directory. Standalone
-  installs (e.g. `npm i -g pnpm`) also work - pnpm v10+ verifies the `packageManager` pin itself.
+- Install pnpm using any method from [pnpm.io/installation](https://pnpm.io/installation). On
+  macOS, use the standalone script or Homebrew. The script installs a native binary that does not
+  depend on your Node version, unlike `npm i -g pnpm` under nvm. On Windows, use
+  `npm install -g pnpm`.
+- Verify with `pnpm --version` from within the project directory. It should print the pinned
+  version.
 - Within the `client-app` directory of a Hoist app such as Toolbox, run `pnpm install` (or the
   yarn/npm equivalent) to download and install all client-side dependencies.
+- To move a project to a newer pnpm, run `pnpm self-update` (latest) or
+  `pnpm self-update <version>` in the project root. It rewrites the `packageManager` pin. Commit
+  the change.
 
 ## JetBrains IntelliJ
 
