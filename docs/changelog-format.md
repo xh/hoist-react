@@ -17,22 +17,14 @@ requests never conflict over `CHANGELOG.md` and a late merge cannot land under a
   `persistWith`.
 ```
 
-- `pnpm changelog add fix "<text>"` adds a one-line entry to `changelog.d/<branch>.md`. It finds
-  the section from a short name, such as `fix`, `feature`, `tech` or `breaking`, and wraps the line.
-- `pnpm changelog new` creates an empty `changelog.d/<branch>.md` for a longer entry. Or create the
-  file yourself.
-- `pnpm changelog check` validates the fragments. CI runs the same check on each pull request, and
-  shows the entries that the pull request adds in the job summary.
-- A fragment uses only the section headers listed in `changelog.d/config.json`. You can leave the
-  emoji off a header. The release adds it.
-- Leave release-level content out of fragments: the `(upgrade difficulty: ...)` suffix, the
-  upgrade-notes sentence, and `####` topic groups. The release curator adds them.
-- To change an unreleased entry, edit its fragment, even one that another pull request added. To
-  correct a released entry, edit `CHANGELOG.md`.
-- `pnpm changelog preview` prints the next release as it will be assembled.
+Add a one-line entry with `pnpm changelog add fix "<text>"`.
 
-The `xh-changelog` command behind these scripts ships with `@xh/hoist-dev-utils`. See its README
-section "Changelog fragments".
+Leave release-level content out of fragments: the `(upgrade difficulty: ...)` suffix, the
+upgrade-notes sentence, and `####` topic groups. The release curator adds them.
+
+The `pnpm changelog` script runs `xh-changelog` from `@xh/hoist-dev-utils`. Its README section
+[Changelog fragments](https://github.com/xh/hoist-dev-utils/blob/master/README.md#changelog-fragments)
+covers the fragment format, the commands, what `check` enforces, and how a release behaves.
 
 > **Library vs. Application changelogs:** This guide applies to hoist-react and other Hoist library
 > packages. Hoist *application* changelogs have different formatting requirements — see the
@@ -243,4 +235,5 @@ needs `@xh/hoist-dev-utils` 16.6 or later. Older releases keep only the first li
 and silently drop the rest. On those releases, write each bullet as a single unwrapped line.
 
 An app on `@xh/hoist-dev-utils` 16.6 or later can also use changelog fragments. Run
-`xh-changelog init` from its `client-app/` folder.
+`xh-changelog init` from its `client-app/` folder. See the
+[hoist-dev-utils README](https://github.com/xh/hoist-dev-utils/blob/master/README.md#changelog-fragments).

@@ -68,14 +68,13 @@ How it works:
   [Changelog Entry Format](./changelog-format.md#where-entries-go). Deploy Release fails if
   `CHANGELOG.md` lacks the version or fragments are left over.
 - A release without breaking changes goes out as the next minor or patch from the latest tag. Keep
-  `package.json` on the snapshot, because Deploy Release sets the published version. The
-  `## N.0.0-SNAPSHOT - unreleased` heading stays on top of the changelog. `release` refuses a
-  minor or patch while a fragment has a `💥 Breaking Changes` section.
-- A major release rolls the changelog's snapshot heading forward to the next major. Then bump
-  `package.json` on `develop` to match.
-- A hotfix to an older line adds its fragment on the hotfix branch and runs `release` there, which
-  places the block in version order. When the hotfix merges back to `develop`, delete the matching
-  fragment on `develop` if the same fix landed there, or the next release lists it twice.
+  `package.json` on the snapshot, because Deploy Release sets the published version.
+- After a major release, bump `package.json` on `develop` to the next major snapshot.
+
+The hoist-dev-utils README section
+[Release](https://github.com/xh/hoist-dev-utils/blob/master/README.md#release) describes how
+`release` orders entries, rolls the snapshot heading forward, blocks breaking changes in a minor,
+and handles hotfixes.
 
 ## Deploy Release (`deployRelease.yml`)
 
