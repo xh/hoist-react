@@ -67,6 +67,7 @@
   // The list's row carries the background, so the remove button beside the select shares it.
   &__list {
     --xh-sortable-list-item-padding: #{0 var(--xh-spacing-half)};
+    --xh-sortable-list-row-gap: 0;
 
     margin-block: var(--xh-spacing-half);
     background-color: var(--xh-bg-alt);
@@ -100,11 +101,6 @@
 
       .xh-select__single-value {
         color: var(--xh-input-text-color);
-      }
-
-      // Brings the name close to the grip.
-      .xh-select__value-container {
-        padding-left: 2px;
       }
 
       .xh-select__indicator {
