@@ -6,10 +6,15 @@
  */
 import classNames from 'classnames';
 import {isFunction, isNil, uniq} from 'lodash';
-import type {KeyboardEvent as ReactKeyboardEvent, MutableRefObject, ReactNode} from 'react';
-import {useLayoutEffect, useRef, useState} from 'react';
+import type {
+    KeyboardEvent as ReactKeyboardEvent,
+    MouseEvent as ReactMouseEvent,
+    MutableRefObject,
+    ReactNode
+} from 'react';
+import {useId, useLayoutEffect, useRef, useState} from 'react';
 
-import {div} from '@xh/hoist/cmp/layout';
+import {div, htmlButton} from '@xh/hoist/cmp/layout';
 import type {BoxProps, HoistModel, HoistProps} from '@xh/hoist/core';
 import {hoistCmp, uses} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
@@ -22,6 +27,8 @@ import {DND_PLUGINS, DND_SENSORS, DND_TRANSITION} from './impl/DndDefaults';
 import type {SortableKey} from './impl/DndUtils';
 import {moveItem, stopDragKeys} from './impl/DndUtils';
 import './SortableList.scss';
+
+export type {SortableKey};
 
 export interface SortableListProps<T = any> extends HoistProps<HoistModel>, BoxProps {
     /**
@@ -39,8 +46,29 @@ export interface SortableListProps<T = any> extends HoistProps<HoistModel>, BoxP
     /** Renders one item's content. The list adds the handle and drag behavior around it. */
     renderItem: (item: T, ctx: SortableItemContext) => ReactNode;
 
-    /** Content drawn under an item's row at the list's full width, e.g. an editor. Null for none. */
+    /**
+     * Content drawn under an open item's row at the list's full width, e.g. an editor. Setting it
+     * makes items expandable: each gets a chevron that opens and closes its detail.
+     */
     renderDetail?: (item: T) => ReactNode;
+
+    /** Items that can open a detail. Default: every item, when `renderDetail` is set. */
+    isItemExpandable?: (item: T) => boolean;
+
+    /** Keys of the open items, to control them. Omit to let the list keep its own. */
+    expandedKeys?: SortableKey[];
+
+    /** Called with the keys of the open items whenever a user opens or closes one. */
+    onExpandedChange?: (keys: SortableKey[]) => void;
+
+    /** True to let several items be open at once. Default false - opening one closes the other. */
+    multiExpand?: boolean;
+
+    /**
+     * True (default) to open and close an expandable item on a click on its row, outside its
+     * controls. Applies only with a separate handle - never with `handle: 'item'`.
+     */
+    toggleOnRowClick?: boolean;
 
     /** Called once per completed reorder - never mid-drag, on cancel, or for a drop in place. */
     onReorder?: (e: SortableReorderEvent<T>) => void;
@@ -125,6 +153,11 @@ export const [SortableList, sortableList] = hoistCmp.withFactory<SortableListPro
                     itemKey = 'id',
                     renderItem,
                     renderDetail,
+                    isItemExpandable,
+                    expandedKeys,
+                    onExpandedChange,
+                    multiExpand,
+                    toggleOnRowClick = true,
                     onReorder,
                     orientation = 'vertical',
                     wrap,
@@ -148,6 +181,8 @@ export const [SortableList, sortableList] = hoistCmp.withFactory<SortableListPro
             [pendingKeys, setPendingKeys] = useState<SortableKey[]>(null),
             dragSource = useRef<SortableReorderEvent['source']>('pointer'),
             focusKey = useRef<SortableKey>(null),
+            [ownExpandedKeys, setOwnExpandedKeys] = useState<SortableKey[]>([]),
+            openKeys = expandedKeys ?? ownExpandedKeys,
             latest = useRef({keys, pendingKeys});
 
         latest.current = {keys, pendingKeys};
@@ -165,6 +200,16 @@ export const [SortableList, sortableList] = hoistCmp.withFactory<SortableListPro
             next.splice(toIndex, 0, item);
             if (model && bind) model.setBindable(bind, next);
             onReorder?.({item, fromIndex, toIndex, items: next, source});
+        };
+
+        const toggleExpanded = (key: SortableKey) => {
+            const next = openKeys.includes(key)
+                ? openKeys.filter(it => it !== key)
+                : multiExpand
+                  ? [...openKeys, key]
+                  : [key];
+            if (expandedKeys === undefined) setOwnExpandedKeys(next);
+            onExpandedChange?.(next);
         };
 
         const onDragStart = (e: DragStartEvent) => {
@@ -220,7 +265,9 @@ export const [SortableList, sortableList] = hoistCmp.withFactory<SortableListPro
                 role: 'list',
                 ...divProps,
                 children: shownKeys.map((key, index) => {
-                    const item = items[keys.indexOf(key)];
+                    const item = items[keys.indexOf(key)],
+                        expandable =
+                            !!renderDetail && (isItemExpandable ? isItemExpandable(item) : true);
                     return sortableItem({
                         key,
                         listItem: item,
@@ -236,6 +283,10 @@ export const [SortableList, sortableList] = hoistCmp.withFactory<SortableListPro
                         focusKey,
                         renderItem,
                         renderDetail,
+                        expandable,
+                        expanded: expandable && openKeys.includes(key),
+                        rowToggle: expandable && toggleOnRowClick && handle !== 'item',
+                        onToggle: () => toggleExpanded(key),
                         onMove: (to: number) => {
                             focusKey.current = key;
                             reorder(index, to, 'keyboard');
@@ -250,6 +301,13 @@ export const [SortableList, sortableList] = hoistCmp.withFactory<SortableListPro
 //------------------
 // Implementation
 //------------------
+// A click on one of these, inside a row, does its own job and never toggles the row.
+const ROW_CLICK_IGNORED =
+    'button, a, input, select, textarea, [role=button], [contenteditable], .xh-chip';
+
+// Pointer travel between press and click beyond which the click ended a drag, not a tap.
+const DRAG_DISTANCE = 4;
+
 interface SortableItemProps extends HoistProps {
     listItem: any;
     itemKey: SortableKey;
@@ -265,6 +323,11 @@ interface SortableItemProps extends HoistProps {
     focusKey: MutableRefObject<SortableKey>;
     renderItem: SortableListProps['renderItem'];
     renderDetail: SortableListProps['renderDetail'];
+    expandable: boolean;
+    expanded: boolean;
+    /** True to open and close the item on a click on its row. */
+    rowToggle: boolean;
+    onToggle: () => void;
     onMove: (toIndex: number) => void;
 }
 
@@ -286,10 +349,16 @@ const sortableItem = hoistCmp.factory<SortableItemProps>({
         focusKey,
         renderItem,
         renderDetail,
+        expandable,
+        expanded,
+        rowToggle,
+        onToggle,
         onMove
     }) {
         const isDisabled = itemDisabled || listDisabled,
             activator = useRef<Element>(null),
+            pointerDown = useRef<{x: number; y: number}>(null),
+            detailId = useId(),
             sortable = useSortable({
                 id: itemKey,
                 index,
@@ -331,6 +400,23 @@ const sortableItem = hoistCmp.factory<SortableItemProps>({
             }
         };
 
+        const onRowClick = (e: ReactMouseEvent<HTMLDivElement>) => {
+            const target = e.target as Element,
+                start = pointerDown.current,
+                selection = window.getSelection();
+            pointerDown.current = null;
+            if (
+                !rowToggle ||
+                target.closest(ROW_CLICK_IGNORED) ||
+                activator.current?.contains(target) ||
+                (selection && !selection.isCollapsed && selection.toString()) ||
+                (start && Math.hypot(e.clientX - start.x, e.clientY - start.y) > DRAG_DISTANCE)
+            ) {
+                return;
+            }
+            onToggle();
+        };
+
         const ctx: SortableItemContext = {
                 index,
                 isDragging: sortable.isDragging,
@@ -347,7 +433,20 @@ const sortableItem = hoistCmp.factory<SortableItemProps>({
                       children: itemDisabled ? Icon.lock() : Icon.gripVertical()
                   })
                 : null,
-            detail = renderDetail?.(item);
+            expander = expandable
+                ? htmlButton({
+                      type: 'button',
+                      className: classNames(
+                          'xh-sortable-list__expander',
+                          expanded && 'xh-sortable-list__expander--open'
+                      ),
+                      'aria-expanded': expanded,
+                      'aria-controls': expanded ? detailId : undefined,
+                      'aria-label': `${label} details`,
+                      onClick: onToggle,
+                      children: Icon.chevronDown()
+                  })
+                : null;
 
         return div({
             ref: itemRef,
@@ -355,24 +454,34 @@ const sortableItem = hoistCmp.factory<SortableItemProps>({
             className: classNames(
                 'xh-sortable-list__item',
                 sortable.isDragging && 'xh-sortable-list__item--dragging',
-                itemDisabled && 'xh-sortable-list__item--disabled'
+                itemDisabled && 'xh-sortable-list__item--disabled',
+                rowToggle && 'xh-sortable-list__item--row-toggle'
             ),
             onKeyDown,
             children: [
                 div({
                     className: 'xh-sortable-list__row',
+                    onPointerDown: e => (pointerDown.current = {x: e.clientX, y: e.clientY}),
+                    onClick: onRowClick,
                     children: [
                         handle === 'start' ? grip : null,
                         div({
                             className: 'xh-sortable-list__content',
                             children: renderItem(item, ctx)
                         }),
+                        expander,
                         handle === 'end' ? grip : null
                     ]
                 }),
-                isNil(detail)
-                    ? null
-                    : div({className: 'xh-sortable-list__detail', children: detail})
+                expanded
+                    ? div({
+                          id: detailId,
+                          role: 'region',
+                          'aria-label': `${label} details`,
+                          className: 'xh-sortable-list__detail',
+                          children: renderDetail(item)
+                      })
+                    : null
             ]
         });
     }

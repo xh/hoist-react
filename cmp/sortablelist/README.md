@@ -30,7 +30,7 @@ sortableList({
     getItemLabel: step => step.name,
     onReorder: e => model.moveStepAsync(e.item, e.toIndex),
     renderItem: (step, {isDragging}) => stepRow({step, isDragging}),
-    renderDetail: step => (model.expandedStepId === step.id ? stepEditor({step}) : null)
+    renderDetail: step => stepEditor({step})
 })
 ```
 
@@ -66,8 +66,25 @@ doesn't also trigger an ancestor's shortcuts.
 Set `orientation: 'horizontal'` for a row of items, and `wrap: true` to let it wrap. The list
 auto-scrolls itself, any scrolling ancestors and the window when a dragged item nears an edge.
 
-`renderDetail` draws content under an item at the list's full width, such as an editor for an
-expanded row. Return null for items with no detail. The detail moves with its item.
+### Expandable rows
+
+Set `renderDetail` to make items expandable. Each item gets a chevron at the end of its row, which
+opens a detail under the row at the list's full width - an editor, say - and closes it again. The
+chevron is a button with `aria-expanded`, and the detail is a region named for its item. The list
+calls `renderDetail` only for open items, and the detail moves with its item when the list
+reorders.
+
+- **Which items expand:** every item by default. `isItemExpandable` limits it.
+- **How many open at once:** one by default - opening an item closes the open one. Set
+  `multiExpand: true` to allow several.
+- **Who owns the open state:** the list, by default. Pass `expandedKeys` - item keys - to control
+  it, and apply the keys `onExpandedChange` reports. `onExpandedChange` also reports changes when
+  the list owns the state.
+- **Row clicks:** a click on an expandable row opens or closes it, and the row shows a pointer and
+  a hover tint. A click on a button, link, input, chip or other control in the row does only its own
+  job, as do the click that ends a drag and one that ends a text selection. Set
+  `toggleOnRowClick: false` for rows that are mostly controls. Row clicks never toggle with
+  `handle: 'item'`, where a press on the row starts a drag - use the chevron.
 
 `isItemDisabled` marks items that can't be picked up. Other items still move past them, so render
 items that must keep a fixed position, such as pinned columns, outside the list. `disabled`

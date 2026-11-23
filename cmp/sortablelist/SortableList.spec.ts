@@ -126,30 +126,19 @@ describe('SortableList', () => {
         expect(onReorder).toHaveBeenCalledTimes(1);
     });
 
-    it('renders a detail under an item only when renderDetail returns content', () => {
-        const el = renderList({
-            value: DIMS,
-            renderDetail: it => (it.id === 'sector' ? span('Sector settings') : null)
-        });
-
-        const details = el.querySelectorAll('.xh-sortable-list__detail');
-        expect(details).toHaveLength(1);
-        expect(items(el)[1].contains(details[0])).toBe(true);
-    });
-
     // Rows read model state - an expanded row, a renamed item - so they must re-render on change.
     it('re-renders an item when observable state read by renderItem or renderDetail changes', () => {
         const model = new DimsModel(),
             el = renderList({
                 value: DIMS,
+                expandedKeys: ['sector'],
                 renderItem: it => span(model.expandedId === it.id ? `${it.name} (open)` : it.name),
-                renderDetail: it => (model.expandedId === it.id ? span('Details') : null)
+                renderDetail: it => span(model.expandedId === it.id ? 'Editing' : 'Details')
             });
 
-        expect(el.querySelector('.xh-sortable-list__detail')).toBeNull();
         act(() => model.setExpandedId('sector'));
         expect(items(el)[1].textContent).toContain('Sector (open)');
-        expect(items(el)[1].querySelector('.xh-sortable-list__detail')).not.toBeNull();
+        expect(detail(el, 1).textContent).toBe('Editing');
     });
 
     // jsdom keeps focus on a node React moves, so this can't catch the browser's focus loss.
@@ -172,6 +161,159 @@ describe('SortableList', () => {
         });
 
         expect(el.querySelector('.my-grip').getAttribute('aria-label')).toBe('Region');
+    });
+
+    describe('expandable rows', () => {
+        const detailText = (it: any) => span(`${it.name} settings`);
+
+        it('opens a row from its chevron, rendering its detail only while open', () => {
+            const renderDetail = vi.fn(detailText),
+                el = renderList({value: DIMS, renderDetail});
+
+            expect(renderDetail).not.toHaveBeenCalled();
+            expect(chevron(el, 1).tagName).toBe('BUTTON');
+            expect(chevron(el, 1).getAttribute('aria-expanded')).toBe('false');
+
+            fireEvent.click(chevron(el, 1));
+            const region = detail(el, 1);
+            expect(chevron(el, 1).getAttribute('aria-expanded')).toBe('true');
+            expect(chevron(el, 1).getAttribute('aria-controls')).toBe(region.id);
+            expect(region.getAttribute('role')).toBe('region');
+            expect(region.getAttribute('aria-label')).toBe('sector details');
+            expect(region.textContent).toBe('Sector settings');
+            expect(renderDetail.mock.calls.every(([it]) => it.id === 'sector')).toBe(true);
+
+            fireEvent.click(chevron(el, 1));
+            expect(detail(el, 1)).toBeNull();
+        });
+
+        it('keeps one row open by default, and several with multiExpand', () => {
+            const single = renderList({value: DIMS, renderDetail: detailText});
+            fireEvent.click(chevron(single, 0));
+            fireEvent.click(chevron(single, 2));
+            expect(openRows(single)).toEqual([2]);
+
+            const multi = renderList({value: DIMS, renderDetail: detailText, multiExpand: true});
+            fireEvent.click(chevron(multi, 0));
+            fireEvent.click(chevron(multi, 2));
+            expect(openRows(multi)).toEqual([0, 2]);
+        });
+
+        it('follows expandedKeys when controlled, reporting changes via onExpandedChange', () => {
+            const onExpandedChange = vi.fn(),
+                el = renderList({
+                    value: DIMS,
+                    renderDetail: detailText,
+                    expandedKeys: ['fund'],
+                    onExpandedChange
+                });
+
+            expect(openRows(el)).toEqual([2]);
+            fireEvent.click(chevron(el, 0));
+            expect(onExpandedChange).toHaveBeenCalledWith(['region']);
+            expect(openRows(el)).toEqual([2]);
+        });
+
+        it('gives rows that isItemExpandable rejects no chevron and no row toggle', () => {
+            const el = renderList({
+                value: DIMS,
+                renderDetail: detailText,
+                isItemExpandable: it => it.id !== 'region'
+            });
+
+            expect(chevron(el, 0)).toBeNull();
+            fireEvent.click(row(el, 0));
+            expect(openRows(el)).toEqual([]);
+        });
+
+        it('toggles on a row click, unless toggleOnRowClick is false', () => {
+            const el = renderList({value: DIMS, renderDetail: detailText});
+            fireEvent.click(row(el, 1));
+            expect(openRows(el)).toEqual([1]);
+            fireEvent.click(row(el, 1));
+            expect(openRows(el)).toEqual([]);
+
+            const off = renderList({
+                value: DIMS,
+                renderDetail: detailText,
+                toggleOnRowClick: false
+            });
+            fireEvent.click(row(off, 1));
+            expect(openRows(off)).toEqual([]);
+        });
+
+        it.each([
+            ['a button', 'button'],
+            ['a link', 'a'],
+            ['an input', 'input'],
+            ['a select', 'select'],
+            ['a textarea', 'textarea'],
+            ['a role=button element', '[role=button]'],
+            ['a contenteditable element', '[contenteditable]'],
+            ['a chip', '.xh-chip']
+        ])('ignores a row click on %s', (_, selector) => {
+            const el = renderList({
+                value: DIMS,
+                renderDetail: detailText,
+                renderItem: () =>
+                    div({
+                        dangerouslySetInnerHTML: {
+                            __html:
+                                '<button>b</button><a href="#">a</a><input/><select></select>' +
+                                '<textarea></textarea><span role="button">r</span>' +
+                                '<span contenteditable="true">e</span><span class="xh-chip">c</span>'
+                        }
+                    })
+            });
+
+            fireEvent.click(items(el)[1].querySelector(selector));
+            expect(openRows(el)).toEqual([]);
+        });
+
+        it('ignores a row click on the drag handle', () => {
+            const el = renderList({value: DIMS, renderDetail: detailText});
+            fireEvent.click(handles(el)[1]);
+            expect(openRows(el)).toEqual([]);
+        });
+
+        it('ignores a row click that ends a text selection', () => {
+            const el = renderList({value: DIMS, renderDetail: detailText});
+            vi.spyOn(window, 'getSelection').mockReturnValue({
+                isCollapsed: false,
+                toString: () => 'Sect'
+            } as Selection);
+
+            fireEvent.click(row(el, 1));
+            expect(openRows(el)).toEqual([]);
+            vi.restoreAllMocks();
+        });
+
+        it('ignores the click that ends a drag', () => {
+            const el = renderList({value: DIMS, renderDetail: detailText});
+            fireEvent.pointerDown(row(el, 1), {clientX: 10, clientY: 10});
+            fireEvent.click(row(el, 1), {clientX: 10, clientY: 40});
+            expect(openRows(el)).toEqual([]);
+        });
+
+        it('never toggles on a row click with handle: item, though the chevron works', () => {
+            const el = renderList({value: DIMS, renderDetail: detailText, handle: 'item'});
+            fireEvent.click(row(el, 1));
+            expect(openRows(el)).toEqual([]);
+
+            fireEvent.click(chevron(el, 1));
+            expect(openRows(el)).toEqual([1]);
+        });
+
+        it('keeps a row open when the list reorders', () => {
+            const model = new DimsModel(),
+                el = renderList({model, bind: 'dims', renderDetail: detailText});
+
+            fireEvent.click(chevron(el, 1));
+            fireEvent.keyDown(handles(el)[1], {key: 'ArrowUp', altKey: true});
+            expect(model.dims[0].id).toBe('sector');
+            expect(openRows(el)).toEqual([0]);
+            expect(detail(el, 0).textContent).toBe('Sector settings');
+        });
     });
 
     it('throws for a duplicate or missing item key', () => {
@@ -217,4 +359,22 @@ function handles(el: HTMLElement): HTMLElement[] {
 
 function items(el: HTMLElement): HTMLElement[] {
     return Array.from(el.querySelectorAll('.xh-sortable-list__item'));
+}
+
+function row(el: HTMLElement, idx: number): HTMLElement {
+    return items(el)[idx].querySelector('.xh-sortable-list__row');
+}
+
+function chevron(el: HTMLElement, idx: number): HTMLElement {
+    return items(el)[idx].querySelector('.xh-sortable-list__expander');
+}
+
+function detail(el: HTMLElement, idx: number): HTMLElement {
+    return items(el)[idx].querySelector('.xh-sortable-list__detail');
+}
+
+function openRows(el: HTMLElement): number[] {
+    return items(el)
+        .map((it, idx) => (it.querySelector('.xh-sortable-list__detail') ? idx : -1))
+        .filter(idx => idx >= 0);
 }

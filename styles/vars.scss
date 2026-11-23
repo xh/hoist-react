@@ -1062,6 +1062,7 @@ body {
   --xh-sortable-list-drag-shadow: 0 4px 14px rgba(38, 50, 56, 0.2), 0 1px 3px rgba(38, 50, 56, 0.15);
   // Gap between items.
   --xh-sortable-list-gap: 0;
+  --xh-sortable-list-expander-transition: 150ms ease;
   // Opacity of a grip handle until its item is hovered or the handle is focused.
   --xh-sortable-list-handle-opacity: 0.55;
   // Items draw no box of their own - the caller's content does.
@@ -1071,6 +1072,8 @@ body {
   --xh-sortable-list-item-min-height: 30px;
   // Padding of each row, around its handle and content. Set 0 for content that draws its own.
   --xh-sortable-list-item-padding: #{0 var(--xh-spacing-half)};
+  // Hover tint on a row that opens its detail on click.
+  --xh-sortable-list-row-hover-bg: var(--xh-grid-row-hover-bg);
   // The dragged item's slot, outlined where it will drop.
   --xh-sortable-list-placeholder-bg: var(--xh-intent-primary-trans1);
   --xh-sortable-list-placeholder-border-color: var(--xh-intent-primary-text-color);
