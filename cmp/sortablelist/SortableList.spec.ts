@@ -9,7 +9,9 @@ import {sortableList} from '@xh/hoist/cmp/sortablelist';
 import type {SortableListProps} from '@xh/hoist/cmp/sortablelist';
 import {HoistModel} from '@xh/hoist/core';
 import {action, observable, observableRef} from '@xh/hoist/mobx';
+import {select} from '@xh/hoist/desktop/cmp/input';
 import {initTestAppAsync} from '@xh/hoist/test-support';
+import {createPortal} from 'react-dom';
 import {act, fireEvent, render} from '@testing-library/react';
 import {beforeAll, describe, expect, it, vi} from 'vitest';
 
@@ -223,7 +225,24 @@ describe('SortableList', () => {
 
             expect(chevron(el, 0)).toBeNull();
             fireEvent.click(row(el, 0));
-            expect(openRows(el)).toEqual([]);
+            expect(chevron(el, 1)).not.toBeNull();
+            expect(openRows(el)).toEqual([0]);
+        });
+
+        // Lets a list show a detail always - a step's body under its header - or track open
+        // state itself, as before rows could expand.
+        it('always shows the detail of a non-expandable item, when renderDetail returns one', () => {
+            const el = renderList({
+                value: DIMS,
+                isItemExpandable: () => false,
+                renderDetail: it => (it.id === 'fund' ? null : detailText(it))
+            });
+
+            expect(items(el).some(it => it.querySelector('.xh-sortable-list__expander'))).toBe(
+                false
+            );
+            expect(openRows(el)).toEqual([0, 1]);
+            expect(detail(el, 0).hasAttribute('role')).toBe(false);
         });
 
         it('toggles on a row click, unless toggleOnRowClick is false', () => {
@@ -250,7 +269,10 @@ describe('SortableList', () => {
             ['a textarea', 'textarea'],
             ['a role=button element', '[role=button]'],
             ['a contenteditable element', '[contenteditable]'],
-            ['a chip', '.xh-chip']
+            ['a chip', '.xh-chip'],
+            ['a Hoist input', '.xh-input div'],
+            ['a combobox', '[role=combobox]'],
+            ['a listbox', '[role=listbox] div']
         ])('ignores a row click on %s', (_, selector) => {
             const el = renderList({
                 value: DIMS,
@@ -261,12 +283,45 @@ describe('SortableList', () => {
                             __html:
                                 '<button>b</button><a href="#">a</a><input/><select></select>' +
                                 '<textarea></textarea><span role="button">r</span>' +
-                                '<span contenteditable="true">e</span><span class="xh-chip">c</span>'
+                                '<span contenteditable="true">e</span><span class="xh-chip">c</span>' +
+                                '<div class="xh-input"><div>s</div></div>' +
+                                '<div role="combobox">x</div><div role="listbox"><div>o</div></div>'
                         }
                     })
             });
 
             fireEvent.click(items(el)[1].querySelector(selector));
+            expect(openRows(el)).toEqual([]);
+        });
+
+        it('ignores a row click on a Hoist select', () => {
+            const model = new DimsModel(),
+                el = renderList({
+                    value: DIMS,
+                    renderDetail: detailText,
+                    renderItem: () =>
+                        select({model, bind: 'expandedId', options: DIMS.map(d => d.id)})
+                });
+
+            fireEvent.click(items(el)[1].querySelector('.xh-select__control'));
+            expect(openRows(el)).toEqual([]);
+        });
+
+        // React bubbles a portal's click - a select menu, a popover - up to the row that renders it.
+        it('ignores a click from a portal that a row renders', () => {
+            const el = renderList({
+                value: DIMS,
+                renderDetail: detailText,
+                renderItem: it =>
+                    it.id === 'sector'
+                        ? createPortal(
+                              span({className: 'popover-pick', children: 'Pick'}),
+                              document.body
+                          )
+                        : span(it.name)
+            });
+
+            fireEvent.click(document.querySelector('.popover-pick'));
             expect(openRows(el)).toEqual([]);
         });
 

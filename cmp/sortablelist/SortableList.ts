@@ -52,7 +52,11 @@ export interface SortableListProps<T = any> extends HoistProps<HoistModel>, BoxP
      */
     renderDetail?: (item: T) => ReactNode;
 
-    /** Items that can open a detail. Default: every item, when `renderDetail` is set. */
+    /**
+     * Items that open and close a detail with a chevron. Default: every item, when `renderDetail`
+     * is set. Any other item shows its detail whenever `renderDetail` returns one, with no
+     * chevron - pass `() => false` for details that are always shown.
+     */
     isItemExpandable?: (item: T) => boolean;
 
     /** Keys of the open items, to control them. Omit to let the list keep its own. */
@@ -303,7 +307,14 @@ export const [SortableList, sortableList] = hoistCmp.withFactory<SortableListPro
 //------------------
 // A click on one of these, inside a row, does its own job and never toggles the row.
 const ROW_CLICK_IGNORED =
-    'button, a, input, select, textarea, [role=button], [contenteditable], .xh-chip';
+    'button, a, input, select, textarea, [role=button], [role=combobox], [role=listbox], ' +
+    '[contenteditable], .xh-chip, .xh-input';
+
+// A non-expandable item shows its detail whenever `renderDetail` returns one.
+function fixedDetail(item: any, renderDetail: SortableListProps['renderDetail']) {
+    const detail = renderDetail?.(item);
+    return isNil(detail) ? null : div({className: 'xh-sortable-list__detail', children: detail});
+}
 
 // Pointer travel between press and click beyond which the click ended a drag, not a tap.
 const DRAG_DISTANCE = 4;
@@ -407,6 +418,8 @@ const sortableItem = hoistCmp.factory<SortableItemProps>({
             pointerDown.current = null;
             if (
                 !rowToggle ||
+                // React carries a click from a portal - a select's menu, a popover - up to the row.
+                !e.currentTarget.contains(target) ||
                 target.closest(ROW_CLICK_IGNORED) ||
                 activator.current?.contains(target) ||
                 (selection && !selection.isCollapsed && selection.toString()) ||
@@ -481,7 +494,9 @@ const sortableItem = hoistCmp.factory<SortableItemProps>({
                           className: 'xh-sortable-list__detail',
                           children: renderDetail(item)
                       })
-                    : null
+                    : expandable
+                      ? null
+                      : fixedDetail(item, renderDetail)
             ]
         });
     }
