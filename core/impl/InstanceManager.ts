@@ -19,15 +19,15 @@ import {wait} from '@xh/hoist/promise';
  * @internal
  */
 class InstanceManager {
-    readonly services = new WeakCollection<HoistService>();
+    readonly services = new IterableWeakSet<HoistService>();
 
-    readonly models = new WeakCollection<HoistModel>();
+    readonly models = new IterableWeakSet<HoistModel>();
 
-    readonly stores = new WeakCollection<Store>();
+    readonly stores = new IterableWeakSet<Store>();
 
-    readonly cubes = new WeakCollection<Cube>();
+    readonly cubes = new IterableWeakSet<Cube>();
 
-    readonly views = new WeakCollection<View>();
+    readonly views = new IterableWeakSet<View>();
 
     private modelsByTestId: Map<string, HoistModel> = new Map();
     private testSupportedModels = new Set([
@@ -99,7 +99,7 @@ class InstanceManager {
  * An observable, insertion-ordered collection that holds its members weakly. Members are dropped
  * when deleted, or when garbage collected.
  */
-class WeakCollection<T extends HoistBase> {
+class IterableWeakSet<T extends HoistBase> {
     @observableShallow private accessor refs: Map<string, WeakRef<T>> = new Map();
 
     // Called with a member's xhId after the member is garbage collected.
@@ -113,9 +113,8 @@ class WeakCollection<T extends HoistBase> {
     }
 
     add(member: T) {
-        const {xhId} = member;
-        if (this.refs.has(xhId)) return;
-        const ref = new WeakRef(member);
+        const {xhId} = member,
+            ref = new WeakRef(member);
         this.registry.register(member, xhId, ref);
         this.refs.set(xhId, ref);
     }
@@ -126,10 +125,6 @@ class WeakCollection<T extends HoistBase> {
         if (!ref) return;
         this.registry.unregister(ref);
         this.refs.delete(xhId);
-    }
-
-    forEach(fn: (member: T) => void) {
-        for (const member of this) fn(member);
     }
 
     *[Symbol.iterator](): Iterator<T> {

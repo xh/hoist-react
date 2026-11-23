@@ -865,11 +865,7 @@ export class XHApi {
      * in memory. A model that was never destroyed drops out once it is garbage collected.
      */
     getModels<T extends HoistModel>(selector: ModelSelector = '*'): T[] {
-        const ret = [];
-        instanceManager.models.forEach(m => {
-            if (m.matchesSelector(selector, true)) ret.push(m);
-        });
-        return ret;
+        return [...instanceManager.models].filter(m => m.matchesSelector(selector, true)) as T[];
     }
 
     /** Get the first active model that matches the given selector, or null if none found. */

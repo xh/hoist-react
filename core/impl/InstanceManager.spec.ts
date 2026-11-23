@@ -31,7 +31,7 @@ describe('InstanceManager', () => {
 
     it('does not keep an undestroyed model in memory', async () => {
         const ref = await createAbandonedModelAsync();
-        await collectGarbageAsync();
+        collectGarbage();
         expect(ref.deref()).toBeUndefined();
     });
 });
@@ -48,11 +48,7 @@ async function createAbandonedModelAsync(): Promise<WeakRef<TestModel>> {
     return ref;
 }
 
-async function collectGarbageAsync() {
+function collectGarbage() {
     setFlagsFromString('--expose-gc');
-    const gc = runInNewContext('gc') as () => void;
-    for (let i = 0; i < 3; i++) {
-        gc();
-        await wait();
-    }
+    (runInNewContext('gc') as () => void)();
 }
