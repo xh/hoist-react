@@ -102,6 +102,11 @@
         color: var(--xh-input-text-color);
       }
 
+      // Brings the name close to the grip.
+      .xh-select__value-container {
+        padding-left: 2px;
+      }
+
       .xh-select__indicator {
         color: var(--xh-text-color-muted);
         opacity: 0;
