@@ -16,28 +16,19 @@
 
 ### 🐞 Bug Fixes
 
-* Fixed a memory leak where each opening of a grid column header filter left models behind that
-  were never released. They kept the grid alive, with all its data, after the grid itself was gone.
-* Fixed a memory leak in the mobile `Navigator`, where each route change left the pages it replaced
-  in memory.
-* Fixed a minor memory leak in `Sparkline` tooltips, where an unmount cleanup kept the first
-  render's props.
-* Fixed `useOnResize`, `useOnVisibleChange` and `useOnScroll` calling the function passed on a
-  component's first render rather than the latest one.
-* Fixed a memory leak in `DashContainer` where each rebuild of the layout left the old layout,
-  including its DOM, in memory. The menu button in each stack header was rendered into a React root
-  that was never unmounted.
-* Fixed a memory leak where a Hoist component kept its first-render props until it unmounted.
-  Passing a mounted component a new object in any prop - e.g. a new `model` to `grid` or a new
-  `gridModel` to `gridFindField` - left the old object in memory.
+* Addressed potential memory leaks:
+    * Grid column header filters could retain models after closing.
+    * Mobile `Navigator` could retain pages replaced by a route change.
+    * `Sparkline` tooltips could retain first-render props.
+    * `DashContainer` could retain old layouts after a rebuild.
+    * Hoist components could retain their first-render props until unmount.
+    * `useOnResize`, `useOnVisibleChange` and `useOnScroll` could hold on to the callback from the
+      first render rather than the latest one.
 
 ### ⚙️ Technical
 
-* `InstanceManager` now holds models, stores, cubes and views weakly. A model that is never
-  destroyed is collected once nothing else references it, instead of staying in memory for the
-  life of the app. `XH.getModels()` and the Inspector no longer list such a model once it has been
-  collected.
-
+* `InstanceManager` now holds models, stores, cubes and views weakly, so models that are never
+  destroyed can still be garbage collected.
 
 ## 91.0.0 - 2026-11-20
 
