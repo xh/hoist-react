@@ -153,7 +153,7 @@ describe('Column.getAgSpec', () => {
                 col = createColumn({textRenderer, cellClassRules: {shared: () => true}}),
                 rules = col.getAgSpec().cellClassRules as Record<string, Function>;
 
-            expect(Object.keys(rules)).toEqual(['pos', 'shared']);
+            expect(Object.keys(rules)).toEqual(['pos', 'shared', 'xh-cell--find-active']);
             expect(rules.shared({})).toBe(true);
         });
 
@@ -167,6 +167,7 @@ describe('Column.getAgSpec', () => {
                 'xh-pos-val',
                 'xh-neg-val',
                 'xh-neutral-val',
+                'xh-cell--find-active',
                 'custom'
             ]);
             expect((spec.cellClassRules['xh-neg-val'] as Function)({value: -1})).toBe(false);
@@ -178,7 +179,7 @@ describe('Column.getAgSpec', () => {
 
             expect(spec.valueFormatter).toBeNull();
             expect(spec.cellRenderer).toBeTypeOf('function');
-            expect(spec.cellClassRules).toEqual({});
+            expect(Object.keys(spec.cellClassRules)).toEqual(['xh-cell--find-active']);
         });
 
         it('keeps its cellClassRules when set as the renderer, like any renderer', () => {
@@ -186,7 +187,7 @@ describe('Column.getAgSpec', () => {
                 spec = createColumn({renderer}).getAgSpec();
 
             expect(spec.cellRenderer).toBeTypeOf('function');
-            expect(Object.keys(spec.cellClassRules)).toEqual(['pos']);
+            expect(Object.keys(spec.cellClassRules)).toEqual(['pos', 'xh-cell--find-active']);
         });
 
         it('shows its text in a tree column, through the group cell renderer', () => {
@@ -327,6 +328,63 @@ describe('Column.getAgSpec', () => {
             expect(editable({node: {data: store.getById(1)}})).toBe(true);
             expect(editable({node: {data: store.getById(2)}})).toBe(false);
             expect(editable({node: {data: null}})).toBe(false);
+        });
+    });
+
+    describe('getFindText', () => {
+        it('is omitted where ag-Grid Find can search the formatted value', () => {
+            expect(createColumn({}).getAgSpec().getFindText).toBeUndefined();
+            expect(
+                createColumn({textRenderer: v => `${v}!`}).getAgSpec().getFindText
+            ).toBeUndefined();
+        });
+
+        it('gives the text a renderer displays, stripped of markup', () => {
+            const findText = (renderer, value) =>
+                createColumn({renderer})
+                    .getAgSpec()
+                    .getFindText({value} as any);
+
+            expect(findText(v => `<b>${v}</b> &amp; co`, 'a')).toBe('a & co');
+            expect(findText(numberRenderer({precision: 2, colorSpec: true}), 1234.5)).toBe(
+                '1,234.50'
+            );
+            expect(findText(() => null, 'a')).toBeNull();
+        });
+
+        it('yields to a cellRenderer supplied via agOptions', () => {
+            const spec = createColumn({renderer: v => v, agOptions: {cellRenderer: () => null}});
+            expect(spec.getAgSpec().getFindText).toBeUndefined();
+        });
+    });
+
+    describe('find active cell', () => {
+        it('marks only the cell holding the active match of a GridCellFindField', () => {
+            const gridModel = createGridModel({}, [{field: 'name'}, {field: 'other'}]),
+                node = {} as any,
+                rule = (colId: string) =>
+                    gridModel.getColumn(colId).getAgSpec().cellClassRules[
+                        'xh-cell--find-active'
+                    ] as Function;
+
+            expect(rule('name')({node} as any)).toBe(false);
+
+            gridModel._findActiveCell = {node, colId: 'name'};
+            expect(rule('name')({node} as any)).toBe(true);
+            expect(rule('other')({node} as any)).toBe(false);
+            expect(rule('name')({node: {}} as any)).toBe(false);
+        });
+
+        it('marks only the header of the column holding the active header match', () => {
+            const gridModel = createGridModel({}, [{field: 'name'}, {field: 'other'}]),
+                headerClass = (colId: string) =>
+                    (gridModel.getColumn(colId).getAgSpec().headerClass as Function)({});
+
+            expect(headerClass('name')).not.toContain('xh-column-header--find-active');
+
+            gridModel._findActiveHeader = 'name';
+            expect(headerClass('name')).toContain('xh-column-header--find-active');
+            expect(headerClass('other')).not.toContain('xh-column-header--find-active');
         });
     });
 });

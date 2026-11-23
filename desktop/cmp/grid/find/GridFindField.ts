@@ -5,11 +5,10 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import type {GridLikeModel} from '@xh/hoist/cmp/grid';
-import {hbox, span, vbox} from '@xh/hoist/cmp/layout';
+import {hbox} from '@xh/hoist/cmp/layout';
 import type {LayoutProps} from '@xh/hoist/core';
 import {hoistCmp, useLocalModel} from '@xh/hoist/core';
 import type {FilterMatchMode} from '@xh/hoist/data';
-import {button} from '@xh/hoist/desktop/cmp/button';
 import type {TextInputProps} from '@xh/hoist/desktop/cmp/input';
 import {textInput} from '@xh/hoist/desktop/cmp/input';
 import '@xh/hoist/desktop/register';
@@ -17,6 +16,7 @@ import {Icon} from '@xh/hoist/icon';
 import {consumeEvent} from '@xh/hoist/utils/js';
 import {useComposedRefs, splitLayoutProps} from '@xh/hoist/utils/react';
 import './GridFindField.scss';
+import {findFieldControls} from './impl/FindFieldControls';
 import {GridFindFieldImplModel} from './impl/GridFindFieldImplModel';
 
 export interface GridFindFieldProps extends TextInputProps, LayoutProps {
@@ -106,35 +106,8 @@ export const [GridFindField, gridFindField] = hoistCmp.withFactory<GridFindField
                     },
                     ...restProps
                 }),
-                controls({impl})
+                findFieldControls({impl})
             ]
         });
     }
-});
-
-const controls = hoistCmp.factory(({impl}) => {
-    const {hasFocus, hasQuery, hasResults, countLabel} = impl;
-    if (!hasFocus && !hasQuery) return null;
-    return hbox({
-        className: 'xh-grid-find-field__controls',
-        children: [
-            span({
-                omit: !countLabel,
-                className: 'xh-grid-find-field__count-label',
-                children: countLabel
-            }),
-            vbox(
-                button({
-                    disabled: !hasResults,
-                    icon: Icon.chevronUp(),
-                    onClick: () => impl.selectPrev()
-                }),
-                button({
-                    disabled: !hasResults,
-                    icon: Icon.chevronDown(),
-                    onClick: () => impl.selectNext()
-                })
-            )
-        ]
-    });
 });

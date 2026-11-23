@@ -110,6 +110,12 @@
     padding-right: 0;
   }
 
+  // The active match of a GridCellFindField, outlined as Excel outlines its active cell.
+  .ag-cell.xh-cell--find-active,
+  .ag-header-cell.xh-column-header--find-active {
+    box-shadow: inset 0 0 0 2px var(--xh-grid-cell-focused-border-color);
+  }
+
   // Cell corner flags - small triangular markers in a cell's top-right corner, colored by Intent.
   // Driven by `Column.cellFlag`, and by the framework to surface cell validation state.
   .ag-cell.xh-cell--flag-primary {

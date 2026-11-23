@@ -78,6 +78,10 @@ export function getAgHeaderClassFn(column: ColumnOrGroup): (params: HeaderClassP
             r.push('xh-column-header--hoverable');
         }
 
+        if (column instanceof Column && gridModel._findActiveHeader === column.colId) {
+            r.push('xh-column-header--find-active');
+        }
+
         return r;
     };
 }

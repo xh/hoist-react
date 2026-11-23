@@ -14,6 +14,13 @@
 
 ## 92.0.0-SNAPSHOT - unreleased
 
+### 🎁 New Features
+
+* Added `GridCellFindField`, a desktop find box that moves between matching column headers and
+  grid cells as Excel's Find does, stepping from the focused cell without changing row selection.
+  Its `enableHotkey` prop lets Ctrl+F focus it in place of the browser's find. Requires ag-Grid's
+  Enterprise `FindModule`. `Column` now gives renderer columns' displayed text to ag-Grid Find.
+
 ## 91.0.0 - 2026-11-20
 
 ### 💥 Breaking Changes (upgrade difficulty: 🟠 MEDIUM - CSS variables)

@@ -16,7 +16,16 @@ import type {
     ValidationSeverity
 } from '@xh/hoist/data';
 import {genDisplayName, maxSeverity, StoreRecord} from '@xh/hoist/data';
-import {computeOnce, logDebug, logWarn, throwIf, warnIf, withDefault} from '@xh/hoist/utils/js';
+import {
+    computeOnce,
+    logDebug,
+    logWarn,
+    stripTags,
+    throwIf,
+    warnIf,
+    withDefault
+} from '@xh/hoist/utils/js';
+import {renderToStaticMarkup} from '@xh/hoist/utils/react';
 import {
     castArray,
     clone,
@@ -31,7 +40,8 @@ import {
     isPlainObject,
     isString,
     keysIn,
-    toString
+    toString,
+    unescape
 } from 'lodash';
 import type {FunctionComponent, ReactElement, ReactNode} from 'react';
 import {createElement, forwardRef, isValidElement, useLayoutEffect, useRef} from 'react';
@@ -890,6 +900,9 @@ export class Column {
             ret.cellRenderer = agCellRenderer;
         }
 
+        // ag-Grid Find searches a cell's formatted value, which a renderer column lacks.
+        if (this.renderer && !agOptions.cellRenderer) ret.getFindText = this.agGetFindText;
+
         // Tooltip Handling. ag-Grid shows a tooltip only when `tooltip` returns a value, mounting
         // the component (a React portal) each time it does. The content is resolved within the
         // component - here decide only whether there is anything to show: any record's cell for a
@@ -994,6 +1007,11 @@ export class Column {
             ret.cellClassRules = {...flagRules, ...ret.cellClassRules};
         }
 
+        ret.cellClassRules = {
+            ...ret.cellClassRules,
+            'xh-cell--find-active': this.agIsFindActiveCell
+        };
+
         // Finally, apply explicit app requests.  The customer is always right....
         const spec = {...ret, ...agOptions};
 
@@ -1052,6 +1070,36 @@ export class Column {
 
             // Add wrapping span for styling purposes
             return span({className: 'xh-cell-inner-wrapper', children: ret});
+        };
+    }
+
+    // The text a renderer shows, for ag-Grid Find - its markup rendered, then stripped of tags as
+    // autosize does. Memoized by value unless the renderer reads other fields of the record.
+    @computeOnce
+    private get agGetFindText(): ColDef['getFindText'] {
+        const memo = this.rendererIsComplex ? null : new Map<unknown, string>();
+        return ({value, data}) => {
+            if (memo?.has(value)) return memo.get(value);
+
+            const {renderer, gridModel} = this;
+            let ret = renderer(value, {record: data, column: this, gridModel});
+            if (isValidElement(ret)) ret = renderToStaticMarkup(ret);
+            const text = isNil(ret) ? null : unescape(stripTags(toString(ret)));
+
+            if (memo) {
+                if (memo.size >= FIND_TEXT_MEMO_SIZE) memo.clear();
+                memo.set(value, text);
+            }
+            return text;
+        };
+    }
+
+    // Marks the cell holding the active match of a GridCellFindField.
+    @computeOnce
+    private get agIsFindActiveCell(): ColumnCellClassRuleFn {
+        return ({node}) => {
+            const cell = this.gridModel._findActiveCell;
+            return !!cell && cell.node === node && cell.colId === this.colId;
         };
     }
 
@@ -1344,6 +1392,9 @@ export class Column {
             : (record?.data[sortValue] ?? v);
     }
 }
+
+// Distinct values whose find text a Column keeps before starting over.
+const FIND_TEXT_MEMO_SIZE = 10_000;
 
 //------------------------
 // Cell flag implementation
