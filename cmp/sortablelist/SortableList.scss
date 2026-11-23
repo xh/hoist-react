@@ -140,13 +140,10 @@
   }
 
   // A press on a handle, before the pointer moves far enough to lift the item.
-  &__activator:active {
-    cursor: grabbing;
-  }
-
-  &:not(&--disabled) &__item:not(&__item--disabled, [data-dnd-dragging]):has(&__activator:active) {
+  &__item--pressed:not([data-dnd-dragging]) {
     background-color: var(--xh-sortable-list-drag-bg);
     box-shadow: var(--xh-sortable-list-pressed-shadow);
+    cursor: grabbing;
 
     @media (prefers-reduced-motion: no-preference) {
       transition: box-shadow var(--xh-sortable-list-pressed-transition);

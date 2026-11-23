@@ -9,6 +9,7 @@ import {isFunction, isNil, uniq} from 'lodash';
 import type {
     KeyboardEvent as ReactKeyboardEvent,
     MouseEvent as ReactMouseEvent,
+    PointerEvent as ReactPointerEvent,
     MutableRefObject,
     ReactNode
 } from 'react';
@@ -369,6 +370,7 @@ const sortableItem = hoistCmp.factory<SortableItemProps>({
         const isDisabled = itemDisabled || listDisabled,
             activator = useRef<Element>(null),
             pointerDown = useRef<{x: number; y: number}>(null),
+            [pressed, setPressed] = useState(false),
             detailId = useId(),
             sortable = useSortable({
                 id: itemKey,
@@ -380,8 +382,6 @@ const sortableItem = hoistCmp.factory<SortableItemProps>({
             handleRef = (el: Element) => {
                 activator.current = el;
                 if (el && !el.hasAttribute('aria-label')) el.setAttribute('aria-label', label);
-                // Marks built-in and custom handles alike, for the pressed style.
-                el?.classList.add('xh-sortable-list__activator');
                 sortable.handleRef(el);
             },
             itemRef = (el: Element) => {
@@ -411,6 +411,21 @@ const sortableItem = hoistCmp.factory<SortableItemProps>({
             } else if (!isDisabled) {
                 stopDragKeys(e, keyboardDrag);
             }
+        };
+
+        // Cues a press on a handle, before the pointer moves far enough to lift the item.
+        const onItemPointerDown = (e: ReactPointerEvent<HTMLDivElement>) => {
+            const target = e.target as Element;
+            if (e.button !== 0 || handle === 'item' || isDisabled) return;
+            if (!activator.current?.contains(target)) return;
+            setPressed(true);
+            const release = () => {
+                setPressed(false);
+                window.removeEventListener('pointerup', release, true);
+                window.removeEventListener('pointercancel', release, true);
+            };
+            window.addEventListener('pointerup', release, true);
+            window.addEventListener('pointercancel', release, true);
         };
 
         const onRowClick = (e: ReactMouseEvent<HTMLDivElement>) => {
@@ -470,8 +485,10 @@ const sortableItem = hoistCmp.factory<SortableItemProps>({
                 'xh-sortable-list__item',
                 sortable.isDragging && 'xh-sortable-list__item--dragging',
                 itemDisabled && 'xh-sortable-list__item--disabled',
-                rowToggle && 'xh-sortable-list__item--row-toggle'
+                rowToggle && 'xh-sortable-list__item--row-toggle',
+                pressed && !sortable.isDragging && 'xh-sortable-list__item--pressed'
             ),
+            onPointerDown: onItemPointerDown,
             onKeyDown,
             children: [
                 div({

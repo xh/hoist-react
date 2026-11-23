@@ -371,6 +371,32 @@ describe('SortableList', () => {
         });
     });
 
+    describe('pressed handle', () => {
+        const pressed = (el: HTMLElement) =>
+            items(el).map(it => it.classList.contains('xh-sortable-list__item--pressed'));
+
+        it('marks an item pressed while its handle is held, and clears it on release', () => {
+            const el = renderList({value: DIMS});
+
+            fireEvent.pointerDown(handles(el)[1], {button: 0});
+            expect(pressed(el)).toEqual([false, true, false]);
+
+            fireEvent.pointerUp(window);
+            expect(pressed(el)).toEqual([false, false, false]);
+        });
+
+        it('ignores a press on the row body, on a disabled item, or with handle: item', () => {
+            const el = renderList({value: DIMS, isItemDisabled: it => it.id === 'fund'});
+            fireEvent.pointerDown(row(el, 0), {button: 0});
+            fireEvent.pointerDown(handles(el)[2], {button: 0});
+            expect(pressed(el)).toEqual([false, false, false]);
+
+            const itemHandle = renderList({value: DIMS, handle: 'item'});
+            fireEvent.pointerDown(items(itemHandle)[0], {button: 0});
+            expect(pressed(itemHandle)).toEqual([false, false, false]);
+        });
+    });
+
     it('throws for a duplicate or missing item key', () => {
         vi.spyOn(console, 'error').mockImplementation(() => {});
         expect(() => renderList({value: [DIMS[0], {...DIMS[0]}]})).toThrow(/unique/);
