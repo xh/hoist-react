@@ -98,6 +98,7 @@ class ChartLocalModel extends HoistModel {
 
     chartRef = createObservableRef<HTMLElement>();
     prevSeriesConfig;
+    private renderTo: HTMLElement = null;
 
     override onLinked() {
         this.addReaction({
@@ -168,7 +169,12 @@ class ChartLocalModel extends HoistModel {
             const dims = this.getChartDims(parentDims);
             assign(config.chart, dims);
 
-            config.chart.renderTo = chartElem;
+            // Highcharts observes the element it renders into, and never stops observing it, even
+            // once the chart is destroyed. Each build gets its own element, dropped with the chart.
+            const renderTo = document.createElement('div');
+            chartElem.appendChild(renderTo);
+            this.renderTo = renderTo;
+            config.chart.renderTo = renderTo;
             this.chart = Highcharts.chart(config);
         }
     }
@@ -229,6 +235,8 @@ class ChartLocalModel extends HoistModel {
             this.chart.destroy();
             this.chart = null;
         }
+        this.renderTo?.remove();
+        this.renderTo = null;
     }
 
     //----------------------

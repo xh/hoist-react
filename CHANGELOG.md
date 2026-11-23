@@ -14,6 +14,11 @@
 
 ## 92.0.0-SNAPSHOT - unreleased
 
+### 🐞 Bug Fixes
+
+* Fixed `Chart` leaving one Highcharts resize observer behind on each rebuild, such as a change to
+  `highchartsConfig`. Each one ran on every resize for as long as the chart was mounted.
+
 ## 91.0.0 - 2026-11-20
 
 ### 💥 Breaking Changes (upgrade difficulty: 🟠 MEDIUM - CSS variables)
