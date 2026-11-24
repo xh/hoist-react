@@ -205,5 +205,9 @@
     &:hover {
       background-color: var(--xh-intent-primary-darkest);
     }
+
+    &:active {
+      background-color: color-mix(in srgb, var(--xh-intent-primary-darkest) 85%, black);
+    }
   }
 }

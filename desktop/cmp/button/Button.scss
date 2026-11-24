@@ -373,8 +373,9 @@
           &:hover:not(:active):not(.xh-button--active):not(.bp6-active) {
             background-color: var(--xh-intent-primary-darkest);
           }
+          // Darker than hover, which takes the darkest step.
           &:active {
-            background-color: var(--xh-intent-primary-darkest);
+            background-color: color-mix(in srgb, var(--xh-intent-primary-darkest) 85%, black);
           }
         }
       }
