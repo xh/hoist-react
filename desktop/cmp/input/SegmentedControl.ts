@@ -239,7 +239,10 @@ const cmp = hoistCmp.factory<SegmentedControlModel>(({model, className, ...props
                 label: opt.label,
                 icon: opt.icon,
                 disabled: opt.disabled,
-                className: optIntent ? `xh-segmented-control-option--${optIntent}` : null,
+                className: classNames(
+                    optIntent && `xh-segmented-control-option--${optIntent}`,
+                    opt.intent && 'xh-segmented-control-option--own-intent'
+                ),
                 ...(optTestId ? {[TEST_ID]: optTestId} : null)
             };
         });

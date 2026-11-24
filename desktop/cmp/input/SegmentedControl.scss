@@ -37,11 +37,12 @@
     }
 
     // Per-option intents - colors keyed off the className applied to each button. Renders the
-    // selected option as a solid fill in the intent color, and tints unselected options' text
-    // so an intent (e.g. danger) reads as such even before it is chosen.
+    // selected option as a solid fill in the intent color. An option's own intent also tints its
+    // text while unselected, so (e.g.) danger reads as such before it is chosen. An intent set on
+    // the whole control does not, or every option would look selected.
     @each $intent in (primary, success, warning, danger) {
       > .bp6-button.xh-segmented-control-option--#{$intent} {
-        &.bp6-minimal {
+        &.bp6-minimal.xh-segmented-control-option--own-intent {
           color: var(--xh-intent-#{$intent}-text-color);
         }
 

@@ -87,6 +87,8 @@ detailed, step-by-step upgrade instructions with before/after code examples.
   browser. Such a field now aggregates each group once.
 * Fixed dialogs, popovers, menus and toasts showing Blueprint's system font in place of the app's
   `--xh-font-family`.
+* Fixed a `SegmentedControl` with an `intent` tinting every unselected option in that intent, so no
+  option read as selected. Only an option with its own `intent` is tinted while unselected.
 
 ### ⚙️ Typescript API Adjustments
 

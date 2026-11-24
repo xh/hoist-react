@@ -234,7 +234,8 @@ const cmp = hoistCmp.factory<SegmentedControlModel>(({model, className, ...props
             className: classNames(
                 'xh-segmented-control-option',
                 selected && 'xh-segmented-control-option--selected',
-                optIntent && `xh-segmented-control-option--${optIntent}`
+                optIntent && `xh-segmented-control-option--${optIntent}`,
+                opt.intent && 'xh-segmented-control-option--own-intent'
             ),
             onClick: () => model.onValueChange(opt._key),
             testId: optTestId
