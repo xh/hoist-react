@@ -117,6 +117,8 @@ detailed, step-by-step upgrade instructions with before/after code examples.
   `--xh-sortable-list-drag-border-color` and `--xh-sortable-list-drag-shadow`. Each row has
   horizontal padding from `--xh-sortable-list-item-padding`, Hoist's half spacing by default.
 * `FilterChooser` favorites now show their filter labels as minimal `Chip`s.
+* Darkened primary `Button` fills and selected primary `SegmentedControl` options in the dark theme
+  to the `--xh-intent-primary-darker` step, raising white text from 3.94:1 to 7.46:1 contrast.
 * Removed the `xh-grouping-chooser__row--dragging` class. A dragged row is styled by `SortableList`.
 * `GroupingChooser` rows use `SortableList`'s grip handle, and its desktop dimension selects show a
   dropdown chevron and a hover tint. Removed the `xh-grouping-chooser__row__grabber` class.

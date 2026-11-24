@@ -160,3 +160,10 @@
 .xh-segmented-control--toggle {
   cursor: pointer;
 }
+
+// The darker step keeps white text above 4.5:1 on a selected primary option in dark.
+.xh-app.xh-dark .xh-segmented-control {
+  .xh-button.xh-segmented-control-option--primary.xh-segmented-control-option--selected {
+    background-color: var(--xh-intent-primary-darker);
+  }
+}

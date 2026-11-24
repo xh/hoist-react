@@ -193,6 +193,15 @@
 .xh-app.xh-dark {
   .xh-button {
     &--standard {
+      // The darker step keeps white text above 4.5:1 in dark.
+      &.xh-button--intent-primary {
+        background-color: var(--xh-intent-primary-darker);
+        &.xh-button--active,
+        &.xh-button--enabled:active {
+          background-color: var(--xh-intent-primary-darkest);
+        }
+      }
+
       &.xh-button--intent-none {
         &.xh-button--enabled:active {
           background-color: var(--xh-button-bg-lightest);

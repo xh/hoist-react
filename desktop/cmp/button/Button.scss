@@ -361,16 +361,17 @@
         }
       }
 
+      // The darker step keeps white text above 4.5:1 in dark.
       &.xh-button--intent-primary {
         color: white;
-        background-color: var(--xh-intent-primary);
+        background-color: var(--xh-intent-primary-darker);
         &.xh-button--active,
         &.bp6-active {
           background-color: var(--xh-intent-primary-darkest);
         }
         &.xh-button--enabled {
           &:hover:not(:active):not(.xh-button--active):not(.bp6-active) {
-            background-color: var(--xh-intent-primary-darker);
+            background-color: var(--xh-intent-primary-darkest);
           }
           &:active {
             background-color: var(--xh-intent-primary-darkest);
