@@ -80,6 +80,24 @@
     .xh-sortable-list__remove {
       margin-left: var(--xh-spacing-half);
     }
+
+    .xh-sortable-list__empty,
+    .xh-sortable-list__add {
+      background-color: var(--xh-bg);
+    }
+
+    .xh-sortable-list__add {
+      border-top: var(--xh-border-solid);
+
+      .xh-select__control {
+        background: none;
+        box-shadow: none;
+      }
+
+      .xh-select__control__left-icon {
+        color: var(--xh-input-placeholder-text-color);
+      }
+    }
   }
 
   &__row {
@@ -122,27 +140,6 @@
 
     &__text {
       flex: 1;
-    }
-  }
-
-  &__add-control {
-    display: flex;
-    align-items: center;
-    padding: 0 var(--xh-spacing-half);
-    border-top: var(--xh-border-solid);
-
-    &__icon {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      height: 20px;
-      width: 20px;
-      color: var(--xh-input-placeholder-text-color);
-    }
-
-    .xh-select__control {
-      background: none;
-      box-shadow: none;
     }
   }
 

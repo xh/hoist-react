@@ -13,7 +13,6 @@ import {
     filler,
     fragment,
     frame,
-    hbox,
     hframe,
     placeholder,
     vbox,
@@ -35,6 +34,7 @@ import classNames from 'classnames';
 import {isEmpty, isNil} from 'lodash';
 import './GroupingChooser.scss';
 import type {ReactNode} from 'react';
+import {useEffect, useRef} from 'react';
 
 export interface GroupingChooserProps extends ButtonProps<GroupingChooserModel> {
     /** Title for value-editing portion of popover, or null to suppress. */
@@ -228,8 +228,7 @@ const editor = hoistCmp.factory<GroupingChooserLocalModel>({
                     children: editorTitle,
                     omit: isNil(editorTitle)
                 }),
-                dimensionList({emptyText}),
-                addDimensionControl()
+                dimensionList({emptyText})
             ]
         });
     }
@@ -237,24 +236,19 @@ const editor = hoistCmp.factory<GroupingChooserLocalModel>({
 
 const dimensionList = hoistCmp.factory<GroupingChooserLocalModel>({
     render({model, emptyText}) {
-        if (isEmpty(model.pendingValue)) {
-            return model.parentModel.allowEmpty
-                ? hbox({
-                      className: 'xh-grouping-chooser__row',
-                      children: [filler(), emptyText, filler()]
-                  })
-                : null;
-        }
-
+        const {parentModel} = model;
         return sortableList({
             className: 'xh-grouping-chooser__list',
             value: model.pendingValue,
             itemKey: dim => dim,
-            getItemLabel: dim => model.parentModel.getDimDisplayName(dim),
+            getItemLabel: dim => parentModel.getDimDisplayName(dim),
+            emptyText: parentModel.allowEmpty ? emptyText : null,
+            showRemoveOnHover: true,
             onReorder: e => model.movePendingDimToIndex(e.item, e.toIndex),
             onRemove: e => model.removePendingDimAtIdx(e.index),
-            showRemoveOnHover: true,
-            renderItem: (dimension, {index}) => dimensionRow({dimension, idx: index})
+            onAdd: e => model.addPendingDim(e.item),
+            itemRenderer: (dimension, {index}) => dimensionRow({dimension, idx: index}),
+            addRenderer: model.isAddEnabled ? ({add}) => addLevelSelect({add}) : null
         });
     }
 });
@@ -282,31 +276,31 @@ const dimensionRow = hoistCmp.factory<GroupingChooserLocalModel>({
     }
 });
 
-const addDimensionControl = hoistCmp.factory<GroupingChooserLocalModel>({
-    render({model}) {
-        if (!model.isAddEnabled) return null;
+const addLevelSelect = hoistCmp.factory<GroupingChooserLocalModel>({
+    render({model, add}) {
+        const options = model.getDimSelectOpts(),
+            justAdded = useRef(false);
 
-        const options = model.getDimSelectOpts();
-        return div({
-            className: 'xh-grouping-chooser__add-control',
-            children: [
-                div({
-                    className: 'xh-grouping-chooser__add-control__icon',
-                    children: Icon.add()
-                }),
-                select({
-                    // By changing the key each time the options change, we can
-                    // ensure the Select loses its internal input state.
-                    key: JSON.stringify(options),
-                    options,
-                    placeholder: 'Add level...',
-                    flex: 1,
-                    width: null,
-                    hideDropdownIndicator: true,
-                    hideSelectedOptionCheck: true,
-                    onChange: newDim => model.addPendingDim(newDim)
-                })
-            ]
+        useEffect(() => {
+            justAdded.current = false;
+        });
+
+        return select({
+            // A new key when the options change clears the select's typed text. The remount
+            // drops focus, so the select takes it back after an add.
+            key: JSON.stringify(options),
+            autoFocus: justAdded.current,
+            options,
+            placeholder: 'Add level...',
+            leftIcon: Icon.add(),
+            flex: 1,
+            width: null,
+            hideDropdownIndicator: true,
+            hideSelectedOptionCheck: true,
+            onChange: newDim => {
+                justAdded.current = true;
+                add(newDim);
+            }
         });
     }
 });
