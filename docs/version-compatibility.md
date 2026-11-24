@@ -189,6 +189,7 @@ minor that changes a pairing. These are hard gates stated in the [hoist-dev-util
 
 | hoist-dev-utils | Min hoist-react | Min Node | Notes |
 |---|---|---|---|
+| 16.6 | -- | -- | Adds changelog fragments and the `xh-changelog` command - see [Changelog Entry Format](./changelog-format.md#where-entries-go). The app changelog build keeps wrapped bullets and sub-bullets, and adds markdown entries that hoist-react releases after 91.0 render in the release notes dialog. Earlier hoist-react releases show the same notes as plain text. |
 | 16.4.2 | -- | -- | Builds and the dev server fail on `@rspack/core` 2.3.2 and 2.3.3. Apps must pin `'@rspack/core': 2.3.1` with a pnpm override in `client-app/pnpm-workspace.yaml` - see [Rspack minifier bugs](#rspack-minifier-bugs). |
 | 16.4.1 | -- | -- | Superseded by 16.4.2 - do not use. It brings in `@rspack/core` 2.3.3, which leaves Highcharts charts blank in production builds. |
 | 16.3 | -- | -- | Builds and the dev server fail on `@rspack/core` 2.3.2. Take 16.4.2+ and pin Rspack 2.3.1 - see [Rspack minifier bugs](#rspack-minifier-bugs). |

@@ -37,13 +37,14 @@ export function useOnResize(
     fn: (rect: DOMRect) => any,
     opts: {debounce?: number} = {}
 ): (node: any) => void {
-    const observer = useRef(null);
+    const latestFn = useLatestFn(fn),
+        observer = useRef(null);
     useOnUnmount(() => observer.current?.disconnect());
 
     return useCallback(
         node => {
             observer.current?.disconnect();
-            if (node) observer.current = observeResize(fn, node, opts);
+            if (node) observer.current = observeResize(latestFn, node, opts);
         },
         [opts.debounce]
     );
@@ -58,12 +59,13 @@ export function useOnResize(
  * @returns callback ref to be placed on target component
  */
 export function useOnVisibleChange(fn: (visible: boolean) => any): (node: any) => void {
-    const observer = useRef(null);
+    const latestFn = useLatestFn(fn),
+        observer = useRef(null);
     useOnUnmount(() => observer.current?.disconnect());
 
     return useCallback(node => {
         observer.current?.disconnect();
-        if (node) observer.current = observeVisibleChange(fn, node);
+        if (node) observer.current = observeVisibleChange(latestFn, node);
     }, []);
 }
 
@@ -74,8 +76,9 @@ export function useOnVisibleChange(fn: (visible: boolean) => any): (node: any) =
  * @returns callback ref to be placed on target component
  */
 export function useOnScroll(fn: (ev: Event) => any): (node: any) => void {
+    const latestFn = useLatestFn(fn);
     return useCallback(node => {
-        node?.addEventListener('scroll', fn);
+        node?.addEventListener('scroll', latestFn);
     }, []);
 }
 
@@ -96,4 +99,14 @@ export function useCached<T>(value: T, equalsFn: (prev: T, curr: T) => boolean):
         cache.current = value;
     }
     return cache.current;
+}
+
+//------------------
+// Implementation
+//------------------
+// A stable function that calls the latest `fn`, for long-lived observers and listeners.
+function useLatestFn(fn: (...args: any[]) => any) {
+    const ref = useRef(fn);
+    ref.current = fn;
+    return useCallback((...args: any[]) => ref.current(...args), []);
 }

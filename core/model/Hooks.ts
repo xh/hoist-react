@@ -13,7 +13,6 @@ import {ModelLookupContext, formatSelector, RefreshContextModel} from './';
 
 import {XH} from '../';
 import {untracked} from '@xh/hoist/mobx';
-import {useOnUnmount} from '@xh/hoist/utils/react';
 import {each, isUndefined} from 'lodash';
 
 /**
@@ -87,30 +86,11 @@ export function useModelLinker(model: HoistModel, modelLookup: ModelLookup, prop
         untracked(() => model.onLinked());
     }
 
-    // 2) Linking async work: call afterLinked(), and wire up loadSupport
-    useEffect(() => {
-        if (isLinking) {
-            model.afterLinked();
-            if (model.loadSupport) {
-                model.loadAsync();
-                const refreshContext = modelLookup?.lookupModel(
-                    RefreshContextModel
-                ) as RefreshContextModel;
-                if (refreshContext) {
-                    refreshContext.register(model);
-                    return () => refreshContext.unregister(model);
-                }
-            }
-        }
-    }, []);
+    // 2) Linking async work: call afterLinked(), wire up loadSupport, and clean up on unmount
+    useModelLifecycle(model, isLinking, modelLookup);
 
     // 3) Subsequent renders: update props (async to avoid triggering synchronous state changes)
-    useEffect(() => {
-        if (!isLinking) model?.setComponentProps(props);
-    }, [props]);
-
-    // 4) Destroy on unmount
-    useOnUnmount(() => XH.safeDestroy(model));
+    useUpdateProps(model, isLinking, props);
 }
 
 /**
@@ -134,6 +114,10 @@ export function withLocalModelContext(
     }
 }
 
+//------------------
+// Implementation
+//------------------
+
 // Context for useLocalModel(), set by withLocalModelContext() while a HoistComponent renders.
 const localModelContext = {
     props: null as object,
@@ -144,3 +128,30 @@ const localModelContext = {
         return (this.lookup ??= use(ModelLookupContext));
     }
 };
+
+// Separate from useModelLinker, so the long-lived cleanup closure never shares a scope with props.
+function useModelLifecycle(model: HoistModel, isLinking: boolean, modelLookup: ModelLookup) {
+    useEffect(() => {
+        let refreshContext: RefreshContextModel = null;
+        if (isLinking) {
+            model.afterLinked();
+            if (model.loadSupport) {
+                model.loadAsync();
+                refreshContext = modelLookup?.lookupModel(
+                    RefreshContextModel
+                ) as RefreshContextModel;
+                refreshContext?.register(model);
+            }
+        }
+        return () => {
+            refreshContext?.unregister(model);
+            XH.safeDestroy(model);
+        };
+    }, []);
+}
+
+function useUpdateProps(model: HoistModel, isLinking: boolean, props: object) {
+    useEffect(() => {
+        if (!isLinking) model?.setComponentProps(props);
+    }, [props]);
+}

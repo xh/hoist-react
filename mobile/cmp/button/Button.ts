@@ -4,7 +4,7 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {div, hspacer} from '@xh/hoist/cmp/layout';
+import {div} from '@xh/hoist/cmp/layout';
 import type {
     DomAttrsProps,
     LayoutProps,
@@ -19,6 +19,7 @@ import '@xh/hoist/mobile/register';
 import {TEST_ID} from '@xh/hoist/utils/js';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
+import {castArray} from 'lodash';
 import type {ReactNode, ReactElement, MouseEvent} from 'react';
 import './Button.scss';
 
@@ -41,6 +42,8 @@ export interface ButtonProps<M extends HoistModel = HoistModel>
  *
  * Renders a div with the button role rather than a native button, so it lays out as a block that
  * fills its container and as a content-sized item in a flex row, like other Hoist containers.
+ *
+ * Renders any `children` after `text`, as the desktop Button does.
  */
 export const [Button, button] = hoistCmp.withFactory<ButtonProps>({
     displayName: 'Button',
@@ -49,8 +52,7 @@ export const [Button, button] = hoistCmp.withFactory<ButtonProps>({
 
     render(props, ref) {
         const [layoutProps, nonLayoutProps] = splitLayoutProps(props),
-            classes = [],
-            children = [];
+            classes = [];
 
         const {
             active,
@@ -65,6 +67,7 @@ export const [Button, button] = hoistCmp.withFactory<ButtonProps>({
             style,
             testId,
             text,
+            children: content,
             ...rest
         } = nonLayoutProps;
 
@@ -85,14 +88,6 @@ export const [Button, button] = hoistCmp.withFactory<ButtonProps>({
         if (!minimal && !outlined) classes.push('xh-button--standard');
         if (active) classes.push('xh-button--active');
 
-        if (icon && text) {
-            children.push(icon, hspacer(8), text);
-        } else if (icon) {
-            children.push(icon);
-        } else if (text) {
-            children.push(text);
-        }
-
         return div({
             ref,
             role: 'button',
@@ -106,7 +101,7 @@ export const [Button, button] = hoistCmp.withFactory<ButtonProps>({
             [TEST_ID]: testId,
             ...domAttrs,
             ...rest,
-            children
+            children: [icon, text, ...castArray(content)]
         });
     }
 });
