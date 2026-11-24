@@ -207,12 +207,16 @@ export interface SortableAddContext<T = any> {
     /**
      * Appends `item` - through `bind` when set - then calls `onAdd` and announces it. When the
      * list has a `detailRenderer`, focuses the new item and opens an expandable detail, closing any
-     * other unless `multiExpand`. Otherwise focus stays in the control, ready for the next pick.
+     * other unless `multiExpand`. Otherwise focus stays in the control, ready for the next pick -
+     * or moves to the new item, if the add leaves the row with no control.
      */
     add: (item: T) => void;
 
-    /** The current items, e.g. to leave ones already chosen out of a picker. */
-    items: T[];
+    /**
+     * The current items, e.g. to leave ones already chosen out of a picker. Named `value`, as on
+     * the list, since element factories read an `items` prop as `children`.
+     */
+    value: T[];
 
     /** True while the list is disabled. */
     disabled: boolean;
@@ -375,17 +379,15 @@ export const [SortableList, sortableList] = hoistCmp.withFactory<SortableListPro
         };
 
         // A picker keeps focus for the next pick, unless the new item has a detail to fill in. Its
-        // control is refocused, as one keyed on its options remounts on each add.
+        // control is refocused, as one keyed on its options remounts on each add. The new item
+        // takes focus instead if the add leaves the row with no control.
         const add = (added: any, fromPicker: boolean) => {
             if (added == null) return;
             const key = keyOf(added),
                 {items, openKeys} = latest.current,
                 next = [...items, added];
-            if (!fromPicker || detailRenderer) {
-                focusKey.current = key;
-            } else {
-                focusAdd.current = true;
-            }
+            focusKey.current = key;
+            focusAdd.current = fromPicker && !detailRenderer;
             if (isExpandable(added) && !openKeys.includes(key)) {
                 setOpenKeys(multiExpand ? [...openKeys, key] : [key]);
             }
@@ -394,11 +396,18 @@ export const [SortableList, sortableList] = hoistCmp.withFactory<SortableListPro
             onAdd?.({item: added, index: next.length - 1, items: next});
         };
 
-        useLayoutEffect(() => {
-            if (!focusAdd.current) return;
+        // Runs from an item's layout effect, before the list's own, to win over focusing the item.
+        const focusAddControl = (): boolean => {
+            if (!focusAdd.current) return false;
             focusAdd.current = false;
-            const row: HTMLElement = addRef.current;
-            (row?.matches('button') ? row : row?.querySelector<HTMLElement>(FOCUSABLE))?.focus();
+            const row: HTMLElement = addRef.current,
+                control = row?.matches('button') ? row : row?.querySelector<HTMLElement>(FOCUSABLE);
+            control?.focus();
+            return !!control;
+        };
+
+        useLayoutEffect(() => {
+            focusAddControl();
         });
 
         const onDragStart = (e: DragStartEvent) => {
@@ -432,6 +441,7 @@ export const [SortableList, sortableList] = hoistCmp.withFactory<SortableListPro
         actions.current = {
             toggle: toggleExpanded,
             remove,
+            focusAddControl,
             move: (key, fromIndex, toIndex) => {
                 focusKey.current = key;
                 reorder(fromIndex, toIndex, 'keyboard');
@@ -512,7 +522,7 @@ export const [SortableList, sortableList] = hoistCmp.withFactory<SortableListPro
                               className: 'xh-sortable-list__add xh-sortable-list__add--custom',
                               children: addRenderer({
                                   add: it => add(it, true),
-                                  items,
+                                  value: items,
                                   disabled: !!disabled
                               })
                           })
@@ -593,6 +603,8 @@ interface SortableItemActions {
     toggle: (key: SortableKey) => void;
     remove: (key: SortableKey) => void;
     move: (key: SortableKey, fromIndex: number, toIndex: number) => void;
+    /** Focuses the Add row's control if an add asked for it. False if it didn't, or has none. */
+    focusAddControl: () => boolean;
 }
 
 // Pointer travel between press and click beyond which the click ended a drag, not a tap.
@@ -680,7 +692,7 @@ const sortableItem = hoistCmp.factory<SortableItemProps>({
         useLayoutEffect(() => {
             if (focusKey.current !== itemKey) return;
             focusKey.current = null;
-            (activator.current as HTMLElement)?.focus();
+            if (!actions.current.focusAddControl()) (activator.current as HTMLElement)?.focus();
         });
 
         const onKeyDown = (e: ReactKeyboardEvent<HTMLDivElement>) => {

@@ -575,6 +575,23 @@ describe('SortableList', () => {
                 expect(document.activeElement).toBe(control);
             });
 
+            // As GroupingChooser's does once a pick uses its last option.
+            it('focuses the added item when the add removes its control', () => {
+                const model = new DimsModel(),
+                    el = renderList({
+                        model,
+                        bind: 'dims',
+                        addRenderer: ({add}) =>
+                            remountingPicker({dimsModel: model, add, omit: model.dims.length > 3})
+                    }),
+                    control = el.querySelector<HTMLElement>('.picker');
+
+                control.focus();
+                fireEvent.click(control);
+                expect(el.querySelector('.picker')).toBeNull();
+                expect(document.activeElement).toBe(handles(el)[3]);
+            });
+
             // As GroupingChooser's select does, keyed on its options to clear its typed text.
             it('refocuses a control that remounts on the add', () => {
                 const model = new DimsModel(),
@@ -606,11 +623,11 @@ describe('SortableList', () => {
                 expect(openRows(el)).toEqual([3]);
             });
 
-            it('passes the current items and disabled state', () => {
+            it('passes the current items as value, and the disabled state', () => {
                 const addRenderer = vi.fn(() => null);
                 renderList({value: DIMS, addRenderer, disabled: true});
                 expect(addRenderer).toHaveBeenLastCalledWith(
-                    expect.objectContaining({items: DIMS, disabled: true})
+                    expect.objectContaining({value: DIMS, disabled: true})
                 );
             });
 

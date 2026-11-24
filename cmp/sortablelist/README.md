@@ -87,9 +87,10 @@ The list shows an Add row after the items in one of two ways:
   so `getNewItem` returns the new item, or a promise of it, or null to add nothing. The list then
   focuses the new item and opens its detail, if it has one.
 - **`addRenderer`** - your own control in the Add row, such as a select, picker or menu. It gets
-  `{add, items, disabled}` and calls `add(item)` with each pick. `items` lets a picker leave out
-  ones already chosen. When the list has a `detailRenderer`, the new item takes focus and its detail
-  opens. Otherwise focus stays in the control, ready for the next pick.
+  `{add, value, disabled}` and calls `add(item)` with each pick. `value` holds the current items,
+  so a picker can leave out ones already chosen. When the list has a `detailRenderer`, the new
+  item takes focus and its detail opens. Otherwise focus stays in the control, ready for the next
+  pick - or moves to the new item, if the add leaves the row with no control.
 
 ```typescript
 sortableList({
@@ -98,9 +99,9 @@ sortableList({
     emptyText: 'Ungrouped',
     onAdd: e => model.addPendingDim(e.item),
     itemRenderer: dim => dimensionRow({dim}),
-    addRenderer: ({add, items}) =>
+    addRenderer: ({add, value}) =>
         select({
-            options: model.dimOptions.filter(it => !items.includes(it.value)),
+            options: model.dimOptions.filter(it => !value.includes(it.value)),
             placeholder: 'Add level...',
             leftIcon: Icon.add(),
             onChange: add
