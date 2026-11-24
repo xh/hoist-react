@@ -92,6 +92,10 @@
       .xh-select__control {
         background: none;
         box-shadow: none;
+
+        &--is-focused {
+          box-shadow: var(--xh-form-field-focused-box-shadow);
+        }
       }
 
       .xh-select__control__left-icon {
