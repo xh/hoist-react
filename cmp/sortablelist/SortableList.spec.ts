@@ -606,11 +606,11 @@ describe('SortableList', () => {
                 expect(openRows(el)).toEqual([3]);
             });
 
-            it('passes the current items and disabled state', () => {
+            it('passes the current items as value, and the disabled state', () => {
                 const addRenderer = vi.fn(() => null);
                 renderList({value: DIMS, addRenderer, disabled: true});
                 expect(addRenderer).toHaveBeenLastCalledWith(
-                    expect.objectContaining({items: DIMS, disabled: true})
+                    expect.objectContaining({value: DIMS, disabled: true})
                 );
             });
 

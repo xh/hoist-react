@@ -211,8 +211,11 @@ export interface SortableAddContext<T = any> {
      */
     add: (item: T) => void;
 
-    /** The current items, e.g. to leave ones already chosen out of a picker. */
-    items: T[];
+    /**
+     * The current items, e.g. to leave ones already chosen out of a picker. Named `value`, as on
+     * the list, since element factories read an `items` prop as `children`.
+     */
+    value: T[];
 
     /** True while the list is disabled. */
     disabled: boolean;
@@ -512,7 +515,7 @@ export const [SortableList, sortableList] = hoistCmp.withFactory<SortableListPro
                               className: 'xh-sortable-list__add xh-sortable-list__add--custom',
                               children: addRenderer({
                                   add: it => add(it, true),
-                                  items,
+                                  value: items,
                                   disabled: !!disabled
                               })
                           })
