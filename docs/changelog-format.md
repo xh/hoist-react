@@ -2,14 +2,38 @@
 
 Reference for writing and reviewing CHANGELOG entries in the **hoist-react library** `CHANGELOG.md`.
 
+## Where Entries Go
+
+Write new entries in a **changelog fragment**, not in `CHANGELOG.md`. Each pull request adds a
+markdown file in [`changelog.d/`](../changelog.d/README.md), named for its branch. The fragment holds
+the release body without its `##` heading: the same `###` section headers and bullets described
+below. A release assembles every fragment into `CHANGELOG.md` under the real version number, so pull
+requests never conflict over `CHANGELOG.md` and a late merge cannot land under a shipped version.
+
+```markdown
+### 🎁 New Features
+
+* Added `Callout.dismissible`, which shows a close button. The dismissed state persists with
+  `persistWith`.
+```
+
+Add a one-line entry with `pnpm changelog add fix "<text>"`.
+
+Leave release-level content out of fragments: the `(upgrade difficulty: ...)` suffix, the
+upgrade-notes sentence, and `####` topic groups. The release curator adds them.
+
+The `pnpm changelog` script runs `xh-changelog` from `@xh/hoist-dev-utils`. Its README section
+[Changelog fragments](https://github.com/xh/hoist-dev-utils/blob/master/README.md#changelog-fragments)
+covers the fragment format, the commands, what `check` enforces, and how a release behaves.
+
 > **Library vs. Application changelogs:** This guide applies to hoist-react and other Hoist library
 > packages. Hoist *application* changelogs have different formatting requirements — see the
 > [Application Changelogs](#application-changelogs) section at the end of this document.
 
 ## Entry Structure
 
-Every major version entry should use this structure. Minor/patch releases use whichever sections
-apply.
+Every major version entry in `CHANGELOG.md` should use this structure once the release is curated.
+Minor/patch releases use whichever sections apply.
 
 ```markdown
 ## {VERSION} - {YYYY-MM-DD}
@@ -53,10 +77,9 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 * {Library} `{old} → {new}`
 ```
 
-On `develop`, the top entry is the next major version as a snapshot:
-`## {N}.0.0-SNAPSHOT - unreleased`. New entries go under that heading. A minor or patch release
-changes the heading to the release version for the release, then the snapshot heading goes back on
-top. See [Versioning](./build-and-publish.md#versioning) for the full policy.
+On `develop`, the top heading is the next major version as a snapshot:
+`## {N}.0.0-SNAPSHOT - unreleased`. It stays empty. Entries wait in `changelog.d/` until a release
+assembles them below it. See [Versioning](./build-and-publish.md#versioning) for the release steps.
 
 ## Section Headers
 
@@ -205,11 +228,16 @@ Use abbreviated versions where the minor/patch isn't significant (e.g. `6.3` not
 
 Hoist *application* changelogs (e.g. in app repos that depend on `@xh/hoist`) follow different
 formatting rules than the library changelog described above. Application changelogs are parsed at
-runtime by a Hoist release notes feature that displays them within the app UI.
+build time by a Hoist release notes feature that displays them within the app UI.
 
-**Do NOT hard-wrap list items in application changelogs.** Each bullet point must be a single
-unwrapped line — the release notes parser treats line breaks within a list item as separate entries.
-Let the viewing tool handle display wrapping.
+An app on `@xh/hoist-dev-utils` 16.6 or later parses its changelog with the same parser as
+`xh-changelog`. Its bullets can wrap and hold sub-bullets, as in a library changelog. Such an app
+can also use changelog fragments: run `pnpm exec xh-changelog init` from its `client-app/` folder.
+See the [hoist-dev-utils README](https://github.com/xh/hoist-dev-utils/blob/master/README.md#changelog-fragments).
+
+**On an older `@xh/hoist-dev-utils`, do NOT hard-wrap list items in application changelogs.** Each
+bullet point must be a single unwrapped line. That parser treats a line break inside a list item as
+the end of the entry, and drops the rest.
 
 All other conventions (section headers, voice/tense, backtick-wrapped specificity) apply to both
 library and application changelogs.
