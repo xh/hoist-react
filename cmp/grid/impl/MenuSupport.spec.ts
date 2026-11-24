@@ -136,6 +136,14 @@ describe('Grid header context menu', () => {
         expect(texts(headerItems(gridModel, 'pnl'))).not.toContain('Pin Column');
     });
 
+    it('omits the pin item for a column that is not movable', () => {
+        const gridModel = createGridModel({
+            columns: [{field: 'name'}, {field: 'pnl', movable: false}]
+        });
+        expect(texts(headerItems(gridModel, 'pnl'))).not.toContain('Pin Column');
+        expect(texts(headerItems(gridModel, 'name'))).toContain('Pin Column');
+    });
+
     it('hides the clicked column, unless it is not hideable', () => {
         const gridModel = createGridModel({
             columns: [{field: 'name', hideable: false}, {field: 'region'}]
@@ -176,6 +184,22 @@ describe('Grid header context menu', () => {
 //------------------------
 // Helpers
 //------------------------
+describe('Grid context menu row expansion', () => {
+    beforeAll(() => initTestAppAsync());
+
+    it('offers "Expand to..." for a single grouped level', () => {
+        const items = (config: GridConfig) => {
+            const gridModel = createGridModel(config),
+                params = {node: null, column: null} as unknown as GetMainMenuItemsParams;
+            return texts(getAgGridMenuItems(params, gridModel, gridModel.contextMenu) ?? []);
+        };
+
+        expect(items({groupBy: 'region', levelLabels: ['Total', 'Region']})).toContain(
+            'Expand to...'
+        );
+    });
+});
+
 function createGridModel(config: GridConfig = {}): GridModel {
     const ret = new GridModel({
         columns: [{field: 'name'}, {field: 'region'}, {field: 'pnl', absSort: true}],

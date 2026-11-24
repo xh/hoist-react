@@ -331,7 +331,7 @@ General-purpose helpers for objects, arrays, and strings:
 ### DOM Utilities
 
 ```typescript
-import {observeResize, consumeEvent, elemWithin} from '@xh/hoist/utils/js';
+import {observeResize, consumeEvent, elemWithin, scrollIntoViewWithin} from '@xh/hoist/utils/js';
 
 // Observe element resizing with debounce
 const observer = observeResize(
@@ -345,6 +345,9 @@ consumeEvent(event);
 
 // Check if click target is within a specific component
 if (elemWithin(event.target, 'xh-grid-cell')) { /* ... */ }
+
+// Scroll a list just far enough to show an item, without moving the page around it
+scrollIntoViewWithin(itemEl, listEl, 'smooth');
 ```
 
 ### Version Utilities
@@ -396,7 +399,7 @@ switch between compact and full layouts:
 const myWidget = hoistCmp.factory<MyWidgetModel>({
     render({model}) {
         return panel({
-            item: model.compactMode ? compactView() : fullView(),
+            children: model.compactMode ? compactView() : fullView(),
             ref: useOnResize(({width}) => model.onResize(width))
         });
     }
@@ -415,7 +418,7 @@ const priceFeed = hoistCmp.factory<PriceFeedModel>({
     render({model}) {
         return panel({
             ref: useOnVisibleChange(visible => model.visible = visible),
-            item: grid()
+            children: grid()
         });
     }
 });
@@ -449,7 +452,7 @@ const ref = composeRefs(
     useOnVisibleChange(v => model.visible = v),
     useOnResize(({width}) => model.width = width)
 );
-return panel({ref, item: body()});
+return panel({ref, children: body()});
 ```
 
 ### Layout Prop Utilities

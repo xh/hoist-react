@@ -65,11 +65,6 @@ jobs:
         - name: Check vendored files
           run: pnpm check:vendored
 
-        # Self-contained spec scripts for the MCP server and CLI tools, including the doc-search
-        # golden-set eval. See mcp/README.md.
-        - name: MCP tests
-          run: pnpm test:mcp
-
         # Gates merges on a clean production-dependency audit for high and
         # critical advisories. The first, un-gated run prints lower-severity
         # findings in the step log for visibility without failing the build -
@@ -92,12 +87,12 @@ jobs:
         - uses: actions/checkout@v7
 
         - name: Initialize CodeQL
-          uses: github/codeql-action/init@v4.39.1
+          uses: github/codeql-action/init@v4.39.3
           with:
               languages: javascript
 
         - name: Autobuild
-          uses: github/codeql-action/autobuild@v4.39.1
+          uses: github/codeql-action/autobuild@v4.39.3
 
         - name: Perform CodeQL Analysis
-          uses: github/codeql-action/analyze@v4.39.1
+          uses: github/codeql-action/analyze@v4.39.3

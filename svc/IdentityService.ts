@@ -102,6 +102,7 @@ export class IdentityService extends HoistService {
         await this.pushPendingUserStateAsync();
         await this.runner().span('impersonate').fetchJson({
             url: 'xh/impersonate',
+            method: 'POST',
             params: {username}
         });
 

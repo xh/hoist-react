@@ -18,6 +18,9 @@ import {filter, groupBy, isEmpty, isFunction, keys, some, startCase} from 'lodas
 import type {ReactNode} from 'react';
 import type {ViewManagerLocalModel} from './ViewManagerLocalModel';
 
+/** Group and owner submenus render in a portal, clear of the popover holding the menu. */
+const SUBMENU_POPOVER_PROPS = {usePortal: true};
+
 /**
  * Default Menu used by ViewManager.
  */
@@ -26,7 +29,7 @@ export const viewMenu = hoistCmp.factory<ViewManagerLocalModel>({
         return menu({
             className: 'xh-view-manager__menu',
             [TEST_ID]: testId,
-            items: [
+            children: [
                 ...getNavMenuItems(model.parent, testId),
                 menuDivider(),
                 ...parseMenuItems(extraMenuItems),
@@ -71,7 +74,8 @@ function getNavMenuItems(model: ViewManagerModel, testId: string): ReactNode[] {
                             ? Icon.check()
                             : Icon.placeholder(),
                         shouldDismissPopover: false,
-                        items: getGroupedMenuItems(sharedViews[owner], model, testId)
+                        popoverProps: SUBMENU_POPOVER_PROPS,
+                        children: getGroupedMenuItems(sharedViews[owner], model, testId)
                     })
                 )
         );
@@ -170,7 +174,8 @@ function groupMenuItem(node: ViewGroupNode, model: ViewManagerModel, testId: str
         text: node.name,
         icon: containsSelected(node, model) ? Icon.check() : Icon.placeholder(),
         shouldDismissPopover: false,
-        items: [
+        popoverProps: SUBMENU_POPOVER_PROPS,
+        children: [
             ...node.children.map(child => groupMenuItem(child, model, testId)),
             ...node.views.map(v => viewMenuItem(v, model, testId))
         ]

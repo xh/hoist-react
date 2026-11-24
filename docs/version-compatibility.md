@@ -61,7 +61,8 @@ Verified against both hoist-react and hoist-core changelogs.
 
 | hoist-react | Min Core Required | Recommended Core | Max Core Tested | Notes | Upgrade |
 |---|---|---|---|---|---|
-| 90.0 | -- | 42.0 | 43.0 | Admin Console Connection Pool Monitor purge buttons call a core 44 endpoint and fail on older cores | [Notes](./upgrade-notes/v90-upgrade-notes.md) |
+| 91.0 | 45.0.0 | 45.0 | 45.0 | Released together with hoist-core 45, which requires hoist-react 91. Agent docs for both come from Hoist Docs, which reads hoist-core's docs index from 45 on | [Notes](./upgrade-notes/v91-upgrade-notes.md) |
+| 90.0 | -- | 44.0 | 44.1 | Admin Console Connection Pool Monitor purge buttons call a core 44 endpoint and fail on older cores | [Notes](./upgrade-notes/v90-upgrade-notes.md) |
 | 89.0 | -- | 42.0 | 43.0 | No new server-side pairing requirements | [Notes](./upgrade-notes/v89-upgrade-notes.md) |
 | 88.1 | -- | 42.0 | 42.0 | Use 88.1.2 or later - earlier 88 releases drop `MsalClient` defaults. `ViewManagerModel.manageGlobal` derived from server `globalWriteRoles` (42, degrades gracefully). TC39 decorators are client-only - requires hoist-dev-utils 16 | [Notes](./upgrade-notes/v88-upgrade-notes.md) |
 | 87.0 | 40.5.0 | 41.0 | 41.0 | `ViewManager` group rename + bulk edit (40.5); directory group names/search, tabbed config editor (41, degrade gracefully) | [Notes](./upgrade-notes/v87-upgrade-notes.md) |
@@ -122,6 +123,8 @@ to find the minimum hoist-react version for a given core release.
 
 | hoist-core | Min hoist-react | Notes |
 |---|---|---|
+| 45.0 | 91.0 | Agent docs: hoist-core 45 drops its bundled MCP and CLI tools, and its docs are served by Hoist Docs, which an app gets with hoist-react 91. No runtime dependency, but on older hoist-react the agent has no hoist-core reference. |
+| 44.0 | 90.0 recommended | Connection pool purge endpoint, called by the Purge Connections buttons in v90's Admin Console. Older hoist-react does not call it. No hard hoist-react bump. |
 | 43.0 | -- | Grails 8 / Spring Boot 4 / Java 21 server upgrade. No client-facing changes and no hoist-react bump. |
 | 42.0 | 88.0 recommended | `JsonBlobService` limits global blob writes to `xhJsonBlobConfig.globalWriteRoles` and reports `manageGlobal` on `xhView/allData`, consumed by v88's `ViewManagerModel`. Older hoist-react keeps its client-side `manageGlobal`, which the server now also enforces. No hard hoist-react bump. |
 | 41.0 | 87.0 recommended | Tabbed/typed config editor, directory group names + search endpoints - consumed by v87's Admin Console, which degrades gracefully without them. No hard hoist-react bump. |
@@ -186,6 +189,10 @@ minor that changes a pairing. These are hard gates stated in the [hoist-dev-util
 
 | hoist-dev-utils | Min hoist-react | Min Node | Notes |
 |---|---|---|---|
+| 16.6 | -- | -- | Adds changelog fragments and the `xh-changelog` command - see [Changelog Entry Format](./changelog-format.md#where-entries-go). The app changelog build keeps wrapped bullets and sub-bullets, and adds markdown entries that hoist-react releases after 91.0 render in the release notes dialog. Earlier hoist-react releases show the same notes as plain text. |
+| 16.4.2 | -- | -- | Builds and the dev server fail on `@rspack/core` 2.3.2 and 2.3.3. Apps must pin `'@rspack/core': 2.3.1` with a pnpm override in `client-app/pnpm-workspace.yaml` - see [Rspack minifier bugs](#rspack-minifier-bugs). |
+| 16.4.1 | -- | -- | Superseded by 16.4.2 - do not use. It brings in `@rspack/core` 2.3.3, which leaves Highcharts charts blank in production builds. |
+| 16.3 | -- | -- | Builds and the dev server fail on `@rspack/core` 2.3.2. Take 16.4.2+ and pin Rspack 2.3.1 - see [Rspack minifier bugs](#rspack-minifier-bugs). |
 | 16.1 | -- | -- | Adds `configureVitest()`, the Vitest preset for app unit tests. The preset alone needs hoist-react 89, which ships the `@xh/hoist/test-support` kit. Builds keep the 88 floor. |
 | 16.0 | 88.0 | 22.15 | Rsbuild replaces webpack, and TC39 `2023-11` decorators replace `legacy`. Both require app changes. |
 | 15.0 | 87.1 | 22.15 | Take 15.0.1+ - 15.0.0 can crash app boot ([#4640](https://github.com/xh/hoist-react/issues/4640)). Apps must be TypeScript-only - `.jsx` files are no longer resolved or transpiled. Re-enables Terser name-mangling, ships ESLint v10 via `@xh/eslint-config` 8, and emits pre-compressed `.br` / `.gz` assets on prod builds. |
@@ -227,6 +234,30 @@ Some hoist-react upgrades also require a corresponding hoist-dev-utils upgrade, 
 major sets its own minimum hoist-react. These are build-time dependencies, so failures appear when
 starting the dev server or building rather than at runtime. See
 [hoist-react ↔ hoist-dev-utils](#hoist-react--hoist-dev-utils) above.
+
+### Rspack minifier bugs
+
+Two `@rspack/core` releases have minifier bugs that break production builds. Dev builds do not
+minify, so neither bug shows up before deploy.
+
+- **2.3.2** breaks classes that reference themselves in a static initializer, so the built app
+  crashes on load. See [xh/hoist-dev-utils#85](https://github.com/xh/hoist-dev-utils/issues/85).
+- **2.3.3** can give a local variable the same name as a kept class name, which leaves every
+  Highcharts chart blank with `Cannot access '...' before initialization`. See
+  [web-infra-dev/rspack#16695](https://github.com/web-infra-dev/rspack/issues/16695).
+
+Take hoist-dev-utils 16.4.2 or later. It refuses to build or start the dev server with either
+version, and pins Rsbuild to 2.3.1. Rsbuild's `~2.3.x` range for Rspack still resolves 2.3.3, so
+apps must also pin Rspack with a pnpm override in `client-app/pnpm-workspace.yaml`:
+
+```yaml
+overrides:
+  '@rspack/core': 2.3.1
+```
+
+Keep the override if the app already has one, but change it to 2.3.1. 16.3 advised 2.3.0. Restore
+it if 16.4.1 led you to remove it. Remove it once a fixed Rspack release ships and hoist-dev-utils
+raises its floor.
 
 ### Upgrading hoist-core without upgrading hoist-react
 

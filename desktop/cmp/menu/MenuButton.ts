@@ -59,6 +59,7 @@ export interface MenuButtonProps extends ButtonProps {
  */
 export const [MenuButton, menuButton] = hoistCmp.withFactory<MenuButtonProps>({
     displayName: 'MenuButton',
+    model: false,
     className: 'xh-menu-button',
 
     render({
@@ -81,21 +82,21 @@ export const [MenuButton, menuButton] = hoistCmp.withFactory<MenuButtonProps>({
             disabled,
             position: menuPosition,
             minimal: true,
-            item: button({
-                className,
-                icon,
-                disabled,
-                testId,
-                onContextMenu: swallowContextMenu,
-                ...rest
-            }),
             content: menu({
                 menuItems: isFunction(menuItems) ? impl.menuItems : menuItems,
                 context: isFunction(context) ? impl.context : context,
                 className: menuClassName,
                 testId: getTestId(testId, 'menu')
             }),
-            ...popoverProps
+            ...popoverProps,
+            children: button({
+                className,
+                icon,
+                disabled,
+                testId,
+                onContextMenu: swallowContextMenu,
+                ...rest
+            })
         });
     }
 });

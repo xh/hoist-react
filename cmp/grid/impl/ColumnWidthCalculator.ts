@@ -6,7 +6,9 @@
  */
 
 import type {GridAutosizeOptions} from '@xh/hoist/cmp/grid/GridAutosizeOptions';
+import type {SizingMode} from '@xh/hoist/core';
 import {XH} from '@xh/hoist/core';
+import {Icon} from '@xh/hoist/icon';
 import type {CellClassParams} from '@xh/hoist/kit/ag-grid';
 import type {Filter, StoreRecord} from '@xh/hoist/data';
 import {CompoundFilter, FieldFilter} from '@xh/hoist/data';
@@ -243,6 +245,22 @@ export class ColumnWidthCalculator {
         return Math.ceil(headerEl.clientWidth) + bufferPx;
     }
 
+    /**
+     * Width of a plain-text header label, with the header font and padding of a sizing mode, and
+     * optionally the expand icon of a collapsible column group.
+     */
+    calcHeaderTextWidth(sizingMode: SizingMode, text: string, withExpandIcon = false): number {
+        try {
+            const headerEl = this.getHeaderEl();
+            this.setHeaderClassNames(sizingMode, false, false, '');
+            if (withExpandIcon) headerEl.classList.add('xh-grid-autosize-header--expand');
+            headerEl.firstChild.textContent = text;
+            return Math.ceil(headerEl.clientWidth);
+        } finally {
+            this.resetHeaderClassNames();
+        }
+    }
+
     isColumnFiltered(filter: Filter, column: Column): boolean {
         if (filter instanceof FieldFilter) {
             return filter.field === column.field;
@@ -298,6 +316,12 @@ export class ColumnWidthCalculator {
             const menuIcon = document.createElement('div');
             menuIcon.classList.add('xh-grid-header-menu-icon');
             headerEl.appendChild(menuIcon);
+
+            // As ColumnGroupHeader renders it.
+            const expandIcon = document.createElement('div');
+            expandIcon.classList.add('xh-grid-header-expand-icon');
+            expandIcon.innerHTML = Icon.chevronRight({size: 'sm', asHtml: true});
+            headerEl.appendChild(expandIcon);
 
             document.body.appendChild(headerEl);
             this._headerEl = headerEl;

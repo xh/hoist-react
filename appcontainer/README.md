@@ -428,7 +428,7 @@ class AppModel extends HoistAppModel {
                 formField: {
                     label: 'Inactive Loans',
                     info: 'Default to loading inactive loans (more data, slower).',
-                    item: switchInput()
+                    children: switchInput()
                 }
             }
         ];

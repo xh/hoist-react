@@ -55,10 +55,11 @@ patterns and components, and it is the best starting point for new developers. S
 and the [Hoist Core README](https://github.com/xh/hoist-core) for server-side configuration.
 
 This repo uses [pnpm](https://pnpm.io). To develop hoist-react locally, run `pnpm install` to
-install its dependencies. The `packageManager` field in `package.json` pins the required pnpm
-version. You can let [corepack](https://nodejs.org/api/corepack.html) provide that version
-automatically (`corepack enable pnpm`), or use a standalone pnpm install of v10+. Applications
-consuming the published `@xh/hoist` package are free to use pnpm, yarn, or npm.
+install its dependencies. The `packageManager` field in `package.json` pins the exact pnpm
+version. Install any recent pnpm (see
+[Package manager](docs/development-environment.md#package-manager-pnpm-yarn-or-npm)), and it
+switches to the pinned version automatically. Applications consuming the published `@xh/hoist`
+package are free to use pnpm, yarn, or npm.
 
 ## Documentation
 

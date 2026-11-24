@@ -27,13 +27,13 @@ export const resizeContainer = hoistCmp.factory({
 
         const boxSize = sizeIsPct ? `calc(100% - ${splitterSize})` : size;
         // Keyed so content is never remounted when a line-less splitter comes or goes.
-        let items = [box({key: 'content', item: child, [dim]: collapsed ? null : boxSize})];
+        let parts = [box({key: 'content', children: child, [dim]: collapsed ? null : boxSize})];
 
         // Without a visible splitter, a resizable panel still gets a line-less splitter as its
         // hit area for dragging and keyboard resizing.
         if (showSplitter || (resizable && !collapsed)) {
             const splitterCmp = splitter({key: 'splitter'});
-            items = contentFirst ? [...items, splitterCmp] : [splitterCmp, ...items];
+            parts = contentFirst ? [...parts, splitterCmp] : [splitterCmp, ...parts];
         }
 
         const cmp = vertical ? vbox : hbox,
@@ -55,7 +55,7 @@ export const resizeContainer = hoistCmp.factory({
             [minDim]: splitterSize,
             testId,
             domAttrs,
-            items
+            children: parts
         });
     }
 });

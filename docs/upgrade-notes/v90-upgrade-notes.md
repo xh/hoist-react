@@ -25,6 +25,27 @@ affected APIs.
 - **Panel splitter CSS (required if an app styled splitters)** - desktop panel splitters are now
   a 1px line with their own `--xh-panel-splitter-*` variables. App overrides of
   `--xh-resizable-*` variables no longer reach them - see Step 6.
+- **Renderer import paths (required if used)** - the `*Renderer` factories moved out of
+  `@xh/hoist/format/FormatNumber` and `@xh/hoist/format/FormatDate`. Import them from
+  `@xh/hoist/format` - see Step 7.
+- **Removed libraries (required if an app imports them)** - Hoist no longer depends on several
+  libraries, such as `semver` and `store2`. An app that imports one must declare it in its own
+  `package.json` - see Step 8.
+- **router5 8 (required if an app declares router5)** - Hoist moves to router5 8. An app that
+  declares its own `router5` must match that version, or drop the dependency and type its routes
+  with `HoistRoute` - see Step 9.
+
+## Prerequisites
+
+Before starting, ensure:
+
+- [ ] Running hoist-react v89.x.
+- [ ] **hoist-core** at >= 40.5.0 (unchanged floor). **hoist-core 44.0 is recommended.** The new
+  Purge Connections buttons in the Admin Console Connection Pool Monitor call an endpoint that
+  older cores lack, so they fail there. See [Version Compatibility](../version-compatibility.md).
+- [ ] **TypeScript 5.9 projects** list `dom.iterable` in `lib`. This applies to every
+  `tsconfig.json` that type-checks Hoist sources, including the app and any test suite. Hoist v90
+  iterates a DOM collection, which TypeScript 6 and later allow with plain `dom`.
 
 ## Upgrade Steps
 
@@ -373,6 +394,143 @@ import {PanelModel} from '@xh/hoist/desktop/cmp/panel';
 PanelModel.defaults.showHeaderCollapseButton = true;
 ```
 
+### 7. Import Renderer Factories from `@xh/hoist/format`
+
+The number and date renderer factories now live in their own files, next to the new text renderer
+factories. The `@xh/hoist/format` package still exports all of them, so apps that import from it
+need no change. An import of a renderer from `@xh/hoist/format/FormatNumber` or
+`@xh/hoist/format/FormatDate` fails to compile. The `fmt*` functions and option types such as
+`NumberFormatOptions` still import from those paths.
+
+The moved factories:
+
+| Old file | Factories |
+|---|---|
+| `FormatNumber` | `numberRenderer`, `thousandsRenderer`, `millionsRenderer`, `billionsRenderer`, `quantityRenderer`, `priceRenderer`, `percentRenderer` |
+| `FormatDate` | `dateRenderer`, `dateTimeRenderer`, `dateTimeSecRenderer`, `timeRenderer`, `compactDateRenderer` |
+
+**Find affected code:**
+
+```bash
+grep -rnE "@xh/hoist/format/Format(Number|Date)['\"]" client-app/src/
+```
+
+Check each match for a name that ends in `Renderer`.
+
+Before:
+
+```typescript
+import {fmtNumber, numberRenderer} from '@xh/hoist/format/FormatNumber';
+```
+
+After:
+
+```typescript
+import {fmtNumber, numberRenderer} from '@xh/hoist/format';
+```
+
+### 8. Declare Removed Libraries Your App Imports
+
+Hoist v90 drops the libraries below from its dependencies. An app could import any of them
+without declaring it, because Hoist installed them. Those imports now fail to resolve. For each
+library that an app imports, either add it to the app's `package.json` or switch to the Hoist API
+in the table.
+
+| Library | Hoist alternative |
+|---|---|
+| `numbro` | `fmtNumber` and its options - see Step 1 |
+| `date-fns`, `@blueprintjs/datetime` | `dayPicker` from `@xh/hoist/kit/react-day-picker` - see Step 2 |
+| `onsenui`, `react-onsenui` | Hoist's mobile components - see Step 3 |
+| `react-windowed-select` | `select({enableWindowed: true})` - see Step 4 |
+| `semver` | `checkVersion`, `checkMinVersion` and `checkMaxVersion` from `@xh/hoist/utils/js` |
+| `ua-parser-js` | `XH.isPhone`, `XH.isTablet` and `XH.isDesktop` |
+| `store2` | `XH.localStorageService` and `XH.sessionStorageService` |
+| `short-unique-id` | `genRandomId()` from `@xh/hoist/utils/js`, or `XH.genId()` |
+| `lodash-inflection` | `pluralize`, `singularize` and `ordinalize` from `@xh/hoist/utils/js` |
+| `http-status-codes` | None |
+
+**Find affected code:**
+
+```bash
+grep -rnE "from '(numbro|date-fns|@blueprintjs/datetime|onsenui|react-onsenui|react-windowed-select|semver|ua-parser-js|store2|short-unique-id|lodash-inflection|http-status-codes)['/]" client-app/src/
+```
+
+Skip any match for a library that the app's `package.json` already declares.
+
+### 9. Align Your App's router5 Dependency
+
+Hoist v90 updates router5 and router5-plugin-browser from 7.0 to 8.0. An app that declares its own
+`router5` at 7.x installs a second copy of the library beside Hoist's.
+
+Most apps declare router5 only to import its `Route` type for `getRoutes()`. Import `HoistRoute`
+from `@xh/hoist/core` instead. It is router5's `Route` plus Hoist's `omit` key, and it is the type
+that `HoistAppModel.getRoutes()` returns. Then remove `router5` from the app's `package.json`.
+
+Before:
+
+```typescript
+import type {Route} from 'router5';
+
+override getRoutes(): Route[] {
+```
+
+After:
+
+```typescript
+import type {HoistRoute} from '@xh/hoist/core';
+
+override getRoutes(): HoistRoute[] {
+```
+
+If the app still imports from router5 for anything else, update its own dependency to `~8.0.1`.
+router5 8 moved its type files from `types/` to `dist/`, so an import from `router5/types/...` no
+longer resolves. Import those types from `router5` itself.
+
+**Find affected code.** Search the whole repo, not only `client-app`. A sibling TypeScript project,
+such as an end-to-end test suite, can declare its own `router5` and import its `Route` type.
+
+```bash
+grep -rn --include=package.json '"router5' . --exclude-dir=node_modules
+grep -rnE --exclude-dir=node_modules "from 'router5(-plugin-browser)?['/]" .
+```
+
+**Review deep links with `@`, `=` or `|` in a path parameter.** router5 8 percent-encodes path
+parameter values. Values that contain `/`, `&`, `?` or `#` now work, where router5 7 threw an error.
+But router5 8 does not match a URL from router5 7 whose path parameter holds a bare `@` or `=`, or
+an encoded `|`. A bookmark to `/app/users/jane@example.com`, for example, no longer finds its route.
+This applies to path parameters only. See [Route Parameters](../routing.md#route-parameters)
+for a server limit on `/` in path parameters.
+
+**Review calls that build a path or URL for an unknown route.** `XH.router.buildPath()` and
+`XH.router.buildUrl()` now throw if no route has the given name. router5 7 returned `null`. The
+error reads `[route-node][buildPath] '{routeName}' is not defined`, with that literal text in
+place of the name. Typecheck, lint and the build all pass, so the error shows only at runtime.
+A component that builds a link during render now fails, and the app shows its critical error
+screen. A typical case is a menu item whose route the app adds only after its data loads.
+
+Check each call where the route name is computed or can be undefined. Also check code that tests
+the result for `null` to find out if a route exists. That test now throws. Call
+`XH.routerModel.hasRoute(name)` first, as shown below. Hoist v91 adds `XH.hasRoute(name)` as a
+shortcut.
+
+Before:
+
+```typescript
+const href = XH.router.buildUrl(item.route);  // null if the route is unknown
+```
+
+After:
+
+```typescript
+const href = XH.routerModel.hasRoute(item.route) ? XH.router.buildUrl(item.route) : null;
+```
+
+**Find affected code:**
+
+```bash
+grep -rnE "router\.(buildPath|buildUrl)\(" client-app/src/
+```
+
 ## Verification Checklist
 
 After completing all steps:
@@ -393,6 +551,14 @@ After completing all steps:
 - [ ] Styles on `xh-units-label` or on sign color classes inside grid cells still apply.
 - [ ] No app SCSS styles panel splitters with `--xh-resizable-*` variables or
       `.xh-resizable-splitter`.
+- [ ] Nothing imports a `*Renderer` factory from `@xh/hoist/format/FormatNumber` or
+      `@xh/hoist/format/FormatDate`.
+- [ ] The app's `package.json` declares every library that the app imports.
+- [ ] The app's `package.json` declares no `router5` dependency, or declares `~8.0.1`, and
+      `getRoutes()` returns `HoistRoute[]`.
+- [ ] Deep links that carry `@`, `=` or `|` in a path parameter still open the right route.
+- [ ] No code calls `buildPath()` or `buildUrl()` with a route name that may not exist, or tests
+      their result for `null`.
 
 ## Reference
 

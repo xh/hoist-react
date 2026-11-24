@@ -12,6 +12,27 @@ import {isArray, isEmpty} from 'lodash';
 import type {View} from '../View';
 import type {ViewRow} from '../ViewRow';
 import type {ParentRow} from './ParentRow';
+import type {RowUpdate} from './RowUpdate';
+
+/**
+ * Send updates up both aggregation routes. `applyDataUpdate` rewrites each {@link RowUpdate} in
+ * place, so the second route receives clones.
+ * @internal
+ */
+export function propagateUpdate(
+    parent: ParentRow,
+    pivotParent: ParentRow,
+    updates: RowUpdate[],
+    updatedRows: Set<BaseRow>
+) {
+    if (parent && pivotParent) {
+        const forPivot = updates.map(u => u.clone());
+        parent.applyDataUpdate(updates, updatedRows);
+        pivotParent.applyDataUpdate(forPivot, updatedRows);
+    } else {
+        (parent ?? pivotParent)?.applyDataUpdate(updates, updatedRows);
+    }
+}
 
 /**
  * Base class for a row within a dataset produced by a Cube / View.
@@ -39,6 +60,11 @@ export abstract class BaseRow implements ViewRow {
     // which adopt their cube record's plain data object - see LeafRow and subclasses.
     data: PlainObject;
     parent: ParentRow = null;
+    /**
+     * Second aggregation parent, used by pivot views to propagate up the pivot axis. Null in a
+     * plain View. The two routes must reach disjoint ancestors - see {@link PivotStructure}.
+     */
+    pivotParent: ParentRow = null;
     children: BaseRow[] = null;
 
     get isLeaf() {

@@ -14,6 +14,7 @@ import './VersionBar.scss';
  * @internal
  */
 export const versionBar = hoistCmp.factory({
+    model: false,
     render() {
         if (!isShowing()) return null;
 
@@ -28,7 +29,7 @@ export const versionBar = hoistCmp.factory({
             flex: 'none',
             className: `xh-version-bar xh-version-bar--${env.toLowerCase()}`,
             testId: 'xh-version-bar',
-            items: [
+            children: [
                 [env, version, tabId].join(' • '),
                 button({
                     icon: Icon.info(),

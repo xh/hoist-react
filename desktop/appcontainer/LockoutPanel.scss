@@ -6,7 +6,7 @@
  */
 
 .xh-lockout-panel {
-  padding: var(--xh-pad-double-px);
+  padding: var(--xh-spacing-double);
   background-color: var(--xh-red);
   color: white;
   text-align: center;
@@ -16,6 +16,6 @@
   margin: 0 auto;
 
   p:last-of-type {
-    margin-bottom: var(--xh-pad-double-px);
+    margin-bottom: var(--xh-spacing-double);
   }
 }

@@ -35,8 +35,8 @@ export const [DialogPanel, dialogPanel] = hoistCmp.withFactory<DialogPanelProps>
         return dialogContainer({
             isCancelable: false,
             className,
-            item: panel({
-                items: children,
+            children: panel({
+                children,
                 ...rest
             })
         });

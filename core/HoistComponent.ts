@@ -16,7 +16,7 @@ import {CreatesSpec, UsesSpec, elementFactory} from './';
 import type {ModelSpec, HoistModel} from './model';
 import {
     useModelLinker,
-    localModelContext,
+    withLocalModelContext,
     ModelLookup,
     ModelLookupContext,
     modelLookupContextProvider,
@@ -24,7 +24,7 @@ import {
     formatSelector
 } from './model';
 import {logError, throwIf, warnIf, withDefault} from '@xh/hoist/utils/js';
-import {getLayoutProps, useOnMount, useOnUnmount} from '@xh/hoist/utils/react';
+import {getLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import {isFunction, isPlainObject, isObject} from 'lodash';
 import {observer, untracked} from '../mobx';
@@ -173,9 +173,7 @@ export function hoistCmp<P extends HoistProps>(config: ComponentConfig<P>): FC<P
     );
 
     // 2) Wrap supplied render function with model and classname, support. Be sure to clone props.
-    if (cfg.modelSpec) {
-        render = wrapWithModel(render, cfg);
-    }
+    render = cfg.modelSpec ? wrapWithModel(render, cfg) : wrapWithoutModel(render);
     if (cfg.className) {
         render = wrapWithClassName(render, cfg);
     }
@@ -276,6 +274,15 @@ function wrapWithClonedProps(render: RenderFn): RenderFn {
 }
 
 //------------------------------------------------------------------------------------
+// Context support for components without their own models.
+//------------------------------------------------------------------------------------
+function wrapWithoutModel(render: RenderFn): RenderFn {
+    return (props, ref) => withLocalModelContext(props, null, () => render(props, ref));
+}
+
+//------------------------------------------------------------------------------------
+// Context support for components with their own models.
+//
 // Lookup/create model for this component using spec, *AND* potentially publish
 // explicitly to children, if needed.  This may require inserting a ContextProvider
 //------------------------------------------------------------------------------------
@@ -292,16 +299,6 @@ function wrapWithModel(render: RenderFn, cfg: Config): RenderFn {
             resolvedModel = useResolvedModel(props, modelLookup, cfg),
             {isLinked, model, fromContext} = resolvedModel;
 
-        // 2) Validate
-        if (!model && !spec.optional && spec instanceof UsesSpec) {
-            logError(
-                `Failed to find model with selector '${formatSelector(spec.selector)}'. Ensure the
-                proper model is available via context, or specify using the 'model' prop.`,
-                cfg.displayName
-            );
-            return cmpErrDisplay({...getLayoutProps(props), item: 'No model found'});
-        }
-
         useDebugValue(model, m => {
             if (!m) return 'null';
             return [
@@ -311,7 +308,7 @@ function wrapWithModel(render: RenderFn, cfg: Config): RenderFn {
             ].join(' | ');
         });
 
-        // 3) insert any new lookup context that needs to be established.  Avoid adding if default
+        // 2) insert any new lookup context that needs to be established.  Avoid adding if default
         // model not changing; cache object to avoid triggering re-renders in context children
         const insertLookup = useRef<ModelLookup>(null);
         if (
@@ -329,23 +326,26 @@ function wrapWithModel(render: RenderFn, cfg: Config): RenderFn {
             insertLookup.current = null;
         }
 
+        // 3) Validate - only after the hooks above, so a failed lookup keeps the hook count stable.
+        if (!model && !spec.optional && spec instanceof UsesSpec) {
+            logError(
+                `Failed to find model with selector '${formatSelector(spec.selector)}'. Ensure the
+                proper model is available via context, or specify using the 'model' prop.`,
+                cfg.displayName
+            );
+            return cmpErrDisplay({...getLayoutProps(props), children: 'No model found'});
+        }
+
         // 4) Get the rendering of the component with its model context
         // 4a) Create a generic render function, that can be called immediately, or in wrapped component.
         const managedRender = () => {
-            let ctx = localModelContext;
-            try {
-                props.model = model;
-                delete props.modelRef;
-                delete props.modelConfig;
-                ctx.props = props;
-                ctx.modelLookup = insertLookup.current ?? modelLookup;
-                useOnMount(() => instanceManager.registerModelWithTestId(props.testId, model));
-                useOnUnmount(() => instanceManager.unregisterModelWithTestId(props.testId));
-                return render(props, ref);
-            } finally {
-                ctx.props = null;
-                ctx.modelLookup = null;
-            }
+            props.model = model;
+            delete props.modelRef;
+            delete props.modelConfig;
+            instanceManager.useTestIdRegistration(props.testId, model);
+            return withLocalModelContext(props, insertLookup.current ?? modelLookup, () =>
+                render(props, ref)
+            );
         };
 
         // 4b) Get the element, either running the wrapped function directly, or in a wrapped component if needed
@@ -354,7 +354,7 @@ function wrapWithModel(render: RenderFn, cfg: Config): RenderFn {
             : createElement(HostCmp, {managedRender, key: model?.xhId});
 
         return insertLookup.current
-            ? modelLookupContextProvider({value: insertLookup.current, item: ret})
+            ? modelLookupContextProvider({value: insertLookup.current, children: ret})
             : ret;
     };
 }

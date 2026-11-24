@@ -37,6 +37,7 @@ export interface MaskProps extends HoistProps {
  */
 export const [Mask, mask] = hoistCmp.withFactory<MaskProps>({
     displayName: 'Mask',
+    model: false,
     className: 'xh-mask',
 
     render({isDisplayed, message, onClick, inline = true, spinner = false, className}) {

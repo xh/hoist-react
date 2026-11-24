@@ -153,7 +153,7 @@ export class ConfigPanelModel extends HoistModel {
                 {field: 'resolvedValue', omit: true},
                 {field: 'defaultValue', omit: true},
                 {field: 'overrideValue', omit: true},
-                {field: 'note', formField: {item: textArea({height: 100})}},
+                {field: 'note', formField: {children: textArea({height: 100})}},
                 {field: 'clientVisible'},
                 {field: 'lastUpdated'},
                 {field: 'lastUpdatedBy'}
@@ -230,12 +230,12 @@ export class ConfigPanelModel extends HoistModel {
     private withOverrideWarning(value, {strike = false}: {strike?: boolean} = {}) {
         return hbox({
             alignItems: 'center',
-            items: [
+            children: [
                 Icon.warning({intent: 'warning', prefix: 'fas'}),
                 hspacer(),
                 // Clip long values cleanly - the flex row defeats the grid cell's own ellipsis.
                 span({
-                    item: value,
+                    children: value,
                     style: {overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap'}
                 })
             ],

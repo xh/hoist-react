@@ -15,6 +15,7 @@ import {installMobileImpls} from '@xh/hoist/dynamics/mobile';
 import {colChooser} from '@xh/hoist/mobile/cmp/grid/impl/ColChooser';
 import {ColChooserModel} from '@xh/hoist/mobile/cmp/grid/impl/ColChooserModel';
 import {mask} from '@xh/hoist/cmp/mask';
+import {pdfViewerToolbarImpl} from '@xh/hoist/mobile/cmp/pdfviewer/impl/PdfViewerToolbar';
 import {pinPadImpl} from '@xh/hoist/mobile/cmp/pinpad/impl/PinPad';
 import {storeFilterFieldImpl} from '@xh/hoist/mobile/cmp/store/impl/StoreFilterField';
 import {tabContainerImpl} from '@xh/hoist/mobile/cmp/tab/impl/TabContainer';
@@ -44,7 +45,8 @@ installMobileImpls({
     zoneMapper,
     errorMessageImpl,
     maskImpl,
-    cardHeaderImpl
+    cardHeaderImpl,
+    pdfViewerToolbarImpl
 });
 
 /**
@@ -76,7 +78,7 @@ export const AppContainer = hoistCmp({
                     },
                     errorRenderer: () => null
                 },
-                item: viewForState({model})
+                children: viewForState({model})
             }),
             // Modal component helpers rendered here at top-level to support display of messages
             // and exceptions at any point during the app lifecycle.
@@ -131,7 +133,7 @@ const appContainerView = hoistCmp.factory<AppContainerModel>({
                 bannerList(),
                 refreshContextView({
                     model: model.refreshContextModel,
-                    item: frame(
+                    children: frame(
                         createElement(model.appSpec.componentClass, {model: model.appModel})
                     )
                 }),
@@ -154,7 +156,7 @@ const bannerList = hoistCmp.factory<AppContainerModel>({
         const {bannerModels} = model.bannerSourceModel;
         if (isEmpty(bannerModels)) return null;
         return fragment({
-            items: bannerModels.map(model => appBanner({model}))
+            children: bannerModels.map(model => appBanner({model}))
         });
     }
 });

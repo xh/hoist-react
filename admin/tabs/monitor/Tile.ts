@@ -37,9 +37,9 @@ export const tile = hoistCmp.factory(props => {
             collapsible: false,
             resizable: false
         },
-        item: div({
+        children: div({
             className: 'xh-status-tile__content',
-            item: vbox(
+            children: vbox(
                 statusText,
                 vspacer(5),
                 ...instanceResults.map(result => instanceRow({result, metricUnit}))
@@ -55,12 +55,12 @@ const instanceRow = hoistCmp.factory(({result, metricUnit}) => {
     return hbox({
         className: 'xh-status-tile__instance-row xh-status-tile-' + status.toLowerCase(),
         alignItems: 'start',
-        items: [
+        children: [
             icon,
             hspacer(5),
             span({
                 className: 'xh-status-tile__instance-name',
-                item: instance
+                children: instance
             }),
             hspacer(10),
             div(div(metricText), div(message))

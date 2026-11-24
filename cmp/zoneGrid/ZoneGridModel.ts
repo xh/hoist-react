@@ -17,7 +17,11 @@ import type {
     GridConfig,
     GridContextMenuItemLike,
     GridContextMenuSpec,
+    GridEnsureVisibleOptions,
     GridGroupSortFn,
+    GridLikeModel,
+    GridSelectFirstOptions,
+    GridSelectOptions,
     GridSorterLike,
     GroupRowRenderer,
     RowClassFn,
@@ -322,7 +326,7 @@ export interface ZoneGridConfig {
  * @see ZoneGrid
  * @see ZoneGridConfig
  */
-export class ZoneGridModel extends HoistModel {
+export class ZoneGridModel extends HoistModel implements GridLikeModel {
     @managed
     gridModel: GridModel;
 
@@ -509,6 +513,10 @@ export class ZoneGridModel extends HoistModel {
         return this.gridModel.store;
     }
 
+    get innerGridModel(): GridModel {
+        return this.gridModel;
+    }
+
     get empty() {
         return this.gridModel.empty;
     }
@@ -537,10 +545,7 @@ export class ZoneGridModel extends HoistModel {
         return this.gridModel.groupBy;
     }
 
-    selectAsync(
-        records: Some<StoreRecordOrId>,
-        opts: {ensureVisible?: boolean; clearSelection?: boolean}
-    ) {
+    selectAsync(records: Some<StoreRecordOrId>, opts?: GridSelectOptions) {
         return this.gridModel.selectAsync(records, opts);
     }
 
@@ -548,12 +553,12 @@ export class ZoneGridModel extends HoistModel {
         return this.gridModel.preSelectFirstAsync();
     }
 
-    selectFirstAsync(opts: {ensureVisible?: boolean} = {}) {
+    selectFirstAsync(opts?: GridSelectFirstOptions) {
         return this.gridModel.selectFirstAsync(opts);
     }
 
-    ensureSelectionVisibleAsync() {
-        return this.gridModel.ensureSelectionVisibleAsync();
+    ensureSelectionVisibleAsync(opts?: GridEnsureVisibleOptions) {
+        return this.gridModel.ensureSelectionVisibleAsync(opts);
     }
 
     override doLoadAsync(loadSpec: LoadSpec) {

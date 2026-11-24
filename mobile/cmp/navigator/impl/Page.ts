@@ -39,9 +39,9 @@ export const page = hoistCmp.factory({
 
         return refreshContextView({
             model: refreshContextModel,
-            item: div({
+            children: div({
                 className: 'xh-page',
-                item: errorBoundary(elementFromContent(content, props))
+                children: errorBoundary(elementFromContent(content, props))
             })
         });
     }

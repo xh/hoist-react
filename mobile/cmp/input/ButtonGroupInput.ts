@@ -121,7 +121,7 @@ const cmp = hoistCmp.factory<ButtonGroupInputModel>(({model, className, ...props
     });
 
     return buttonGroup({
-        items: buttons,
+        children: buttons,
         tabIndex,
         onBlur: model.onBlur,
         onFocus: model.onFocus,

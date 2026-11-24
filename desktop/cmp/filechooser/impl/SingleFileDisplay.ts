@@ -20,10 +20,10 @@ export const singleFileDisplay = hoistCmp.factory({
 
         return placeholder(
             Icon.fileIcon({filename: file.name}),
-            div({className: 'xh-file-chooser__file-name', item: file.name}),
+            div({className: 'xh-file-chooser__file-name', children: file.name}),
             div({
                 className: 'xh-file-chooser__file-hint',
-                item: `${filesize(file.size)} · drop or click to replace`
+                children: `${filesize(file.size)} · drop or click to replace`
             }),
             button({
                 text: 'Remove',

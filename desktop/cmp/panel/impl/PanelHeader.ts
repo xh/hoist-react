@@ -33,7 +33,7 @@ export const panelHeader = hoistCmp.factory({
                 showHeaderCollapseButton,
                 showCollapsedStrip
             } = panelModel,
-            {title, icon, compact} = props,
+            {title, icon, compact, intent} = props,
             expandedByClick = useRef(false);
 
         // Title and icon can vary based on collapsed state.
@@ -87,20 +87,26 @@ export const panelHeader = hoistCmp.factory({
         const titleCls = 'xh-panel-header__title',
             sideCls = `xh-panel-header--${side}`,
             compactCls = compact ? 'xh-panel-header--compact' : null,
-            collapsedCls = clickToExpand ? 'xh-panel-header--collapsed' : null;
+            collapsedCls = clickToExpand ? 'xh-panel-header--collapsed' : null,
+            intentCls = intent
+                ? ['xh-panel-header--intent', `xh-panel-header--intent-${intent}`]
+                : null;
 
         // Return a vertically oriented header if collapsed to left or right side.
         if (isCollapsedToLeftOrRight) {
             return vbox({
-                className: classNames(className, sideCls, compactCls, collapsedCls),
+                className: classNames(className, sideCls, compactCls, collapsedCls, intentCls),
                 flex: 1,
-                items: [
+                children: [
                     displayedIcon,
                     displayedTitle
                         ? box({
                               className: titleCls,
                               flex: 1,
-                              item: span({className: `${titleCls}__inner`, item: displayedTitle})
+                              children: span({
+                                  className: `${titleCls}__inner`,
+                                  children: displayedTitle
+                              })
                           })
                         : filler(),
                     ...displayedHeaderItems
@@ -113,19 +119,22 @@ export const panelHeader = hoistCmp.factory({
         // Return a standard horizontal header otherwise.
         // Panel is expanded, modal, and/or collapsed to the top or bottom side.
         return hbox({
-            className: classNames(className, compactCls, collapsedCls),
-            items: [
+            className: classNames(className, compactCls, collapsedCls, intentCls),
+            children: [
                 displayedIcon,
                 displayedTitle
                     ? box({
                           className: titleCls,
                           flex: 1,
-                          item: span({className: `${titleCls}__inner`, item: displayedTitle})
+                          children: span({
+                              className: `${titleCls}__inner`,
+                              children: displayedTitle
+                          })
                       })
                     : filler(),
                 hbox({
                     className: 'xh-panel-header__items',
-                    items: displayedHeaderItems,
+                    children: displayedHeaderItems,
                     onDoubleClick: e => e.stopPropagation()
                 })
             ],

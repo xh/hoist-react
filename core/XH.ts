@@ -75,7 +75,7 @@ import {installServicesAsync} from './impl/InstallServices';
 import {instanceManager} from './impl/InstanceManager';
 import type {HoistModel, ModelSelector, RefreshContextModel} from './model';
 
-export const MIN_HOIST_CORE_VERSION = '40.5.0';
+export const MIN_HOIST_CORE_VERSION = '45.0.0';
 
 declare const xhAppCode: string;
 declare const xhAppName: string;
@@ -660,6 +660,15 @@ export class XHApi {
         return this.routerModel.popRoute();
     }
 
+    /**
+     * Does a route exist with the given fully qualified name?
+     * Check before calling `XH.router.buildPath()` or `buildUrl()` with a name that may not be
+     * registered, as both throw for an unknown route.
+     */
+    hasRoute(routeName: string): boolean {
+        return this.routerModel.hasRoute(routeName);
+    }
+
     //------------------------------
     // Message Support
     //------------------------------
@@ -852,14 +861,11 @@ export class XHApi {
 
     /**
      * Get a collection of Models currently 'active' in the app, returned in creation-time order.
-     * This will include all models that have not yet had `destroy()` called on them.
+     * This will include all models that have not yet had `destroy()` called on them and are still
+     * in memory. A model that was never destroyed drops out once it is garbage collected.
      */
     getModels<T extends HoistModel>(selector: ModelSelector = '*'): T[] {
-        const ret = [];
-        instanceManager.models.forEach(m => {
-            if (m.matchesSelector(selector, true)) ret.push(m);
-        });
-        return ret;
+        return [...instanceManager.models].filter(m => m.matchesSelector(selector, true)) as T[];
     }
 
     /** Get the first active model that matches the given selector, or null if none found. */

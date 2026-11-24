@@ -27,7 +27,7 @@ export const dataFieldsEditor = hoistCmp.factory({
 
         return popover({
             isOpen: showEditor,
-            item: button({
+            children: button({
                 text: `Extract Data Fields${appliedDataFieldCount ? ' (' + appliedDataFieldCount + ')' : ''}`,
                 icon: Icon.json({prefix: hasAppliedDataFields ? 'fas' : 'far'}),
                 intent: hasAppliedDataFields ? 'primary' : null,
@@ -45,34 +45,34 @@ const formPanel = hoistCmp.factory<DataFieldsEditorModel>(({model}) => {
     const {formModel, dataFields} = model;
     return panel({
         className: 'xh-admin-activity-panel__data-fields-editor',
-        item: form({
+        children: form({
             model: formModel,
-            items: isEmpty(dataFields.value)
+            children: isEmpty(dataFields.value)
                 ? emptyPlaceholder()
                 : [
                       ...dataFields.value.map((dfModel: FormModel) => {
                           return form({
                               model: dfModel,
                               fieldDefaults: {label: null, commitOnChange: true},
-                              item: hbox({
+                              children: hbox({
                                   className: 'xh-admin-activity-panel__data-fields-editor__row',
                                   alignItems: 'flex-start',
                                   flex: 'none',
-                                  items: [
+                                  children: [
                                       formField({
                                           field: 'path',
                                           flex: 1,
-                                          item: textInput({placeholder: 'Path (dot-delimited)'})
+                                          children: textInput({placeholder: 'Path (dot-delimited)'})
                                       }),
                                       formField({
                                           field: 'displayName',
                                           width: 180,
-                                          item: textInput({placeholder: 'Display Name'})
+                                          children: textInput({placeholder: 'Display Name'})
                                       }),
                                       formField({
                                           field: 'type',
                                           width: 120,
-                                          item: select({
+                                          children: select({
                                               placeholder: 'Data Type',
                                               options: Object.values(FieldType).sort()
                                           })
@@ -80,7 +80,7 @@ const formPanel = hoistCmp.factory<DataFieldsEditorModel>(({model}) => {
                                       formField({
                                           field: 'aggregator',
                                           width: 120,
-                                          item: select({
+                                          children: select({
                                               placeholder: 'Aggregator',
                                               // TODO - cascade select with type?
                                               options: model.aggTokens,
@@ -90,12 +90,12 @@ const formPanel = hoistCmp.factory<DataFieldsEditorModel>(({model}) => {
                                       formField({
                                           field: 'isDimension',
                                           marginTop: 8,
-                                          item: checkbox({label: 'dimension'})
+                                          children: checkbox({label: 'dimension'})
                                       }),
                                       buttonGroup({
                                           outlined: true,
                                           marginTop: 3,
-                                          items: [
+                                          children: [
                                               button({
                                                   icon: Icon.copy(),
                                                   onClick: () => model.cloneField(dfModel)

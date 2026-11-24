@@ -10,7 +10,7 @@ import {describe, expect, it, onTestFinished, vi} from 'vitest';
 
 /**
  * RouterModel - Hoist's MobX facade over router5, behind `XH.routerState`, `XH.navigate()`,
- * `XH.appendRoute()` and `XH.popRoute()`. Every routed app registers its routes here and reacts to
+ * `XH.appendRoute()`, `XH.popRoute()` and `XH.hasRoute()`. Every routed app registers its routes here and reacts to
  * its observable state, so a break here strands users on the wrong page.
  */
 describe('RouterModel', () => {
@@ -33,6 +33,19 @@ describe('RouterModel', () => {
             expect(model.hasRoute('default.admin')).toBe(false);
             expect(model.hasRoute('default.beta')).toBe(false);
             expect(model.hasRoute('legacy')).toBe(false);
+        });
+    });
+
+    describe('hasRoute', () => {
+        it('matches fully qualified names only, for leaf and parent routes alike', () => {
+            const model = createModel();
+
+            expect(model.hasRoute('default')).toBe(true);
+            expect(model.hasRoute('default.grids')).toBe(true);
+            expect(model.hasRoute('default.grids.detail')).toBe(true);
+            expect(model.hasRoute('detail')).toBe(false);
+            expect(model.hasRoute('default.charts')).toBe(false);
+            expect(model.hasRoute(null)).toBe(false);
         });
     });
 

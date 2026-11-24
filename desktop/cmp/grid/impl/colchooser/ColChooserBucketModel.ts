@@ -485,7 +485,7 @@ export class ColChooserBucketModel extends HoistModel implements ColChooserDropP
 
                 data.push({
                     id: instanceId,
-                    name: typeof group.headerName === 'string' ? group.headerName : group.groupId,
+                    name: group.chooserName,
                     description: '',
                     chooserGroup: '',
                     visible: false,
@@ -731,7 +731,7 @@ export class ColChooserBucketModel extends HoistModel implements ColChooserDropP
                 : Icon.arrowToRight({className: 'xh-col-chooser__drop-hint__arrow', size: 'sm'});
         return hbox({
             className: 'xh-col-chooser__drop-hint',
-            items: pinned === 'left' ? [arrow, span(text)] : [span(text), arrow]
+            children: pinned === 'left' ? [arrow, span(text)] : [span(text), arrow]
         });
     }
 

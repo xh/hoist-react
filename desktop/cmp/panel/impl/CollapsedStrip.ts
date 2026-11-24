@@ -29,7 +29,7 @@ export const collapsedStrip = hoistCmp.factory({
                 `xh-panel-collapsed-strip--${panelModel.vertical ? 'ns' : 'ew'}`
             ),
             title: 'Expand',
-            item: collapseToggleIcon(panelModel),
+            children: collapseToggleIcon(panelModel),
             onClick: () => panelModel.toggleCollapsed()
         });
     }

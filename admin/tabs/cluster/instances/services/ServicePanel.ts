@@ -21,9 +21,9 @@ export const servicePanel = hoistCmp.factory({
 
     render({model}) {
         return panel({
-            item: hframe(
+            children: hframe(
                 panel({
-                    item: grid({
+                    children: grid({
                         flex: 1,
                         agOptions: {
                             groupRowRendererParams: {

@@ -52,6 +52,7 @@ export interface RecordActionBarProps extends ButtonGroupProps {
  */
 export const [RecordActionBar, recordActionBar] = hoistCmp.withFactory<RecordActionBarProps>({
     displayName: 'RecordActionBar',
+    model: false,
     className: 'xh-record-action-bar',
 
     render(props) {
@@ -76,7 +77,8 @@ export const [RecordActionBar, recordActionBar] = hoistCmp.withFactory<RecordAct
 
         return buttonGroup({
             vertical,
-            items: actions.filter(Boolean).map(action => {
+            ...rest,
+            children: actions.filter(Boolean).map(action => {
                 const recordAction =
                     action instanceof RecordAction ? action : new RecordAction(action);
                 const scopedTestId =
@@ -92,8 +94,7 @@ export const [RecordActionBar, recordActionBar] = hoistCmp.withFactory<RecordAct
                     ...buttonProps,
                     testId: scopedTestId
                 });
-            }),
-            ...rest
+            })
         });
     }
 });

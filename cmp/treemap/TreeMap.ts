@@ -11,7 +11,7 @@ import {errorMessage} from '@xh/hoist/cmp/error';
 import {mask} from '@xh/hoist/cmp/mask';
 import {Highcharts} from '@xh/hoist/kit/highcharts';
 import {wait} from '@xh/hoist/promise';
-import {logError, logWithDebug} from '@xh/hoist/utils/js';
+import {logError, logWarn, logWithDebug} from '@xh/hoist/utils/js';
 import {
     useComposedRefs,
     createObservableRef,
@@ -36,6 +36,10 @@ export interface TreeMapProps<M extends TreeMapModel = TreeMapModel>
  * It is a managed wrapper around a Highcharts TreeMap visualization, which renders
  * records from a Store and optionally binds to a GridModel.
  *
+ * The app must import the Highcharts `treemap` module, and a module that holds the Highcharts
+ * color axis: `highcharts/modules/heatmap` or `highcharts/modules/coloraxis`. Without a color
+ * axis, every node draws in one default color - see {@link TreeMapModel}.
+ *
  * @see TreeMapModel
  */
 export const [TreeMap, treeMap] = hoistCmp.withFactory<TreeMapProps>({
@@ -52,6 +56,7 @@ export const [TreeMap, treeMap] = hoistCmp.withFactory<TreeMapProps>({
             );
             return 'Highcharts not available';
         }
+        warnIfNoColorAxis();
 
         const impl = useLocalModel(TreeMapLocalModel);
         ref = useComposedRefs(
@@ -67,16 +72,16 @@ export const [TreeMap, treeMap] = hoistCmp.withFactory<TreeMapProps>({
             layoutProps.flex = 1;
         }
 
-        // Render child item - note this will NOT render the actual HighCharts viz - only a shell
+        // Render children - note this will NOT render the actual HighCharts viz - only a shell
         // div to hold one. The chart itself will be rendered once the shell's ref resolves.
         const {error, empty, emptyText, isMasking} = model;
-        let items;
+        let children;
         if (error) {
-            items = errorMessage({error});
+            children = errorMessage({error});
         } else if (empty) {
-            items = placeholder(emptyText);
+            children = placeholder(emptyText);
         } else {
-            items = [
+            children = [
                 div({
                     className: 'xh-treemap__chart-holder',
                     ref: impl.chartRef
@@ -84,7 +89,7 @@ export const [TreeMap, treeMap] = hoistCmp.withFactory<TreeMapProps>({
                 div({
                     omit: !isMasking,
                     className: 'xh-treemap__mask-holder',
-                    item: mask({isDisplayed: true, spinner: true})
+                    children: mask({isDisplayed: true, spinner: true})
                 })
             ];
         }
@@ -94,10 +99,28 @@ export const [TreeMap, treeMap] = hoistCmp.withFactory<TreeMapProps>({
             className: classNames(className, `xh-treemap--${impl.theme}`),
             ref,
             testId,
-            items
+            children
         });
     }
 });
+
+/**
+ * The treemap module does not hold the Highcharts color axis. Without one, Highcharts ignores the
+ * `colorAxis` config and each node's `colorValue`, with no error, so say so once. This applies to
+ * every color mode: the neutral color of `none` is a stop on the color axis too.
+ */
+let warnedNoColorAxis = false;
+function warnIfNoColorAxis() {
+    if (warnedNoColorAxis || Highcharts.ColorAxis) return;
+    warnedNoColorAxis = true;
+    logWarn(
+        `Highcharts has no color axis, so TreeMap cannot apply its colors - every node draws ` +
+            `in one default color. Import 'highcharts/modules/heatmap' (or ` +
+            `'highcharts/modules/coloraxis') before 'highcharts/modules/treemap' in ` +
+            `Bootstrap.ts. See Toolbox for an example.`,
+        TreeMap
+    );
+}
 
 class TreeMapLocalModel extends HoistModel {
     override xhImpl = true;

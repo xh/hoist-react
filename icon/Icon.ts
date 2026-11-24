@@ -548,6 +548,9 @@ export const iconFactories = {
     gridPanel(p?: IconProps) {
         return Icon.icon({...p, faName: 'table'});
     },
+    gridPivot(p?: IconProps) {
+        return Icon.icon({...p, faName: 'table-pivot'});
+    },
     grip(p?: IconProps) {
         return Icon.icon({...p, faName: 'grip-horizontal'});
     },
@@ -622,6 +625,12 @@ export const iconFactories = {
     },
     magnifyingGlass(p?: IconProps) {
         return Icon.icon({...p, faName: 'magnifying-glass'});
+    },
+    magnifyingGlassMinus(p?: IconProps) {
+        return Icon.icon({...p, faName: 'magnifying-glass-minus'});
+    },
+    magnifyingGlassPlus(p?: IconProps) {
+        return Icon.icon({...p, faName: 'magnifying-glass-plus'});
     },
     mail(p?: IconProps) {
         return Icon.icon({...p, faName: 'envelope'});
@@ -730,6 +739,9 @@ export const iconFactories = {
     },
     roles(p?: IconProps) {
         return Icon.icon({...p, faName: 'user-shield'});
+    },
+    rotateRight(p?: IconProps) {
+        return Icon.icon({...p, faName: 'rotate-right'});
     },
     server(p?: IconProps) {
         return Icon.icon({...p, faName: 'server'});
@@ -959,6 +971,18 @@ export const aliasFactories = {
     instrument(p?: IconProps) {
         return Icon.fileCertificate(p);
     },
+    intentDanger(p?: IconProps) {
+        return Icon.danger(p);
+    },
+    intentPrimary(p?: IconProps) {
+        return Icon.info(p);
+    },
+    intentSuccess(p?: IconProps) {
+        return Icon.success(p);
+    },
+    intentWarning(p?: IconProps) {
+        return Icon.warning(p);
+    },
     menu(p?: IconProps) {
         return Icon.bars(p);
     },
@@ -1012,7 +1036,24 @@ export const aliasFactories = {
     },
     upload(p?: IconProps) {
         return Icon.arrowUpFromBracket(p);
+    },
+    zoomIn(p?: IconProps) {
+        return Icon.magnifyingGlassPlus(p);
+    },
+    zoomOut(p?: IconProps) {
+        return Icon.magnifyingGlassMinus(p);
     }
+};
+
+/**
+ * Name of the icon that stands for each intent, resolved by {@link Icon.forIntent} when called.
+ * Each defaults to the general icon of the same concept, such as `warning`.
+ */
+const INTENT_ICON_NAMES: Record<Intent, string> = {
+    primary: 'intentPrimary',
+    success: 'intentSuccess',
+    warning: 'intentWarning',
+    danger: 'intentDanger'
 };
 
 /**
@@ -1102,6 +1143,19 @@ export const Icon = {
      */
     register(config: IconRegistrationConfig): IconFactory {
         return iconCatalog.register(config);
+    },
+
+    /**
+     * Render the standard icon for an intent, from the `intentPrimary`, `intentSuccess`,
+     * `intentWarning` and `intentDanger` aliases. Returns null for no intent. Hoist components
+     * that show an intent with an icon, such as `Banner` and `Callout`, use this.
+     *
+     * Each alias renders the general icon of its concept - `info`, `success`, `warning` and
+     * `danger` - so replacing one of those via {@link Icon.register} also changes its intent.
+     * Replace an `intent*` alias to change the icon for the intent alone.
+     */
+    forIntent(intent: Intent, props?: IconProps): any {
+        return intent ? Icon.get(INTENT_ICON_NAMES[intent], props) : null;
     },
 
     /** Register multiple custom icons - see {@link Icon.register}. */

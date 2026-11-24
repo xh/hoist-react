@@ -8,7 +8,7 @@
     border-bottom: var(--xh-border-solid);
     flex: none;
     font-family: var(--xh-panel-title-font-family);
-    padding: var(--xh-title-pad-px);
+    padding: var(--xh-title-padding);
     user-select: none;
 
     &__title {
@@ -16,7 +16,8 @@
       overflow: hidden;
       white-space: nowrap;
       text-overflow: ellipsis;
-      font-size: var(--xh-panel-title-font-size-px);
+      font-size: var(--xh-panel-title-font-size);
+      font-weight: var(--xh-panel-title-font-weight);
     }
 
     & > .xh-icon {
@@ -28,16 +29,49 @@
     .xh-button--minimal:active {
       color: var(--xh-panel-title-text-color) !important;
     }
+
+    // Intent - solid intent background, with white title, icon, and header tools.
+    // Overrides the title vars read by the rules above, so all parts of the header follow.
+    &--intent {
+      --xh-panel-title-text-color: var(--xh-panel-title-intent-text-color);
+
+      .xh-button--minimal,
+      .xh-button--outlined {
+        color: var(--xh-panel-title-text-color) !important;
+        border-color: var(--xh-panel-title-text-color) !important;
+        background-color: transparent !important;
+
+        .xh-icon {
+          color: var(--xh-panel-title-text-color) !important;
+        }
+
+        &.xh-button--enabled:hover {
+          background-color: var(--xh-panel-title-intent-button-hover-bg) !important;
+        }
+
+        &.xh-button--enabled:active,
+        &.xh-button--active,
+        &.bp6-active {
+          background-color: var(--xh-panel-title-intent-button-active-bg) !important;
+        }
+      }
+    }
+
+    @each $intent in (primary, success, warning, danger) {
+      &--intent-#{$intent} {
+        --xh-panel-title-bg: var(--xh-intent-#{$intent});
+      }
+    }
   }
 }
 
 // Separate banners from the panel contents they sit above or below.
 .xh-panel__banner {
   &--top {
-    border-bottom: 1px solid var(--xh-tbar-border-color);
+    border-bottom: 1px solid var(--xh-toolbar-border-color);
   }
 
   &--bottom {
-    border-top: 1px solid var(--xh-tbar-border-color);
+    border-top: 1px solid var(--xh-toolbar-border-color);
   }
 }

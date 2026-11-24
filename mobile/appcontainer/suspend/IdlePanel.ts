@@ -21,6 +21,7 @@ import idleImage from './IdlePanelImage.png';
  */
 export const idlePanel = hoistCmp.factory({
     displayName: 'IdlePanel',
+    model: false,
 
     render({onReactivate}) {
         return panel({
@@ -28,21 +29,21 @@ export const idlePanel = hoistCmp.factory({
             testId: 'xh-idle-panel',
             title: `${XH.clientAppName} is sleeping`,
             icon: Icon.moon(),
-            items: [
+            children: [
                 img({src: idleImage}),
                 vframe({
                     className: 'xh-idle-panel__content',
-                    items: [
+                    children: [
                         div({
                             className: 'xh-idle-panel__text-container',
-                            items: [
+                            children: [
                                 p('This application is sleeping due to inactivity.'),
                                 p('Please click below to reload it.')
                             ]
                         }),
                         div({
                             className: 'xh-idle-panel__button-container',
-                            item: button({
+                            children: button({
                                 text: "I'm back!",
                                 flex: 1,
                                 testId: 'xh-idle-reactivate-btn',

@@ -25,6 +25,7 @@ kit/
 ├── blueprint/            # Blueprint 6 wrappers, element factories, disabled transitions
 ├── golden-layout/        # GoldenLayout v1.5.9 with React 18 patches
 ├── highcharts/           # Highcharts install function with default config
+├── pdfjs/                # Lazy loader for pdf.js (optional peer dependency)
 ├── react-beautiful-dnd/  # Drag-and-drop re-exports with element factories
 ├── react-day-picker/     # Calendar for desktop and mobile DateInput, with shared theme
 ├── react-dropzone/       # File drop zone re-export
@@ -52,7 +53,7 @@ import {version} from 'ag-grid-community/package.json';
 installAgGrid(AgGridReact, version);
 ```
 
-**Version constraints:** Hoist requires ag-Grid **34.2.0 – 34.\*.\***. Attempting to install an
+**Version constraints:** Hoist requires ag-Grid **36.3.0 – 36.\*.\***. Attempting to install an
 out-of-range version will log an error and leave ag-Grid unavailable.
 
 Kit also re-exports key ag-Grid types (e.g. `GridOptions`, `GridApi`, `ColDef`) and select hooks
@@ -133,6 +134,7 @@ with several patches applied directly to GoldenLayout's internal classes:
 
 | Library | Kit Sub-package | Used By | Purpose |
 |---------|-----------------|---------|---------|
+| pdf.js (`pdfjs-dist`) | `pdfjs/` | PdfViewer | Loaded on first use. Optional peer - apps add it to opt in. See [`/cmp/pdfviewer/`](../cmp/pdfviewer/README.md) |
 | react-beautiful-dnd | `react-beautiful-dnd/` | DashCanvas widget reordering | Drag-and-drop with `DragDropContext`, `Droppable`, `Draggable` |
 | react-day-picker | `react-day-picker/` | Desktop and mobile DateInput | `DayPicker` calendar (v10) and the stylesheet that themes it for both platforms |
 | react-dropzone | `react-dropzone/` | FileChooser | File drop zone via `Dropzone` component |
@@ -151,7 +153,7 @@ import {installHighcharts} from '@xh/hoist/kit/highcharts';
 import {AgGridReact} from 'ag-grid-react';
 import Highcharts from 'highcharts/highstock';
 
-installAgGrid(AgGridReact, '34.2.1');
+installAgGrid(AgGridReact, '36.3.0');
 installHighcharts(Highcharts);
 ```
 

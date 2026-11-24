@@ -5,14 +5,14 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
-import {useContext, useEffect, useState} from 'react';
+import type {ReactNode} from 'react';
+import {use, useContext, useEffect, useState} from 'react';
 import {throwIf} from '@xh/hoist/utils/js';
 import type {HoistModel, HoistModelClass, ModelSelector, ModelLookup} from './';
 import {ModelLookupContext, formatSelector, RefreshContextModel} from './';
 
 import {XH} from '../';
 import {untracked} from '@xh/hoist/mobx';
-import {useOnUnmount} from '@xh/hoist/utils/react';
 import {each, isUndefined} from 'lodash';
 
 /**
@@ -38,11 +38,10 @@ export function useLocalModel<T extends HoistModel>(spec?: HoistModelClass<T> | 
             return s.isHoistModel ? new s() : s.call();
         })
     );
-    const {modelLookup, props} = localModelContext;
+    const {props, modelLookup} = localModelContext;
     throwIf(
-        !modelLookup || !props,
-        'Cannot use useLocalModel() in this render method. ' +
-            'Please ensure that this is a HoistComponent and that its `model` spec is not falsy.'
+        !props,
+        'Cannot use useLocalModel() in this render method. Please ensure that this is a HoistComponent.'
     );
     useModelLinker(ret, modelLookup, props);
     return ret;
@@ -87,35 +86,72 @@ export function useModelLinker(model: HoistModel, modelLookup: ModelLookup, prop
         untracked(() => model.onLinked());
     }
 
-    // 2) Linking async work: call afterLinked(), and wire up loadSupport
+    // 2) Linking async work: call afterLinked(), wire up loadSupport, and clean up on unmount
+    useModelLifecycle(model, isLinking, modelLookup);
+
+    // 3) Subsequent renders: update props (async to avoid triggering synchronous state changes)
+    useUpdateProps(model, isLinking, props);
+}
+
+/**
+ * Run a HoistComponent's render with the context for useLocalModel() set.
+ * @param modelLookup - the component's own lookup, or null to inherit one from context.
+ * @internal
+ */
+export function withLocalModelContext(
+    props: object,
+    modelLookup: ModelLookup,
+    fn: () => ReactNode
+): ReactNode {
+    const ctx = localModelContext;
+    try {
+        ctx.props = props;
+        ctx.lookup = modelLookup;
+        return fn();
+    } finally {
+        ctx.props = null;
+        ctx.lookup = null;
+    }
+}
+
+//------------------
+// Implementation
+//------------------
+
+// Context for useLocalModel(), set by withLocalModelContext() while a HoistComponent renders.
+const localModelContext = {
+    props: null as object,
+    lookup: null as ModelLookup,
+
+    // A provided lookup, or one lazily looked up
+    get modelLookup(): ModelLookup {
+        return (this.lookup ??= use(ModelLookupContext));
+    }
+};
+
+// Separate from useModelLinker, so the long-lived cleanup closure never shares a scope with props.
+function useModelLifecycle(model: HoistModel, isLinking: boolean, modelLookup: ModelLookup) {
     useEffect(() => {
+        let refreshContext: RefreshContextModel = null;
         if (isLinking) {
             model.afterLinked();
             if (model.loadSupport) {
                 model.loadAsync();
-                const refreshContext = modelLookup?.lookupModel(
+                refreshContext = modelLookup?.lookupModel(
                     RefreshContextModel
                 ) as RefreshContextModel;
-                if (refreshContext) {
-                    refreshContext.register(model);
-                    return () => refreshContext.unregister(model);
-                }
+                refreshContext?.register(model);
             }
         }
+        return () => {
+            refreshContext?.unregister(model);
+            XH.safeDestroy(model);
+        };
     }, []);
+}
 
-    // 3) Subsequent renders: update props (async to avoid triggering synchronous state changes)
+function useUpdateProps(model: HoistModel, isLinking: boolean, props: object) {
     useEffect(() => {
         if (!isLinking) model?.setComponentProps(props);
     }, [props]);
-
-    // 4) Destroy on unmount
-    useOnUnmount(() => XH.safeDestroy(model));
 }
-
-/**
- * Default Context for useLocalModel.
- * Set by HoistComponent during render to minimize app boilerplate required.
- * @internal
- */
-export const localModelContext = {modelLookup: null, props: null};

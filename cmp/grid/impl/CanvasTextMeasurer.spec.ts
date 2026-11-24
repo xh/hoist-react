@@ -4,7 +4,7 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {afterEach, describe, expect, it, vi} from 'vitest';
+import {afterEach, describe, expect, it, onTestFinished, vi} from 'vitest';
 import {CanvasTextMeasurer} from './CanvasTextMeasurer';
 
 /**
@@ -87,6 +87,9 @@ function createMeasurer(font: {fontSize?: string; fontFamily?: string} = {}) {
 
     const fontEl = document.createElement('div');
     Object.assign(fontEl.style, font);
+    // Computed styles are empty for an element outside the document.
+    document.body.append(fontEl);
+    onTestFinished(() => fontEl.remove());
     const measurer = new CanvasTextMeasurer(fontEl);
 
     // Create the context now, so a test can assert on its font before measuring.

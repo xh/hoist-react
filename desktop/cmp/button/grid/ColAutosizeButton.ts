@@ -5,7 +5,8 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import type {GridAutosizeOptions} from '@xh/hoist/cmp/grid';
-import {GridModel} from '@xh/hoist/cmp/grid';
+import type {GridLikeModel} from '@xh/hoist/cmp/grid';
+import {isGridLikeModel} from '@xh/hoist/cmp/grid/impl/GridLikeModel';
 import {hoistCmp, useContextModel} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
@@ -14,8 +15,11 @@ import type {ButtonProps} from '../Button';
 import {button} from '../Button';
 
 export interface ColAutosizeButtonProps extends ButtonProps {
-    /** GridModel to which this button should bind. Will find nearest in context if not provided. */
-    gridModel?: GridModel;
+    /**
+     * GridModel, or a model wrapping one, to which this button should bind. Will find the
+     * nearest in context if not provided.
+     */
+    gridModel?: GridLikeModel;
 
     /** Options for the grid autosize. */
     autosizeOptions?: Omit<GridAutosizeOptions, 'mode'>;
@@ -30,10 +34,22 @@ export const [ColAutosizeButton, colAutosizeButton] = hoistCmp.withFactory<ColAu
     model: false,
 
     render(
-        {className, icon, title, onClick, gridModel, disabled, autosizeOptions = {}, ...rest},
+        {
+            className,
+            icon,
+            title,
+            onClick,
+            gridModel: boundModel,
+            disabled,
+            autosizeOptions = {},
+            ...rest
+        },
         ref
     ) {
-        gridModel = withDefault(gridModel, useContextModel(GridModel));
+        const gridModel = withDefault(
+            boundModel,
+            useContextModel<GridLikeModel>(isGridLikeModel)
+        )?.innerGridModel;
 
         // Validate bound model available and suitable for use.
         if (!gridModel) {

@@ -60,6 +60,7 @@ export class MemoryMonitorModel extends BaseInstanceModel {
             .span('takeSnapshot')
             .fetchJson({
                 url: 'memoryMonitorAdmin/takeSnapshot',
+                method: 'POST',
                 params: {instance: this.instanceName}
             })
             .linkTo(this.loadObserver)
@@ -76,6 +77,7 @@ export class MemoryMonitorModel extends BaseInstanceModel {
             .linkTo(this.loadObserver)
             .fetchJson({
                 url: 'memoryMonitorAdmin/requestGc',
+                method: 'POST',
                 params: {instance: this.instanceName}
             })
             .then(async () => {
@@ -103,6 +105,7 @@ export class MemoryMonitorModel extends BaseInstanceModel {
             .linkTo(this.loadObserver)
             .fetchJson({
                 url: 'memoryMonitorAdmin/dumpHeap',
+                method: 'POST',
                 params: {
                     instance: this.instanceName,
                     filename

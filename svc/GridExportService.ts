@@ -245,7 +245,7 @@ export class GridExportService extends HoistService {
             message: span(
                 'Export failed ',
                 a({
-                    item: '(show details...)',
+                    children: '(show details...)',
                     onClick: () => {
                         failToast?.dismiss();
                         XH.exceptionHandler.showExceptionDetails(e);

@@ -123,7 +123,8 @@ export interface ColumnSpec {
 
     /**
      * User-facing text/element displayed in the Column header, or a function to produce the same.
-     * Defaulted from `displayName`.
+     * Defaulted from the field's `shortDisplayName` unless this Column sets its own `displayName`,
+     * then from `displayName`.
      */
     headerName?: ColumnHeaderNameFn | ReactNode;
 
@@ -676,6 +677,7 @@ export class Column {
         this.description = description ?? this.fieldSpec?.description;
 
         // In contrast, headerName supports a null or '' value when no header label is desired.
+        // GridModel may have defaulted it from the field's `shortDisplayName` already.
         this.headerName = withDefault(headerName, this.displayName);
 
         this.headerTooltip = withDefault(headerTooltip, this.description);
@@ -1049,7 +1051,7 @@ export class Column {
             ret = isNil(ret) || isValidElement(ret) ? ret : toString(ret);
 
             // Add wrapping span for styling purposes
-            return span({className: 'xh-cell-inner-wrapper', item: ret});
+            return span({className: 'xh-cell-inner-wrapper', children: ret});
         };
     }
 
@@ -1150,15 +1152,15 @@ export class Column {
                 return () => container?.classList.remove(...xhToolTipClassNames);
             }, [isCustom, validationCount, location]);
 
-            if (location === 'header') return div({ref: wrapperRef, item: this.headerTooltip});
+            if (location === 'header') return div({ref: wrapperRef, children: this.headerTooltip});
             if (!hasRecord) return div();
 
             // Validation messages supersede the column's own tooltip - resolved above.
             if (validationMessages) {
                 return div({
                     ref: wrapperRef,
-                    item: ul({
-                        items: validationMessages.map((it, idx) => li({key: idx, item: it}))
+                    children: ul({
+                        children: validationMessages.map((it, idx) => li({key: idx, children: it}))
                     })
                 });
             }
@@ -1168,7 +1170,7 @@ export class Column {
 
             return div({
                 ref: wrapperRef,
-                item: (isElement ? ret : toString(ret)) as any
+                children: (isElement ? ret : toString(ret)) as any
             });
         };
     }

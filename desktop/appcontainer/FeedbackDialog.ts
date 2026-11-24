@@ -29,7 +29,7 @@ export const feedbackDialog = hoistCmp.factory({
             isOpen: true,
             onClose: () => model.hide(),
             canOutsideClickClose: false,
-            items: [
+            children: [
                 textArea({
                     placeholder: 'Please enter your comments...',
                     width: null,

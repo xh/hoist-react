@@ -83,6 +83,11 @@ jobs:
         - name: Install dependencies
           run: pnpm install --frozen-lockfile
 
+        # Build the Hoist Docs index with the newest builder release in package.json's range, not
+        # the one the lockfile recorded, so builder fixes reach every published build.
+        - name: Update the Hoist Docs builder
+          run: pnpm update @xh/hoist-docs-builder --no-save
+
         - name: Lint
           run: pnpm lint:all
 
@@ -93,9 +98,13 @@ jobs:
           id: snapshot
           # Pinned to commit SHA of xh/hoist-dev-utils master at time of pinning.
           # Bumped by Dependabot when newer versions of the action are released.
-          uses: xh/hoist-dev-utils/.github/actions/prepare-npm-snapshot-version@c65099c640ff360d0e7b068de6a3417421be9264 # master
+          uses: xh/hoist-dev-utils/.github/actions/prepare-npm-snapshot-version@3e286bdc09b126ef9b51a34415a73cc44ed5374d # master
           with:
               version: ${{ inputs.version }}
+
+        # List the unreleased changelog fragments in the published CHANGELOG.md. Not committed.
+        - name: Add unreleased changelog entries
+          run: pnpm changelog snapshot
 
         # `--no-git-checks` disables pnpm's own publish guards, which do not fit this workflow:
         # snapshots publish from develop rather than pnpm's expected master/main (which prompts

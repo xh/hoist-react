@@ -16,113 +16,34 @@ as `@xh/hoist` and consumed by Hoist application projects. The server-side count
 
 ## Hoist Developer Tools and Documentation
 
-**IMPORTANT: Do not guess at hoist-react APIs, component props, or framework patterns.** Hoist-react
-ships dedicated tools that provide structured access to all framework documentation and TypeScript
-type information. **You MUST use these tools before modifying or extending hoist-react code** to
-understand existing architecture, configuration patterns, and common pitfalls. The package READMEs
-and concept docs are the authoritative reference for how Hoist works -- skipping them risks producing
-code that conflicts with established patterns or misses built-in functionality.
+**IMPORTANT: Do not guess at hoist-react APIs, component props, or framework patterns.** The
+package READMEs and concept docs are the authoritative reference for how Hoist works - skipping them
+risks producing code that conflicts with established patterns or misses built-in functionality.
 
-Two interfaces are available. Both share the same underlying registries and produce identical output:
+**Hoist Docs MCP server (`hoist-docs`)** - [Hoist Docs](https://github.com/xh/hoist-docs) serves
+hoist-react and hoist-core documentation and API reference over MCP. `.mcp.json` runs it locally
+over stdio (`npx @xh/hoist-docs`); in this checkout it serves both libraries' `develop` indexes.
+Use `hoist-search-docs`, `hoist-list-docs`, `hoist-read-doc`, `hoist-search-symbols`,
+`hoist-get-symbol`, and `hoist-get-members`, plus `hoist://docs/{id}` resources. To serve this
+checkout's current state instead, build indexes in a hoist-docs checkout (`pnpm build:react --root
+../hoist-react`) and set `HOIST_DOCS_INDEX_DIR` to its `indexes` directory.
 
-**MCP Server (hoist-react)** -- When working in the hoist-react repository, an MCP server is
-configured via `.mcp.json` and is very likely already available. Use the `hoist-search-docs`,
-`hoist-list-docs`, `hoist-read-doc`, `hoist-search-symbols`, `hoist-get-symbol`, and
-`hoist-get-members` tools, plus `hoist://docs/{id}` resources for direct document access.
+**Without the server**, read the docs directly: start at [`docs/README.md`](docs/README.md), whose
+"Quick Reference by Task" table maps goals to the right README or concept doc, then read the
+TypeScript source for exact signatures.
 
-**CLI Tools** -- For environments without MCP support, or when you prefer shell commands. These are
-real `bin` entries in the hoist-react `package.json` — invoke them exactly as shown with `npx`:
+**Using the tools:** for how-to and concept questions start with `hoist-search-docs` and read one
+returned section with `hoist-read-doc {id, section}`. For exact names and signatures start with
+`hoist-search-symbols` - one strong keyword, ideally an API name (`GridModel`, `persistWith`,
+`headerName`); camelCase names match their parts. Then `hoist-get-symbol` gives the import line,
+signature, docs, and a member summary, and `hoist-get-members` with `filter` gives member docs.
+Prefer the package barrel import path when one is shown. `impl/` and `admin/` code is excluded
+unless you pass `includeInternal: true`.
 
-```bash
-# Documentation
-npx hoist-docs search "grid sorting"         # Search all docs - returns ranked sections
-npx hoist-docs read cmp/grid                 # Read a specific doc by ID
-npx hoist-docs read cmp/grid --outline       # List a doc's sections with token counts
-npx hoist-docs read cmp/grid -s "Sorting"    # Read one section (cheaper than the whole doc)
-npx hoist-docs list                          # List all available docs
-npx hoist-docs conventions                   # Print coding conventions
-npx hoist-docs index                         # Print the documentation catalog
+### GitHub
 
-# TypeScript symbols and types
-npx hoist-ts search GridModel                # Ranked search: symbols and members, one line each
-npx hoist-ts search headerName               # Find which class or config owns a property
-npx hoist-ts symbol GridModel                # Import line, signature, docs, member summary
-npx hoist-ts members GridModel --filter col  # Members whose name contains "col", with docs
-```
-
-**Use `search` for discovery** - one strong keyword works best, ideally an API name
-(`GridModel`, `persistWith`, `headerName`); camelCase names match their parts. Multi-word
-queries rank hits by how many terms they match, so extra words narrow rather than exclude
-(`"StoreRecord raw"` finds `StoreRecord.raw`, `"panel modal"` finds `ModalSupportModel`). Every
-hit carries its import path: the package barrel when one exists, otherwise the file. Prefer the
-barrel path when shown. Members of every exported class and every `*Config`, `*Spec`, and
-`*Options` interface are searched too, so `"groupSortFn"` reaches both `GridModel` and
-`GridConfig`; `*Props` members appear when the query names the component. `impl/` and `admin/`
-code is excluded unless you pass `--include-internal`.
-Use `symbol` when you know the exact name - for classes and interfaces it includes a member
-summary, usually enough to write the code - and `members` with `--filter` for member docs. When
-multiple symbols share a name (e.g. `View` exists in both `cmp/viewmanager` and `data/cube`),
-pass the file path with `--file` to disambiguate - the tools will hint when this is needed. Run
-`npx hoist-docs --help` and `npx hoist-ts --help` for full usage.
-
-**Recommended workflow:** Start with the documentation index (`hoist-docs index` or `hoist://docs/index`)
-to discover available docs. Use the "Quick Reference by Task" table to find the right doc for your
-goal, then read the relevant README(s). Supplement with TypeScript symbol lookups for precise API
-details. The docs provide architectural context and common pitfalls; the TypeScript tools provide
-exact signatures, decorators, and member listings.
-
-### GitHub MCP Server (opt-in)
-
-A Docker-based server providing GitHub API tools (issues, PRs, code search, etc.) via the
-official `github-mcp-server` image. Configured in `.mcp.json` but **not enabled by default** —
-it requires Docker and an authenticated GitHub CLI, which not every developer keeps running.
-
-**To enable:**
-
-1. Install and start **Docker**.
-2. Install the **GitHub CLI** (`brew install gh`) and authenticate with `gh auth login`. The
-   server invokes `gh auth token` at startup to fetch a token from the macOS Keychain (or
-   `gh`'s credential store on other platforms), so no plaintext token needs to live in your
-   shell environment.
-3. Add `"github"` to `enabledMcpjsonServers` in `.claude/settings.local.json` (local settings
-   merge with the shared `settings.json` — enabling locally does not affect other developers):
-   ```json
-   {
-     "enabledMcpjsonServers": ["hoist-react", "github"]
-   }
-   ```
-
-If Docker is not running or `gh` is not authenticated when the server is enabled, Claude Code
-may show errors on startup — remove `"github"` from your local settings to resolve.
-
-**Fallback when not enabled:** The `gh` CLI provides functionally equivalent access to the same
-operations (`gh pr view`, `gh issue list`, `gh api`, `gh pr create`, etc.). Prefer `gh` over
-crafting raw `curl` calls to the GitHub API.
-
-### JetBrains IntelliJ MCP Server (`idea`)
-
-IntelliJ registers its own MCP server in `.mcp.json` under the name `idea`, providing tools for
-interacting with the IDE (file navigation, code inspections, refactoring, terminal commands, etc.).
-It requires a running IDE instance with the MCP server enabled in IntelliJ's settings.
-
-**Not enabled by default** - the server fails to connect when no IDE is running, which shows as a
-startup error. Add `"idea"` to `enabledMcpjsonServers` in `.claude/settings.local.json` to enable it
-for yourself (local settings merge with the shared `settings.json`):
-
-```json
-{
-  "enabledMcpjsonServers": ["hoist-react", "idea"]
-}
-```
-
-A read-only subset of its tools (search, read, symbol lookup, inspections) is pre-approved in the
-shared permissions allowlist, so no extra local config is needed once the server is on. Write and
-execute tools - `apply_patch`, `execute_terminal_command`, `execute_sql_query`, the `xdebug_*`
-family - are deliberately left out and still prompt.
-
-IntelliJ rewrites its own entry in `.mcp.json` on startup. Take its changes rather than reverting
-them, or it will keep prompting. Note that it hardcodes the default port `64342`, so a second IDE
-instance on another port needs a local override.
+Use the GitHub CLI (`gh`) for GitHub operations: `gh pr view`, `gh issue list`, `gh pr create`,
+and `gh api` for anything else. Prefer it over raw `curl` calls to the GitHub API.
 
 ### Chrome DevTools MCP Server (`chrome-devtools`)
 
@@ -148,22 +69,27 @@ profile. To check that the port is open, run `curl -s http://127.0.0.1:9222/json
 
 ```json
 {
-  "enabledMcpjsonServers": ["hoist-react", "chrome-devtools"]
+  "enabledMcpjsonServers": ["hoist-docs", "chrome-devtools"]
 }
 ```
 
 ### hoist-ai plugin (`xh@hoist-ai`)
 
 The shared `.claude/settings.json` enables XH's `xh@hoist-ai` plugin, the same plugin that Hoist
-applications install. Claude Code offers to install it on your first session here. Three of its
-skills apply in this repo:
+applications use. Enabling it does not install it. Each developer should install it once per
+machine at user scope, which covers every repo and worktree and auto-updates. If no `xh:` skills
+appear in your available skills, tell the developer the plugin is missing and give them the
+command `claude plugin install xh@hoist-ai --scope user`. Offer to run it for them.
+
+Three of its skills apply in this repo:
 
 - `xh:clear-writing` - house style for CHANGELOG entries, PR descriptions, docs, and comments.
   Prose written here follows its rules. Lint a draft with its script before you commit it.
 - `xh:setup-worktree` - provisions a runnable worktree. It knows this repo has no `client-app/`.
-- `xh:using-hoist-react-reference` - routes Hoist API questions to the MCP and CLI tools above.
-  It restates what this file already says, so it adds little here. It is the skill that app
-  developers rely on, and this repo is where changes to its tools land first, so keep it enabled.
+- `xh:using-hoist-react-reference` - routes Hoist API questions to the MCP tools above. It
+  restates what this file already says, so it adds little here. It is the skill that app
+  developers rely on, so keep it enabled. It still describes the stdio server and CLI tools this
+  repo used to ship, and needs updating for the Hoist Docs service.
 
 The other skills are for Hoist applications and do not apply to this library:
 
@@ -178,14 +104,12 @@ local skill change, install the plugin from that path as hoist-ai's own `CLAUDE.
 
 ```bash
 pnpm install                     # Install dependencies
-pnpm lint                        # Lint all code (library JS/TS, MCP tools, SCSS)
+pnpm lint                        # Lint all code (library JS/TS, SCSS)
 pnpm lint:code                   # Lint library JavaScript/TypeScript only
-pnpm lint:mcp                    # Lint MCP server and CLI tools (mcp/) only
 pnpm lint:styles                 # Lint SCSS only
-pnpm typecheck                   # Type check library and MCP tools
+pnpm typecheck                   # Type check library
 pnpm test                        # Run library unit tests (Vitest)
 pnpm test data/Store             # Run unit tests in spec files whose path contains "data/Store"
-pnpm test:mcp                    # Run MCP spec scripts, incl. the doc-search golden set
 ```
 
 Linting and type-checking are separate concerns, and neither subsumes the other — run both. ESLint
@@ -252,7 +176,7 @@ keeps client side codebases anchored in standard TypeScript/JavaScript syntax:
 // Element factory style - strongly preferred
 panel({
     title: 'Users',
-    items: [grid({model: gridModel})],
+    children: [grid({model: gridModel})],
     bbar: toolbar(button({text: 'Save'}))
 })
 ```
@@ -267,18 +191,17 @@ panel({
 </Panel>
 ```
 
-Factories can take a config object for props, using the key `item`/`items` for children. A shortcut
-form also exists where factories are passed children directly as arguments, when no other props
-are required. Factories all support an `omit` prop for conditional rendering.
+Factories can take a config object for props, using the standard React `children` key for
+children. In the shortcut form, factories take children directly as arguments. Use the shortcut
+form when a call passes only children - `toolbar(a, b)`, `p('text')` - and the config object form
+as soon as it passes any other prop. Never pass a factory directly as a callback (`rows.map(span)`).
+Factories all support an `omit` prop for conditional rendering.
 
-**Important — `items` in, `children` out**: `item`/`items` are Hoist's *calling* API. Inside a
-render function, those values arrive as the standard React `children` prop (because the factory
-spreads them as rest args to `React.createElement`). The canonical pattern when authoring a
-container component is therefore to destructure `children` from props and pass them downstream as
-`items` to an inner factory. See
-[Authoring a Container Component](./core/README.md#authoring-a-container-component-items-in-children-out)
-in the core README for the full explanation, examples, and the `$item`/`$items` escape hatch for
-components whose underlying API genuinely has its own `items` prop.
+`item` and `items` are legacy aliases for `children`. They still work, but do not use them in new
+code. A container component destructures `children` from props and passes it on as `children` to
+an inner factory. See
+[Authoring a Container Component](./core/README.md#authoring-a-container-component) in the core
+README for examples and the `$items` escape hatch for components with their own `items` prop.
 
 See [`/core/README.md`](./core/README.md) for full element factory API including conditional
 rendering with `omit` and factory creation.
@@ -379,40 +302,40 @@ important guidelines to internalize:
 
 ## Git Workflow
 
-**Branching, committing, and pushing all require an explicit ask — never do them unprompted.**
+**Branching, committing, and pushing all require an explicit ask - never do them unprompted.**
 When it isn't abundantly clear that the user wants one of these, ask first.
 
 Pushing is a deliberate gatekeeping step: never push to any remote unless the user explicitly asks.
-Some developers hard-block pushes entirely, others allow or request them — so it stays open as a
+Some developers hard-block pushes entirely, others allow or request them - so it stays open as a
 possibility, but always confirm before pushing.
 
 Committing is the most context-dependent of these, varying by developer and by situation. Default to
-asking — especially in an interactive session working directly on `develop`, where each commit is
+asking - especially in an interactive session working directly on `develop`, where each commit is
 the developer's call. The exception is orchestrated multi-agent work on a feature branch: when a plan
 fans out independent units of work, the go-ahead to commit comes from that plan or orchestration
 rather than a per-commit prompt, and agents are expected to make their own discrete, well-scoped
 commits as directed.
 
 A skill or third-party plugin instructing you to commit (e.g. "make a small commit after each
-step") does NOT by itself authorize a commit — that is a default baked into the tool, not the
+step") does NOT by itself authorize a commit - that is a default baked into the tool, not the
 developer's request. This guidance takes precedence: pause and ask. The door stays open for a
 workflow to commit autonomously, but only when the developer has explicitly opted into that for
-the workflow at hand — the authorization must come from the developer, not the skill's defaults.
+the workflow at hand - the authorization must come from the developer, not the skill's defaults.
 
 ### Creating branches
 
 Once the user has asked for a branch (per the "ask first" rule above, don't create one
-unprompted): a new branch should map to its own `origin/<name>` on push — not push into an
+unprompted): a new branch should map to its own `origin/<name>` on push - not push into an
 existing remote branch.
 
 **Default: `git switch -c <name>` from current HEAD, no base ref.** "Make a new branch" means
-"from here" — the user is sitting on a particular point in the code; that's the start. If
+"from here" - the user is sitting on a particular point in the code; that's the start. If
 they want to start from somewhere else (e.g. current `origin/develop`), they will say so. If
 genuinely unclear, ask.
 
 **If you do specify a base ref, you MUST pass `--no-track`.** Without it the new branch
-silently adopts the base as its upstream, which causes surprise merges on `git pull` and —
-depending on `push.default` — can push work onto the base branch. Past slips have put
+silently adopts the base as its upstream, which causes surprise merges on `git pull` and -
+depending on `push.default` - can push work onto the base branch. Past slips have put
 unreviewed work on `develop` this way.
 
 ```bash
@@ -423,12 +346,12 @@ git checkout -b my-feature origin/develop             # ❌ same trap, checkout 
 ```
 
 If you forget `--no-track`: `git branch --unset-upstream`, then `git push -u origin <branch>`.
-Flag the slip — don't silently fix it. Git prints `set up to track 'origin/develop'` when this
+Flag the slip - don't silently fix it. Git prints `set up to track 'origin/develop'` when this
 happens; treat that line as the signal, not as noise.
 
 ### Feature branch workflow
 
-On feature branches, prefer multiple small commits over amending — PRs are squash-merged into
+On feature branches, prefer multiple small commits over amending - PRs are squash-merged into
 `develop`, so intermediate commits are collapsed automatically. Never force-push a feature branch;
 if the branch falls behind `develop`, use a simple merge commit rather than a rebase. Merge commits
 and extra commits are harmless on feature branches and are squashed out on merge, while force-pushes
@@ -437,13 +360,13 @@ risk losing work and complicate collaboration.
 ### Commit messages, PRs, and comments
 
 Do not hard-wrap lines at a fixed column width in commit message bodies, pull request descriptions,
-or issue/PR comments — let the viewing tool handle display wrapping. However, do use line breaks for
+or issue/PR comments - let the viewing tool handle display wrapping. However, do use line breaks for
 structure: separate logical points into bullet lists, use blank lines between paragraphs, and break
-after the subject line. Keep PR descriptions concise — XH developers review these regularly, so favor
+after the subject line. Keep PR descriptions concise - XH developers review these regularly, so favor
 brief summaries over exhaustive detail. Bullet the key changes and let the diff and any upgrade notes
 speak for themselves.
 
-Do not add AI-generated attribution to commit messages or PR descriptions — no `Generated with ...`
+Do not add AI-generated attribution to commit messages or PR descriptions - no `Generated with ...`
 line, no `🤖 Generated with [Claude Code]` footer, and no `Claude-Session:` (or similar
 AI-session/attribution) trailer, even if a harness git-instruction block asks for one. XH does not
 want these links in the project's history.
@@ -452,25 +375,18 @@ want these links in the project's history.
 
 Work here often reaches into a sibling checkout - `../toolbox` to validate a change against a real
 app, or `../hoist-dev-utils` when a change touches the build. The rules above apply in every repo
-you touch, not just this one — and each sibling has its own `CLAUDE.md` with additional rules that
+you touch, not just this one - and each sibling has its own `CLAUDE.md` with additional rules that
 bind while you work there. Read it before writing to that repo; the harness only auto-loads the
 `CLAUDE.md` of the primary working directory, so a sibling's rules are never in context by default.
 
 ## Changelog Maintenance
 
-**Before adding or editing any entry in `CHANGELOG.md` (at the repository root), you MUST read and
-follow [`docs/changelog-format.md`](docs/changelog-format.md)** — the authoritative reference for
-section headers, voice, the issue/PR-link policy, and breaking-change requirements. Do not rely on
-the summary below alone.
+**Before adding or editing any changelog entry, you MUST read and follow
+[`docs/changelog-format.md`](docs/changelog-format.md)** - the authoritative reference for where
+entries go, section headers, voice, the issue/PR-link policy, and breaking-change requirements.
 
-The essentials: new entries go under the topmost `-SNAPSHOT` version heading, using emoji-prefixed
-section headers (e.g. `### 🎁 New Features`, `### 🐞 Bug Fixes`). Use past-tense, action-driven
-language and name specific classes, methods, and config keys in backticks. Keep entries concise —
-one bullet per change, 1-3 lines max. Upgrade notes provide granular detail when needed; the
-changelog should not. Do not add GitHub issue or PR links to entries by default — include one only
-when explicitly requested or when it points to extensive context that doesn't fit the changelog's
-scope (issue/PR references belong in the commit message and PR description). Hard-wrap changelog
-entries at 100 characters (unlike commit messages and PR descriptions, which should not be wrapped).
+The essentials: new entries go in a fragment file in `changelog.d/`, never in `CHANGELOG.md`. Add
+one with `pnpm changelog add <section> "<text>"`. Run `pnpm changelog check` before you commit.
 
 **Versioning:** `develop` always holds the next major version as a snapshot, for example
 `90.0.0-SNAPSHOT` while 89.x releases ship. Minor and patch releases never move it. See
@@ -512,9 +428,15 @@ hoist-react as a dependency.
 To see a hoist-react change in a real browser, run Toolbox with this checkout compiled inline:
 
 - **Client** - `cd ../toolbox/client-app && pnpm startWithHoist` serves `http://localhost:3000`
-  and rebuilds when files here change. Reload the page after a rebuild.
+  and rebuilds when files here change. The page reloads after each rebuild.
 - **Server** - `cd ../toolbox && ./gradlew bootRun` serves the Grails API on port 8080, against
   the developer's MySQL and login by default.
+
+From a worktree of this repo, `../toolbox` does not resolve. Run both commands in the Toolbox
+checkout, and start the client with
+`XH_HOIST_REACT_PATH=<absolute path of this worktree> pnpm startWithHoist`. Without it, Toolbox
+builds the `hoist-react` checkout next to its own repo, not the worktree. The build banner shows
+the path and branch in use.
 
 Check first whether both are already running (`curl -s -o /dev/null -w '%{http_code}'
 http://localhost:3000/admin/` and the same for `:8080`). Leave servers you did not start running

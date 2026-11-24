@@ -44,7 +44,7 @@ export const formButtons = hoistCmp.factory<FormButtonsProps>({
         if (formModel.isDirty) {
             return hbox({
                 justifyContent: 'center',
-                items: [
+                children: [
                     button({
                         text: 'Save Changes',
                         icon: Icon.check(),
@@ -71,7 +71,7 @@ export const formButtons = hoistCmp.factory<FormButtonsProps>({
             : '';
         return vbox({
             style: {gap: 10, alignItems: 'center'},
-            items: [
+            children: [
                 button({
                     text: allPinned
                         ? `Unpin ${groupViews}from your Menu`

@@ -295,7 +295,7 @@ import {errorMessage} from '@xh/hoist/cmp/error';
 export const myWidget = hoistCmp.factory({
     render({model}) {
         return panel({
-            item: model.lastLoadException
+            children: model.lastLoadException
                 ? errorMessage({error: model.lastLoadException})
                 : grid(),
             bbar: toolbar(/* toolbar still renders, user can adjust filters */)
@@ -451,7 +451,7 @@ import {errorBoundary} from '@xh/hoist/cmp/error';
 
 // Wraps children -- catches React rendering lifecycle errors
 errorBoundary({
-    items: [myComponent()]
+    children: [myComponent()]
 });
 
 // With custom error handling
@@ -460,7 +460,7 @@ errorBoundary({
         errorHandler: {showAlert: false},  // ExceptionHandlerOptions
         errorRenderer: (e) => myCustomErrorDisplay(e)
     },
-    items: [myComponent()]
+    children: [myComponent()]
 });
 ```
 

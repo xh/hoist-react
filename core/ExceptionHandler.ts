@@ -162,11 +162,11 @@ export class ExceptionHandler {
             if (alertType === 'toast') {
                 XH.toast({
                     message: fragment(
-                        span({className: 'xh-toast__title', item: title, omit: !title}),
-                        span({className: 'xh-toast__body', item: message}),
+                        span({className: 'xh-toast__title', children: title, omit: !title}),
+                        span({className: 'xh-toast__body', children: message}),
                         span({
                             className: 'xh-toast__trace-id',
-                            item: `Trace ID: ${e.traceId}`,
+                            children: `Trace ID: ${e.traceId}`,
                             omit: !e.traceId || e.isRoutine
                         })
                     ),

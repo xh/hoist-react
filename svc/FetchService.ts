@@ -394,7 +394,7 @@ export class FetchService extends HoistService {
     }
 
     private async withResolvedHeadersAsync(opts: FetchOptions, span: Span): Promise<FetchOptions> {
-        const method = opts.method ?? (opts.params ? 'POST' : 'GET'),
+        const method = opts.method ?? 'GET',
             isForm = ['POST', 'PUT'].includes(method);
 
         const defaultHeaders = {};
@@ -569,7 +569,7 @@ export class FetchService extends HoistService {
     private createSpanConfig(opts: FetchOptions): SpanConfig {
         if (!XH.traceService.enabled) return null;
 
-        const method = opts.method ?? (opts.params ? 'POST' : 'GET'),
+        const method = opts.method ?? 'GET',
             fullUrl = this.buildFullUrl(opts.url),
             tags: PlainObject = {
                 'xh.source': 'hoist',
@@ -913,19 +913,14 @@ export interface FetchOptions {
     propagateTrace?: boolean;
 
     /**
-     * Parameters to encode and append as a query string, or send with the request body
-     * (for POSTs/PUTs sending form-url-encoded).
-     *
-     * If `method` is not specified, a request with params is sent as a POST, with the params in a
-     * form-url-encoded body, or on the query string if `Content-Type` is JSON. `fetch`,
-     * `fetchJson`, and `fetchNdjson` follow this rule, while `getJson`, `postJson`, `putJson`,
-     * `patchJson`, and `deleteJson` set the method themselves.
+     * Parameters to encode as a query string, or as a form-url-encoded body for a POST or PUT
+     * whose `Content-Type` is not JSON. A request with no `method` is a GET, so its params go on
+     * the query string - set `method: 'POST'` to send them in the body instead.
      */
     params?: PlainObject;
 
     /**
-     * HTTP Request method to use for the request. If not specified, the method will be set to POST
-     * if there are params, otherwise GET.
+     * HTTP Request method to use for the request. Defaults to GET, whether or not `params` are set.
      */
     method?: string;
 

@@ -114,12 +114,12 @@ const filterChooserControl = hoistCmp.factory<FilterChooserControlProps>({
             ref,
             className,
             ...layoutProps,
-            item: popover({
-                item: hframe(
+            children: popover({
+                children: hframe(
                     badge({
                         omit: !displayCount || tagCount < 1,
                         className: 'xh-filter-chooser__count',
-                        item: tagCount
+                        children: tagCount
                     }),
                     select({
                         flex: 1,
@@ -193,13 +193,13 @@ const popoverFilterChooser = hoistCmp.factory<FilterChooserProps>({
             ref,
             className: classNames(className, 'xh-filter-chooser--popover'),
             ...layoutProps,
-            item: popover({
+            children: popover({
                 isOpen: popoverIsOpen,
                 popoverClassName: 'xh-filter-chooser__popover',
                 matchTargetWidth: true,
                 minimal: true,
                 position: 'bottom',
-                item: filterChooserControl({
+                children: filterChooserControl({
                     model,
                     flex: 1,
                     className: 'xh-filter-chooser__trigger',
@@ -291,11 +291,11 @@ const fieldOption = hoistCmp.factory({
             displayOps = [...ops, 'is']; // Always include the 'is' pseudo-operator so users know to try to use it.
         return hframe({
             className: 'xh-filter-chooser-option__field',
-            items: [
-                div({className: 'prefix', item: 'e.g.'}),
-                div({className: 'name', item: displayName}),
-                div({className: 'operators', item: '[ ' + displayOps.join(', ') + ' ]'}),
-                div({className: 'example', item: example})
+            children: [
+                div({className: 'prefix', children: 'e.g.'}),
+                div({className: 'name', children: displayName}),
+                div({className: 'operators', children: '[ ' + displayOps.join(', ') + ' ]'}),
+                div({className: 'example', children: example})
             ]
         });
     }
@@ -309,7 +309,7 @@ const minimalFieldOption = hoistCmp.factory({
         const {displayName} = fieldSpec;
         return hframe({
             className: 'xh-filter-chooser-option__minimal-field',
-            item: displayName
+            children: displayName
         });
     }
 });
@@ -320,10 +320,10 @@ const filterOption = hoistCmp.factory({
     render({fieldSpec, displayOp, displayValue}) {
         return hframe({
             className: 'xh-filter-chooser-option',
-            items: [
-                div({className: 'name', item: fieldSpec.displayName}),
-                div({className: 'operator', item: displayOp}),
-                div({className: 'value', item: displayValue})
+            children: [
+                div({className: 'name', children: fieldSpec.displayName}),
+                div({className: 'operator', children: displayOp}),
+                div({className: 'value', children: displayValue})
             ]
         });
     }
@@ -335,7 +335,7 @@ const messageOption = hoistCmp.factory({
     render({label}) {
         return hframe({
             className: 'xh-filter-chooser-option__message',
-            item: label
+            children: label
         });
     }
 });
@@ -380,7 +380,10 @@ const favoritesMenu = hoistCmp.factory<FilterChooserModel>({
             })
         );
 
-        return vbox(div({className: 'xh-popup__title', item: 'Favorites'}), menu({items}));
+        return vbox(
+            div({className: 'xh-popup__title', children: 'Favorites'}),
+            menu({children: items})
+        );
     }
 });
 
@@ -404,10 +407,11 @@ const favoriteMenuItem = hoistCmp.factory<
 });
 
 const favoriteTag = hoistCmp.factory({
+    model: false,
     render({label}) {
         return div({
             className: 'xh-filter-chooser-favorite__tag',
-            item: label
+            children: label
         });
     }
 });

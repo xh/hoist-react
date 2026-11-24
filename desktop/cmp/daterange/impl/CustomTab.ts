@@ -26,10 +26,10 @@ export const customTab = hoistCmp.factory<DateRangePickerLocalModel>(({model, te
                 'xh-date-range-picker-popover__field',
                 model.nextEdge === edge && 'xh-date-range-picker-popover__field--armed'
             ),
-            items: [
+            children: [
                 div({
                     className: 'xh-date-range-picker-popover__field-label',
-                    item: edge === 'start' ? 'Start' : 'End'
+                    children: edge === 'start' ? 'Start' : 'End'
                 }),
                 dateInput({
                     value: edge === 'start' ? model.customStart : model.customEnd,
@@ -52,10 +52,10 @@ export const customTab = hoistCmp.factory<DateRangePickerLocalModel>(({model, te
 
     return vbox({
         className: 'xh-date-range-picker-popover__tab',
-        items: [
+        children: [
             hbox({
                 className: 'xh-date-range-picker-popover__custom-fields',
-                items: [
+                children: [
                     field('start'),
                     Icon.arrowRight({className: 'xh-date-range-picker-popover__field-arrow'}),
                     field('end')
@@ -63,7 +63,7 @@ export const customTab = hoistCmp.factory<DateRangePickerLocalModel>(({model, te
             }),
             hbox({
                 className: 'xh-date-range-picker-popover__cal-nav',
-                items: [
+                children: [
                     button({
                         className: 'xh-date-range-picker-popover__nav-btn',
                         icon: Icon.angleLeft(),
@@ -74,11 +74,11 @@ export const customTab = hoistCmp.factory<DateRangePickerLocalModel>(({model, te
                     }),
                     span({
                         className: 'xh-date-range-picker-popover__cal-title',
-                        item: leftMonth.format('MMMM YYYY')
+                        children: leftMonth.format('MMMM YYYY')
                     }),
                     span({
                         className: 'xh-date-range-picker-popover__cal-title',
-                        item: rightMonth.format('MMMM YYYY')
+                        children: rightMonth.format('MMMM YYYY')
                     }),
                     button({
                         className: 'xh-date-range-picker-popover__nav-btn',
@@ -92,7 +92,7 @@ export const customTab = hoistCmp.factory<DateRangePickerLocalModel>(({model, te
             }),
             hbox({
                 className: 'xh-date-range-picker-popover__cals',
-                items: [
+                children: [
                     calendarMonth({model, monthStart: leftMonth}),
                     calendarMonth({model, monthStart: rightMonth})
                 ]
@@ -112,16 +112,16 @@ const calendarMonth = hoistCmp.factory<CalendarMonthProps>(({model, monthStart})
 
     return div({
         className: 'xh-date-range-picker-popover__cal',
-        items: [
+        children: [
             div({
                 className: 'xh-date-range-picker-popover__cal-dow',
-                items: DOW_LABELS.map((it, idx) => span({key: idx, item: it}))
+                children: DOW_LABELS.map((it, idx) => span({key: idx, children: it}))
             }),
             ...buildWeeks(monthStart).map((week, wIdx) =>
                 div({
                     key: wIdx,
                     className: 'xh-date-range-picker-popover__cal-week',
-                    items: week.map((day, dIdx) => {
+                    children: week.map((day, dIdx) => {
                         if (!day) {
                             return div({
                                 key: dIdx,
@@ -140,7 +140,7 @@ const calendarMonth = hoistCmp.factory<CalendarMonthProps>(({model, monthStart})
                                 disabled && 'xh-date-range-picker-popover__cal-cell--disabled'
                             ),
                             ...dataAttrs({'data-date': day.isoString}),
-                            item: day.format('D'),
+                            children: day.format('D'),
                             ...clickable(disabled ? null : () => model.pickDay(day))
                         });
                     })

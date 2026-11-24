@@ -42,4 +42,12 @@ export class RowUpdate {
         this.oldValue = this.leafOldValue;
         this.newValue = this.leafNewValue;
     }
+
+    /** Independent copy for a second aggregation route - see {@link propagateUpdate}. */
+    clone(): RowUpdate {
+        const ret = new RowUpdate(this.field, this.leafOldData, this.leafNewData);
+        ret.oldValue = this.oldValue;
+        ret.newValue = this.newValue;
+        return ret;
+    }
 }

@@ -35,7 +35,7 @@ export function getAppModel<T extends AppModel>() {
 
 /** Muted "N/A" placeholder for empty values in read-only detail forms. */
 export function naSpan(): ReactNode {
-    return span({item: 'N/A', className: 'xh-text-color-muted'});
+    return span({children: 'N/A', className: 'xh-text-color-muted'});
 }
 
 /**
@@ -88,5 +88,5 @@ export function yesNoRenderer(v: boolean): ReactNode {
 export function markdownRenderer(v: string): ReactNode {
     return v == null
         ? naSpan()
-        : div({className: 'xh-admin-readonly-form__markdown', item: markdown({content: v})});
+        : div({className: 'xh-admin-readonly-form__markdown', children: markdown({content: v})});
 }

@@ -239,6 +239,7 @@ export class ClientsModel extends BaseAdminTabModel {
                     XH.fetchJson(
                         {
                             url: 'clientAdmin/pushToClient',
+                            method: 'POST',
                             params: {
                                 channelKey: rec.data.key,
                                 instance: rec.data.instance,

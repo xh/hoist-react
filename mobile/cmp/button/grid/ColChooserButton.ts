@@ -4,7 +4,8 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {GridModel} from '@xh/hoist/cmp/grid';
+import type {GridLikeModel} from '@xh/hoist/cmp/grid';
+import {isGridLikeModel} from '@xh/hoist/cmp/grid/impl/GridLikeModel';
 import {hoistCmp, useContextModel} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import type {ButtonProps} from '@xh/hoist/mobile/cmp/button';
@@ -13,8 +14,11 @@ import '@xh/hoist/mobile/register';
 import {logError, withDefault} from '@xh/hoist/utils/js';
 
 export interface ColChooserButtonProps extends ButtonProps {
-    /** GridModel to which this button should bind. Will find nearest in context if not provided. */
-    gridModel?: GridModel;
+    /**
+     * GridModel, or a model wrapping one, to which this button should bind. Will find the
+     * nearest in context if not provided.
+     */
+    gridModel?: GridLikeModel;
 }
 
 /**
@@ -28,8 +32,11 @@ export const [ColChooserButton, colChooserButton] = hoistCmp.withFactory<ColChoo
     className: 'xh-col-chooser-button',
     model: false,
 
-    render({className, gridModel, icon, onClick, disabled, ...props}) {
-        gridModel = withDefault(gridModel, useContextModel(GridModel));
+    render({className, gridModel: boundModel, icon, onClick, disabled, ...props}) {
+        const gridModel = withDefault(
+            boundModel,
+            useContextModel<GridLikeModel>(isGridLikeModel)
+        )?.innerGridModel;
 
         if (!onClick) {
             // Validate bound model available and suitable for use.

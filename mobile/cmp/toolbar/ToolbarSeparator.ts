@@ -20,7 +20,7 @@ export const [ToolbarSeparator, toolbarSeparator] = hoistCmp.withFactory({
     observer: false,
 
     render({className, ...props}) {
-        return span({className, ...props});
+        return span({role: 'separator', className, ...props});
     }
 });
 
