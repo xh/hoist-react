@@ -44,7 +44,7 @@ export interface ShiftByPeriodOptions {
  * `+` for a forward period: `3M`, `+5D`. Returns null for anything else, including a count out of
  * range or a lower-case unit.
  */
-export function parsePeriod(spec: unknown): Period | null {
+export function parsePeriod(spec: unknown): Period {
     if (!isString(spec)) return null;
     const match = PERIOD_RE.exec(spec);
     if (!match) return null;

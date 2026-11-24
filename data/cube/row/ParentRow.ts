@@ -226,8 +226,9 @@ export abstract class ParentRow extends BaseRow {
     refreshAggregates(fields: CubeField[]): boolean {
         let changed = false;
         fields.forEach(field => {
-            if (this.aggFieldNames.has(field.name) && this.recomputeAggregate(field))
+            if (this.aggFieldNames.has(field.name) && this.recomputeAggregate(field)) {
                 changed = true;
+            }
         });
         return changed;
     }

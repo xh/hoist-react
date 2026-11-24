@@ -160,11 +160,11 @@ export const [Chip, chip] = hoistCmp.withFactory<ChipProps>({
         return div({
             ref,
             ...divProps,
-            role: onClick ? 'button' : undefined,
-            tabIndex: clickable ? 0 : undefined,
-            'aria-pressed': onClick && active != null ? active : undefined,
-            'aria-disabled': disabled || undefined,
-            onClick: clickable ? (e: MouseEvent<HTMLDivElement>) => onClick(e) : undefined,
+            role: onClick ? 'button' : null,
+            tabIndex: clickable ? 0 : null,
+            'aria-pressed': onClick && active != null ? active : null,
+            'aria-disabled': disabled || null,
+            onClick: clickable ? (e: MouseEvent<HTMLDivElement>) => onClick(e) : null,
             onKeyDown: handleKeyDown,
             children: [
                 icon,
@@ -176,8 +176,8 @@ export const [Chip, chip] = hoistCmp.withFactory<ChipProps>({
                           className: 'xh-chip__remove',
                           'aria-label': removeLabel(children, props.title),
                           // A clickable chip is the one tab stop - Backspace or Delete remove it.
-                          'aria-hidden': clickable || undefined,
-                          tabIndex: clickable ? -1 : undefined,
+                          'aria-hidden': clickable || null,
+                          tabIndex: clickable ? -1 : null,
                           disabled,
                           onClick: handleRemoveClick,
                           children: Icon.x()

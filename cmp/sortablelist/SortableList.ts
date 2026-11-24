@@ -132,8 +132,8 @@ export interface SortableListProps<T = any> extends HoistProps<HoistModel>, BoxP
 
     /**
      * Called when a user removes an item, by its remove button or Delete or Backspace on its
-     * handle. Setting it, or `removable`, shows those controls. With `bind`, the list writes the shortened list
-     * first; otherwise apply `e.items` yourself.
+     * handle. Setting it, or `removable`, shows those controls. With `bind`, the list writes the
+     * shortened list first; otherwise apply `e.items` yourself.
      */
     onRemove?: (e: SortableRemoveEvent<T>) => void;
 
@@ -353,7 +353,7 @@ export const [SortableList, sortableList] = hoistCmp.withFactory<SortableListPro
         };
 
         const setOpenKeys = (next: SortableKey[]) => {
-            if (expandedKeys === undefined) setOwnExpandedKeys(next);
+            if (expandedKeys == null) setOwnExpandedKeys(next);
             onExpandedChange?.(next);
         };
 
@@ -778,7 +778,7 @@ const sortableItem = hoistCmp.factory<SortableItemProps>({
                           expanded && 'xh-sortable-list__expander--open'
                       ),
                       'aria-expanded': expanded,
-                      'aria-controls': expanded ? detailId : undefined,
+                      'aria-controls': expanded ? detailId : null,
                       'aria-label': `${label} details`,
                       onClick: onToggle,
                       children: Icon.chevronDown()

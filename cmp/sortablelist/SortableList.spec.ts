@@ -220,6 +220,12 @@ describe('SortableList', () => {
             expect(openRows(el)).toEqual([2]);
         });
 
+        it('keeps its own open rows when expandedKeys is null', () => {
+            const el = renderList({value: DIMS, detailRenderer: detailText, expandedKeys: null});
+            fireEvent.click(chevron(el, 1));
+            expect(openRows(el)).toEqual([1]);
+        });
+
         it('gives rows that isItemExpandable rejects no chevron and no row toggle', () => {
             const el = renderList({
                 value: DIMS,
