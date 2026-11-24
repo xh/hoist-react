@@ -861,14 +861,11 @@ export class XHApi {
 
     /**
      * Get a collection of Models currently 'active' in the app, returned in creation-time order.
-     * This will include all models that have not yet had `destroy()` called on them.
+     * This will include all models that have not yet had `destroy()` called on them and are still
+     * in memory. A model that was never destroyed drops out once it is garbage collected.
      */
     getModels<T extends HoistModel>(selector: ModelSelector = '*'): T[] {
-        const ret = [];
-        instanceManager.models.forEach(m => {
-            if (m.matchesSelector(selector, true)) ret.push(m);
-        });
-        return ret;
+        return [...instanceManager.models].filter(m => m.matchesSelector(selector, true)) as T[];
     }
 
     /** Get the first active model that matches the given selector, or null if none found. */

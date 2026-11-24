@@ -1,7 +1,8 @@
 # Changelog
 
 <!--
-  Entry conventions: docs/changelog-format.md - read it before adding entries here.
+  New entries go in a fragment in changelog.d/, not in this file. A release assembles them here.
+  Entry conventions: docs/changelog-format.md - read it before adding or editing entries.
 
   The three rules that account for most review feedback:
 
@@ -13,11 +14,6 @@
 -->
 
 ## 92.0.0-SNAPSHOT - unreleased
-
-### 🐞 Bug Fixes
-
-* Fixed `DashContainer` tabs parsing view titles as HTML, which let markup in a title - such as a
-  user's rename restored from saved or shared state - run script. Tabs now show titles as text.
 
 ## 91.0.0 - 2026-11-20
 
