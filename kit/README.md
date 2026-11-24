@@ -30,7 +30,6 @@ kit/
 ├── react-day-picker/     # Calendar for desktop and mobile DateInput, with shared theme
 ├── react-dropzone/       # File drop zone re-export
 ├── react-grid-layout/    # Grid layout re-exports with element factories and its stylesheet
-├── react-resizable-panels/ # Resizable split panes, as groups of panels and separators
 ├── react-markdown/       # Markdown renderer re-export
 ├── react-select/         # Select variants (async, creatable, windowed)
 └── swiper/               # Touch slider re-export for mobile
@@ -141,7 +140,6 @@ with several patches applied directly to GoldenLayout's internal classes:
 | react-day-picker | `react-day-picker/` | Desktop and mobile DateInput | `DayPicker` calendar (v10) and the stylesheet that themes it for both platforms |
 | react-dropzone | `react-dropzone/` | FileChooser | File drop zone via `Dropzone` component |
 | react-grid-layout | `react-grid-layout/` | DashCanvas | Draggable, resizable grid via `ReactGridLayout`, with `GridBackground` and the compactors |
-| react-resizable-panels | `react-resizable-panels/` | Blueprints split layouts | Resizable split panes via `Group`, `Panel` and `Separator`, with keyboard-resizable separators |
 | react-markdown | `react-markdown/` | Markdown display | `ReactMarkdown` component for rendering markdown content |
 | Swiper | `swiper/` | Mobile TabContainer | Touch slider with creative effect for swipeable tabs |
 

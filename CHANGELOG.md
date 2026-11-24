@@ -128,7 +128,6 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 
 ### 📚 Libraries
 
-* react-resizable-panels `added` at `4.21` - split panes, through `kit/react-resizable-panels`.
 * @dnd-kit/react, @dnd-kit/dom and @dnd-kit/abstract `added` at `0.5.3`
 * @hello-pangea/dnd `removed`
 

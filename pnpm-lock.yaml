@@ -277,9 +277,6 @@ importers:
       react-markdown:
         specifier: ~10.1.0
         version: 10.1.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1)
-      react-resizable-panels:
-        specifier: ~4.21.0
-        version: 4.21.0(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
       react-select:
         specifier: ~5.10.2
         version: 5.10.2(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)(supports-color@8.1.1)
@@ -3104,16 +3101,6 @@ packages:
   react-refresh@0.19.0:
     resolution: {integrity: sha512-5HdstYgoJBbBofjapO5qCPcovECJCBfvjLb+iTcsmqDFVMRdqy0qs7iiInBJTUXmIFc2bjoc5b2HVLp2zRtYhQ==}
     engines: {node: '>=0.10.0'}
-
-  react-resizable-panels@4.21.0:
-    resolution: {integrity: sha512-SzNEQNH/xIn3aKKLSdv48h0eu1gF1bkvozIVStow2hRmh/d9jkyoZR7dF8GUx39Wc2TAJTmfSUr4y/wwtvMoRQ==}
-    peerDependencies:
-      '@types/react': ^18.2.6 || ^19.0.0
-      react: ^18.0.0 || ^19.0.0
-      react-dom: ^18.0.0 || ^19.0.0
-    peerDependenciesMeta:
-      '@types/react':
-        optional: true
 
   react-resizable@3.2.0:
     resolution: {integrity: sha512-3NKQ0SLZV7rs3LQHeXlOzDSRQfFrkX6TVet77/Qk03zqiZyee37b7N8/gwDJAA8UUjRz7PdWCCy49hcso45SMQ==}
@@ -6937,13 +6924,6 @@ snapshots:
       warning: 4.0.3
 
   react-refresh@0.19.0: {}
-
-  react-resizable-panels@4.21.0(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1):
-    dependencies:
-      react: 19.3.1
-      react-dom: 19.3.1(react@19.3.1)
-    optionalDependencies:
-      '@types/react': 19.3.0
 
   react-resizable@3.2.0(react-dom@19.3.1(react@19.3.1))(react@19.3.1):
     dependencies:
