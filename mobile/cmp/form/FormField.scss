@@ -39,6 +39,34 @@
     }
   }
 
+  // A grid lifts the rightItems, which follow the input in the DOM, onto the label's row.
+  &--right-items {
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    column-gap: var(--xh-spacing-half);
+
+    > .xh-form-field__label {
+      grid-area: 1 / 1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    > .xh-form-field__right-items {
+      grid-area: 1 / 2;
+    }
+
+    > .xh-form-field__inner {
+      grid-area: 2 / 1 / 3 / 3;
+    }
+  }
+
+  &__right-items {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+  }
+
   &__info-msg,
   &__validation-msg {
     font-size: var(--xh-form-field-message-font-size);

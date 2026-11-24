@@ -7,6 +7,7 @@
 import type {PopoverPosition, PopperBoundary} from '@blueprintjs/core';
 import type {BaseFormFieldProps, FormContextType} from '@xh/hoist/cmp/form';
 import {FieldModel, FormContext, FormFieldSetContext} from '@xh/hoist/cmp/form';
+import {resolveRightItems} from '@xh/hoist/cmp/form/impl/RightItems';
 import {box, div, label as labelEl, li, span, ul} from '@xh/hoist/cmp/layout';
 import type {DefaultHoistProps, HoistProps, HSide, TestSupportProps} from '@xh/hoist/core';
 import {hoistCmp, uses, XH} from '@xh/hoist/core';
@@ -60,6 +61,13 @@ export interface FormFieldProps extends BaseFormFieldProps {
 
     /** Width of the label in pixels. */
     labelWidth?: number;
+
+    /**
+     * Width in pixels reserved for `rightItems` on every inline field it applies to, with or
+     * without items, so a form's inputs end at one edge. Ignored when stacked. Defaulted from
+     * containing Form.
+     */
+    rightItemsWidth?: number;
 
     /**
      * Signal a validation error by inserting a warning glyph in the far left side of the
@@ -183,7 +191,16 @@ export const [FormField, formField] = hoistCmp.withFactory<FormFieldProps>({
                 props,
                 formContext,
                 defaultReadonlyRenderer
-            );
+            ),
+            inputRenderer = defaultProp('inputRenderer', props, formContext, null),
+            rightItems = readonly
+                ? null
+                : resolveRightItems(defaultProp('rightItems', props, formContext, null), model),
+            rightItemsWidth = inline
+                ? defaultProp('rightItemsWidth', props, formContext, null)
+                : null,
+            inputRow = inline && (!!rightItems || !isNil(rightItemsWidth)),
+            labelRowItems = !inline && !!rightItems;
 
         // Styles
         const classes = [];
@@ -193,6 +210,7 @@ export const [FormField, formField] = hoistCmp.withFactory<FormFieldProps>({
         if (minimal) classes.push('xh-form-field--minimal');
         if (readonly) classes.push('xh-form-field--readonly');
         if (disabled) classes.push('xh-form-field--disabled');
+        if (labelRowItems) classes.push('xh-form-field--right-items');
 
         if (severityToDisplay) {
             classes.push(`xh-form-field--${severityToDisplay}`);
@@ -205,7 +223,7 @@ export const [FormField, formField] = hoistCmp.withFactory<FormFieldProps>({
         useOnUnmount(() => instanceManager.unregisterModelWithTestId(testId));
 
         // Generate actual element child to render
-        let childEl: ReactElement =
+        let childEl: ReactNode =
             !child || readonly
                 ? readonlyChild({
                       model,
@@ -221,6 +239,7 @@ export const [FormField, formField] = hoistCmp.withFactory<FormFieldProps>({
                       displayNotValid: severityToDisplay === 'error',
                       leftErrorIcon,
                       commitOnChange,
+                      inputRenderer,
                       testId: getTestId(testId, 'input')
                   });
 
@@ -263,11 +282,23 @@ export const [FormField, formField] = hoistCmp.withFactory<FormFieldProps>({
                       });
         }
 
+        const rightItemsEl =
+            rightItems || inputRow
+                ? div({
+                      className: 'xh-form-field__right-items',
+                      style: {width: rightItemsWidth},
+                      [TEST_ID]: getTestId(testId, 'right-items'),
+                      children: rightItems
+                  })
+                : null;
+
         return box({
             ref,
             key: model?.xhId,
             className: classNames(className, classes),
             ...getLayoutProps(props),
+            // Puts the items on the label's row, though they follow the input for Tab.
+            ...(labelRowItems ? {display: 'grid'} : null),
             testId,
             domAttrs: props.domAttrs,
             children: [
@@ -293,7 +324,12 @@ export const [FormField, formField] = hoistCmp.withFactory<FormFieldProps>({
                             : 'xh-form-field__inner--block'
                     ),
                     children: [
-                        childEl,
+                        inputRow
+                            ? div({
+                                  className: 'xh-form-field__input-row',
+                                  children: [childEl, rightItemsEl]
+                              })
+                            : childEl,
                         div({
                             className: 'xh-form-field__inner__info-msg',
                             omit: !info,
@@ -301,7 +337,8 @@ export const [FormField, formField] = hoistCmp.withFactory<FormFieldProps>({
                         }),
                         validationMsgEl
                     ]
-                })
+                }),
+                labelRowItems ? rightItemsEl : null
             ]
         });
     }
@@ -336,6 +373,7 @@ const editableChild = hoistCmp.factory<FieldModel>({
         displayNotValid,
         leftErrorIcon,
         commitOnChange,
+        inputRenderer,
         testId
     }) {
         const {props} = child;
@@ -371,7 +409,8 @@ const editableChild = hoistCmp.factory<FieldModel>({
         if (!isUndefined(commitOnChange)) {
             overrides.commitOnChange = commitOnChange;
         }
-        return cloneElement(child, overrides);
+        const input = cloneElement(child, overrides);
+        return inputRenderer ? inputRenderer(input, model) : input;
     }
 });
 

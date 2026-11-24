@@ -583,6 +583,52 @@ formField({
 // Validation with `when` clause handles conditional requirements
 ```
 
+### Per-Field Buttons and Custom Inputs
+
+`rightItems` puts buttons or menus beside a field, such as a reset. Inline, they follow the input in
+its row. Stacked, they sit at the right end of the label's row, so the input keeps its full width.
+They show only while the field isn't readonly, and FormField keys them. On desktop,
+`rightItemsWidth` reserves their width on every inline field, with or without items, so a form's
+inputs end at one edge.
+
+`inputRenderer` gets the input FormField has bound, sized and given the label's id, and returns what
+to show: the input, a wrapper around it, or a replacement such as a chip. It isn't called while the
+field is readonly - pair it with `readonlyRenderer`. Both props can be set form-wide through
+`fieldDefaults`, where a function receives each field's model.
+
+```typescript
+form({
+    model: configForm,
+    fieldDefaults: {
+        inline: true,
+        rightItemsWidth: 28,
+        rightItems: resetItems // module-level, so fieldDefaults stays stable
+    },
+    children: [
+        formField({field: 'queryTimeoutMs', children: numberInput()}),
+        formField({field: 'retryCount', children: numberInput()})
+    ]
+});
+
+function resetItems(field: FieldModel): ReactNode[] {
+    return [
+        button({
+            icon: Icon.reset(),
+            minimal: true,
+            omit: !field.isDirty,
+            disabled: field.disabled,
+            onClick: () => field.reset()
+        })
+    ];
+}
+```
+
+- FormField doesn't disable `rightItems` with the field - read `model.disabled`.
+- A replacement from `inputRenderer` stays reachable by a label click and `FieldModel.focus()` when
+  it takes `id: input.props.id` and `ref: model.boundInputRef`.
+- Wrap the input on every render or on none. Switching between wrapped and bare remounts it,
+  dropping its focus and any uncommitted text.
+
 ### Scrollable Form Content
 
 Forms with many fields may overflow their containing Panel. Use Panel's `scrollable` prop

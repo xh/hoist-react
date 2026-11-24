@@ -6,6 +6,7 @@
  */
 import type {FormContextType, BaseFormFieldProps} from '@xh/hoist/cmp/form';
 import {FieldModel, FormContext, FormFieldSetContext} from '@xh/hoist/cmp/form';
+import {resolveRightItems} from '@xh/hoist/cmp/form/impl/RightItems';
 import {box, div, span} from '@xh/hoist/cmp/layout';
 import type {DefaultHoistProps, HoistProps, TestSupportProps} from '@xh/hoist/core';
 import {hoistCmp, uses, XH} from '@xh/hoist/core';
@@ -109,7 +110,11 @@ export const [FormField, formField] = hoistCmp.withFactory<FormFieldProps>({
                 props,
                 formContext,
                 defaultReadonlyRenderer
-            );
+            ),
+            inputRenderer = defaultProp('inputRenderer', props, formContext, null),
+            rightItems = readonly
+                ? null
+                : resolveRightItems(defaultProp('rightItems', props, formContext, null), model);
 
         // Styles
         const classes = [];
@@ -117,6 +122,7 @@ export const [FormField, formField] = hoistCmp.withFactory<FormFieldProps>({
         if (minimal) classes.push('xh-form-field--minimal');
         if (readonly) classes.push('xh-form-field--readonly');
         if (disabled) classes.push('xh-form-field--disabled');
+        if (rightItems) classes.push('xh-form-field--right-items');
         if (severityToDisplay) {
             classes.push(`xh-form-field--${severityToDisplay}`);
             if (displayInvalid) classes.push('xh-form-field--invalid');
@@ -140,6 +146,7 @@ export const [FormField, formField] = hoistCmp.withFactory<FormFieldProps>({
                       childIsSizeable,
                       disabled,
                       commitOnChange,
+                      inputRenderer,
                       width: layoutProps.width,
                       height: layoutProps.height,
                       flex: layoutProps.flex,
@@ -152,6 +159,8 @@ export const [FormField, formField] = hoistCmp.withFactory<FormFieldProps>({
             domAttrs: props.domAttrs,
             className: classNames(className, classes),
             ...layoutProps,
+            // Puts the items on the label's row, though they follow the input for Tab.
+            ...(rightItems ? {display: 'grid'} : null),
             children: [
                 labelCmp({
                     omit: !label,
@@ -183,7 +192,14 @@ export const [FormField, formField] = hoistCmp.withFactory<FormFieldProps>({
                             children: first(validationResultsToDisplay)?.message
                         })
                     ]
-                })
+                }),
+                rightItems
+                    ? div({
+                          className: 'xh-form-field__right-items',
+                          [TEST_ID]: getTestId(testId, 'right-items'),
+                          children: rightItems
+                      })
+                    : null
             ]
         });
     }
@@ -209,7 +225,18 @@ const readonlyChild = hoistCmp.factory<ReadonlyChildProps>({
 const editableChild = hoistCmp.factory<FieldModel>({
     model: false,
 
-    render({model, child, childIsSizeable, disabled, commitOnChange, width, height, flex, testId}) {
+    render({
+        model,
+        child,
+        childIsSizeable,
+        disabled,
+        commitOnChange,
+        inputRenderer,
+        width,
+        height,
+        flex,
+        testId
+    }) {
         const {props} = child;
 
         // Overrides -- be sure not to clobber selected properties on child
@@ -239,7 +266,8 @@ const editableChild = hoistCmp.factory<FieldModel>({
             overrides.commitOnChange = commitOnChange;
         }
 
-        return cloneElement(child, overrides);
+        const input = cloneElement(child, overrides);
+        return inputRenderer ? inputRenderer(input, model) : input;
     }
 });
 
