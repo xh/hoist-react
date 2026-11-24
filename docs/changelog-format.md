@@ -226,18 +226,14 @@ Use abbreviated versions where the minor/patch isn't significant (e.g. `6.3` not
 
 ## Application Changelogs
 
-Hoist *application* changelogs (e.g. in app repos that depend on `@xh/hoist`) follow different
-formatting rules than the library changelog described above. Application changelogs are parsed at
-build time by a Hoist release notes feature that displays them within the app UI.
+Hoist *application* changelogs (e.g. in app repos that depend on `@xh/hoist`) follow the
+conventions above. hoist-dev-utils parses the app's changelog into JSON at build time, and
+`ChangelogDialog` shows it to users as in-app release notes.
 
-An app on `@xh/hoist-dev-utils` 16.6 or later parses its changelog with the same parser as
-`xh-changelog`. Its bullets can wrap and hold sub-bullets, as in a library changelog. Such an app
-can also use changelog fragments: run `pnpm exec xh-changelog init` from its `client-app/` folder.
-See the [hoist-dev-utils README](https://github.com/xh/hoist-dev-utils/blob/master/README.md#changelog-fragments).
+Bullets in an application changelog can wrap and can hold sub-bullets, as library entries do. This
+needs `@xh/hoist-dev-utils` 16.6 or later. Older releases keep only the first line of each bullet
+and silently drop the rest. On those releases, write each bullet as a single unwrapped line.
 
-**On an older `@xh/hoist-dev-utils`, do NOT hard-wrap list items in application changelogs.** Each
-bullet point must be a single unwrapped line. That parser treats a line break inside a list item as
-the end of the entry, and drops the rest.
-
-All other conventions (section headers, voice/tense, backtick-wrapped specificity) apply to both
-library and application changelogs.
+An app on `@xh/hoist-dev-utils` 16.6 or later can also use changelog fragments. Run
+`pnpm exec xh-changelog init` from its `client-app/` folder. See the
+[hoist-dev-utils README](https://github.com/xh/hoist-dev-utils/blob/master/README.md#changelog-fragments).
