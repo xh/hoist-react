@@ -64,7 +64,14 @@
     }
   }
 
-  // Mixed toward the text color so one value reads in both themes.
+  // White text needs the darkest warning step to clear 4.5:1.
+  &--intent-warning {
+    --chip-fill: var(--xh-intent-warning-darkest);
+    --chip-fill-hover: color-mix(in srgb, var(--xh-intent-warning-darkest) 85%, black);
+  }
+
+  // Mixed toward the text color so one value reads in both themes - further in dark, where a dark
+  // base color would otherwise stay too dark.
   &--custom {
     --chip-fill: var(--xh-chip-color);
     --chip-fill-hover: color-mix(in srgb, var(--xh-chip-color) 85%, black);
@@ -73,6 +80,10 @@
     --chip-wash: color-mix(in srgb, var(--xh-chip-color) 15%, transparent);
     --chip-wash-hover: color-mix(in srgb, var(--xh-chip-color) 30%, transparent);
     --chip-line: var(--chip-text);
+
+    :where(.xh-dark) & {
+      --chip-text: color-mix(in oklab, var(--xh-chip-color) 50%, var(--xh-text-color));
+    }
   }
 
   &--minimal {

@@ -64,6 +64,9 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 * Mixed the text of minimal and outlined intent `Chip`s 65% toward the text color in the light
   theme, as custom-colored chips already were. Success text on its wash rises from 3.72:1 to 5.45:1
   and warning from 2.84:1 to 4.55:1.
+* Darkened the fill of a filled warning `Chip` to `--xh-intent-warning-darkest`, raising white text
+  from 4.20:1 to 5.07:1, and mixed a custom-colored `Chip`'s text 50% toward the text color in the
+  dark theme, so a dark base color such as `--xh-purple` reads at 4.85:1 rather than 3.41:1.
 * Removed the `xh-grouping-chooser__row--dragging` class. A dragged row is styled by `SortableList`.
 * `GroupingChooser` rows use `SortableList`'s grip handle, and its desktop dimension selects show a
   dropdown chevron and a hover tint. Removed the `xh-grouping-chooser__row__grabber` class.
