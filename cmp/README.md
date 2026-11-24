@@ -356,9 +356,9 @@ in as many columns as the width allows. See the
 
 ### SortableList (`/sortablelist/`)
 
-A list users reorder by dragging an item or with the keyboard. The caller renders each item; the list
-supplies handles, the drop placeholder, auto-scrolling and screen reader announcements, and reports
-each completed move once. See the [SortableList README](./sortablelist/README.md).
+A list users reorder by dragging an item or with the keyboard. The caller renders each item; the
+list supplies handles, the drop placeholder, auto-scrolling and screen reader announcements, and
+reports each completed move once. See the [SortableList README](./sortablelist/README.md).
 
 ### Callout (`/callout/`)
 

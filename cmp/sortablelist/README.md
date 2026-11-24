@@ -52,7 +52,8 @@ throws if a key is missing or repeated.
 
 A drag starts when a pointer holds a handle for 200ms, or when a mouse moves 4px, whichever comes
 first. Either way the item lifts at once, which is the cue that it is held. A quick click on a
-handle or row still clicks. On touch only the hold starts a drag, so a finger can still scroll the list.
+handle or row still clicks. On touch only the hold starts a drag, so a finger can still scroll the
+list.
 
 ### Keyboard
 
@@ -66,20 +67,20 @@ doesn't also trigger an ancestor's shortcuts.
 
 Set `orientation: 'horizontal'` for a row of items, and `wrap: true` to let it wrap.
 
-Give the list a `maxHeight` and it fits its items up to that height, then scrolls them, with the
-Add row pinned below. A fixed `height`, or a `flex` in a sized container, scrolls the same way, but
-keeps its full height when the items are fewer - they and the Add row sit at the top. During a drag the list
-auto-scrolls its items, any scrolling ancestors and the window when the dragged item nears an edge.
-`scrollAcceleration` sets how fast - 15 by default, below dnd-kit's own 25.
+Give the list a `maxHeight` and it fits its items up to that height, then scrolls them, with the Add
+row pinned below. A fixed `height`, or a `flex` in a sized container, scrolls the same way, but
+keeps its full height when the items are fewer - they and the Add row sit at the top. During a drag
+the list auto-scrolls its items, any scrolling ancestors and the window when the dragged item nears
+an edge. `scrollAcceleration` sets how fast - 15 by default, below dnd-kit's own 25.
 
 ### Removing and adding items
 
-Set `removable: true`, or `onRemove`, to give each item a remove button, after its content and any chevron, so the
-buttons line up in one column. Delete or Backspace on an item's handle removes it too.
-`isItemRemovable` limits which items have one. Set `showRemoveOnHover` to show the buttons only
-while their item is hovered or focused - they always show on touch devices. With `bind`, the list writes the list without the
-item and then calls `onRemove({item, index, items})`, if set, for any other work the removal needs.
-Without `bind`, apply `items` yourself.
+Set `removable: true`, or `onRemove`, to give each item a remove button, after its content and any
+chevron, so the buttons line up in one column. Delete or Backspace on an item's handle removes it
+too. `isItemRemovable` limits which items have one. Set `showRemoveOnHover` to show the buttons only
+while their item is hovered or focused - they always show on touch devices. With `bind`, the list
+writes the list without the item and then calls `onRemove({item, index, items})`, if set, for any
+other work the removal needs. Without `bind`, apply `items` yourself.
 
 The list shows an Add row after the items in one of two ways:
 
@@ -120,13 +121,12 @@ control once the list is empty. Screen readers hear "Removed {item}." and "Added
 
 ### Expandable rows
 
-Set `detailRenderer` to make items expandable. Each item gets a chevron, which opens a detail under the
-row at the list's full width - an editor, say - and closes it again. The chevron always follows
+Set `detailRenderer` to make items expandable. Each item gets a chevron, which opens a detail under
+the row at the list's full width - an editor, say - and closes it again. The chevron always follows
 everything `itemRenderer` draws, and precedes an end handle, so chevrons line up in one column even
-when rows have different trailing controls. The
-chevron is a button with `aria-expanded`, and the detail is a region named for its item. The list
-calls `detailRenderer` only for open items, and the detail moves with its item when the list
-reorders.
+when rows have different trailing controls. The chevron is a button with `aria-expanded`, and the
+detail is a region named for its item. The list calls `detailRenderer` only for open items, and the
+detail moves with its item when the list reorders.
 
 - **Which items expand:** every item by default. `isItemExpandable` limits it. An item it rejects
   shows its detail whenever `detailRenderer` returns one, with no chevron - so
@@ -144,9 +144,9 @@ reorders.
   `toggleOnRowClick: false` for rows that are mostly controls. Row clicks never toggle with
   `handle: 'item'`, where a press on the row starts a drag - use the chevron.
 
-`isItemMovable` limits which items can be picked up - the rest show a lock in place of their grip. Other items still move past them, so render
-items that must keep a fixed position, such as pinned columns, outside the list. `disabled`
-disables all reordering.
+`isItemMovable` limits which items can be picked up - the rest show a lock in place of their grip.
+Other items still move past them, so render items that must keep a fixed position, such as pinned
+columns, outside the list. `disabled` disables all reordering.
 
 ## Styling
 
