@@ -70,11 +70,13 @@ export class ChangelogService extends HoistService {
         return XH.isDesktop && enabled && userHasAccess && !isEmpty(versions);
     }
 
+    /** The newest version in the changelog, including an unreleased SNAPSHOT version. */
     get latestAvailableVersion(): string {
         if (!this.enabled) return null;
         return this.versions[0].version;
     }
 
+    /** The newest version with notes, including an unreleased SNAPSHOT version. */
     get latestNonEmptyVersion(): string {
         if (!this.enabled) return null;
         return this.versions.find(it => !isEmpty(it.categories))?.version;

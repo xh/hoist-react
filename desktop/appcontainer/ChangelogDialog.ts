@@ -46,7 +46,7 @@ const changelogContents = hoistCmp.factory<ChangelogDialogModel>(({model}) => {
     return panel({
         children: div({
             className: 'xh-changelog__inner',
-            children: versions.map(it => version({version: it, key: it.title}))
+            children: versions.map(it => version({version: it, key: it.version}))
         }),
         bbar: [
             filler(),
@@ -72,8 +72,7 @@ const version = hoistCmp.factory<HoistProps & {version: ChangelogVersion}>(({ver
             div({
                 className: 'xh-changelog__version__header',
                 children: [
-                    // A heading with no version number shows as written.
-                    h2(version.version ?? version.title),
+                    h2(version.version),
                     versionTag({omit: !isUnreleased, text: 'Unreleased'}),
                     versionTag({omit: !isCurrentVersion, text: 'Current'}),
                     filler(),
@@ -109,7 +108,7 @@ const category = hoistCmp.factory<
     const {title, items} = category,
         style = title == null ? null : getCategoryStyle(title),
         // A title such as "🎁 New Features" brings its own emoji, so skip the icon.
-        icon = EMOJI_START.test(title) ? null : (style?.icon() ?? Icon.tag());
+        icon = LEADING_EMOJI.test(title) ? null : (style?.icon() ?? Icon.tag());
 
     return div({
         className: classNames(
@@ -138,8 +137,6 @@ const category = hoistCmp.factory<
         ]
     });
 });
-
-const EMOJI_START = /^\p{Extended_Pictographic}/u;
 
 // Open links in a new tab, so that following one does not unload the app.
 const externalLink = ({node, ...props}) =>
