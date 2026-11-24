@@ -5,6 +5,12 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 .xh-grouping-chooser {
+  // Toolbars keep their items from shrinking - let the label's ellipsis absorb the squeeze.
+  .xh-toolbar > & {
+    flex-shrink: 1;
+    min-width: 0;
+  }
+
   .xh-grouping-chooser-button {
     width: 100%;
     justify-content: flex-start;
