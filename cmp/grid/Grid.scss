@@ -529,22 +529,32 @@
   // the section it closes - that gap, plus the absent icon, is what reads as a heading rather than
   // an item. Drawn on each cell so it spans the full menu width, as ag-Grid does for separators.
   .ag-menu-option-part {
+    background-color: var(--xh-menu-heading-bg);
     border-bottom: var(--xh-menu-heading-border);
-    padding-top: calc(var(--ag-grid-size) * 2);
-    padding-bottom: var(--ag-grid-size);
+    padding-top: var(--xh-menu-heading-padding-top);
+    padding-bottom: var(--xh-menu-heading-padding-bottom);
+  }
+
+  // A heading that leads the menu needs no space above it. ag-Grid wraps each custom item in its
+  // own container, placed after a focus guard at the top of the list.
+  .ag-tab-guard-top + .ag-menu-option-custom > & .ag-menu-option-part {
+    padding-top: var(--xh-menu-heading-padding-bottom);
   }
 
   // Outdent the label to start where the item icons do, rather than where their text does. The
-  // shift is applied to the label, not its cell - a table row paints its background only behind
-  // areas a cell still covers, so moving the cell itself punches a gap in the band. Keeping the
-  // cell in place also lets it reserve its natural width, so the menu sizes to a long heading
+  // shift is the icon's own width and right padding (see AgGrid.scss) plus the text cell's left
+  // padding. It is applied to the label, not its cell - a table row paints its background only
+  // behind areas a cell still covers, so moving the cell itself punches a gap in the band. Keeping
+  // the cell in place also lets it reserve its natural width, so the menu sizes to a long heading
   // rather than letting it overflow.
   &__label {
     position: relative;
-    left: calc(-1 * (var(--ag-icon-size) + var(--ag-grid-size) * 2));
+    left: calc(-1 * (var(--ag-icon-size) + 8px + var(--ag-spacing) * 2));
     color: var(--xh-menu-heading-text-color);
     font-size: var(--xh-menu-heading-font-size);
     font-weight: var(--xh-menu-heading-font-weight);
+    letter-spacing: var(--xh-menu-heading-letter-spacing);
+    text-transform: var(--xh-menu-heading-text-transform);
   }
 }
 

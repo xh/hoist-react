@@ -37,11 +37,16 @@
 
     // Non-interactive heading - see MenuHeading.
     &__heading {
-      padding: var(--xh-spacing) var(--xh-spacing-double) var(--xh-spacing-half) var(--xh-spacing);
+      padding: var(--xh-menu-heading-padding-top) var(--xh-spacing-double)
+        var(--xh-menu-heading-padding-bottom) var(--xh-spacing);
       font-size: var(--xh-menu-heading-font-size);
       font-weight: var(--xh-menu-heading-font-weight);
+      letter-spacing: var(--xh-menu-heading-letter-spacing);
+      text-transform: var(--xh-menu-heading-text-transform);
       color: var(--xh-menu-heading-text-color);
-      background-color: var(--xh-menu-bg);
+      // Layered over the menu bg, so a translucent heading bg still hides the content beneath.
+      background:
+        linear-gradient(var(--xh-menu-heading-bg), var(--xh-menu-heading-bg)), var(--xh-menu-bg);
       border-bottom: var(--xh-menu-heading-border);
     }
 
@@ -53,6 +58,7 @@
       margin: 0;
       padding: 0 var(--xh-spacing-double) 0 var(--xh-spacing);
       font-size: var(--xh-menu-item-font-size);
+      font-weight: var(--xh-menu-item-font-weight);
       color: var(--xh-menu-item-text-color);
       background-color: var(--xh-menu-bg);
       transition: background-color 0.2s linear;
