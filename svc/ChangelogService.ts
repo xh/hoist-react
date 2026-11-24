@@ -10,14 +10,16 @@ import {HoistService, XH} from '@xh/hoist/core';
 import jsonFromMarkdown from '@xh/app-changelog.json';
 import {action, observable} from '@xh/hoist/mobx';
 import {checkMinVersion} from '@xh/hoist/utils/js';
-import {isEmpty, forOwn, includes} from 'lodash';
+import {includes, isArray, isEmpty, map, omit} from 'lodash';
 
 /**
  * Service to display an application changelog (aka release notes) to end users, if so configured.
  *
  * Changelog entries are maintained in a CHANGELOG.md file within the project root, formatted as
  * per https://keepachangelog.com. Requires hoist-dev-utils v5.7+ to parse the markdown source
- * into JSON and make available via the special `@xh/app-changelog.json` import above.
+ * into JSON and make available via the special `@xh/app-changelog.json` import above. Recent
+ * hoist-dev-utils releases also supply each entry's markdown, wrapped lines and sub-bullets
+ * included, which the dialog renders. Older releases supply plain text only.
  *
  * If a changelog is available, the top-level app menu will include an item to view the log in a
  * dialog. If a string pref is defined with key `xhLastReadChangelog`, this service will track the
@@ -53,8 +55,9 @@ export class ChangelogService extends HoistService {
     versions: ChangelogVersion[];
 
     /**
-     * True if an entry exists for the current app version which the user has
-     * yet to view (and the required user preference has been created).
+     * True if the latest released version with notes is one the user has yet to view (and the
+     * required user preference has been created). An unreleased SNAPSHOT version never counts: its
+     * notes are still changing, and it cannot be marked as read.
      */
     @observable accessor currentVersionIsUnread: boolean;
 
@@ -67,11 +70,13 @@ export class ChangelogService extends HoistService {
         return XH.isDesktop && enabled && userHasAccess && !isEmpty(versions);
     }
 
+    /** The newest version in the changelog, including an unreleased SNAPSHOT version. */
     get latestAvailableVersion(): string {
         if (!this.enabled) return null;
         return this.versions[0].version;
     }
 
+    /** The newest version with notes, including an unreleased SNAPSHOT version. */
     get latestNonEmptyVersion(): string {
         if (!this.enabled) return null;
         return this.versions.find(it => !isEmpty(it.categories))?.version;
@@ -86,22 +91,19 @@ export class ChangelogService extends HoistService {
         this.updateUnreadStatus();
     }
 
+    /** Record that the user has viewed the notes, up to the latest released version. */
     markLatestAsRead() {
-        const {latestAvailableVersion, LAST_READ_PREF_KEY} = this;
+        const {LAST_READ_PREF_KEY} = this,
+            latestReleased = this.enabled ? this.releasedVersions[0]?.version : null;
 
-        if (includes(latestAvailableVersion, 'SNAPSHOT')) {
-            this.logWarn('Unable to mark changelog as read when latest version is SNAPSHOT.');
-            return;
-        }
-
-        if (!latestAvailableVersion || !XH.prefService.hasKey(LAST_READ_PREF_KEY)) {
+        if (!latestReleased || !XH.prefService.hasKey(LAST_READ_PREF_KEY)) {
             this.logWarn(
-                'Unable to mark changelog as read - latest version or required pref not found.'
+                'Unable to mark changelog as read - released version or required pref not found.'
             );
             return;
         }
 
-        XH.setPref(LAST_READ_PREF_KEY, latestAvailableVersion);
+        XH.setPref(LAST_READ_PREF_KEY, latestReleased);
         this.updateUnreadStatus();
     }
 
@@ -117,25 +119,33 @@ export class ChangelogService extends HoistService {
         });
     }
 
+    // Versions that have shipped. A snapshot build also lists the version in development.
+    private get releasedVersions(): ChangelogVersion[] {
+        return this.versions.filter(it => !it.isUnreleased);
+    }
+
     private parseVersions(changelog): ChangelogVersion[] {
         try {
             const versions = [];
             (changelog.versions ?? [])
                 .filter(v => this.includeVersion(v.version))
                 .forEach(v => {
-                    const categories = [];
-                    // JSON parsed from markdown sets up categories as object keys.
-                    forOwn(v.parsed, (items, title) => {
-                        if (this.includeCategory(title)) {
-                            categories.push({title, items});
-                        }
-                    });
+                    // Prefer markdown `sections` over plain-text `parsed`, the only form older
+                    // hoist-dev-utils supply. `parsed` holds `###` titles as keys, plus an `_`
+                    // catch-all of every entry.
+                    const isMarkdown = isArray(v.sections),
+                        categories: ChangelogCategory[] = isMarkdown
+                            ? v.sections
+                            : map(omit(v.parsed, '_'), (items, title) => ({title, items}));
 
                     versions.push({
                         version: v.version,
                         title: v.title,
+                        date: v.date ?? null,
                         isCurrentVersion: v.version === XH.appVersion,
-                        categories
+                        isUnreleased: includes(v.version, 'SNAPSHOT'),
+                        isMarkdown,
+                        categories: categories.filter(it => this.includeCategory(it.title))
                     });
                 });
 
@@ -153,33 +163,41 @@ export class ChangelogService extends HoistService {
         return versionStr && !this.config.excludedVersions.includes(versionStr);
     }
 
-    private includeCategory(catTitle) {
-        // Check against '_' is due to catch-all category created by changelog-parser lib.
+    private includeCategory(catTitle: string) {
         return (
-            catTitle !== '_' && !this.config.excludedCategories.find(it => catTitle.includes(it))
+            catTitle == null || !this.config.excludedCategories.some(it => catTitle.includes(it))
         );
     }
 
     @action
     private updateUnreadStatus() {
-        const {enabled, latestNonEmptyVersion} = this,
+        const {enabled} = this,
+            latestWithNotes = this.releasedVersions.find(it => !isEmpty(it.categories))?.version,
             lastReadVersion = XH.getPref(this.LAST_READ_PREF_KEY, null);
         this.currentVersionIsUnread =
             enabled &&
-            latestNonEmptyVersion &&
-            lastReadVersion &&
-            !checkMinVersion(lastReadVersion, latestNonEmptyVersion);
+            !!latestWithNotes &&
+            !!lastReadVersion &&
+            !checkMinVersion(lastReadVersion, latestWithNotes);
     }
 }
 
 export interface ChangelogVersion {
     version: string;
+    /** The full `##` heading, e.g. `v2.0.0 - 2026-11-01`. */
     title: string;
+    /** Release date from the heading, as `YYYY-MM-DD`, or null if not dated. */
+    date: string;
     isCurrentVersion: boolean;
+    /** True for a SNAPSHOT version that has not yet been released. */
+    isUnreleased: boolean;
+    /** True if category items are markdown, false if they are plain text. */
+    isMarkdown: boolean;
     categories: ChangelogCategory[];
 }
 
 export interface ChangelogCategory {
+    /** The `###` heading, or null for entries listed above any heading. */
     title: string;
     items: string[];
 }

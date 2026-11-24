@@ -9,7 +9,8 @@
         "docs/superpowers",
         "scripts",
         ".github",
-        ".claude"
+        ".claude",
+        "changelog.d"
     ],
     "excludeFiles": [
         "CHANGELOG.md",

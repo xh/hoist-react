@@ -62,12 +62,21 @@ How it works:
 `develop` always holds the next major version as a snapshot, in the Maven style. For example,
 `develop` stays on `90.0.0-SNAPSHOT` while 89.x releases ship. All XH libraries follow this policy.
 
-- After a major release, bump `package.json` on `develop` to the next major `-SNAPSHOT`. Add a
-  matching `## N.0.0-SNAPSHOT - unreleased` heading to the top of `CHANGELOG.md`.
-- A release without breaking changes goes out as the next minor or patch from the latest tag.
-  For the release, change the snapshot changelog heading to that version and date. Keep
-  `package.json` on the snapshot, because Deploy Release sets the published version. After the
-  release, put the snapshot heading back on top of the changelog.
+- Before any release, run `pnpm changelog release <version>`. It assembles the fragments in
+  `changelog.d/` into a new `## <version> - <date>` block in `CHANGELOG.md` and deletes them.
+  Review and curate the block, then commit it. See
+  [Changelog Entry Format](./changelog-format.md#where-entries-go). Deploy Release fails if
+  `CHANGELOG.md` lacks the version or fragments are left over.
+- A release without breaking changes goes out as the next minor or patch from the latest tag. Keep
+  `package.json` on the snapshot, because Deploy Release sets the published version.
+- After a major release, bump `package.json` on `develop` to the next major snapshot.
+- A hotfix branch cut from v91.0.0 or an earlier tag has no `changelog.d/`. Edit `CHANGELOG.md`
+  there directly, as before.
+
+The hoist-dev-utils README section
+[Release](https://github.com/xh/hoist-dev-utils/blob/master/README.md#release) describes how
+`release` orders entries, rolls the snapshot heading forward, blocks breaking changes in a minor,
+and handles hotfixes.
 
 ## Deploy Release (`deployRelease.yml`)
 
