@@ -102,30 +102,25 @@ const editor = hoistCmp.factory({
         return panel({
             className: 'xh-grouping-chooser__editor',
             scrollable: true,
-            children: [dimensionList({emptyText}), addDimensionControl()]
+            children: dimensionList({emptyText})
         });
     }
 });
 
 const dimensionList = hoistCmp.factory<GroupingChooserLocalModel>({
     render({model, emptyText}) {
-        if (isEmpty(model.pendingValue)) {
-            return model.parentModel.allowEmpty
-                ? hbox({
-                      className: 'xh-grouping-chooser__row',
-                      children: [filler(), emptyText, filler()]
-                  })
-                : null;
-        }
-
+        const {parentModel} = model;
         return sortableList({
             className: 'xh-grouping-chooser__list',
             value: model.pendingValue,
             itemKey: dim => dim,
-            getItemLabel: dim => model.parentModel.getDimDisplayName(dim),
+            getItemLabel: dim => parentModel.getDimDisplayName(dim),
+            emptyText: parentModel.allowEmpty ? emptyText : null,
             onReorder: e => model.movePendingDimToIndex(e.item, e.toIndex),
             onRemove: e => model.removePendingDimAtIdx(e.index),
-            renderItem: (dimension, {index}) => dimensionRow({dimension, idx: index})
+            onAdd: e => model.addPendingDim(e.item),
+            itemRenderer: (dimension, {index}) => dimensionRow({dimension, idx: index}),
+            addRenderer: model.isAddEnabled ? ({add}) => addLevelSelect({add}) : null
         });
     }
 });
@@ -154,27 +149,19 @@ const dimensionRow = hoistCmp.factory<GroupingChooserLocalModel>({
     }
 });
 
-const addDimensionControl = hoistCmp.factory<GroupingChooserLocalModel>({
-    render({model}) {
-        if (!model.isAddEnabled) return null;
-
+const addLevelSelect = hoistCmp.factory<GroupingChooserLocalModel>({
+    render({model, add}) {
         const options = model.getDimSelectOpts();
-        return div({
-            className: 'xh-grouping-chooser__add-control',
-            children: [
-                select({
-                    // By changing the key each time the options change, we can
-                    // ensure the Select loses its internal input state.
-                    key: JSON.stringify(options),
-                    options,
-                    placeholder: 'Add level...',
-                    flex: 1,
-                    width: null,
-                    hideDropdownIndicator: true,
-                    hideSelectedOptionCheck: true,
-                    onChange: newDim => model.addPendingDim(newDim)
-                })
-            ]
+        return select({
+            // A new key when the options change clears the select's typed text.
+            key: JSON.stringify(options),
+            options,
+            placeholder: 'Add level...',
+            flex: 1,
+            width: null,
+            hideDropdownIndicator: true,
+            hideSelectedOptionCheck: true,
+            onChange: add
         });
     }
 });

@@ -4,7 +4,7 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {div, input, span} from '@xh/hoist/cmp/layout';
+import {div, htmlButton, input, span} from '@xh/hoist/cmp/layout';
 import {sortableList} from '@xh/hoist/cmp/sortablelist';
 import type {SortableListProps} from '@xh/hoist/cmp/sortablelist';
 import {HoistModel} from '@xh/hoist/core';
@@ -73,7 +73,7 @@ describe('SortableList', () => {
                 el = render(
                     div({
                         onKeyDown: ancestorKeyDown,
-                        children: sortableList({value: DIMS, renderItem: it => span(it.name)})
+                        children: sortableList({value: DIMS, itemRenderer: it => span(it.name)})
                     })
                 ).container.querySelector<HTMLElement>('.xh-sortable-list');
 
@@ -89,7 +89,7 @@ describe('SortableList', () => {
                 el = renderList({
                     value: DIMS,
                     onReorder,
-                    renderItem: it => input({className: 'name-input', defaultValue: it.name})
+                    itemRenderer: it => input({className: 'name-input', defaultValue: it.name})
                 });
 
             fireEvent.keyDown(el.querySelector('.name-input'), {key: 'ArrowDown', altKey: true});
@@ -131,13 +131,14 @@ describe('SortableList', () => {
     });
 
     // Rows read model state - an expanded row, a renamed item - so they must re-render on change.
-    it('re-renders an item when observable state read by renderItem or renderDetail changes', () => {
+    it('re-renders an item when observable state read by itemRenderer or detailRenderer changes', () => {
         const model = new DimsModel(),
             el = renderList({
                 value: DIMS,
                 expandedKeys: ['sector'],
-                renderItem: it => span(model.expandedId === it.id ? `${it.name} (open)` : it.name),
-                renderDetail: it => span(model.expandedId === it.id ? 'Editing' : 'Details')
+                itemRenderer: it =>
+                    span(model.expandedId === it.id ? `${it.name} (open)` : it.name),
+                detailRenderer: it => span(model.expandedId === it.id ? 'Editing' : 'Details')
             });
 
         act(() => model.setExpandedId('sector'));
@@ -161,7 +162,7 @@ describe('SortableList', () => {
             value: DIMS,
             handle: 'custom',
             getItemLabel: it => it.name,
-            renderItem: (it, {handleRef}) => div({ref: handleRef, className: 'my-grip'})
+            itemRenderer: (it, {handleRef}) => div({ref: handleRef, className: 'my-grip'})
         });
 
         expect(el.querySelector('.my-grip').getAttribute('aria-label')).toBe('Region');
@@ -171,10 +172,10 @@ describe('SortableList', () => {
         const detailText = (it: any) => span(`${it.name} settings`);
 
         it('opens a row from its chevron, rendering its detail only while open', () => {
-            const renderDetail = vi.fn(detailText),
-                el = renderList({value: DIMS, renderDetail});
+            const detailRenderer = vi.fn(detailText),
+                el = renderList({value: DIMS, detailRenderer});
 
-            expect(renderDetail).not.toHaveBeenCalled();
+            expect(detailRenderer).not.toHaveBeenCalled();
             expect(chevron(el, 1).tagName).toBe('BUTTON');
             expect(chevron(el, 1).getAttribute('aria-expanded')).toBe('false');
 
@@ -185,19 +186,19 @@ describe('SortableList', () => {
             expect(region.getAttribute('role')).toBe('region');
             expect(region.getAttribute('aria-label')).toBe('sector details');
             expect(region.textContent).toBe('Sector settings');
-            expect(renderDetail.mock.calls.every(([it]) => it.id === 'sector')).toBe(true);
+            expect(detailRenderer.mock.calls.every(([it]) => it.id === 'sector')).toBe(true);
 
             fireEvent.click(chevron(el, 1));
             expect(detail(el, 1)).toBeNull();
         });
 
         it('keeps one row open by default, and several with multiExpand', () => {
-            const single = renderList({value: DIMS, renderDetail: detailText});
+            const single = renderList({value: DIMS, detailRenderer: detailText});
             fireEvent.click(chevron(single, 0));
             fireEvent.click(chevron(single, 2));
             expect(openRows(single)).toEqual([2]);
 
-            const multi = renderList({value: DIMS, renderDetail: detailText, multiExpand: true});
+            const multi = renderList({value: DIMS, detailRenderer: detailText, multiExpand: true});
             fireEvent.click(chevron(multi, 0));
             fireEvent.click(chevron(multi, 2));
             expect(openRows(multi)).toEqual([0, 2]);
@@ -207,7 +208,7 @@ describe('SortableList', () => {
             const onExpandedChange = vi.fn(),
                 el = renderList({
                     value: DIMS,
-                    renderDetail: detailText,
+                    detailRenderer: detailText,
                     expandedKeys: ['fund'],
                     onExpandedChange
                 });
@@ -221,7 +222,7 @@ describe('SortableList', () => {
         it('gives rows that isItemExpandable rejects no chevron and no row toggle', () => {
             const el = renderList({
                 value: DIMS,
-                renderDetail: detailText,
+                detailRenderer: detailText,
                 isItemExpandable: it => it.id !== 'region'
             });
 
@@ -233,11 +234,11 @@ describe('SortableList', () => {
 
         // Lets a list show a detail always - a step's body under its header - or track open
         // state itself, as before rows could expand.
-        it('always shows the detail of a non-expandable item, when renderDetail returns one', () => {
+        it('always shows the detail of a non-expandable item, when detailRenderer returns one', () => {
             const el = renderList({
                 value: DIMS,
                 isItemExpandable: () => false,
-                renderDetail: it => (it.id === 'fund' ? null : detailText(it))
+                detailRenderer: it => (it.id === 'fund' ? null : detailText(it))
             });
 
             expect(items(el).some(it => it.querySelector('.xh-sortable-list__expander'))).toBe(
@@ -248,7 +249,7 @@ describe('SortableList', () => {
         });
 
         it('toggles on a row click, unless toggleOnRowClick is false', () => {
-            const el = renderList({value: DIMS, renderDetail: detailText});
+            const el = renderList({value: DIMS, detailRenderer: detailText});
             fireEvent.click(row(el, 1));
             expect(openRows(el)).toEqual([1]);
             fireEvent.click(row(el, 1));
@@ -256,7 +257,7 @@ describe('SortableList', () => {
 
             const off = renderList({
                 value: DIMS,
-                renderDetail: detailText,
+                detailRenderer: detailText,
                 toggleOnRowClick: false
             });
             fireEvent.click(row(off, 1));
@@ -278,8 +279,8 @@ describe('SortableList', () => {
         ])('ignores a row click on %s', (_, selector) => {
             const el = renderList({
                 value: DIMS,
-                renderDetail: detailText,
-                renderItem: () =>
+                detailRenderer: detailText,
+                itemRenderer: () =>
                     div({
                         dangerouslySetInnerHTML: {
                             __html:
@@ -300,8 +301,8 @@ describe('SortableList', () => {
             const model = new DimsModel(),
                 el = renderList({
                     value: DIMS,
-                    renderDetail: detailText,
-                    renderItem: () =>
+                    detailRenderer: detailText,
+                    itemRenderer: () =>
                         select({model, bind: 'expandedId', options: DIMS.map(d => d.id)})
                 });
 
@@ -313,8 +314,8 @@ describe('SortableList', () => {
         it('ignores a click from a portal that a row renders', () => {
             const el = renderList({
                 value: DIMS,
-                renderDetail: detailText,
-                renderItem: it =>
+                detailRenderer: detailText,
+                itemRenderer: it =>
                     it.id === 'sector'
                         ? createPortal(
                               span({className: 'popover-pick', children: 'Pick'}),
@@ -328,13 +329,13 @@ describe('SortableList', () => {
         });
 
         it('ignores a row click on the drag handle', () => {
-            const el = renderList({value: DIMS, renderDetail: detailText});
+            const el = renderList({value: DIMS, detailRenderer: detailText});
             fireEvent.click(handles(el)[1]);
             expect(openRows(el)).toEqual([]);
         });
 
         it('ignores a row click that ends a text selection', () => {
-            const el = renderList({value: DIMS, renderDetail: detailText});
+            const el = renderList({value: DIMS, detailRenderer: detailText});
             vi.spyOn(window, 'getSelection').mockReturnValue({
                 isCollapsed: false,
                 toString: () => 'Sect'
@@ -346,14 +347,14 @@ describe('SortableList', () => {
         });
 
         it('ignores the click that ends a drag', () => {
-            const el = renderList({value: DIMS, renderDetail: detailText});
+            const el = renderList({value: DIMS, detailRenderer: detailText});
             fireEvent.pointerDown(row(el, 1), {clientX: 10, clientY: 10});
             fireEvent.click(row(el, 1), {clientX: 10, clientY: 40});
             expect(openRows(el)).toEqual([]);
         });
 
         it('never toggles on a row click with handle: item, though the chevron works', () => {
-            const el = renderList({value: DIMS, renderDetail: detailText, handle: 'item'});
+            const el = renderList({value: DIMS, detailRenderer: detailText, handle: 'item'});
             fireEvent.click(row(el, 1));
             expect(openRows(el)).toEqual([]);
 
@@ -363,7 +364,7 @@ describe('SortableList', () => {
 
         it('keeps a row open when the list reorders', () => {
             const model = new DimsModel(),
-                el = renderList({model, bind: 'dims', renderDetail: detailText});
+                el = renderList({model, bind: 'dims', detailRenderer: detailText});
 
             fireEvent.click(chevron(el, 1));
             fireEvent.keyDown(handles(el)[1], {key: 'ArrowUp', altKey: true});
@@ -427,7 +428,7 @@ describe('SortableList', () => {
                             model,
                             bind: 'dims',
                             onRemove: () => {},
-                            renderItem: it => span(it.name)
+                            itemRenderer: it => span(it.name)
                         })
                     })
                 ).container.querySelector<HTMLElement>('.xh-sortable-list');
@@ -455,55 +456,168 @@ describe('SortableList', () => {
     describe('add', () => {
         const newDim = {id: 'book', name: 'Book'};
 
-        it('shows an Add row only with onAdd, labelled by addText', () => {
-            expect(addRow(renderList({value: DIMS}))).toBeNull();
-            expect(addRow(renderList({value: DIMS, onAdd: vi.fn()})).textContent).toBe('Add...');
+        it('shows an Add row only with getNewItem or addRenderer, labelled by addText', () => {
+            expect(addRow(renderList({value: DIMS, onAdd: vi.fn()}))).toBeNull();
+            expect(addRow(renderList({value: DIMS, getNewItem: vi.fn()})).textContent).toBe(
+                'Add...'
+            );
             expect(
-                addRow(renderList({value: DIMS, onAdd: vi.fn(), addText: 'Add level'})).textContent
+                addRow(renderList({value: DIMS, getNewItem: vi.fn(), addText: 'Add level'}))
+                    .textContent
             ).toBe('Add level');
+            expect(
+                addRow(renderList({value: DIMS, addRenderer: () => span('Pick one')})).textContent
+            ).toBe('Pick one');
         });
 
-        it('appends the item onAdd returns through bind, focuses it and opens its detail', async () => {
-            const model = new DimsModel(),
-                el = renderList({
-                    model,
-                    bind: 'dims',
-                    onAdd: () => newDim,
-                    renderDetail: it => span(`${it.name} settings`)
+        describe('built-in button', () => {
+            it('appends the item getNewItem returns through bind, then calls onAdd', async () => {
+                const model = new DimsModel(),
+                    onAdd = vi.fn(),
+                    el = renderList({model, bind: 'dims', getNewItem: () => newDim, onAdd});
+
+                await act(async () => fireEvent.click(addRow(el)));
+                expect(model.dims.map(it => it.id)).toEqual(['region', 'sector', 'fund', 'book']);
+                expect(onAdd).toHaveBeenCalledExactlyOnceWith({
+                    item: newDim,
+                    index: 3,
+                    items: model.dims
                 });
-
-            await act(async () => fireEvent.click(addRow(el)));
-            expect(model.dims.map(it => it.id)).toEqual(['region', 'sector', 'fund', 'book']);
-            expect(document.activeElement).toBe(handles(el)[3]);
-            expect(openRows(el)).toEqual([3]);
-            expect(status(el).textContent).toBe('Added book.');
-        });
-
-        it('waits for an async onAdd, and adds nothing when it returns null', async () => {
-            const model = new DimsModel(),
-                el = renderList({model, bind: 'dims', onAdd: async () => newDim}),
-                none = renderList({model: new DimsModel(), bind: 'dims', onAdd: () => null});
-
-            await act(async () => fireEvent.click(addRow(el)));
-            expect(model.dims).toHaveLength(4);
-
-            await act(async () => fireEvent.click(addRow(none)));
-            expect(items(none)).toHaveLength(3);
-        });
-
-        it('focuses the Add row once the last item is removed', () => {
-            const el = renderList({
-                model: new DimsModel(),
-                bind: 'dims',
-                onRemove: () => {},
-                onAdd: () => null
+                expect(status(el).textContent).toBe('Added book.');
             });
 
-            fireEvent.click(removeButton(el, 2));
-            fireEvent.click(removeButton(el, 1));
-            fireEvent.click(removeButton(el, 0));
-            expect(document.activeElement).toBe(addRow(el));
+            it('focuses the new item, opening its detail', async () => {
+                const el = renderList({
+                    model: new DimsModel(),
+                    bind: 'dims',
+                    getNewItem: () => newDim,
+                    detailRenderer: it => span(`${it.name} settings`)
+                });
+
+                await act(async () => fireEvent.click(addRow(el)));
+                expect(document.activeElement).toBe(handles(el)[3]);
+                expect(openRows(el)).toEqual([3]);
+            });
+
+            it('waits for an async getNewItem, and adds nothing when it returns null', async () => {
+                const model = new DimsModel(),
+                    onAdd = vi.fn(),
+                    el = renderList({model, bind: 'dims', getNewItem: async () => newDim}),
+                    none = renderList({
+                        model: new DimsModel(),
+                        bind: 'dims',
+                        getNewItem: () => null,
+                        onAdd
+                    });
+
+                await act(async () => fireEvent.click(addRow(el)));
+                expect(model.dims).toHaveLength(4);
+
+                await act(async () => fireEvent.click(addRow(none)));
+                expect(items(none)).toHaveLength(3);
+                expect(onAdd).not.toHaveBeenCalled();
+            });
+
+            it('leaves a list without bind to onAdd', async () => {
+                const onAdd = vi.fn(),
+                    el = renderList({value: DIMS, getNewItem: () => newDim, onAdd});
+
+                await act(async () => fireEvent.click(addRow(el)));
+                expect(items(el)).toHaveLength(3);
+                expect(onAdd).toHaveBeenCalledExactlyOnceWith({
+                    item: newDim,
+                    index: 3,
+                    items: [...DIMS, newDim]
+                });
+            });
+
+            it('focuses the Add row once the last item is removed', () => {
+                const el = renderList({
+                    model: new DimsModel(),
+                    bind: 'dims',
+                    onRemove: () => {},
+                    getNewItem: () => null
+                });
+
+                fireEvent.click(removeButton(el, 2));
+                fireEvent.click(removeButton(el, 1));
+                fireEvent.click(removeButton(el, 0));
+                expect(document.activeElement).toBe(addRow(el));
+            });
         });
+
+        describe('addRenderer', () => {
+            const picker = ({add}) =>
+                htmlButton({className: 'picker', onClick: () => add(newDim), children: 'Pick'});
+
+            it('appends each item its control passes to ctx.add, then calls onAdd', () => {
+                const model = new DimsModel(),
+                    onAdd = vi.fn(),
+                    el = renderList({model, bind: 'dims', addRenderer: picker, onAdd});
+
+                fireEvent.click(el.querySelector('.picker'));
+                expect(model.dims.map(it => it.id)).toEqual(['region', 'sector', 'fund', 'book']);
+                expect(onAdd).toHaveBeenCalledExactlyOnceWith({
+                    item: newDim,
+                    index: 3,
+                    items: model.dims
+                });
+                expect(status(el).textContent).toBe('Added book.');
+            });
+
+            it('keeps focus in its control after adding an item with no detail', () => {
+                const el = renderList({model: new DimsModel(), bind: 'dims', addRenderer: picker}),
+                    control = el.querySelector<HTMLElement>('.picker');
+
+                control.focus();
+                fireEvent.click(control);
+                expect(document.activeElement).toBe(control);
+            });
+
+            it('focuses an added item with a detail, opening it', () => {
+                const el = renderList({
+                    model: new DimsModel(),
+                    bind: 'dims',
+                    addRenderer: picker,
+                    detailRenderer: it => span(`${it.name} settings`)
+                });
+
+                fireEvent.click(chevron(el, 0));
+                fireEvent.click(el.querySelector('.picker'));
+                expect(document.activeElement).toBe(handles(el)[3]);
+                expect(openRows(el)).toEqual([3]);
+            });
+
+            it('passes the current items and disabled state', () => {
+                const addRenderer = vi.fn(() => null);
+                renderList({value: DIMS, addRenderer, disabled: true});
+                expect(addRenderer).toHaveBeenLastCalledWith(
+                    expect.objectContaining({items: DIMS, disabled: true})
+                );
+            });
+
+            it('focuses its control once the last item is removed', () => {
+                const el = renderList({
+                    model: new DimsModel(),
+                    bind: 'dims',
+                    removable: true,
+                    addRenderer: picker
+                });
+
+                fireEvent.click(removeButton(el, 2));
+                fireEvent.click(removeButton(el, 1));
+                fireEvent.click(removeButton(el, 0));
+                expect(document.activeElement).toBe(el.querySelector('.picker'));
+            });
+        });
+    });
+
+    it('shows emptyText while there are no items', () => {
+        expect(emptyRow(renderList({value: [], emptyText: 'Ungrouped'})).textContent).toBe(
+            'Ungrouped'
+        );
+        expect(emptyRow(renderList({value: DIMS, emptyText: 'Ungrouped'}))).toBeNull();
+        expect(emptyRow(renderList({value: []}))).toBeNull();
     });
 
     /**
@@ -512,45 +626,45 @@ describe('SortableList', () => {
      */
     describe('render cost', () => {
         function setup(props: Partial<SortableListProps> = {}) {
-            const renderItem = vi.fn((it: any) => span(it.name)),
-                renderDetail = vi.fn((it: any) => span(`${it.name} settings`)),
+            const itemRenderer = vi.fn((it: any) => span(it.name)),
+                detailRenderer = vi.fn((it: any) => span(`${it.name} settings`)),
                 listProps = {
                     value: DIMS,
-                    renderItem,
-                    renderDetail,
+                    itemRenderer,
+                    detailRenderer,
                     expandedKeys: ['fund'],
                     ...props
                 } as SortableListProps,
                 {container, rerender} = render(sortableList(listProps)),
                 el = container.querySelector<HTMLElement>('.xh-sortable-list'),
-                rendered = () => renderItem.mock.calls.map(([it]) => it.id);
-            renderItem.mockClear();
-            renderDetail.mockClear();
+                rendered = () => itemRenderer.mock.calls.map(([it]) => it.id);
+            itemRenderer.mockClear();
+            detailRenderer.mockClear();
             return {
                 el,
-                renderItem,
-                renderDetail,
+                itemRenderer,
+                detailRenderer,
                 rendered,
                 rerender: () => rerender(sortableList({...listProps, className: 'changed'}))
             };
         }
 
         it('re-renders no row when the list re-renders with the same items', () => {
-            const {renderItem, renderDetail, rerender} = setup();
+            const {itemRenderer, detailRenderer, rerender} = setup();
             rerender();
-            expect(renderItem).not.toHaveBeenCalled();
-            expect(renderDetail).not.toHaveBeenCalled();
+            expect(itemRenderer).not.toHaveBeenCalled();
+            expect(detailRenderer).not.toHaveBeenCalled();
         });
 
         it('re-renders only the rows a move swaps, leaving an open detail alone', () => {
-            const {el, renderDetail, rendered} = setup({
+            const {el, detailRenderer, rendered} = setup({
                 value: null,
                 model: new DimsModel(),
                 bind: 'dims'
             });
             fireEvent.keyDown(handles(el)[0], {key: 'ArrowDown', altKey: true});
             expect(rendered().sort()).toEqual(['region', 'sector']);
-            expect(renderDetail).not.toHaveBeenCalled();
+            expect(detailRenderer).not.toHaveBeenCalled();
         });
 
         // A keyboard drag runs in jsdom given the two browser APIs dnd-kit's drag start calls.
@@ -563,7 +677,7 @@ describe('SortableList', () => {
                 }
             );
             Document.prototype.getAnimations = Element.prototype.getAnimations = () => [];
-            const {el, renderDetail, rendered} = setup();
+            const {el, detailRenderer, rendered} = setup();
             await act(() => wait(20));
             handles(el)[2].focus();
             await act(async () => {
@@ -572,7 +686,7 @@ describe('SortableList', () => {
             });
             expect(el.classList).toContain('xh-sortable-list--keyboard-drag');
             expect(uniq(rendered())).toEqual(['fund']);
-            expect(renderDetail).not.toHaveBeenCalled();
+            expect(detailRenderer).not.toHaveBeenCalled();
             delete Document.prototype.getAnimations;
             delete Element.prototype.getAnimations;
             vi.unstubAllGlobals();
@@ -612,7 +726,7 @@ class DimsModel extends HoistModel {
 
 function renderList(props: Partial<SortableListProps>): HTMLElement {
     return render(
-        sortableList({renderItem: it => span(it.name), ...props} as SortableListProps)
+        sortableList({itemRenderer: it => span(it.name), ...props} as SortableListProps)
     ).container.querySelector('.xh-sortable-list');
 }
 
@@ -648,6 +762,10 @@ function removeButton(el: HTMLElement, idx: number): HTMLElement {
 
 function addRow(el: HTMLElement): HTMLElement {
     return el.querySelector('.xh-sortable-list__add');
+}
+
+function emptyRow(el: HTMLElement): HTMLElement {
+    return el.querySelector('.xh-sortable-list__empty');
 }
 
 function status(el: HTMLElement): HTMLElement {

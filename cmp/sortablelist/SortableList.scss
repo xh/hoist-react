@@ -224,8 +224,37 @@
     }
   }
 
+  // An `addRenderer` control brings its own pointer and hover states.
+  &__add--custom {
+    color: inherit;
+    cursor: auto;
+
+    &:hover:not(:disabled) {
+      color: inherit;
+      background: none;
+    }
+  }
+
   &--compact &__add {
     min-height: var(--xh-sortable-list-compact-item-min-height);
+  }
+
+  &__empty {
+    display: flex;
+    flex: none;
+    align-items: center;
+    justify-content: center;
+    min-height: var(--xh-sortable-list-item-min-height);
+    padding: var(--xh-sortable-list-item-padding);
+    color: var(--xh-text-color-muted);
+  }
+
+  &--compact &__empty {
+    min-height: var(--xh-sortable-list-compact-item-min-height);
+  }
+
+  &--divided &__empty + &__add {
+    border-top: var(--xh-border-width) solid var(--xh-sortable-list-border-color);
   }
 
   &__status {

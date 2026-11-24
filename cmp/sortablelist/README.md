@@ -21,7 +21,7 @@ sortableList({
     bind: 'dimensions',
     itemKey: dim => dim,
     getItemLabel: dim => model.getDimDisplayName(dim),
-    renderItem: dim => dimensionRow({dim})
+    itemRenderer: dim => dimensionRow({dim})
 })
 
 // Controlled by hand, for a caller that persists each move.
@@ -29,8 +29,8 @@ sortableList({
     value: model.steps,
     getItemLabel: step => step.name,
     onReorder: e => model.moveStepAsync(e.item, e.toIndex),
-    renderItem: (step, {isDragging}) => stepRow({step, isDragging}),
-    renderDetail: step => stepEditor({step})
+    itemRenderer: (step, {isDragging}) => stepRow({step, isDragging}),
+    detailRenderer: step => stepEditor({step})
 })
 ```
 
@@ -47,7 +47,7 @@ throws if a key is missing or repeated.
 - **`'start'`** (default) or **`'end'`** - the list draws a grip handle at that end of each item.
 - **`'item'`** - the whole item is the handle. A press on a button, input or link inside it never
   starts a drag, so rows can hold their own controls.
-- **`'custom'`** - the list draws nothing. Pass `ctx.handleRef` from `renderItem` to the element
+- **`'custom'`** - the list draws nothing. Pass `ctx.handleRef` from `itemRenderer` to the element
   users should grab.
 
 A drag starts when a pointer holds a handle for 200ms, or when a mouse moves 4px, whichever comes
@@ -81,25 +81,54 @@ while their item is hovered or focused - they always show on touch devices. With
 item and then calls `onRemove({item, index, items})`, if set, for any other work the removal needs.
 Without `bind`, apply `items` yourself.
 
-Set `onAdd` to show an Add row after the items, labelled by `addText`. The list cannot build your
-data, so `onAdd` returns the new item, or a promise of it, or null to add nothing. With `bind` the
-list appends it. Either way it then focuses the new item and opens its detail, if it has one.
+The list shows an Add row after the items in one of two ways:
 
-After a removal, focus moves to the item that took its place, or the one before it, or the Add row
-once the list is empty. Screen readers hear "Removed {item}." and "Added {item}.".
+- **`getNewItem`** - a built-in Add button, labelled by `addText`. The list cannot build your data,
+  so `getNewItem` returns the new item, or a promise of it, or null to add nothing. The list then
+  focuses the new item and opens its detail, if it has one.
+- **`addRenderer`** - your own control in the Add row, such as a select, picker or menu. It gets
+  `{add, items, disabled}` and calls `add(item)` with each pick. `items` lets a picker leave out
+  ones already chosen. When the list has a `detailRenderer`, the new item takes focus and its detail
+  opens. Otherwise focus stays in the control, ready for the next pick.
+
+```typescript
+sortableList({
+    value: model.pendingDims,
+    itemKey: dim => dim,
+    emptyText: 'Ungrouped',
+    onAdd: e => model.addPendingDim(e.item),
+    itemRenderer: dim => dimensionRow({dim}),
+    addRenderer: ({add, items}) =>
+        select({
+            options: model.dimOptions.filter(it => !items.includes(it.value)),
+            placeholder: 'Add level...',
+            leftIcon: Icon.add(),
+            onChange: add
+        })
+})
+```
+
+Either way, with `bind` the list appends the item and then calls `onAdd({item, index, items})`, if
+set. Without `bind`, add `e.item` to `value` in `onAdd`. The Add row is the list's frame, lined up
+with the items' rows - any "+" belongs to your control, such as Select's `leftIcon`.
+
+Set `emptyText` to show a line in place of the items while there are none.
+
+After a removal, focus moves to the item that took its place, or the one before it, or the Add row's
+control once the list is empty. Screen readers hear "Removed {item}." and "Added {item}.".
 
 ### Expandable rows
 
-Set `renderDetail` to make items expandable. Each item gets a chevron, which opens a detail under the
+Set `detailRenderer` to make items expandable. Each item gets a chevron, which opens a detail under the
 row at the list's full width - an editor, say - and closes it again. The chevron always follows
-everything `renderItem` draws, and precedes an end handle, so chevrons line up in one column even
+everything `itemRenderer` draws, and precedes an end handle, so chevrons line up in one column even
 when rows have different trailing controls. The
 chevron is a button with `aria-expanded`, and the detail is a region named for its item. The list
-calls `renderDetail` only for open items, and the detail moves with its item when the list
+calls `detailRenderer` only for open items, and the detail moves with its item when the list
 reorders.
 
 - **Which items expand:** every item by default. `isItemExpandable` limits it. An item it rejects
-  shows its detail whenever `renderDetail` returns one, with no chevron - so
+  shows its detail whenever `detailRenderer` returns one, with no chevron - so
   `isItemExpandable: () => false` gives details that are always shown, such as a step's body under
   its header.
 - **How many open at once:** one by default - opening an item closes the open one. Set

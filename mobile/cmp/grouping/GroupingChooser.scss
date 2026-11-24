@@ -26,8 +26,15 @@
   &__list {
     --xh-sortable-list-item-padding: #{0 var(--xh-spacing-half)};
 
-    .xh-sortable-list__row {
+    .xh-sortable-list__row,
+    .xh-sortable-list__empty,
+    .xh-sortable-list__add {
       background-color: var(--xh-bg);
+    }
+
+    // Its select lines up with the level selects, past the grip.
+    .xh-sortable-list__add {
+      padding: 5px 40px 5px 30px;
     }
   }
 
@@ -46,11 +53,6 @@
         border: none;
       }
     }
-  }
-
-  &__add-control {
-    // Align with already-added level controls.
-    padding: 5px 40px 5px 30px;
   }
 
   &__favorites {
