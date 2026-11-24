@@ -10,7 +10,9 @@ import type {SortableListProps} from '@xh/hoist/cmp/sortablelist';
 import {HoistModel} from '@xh/hoist/core';
 import {action, observable, observableRef} from '@xh/hoist/mobx';
 import {select} from '@xh/hoist/desktop/cmp/input';
+import {wait} from '@xh/hoist/promise';
 import {initTestAppAsync} from '@xh/hoist/test-support';
+import {uniq} from 'lodash';
 import {createPortal} from 'react-dom';
 import {act, fireEvent, render} from '@testing-library/react';
 import {beforeAll, describe, expect, it, vi} from 'vitest';
@@ -501,6 +503,79 @@ describe('SortableList', () => {
             fireEvent.click(removeButton(el, 1));
             fireEvent.click(removeButton(el, 0));
             expect(document.activeElement).toBe(addRow(el));
+        });
+    });
+
+    /**
+     * Rows can be heavy - a detail row may hold a whole editor - so a list re-render, a drag or a
+     * move must re-render only the rows it changes, and never an open detail it doesn't change.
+     */
+    describe('render cost', () => {
+        function setup(props: Partial<SortableListProps> = {}) {
+            const renderItem = vi.fn((it: any) => span(it.name)),
+                renderDetail = vi.fn((it: any) => span(`${it.name} settings`)),
+                listProps = {
+                    value: DIMS,
+                    renderItem,
+                    renderDetail,
+                    expandedKeys: ['fund'],
+                    ...props
+                } as SortableListProps,
+                {container, rerender} = render(sortableList(listProps)),
+                el = container.querySelector<HTMLElement>('.xh-sortable-list'),
+                rendered = () => renderItem.mock.calls.map(([it]) => it.id);
+            renderItem.mockClear();
+            renderDetail.mockClear();
+            return {
+                el,
+                renderItem,
+                renderDetail,
+                rendered,
+                rerender: () => rerender(sortableList({...listProps, className: 'changed'}))
+            };
+        }
+
+        it('re-renders no row when the list re-renders with the same items', () => {
+            const {renderItem, renderDetail, rerender} = setup();
+            rerender();
+            expect(renderItem).not.toHaveBeenCalled();
+            expect(renderDetail).not.toHaveBeenCalled();
+        });
+
+        it('re-renders only the rows a move swaps, leaving an open detail alone', () => {
+            const {el, renderDetail, rendered} = setup({
+                value: null,
+                model: new DimsModel(),
+                bind: 'dims'
+            });
+            fireEvent.keyDown(handles(el)[0], {key: 'ArrowDown', altKey: true});
+            expect(rendered().sort()).toEqual(['region', 'sector']);
+            expect(renderDetail).not.toHaveBeenCalled();
+        });
+
+        // A keyboard drag runs in jsdom given the two browser APIs dnd-kit's drag start calls.
+        it('re-renders only the lifted row at drag start, leaving its open detail alone', async () => {
+            vi.stubGlobal(
+                'IntersectionObserver',
+                class {
+                    observe() {}
+                    disconnect() {}
+                }
+            );
+            Document.prototype.getAnimations = Element.prototype.getAnimations = () => [];
+            const {el, renderDetail, rendered} = setup();
+            await act(() => wait(20));
+            handles(el)[2].focus();
+            await act(async () => {
+                fireEvent.keyDown(handles(el)[2], {key: ' ', code: 'Space'});
+                await wait(50);
+            });
+            expect(el.classList).toContain('xh-sortable-list--keyboard-drag');
+            expect(uniq(rendered())).toEqual(['fund']);
+            expect(renderDetail).not.toHaveBeenCalled();
+            delete Document.prototype.getAnimations;
+            delete Element.prototype.getAnimations;
+            vi.unstubAllGlobals();
         });
     });
 
