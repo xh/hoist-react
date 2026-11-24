@@ -1,7 +1,8 @@
 # Changelog
 
 <!--
-  Entry conventions: docs/changelog-format.md - read it before adding entries here.
+  New entries go in a fragment in changelog.d/, not in this file. A release assembles them here.
+  Entry conventions: docs/changelog-format.md - read it before adding or editing entries.
 
   The three rules that account for most review feedback:
 
@@ -13,27 +14,6 @@
 -->
 
 ## 92.0.0-SNAPSHOT - unreleased
-
-### 🎁 New Features
-
-* `GridModel.showGroupRowCounts` and `GridModel.groupRowHeight` can now change on a mounted grid,
-  which redraws its group rows, where before they were read once at construction.
-
-### 🐞 Bug Fixes
-
-* Addressed potential memory leaks:
-    * Grid column header filters could retain models after closing.
-    * Mobile `Navigator` could retain pages replaced by a route change.
-    * `Sparkline` tooltips could retain first-render props.
-    * `DashContainer` could retain old layouts after a rebuild.
-    * Hoist components could retain their first-render props until unmount.
-    * `useOnResize`, `useOnVisibleChange` and `useOnScroll` could hold on to the callback from the
-      first render rather than the latest one.
-
-### ⚙️ Technical
-
-* `InstanceManager` now holds models, stores, cubes and views weakly, so models that are never
-  destroyed can still be garbage collected.
 
 ## 91.0.0 - 2026-11-20
 
