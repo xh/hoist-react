@@ -8,7 +8,7 @@ import {div, htmlButton, input, span} from '@xh/hoist/cmp/layout';
 import {sortableList} from '@xh/hoist/cmp/sortablelist';
 import type {SortableListProps} from '@xh/hoist/cmp/sortablelist';
 import type {HoistProps} from '@xh/hoist/core';
-import {hoistCmp, HoistModel} from '@xh/hoist/core';
+import {hoistCmp, HoistModel, XH} from '@xh/hoist/core';
 import {action, observable, observableRef} from '@xh/hoist/mobx';
 import {select} from '@xh/hoist/desktop/cmp/input';
 import {wait} from '@xh/hoist/promise';
@@ -517,6 +517,31 @@ describe('SortableList', () => {
                 await act(async () => fireEvent.click(addRow(none)));
                 expect(items(none)).toHaveLength(3);
                 expect(onAdd).not.toHaveBeenCalled();
+            });
+
+            it('reports a getNewItem that fails, and adds nothing', async () => {
+                const onException = vi.spyOn(XH, 'handleException').mockImplementation(() => {}),
+                    model = new DimsModel(),
+                    el = renderList({
+                        model,
+                        bind: 'dims',
+                        getNewItem: () => Promise.reject(new Error('No book'))
+                    });
+
+                await act(async () => fireEvent.click(addRow(el)));
+                expect(onException).toHaveBeenCalledOnce();
+                expect(model.dims).toHaveLength(3);
+                onException.mockRestore();
+            });
+
+            it('never focuses an item the caller left out, once it appears later', async () => {
+                const props = {itemRenderer: it => span(it.name), getNewItem: () => newDim},
+                    {container, rerender} = render(sortableList({...props, value: DIMS})),
+                    el = container.querySelector<HTMLElement>('.xh-sortable-list');
+
+                await act(async () => fireEvent.click(addRow(el)));
+                rerender(sortableList({...props, value: [...DIMS, newDim]}));
+                expect(document.activeElement).not.toBe(handles(el)[3]);
             });
 
             it('leaves a list without bind to onAdd', async () => {

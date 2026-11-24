@@ -405,6 +405,8 @@ export const [SortableList, sortableList] = hoistCmp.withFactory<SortableListPro
             onAdd?.({item: added, index: next.length - 1, items: next});
         };
 
+        const addNewItemAsync = async () => add(await getNewItem(), false);
+
         // Runs from an item's layout effect, before the list's own, to win over focusing the item.
         const focusAddControl = (): boolean => {
             if (!focusAdd.current) return false;
@@ -418,6 +420,8 @@ export const [SortableList, sortableList] = hoistCmp.withFactory<SortableListPro
 
         useLayoutEffect(() => {
             focusAddControl();
+            // An added item the caller left out never takes focus, even if it appears later.
+            if (!keys.includes(focusKey.current)) focusKey.current = null;
         });
 
         const onDragStart = (e: DragStartEvent) => {
@@ -542,7 +546,7 @@ export const [SortableList, sortableList] = hoistCmp.withFactory<SortableListPro
                                 type: 'button',
                                 className: 'xh-sortable-list__add',
                                 disabled,
-                                onClick: async () => add(await getNewItem(), false),
+                                onClick: () => addNewItemAsync().catchDefault(),
                                 children: [Icon.add(), span(addText)]
                             })
                           : null,
