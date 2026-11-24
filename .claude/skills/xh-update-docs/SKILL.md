@@ -19,12 +19,9 @@ Accept `$ARGUMENTS` as a commit hash or PR number.
 
 **If arguments are provided:**
 - If it looks like a PR number (digits only, typically 1-5 digits):
-  - **Preferred:** Use `gh pr diff <number>` and `gh pr view <number>` to analyze
-  - **If `gh` CLI is not available:** Use the GitHub MCP server tools instead — call
-    `pull_request_read` with method `get_diff` for the unified diff and method `details`
-    for PR metadata. The MCP server is configured in `.mcp.json` at the repo root.
-  - **If neither `gh` nor the GitHub MCP server is available:** Ask the user to provide
-    the commit hash instead, or to check out the PR branch locally.
+  - Use `gh pr diff <number>` and `gh pr view <number>` to analyze
+  - **If `gh` CLI is not available:** Ask the user to provide the commit hash instead, or to
+    check out the PR branch locally.
 - Otherwise treat it as a commit hash and use `git diff <hash>~1..<hash>`
 
 **If no arguments are provided:**
@@ -49,11 +46,12 @@ Analyze the diff to identify documentation-worthy changes:
    - Don't just rely on the diff — read the actual source files to understand what was
      added or changed, including class hierarchies and exported APIs
 
-4. **Cross-reference CHANGELOG.md:**
-   - Check `CHANGELOG.md` for entries related to the commit/PR
-   - The changelog uses categorized sections under version headers:
-     `💥 Breaking Changes`, `🎁 New Features`, `⚙️ Technical`, `🐞 Bug Fixes`
-   - Look for entries in the current SNAPSHOT version that describe the change
+4. **Cross-reference the changelog:**
+   - Check the fragments in `changelog.d/` for entries related to the commit/PR. Unreleased
+     entries live there until a release assembles them into `CHANGELOG.md`
+   - For a change that already shipped, check `CHANGELOG.md` under its release version
+   - Both use categorized sections: `💥 Breaking Changes`, `🎁 New Features`, `⚙️ Technical`,
+     `🐞 Bug Fixes`
    - These provide curated descriptions and are a strong signal of documentation-worthy changes
 
 ## Step 3: Inventory Existing Documentation

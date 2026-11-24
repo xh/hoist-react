@@ -87,14 +87,15 @@ Use the hoist-react categories where they fit: `package`, `concept`, `devops`, `
 
 ## Agent Guidance
 
-An `@xh` library can give agents short, direct guidance with `mcpInstructions` in its registry
+A companion library can give agents short, direct guidance with `mcpInstructions` in its registry
 file. Hoist Docs adds it to its server instructions under the library's name. Agents read server
 instructions before they use any tool, so guidance reaches an agent that never searches the docs.
 
-Hoist Docs uses guidance only from packages in the `@xh` scope, so an installed dependency cannot
-steer the agent. A library outside it still ships its docs and symbols; its `mcpInstructions` are
-dropped. Put what such a library changes about writing Hoist code at the top of its index doc
-instead.
+Hoist Docs passes on guidance from packages in the `@xh` scope and from packages the app lists in
+its own `package.json`, so a package that arrives only through another cannot steer the agent.
+Such a package still ships its docs and symbols, but its `mcpInstructions` are dropped. Hoist Docs
+before 1.1.0 passes on guidance from `@xh` packages only. So a library should also put what it
+changes about writing Hoist code at the top of its index doc.
 
 - **Keep it short.** The builder cuts guidance longer than 1,500 characters and logs a warning.
   Put the details in the docs, and point to them.

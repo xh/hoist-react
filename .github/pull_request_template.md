@@ -6,8 +6,8 @@ checked off to indicate they have been considered. If unclear if a step is relev
 unchecked and note in comments.
 
 - [ ] Caught up with `develop` branch as of last change.
-- [ ] Added CHANGELOG entry, or determined not required.
-- [ ] Reviewed for breaking changes, added `breaking-change` label + CHANGELOG if so.
+- [ ] Added a changelog fragment in `changelog.d/`, or determined not required.
+- [ ] Reviewed for breaking changes, added `breaking-change` label + changelog fragment if so.
 - [ ] Updated doc comments / prop-types, or determined not required.
 - [ ] Added or updated unit tests, or determined not required.
 - [ ] Reviewed and tested on Mobile, or determined not required.
