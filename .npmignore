@@ -35,6 +35,9 @@ pnpm-workspace.yaml
 tsconfig.tsbuildinfo
 webpack.config.intellij.js
 
+# Changelog fragments - the snapshot publish folds them into CHANGELOG.md
+changelog.d
+
 # Development documentation
 AGENTS.md
 CLAUDE.md
