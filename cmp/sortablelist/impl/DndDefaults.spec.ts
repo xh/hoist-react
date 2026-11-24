@@ -4,9 +4,19 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {DND_PLUGINS, DND_SENSORS, dndPlugins} from '@xh/hoist/cmp/sortablelist/impl/DndDefaults';
-import {AutoScroller, PointerActivationConstraints} from '@xh/hoist/kit/dnd-kit';
-import {describe, expect, it} from 'vitest';
+import {
+    ClearSelection,
+    DND_PLUGINS,
+    DND_SENSORS,
+    dndPlugins
+} from '@xh/hoist/cmp/sortablelist/impl/DndDefaults';
+import {
+    AutoScroller,
+    Cursor,
+    PointerActivationConstraints,
+    PreventSelection
+} from '@xh/hoist/kit/dnd-kit';
+import {describe, expect, it, vi} from 'vitest';
 
 /**
  * Every Hoist list starts a drag the same way: a short hold lifts the item, as the cue that it is
@@ -42,5 +52,49 @@ describe('dndPlugins', () => {
     it('sets the auto-scroll acceleration, defaulting to 15', () => {
         expect(acceleration(DND_PLUGINS as any[])).toBe(15);
         expect(acceleration(dndPlugins(8) as any[])).toBe(8);
+    });
+});
+
+/**
+ * dnd-kit's Cursor and PreventSelection plugins add and remove page-wide `*` style rules on every
+ * drag, forcing the browser to restyle and lay out the whole page - a stutter at each drag start
+ * on a large dashboard. Hoist leaves them out.
+ */
+describe('drag start cost', () => {
+    const pluginOf = (it: any) => it?.plugin ?? it;
+
+    it('leaves out the plugins that inject page-wide style rules', () => {
+        const plugins = (DND_PLUGINS as any[]).map(pluginOf);
+        expect(plugins).not.toContain(Cursor);
+        expect(plugins).not.toContain(PreventSelection);
+        expect(plugins).toContain(ClearSelection);
+    });
+
+    it('clears text selection from drag start until drag end, without styles', () => {
+        const handlers: Record<string, () => void> = {},
+            manager = {
+                monitor: {
+                    addEventListener: (type: string, fn: () => void) => {
+                        handlers[type] = fn;
+                        return () => delete handlers[type];
+                    }
+                }
+            },
+            removeAllRanges = vi.fn();
+        vi.spyOn(document, 'getSelection').mockReturnValue({removeAllRanges} as any);
+        const plugin = new ClearSelection(manager as any);
+
+        handlers.dragstart();
+        expect(removeAllRanges).toHaveBeenCalledTimes(1);
+        document.dispatchEvent(new Event('selectionchange'));
+        expect(removeAllRanges).toHaveBeenCalledTimes(2);
+
+        handlers.dragend();
+        document.dispatchEvent(new Event('selectionchange'));
+        expect(removeAllRanges).toHaveBeenCalledTimes(2);
+
+        plugin.destroy();
+        expect(handlers).toEqual({});
+        vi.restoreAllMocks();
     });
 });
