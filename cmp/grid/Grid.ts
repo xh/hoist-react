@@ -229,6 +229,7 @@ export class GridLocalModel extends HoistModel {
             this.dataReaction(),
             this.groupReaction(),
             this.expandLevelReaction(),
+            this.groupRowCountsReaction(),
             this.sizingModeReaction(),
             this.validationDisplayReaction(),
             this.modalReaction(),
@@ -545,6 +546,23 @@ export class GridLocalModel extends HoistModel {
                 this.doWithPreservedState({expansion: false}, () => {
                     api.applyColumnState({state: colState, applyOrder});
                 });
+            }
+        };
+    }
+
+    groupRowCountsReaction() {
+        const {model} = this;
+        return {
+            track: () => [model.agApi, model.showGroupRowCounts] as const,
+            run: ([agApi, show]) => {
+                const params = agApi?.getGridOption('groupRowRendererParams');
+                if (!params || params.suppressCount === !show) return;
+                agApi.setGridOption('groupRowRendererParams', {...params, suppressCount: !show});
+                const groupRows = [];
+                agApi.forEachNode(node => {
+                    if (node.group) groupRows.push(node);
+                });
+                agApi.redrawRows({rowNodes: groupRows});
             }
         };
     }

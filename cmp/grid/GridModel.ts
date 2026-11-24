@@ -223,7 +223,10 @@ export interface GridConfig {
      */
     expandLevel?: number;
 
-    /** True (default) to show a count of group member rows within each full-width group row. */
+    /**
+     * True (default) to show a count of group member rows within each full-width group row. Can be
+     * changed on a mounted grid.
+     */
     showGroupRowCounts?: boolean;
 
     /** Size of text in grid.  If undefined, will default and bind to `XH.sizingMode`. */
@@ -281,7 +284,10 @@ export interface GridConfig {
      */
     rowClassRules?: Record<string, RowClassRuleFn>;
 
-    /** Height (in px) of a group row. Note that this will override `sizingMode` for group rows. */
+    /**
+     * Height (in px) of a group row. Note that this will override `sizingMode` for group rows. Can
+     * be changed on a mounted grid.
+     */
     groupRowHeight?: number;
 
     /** Function used to render group rows. */
@@ -582,10 +588,8 @@ export class GridModel extends HoistModel implements GridLikeModel {
     rowClassRules: Record<string, RowClassRuleFn>;
     contextMenu: GridContextMenuSpec;
     headerContextMenu: GridHeaderContextMenuSpec;
-    groupRowHeight: number;
     groupRowRenderer: GroupRowRenderer;
     groupSortFn: GridGroupSortFn;
-    showGroupRowCounts: boolean;
     enableColumnPinning: boolean;
     enableExport: boolean;
     externalSort: boolean;
@@ -642,6 +646,8 @@ export class GridModel extends HoistModel implements GridLikeModel {
     }
 
     @bindable accessor showSummary: boolean | VSide = false;
+    @bindable accessor showGroupRowCounts: boolean;
+    @bindable accessor groupRowHeight: number;
     @bindableRef accessor emptyText: ReactNode;
     @bindable accessor treeStyle: TreeStyle;
 
