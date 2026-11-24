@@ -34,7 +34,6 @@ import classNames from 'classnames';
 import {isEmpty, isNil} from 'lodash';
 import './GroupingChooser.scss';
 import type {ReactNode} from 'react';
-import {useEffect, useRef} from 'react';
 
 export interface GroupingChooserProps extends ButtonProps<GroupingChooserModel> {
     /** Title for value-editing portion of popover, or null to suppress. */
@@ -278,18 +277,10 @@ const dimensionRow = hoistCmp.factory<GroupingChooserLocalModel>({
 
 const addLevelSelect = hoistCmp.factory<GroupingChooserLocalModel>({
     render({model, add}) {
-        const options = model.getDimSelectOpts(),
-            justAdded = useRef(false);
-
-        useEffect(() => {
-            justAdded.current = false;
-        });
-
+        const options = model.getDimSelectOpts();
         return select({
-            // A new key when the options change clears the select's typed text. The remount
-            // drops focus, so the select takes it back after an add.
+            // A new key when the options change clears the select's typed text.
             key: JSON.stringify(options),
-            autoFocus: justAdded.current,
             options,
             placeholder: 'Add level...',
             leftIcon: Icon.add(),
@@ -297,10 +288,7 @@ const addLevelSelect = hoistCmp.factory<GroupingChooserLocalModel>({
             width: null,
             hideDropdownIndicator: true,
             hideSelectedOptionCheck: true,
-            onChange: newDim => {
-                justAdded.current = true;
-                add(newDim);
-            }
+            onChange: add
         });
     }
 });

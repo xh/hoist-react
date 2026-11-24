@@ -118,7 +118,7 @@
   &--right-items {
     grid-template-columns: minmax(0, 1fr) auto;
     align-items: center;
-    column-gap: var(--xh-spacing-half);
+    gap: var(--xh-spacing-half);
 
     > .xh-form-field__label {
       grid-area: 1 / 1;
