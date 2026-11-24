@@ -71,6 +71,8 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 * Added `SegmentedControl.toggleOnClick` (desktop and mobile). A two-option control becomes a
   toggle - a click anywhere on it, or Space or Enter on its focused segment, flips the value - for
   an On / Off choice in place of a switch.
+* `GridModel.showGroupRowCounts` and `GridModel.groupRowHeight` can now change on a mounted grid,
+  which redraws its group rows, where before they were read once at construction.
 
 ### 🐞 Bug Fixes
 
