@@ -255,10 +255,13 @@ describe('DateRangeUtils', () => {
 
     describe('dateRangeContext', () => {
         it('fills a context for an anchor date with the picker defaults', () => {
-            const ctx = dateRangeContext({anchorDate: LocalDate.get('2026-09-02')});
+            const before = LocalDate.today().isoString,
+                ctx = dateRangeContext({anchorDate: LocalDate.get('2026-09-02')}),
+                after = LocalDate.today().isoString;
             expect(ctx).toMatchObject({minDate: null, businessDayMode: false});
             expect(ctx.maxDate.isoString).toBe('2026-09-02');
-            expect(ctx.today.isoString).toBe(LocalDate.today().isoString);
+            // Either side of midnight, should the test straddle it.
+            expect([before, after]).toContain(ctx.today.isoString);
             expect(ctx.presets).toBe(dateRangePresets);
             expect(ctx.isBusinessDay(LocalDate.get('2026-09-05'))).toBe(false);
         });

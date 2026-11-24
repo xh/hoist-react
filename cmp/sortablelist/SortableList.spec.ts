@@ -15,7 +15,7 @@ import {wait} from '@xh/hoist/promise';
 import {initTestAppAsync} from '@xh/hoist/test-support';
 import {uniq} from 'lodash';
 import {createPortal} from 'react-dom';
-import {act, fireEvent, render} from '@testing-library/react';
+import {act, fireEvent, render, waitFor} from '@testing-library/react';
 import {beforeAll, describe, expect, it, vi} from 'vitest';
 
 /**
@@ -755,19 +755,21 @@ describe('SortableList', () => {
                 }
             );
             Document.prototype.getAnimations = Element.prototype.getAnimations = () => [];
-            const {el, detailRenderer, rendered} = setup();
-            await act(() => wait(20));
-            handles(el)[2].focus();
-            await act(async () => {
+            try {
+                const {el, detailRenderer, rendered} = setup();
+                await act(() => wait());
+                handles(el)[2].focus();
                 fireEvent.keyDown(handles(el)[2], {key: ' ', code: 'Space'});
-                await wait(50);
-            });
-            expect(el.classList).toContain('xh-sortable-list--keyboard-drag');
-            expect(uniq(rendered())).toEqual(['fund']);
-            expect(detailRenderer).not.toHaveBeenCalled();
-            delete Document.prototype.getAnimations;
-            delete Element.prototype.getAnimations;
-            vi.unstubAllGlobals();
+                await waitFor(() =>
+                    expect(el.classList).toContain('xh-sortable-list--keyboard-drag')
+                );
+                expect(uniq(rendered())).toEqual(['fund']);
+                expect(detailRenderer).not.toHaveBeenCalled();
+            } finally {
+                delete Document.prototype.getAnimations;
+                delete Element.prototype.getAnimations;
+                vi.unstubAllGlobals();
+            }
         });
     });
 
