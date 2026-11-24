@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 /*
- * One-shot codemod for the hoist-react v91 Blueprint class rename.
+ * One-shot codemod for the hoist-react v92 Blueprint class rename.
  *
- * v91 renders Hoist's desktop components with `xh-*` class names only - the `bp6-*` names Blueprint
+ * v92 renders Hoist's desktop components with `xh-*` class names only - the `bp6-*` names Blueprint
  * used are gone from Hoist's markup and stylesheets. This codemod rewrites app stylesheets and
  * TypeScript class strings that target the old names:
  *
@@ -27,7 +27,7 @@
  * Markdown files are never rewritten. The script lists their lines that mention a `bp6-` class.
  *
  * Usage, from an app's `client-app` directory:
- *   node node_modules/@xh/hoist/docs/codemod/v91/codemod-bp6-classes.mjs [--dry]
+ *   node node_modules/@xh/hoist/docs/codemod/v92/codemod-bp6-classes.mjs [--dry]
  *       [--exclude <path>] [path ...]
  *
  * Paths default to `./client-app/src` if present, else the current directory - pass `src` when

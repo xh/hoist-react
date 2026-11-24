@@ -70,7 +70,7 @@ that carries the popover's `className`, as with mobile's earlier popover.
 ## Common Pitfalls
 
 - **App CSS on `bp6-popover*` classes no longer applies.** The popover renders only its
-  `xh-popover__*` classes. Move app CSS to them - the v91 class codemod does this.
+  `xh-popover__*` classes. Move app CSS to them - the v92 class codemod does this.
 - **Changing the route closes popovers.** A popover whose content changes the route closes with
   the change. Keep route changes out of popover content that should stay open.
 - **`popoverModifiers` on `DateInput` has no effect.** It passed Popper.js options to Blueprint.

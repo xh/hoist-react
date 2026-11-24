@@ -240,8 +240,8 @@ export class ThemeModel extends HoistModel {
 
     /**
      * Warn about stylesheet rules that target Blueprint's `bp6-*` classes or read its `--bp-*`
-     * variables. Hoist renders neither since v91, so these rules no longer apply - almost always app
-     * CSS not yet migrated with the v91 codemod.
+     * variables. Hoist renders neither since v92, so these rules no longer apply - almost always app
+     * CSS not yet migrated with the v92 codemod.
      */
     private warnOnBlueprintSelectors() {
         const classes = new Set<string>(),
@@ -274,8 +274,8 @@ export class ThemeModel extends HoistModel {
                     `defines, so these rules have no effect. ` +
                     (classes.size ? `Classes: ${list(classes)}. ` : '') +
                     (vars.size ? `Variables: ${list(vars)}. ` : '') +
-                    `Run docs/codemod/v91/codemod-bp6-classes.mjs - see ` +
-                    `docs/upgrade-notes/v91-upgrade-notes.md.`
+                    `Run docs/codemod/v92/codemod-bp6-classes.mjs - see ` +
+                    `docs/upgrade-notes/v92-upgrade-notes.md.`
             );
         }
     }

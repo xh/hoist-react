@@ -2,7 +2,7 @@
 
 * Removed Blueprint. Desktop components now render Hoist's own markup and behavior, Hoist no longer
   loads Blueprint's stylesheet, and `@xh/hoist/kit/blueprint` is gone - replace its imports as in
-  Step 8 of the upgrade notes. Hoist ships the Blueprint styles its components use, so they look
+  Step 2 of the upgrade notes. Hoist ships the Blueprint styles its components use, so they look
   the same. Move any direct `@blueprintjs/core` imports onto Hoist's components too.
     * Popovers and tooltips use the new `Popover` in `@xh/hoist/cmp/popover` and `Tooltip` in
       `@xh/hoist/cmp/tooltip` - see New Features. `DateInputProps.popoverModifiers` no longer has

@@ -13,7 +13,7 @@ import {afterEach, describe, expect, it} from 'vitest';
 const CODEMOD = join(__dirname, 'codemod-bp6-classes.mjs');
 
 /**
- * The v91 Blueprint class codemod. It runs as a script, so each case writes files to a temp
+ * The v92 Blueprint class codemod. It runs as a script, so each case writes files to a temp
  * folder, runs the codemod over it, and checks the rewritten files and the printed report.
  */
 describe('codemod-bp6-classes', () => {
