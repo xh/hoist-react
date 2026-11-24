@@ -346,8 +346,8 @@ importers:
         specifier: ^8.1.0
         version: 8.1.0(supports-color@8.1.1)
       '@xh/hoist-dev-utils':
-        specifier: ^16.5.0
-        version: 16.5.0(@rspack/core@2.3.3(@swc/helpers@0.5.24))(core-js@3.51.0)(supports-color@8.1.1)
+        specifier: ^16.6.0
+        version: 16.6.0(@rspack/core@2.3.3(@swc/helpers@0.5.24))(core-js@3.51.0)(supports-color@8.1.1)
       '@xh/hoist-docs-builder':
         specifier: ^1.0.0
         version: 1.0.0
@@ -811,31 +811,31 @@ packages:
     resolution: {integrity: sha512-HpCo8tmWzLVad5s2d19EhAz5zqrrQ6s69qd6moPMQvkOuSwDT1YgRfWSVuc4ennqrgv3OHppiOGMQ7oC13yIww==}
 
   '@fortawesome/fontawesome-common-types@7.3.1':
-    resolution: {integrity: sha512-k0C0sdHmZtAo6dRDtd1Z/qcpyHbL0CKsjV8seMY/21xGhY5Wsv0XRmiI/xEEH4y2c9b1+jvgNs/3EqhV27yUEA==, tarball: https://npm.fontawesome.com/@fortawesome/fontawesome-common-types/-/fontawesome-common-types-7.3.1.tgz}
+    resolution: {integrity: sha512-k0C0sdHmZtAo6dRDtd1Z/qcpyHbL0CKsjV8seMY/21xGhY5Wsv0XRmiI/xEEH4y2c9b1+jvgNs/3EqhV27yUEA==}
     engines: {node: '>=6'}
 
   '@fortawesome/fontawesome-svg-core@7.3.1':
-    resolution: {integrity: sha512-BoxVN3PKnMbgStHhjoaky/oWdxHomDqmBVA24IA3KEmssFGeI7u9YT/BJceOjIum/t6TpPa/vcMKaVYQeIQ/3Q==, tarball: https://npm.fontawesome.com/@fortawesome/fontawesome-svg-core/-/fontawesome-svg-core-7.3.1.tgz}
+    resolution: {integrity: sha512-BoxVN3PKnMbgStHhjoaky/oWdxHomDqmBVA24IA3KEmssFGeI7u9YT/BJceOjIum/t6TpPa/vcMKaVYQeIQ/3Q==}
     engines: {node: '>=6'}
 
   '@fortawesome/pro-light-svg-icons@7.3.1':
-    resolution: {integrity: sha512-NwexkEyu5WPQQkxk+dmuq0sKtFEB0Ge80DGBA+b6tcIsaAMJFGdC9oUWwWBVHAW6xGjArZ+v9I8rzUp8E7CI6g==, tarball: https://npm.fontawesome.com/@fortawesome/pro-light-svg-icons/-/pro-light-svg-icons-7.3.1.tgz}
+    resolution: {integrity: sha512-NwexkEyu5WPQQkxk+dmuq0sKtFEB0Ge80DGBA+b6tcIsaAMJFGdC9oUWwWBVHAW6xGjArZ+v9I8rzUp8E7CI6g==}
     engines: {node: '>=6'}
 
   '@fortawesome/pro-regular-svg-icons@7.3.1':
-    resolution: {integrity: sha512-7iJTicd2X4cgUQ5/HlMIUCMtePYNmclMeunu+tvyErsqzu2cMmS3nwaLGNikwX1ISHRybWZqkMYb5l4/so3V5Q==, tarball: https://npm.fontawesome.com/@fortawesome/pro-regular-svg-icons/-/pro-regular-svg-icons-7.3.1.tgz}
+    resolution: {integrity: sha512-7iJTicd2X4cgUQ5/HlMIUCMtePYNmclMeunu+tvyErsqzu2cMmS3nwaLGNikwX1ISHRybWZqkMYb5l4/so3V5Q==}
     engines: {node: '>=6'}
 
   '@fortawesome/pro-solid-svg-icons@7.3.1':
-    resolution: {integrity: sha512-GIpB5nFXFtHJwMSRfNPOP0HekDAUdMi0RgKmMIebXtB8bcPA+vpLmzEryYhdnEpnMRp099u44ewLZ8IIIy9Psw==, tarball: https://npm.fontawesome.com/@fortawesome/pro-solid-svg-icons/-/pro-solid-svg-icons-7.3.1.tgz}
+    resolution: {integrity: sha512-GIpB5nFXFtHJwMSRfNPOP0HekDAUdMi0RgKmMIebXtB8bcPA+vpLmzEryYhdnEpnMRp099u44ewLZ8IIIy9Psw==}
     engines: {node: '>=6'}
 
   '@fortawesome/pro-thin-svg-icons@7.3.1':
-    resolution: {integrity: sha512-KbGQ0KPuSwkLpIpsqkOKUXTb9/arwWPOFzCnwLE656gIyOL0rMvRi5Uxced3/6iodZs2lMhA+77xm/p4XXI8Yg==, tarball: https://npm.fontawesome.com/@fortawesome/pro-thin-svg-icons/-/pro-thin-svg-icons-7.3.1.tgz}
+    resolution: {integrity: sha512-KbGQ0KPuSwkLpIpsqkOKUXTb9/arwWPOFzCnwLE656gIyOL0rMvRi5Uxced3/6iodZs2lMhA+77xm/p4XXI8Yg==}
     engines: {node: '>=6'}
 
   '@fortawesome/react-fontawesome@3.5.0':
-    resolution: {integrity: sha512-63mlRr6fiBbJ0wjr1Cf6dsDGtP2lNvk9lnatKgxs/fIkhslsZT291hIUzJkuUkI9yr69ZvWnWfgb2qXm4QyVaA==, tarball: https://npm.fontawesome.com/@fortawesome/react-fontawesome/-/react-fontawesome-3.5.0.tgz}
+    resolution: {integrity: sha512-63mlRr6fiBbJ0wjr1Cf6dsDGtP2lNvk9lnatKgxs/fIkhslsZT291hIUzJkuUkI9yr69ZvWnWfgb2qXm4QyVaA==}
     engines: {node: '>=20'}
     peerDependencies:
       '@fortawesome/fontawesome-svg-core': ~6 || ~7
@@ -1829,9 +1829,10 @@ packages:
   '@xh/eslint-config@8.1.0':
     resolution: {integrity: sha512-RcBbyvh2Gq/yKZzv8pYA9vU/0Cc6839EMBb39NBHZr4ZUXZz978WCzHmZqHXL1X4iS3dk/fDL/1S9xICa+0NTg==}
 
-  '@xh/hoist-dev-utils@16.5.0':
-    resolution: {integrity: sha512-sUeLev9f90pXLYz3xjPNZ83sgTEL6jdlcJoUzQ+/nVnzN2kqy5B/LUW53Sq1VNI7+EehqqEJS2ko1wO4Q/keKg==}
+  '@xh/hoist-dev-utils@16.6.0':
+    resolution: {integrity: sha512-rZy/jjjpqqgH/DgwksQVx8YqPJ5ekxg1ElAggZcBUqqNoJeN1qkOIVLmq5cO0syBqoq34I00lJZSwqMFmrWTpA==}
     engines: {node: '>=22.15.0'}
+    hasBin: true
 
   '@xh/hoist-docs-builder@1.0.0':
     resolution: {integrity: sha512-Q57CQ6gYPtZFgzISiW+26H9Nz2LGdmh3Lt32cukyqS68Op7lz1yqjJWJuAlcwlTS4I5SeY/6tWqdFkUEIqqGvg==}
@@ -1977,11 +1978,6 @@ packages:
 
   change-case@4.1.2:
     resolution: {integrity: sha512-bSxY2ws9OtviILG1EiY5K7NNxkqg/JnRnFxLtKQ96JaviiIxi7djMrSd0ECT9AC+lttClmYwKw53BWpOMblo7A==}
-
-  changelog-parser@4.1.1:
-    resolution: {integrity: sha512-EXYZQ2nguTPFjkS2XAupx3pEqE7VTdBcUKEJl9NhrTWGygi92hrWm4ReSBbStkOdbp00PUeQMcsBv86WQCV+Uw==}
-    engines: {node: '>=22.12.0'}
-    hasBin: true
 
   character-entities-html4@2.1.0:
     resolution: {integrity: sha512-1v7fgQRj6hnSwFpq1Eu0ynr/CDEw0rXo2B61qXrLNdHZmPKgb7fqS1a2JwF0rISo9q77jDI8VMEHoApn8qDoZA==}
@@ -3178,8 +3174,8 @@ packages:
   remark-stringify@11.0.0:
     resolution: {integrity: sha512-1OSmLd3awB/t8qdoEOMazZkNsfVTeY4fTsgzcQFdXNq8ToTN4ZGwrMnlda4K6smTFKD+GRV6O48i6Z4iKgPPpw==}
 
-  remove-markdown@0.8.0:
-    resolution: {integrity: sha512-VP1v6BYAa6VlLPHzr3JpVDV+f2IHqLKBauXZm08alrB9rJC4mQ1IoePsWOzpJx8GTfFwF+j6fmCtI8DLh1qIdA==}
+  remove-markdown@0.6.4:
+    resolution: {integrity: sha512-BompiLClzjfh46irZmzv+1Q61jZYlKN3iq/hzae9EOUwf7ctr/5wpD4qwgn/FWDAYE18RORO7z/yr+HXZJCY8Q==}
 
   require-from-string@2.0.2:
     resolution: {integrity: sha512-Xf0nWe6RseziFMu+Ap9biiUbmplq6S9/p+7w7YXP/JBHhrUDDUhwa+vANyubuqfZWTveU//DYVGsDG7RKL/vEw==}
@@ -3412,10 +3408,6 @@ packages:
 
   snake-case@3.0.4:
     resolution: {integrity: sha512-LAOh4z89bGQvl9pFfNF8V146i7o7/CqFPbqzYgP+yYzDIDeS9HaNFtXABamRW+AQzEVODcvE79ljJ+8a9YSdMg==}
-
-  source-map-js@1.2.2:
-    resolution: {integrity: sha512-KGj/8Y43x35aZVDtt+J4mK1hoLGHULMYfSkODJNQjNDC3oW1PqPoxMwo0pLUsWM/UEGzON/NxeHywEfNXNP3Vw==}
-    engines: {node: '>=0.10.0'}
 
   source-map-js@1.2.4:
     resolution: {integrity: sha512-J7ZjMvHd9O1fcT/5V09QWaaSl2BbWx3F6O08spde82Namf9UB0GxRVIPiNbVsdKkoizHiSpTodo3vp2bAy91MA==}
@@ -5445,7 +5437,7 @@ snapshots:
       - jiti
       - supports-color
 
-  '@xh/hoist-dev-utils@16.5.0(@rspack/core@2.3.3(@swc/helpers@0.5.24))(core-js@3.51.0)(supports-color@8.1.1)':
+  '@xh/hoist-dev-utils@16.6.0(@rspack/core@2.3.3(@swc/helpers@0.5.24))(core-js@3.51.0)(supports-color@8.1.1)':
     dependencies:
       '@rsbuild/core': 2.3.1(core-js@3.51.0)
       '@rsbuild/plugin-basic-ssl': 2.0.0(@rsbuild/core@2.3.1(core-js@3.51.0))
@@ -5455,8 +5447,8 @@ snapshots:
       '@types/react': 19.3.0
       '@types/react-dom': 19.3.0(@types/react@19.3.0)
       '@xh/eslint-config': 8.1.0(supports-color@8.1.1)
-      changelog-parser: 4.1.1
       lodash: 4.18.1
+      remove-markdown: 0.6.4
       sass-embedded: 1.108.2
       semver: 7.8.6
       type-fest: 5.10.0
@@ -5623,10 +5615,6 @@ snapshots:
       sentence-case: 3.0.4
       snake-case: 3.0.4
       tslib: 2.6.3
-
-  changelog-parser@4.1.1:
-    dependencies:
-      remove-markdown: 0.8.0
 
   character-entities-html4@2.1.0: {}
 
@@ -7031,7 +7019,7 @@ snapshots:
       mdast-util-to-markdown: 2.2.3
       unified: 11.0.5
 
-  remove-markdown@0.8.0: {}
+  remove-markdown@0.6.4: {}
 
   require-from-string@2.0.2: {}
 
@@ -7187,7 +7175,7 @@ snapshots:
     dependencies:
       chokidar: 5.0.0
       immutable: 5.2.1
-      source-map-js: 1.2.2
+      source-map-js: 1.2.4
     optionalDependencies:
       '@parcel/watcher': 2.6.0
     optional: true
@@ -7263,9 +7251,6 @@ snapshots:
     dependencies:
       dot-case: 3.0.4
       tslib: 2.6.3
-
-  source-map-js@1.2.2:
-    optional: true
 
   source-map-js@1.2.4: {}
 

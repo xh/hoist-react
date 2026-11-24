@@ -56,16 +56,15 @@ jobs:
         - name: Validate release version
           # Pinned to commit SHA of xh/hoist-dev-utils master at time of pinning.
           # Bumped by Dependabot when newer versions of the action are released.
-          uses: xh/hoist-dev-utils/.github/actions/validate-release-version@f2cd1a42b938adcf0f9c5ace1121fe77e1ea73f7 # master
+          uses: xh/hoist-dev-utils/.github/actions/validate-release-version@3e286bdc09b126ef9b51a34415a73cc44ed5374d # master
           with:
               version: ${{ inputs.version }}
               is-hotfix: ${{ inputs.is-hotfix }}
 
         # Fails unless CHANGELOG.md holds this version and no changelog fragments are left, so a
         # release cannot start before `pnpm changelog release` has run.
-        # Pin to a commit SHA of xh/hoist-dev-utils master once check-changelog is released there.
         - name: Check changelog
-          uses: xh/hoist-dev-utils/.github/actions/check-changelog@master
+          uses: xh/hoist-dev-utils/.github/actions/check-changelog@3e286bdc09b126ef9b51a34415a73cc44ed5374d # master
           with:
               release: ${{ inputs.version }}
 
@@ -150,7 +149,7 @@ jobs:
         # the correct release version — the tag is just a pointer to the source commit.
         # Checkout is required to be called with `fetch-depth: 0` and `fetch-tags: true`.
         - name: Create tag and GitHub release
-          uses: xh/hoist-dev-utils/.github/actions/create-tag-and-github-release@f2cd1a42b938adcf0f9c5ace1121fe77e1ea73f7 # master
+          uses: xh/hoist-dev-utils/.github/actions/create-tag-and-github-release@3e286bdc09b126ef9b51a34415a73cc44ed5374d # master
           with:
               version: ${{ inputs.version }}
               is-hotfix: ${{ inputs.is-hotfix }}
