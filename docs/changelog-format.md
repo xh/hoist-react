@@ -232,8 +232,8 @@ build time by a Hoist release notes feature that displays them within the app UI
 
 An app on `@xh/hoist-dev-utils` 16.6 or later parses its changelog with the same parser as
 `xh-changelog`. Its bullets can wrap and hold sub-bullets, as in a library changelog. Such an app
-can also use changelog fragments: run `xh-changelog init` from its `client-app/` folder. See the
-[hoist-dev-utils README](https://github.com/xh/hoist-dev-utils/blob/master/README.md#changelog-fragments).
+can also use changelog fragments: run `pnpm exec xh-changelog init` from its `client-app/` folder.
+See the [hoist-dev-utils README](https://github.com/xh/hoist-dev-utils/blob/master/README.md#changelog-fragments).
 
 **On an older `@xh/hoist-dev-utils`, do NOT hard-wrap list items in application changelogs.** Each
 bullet point must be a single unwrapped line. That parser treats a line break inside a list item as
