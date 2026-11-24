@@ -48,10 +48,25 @@ export const DND_SPACE_LIFT_SENSORS: DragDropProviderProps['sensors'] = [
 export const DND_SCROLL_ACCELERATION = 15;
 
 /** Hoist's plugins, with auto-scroll at `scrollAcceleration`. */
-export function dndPlugins(
-    scrollAcceleration: number = DND_SCROLL_ACCELERATION
-): DragDropProviderProps['plugins'] {
-    return [ACCESSIBILITY, AutoScroller.configure({acceleration: scrollAcceleration}), ...REST];
+/** Screen reader instructions for a handle that lifts and drops on Space or Enter. */
+export const DND_INSTRUCTIONS =
+    'To pick up the item, press Space or Enter. Use the arrow keys to move it, then press Space ' +
+    'or Enter to drop it, or Escape to cancel.';
+
+/**
+ * Hoist's plugins for a `dragDropProvider`.
+ * @param instructions - read to screen reader users on a handle. Name only the keys the consumer
+ *      supports.
+ */
+export function dndPlugins({
+    scrollAcceleration = DND_SCROLL_ACCELERATION,
+    instructions = DND_INSTRUCTIONS
+}: {scrollAcceleration?: number; instructions?: string} = {}): DragDropProviderProps['plugins'] {
+    return [
+        accessibility(instructions),
+        AutoScroller.configure({acceleration: scrollAcceleration}),
+        ...REST
+    ];
 }
 
 /**
@@ -125,31 +140,27 @@ export class CancelOnEscape extends Plugin<DragDropManager> {
     }
 }
 
-const ACCESSIBILITY = Accessibility.configure({
-        announcements: {
-            dragstart: ({operation: {source}}) =>
-                isSortable(source)
-                    ? `Picked up ${source.data.label}, position ${source.index + 1} of ${source.data.count}.`
-                    : undefined,
-            dragover: ({operation: {source}}) =>
-                isSortable(source)
-                    ? `${source.data.label}, position ${source.index + 1} of ${source.data.count}.`
-                    : undefined,
-            dragend: ({operation: {source}, canceled}) => {
-                if (!isSortable(source)) return undefined;
-                const {label, count} = source.data;
-                return canceled
-                    ? `Cancelled. ${label} returned to position ${source.initialIndex + 1}.`
-                    : `Dropped ${label} at position ${source.index + 1} of ${count}.`;
-            }
-        },
-        screenReaderInstructions: {
-            draggable:
-                'To pick up the item, press Space or Enter. Use the arrow keys to move it, then ' +
-                'press Space or Enter to drop it, or Escape to cancel. Alt with an arrow key ' +
-                'moves it one place.'
-        }
-    }),
+const accessibility = (draggable: string) =>
+        Accessibility.configure({
+            announcements: {
+                dragstart: ({operation: {source}}) =>
+                    isSortable(source)
+                        ? `Picked up ${source.data.label}, position ${source.index + 1} of ${source.data.count}.`
+                        : undefined,
+                dragover: ({operation: {source}}) =>
+                    isSortable(source)
+                        ? `${source.data.label}, position ${source.index + 1} of ${source.data.count}.`
+                        : undefined,
+                dragend: ({operation: {source}, canceled}) => {
+                    if (!isSortable(source)) return undefined;
+                    const {label, count} = source.data;
+                    return canceled
+                        ? `Cancelled. ${label} returned to position ${source.initialIndex + 1}.`
+                        : `Dropped ${label} at position ${source.index + 1} of ${count}.`;
+                }
+            },
+            screenReaderInstructions: {draggable}
+        }),
     REST = [Feedback.configure({dropAnimation: DND_TRANSITION}), ScopedDragStyles, CancelOnEscape];
 
 export const DND_PLUGINS = dndPlugins();

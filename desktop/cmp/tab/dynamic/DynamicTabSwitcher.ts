@@ -16,9 +16,9 @@ import {ScrollerModel} from '@xh/hoist/desktop/cmp/tab/dynamic/scroller/Scroller
 import {Icon} from '@xh/hoist/icon';
 import {tooltip as bpTooltip, showContextMenu} from '@xh/hoist/kit/blueprint';
 import {
-    DND_PLUGINS,
     DND_SPACE_LIFT_SENSORS,
-    DND_TRANSITION
+    DND_TRANSITION,
+    dndPlugins
 } from '@xh/hoist/cmp/sortablelist/impl/DndDefaults';
 import {stopDragKeys} from '@xh/hoist/cmp/sortablelist/impl/DndUtils';
 import {
@@ -91,7 +91,7 @@ const tabs = hoistCmp.factory<TabsProps>({
             layoutProps = getLayoutProps(props);
         return dragDropProvider({
             sensors: DND_SPACE_LIFT_SENSORS,
-            plugins: DND_PLUGINS,
+            plugins: PLUGINS,
             modifiers: [isVertical ? RestrictToVerticalAxis : RestrictToHorizontalAxis],
             onDragEnd: e => {
                 const {source} = e.operation;
@@ -234,6 +234,13 @@ const tabCmp = hoistCmp.factory<TabProps>(({tab, index, count, localModel, model
             })
         ]
     });
+});
+
+// Enter activates the tab, so only Space lifts it.
+const PLUGINS = dndPlugins({
+    instructions:
+        'To pick up the tab, press Space. Use the arrow keys to move it, then press Space to drop ' +
+        'it, or Escape to cancel.'
 });
 
 function flipOrientation(orientation: Side) {

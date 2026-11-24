@@ -29,7 +29,13 @@ import {dragDropProvider, useSortable} from '@xh/hoist/kit/dnd-kit';
 import {TEST_ID, mergeDeep, throwIf} from '@xh/hoist/utils/js';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
 
-import {DND_SCROLL_ACCELERATION, DND_SENSORS, DND_TRANSITION, dndPlugins} from './impl/DndDefaults';
+import {
+    DND_INSTRUCTIONS,
+    DND_SCROLL_ACCELERATION,
+    DND_SENSORS,
+    DND_TRANSITION,
+    dndPlugins
+} from './impl/DndDefaults';
 import type {SortableKey} from './impl/DndUtils';
 import {moveItem, stopDragKeys} from './impl/DndUtils';
 import './SortableList.scss';
@@ -324,7 +330,10 @@ export const [SortableList, sortableList] = hoistCmp.withFactory<SortableListPro
             latest = useRef({items, keys, pendingKeys, openKeys}),
             // Stable across renders, so a list re-render leaves rows with unchanged props alone.
             actions = useRef<SortableItemActions>(null),
-            plugins = useMemo(() => dndPlugins(scrollAcceleration), [scrollAcceleration]);
+            plugins = useMemo(
+                () => dndPlugins({scrollAcceleration, instructions: INSTRUCTIONS}),
+                [scrollAcceleration]
+            );
 
         latest.current = {items, keys, pendingKeys, openKeys};
         throwIf(keys.some(isNil), 'SortableList requires a key for every item - see `itemKey`.');
@@ -559,6 +568,8 @@ function chain<A extends unknown[]>(
 ): (...args: A) => void {
     return app ? over([own, app]) : own;
 }
+
+const INSTRUCTIONS = `${DND_INSTRUCTIONS} Alt with an arrow key moves it one place.`;
 
 const FOCUSABLE =
     'button:not(:disabled), input:not(:disabled), select:not(:disabled), textarea:not(:disabled), ' +

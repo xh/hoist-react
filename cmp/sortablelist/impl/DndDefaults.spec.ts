@@ -6,12 +6,14 @@
  */
 import {
     CancelOnEscape,
+    DND_INSTRUCTIONS,
     DND_PLUGINS,
     DND_SENSORS,
     dndPlugins,
     ScopedDragStyles
 } from '@xh/hoist/cmp/sortablelist/impl/DndDefaults';
 import {
+    Accessibility,
     AutoScroller,
     Cursor,
     PointerActivationConstraints,
@@ -52,7 +54,17 @@ describe('dndPlugins', () => {
 
     it('sets the auto-scroll acceleration, defaulting to 15', () => {
         expect(acceleration(DND_PLUGINS as any[])).toBe(15);
-        expect(acceleration(dndPlugins(8) as any[])).toBe(8);
+        expect(acceleration(dndPlugins({scrollAcceleration: 8}) as any[])).toBe(8);
+    });
+
+    it('gives screen reader users the instructions it is passed, defaulting to Space or Enter', () => {
+        const instructions = (plugins: any[]) =>
+            plugins.find(it => it.plugin === Accessibility)?.options.screenReaderInstructions
+                .draggable;
+        expect(instructions(DND_PLUGINS as any[])).toBe(DND_INSTRUCTIONS);
+        expect(instructions(dndPlugins({instructions: 'Press Space.'}) as any[])).toBe(
+            'Press Space.'
+        );
     });
 });
 
