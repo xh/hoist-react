@@ -4,7 +4,7 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {HoistModel, XH} from '@xh/hoist/core';
+import {HoistModel, managed, XH} from '@xh/hoist/core';
 import type {
     CompoundFilterOperator,
     FieldFilterOperator,
@@ -27,7 +27,7 @@ export class CustomTabModel extends HoistModel {
     headerFilterModel: HeaderFilterModel;
 
     @bindable accessor op: CompoundFilterOperator = 'AND';
-    @observableRef accessor rowModels: CustomRowModel[] = [];
+    @managed @observableRef accessor rowModels: CustomRowModel[] = [];
 
     /** Filter config output by this model. */
     @computedStruct
@@ -91,6 +91,7 @@ export class CustomTabModel extends HoistModel {
     //-------------------
     @action
     private doSyncWithFilter() {
+        XH.safeDestroy(this.rowModels);
         const {columnCompoundFilter} = this,
             op = this.deriveOp();
         this.op = op;

@@ -11,11 +11,13 @@ import {
     type FieldFilterSpec,
     type FilterLike
 } from '@xh/hoist/data';
+import {instanceManager} from '@xh/hoist/core/impl/InstanceManager';
 import {wait} from '@xh/hoist/promise';
 import {initTestAppAsync} from '@xh/hoist/test-support';
 import {onReactionError} from 'mobx';
 import {beforeAll, describe, expect, it, onTestFinished, vi} from 'vitest';
 import {ColumnHeaderFilterModel} from '../ColumnHeaderFilterModel';
+import {CustomRowModel} from './custom/CustomRowModel';
 import {CustomTabModel} from './custom/CustomTabModel';
 import {HeaderFilterModel} from './HeaderFilterModel';
 
@@ -288,6 +290,20 @@ describe('CustomTabModel', () => {
         expect(customTabModel.rowModels).toBeNull();
         expect(parseFilter(customTabModel.filter).equals(parseFilter(filter))).toBe(true);
     });
+
+    it('destroys every Custom tab row it creates', async () => {
+        const gridModel = createGrid({field: 'qty', op: '>', value: 10}),
+            before = await liveRowCount(),
+            parent = new ColumnHeaderFilterModel(gridModel.filterModel, gridModel.getColumn('qty')),
+            model = new HeaderFilterModel();
+        parent.open();
+        model.parent = parent;
+        model.onLinked();
+        model.destroy();
+        parent.destroy();
+
+        expect(await liveRowCount()).toBe(before);
+    });
 });
 
 //------------------
@@ -337,6 +353,12 @@ function openFilter(gridModel: GridModel, field: string) {
         parent.destroy();
     });
     return ret;
+}
+
+/** Count of CustomRowModels registered and not yet destroyed. */
+async function liveRowCount(): Promise<number> {
+    await wait(); // InstanceManager registers and unregisters asynchronously
+    return [...instanceManager.models].filter(it => it instanceof CustomRowModel).length;
 }
 
 /** Check exactly the given values in the Values tab. */

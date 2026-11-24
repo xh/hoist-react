@@ -17,7 +17,7 @@ import {label as labelCmp} from '@xh/hoist/mobile/cmp/input';
 import '@xh/hoist/mobile/register';
 import {isLocalDate} from '@xh/hoist/utils/datetime';
 import {errorIf, getTestId, TEST_ID, throwIf, withDefault} from '@xh/hoist/utils/js';
-import {getLayoutProps, useComposedRefs, useOnMount, useOnUnmount} from '@xh/hoist/utils/react';
+import {getLayoutProps, useComposedRefs} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import {first, isBoolean, isDate, isEmpty, isFinite, isUndefined} from 'lodash';
 import type {ReactNode} from 'react';
@@ -130,8 +130,7 @@ export const [FormField, formField] = hoistCmp.withFactory<FormFieldProps>({
 
         // Test ID handling
         const testId = getFormFieldTestId(props, formContext, model?.name);
-        useOnMount(() => instanceManager.registerModelWithTestId(testId, model));
-        useOnUnmount(() => instanceManager.unregisterModelWithTestId(testId));
+        instanceManager.useTestIdRegistration(testId, model);
 
         let childEl =
             readonly || !child

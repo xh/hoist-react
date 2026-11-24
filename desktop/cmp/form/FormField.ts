@@ -20,13 +20,7 @@ import {Icon} from '@xh/hoist/icon';
 import {tooltip} from '@xh/hoist/kit/blueprint';
 import {isLocalDate} from '@xh/hoist/utils/datetime';
 import {errorIf, getTestId, logWarn, TEST_ID, throwIf, withDefault} from '@xh/hoist/utils/js';
-import {
-    getLayoutProps,
-    getReactElementName,
-    useComposedRefs,
-    useOnMount,
-    useOnUnmount
-} from '@xh/hoist/utils/react';
+import {getLayoutProps, getReactElementName, useComposedRefs} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import {
     first,
@@ -219,8 +213,7 @@ export const [FormField, formField] = hoistCmp.withFactory<FormFieldProps>({
 
         // Test ID handling
         const testId = getFormFieldTestId(props, formContext, model?.name);
-        useOnMount(() => instanceManager.registerModelWithTestId(testId, model));
-        useOnUnmount(() => instanceManager.unregisterModelWithTestId(testId));
+        instanceManager.useTestIdRegistration(testId, model);
 
         // Generate actual element child to render
         let childEl: ReactNode =

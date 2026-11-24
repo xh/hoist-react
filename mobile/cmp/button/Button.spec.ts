@@ -4,6 +4,7 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
+import {span} from '@xh/hoist/cmp/layout';
 import {Icon} from '@xh/hoist/icon';
 import {button} from '@xh/hoist/mobile/cmp/button';
 import {initTestAppAsync} from '@xh/hoist/test-support';
@@ -22,6 +23,18 @@ describe('Button (mobile)', () => {
         const el = screen.getByTestId('save');
         expect(el.getAttribute('role')).toBe('button');
         expect(el.textContent).toBe('Save');
+        expect(el.querySelector('svg')).not.toBeNull();
+    });
+
+    it('renders children after its text', () => {
+        render(button({text: 'Group by ', children: span('Sector'), testId: 'grp'}));
+        expect(screen.getByTestId('grp').textContent).toBe('Group by Sector');
+    });
+
+    it('renders children as its label when it has no text', () => {
+        render(button({icon: Icon.save(), children: [span('A'), span('B')], testId: 'kids'}));
+        const el = screen.getByTestId('kids');
+        expect(el.textContent).toBe('AB');
         expect(el.querySelector('svg')).not.toBeNull();
     });
 
