@@ -8,7 +8,7 @@ import type {HoistProps} from '@xh/hoist/core';
 import {hoistCmp} from '@xh/hoist/core';
 import {tooltip as bpTooltip} from '@xh/hoist/kit/blueprint';
 import type {HTMLAttributes, ReactElement, Ref} from 'react';
-import {useEffect, useRef, useState} from 'react';
+import {useRef, useState} from 'react';
 
 /** Props for the element that shows the tooltip, to spread onto it. */
 export type SparklineTooltipTargetProps = HTMLAttributes<HTMLElement> & {ref?: Ref<HTMLElement>};
@@ -38,41 +38,31 @@ export const sparklineTooltipImpl = hoistCmp.factory<SparklineTooltipImplProps>(
     observer: false,
 
     render({getContent, renderTarget}) {
-        const [armed, setArmed] = useState(false),
-            timer = useRef<number>(null),
-            latestGetContent = useRef(getContent),
-            // Content built to decide whether to arm, reused by the first armed render.
-            probed = useRef<ReactElement | string>(null),
-            cancel = () => window.clearTimeout(timer.current);
+        const [hasTooltip, setHasTooltip] = useState(false),
+            timerId = useRef<number>(null),
+            cancel = () => window.clearTimeout(timerId.current);
 
-        latestGetContent.current = getContent;
-        useEffect(() => cancel, []);
-
-        if (!armed) {
+        if (!hasTooltip) {
             return renderTarget({
                 onMouseEnter: () => {
                     cancel();
-                    timer.current = window.setTimeout(() => {
-                        // Stay unarmed while there is no content, so a later hover tries again.
-                        probed.current = contentOf(latestGetContent.current);
-                        if (probed.current != null) setArmed(true);
+                    timerId.current = window.setTimeout(() => {
+                        // Add no tooltip while there is no content, so a later hover tries again.
+                        if (contentOf(getContent) != null) setHasTooltip(true);
                     }, HOVER_OPEN_DELAY);
                 },
                 onMouseLeave: cancel
             });
+        } else {
+            // Once added, keep the tooltip even if its content goes empty. Blueprint then shows
+            // nothing, and a remount would open it again while the pointer is elsewhere.
+            return bpTooltip({
+                content: contentOf(getContent),
+                defaultIsOpen: true,
+                openOnTargetFocus: false,
+                renderTarget: ({isOpen, ...targetProps}) => renderTarget(targetProps)
+            });
         }
-
-        const content = probed.current ?? contentOf(getContent);
-        probed.current = null;
-
-        // Once armed, stay mounted even if the content goes empty. Blueprint then shows no tooltip,
-        // and a remount would open it again while the pointer is elsewhere.
-        return bpTooltip({
-            content,
-            defaultIsOpen: true,
-            openOnTargetFocus: false,
-            renderTarget: ({isOpen, ...targetProps}) => renderTarget(targetProps)
-        });
     }
 });
 
