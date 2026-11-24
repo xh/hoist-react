@@ -48,10 +48,19 @@
       --chip-fill: var(--xh-intent-#{$intent}-darker);
       --chip-fill-hover: var(--xh-intent-#{$intent}-darkest);
       --chip-fill-text: var(--xh-white);
-      --chip-text: var(--xh-intent-#{$intent}-text-color);
+      // Mixed toward the text color, as a custom color is, to read on its light wash.
+      --chip-text: color-mix(
+        in oklab,
+        var(--xh-intent-#{$intent}-text-color) 65%,
+        var(--xh-text-color)
+      );
       --chip-wash: var(--xh-intent-#{$intent}-trans1);
       --chip-wash-hover: var(--xh-intent-#{$intent}-trans2);
       --chip-line: var(--xh-intent-#{$intent}-text-color);
+
+      :where(.xh-dark) & {
+        --chip-text: var(--xh-intent-#{$intent}-text-color);
+      }
     }
   }
 
