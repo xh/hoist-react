@@ -61,6 +61,9 @@ detailed, step-by-step upgrade instructions with before/after code examples.
   `--xh-sortable-list-drag-border-color` and `--xh-sortable-list-drag-shadow`. Each row has
   horizontal padding from `--xh-sortable-list-item-padding`, Hoist's half spacing by default.
 * `FilterChooser` favorites now show their filter labels as minimal `Chip`s.
+* Mixed the text of minimal and outlined intent `Chip`s 65% toward the text color in the light
+  theme, as custom-colored chips already were. Success text on its wash rises from 3.72:1 to 5.45:1
+  and warning from 2.84:1 to 4.55:1.
 * Removed the `xh-grouping-chooser__row--dragging` class. A dragged row is styled by `SortableList`.
 * `GroupingChooser` rows use `SortableList`'s grip handle, and its desktop dimension selects show a
   dropdown chevron and a hover tint. Removed the `xh-grouping-chooser__row__grabber` class.
