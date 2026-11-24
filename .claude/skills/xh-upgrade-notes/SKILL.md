@@ -330,6 +330,7 @@ notes and/or CHANGELOG entry. LOW priority items are at your discretion.
 
 - This skill produces documentation — it does NOT modify application source code.
 - The CHANGELOG is a consolidated file that each release adds a block to, assembled from the
-  fragments in `changelog.d/`. Balance completeness with conciseness. The upgrade notes file is where expanded detail lives.
+  fragments in `changelog.d/`. Balance completeness with conciseness. The upgrade notes file is
+  where expanded detail lives.
 - Always verify code examples against actual source files. Never guess at class names, method
   signatures, or file paths.

@@ -19,12 +19,9 @@ Accept `$ARGUMENTS` as a commit hash or PR number.
 
 **If arguments are provided:**
 - If it looks like a PR number (digits only, typically 1-5 digits):
-  - **Preferred:** Use `gh pr diff <number>` and `gh pr view <number>` to analyze
-  - **If `gh` CLI is not available:** Use the GitHub MCP server tools instead — call
-    `pull_request_read` with method `get_diff` for the unified diff and method `details`
-    for PR metadata. The MCP server is configured in `.mcp.json` at the repo root.
-  - **If neither `gh` nor the GitHub MCP server is available:** Ask the user to provide
-    the commit hash instead, or to check out the PR branch locally.
+  - Use `gh pr diff <number>` and `gh pr view <number>` to analyze
+  - **If `gh` CLI is not available:** Ask the user to provide the commit hash instead, or to
+    check out the PR branch locally.
 - Otherwise treat it as a commit hash and use `git diff <hash>~1..<hash>`
 
 **If no arguments are provided:**

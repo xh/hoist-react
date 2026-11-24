@@ -235,5 +235,5 @@ needs `@xh/hoist-dev-utils` 16.6 or later. Older releases keep only the first li
 and silently drop the rest. On those releases, write each bullet as a single unwrapped line.
 
 An app on `@xh/hoist-dev-utils` 16.6 or later can also use changelog fragments. Run
-`xh-changelog init` from its `client-app/` folder. See the
+`pnpm exec xh-changelog init` from its `client-app/` folder. See the
 [hoist-dev-utils README](https://github.com/xh/hoist-dev-utils/blob/master/README.md#changelog-fragments).

@@ -24,7 +24,7 @@ import {
     formatSelector
 } from './model';
 import {logError, throwIf, warnIf, withDefault} from '@xh/hoist/utils/js';
-import {getLayoutProps, useOnMount, useOnUnmount} from '@xh/hoist/utils/react';
+import {getLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import {isFunction, isPlainObject, isObject} from 'lodash';
 import {observer, untracked} from '../mobx';
@@ -342,8 +342,7 @@ function wrapWithModel(render: RenderFn, cfg: Config): RenderFn {
             props.model = model;
             delete props.modelRef;
             delete props.modelConfig;
-            useOnMount(() => instanceManager.registerModelWithTestId(props.testId, model));
-            useOnUnmount(() => instanceManager.unregisterModelWithTestId(props.testId));
+            instanceManager.useTestIdRegistration(props.testId, model);
             return withLocalModelContext(props, insertLookup.current ?? modelLookup, () =>
                 render(props, ref)
             );

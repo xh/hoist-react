@@ -70,6 +70,8 @@ How it works:
 - A release without breaking changes goes out as the next minor or patch from the latest tag. Keep
   `package.json` on the snapshot, because Deploy Release sets the published version.
 - After a major release, bump `package.json` on `develop` to the next major snapshot.
+- A hotfix branch cut from v91.0.0 or an earlier tag has no `changelog.d/`. Edit `CHANGELOG.md`
+  there directly, as before.
 
 The hoist-dev-utils README section
 [Release](https://github.com/xh/hoist-dev-utils/blob/master/README.md#release) describes how

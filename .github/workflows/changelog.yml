@@ -22,7 +22,5 @@ jobs:
           with:
               fetch-depth: 0
 
-        # Pin to a commit SHA of xh/hoist-dev-utils master, as for the other shared actions, once
-        # check-changelog is released there.
         - name: Check changelog fragments
-          uses: xh/hoist-dev-utils/.github/actions/check-changelog@master
+          uses: xh/hoist-dev-utils/.github/actions/check-changelog@3e286bdc09b126ef9b51a34415a73cc44ed5374d # master
