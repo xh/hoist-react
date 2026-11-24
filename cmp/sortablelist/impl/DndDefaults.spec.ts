@@ -5,6 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {
+    CancelOnEscape,
     DND_PLUGINS,
     DND_SENSORS,
     dndPlugins,
@@ -140,5 +141,79 @@ describe('drag start cost', () => {
         expect(marked(container)).toBe(false);
         document.dispatchEvent(new Event('selectionchange'));
         expect(removeAllRanges).toHaveBeenCalledTimes(1);
+    });
+});
+
+/**
+ * PointerSensor hears Escape only once it bubbles to the body. A Blueprint overlay - a popover, a
+ * dialog - stops it first and closes instead, so a pointer drag inside one couldn't be cancelled.
+ */
+describe('CancelOnEscape', () => {
+    function setup() {
+        const handlers: Record<string, (e: any) => void> = {},
+            stop = vi.fn(),
+            manager = {
+                actions: {stop},
+                monitor: {
+                    addEventListener: (type: string, fn: (e: any) => void) => {
+                        handlers[type] = fn;
+                        return () => delete handlers[type];
+                    }
+                }
+            },
+            plugin = new CancelOnEscape(manager as any),
+            start = (nativeEvent: Event) => handlers.dragstart({nativeEvent}),
+            escape = () => {
+                const e = new KeyboardEvent('keydown', {
+                    key: 'Escape',
+                    bubbles: true,
+                    cancelable: true
+                });
+                document.body.dispatchEvent(e);
+                return e;
+            };
+        return {plugin, handlers, stop, start, escape, end: () => handlers.dragend({})};
+    }
+
+    it('cancels a pointer drag on Escape, before anything inside the page sees the key', () => {
+        const {stop, start, escape, end} = setup(),
+            bodyListener = vi.fn();
+        document.body.addEventListener('keydown', bodyListener);
+
+        start(new MouseEvent('pointermove'));
+        const e = escape();
+        expect(stop).toHaveBeenCalledWith({event: e, canceled: true});
+        expect(e.defaultPrevented).toBe(true);
+        expect(bodyListener).not.toHaveBeenCalled();
+
+        end();
+        document.body.removeEventListener('keydown', bodyListener);
+    });
+
+    it("is one of Hoist's default plugins", () => {
+        expect((DND_PLUGINS as any[]).map(it => it?.plugin ?? it)).toContain(CancelOnEscape);
+    });
+
+    it('leaves Escape alone outside a pointer drag', () => {
+        const {stop, start, escape, end} = setup();
+
+        escape();
+        start(new KeyboardEvent('keydown'));
+        escape();
+        end();
+        start(new MouseEvent('pointermove'));
+        end();
+        escape();
+        expect(stop).not.toHaveBeenCalled();
+    });
+
+    it('stops listening when destroyed mid-drag', () => {
+        const {plugin, handlers, stop, start, escape} = setup();
+
+        start(new MouseEvent('pointermove'));
+        plugin.destroy();
+        escape();
+        expect(stop).not.toHaveBeenCalled();
+        expect(handlers).toEqual({});
     });
 });
