@@ -15,6 +15,7 @@ import {
     PointerSensor,
     Plugin
 } from '@xh/hoist/kit/dnd-kit';
+import './Dnd.scss';
 
 /**
  * Hoist's drag-and-drop defaults, shared by `SortableList` and the components that use dnd-kit
@@ -54,27 +55,48 @@ export function dndPlugins(
 }
 
 /**
- * Clears any text selection while a drag is in progress. Stands in for dnd-kit's PreventSelection,
- * which - like its Cursor plugin - adds and removes a page-wide `*` style rule on every drag,
- * making the browser restyle and lay out the whole page as the drag starts.
+ * Clears any text selection while a drag is in progress, and during a pointer drag marks the
+ * dragged item's container with `xh-dnd-pointer-drag`, which shows the grabbing cursor and blocks
+ * selection within it. Stands in for dnd-kit's Cursor and PreventSelection plugins, which add and
+ * remove a page-wide `*` style rule on every drag, making the browser restyle and lay out the
+ * whole page as the drag starts.
  */
-export class ClearSelection extends Plugin<DragDropManager> {
+export class ScopedDragStyles extends Plugin<DragDropManager> {
+    private scope: Element = null;
+
     constructor(manager: DragDropManager) {
         super(manager);
-        const clear = () => document.getSelection()?.removeAllRanges(),
-            stopClearing = () => document.removeEventListener('selectionchange', clear, true),
-            offStart = manager.monitor.addEventListener('dragstart', () => {
-                clear();
-                document.addEventListener('selectionchange', clear, true);
+        const {monitor} = manager,
+            offStart = monitor.addEventListener('dragstart', ({operation, nativeEvent}) => {
+                if (this.isDisabled()) return;
+                this.clearSelection();
+                document.addEventListener('selectionchange', this.clearSelection, true);
+                if (nativeEvent instanceof KeyboardEvent) return;
+                this.scope = operation.source?.element?.parentElement;
+                this.scope?.classList.add(POINTER_DRAG_CLS);
             }),
-            offEnd = manager.monitor.addEventListener('dragend', stopClearing);
-        this.destroy = () => {
+            offEnd = monitor.addEventListener('dragend', () => this.end());
+        this.registerEffect(() => () => {
             offStart();
             offEnd();
-            stopClearing();
-        };
+        });
+    }
+
+    override destroy() {
+        this.end();
+        super.destroy();
+    }
+
+    private clearSelection = () => document.getSelection()?.removeAllRanges();
+
+    private end() {
+        document.removeEventListener('selectionchange', this.clearSelection, true);
+        this.scope?.classList.remove(POINTER_DRAG_CLS);
+        this.scope = null;
     }
 }
+
+const POINTER_DRAG_CLS = 'xh-dnd-pointer-drag';
 
 const ACCESSIBILITY = Accessibility.configure({
         announcements: {
@@ -101,6 +123,6 @@ const ACCESSIBILITY = Accessibility.configure({
                 'moves it one place.'
         }
     }),
-    REST = [Feedback.configure({dropAnimation: DND_TRANSITION}), ClearSelection];
+    REST = [Feedback.configure({dropAnimation: DND_TRANSITION}), ScopedDragStyles];
 
 export const DND_PLUGINS = dndPlugins();

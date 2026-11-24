@@ -5,10 +5,10 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {
-    ClearSelection,
     DND_PLUGINS,
     DND_SENSORS,
-    dndPlugins
+    dndPlugins,
+    ScopedDragStyles
 } from '@xh/hoist/cmp/sortablelist/impl/DndDefaults';
 import {
     AutoScroller,
@@ -16,7 +16,7 @@ import {
     PointerActivationConstraints,
     PreventSelection
 } from '@xh/hoist/kit/dnd-kit';
-import {describe, expect, it, vi} from 'vitest';
+import {afterEach, describe, expect, it, vi} from 'vitest';
 
 /**
  * Every Hoist list starts a drag the same way: a short hold lifts the item, as the cue that it is
@@ -58,43 +58,87 @@ describe('dndPlugins', () => {
 /**
  * dnd-kit's Cursor and PreventSelection plugins add and remove page-wide `*` style rules on every
  * drag, forcing the browser to restyle and lay out the whole page - a stutter at each drag start
- * on a large dashboard. Hoist leaves them out.
+ * on a large dashboard. Hoist leaves them out, and scopes its drag styles to the dragged item's
+ * container.
  */
 describe('drag start cost', () => {
-    const pluginOf = (it: any) => it?.plugin ?? it;
+    const pluginOf = (it: any) => it?.plugin ?? it,
+        marked = (el: Element) => el.classList.contains('xh-dnd-pointer-drag');
 
-    it('leaves out the plugins that inject page-wide style rules', () => {
-        const plugins = (DND_PLUGINS as any[]).map(pluginOf);
-        expect(plugins).not.toContain(Cursor);
-        expect(plugins).not.toContain(PreventSelection);
-        expect(plugins).toContain(ClearSelection);
-    });
-
-    it('clears text selection from drag start until drag end, without styles', () => {
-        const handlers: Record<string, () => void> = {},
+    function setup() {
+        const handlers: Record<string, (e: any) => void> = {},
             manager = {
                 monitor: {
-                    addEventListener: (type: string, fn: () => void) => {
+                    addEventListener: (type: string, fn: (e: any) => void) => {
                         handlers[type] = fn;
                         return () => delete handlers[type];
                     }
                 }
             },
+            container = document.createElement('div'),
+            element = container.appendChild(document.createElement('div')),
+            operation = {source: {element}},
             removeAllRanges = vi.fn();
         vi.spyOn(document, 'getSelection').mockReturnValue({removeAllRanges} as any);
-        const plugin = new ClearSelection(manager as any);
+        const plugin = new ScopedDragStyles(manager as any),
+            start = (nativeEvent: Event) => handlers.dragstart({operation, nativeEvent}),
+            end = () => handlers.dragend({operation});
+        return {plugin, handlers, container, removeAllRanges, start, end};
+    }
 
-        handlers.dragstart();
+    afterEach(() => vi.restoreAllMocks());
+
+    it('leaves out the plugins that inject page-wide style rules', () => {
+        const plugins = (DND_PLUGINS as any[]).map(pluginOf);
+        expect(plugins).not.toContain(Cursor);
+        expect(plugins).not.toContain(PreventSelection);
+        expect(plugins).toContain(ScopedDragStyles);
+    });
+
+    it('clears text selection from drag start until drag end', () => {
+        const {removeAllRanges, start, end} = setup();
+
+        start(new MouseEvent('pointermove'));
         expect(removeAllRanges).toHaveBeenCalledTimes(1);
         document.dispatchEvent(new Event('selectionchange'));
         expect(removeAllRanges).toHaveBeenCalledTimes(2);
 
-        handlers.dragend();
+        end();
         document.dispatchEvent(new Event('selectionchange'));
         expect(removeAllRanges).toHaveBeenCalledTimes(2);
+    });
 
+    it("marks the dragged item's container during a pointer drag only", () => {
+        const {container, start, end} = setup();
+
+        start(new MouseEvent('pointermove'));
+        expect(marked(container)).toBe(true);
+        end();
+        expect(marked(container)).toBe(false);
+
+        start(new KeyboardEvent('keydown'));
+        expect(marked(container)).toBe(false);
+        end();
+    });
+
+    it('does nothing while disabled', () => {
+        const {plugin, container, removeAllRanges, start, end} = setup();
+        plugin.disable();
+
+        start(new MouseEvent('pointermove'));
+        expect(marked(container)).toBe(false);
+        expect(removeAllRanges).not.toHaveBeenCalled();
+        end();
+    });
+
+    it('cleans up when destroyed mid-drag', () => {
+        const {plugin, handlers, container, removeAllRanges, start} = setup();
+
+        start(new MouseEvent('pointermove'));
         plugin.destroy();
         expect(handlers).toEqual({});
-        vi.restoreAllMocks();
+        expect(marked(container)).toBe(false);
+        document.dispatchEvent(new Event('selectionchange'));
+        expect(removeAllRanges).toHaveBeenCalledTimes(1);
     });
 });
