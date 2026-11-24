@@ -374,13 +374,18 @@ export const [SortableList, sortableList] = hoistCmp.withFactory<SortableListPro
             onRemove?.({item, index, items: next});
         };
 
-        // A picker keeps focus for the next pick, unless the new item has a detail to fill in.
+        // A picker keeps focus for the next pick, unless the new item has a detail to fill in. Its
+        // control is refocused, as one keyed on its options remounts on each add.
         const add = (added: any, fromPicker: boolean) => {
             if (added == null) return;
             const key = keyOf(added),
                 {items, openKeys} = latest.current,
                 next = [...items, added];
-            if (!fromPicker || detailRenderer) focusKey.current = key;
+            if (!fromPicker || detailRenderer) {
+                focusKey.current = key;
+            } else {
+                focusAdd.current = true;
+            }
             if (isExpandable(added) && !openKeys.includes(key)) {
                 setOpenKeys(multiExpand ? [...openKeys, key] : [key]);
             }

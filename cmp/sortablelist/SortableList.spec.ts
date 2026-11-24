@@ -7,7 +7,8 @@
 import {div, htmlButton, input, span} from '@xh/hoist/cmp/layout';
 import {sortableList} from '@xh/hoist/cmp/sortablelist';
 import type {SortableListProps} from '@xh/hoist/cmp/sortablelist';
-import {HoistModel} from '@xh/hoist/core';
+import type {HoistProps} from '@xh/hoist/core';
+import {hoistCmp, HoistModel} from '@xh/hoist/core';
 import {action, observable, observableRef} from '@xh/hoist/mobx';
 import {select} from '@xh/hoist/desktop/cmp/input';
 import {wait} from '@xh/hoist/promise';
@@ -574,6 +575,23 @@ describe('SortableList', () => {
                 expect(document.activeElement).toBe(control);
             });
 
+            // As GroupingChooser's select does, keyed on its options to clear its typed text.
+            it('refocuses a control that remounts on the add', () => {
+                const model = new DimsModel(),
+                    el = renderList({
+                        model,
+                        bind: 'dims',
+                        addRenderer: ({add}) => remountingPicker({dimsModel: model, add})
+                    }),
+                    control = el.querySelector<HTMLElement>('.picker');
+
+                control.focus();
+                fireEvent.click(control);
+                const next = el.querySelector<HTMLElement>('.picker');
+                expect(next).not.toBe(control);
+                expect(document.activeElement).toBe(next);
+            });
+
             it('focuses an added item with a detail, opening it', () => {
                 const el = renderList({
                     model: new DimsModel(),
@@ -723,6 +741,19 @@ class DimsModel extends HoistModel {
         this.dims = dims;
     }
 }
+
+const remountingPicker = hoistCmp.factory<HoistProps & {dimsModel: DimsModel; add: (it) => void}>({
+    model: false,
+    render({dimsModel, add}) {
+        const n = dimsModel.dims.length;
+        return htmlButton({
+            key: n,
+            className: 'picker',
+            onClick: () => add({id: `new${n}`, name: `New ${n}`}),
+            children: 'Pick'
+        });
+    }
+});
 
 function renderList(props: Partial<SortableListProps>): HTMLElement {
     return render(
