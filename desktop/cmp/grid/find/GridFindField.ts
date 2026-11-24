@@ -66,7 +66,8 @@ export interface GridFindFieldProps extends TextInputProps, LayoutProps {
 export const [GridFindField, gridFindField] = hoistCmp.withFactory<GridFindFieldProps>({
     displayName: 'GridFindField',
     className: 'xh-grid-find-field',
-    render({className, model, ...props}, ref) {
+    model: false,
+    render({className, ...props}, ref) {
         let [layoutProps, restProps] = splitLayoutProps(props);
         const impl = useLocalModel(GridFindFieldImplModel);
 

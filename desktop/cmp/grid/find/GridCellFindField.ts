@@ -63,7 +63,8 @@ export interface GridCellFindFieldProps extends TextInputProps, LayoutProps {
 export const [GridCellFindField, gridCellFindField] = hoistCmp.withFactory<GridCellFindFieldProps>({
     displayName: 'GridCellFindField',
     className: 'xh-grid-cell-find-field',
-    render({className, model, enableHotkey, ...props}, ref) {
+    model: false,
+    render({className, enableHotkey, ...props}, ref) {
         const [layoutProps, restProps] = splitLayoutProps(props),
             impl = useLocalModel(GridCellFindFieldImplModel);
 
