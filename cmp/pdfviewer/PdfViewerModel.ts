@@ -171,14 +171,11 @@ export class PdfViewerModel extends HoistModel implements PdfViewerToolbarModel 
                 track: () => this.source,
                 run: source => {
                     if (this.pendingFind?.source !== source) this.settleFind('cancelled');
-                    this.loadAsync()
-                        // Load errors display inline - see `lastLoadException`.
-                        .catchDefault({showAlert: false, logOnServer: false})
-                        .then(() => {
-                            if (!this.pdfDocument && this.pendingFind?.source === source) {
-                                this.settleFind('cancelled');
-                            }
-                        });
+                    this.loadAsync().then(() => {
+                        if (!this.pdfDocument && this.pendingFind?.source === source) {
+                            this.settleFind('cancelled');
+                        }
+                    });
                 },
                 fireImmediately: true
             },
@@ -338,6 +335,11 @@ export class PdfViewerModel extends HoistModel implements PdfViewerToolbarModel 
     //------------------
     // Implementation
     //------------------
+    // Load errors display inline - see `lastLoadException`.
+    override handleLoadException(e: unknown) {
+        XH.handleException(e, {showAlert: false, logOnServer: false});
+    }
+
     override async doLoadAsync(loadSpec: LoadSpec) {
         const {source} = this;
         await this.closeDocumentAsync();
