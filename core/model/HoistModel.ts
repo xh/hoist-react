@@ -8,7 +8,7 @@ import {action, computed, observableRef, compareShallow} from '@xh/hoist/mobx';
 import {warnIf} from '@xh/hoist/utils/js';
 import {isFunction} from 'lodash';
 import type {CallContext, DefaultHoistProps, LoadSpecConfig, PlainObject, TaskObserver} from '../';
-import {HoistBase, managed} from '../';
+import {HoistBase, managed, XH} from '../';
 import {instanceManager} from '../impl/InstanceManager';
 import type {Loadable, LoadSpec} from '../load';
 import {LoadSupport} from '../load';
@@ -187,7 +187,14 @@ export abstract class HoistModel extends HoistBase implements Loadable {
         return this.loadSupport?.autoRefreshAsync(meta);
     }
 
+    skipStaleLoads = true;
+    skipAutoRefreshErrors = true;
+
     async doLoadAsync(loadSpec: LoadSpec) {}
+
+    handleLoadException(e: unknown, loadSpec: LoadSpec): void | Promise<void> {
+        XH.handleException(e);
+    }
 
     async loadAsync(loadSpec?: LoadSpecConfig | CallContext) {
         return this.loadSupport?.loadAsync(loadSpec);

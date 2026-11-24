@@ -8,7 +8,7 @@ import {exportFilenameWithDate} from '@xh/hoist/admin/AdminUtils';
 import {AppModel} from '@xh/hoist/admin/AppModel';
 import * as Col from '@xh/hoist/admin/columns';
 import type {LoadSpec} from '@xh/hoist/core';
-import {HoistModel, managed, XH} from '@xh/hoist/core';
+import {HoistModel, managed} from '@xh/hoist/core';
 import type {FieldSpec} from '@xh/hoist/data';
 import {addAction, deleteAction, editAction, RestGridModel} from '@xh/hoist/desktop/cmp/rest';
 import {bindable} from '@xh/hoist/mobx';
@@ -90,10 +90,6 @@ export class UserPreferenceModel extends HoistModel {
     }
 
     override async doLoadAsync(loadSpec: LoadSpec) {
-        try {
-            await this.gridModel.loadAsync(loadSpec);
-        } catch (e) {
-            XH.handleException(e);
-        }
+        return this.gridModel.loadAsync(loadSpec);
     }
 }
