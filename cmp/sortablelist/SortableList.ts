@@ -5,7 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import classNames from 'classnames';
-import {isFunction, isNil, over, uniq} from 'lodash';
+import {isEmpty, isFunction, isNil, over, uniq} from 'lodash';
 import type {
     KeyboardEvent as ReactKeyboardEvent,
     MouseEvent as ReactMouseEvent,
@@ -50,18 +50,18 @@ export interface SortableListProps<T = any> extends HoistProps<HoistModel>, BoxP
     itemKey?: string | ((item: T) => string | number);
 
     /** Renders one item's content. The list adds the handle and drag behavior around it. */
-    renderItem: (item: T, ctx: SortableItemContext) => ReactNode;
+    itemRenderer: (item: T, ctx: SortableItemContext) => ReactNode;
 
     /**
      * Content drawn under an open item's row at the list's full width, e.g. an editor. Setting it
      * makes items expandable: each gets a chevron that opens and closes its detail.
      */
-    renderDetail?: (item: T) => ReactNode;
+    detailRenderer?: (item: T) => ReactNode;
 
     /**
-     * Items that open and close a detail with a chevron. Default: every item, when `renderDetail`
-     * is set. Any other item shows its detail whenever `renderDetail` returns one, with no
-     * chevron - pass `() => false` for details that are always shown.
+     * Items that open and close a detail with a chevron. Default: every item, when
+     * `detailRenderer` is set. Any other item shows its detail whenever `detailRenderer` returns
+     * one, with no chevron - pass `() => false` for details that are always shown.
      */
     isItemExpandable?: (item: T) => boolean;
 
@@ -144,14 +144,29 @@ export interface SortableListProps<T = any> extends HoistProps<HoistModel>, BoxP
     isItemRemovable?: (item: T) => boolean;
 
     /**
-     * Called when a user clicks the Add row, which setting it shows. Return the new item, or a
-     * promise of it - the list appends it through `bind`, focuses it and opens its detail. Without
-     * `bind`, add it to `value` yourself. Return null to add nothing.
+     * Renders the Add row's control in place of the built-in button - a select, picker or menu.
+     * Call `ctx.add` with each new item. Setting it shows the Add row.
      */
-    onAdd?: () => T | Promise<T>;
+    addRenderer?: (ctx: SortableAddContext<T>) => ReactNode;
 
-    /** Label of the Add row. Default 'Add...'. */
+    /**
+     * For the built-in Add button: returns the new item, or a promise of it, or null to add
+     * nothing. The list focuses the new item and opens its detail. Setting it shows the Add row.
+     * Ignored when `addRenderer` is set.
+     */
+    getNewItem?: () => T | Promise<T>;
+
+    /** Label of the built-in Add button. Default 'Add...'. */
     addText?: ReactNode;
+
+    /**
+     * Called after an item is added, by `getNewItem` or `addRenderer`. With `bind`, the list
+     * writes the longer list first; otherwise add `e.item` to `value` yourself.
+     */
+    onAdd?: (e: SortableAddEvent<T>) => void;
+
+    /** Shown in place of the items while there are none. */
+    emptyText?: ReactNode;
 
     /**
      * Escape-hatch props for dnd-kit's `DragDropProvider`, for options this component doesn't map.
@@ -185,6 +200,29 @@ export interface SortableRemoveEvent<T = any> {
     index: number;
 
     /** All items, without the removed one. */
+    items: T[];
+}
+
+export interface SortableAddContext<T = any> {
+    /**
+     * Appends `item` - through `bind` when set - then calls `onAdd` and announces it. When the
+     * list has a `detailRenderer`, focuses the new item and opens an expandable detail, closing any
+     * other unless `multiExpand`. Otherwise focus stays in the control, ready for the next pick.
+     */
+    add: (item: T) => void;
+
+    /** The current items, e.g. to leave ones already chosen out of a picker. */
+    items: T[];
+
+    /** True while the list is disabled. */
+    disabled: boolean;
+}
+
+export interface SortableAddEvent<T = any> {
+    item: T;
+    index: number;
+
+    /** All items, with the added one. */
     items: T[];
 }
 
@@ -228,8 +266,8 @@ export const [SortableList, sortableList] = hoistCmp.withFactory<SortableListPro
                     value,
                     bind,
                     itemKey = 'id',
-                    renderItem,
-                    renderDetail,
+                    itemRenderer,
+                    detailRenderer,
                     isItemExpandable,
                     expandedKeys,
                     onExpandedChange,
@@ -249,8 +287,11 @@ export const [SortableList, sortableList] = hoistCmp.withFactory<SortableListPro
                     removable,
                     showRemoveOnHover,
                     isItemRemovable,
-                    onAdd,
+                    addRenderer,
+                    getNewItem,
                     addText = 'Add...',
+                    onAdd,
+                    emptyText,
                     dndProviderProps,
                     sortableProps,
                     testId,
@@ -274,14 +315,14 @@ export const [SortableList, sortableList] = hoistCmp.withFactory<SortableListPro
             [ownExpandedKeys, setOwnExpandedKeys] = useState<SortableKey[]>([]),
             openKeys = expandedKeys ?? ownExpandedKeys,
             [announcement, setAnnouncement] = useState(''),
-            addRef = useRef<HTMLButtonElement>(null),
+            addRef = useRef<any>(null),
             focusAdd = useRef(false),
-            latest = useRef({keys, pendingKeys, openKeys}),
+            latest = useRef({items, keys, pendingKeys, openKeys}),
             // Stable across renders, so a list re-render leaves rows with unchanged props alone.
             actions = useRef<SortableItemActions>(null),
             plugins = useMemo(() => dndPlugins(scrollAcceleration), [scrollAcceleration]);
 
-        latest.current = {keys, pendingKeys, openKeys};
+        latest.current = {items, keys, pendingKeys, openKeys};
         throwIf(keys.some(isNil), 'SortableList requires a key for every item - see `itemKey`.');
         throwIf(uniq(keys).length !== keys.length, 'SortableList item keys must be unique.');
 
@@ -315,7 +356,7 @@ export const [SortableList, sortableList] = hoistCmp.withFactory<SortableListPro
         };
 
         const isExpandable = (it: any) =>
-            !!renderDetail && (isItemExpandable ? isItemExpandable(it) : true);
+            !!detailRenderer && (isItemExpandable ? isItemExpandable(it) : true);
 
         // Focus goes to the item that takes the removed one's place, else the one before it.
         const remove = (key: SortableKey) => {
@@ -333,23 +374,26 @@ export const [SortableList, sortableList] = hoistCmp.withFactory<SortableListPro
             onRemove?.({item, index, items: next});
         };
 
-        const add = async () => {
-            const added = await onAdd();
+        // A picker keeps focus for the next pick, unless the new item has a detail to fill in.
+        const add = (added: any, fromPicker: boolean) => {
             if (added == null) return;
             const key = keyOf(added),
-                {openKeys} = latest.current;
-            focusKey.current = key;
+                {items, openKeys} = latest.current,
+                next = [...items, added];
+            if (!fromPicker || detailRenderer) focusKey.current = key;
             if (isExpandable(added) && !openKeys.includes(key)) {
                 setOpenKeys(multiExpand ? [...openKeys, key] : [key]);
             }
-            if (model && bind) model.setBindable(bind, [...(model[bind] ?? []), added]);
+            if (model && bind) model.setBindable(bind, next);
             setAnnouncement(`Added ${labelOf(added)}.`);
+            onAdd?.({item: added, index: next.length - 1, items: next});
         };
 
         useLayoutEffect(() => {
             if (!focusAdd.current) return;
             focusAdd.current = false;
-            addRef.current?.focus();
+            const row: HTMLElement = addRef.current;
+            (row?.matches('button') ? row : row?.querySelector<HTMLElement>(FOCUSABLE))?.focus();
         });
 
         const onDragStart = (e: DragStartEvent) => {
@@ -441,8 +485,8 @@ export const [SortableList, sortableList] = hoistCmp.withFactory<SortableListPro
                                 focusKey,
                                 dragging,
                                 sortableProps,
-                                renderItem,
-                                renderDetail,
+                                itemRenderer,
+                                detailRenderer,
                                 expandable,
                                 expanded: expandable && openKeys.includes(key),
                                 rowToggle: expandable && toggleOnRowClick && handle !== 'item',
@@ -454,16 +498,29 @@ export const [SortableList, sortableList] = hoistCmp.withFactory<SortableListPro
                             });
                         })
                     }),
-                    onAdd
-                        ? htmlButton({
-                              ref: addRef,
-                              type: 'button',
-                              className: 'xh-sortable-list__add',
-                              disabled,
-                              onClick: add,
-                              children: [Icon.add(), span(addText)]
-                          })
+                    isEmpty(items) && !isNil(emptyText)
+                        ? div({className: 'xh-sortable-list__empty', children: emptyText})
                         : null,
+                    addRenderer
+                        ? div({
+                              ref: addRef,
+                              className: 'xh-sortable-list__add xh-sortable-list__add--custom',
+                              children: addRenderer({
+                                  add: it => add(it, true),
+                                  items,
+                                  disabled: !!disabled
+                              })
+                          })
+                        : getNewItem
+                          ? htmlButton({
+                                ref: addRef,
+                                type: 'button',
+                                className: 'xh-sortable-list__add',
+                                disabled,
+                                onClick: async () => add(await getNewItem(), false),
+                                children: [Icon.add(), span(addText)]
+                            })
+                          : null,
                     div({
                         className: 'xh-sortable-list__status',
                         role: 'status',
@@ -487,6 +544,10 @@ function chain<A extends unknown[]>(
     return app ? over([own, app]) : own;
 }
 
+const FOCUSABLE =
+    'button:not(:disabled), input:not(:disabled), select:not(:disabled), textarea:not(:disabled), ' +
+    'a[href], [tabindex]:not([tabindex="-1"])';
+
 // A click on one of these, inside a row, does its own job and never toggles the row.
 const ROW_CLICK_IGNORED =
     'button, a, input, select, textarea, [role=button], [role=combobox], [role=listbox], ' +
@@ -494,20 +555,20 @@ const ROW_CLICK_IGNORED =
 
 interface ItemDetailProps extends HoistProps {
     listItem: any;
-    renderDetail: SortableListProps['renderDetail'];
+    detailRenderer: SortableListProps['detailRenderer'];
     label: string;
     /** Id for an expanded item's detail region, else null for an always-shown detail. */
     regionId: string;
 }
 
 // Its own component, so a row's re-render - at drag start, say - leaves a heavy detail alone. An
-// always-shown detail renders only when `renderDetail` returns one.
+// always-shown detail renders only when `detailRenderer` returns one.
 const itemDetail = hoistCmp.factory<ItemDetailProps>({
     displayName: 'SortableItemDetail',
     model: false,
 
-    render({listItem, renderDetail, label, regionId}) {
-        const detail = renderDetail(listItem);
+    render({listItem, detailRenderer, label, regionId}) {
+        const detail = detailRenderer(listItem);
         if (!regionId) {
             return isNil(detail)
                 ? null
@@ -550,8 +611,8 @@ interface SortableItemProps extends HoistProps {
     /** True during a drag, and until just after it ends. */
     dragging: MutableRefObject<boolean>;
     sortableProps: Partial<UseSortableInput>;
-    renderItem: SortableListProps['renderItem'];
-    renderDetail: SortableListProps['renderDetail'];
+    itemRenderer: SortableListProps['itemRenderer'];
+    detailRenderer: SortableListProps['detailRenderer'];
     expandable: boolean;
     expanded: boolean;
     /** True to open and close the item on a click on its row. */
@@ -579,8 +640,8 @@ const sortableItem = hoistCmp.factory<SortableItemProps>({
         focusKey,
         dragging,
         sortableProps,
-        renderItem,
-        renderDetail,
+        itemRenderer,
+        detailRenderer,
         expandable,
         expanded,
         rowToggle,
@@ -719,17 +780,17 @@ const sortableItem = hoistCmp.factory<SortableItemProps>({
                         handle === 'start' ? grip : null,
                         div({
                             className: 'xh-sortable-list__content',
-                            children: renderItem(item, ctx)
+                            children: itemRenderer(item, ctx)
                         }),
                         expander,
                         remover,
                         handle === 'end' ? grip : null
                     ]
                 }),
-                (expanded || !expandable) && renderDetail
+                (expanded || !expandable) && detailRenderer
                     ? itemDetail({
                           listItem: item,
-                          renderDetail,
+                          detailRenderer,
                           label,
                           regionId: expanded ? detailId : null
                       })
