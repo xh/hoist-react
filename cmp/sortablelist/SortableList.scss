@@ -119,16 +119,6 @@
     border-radius: var(--xh-sortable-list-border-radius);
   }
 
-  // Scoped to the list, not the page - a page-wide rule would restyle every element at drag start.
-  &--pointer-drag {
-    user-select: none;
-  }
-
-  &--pointer-drag,
-  &--pointer-drag * {
-    cursor: grabbing !important;
-  }
-
   &--keyboard-drag &__item[data-dnd-dragging] {
     rotate: none;
     outline: var(--xh-border-width) solid var(--xh-intent-primary-text-color);

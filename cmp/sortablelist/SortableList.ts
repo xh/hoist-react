@@ -264,7 +264,6 @@ export const [SortableList, sortableList] = hoistCmp.withFactory<SortableListPro
             keys: SortableKey[] = items.map(keyOf),
             horizontal = orientation === 'horizontal',
             [keyboardDrag, setKeyboardDrag] = useState(false),
-            [pointerDrag, setPointerDrag] = useState(false),
             // Live order during a drag - React renders it, so dnd-kit never moves the DOM itself.
             [pendingKeys, setPendingKeys] = useState<SortableKey[]>(null),
             dragSource = useRef<SortableReorderEvent['source']>('pointer'),
@@ -355,7 +354,6 @@ export const [SortableList, sortableList] = hoistCmp.withFactory<SortableListPro
             const kb = e.nativeEvent instanceof KeyboardEvent;
             dragSource.current = kb ? 'keyboard' : 'pointer';
             setKeyboardDrag(kb);
-            setPointerDrag(!kb);
         };
 
         const onDragOver = (e: DragOverEvent) => {
@@ -371,7 +369,6 @@ export const [SortableList, sortableList] = hoistCmp.withFactory<SortableListPro
             const {keys, pendingKeys} = latest.current,
                 key = e.operation.source?.id;
             setKeyboardDrag(false);
-            setPointerDrag(false);
             setPendingKeys(null);
             setTimeout(() => (dragging.current = false));
             if (e.canceled || !pendingKeys) return;
@@ -388,7 +385,6 @@ export const [SortableList, sortableList] = hoistCmp.withFactory<SortableListPro
                     horizontal && wrap && 'xh-sortable-list--wrap',
                     compact && 'xh-sortable-list--compact',
                     keyboardDrag && 'xh-sortable-list--keyboard-drag',
-                    pointerDrag && 'xh-sortable-list--pointer-drag',
                     showRemoveOnHover && 'xh-sortable-list--remove-on-hover',
                     disabled && 'xh-sortable-list--disabled'
                 )

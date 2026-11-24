@@ -1,0 +1,16 @@
+/*
+ * This file belongs to Hoist, an application development toolkit
+ * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
+ *
+ * Copyright © 2026 Extremely Heavy Industries Inc.
+ */
+
+// Set by ScopedDragStyles on the dragged item's container during a pointer drag.
+.xh-dnd-pointer-drag {
+  user-select: none;
+
+  &,
+  & * {
+    cursor: grabbing !important;
+  }
+}
