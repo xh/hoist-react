@@ -30,7 +30,7 @@ export const userPreferenceDetailPanel = hoistCmp.factory<UserPreferenceModel>({
                 return [
                     formFieldSet({
                         title: 'Preference',
-                        items: [
+                        children: [
                             hbox(
                                 formField({field: 'username', flex: 1}),
                                 formField({field: 'groupName', flex: 1}),
@@ -49,7 +49,7 @@ export const userPreferenceDetailPanel = hoistCmp.factory<UserPreferenceModel>({
                     formFieldSet({
                         title: 'Value',
                         className: isJson ? 'xh-admin-readonly-form__fill' : null,
-                        item: formField({
+                        children: formField({
                             field: 'userValue',
                             label: null,
                             readonlyRenderer: isJson ? jsonRenderer : rawValueRenderer

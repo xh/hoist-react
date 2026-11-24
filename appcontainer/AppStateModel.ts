@@ -4,7 +4,8 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {AppState, AppSuspendData, HoistModel, PlainObject, XH} from '@xh/hoist/core';
+import type {AppState, AppSuspendData, PlainObject} from '@xh/hoist/core';
+import {HoistModel, XH} from '@xh/hoist/core';
 import {action, observable} from '@xh/hoist/mobx';
 import {Timer} from '@xh/hoist/utils/async';
 import {camelCase, isBoolean, isString, mapKeys, pick} from 'lodash';

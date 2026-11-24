@@ -9,8 +9,7 @@ import {initTestAppAsync} from '@xh/hoist/test-support';
 import {beforeAll, describe, expect, it} from 'vitest';
 
 /**
- * App startup for a mobile app. Loading the mobile platform imports Onsen UI, which inspects the
- * document's styles at import - so this also checks that the kit's jsdom setup supports it.
+ * App startup for a mobile app, which loads the mobile platform and its component impls.
  */
 describe('AppContainerModel', () => {
     beforeAll(async () => {

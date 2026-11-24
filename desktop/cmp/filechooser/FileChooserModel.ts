@@ -5,9 +5,11 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {em, li, span, ul, vbox} from '@xh/hoist/cmp/layout';
-import {HoistModel, Some, ToastSpec, XH} from '@xh/hoist/core';
+import type {Some, ToastSpec} from '@xh/hoist/core';
+import {HoistModel, XH} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
-import {ErrorCode, FileRejection} from '@xh/hoist/kit/react-dropzone';
+import type {FileRejection} from '@xh/hoist/kit/react-dropzone';
+import {ErrorCode} from '@xh/hoist/kit/react-dropzone';
 import {action, observable, observableRef} from '@xh/hoist/mobx';
 import {pluralize, withDefault} from '@xh/hoist/utils/js';
 import {createObservableRef} from '@xh/hoist/utils/react';
@@ -23,8 +25,8 @@ import {
     take,
     uniqBy
 } from 'lodash';
-import {ReactElement, ReactNode} from 'react';
-import {DropzoneRef} from 'react-dropzone';
+import type {ReactElement, ReactNode} from 'react';
+import type {DropzoneRef} from 'react-dropzone';
 
 export interface FileChooserConfig {
     /** File extension(s) to accept, e.g. `['.doc', '.docx', '.pdf']` */

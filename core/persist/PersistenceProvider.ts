@@ -7,10 +7,10 @@
 
 import {olderThan} from '@xh/hoist/utils/datetime';
 import {logDebug, logError, throwIf} from '@xh/hoist/utils/js';
+import type {DebouncedFunc} from 'lodash';
 import {
     cloneDeep,
     debounce as lodashDebounce,
-    DebouncedFunc,
     get,
     isArray,
     isEmpty,
@@ -22,10 +22,12 @@ import {
     set,
     toPath
 } from 'lodash';
-import {IReactionDisposer, reaction} from '@xh/hoist/mobx';
-import {Class} from 'type-fest';
-import {DebounceSpec, HoistBase, Persistable, PersistableState} from '../';
-import {PersistenceProviderType, PersistOptions} from './PersistOptions';
+import type {IReactionDisposer} from '@xh/hoist/mobx';
+import {reaction} from '@xh/hoist/mobx';
+import type {Class} from 'type-fest';
+import type {DebounceSpec, Persistable} from '../';
+import {HoistBase, PersistableState} from '../';
+import type {PersistenceProviderType, PersistOptions} from './PersistOptions';
 
 export type PersistenceProviderConfig<S = any> = {
     persistOptions: PersistOptions;

@@ -49,7 +49,7 @@ export const clientsPanel = hoistCmp.factory<ClientsModel>({
                 colChooserButton(),
                 exportButton()
             ],
-            items: hframe(grid(), clientDetailPanel()),
+            children: hframe(grid(), clientDetailPanel()),
             mask: 'onLoad',
             ref: model.viewRef
         });

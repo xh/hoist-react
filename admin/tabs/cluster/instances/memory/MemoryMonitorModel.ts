@@ -8,8 +8,10 @@ import {exportFilenameWithDate} from '@xh/hoist/admin/AdminUtils';
 import {timestampNoYear} from '@xh/hoist/admin/columns';
 import {BaseInstanceModel} from '@xh/hoist/admin/tabs/cluster/instances/BaseInstanceModel';
 import {ChartModel} from '@xh/hoist/cmp/chart';
-import {ColumnSpec, GridModel} from '@xh/hoist/cmp/grid';
-import {LoadSpec, managed, XH} from '@xh/hoist/core';
+import type {ColumnSpec} from '@xh/hoist/cmp/grid';
+import {GridModel} from '@xh/hoist/cmp/grid';
+import type {LoadSpec} from '@xh/hoist/core';
+import {managed, XH} from '@xh/hoist/core';
 import {lengthIs, required} from '@xh/hoist/data';
 import {fmtTime, numberRenderer} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
@@ -62,6 +64,7 @@ export class MemoryMonitorModel extends BaseInstanceModel {
             .span('takeSnapshot')
             .fetchJson({
                 url: 'memoryMonitorAdmin/takeSnapshot',
+                method: 'POST',
                 params: {instance: this.instanceName}
             })
             .linkTo(this.loadObserver)
@@ -78,6 +81,7 @@ export class MemoryMonitorModel extends BaseInstanceModel {
             .linkTo(this.loadObserver)
             .fetchJson({
                 url: 'memoryMonitorAdmin/requestGc',
+                method: 'POST',
                 params: {instance: this.instanceName}
             })
             .then(async () => {
@@ -105,6 +109,7 @@ export class MemoryMonitorModel extends BaseInstanceModel {
             .linkTo(this.loadObserver)
             .fetchJson({
                 url: 'memoryMonitorAdmin/dumpHeap',
+                method: 'POST',
                 params: {
                     instance: this.instanceName,
                     filename

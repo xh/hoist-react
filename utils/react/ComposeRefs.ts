@@ -4,7 +4,8 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {MutableRefObject, Ref, RefObject, useCallback} from 'react';
+import type {MutableRefObject, Ref, RefObject} from 'react';
+import {useCallback} from 'react';
 
 /**
  * Compose two or more refs into a single callback ref. Returns `null` if all inputs are nullish,

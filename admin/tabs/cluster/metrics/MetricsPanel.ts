@@ -54,13 +54,13 @@ export const metricsPanel = hoistCmp.factory({
                 storeFilterField({matchMode: 'any'}),
                 exportButton({gridModel: model.gridModel})
             ),
-            items: [
+            children: [
                 grid(),
                 panel({
                     compactHeader: true,
                     title: model.detailPanelTitle,
                     modelConfig: {side: 'bottom', defaultSize: 300},
-                    item: model.selectedMetricNames.length
+                    children: model.selectedMetricNames.length
                         ? grid({model: model.detailGridModel})
                         : placeholder(Icon.gauge(), 'Select a metric...')
                 })

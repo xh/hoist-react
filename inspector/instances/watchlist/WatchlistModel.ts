@@ -5,17 +5,16 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {GridModel} from '@xh/hoist/cmp/grid';
+import type {HoistBase, PlainObject} from '@xh/hoist/core';
 import {
-    HoistBase,
     HoistModel,
     managed,
     PersistableState,
     PersistenceProvider,
     persistOptions,
-    PlainObject,
     XH
 } from '@xh/hoist/core';
-import {StoreRecord} from '@xh/hoist/data';
+import type {StoreRecord} from '@xh/hoist/data';
 import {fmtDate} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
 import {bindableRef, computed, runInAction} from '@xh/hoist/mobx';

@@ -46,6 +46,12 @@ describe('initTestAppAsync', () => {
         expect(hoistCore.onProblem).toBe(problemSink);
     });
 
+    // A pref saved at boot goes out on a 5s debounce - after the server closes, in a short file.
+    it('leaves no pref change to save after boot', async () => {
+        await XH.prefService.pushPendingAsync();
+        expect(hoistCore.requestsTo('xh/setPrefs')).toEqual([]);
+    });
+
     // Fixed in 90.0.0 (#4866) - errors handled during boot were dropped without a trace.
     it('logs an error the app handled during boot', () => {
         expect(loggedErrors).toContainEqual([expect.any(String), handled]);

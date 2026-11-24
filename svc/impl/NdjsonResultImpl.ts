@@ -5,11 +5,11 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
-import {PlainObject} from '@xh/hoist/core';
+import type {PlainObject} from '@xh/hoist/core';
 import {Exception} from '@xh/hoist/exception';
 import {noop} from 'lodash';
 import type {FetchException, NdjsonFetchOptions, NdjsonResult} from '../FetchService';
-import {StringInterner} from './StringInterner';
+import type {StringInterner} from './StringInterner';
 
 /**
  * Decodes a streamed NDJSON Response body into parsed records - implementation helper

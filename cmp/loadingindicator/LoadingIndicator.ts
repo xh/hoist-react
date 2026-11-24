@@ -6,22 +6,16 @@
  */
 import {hbox} from '@xh/hoist/cmp/layout';
 import {div} from '@xh/hoist/cmp/layout/Tags';
-import {spinner as spinnerCmp, SpinnerProps} from '@xh/hoist/cmp/spinner';
-import {
-    Corner,
-    hoistCmp,
-    HoistModel,
-    HoistProps,
-    Some,
-    TaskObserver,
-    useLocalModel
-} from '@xh/hoist/core';
+import type {SpinnerProps} from '@xh/hoist/cmp/spinner';
+import {spinner as spinnerCmp} from '@xh/hoist/cmp/spinner';
+import type {Corner, HoistProps, Some} from '@xh/hoist/core';
+import {hoistCmp, HoistModel, TaskObserver, useLocalModel} from '@xh/hoist/core';
 import {computed} from '@xh/hoist/mobx';
 import {withDefault} from '@xh/hoist/utils/js';
 import classNames from 'classnames';
 import {isString, truncate} from 'lodash';
 import './LoadingIndicator.scss';
-import {ReactNode} from 'react';
+import type {ReactNode} from 'react';
 
 export interface LoadingIndicatorProps extends HoistProps {
     /** TaskObserver(s) that should be monitored to determine if the Indicator should be displayed. */
@@ -48,6 +42,7 @@ export interface LoadingIndicatorProps extends HoistProps {
  */
 export const [LoadingIndicator, loadingIndicator] = hoistCmp.withFactory<LoadingIndicatorProps>({
     displayName: 'LoadingIndicator',
+    model: false,
     className: 'xh-loading-indicator',
 
     render(
@@ -72,7 +67,7 @@ export const [LoadingIndicator, loadingIndicator] = hoistCmp.withFactory<Loading
 
             if (!message) return [spinnerEl];
 
-            const msgBox = div({className: `xh-loading-indicator__message`, item: message});
+            const msgBox = div({className: `xh-loading-indicator__message`, children: message});
             if (!spinner) spinnerEl = null;
             return corner === 'tl' || corner === 'bl' ? [spinnerEl, msgBox] : [msgBox, spinnerEl];
         };
@@ -80,7 +75,7 @@ export const [LoadingIndicator, loadingIndicator] = hoistCmp.withFactory<Loading
         return div({
             ref,
             className: classNames(className, hasMessageCls, hasSpinnerCls, cornerCls),
-            item: hbox(innerItems())
+            children: hbox(innerItems())
         });
     }
 });

@@ -30,14 +30,14 @@ export const memoryMonitorPanel = hoistCmp.factory({
         }
 
         return panel({
-            item: vframe(
+            children: vframe(
                 grid(),
                 panel({
                     modelConfig: {
                         side: 'bottom',
                         defaultSize: '50%'
                     },
-                    item: chart()
+                    children: chart()
                 })
             ),
             bbar: bbar(),
@@ -56,7 +56,7 @@ const bbar = hoistCmp.factory<MemoryMonitorModel>({
         return toolbar(
             fragment({
                 omit: readonly,
-                items: [
+                children: [
                     button({
                         text: 'Take Snapshot',
                         icon: Icon.camera(),
@@ -99,7 +99,7 @@ const instanceSelect = hoistCmp.factory<MemoryMonitorModel>({
         return popover({
             position: 'top-left',
             minimal: true,
-            item: fragment(
+            children: fragment(
                 button({
                     icon: Icon.history(),
                     minimal: true,
@@ -112,8 +112,8 @@ const instanceSelect = hoistCmp.factory<MemoryMonitorModel>({
                 icon: Icon.history(),
                 title: 'Past Instances',
                 compactHeader: true,
-                item: menu({
-                    items: pastInstances.map(it =>
+                children: menu({
+                    children: pastInstances.map(it =>
                         menuItem({
                             text: instanceDisplay({instance: it}),
                             onClick: () => (model.pastInstance = it)
@@ -125,7 +125,8 @@ const instanceSelect = hoistCmp.factory<MemoryMonitorModel>({
     }
 });
 
-const instanceDisplay = hoistCmp.factory<MemoryMonitorModel>({
+const instanceDisplay = hoistCmp.factory({
+    model: false,
     render({instance}) {
         if (!instance) return null;
         return hbox(
@@ -133,7 +134,7 @@ const instanceDisplay = hoistCmp.factory<MemoryMonitorModel>({
             hspacer(10),
             span({
                 className: 'xh-text-color-muted xh-font-size-small',
-                item: fmtDate(instance.lastUpdated, 'MMM D h:mma')
+                children: fmtDate(instance.lastUpdated, 'MMM D h:mma')
             })
         );
     }

@@ -7,11 +7,11 @@
 import {badgeCol, badgeRenderer} from '@xh/hoist/admin/columns';
 import {RangeAggregator} from '@xh/hoist/admin/tabs/activity/aggregators/RangeAggregator';
 import * as Col from '@xh/hoist/cmp/grid/columns';
-import {ColumnSpec} from '@xh/hoist/cmp/grid/columns';
-import {TrackSeverity} from '@xh/hoist/core';
+import type {ColumnSpec} from '@xh/hoist/cmp/grid/columns';
+import type {TrackSeverity} from '@xh/hoist/core';
 import {fmtDate, fmtSpan, numberRenderer} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
-import {ReactElement} from 'react';
+import type {ReactElement} from 'react';
 
 const autosizeMaxWidth = 400;
 
@@ -30,7 +30,9 @@ export const appEnvironment: ColumnSpec = {
     field: {
         name: 'appEnvironment',
         type: 'string',
-        displayName: 'Environment'
+        displayName: 'Environment',
+        isDimension: true,
+        aggregator: 'UNIQUE'
     },
     chooserGroup: 'Core Data',
     width: 130
@@ -40,7 +42,9 @@ export const appVersion: ColumnSpec = {
     field: {
         name: 'appVersion',
         displayName: 'App Version',
-        type: 'string'
+        type: 'string',
+        isDimension: true,
+        aggregator: 'UNIQUE'
     },
     headerName: 'Version',
     chooserGroup: 'Client App / Browser',
@@ -282,7 +286,9 @@ export const clientAppCode: ColumnSpec = {
     field: {
         name: 'clientAppCode',
         type: 'string',
-        displayName: 'Client App'
+        displayName: 'Client App',
+        isDimension: true,
+        aggregator: 'UNIQUE'
     },
     chooserGroup: 'Core Data',
     width: 100

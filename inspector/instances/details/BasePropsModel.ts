@@ -4,10 +4,13 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {ColumnSpec, GridModel} from '@xh/hoist/cmp/grid';
+import type {ColumnSpec} from '@xh/hoist/cmp/grid';
+import {GridModel} from '@xh/hoist/cmp/grid';
 import {a} from '@xh/hoist/cmp/layout';
-import {HoistBase, hoistCmp, HoistModel, managed, PlainObject, XH} from '@xh/hoist/core';
-import {Cube, StoreRecord, View} from '@xh/hoist/data';
+import type {HoistBase, PlainObject} from '@xh/hoist/core';
+import {hoistCmp, HoistModel, managed, XH} from '@xh/hoist/core';
+import type {StoreRecord} from '@xh/hoist/data';
+import {Cube, View} from '@xh/hoist/data';
 import {actionCol, calcActionColWidth} from '@xh/hoist/desktop/cmp/grid';
 import {Icon} from '@xh/hoist/icon';
 import {action, bindableRef, isObservableProp} from '@xh/hoist/mobx';
@@ -251,7 +254,7 @@ export abstract class BasePropsModel extends HoistModel {
                     renderer: (v, {record}) => {
                         const {data} = record;
                         if (data.isGetter && !data.isLoadedGetter) {
-                            return a({item: '(...)', onClick: () => this.loadGetter(record)});
+                            return a({children: '(...)', onClick: () => this.loadGetter(record)});
                         }
                         if (
                             data.isHoistModel ||
@@ -260,7 +263,7 @@ export abstract class BasePropsModel extends HoistModel {
                             data.isCube ||
                             data.isView
                         ) {
-                            return a({item: v, onClick: () => parent.selectInstanceAsync(v)});
+                            return a({children: v, onClick: () => parent.selectInstanceAsync(v)});
                         }
                         return JSON.stringify(trimToDepth(v, 2));
                     }
@@ -291,5 +294,8 @@ const groupRenderer = hoistCmp.factory<InstancesModel>(({value, node, isWatchlis
     if (!isWatchlist && model.selectedInstances.length === 1) return value;
 
     const {instanceXhId, instanceDisplayName} = node.allLeafChildren[0]?.data.data ?? {};
-    return a({item: instanceDisplayName, onClick: () => model.selectInstanceAsync(instanceXhId)});
+    return a({
+        children: instanceDisplayName,
+        onClick: () => model.selectInstanceAsync(instanceXhId)
+    });
 });

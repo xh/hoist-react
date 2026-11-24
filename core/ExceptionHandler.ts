@@ -4,7 +4,8 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {Exception, HoistException} from '../exception';
+import type {HoistException} from '../exception';
+import {Exception} from '../exception';
 import {fragment, span} from '@xh/hoist/cmp/layout';
 import {apiDeprecated, logDebug, logError, logWarn, stripTags} from '@xh/hoist/utils/js';
 import {Icon} from '@xh/hoist/icon';
@@ -25,7 +26,8 @@ import {
     pick,
     toPath
 } from 'lodash';
-import {LoadSpec, PlainObject, XH} from './';
+import type {PlainObject} from './';
+import {LoadSpec, XH} from './';
 
 export interface ExceptionHandlerOptions {
     /** Text (ideally user-friendly) describing the error. */
@@ -160,11 +162,11 @@ export class ExceptionHandler {
             if (alertType === 'toast') {
                 XH.toast({
                     message: fragment(
-                        span({className: 'xh-toast__title', item: title, omit: !title}),
-                        span({className: 'xh-toast__body', item: message}),
+                        span({className: 'xh-toast__title', children: title, omit: !title}),
+                        span({className: 'xh-toast__body', children: message}),
                         span({
                             className: 'xh-toast__trace-id',
-                            item: `Trace ID: ${e.traceId}`,
+                            children: `Trace ID: ${e.traceId}`,
                             omit: !e.traceId || e.isRoutine
                         })
                     ),

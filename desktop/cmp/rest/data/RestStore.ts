@@ -4,11 +4,14 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {CallContext, LoadSpec, PlainObject, XH} from '@xh/hoist/core';
-import {StoreRecord, StoreRecordId, UrlStore, UrlStoreConfig} from '@xh/hoist/data';
+import type {CallContext, LoadSpec, PlainObject} from '@xh/hoist/core';
+import {XH} from '@xh/hoist/core';
+import type {StoreRecord, StoreRecordId, UrlStoreConfig} from '@xh/hoist/data';
+import {UrlStore} from '@xh/hoist/data';
 import '@xh/hoist/desktop/register';
 import {filter, isNil, keyBy, mapValues} from 'lodash';
-import {RestField, RestFieldSpec} from './RestField';
+import type {RestFieldSpec} from './RestField';
+import {RestField} from './RestField';
 
 export interface RestStoreConfig extends UrlStoreConfig {
     /** Field names, configs, or instances. */
@@ -64,7 +67,7 @@ export class RestStore extends UrlStore {
             .run(ctx => {
                 const {url} = this,
                     ids = records.map(it => it.id);
-                return XH.fetchJson({url: `${url}/bulkDelete`, params: {ids}}, ctx);
+                return XH.fetchJson({url: `${url}/bulkDelete`, method: 'POST', params: {ids}}, ctx);
             })
             .linkTo(this.loadObserver)
             .tap(() => this.loadAsync());

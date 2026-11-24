@@ -5,14 +5,15 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {FormModel} from '@xh/hoist/cmp/form';
-import {HoistModel, managed, PlainObject, TaskObserver, XH} from '@xh/hoist/core';
+import type {PlainObject, TaskObserver} from '@xh/hoist/core';
+import {HoistModel, managed, XH} from '@xh/hoist/core';
 import {isValidJson, required} from '@xh/hoist/data';
-import {RestGridEditor, RestGridModel} from '@xh/hoist/desktop/cmp/rest';
+import type {RestGridEditor, RestGridModel} from '@xh/hoist/desktop/cmp/rest';
 import {action, observable, observableRef} from '@xh/hoist/mobx';
 import {mergeDeep, throwIf} from '@xh/hoist/utils/js';
 import {isFunction, isNil} from 'lodash';
 import {createRef} from 'react';
-import {RestField} from '../data/RestField';
+import type {RestField} from '../data/RestField';
 
 /**
  * @internal

@@ -7,8 +7,9 @@
 
 import {card} from '@xh/hoist/cmp/card';
 import {div, vframe} from '@xh/hoist/cmp/layout';
-import {creates, hoistCmp, HoistProps, TestSupportProps, uses} from '@xh/hoist/core';
-import {DashCanvasModel, DashCanvasViewSpec} from '@xh/hoist/desktop/cmp/dash';
+import type {HoistProps, TestSupportProps} from '@xh/hoist/core';
+import {creates, hoistCmp, uses} from '@xh/hoist/core';
+import type {DashCanvasModel, DashCanvasViewSpec} from '@xh/hoist/desktop/cmp/dash';
 import {DashCanvasWidgetChooserModel} from '@xh/hoist/desktop/cmp/dash/canvas/widgetchooser/DashCanvasWidgetChooserModel';
 import {
     groupViewSpecs,
@@ -41,7 +42,7 @@ export const [DashCanvasWidgetChooser, dashCanvasWidgetChooser] =
                 className,
                 overflowY: 'auto',
                 flexWrap: 'nowrap',
-                items: createDraggableItems(dashCanvasModel),
+                children: createDraggableItems(dashCanvasModel),
                 testId
             });
         }
@@ -63,7 +64,7 @@ const draggableWidget = hoistCmp.factory<
             unselectable: 'on',
             onDragStart: e => model.onDragStart(e, viewSpec),
             onDragEnd: e => model.onDragEnd(e),
-            items: [icon, ' ', title]
+            children: [icon, ' ', title]
         });
     }
 });
@@ -90,7 +91,7 @@ function createGroupItems(nodes: ViewSpecNode<DashCanvasViewSpec>[]): ReactNode[
                   key: `group-${it.name}`,
                   icon: getSharedIcon(it.allViewSpecs),
                   title: it.name,
-                  items: createGroupItems(it.children),
+                  children: createGroupItems(it.children),
                   modelConfig: {collapsible: true}
               })
             : draggableWidget({key: it.id, viewSpec: it})

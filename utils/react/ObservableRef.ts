@@ -5,7 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {action, observable} from '@xh/hoist/mobx';
-import {RefCallback, RefObject} from 'react';
+import type {RefCallback, RefObject} from 'react';
 
 /**
  * Create an observable ref.

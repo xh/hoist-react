@@ -25,7 +25,7 @@ export const allPanel = hoistCmp.factory<InstancesModel>({
     render({model}) {
         const popupParent = useContextModel(InspectorModel).windowContainer;
         return panel({
-            item: grid({
+            children: grid({
                 model: model.instancesGridModel,
                 agOptions: {suppressGroupChangesColumnVisibility: true, popupParent}
             }),
@@ -37,12 +37,12 @@ export const allPanel = hoistCmp.factory<InstancesModel>({
 const instanceGridBar = hoistCmp.factory<InstancesModel>(({model}) => {
     const {instancesGridModel, selectedSyncRun} = model;
     return toolbar({
-        items: [
+        children: [
             buttonGroupInput({
                 bind: 'instQuickFilters',
                 enableMulti: true,
                 outlined: true,
-                items: [
+                children: [
                     button({
                         text: 'Grouped',
                         value: 'showInGroups'
@@ -63,11 +63,11 @@ const instanceGridBar = hoistCmp.factory<InstancesModel>(({model}) => {
             popover({
                 omit: !selectedSyncRun,
                 interactionKind: 'hover',
-                item: span(Icon.filter(), ` registered @ sync run ${selectedSyncRun}`),
+                children: span(Icon.filter(), ` registered @ sync run ${selectedSyncRun}`),
                 content: div({
                     className: 'xh-pad',
                     style: {width: '300px'},
-                    items: [
+                    children: [
                         p('Triggered by your selection in the Memory grid.'),
                         p(
                             'Focuses this grid on instances created around the same time, in-between batched updates to stats.'
@@ -77,7 +77,7 @@ const instanceGridBar = hoistCmp.factory<InstancesModel>(({model}) => {
                         ),
                         p(
                             a({
-                                item: '(click to clear)',
+                                children: '(click to clear)',
                                 onClick: () => model.statsModel.gridModel.clearSelection()
                             })
                         )

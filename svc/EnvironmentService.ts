@@ -5,7 +5,8 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import bpPkg from '@blueprintjs/core/package.json';
-import {HoistService, InitContext, XH} from '@xh/hoist/core';
+import type {InitContext} from '@xh/hoist/core';
+import {HoistService, XH} from '@xh/hoist/core';
 import {agGridVersion} from '@xh/hoist/kit/ag-grid';
 import {action, observable} from '@xh/hoist/mobx';
 import hoistPkg from '@xh/hoist/package.json';

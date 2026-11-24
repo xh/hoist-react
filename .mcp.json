@@ -1,23 +1,10 @@
 {
   "mcpServers": {
-    "hoist-react": {
+    "hoist-docs": {
       "type": "stdio",
-      "command": "node",
-      "args": [
-        "bin/hoist-mcp.mjs"
-      ],
-      "env": {}
-    },
-    "github": {
-      "command": "bash",
-      "args": [
-        "-c",
-        "GITHUB_PERSONAL_ACCESS_TOKEN=\"$(gh auth token)\" exec docker run -i --rm -e GITHUB_PERSONAL_ACCESS_TOKEN ghcr.io/github/github-mcp-server"
-      ]
-    },
-    "idea": {
-      "url": "http://127.0.0.1:64342/stream",
-      "type": "http"
+      "command": "npx",
+      "args": ["-y", "@xh/hoist-docs@1"],
+      "env": {"INDEX_DIR": "${HOIST_DOCS_INDEX_DIR:-}"}
     },
     "chrome-devtools": {
       "command": "npx",

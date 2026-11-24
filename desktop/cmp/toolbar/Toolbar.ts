@@ -5,7 +5,8 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {filler, fragment, hbox, vbox} from '@xh/hoist/cmp/layout';
-import {BoxProps, hoistCmp, HoistProps} from '@xh/hoist/core';
+import type {BoxProps, HoistProps} from '@xh/hoist/core';
+import {hoistCmp} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
@@ -14,7 +15,7 @@ import {filterConsecutiveToolbarSeparators} from '@xh/hoist/utils/impl';
 import {throwIf} from '@xh/hoist/utils/js';
 import classNames from 'classnames';
 import {isEmpty} from 'lodash';
-import {Children, ReactNode} from 'react';
+import {Children} from 'react';
 import './Toolbar.scss';
 import {toolbarSeparator} from './ToolbarSep';
 
@@ -99,7 +100,9 @@ export const [Toolbar, toolbar] = hoistCmp.withFactory<ToolbarProps, ToolbarDefa
                 vertical ? 'xh-toolbar--vertical' : null,
                 overflow ? 'xh-toolbar--overflow' : null
             ),
-            items: overflow ? overflowBox({items, minVisibleItems, collapseFrom}) : items
+            children: overflow
+                ? overflowBox({children: items, minVisibleItems, collapseFrom})
+                : items
         });
     }
 });
@@ -113,7 +116,7 @@ const overflowBox = hoistCmp.factory({
     memo: false,
     render({children, minVisibleItems, collapseFrom}) {
         return overflowList({
-            $items: children as readonly ReactNode[],
+            $items: Children.toArray(children),
             minVisibleItems,
             collapseFrom,
             visibleItemRenderer: item => item,
@@ -132,7 +135,7 @@ const overflowButton = hoistCmp.factory({
             popover({
                 popoverClassName: 'xh-toolbar-overflow-popover',
                 position: 'bottom-right',
-                item: button({icon: Icon.ellipsisVertical()}),
+                children: button({icon: Icon.ellipsisVertical()}),
                 content: vbox(children)
             })
         );

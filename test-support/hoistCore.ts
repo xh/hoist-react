@@ -331,7 +331,7 @@ export class FakeHoistCore {
             this.get('xh/getConfig', () => HttpResponse.json(this.configs)),
 
             // XhController.getPrefs - PrefService.getClientConfig.
-            this.post(
+            this.get(
                 'xh/getPrefs',
                 req =>
                     this.checkUser(req) ??
@@ -379,8 +379,8 @@ export class FakeHoistCore {
             }),
 
             // XhController's JsonBlob actions and XhViewController - see FakeJsonBlobStore.
-            ...this.jsonBlobs.paths.map(path =>
-                this.post(path, req => {
+            ...this.jsonBlobs.paths.map(path => {
+                const handler = (req: RecordedRequest) => {
                     try {
                         const ret = this.jsonBlobs.serve(
                             path,
@@ -392,8 +392,11 @@ export class FakeHoistCore {
                         if (e instanceof FakeServerError) return hoistError(e.status, e.error);
                         throw e;
                     }
-                })
-            ),
+                };
+                return this.jsonBlobs.readPaths.includes(path)
+                    ? this.get(path, handler)
+                    : this.post(path, handler);
+            }),
 
             // XhController.track, recordMetrics, submitSpans - accepted, nothing returned.
             ...['xh/track', 'xh/recordMetrics', 'xh/submitSpans'].map(path =>
@@ -552,7 +555,9 @@ function defaultConfigs(): PlainObject {
     };
 }
 
-// Prefs that hoist-core creates by default, none of them set by the user.
+// Prefs that hoist-core creates by default, none of them set by the user. xhSizingMode defaults to
+// {} in hoist-core, and SizingModeModel saves the platform's mode on boot when it finds none. Seed
+// every platform here, so boot writes nothing.
 function defaultPrefs(): Record<string, PrefSpec> {
     const pref = (type: PrefSpec['type'], defaultValue: any): PrefSpec => ({type, defaultValue});
     return {
@@ -560,7 +565,7 @@ function defaultPrefs(): Record<string, PrefSpec> {
         xhIdleDetectionDisabled: pref('bool', false),
         xhLastReadChangelog: pref('string', '0.0.0'),
         xhShowVersionBar: pref('string', 'auto'),
-        xhSizingMode: pref('json', {}),
+        xhSizingMode: pref('json', {desktop: 'standard', mobile: 'standard', tablet: 'standard'}),
         xhTheme: pref('string', 'system')
     };
 }
@@ -577,7 +582,7 @@ function defaultEnvironment(): PlainObject {
         appBuild: XH.appBuild,
         appEnvironment: 'Development',
         grailsVersion: '7.2.2',
-        hoistCoreVersion: '42.1.0',
+        hoistCoreVersion: '45.0.0',
         javaVersion: '25.0.1',
         serverTimeZone: 'UTC',
         appTimeZone: 'America/New_York',

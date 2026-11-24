@@ -6,7 +6,8 @@
  */
 import {BannerModel} from '@xh/hoist/appcontainer/BannerModel';
 import {markdown} from '@xh/hoist/cmp/markdown';
-import {BannerSpec, HoistService, Intent, XH} from '@xh/hoist/core';
+import type {BannerSpec, Intent} from '@xh/hoist/core';
+import {HoistService, XH} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {compact, isEmpty, map, trim} from 'lodash';
 

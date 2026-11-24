@@ -24,8 +24,8 @@ export const logLevelDialog = hoistCmp.factory({
             isOpen: parent.showLogLevelDialog,
             canOutsideClickClose: false,
             onClose: () => (parent.showLogLevelDialog = false),
-            item: panel({
-                item: restGrid(),
+            children: panel({
+                children: restGrid(),
                 bbar: [
                     Icon.infoCircle(),
                     span('Note - log level adjustments apply to all instances in the cluster'),

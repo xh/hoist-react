@@ -147,6 +147,11 @@ Parameter constraints can be specified using angle-bracket syntax (e.g. `/:id<\\
 numeric-only parameters). See the
 [Router5 documentation](https://router5.js.org/guides/defining-routes) for full syntax details.
 
+Path parameter values are percent-encoded when a URL is built and decoded on match, so values
+containing `/`, `&`, `?` or `#` round-trip through `XH.navigate()` and `XH.routerState.params`.
+Note that a value containing `/` reaches the server as `%2F` on a full page load, which Tomcat
+rejects by default - apps that deep-link such values should substitute another character first.
+
 ### Conditional Route Exclusion
 
 Routes support an `omit` property (a Hoist extension, not part of Router5) that allows
@@ -180,6 +185,7 @@ The `XH` singleton exposes the primary routing API used by application code:
 | `XH.navigate(name, params?, opts?)` | method | Navigate to a route by its fully qualified name |
 | `XH.appendRoute(name, params?)` | method | Append a route segment to the current route, preserving existing params |
 | `XH.popRoute()` | method | Remove the last route segment from the current route, preserving params |
+| `XH.hasRoute(name)` | method | Check if a route exists with the given fully qualified name |
 | `XH.router` | `Router` | Underlying Router5 router instance for advanced use |
 | `XH.routerModel` | `RouterModel` | Hoist model hosting observable state — rarely needed directly |
 
@@ -457,6 +463,9 @@ const state = XH.router.getState();
 const path = XH.router.buildPath('default.other.simpleRouting.recordId', {recordId: 123});
 ```
 
+`buildPath()` and `buildUrl()` throw if no route has the given name. If the name is computed or
+the route is added later, check it first with `XH.hasRoute(name)`.
+
 Applications should prefer the `XH` convenience methods for standard navigation and use
 `XH.router` only when they need Router5-specific features.
 
@@ -529,7 +538,7 @@ this.addReaction({
 | File | Description |
 |------|-------------|
 | [`/appcontainer/RouterModel.ts`](../appcontainer/RouterModel.ts) | Core model wrapping Router5 with MobX observables |
-| [`/core/XH.ts`](../core/XH.ts) | `XH.routerState`, `XH.navigate()`, `XH.appendRoute()`, `XH.popRoute()`, `XH.router` |
+| [`/core/XH.ts`](../core/XH.ts) | `XH.routerState`, `XH.navigate()`, `XH.appendRoute()`, `XH.popRoute()`, `XH.hasRoute()`, `XH.router` |
 | [`/core/HoistAppModel.ts`](../core/HoistAppModel.ts) | `getRoutes()` base method for application route definitions |
 | [`/appcontainer/AppContainerModel.ts`](../appcontainer/AppContainerModel.ts) | `startRouter()` — initializes and starts routing during app startup |
 | [`/cmp/tab/TabContainerModel.ts`](../cmp/tab/TabContainerModel.ts) | Route-based tab synchronization (desktop only) |

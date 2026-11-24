@@ -16,7 +16,6 @@ import {
     useHotkeys
 } from '@blueprintjs/core';
 import '@blueprintjs/core/lib/css/blueprint.css';
-import '@blueprintjs/datetime/lib/css/blueprint-datetime.css';
 import {elementFactory} from '@xh/hoist/core';
 import './styles.scss';
 
@@ -27,15 +26,8 @@ FocusStyleManager.onlyShowFocusOnTabs();
 //---------------------
 // Re-exports
 //---------------------
-export {
-    useHotkeys,
-    HotkeyConfig,
-    Classes,
-    PopoverInteractionKind,
-    Position,
-    OverlayToaster,
-    ToasterPosition
-};
+export type {HotkeyConfig, ToasterPosition};
+export {useHotkeys, Classes, PopoverInteractionKind, Position, OverlayToaster};
 export * from './Wrappers';
 export * from './Dialog';
 export * from './ContextMenu';

@@ -4,7 +4,7 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {AppModel} from '@xh/hoist/admin/AppModel';
+import type {AppModel} from '@xh/hoist/admin/AppModel';
 import {div, span} from '@xh/hoist/cmp/layout';
 import {markdown} from '@xh/hoist/cmp/markdown';
 import {XH} from '@xh/hoist/core';
@@ -12,7 +12,7 @@ import {defaultReadonlyRenderer} from '@xh/hoist/desktop/cmp/form';
 import {jsonInput} from '@xh/hoist/desktop/cmp/input';
 import {LocalDate} from '@xh/hoist/utils/datetime';
 import {isString} from 'lodash';
-import {ReactElement, ReactNode} from 'react';
+import type {ReactElement, ReactNode} from 'react';
 
 /**
  * Generate a standardized filename for an Admin module grid export, without datestamp.
@@ -35,7 +35,7 @@ export function getAppModel<T extends AppModel>() {
 
 /** Muted "N/A" placeholder for empty values in read-only detail forms. */
 export function naSpan(): ReactNode {
-    return span({item: 'N/A', className: 'xh-text-color-muted'});
+    return span({children: 'N/A', className: 'xh-text-color-muted'});
 }
 
 /**
@@ -88,5 +88,5 @@ export function yesNoRenderer(v: boolean): ReactNode {
 export function markdownRenderer(v: string): ReactNode {
     return v == null
         ? naSpan()
-        : div({className: 'xh-admin-readonly-form__markdown', item: markdown({content: v})});
+        : div({className: 'xh-admin-readonly-form__markdown', children: markdown({content: v})});
 }

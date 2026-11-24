@@ -4,13 +4,15 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {TabContainerModel, TabModel} from '@xh/hoist/cmp/tab';
-import {
+import type {TabContainerModel} from '@xh/hoist/cmp/tab';
+import {TabModel} from '@xh/hoist/cmp/tab';
+import type {
     IDynamicTabSwitcherModel,
     TabSwitcherConfig,
     TabSwitcherMenuContext
 } from '@xh/hoist/cmp/tab/Types';
-import {HoistModel, MenuItemLike, MenuToken, ReactionSpec, XH} from '@xh/hoist/core';
+import type {MenuItemLike, MenuToken, ReactionSpec} from '@xh/hoist/core';
+import {HoistModel, XH} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {compact, find} from 'lodash';
 import {action, computed, when, observableRef} from '@xh/hoist/mobx';

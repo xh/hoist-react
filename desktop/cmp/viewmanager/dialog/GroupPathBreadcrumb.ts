@@ -7,16 +7,20 @@
 
 import {span} from '@xh/hoist/cmp/layout';
 import {splitGroupPath} from '@xh/hoist/cmp/viewmanager';
-import {hoistCmp, HoistProps} from '@xh/hoist/core';
+import type {HoistProps} from '@xh/hoist/core';
+import {hoistCmp} from '@xh/hoist/core';
 import classNames from 'classnames';
-import {isEmpty, last} from 'lodash';
+import {isArray, isEmpty, last} from 'lodash';
 
 const SEPARATOR = '›';
 const ELLIPSIS = '…';
 
 export interface GroupPathBreadcrumbProps extends HoistProps {
-    /** Delimited group path to render - null/empty renders nothing. */
-    path: string;
+    /**
+     * Delimited group path to render, or its segments already split - for a path with segments
+     * that may themselves contain the delimiter, such as a view name. Null/empty renders nothing.
+     */
+    path: string | string[];
 
     /** True to take the surrounding text color - e.g. within an intent-colored toast. */
     inheritColor?: boolean;
@@ -38,7 +42,7 @@ export const groupPathBreadcrumb = hoistCmp.factory<GroupPathBreadcrumbProps>({
     model: false,
 
     render({path, inheritColor, maxChars = 44, className}) {
-        const segments = splitGroupPath(path);
+        const segments = isArray(path) ? path : splitGroupPath(path);
         if (isEmpty(segments)) return null;
 
         const fullText = segments.join(` ${SEPARATOR} `),
@@ -46,25 +50,25 @@ export const groupPathBreadcrumb = hoistCmp.factory<GroupPathBreadcrumbProps>({
             collapse = segments.length > 2 && fullText.length > maxChars,
             shown = collapse ? [segments[0], ELLIPSIS, last(segments)] : segments;
 
-        const items = [];
+        const children = [];
         shown.forEach((segment, idx) => {
             if (idx) {
-                items.push(
+                children.push(
                     span({
                         key: `sep-${idx}`,
                         className: 'xh-view-manager__group-path__separator',
-                        item: SEPARATOR
+                        children: SEPARATOR
                     })
                 );
             }
-            items.push(
+            children.push(
                 span({
                     key: idx,
                     className: classNames(
                         'xh-view-manager__group-path__segment',
                         collapse && idx === 1 && 'xh-view-manager__group-path__segment--collapsed'
                     ),
-                    item: segment
+                    children: segment
                 })
             );
         });
@@ -75,7 +79,7 @@ export const groupPathBreadcrumb = hoistCmp.factory<GroupPathBreadcrumbProps>({
                 inheritColor && 'xh-view-manager__group-path--inherit'
             ),
             title: collapse ? fullText : null,
-            items
+            children
         });
     }
 });

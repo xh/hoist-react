@@ -6,8 +6,9 @@
  */
 import {boolCheck, GridModel} from '@xh/hoist/cmp/grid';
 import {TabContainerModel} from '@xh/hoist/cmp/tab';
-import {HoistBase, HoistModel, managed, persist, XH} from '@xh/hoist/core';
-import {StoreRecord} from '@xh/hoist/data';
+import type {HoistBase} from '@xh/hoist/core';
+import {HoistModel, managed, persist, XH} from '@xh/hoist/core';
+import type {StoreRecord} from '@xh/hoist/data';
 import {PanelModel} from '@xh/hoist/desktop/cmp/panel';
 import {fmtDate} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';

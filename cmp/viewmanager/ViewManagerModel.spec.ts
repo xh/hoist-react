@@ -36,7 +36,7 @@ describe('ViewManagerModel', () => {
             const vmm = await createAsync({instance: 'blotter'});
 
             const [req] = hoistCore.requestsTo('xhView/allData');
-            expect(req.form).toEqual({type: 'portfolioGrid', viewInstance: 'blotter'});
+            expect(req.query).toEqual({type: 'portfolioGrid', viewInstance: 'blotter'});
             expect(vmm.views.map(it => it.token)).toEqual(['mine', 'bobs', 'firm']);
             expect(vmm.autoSave).toBe(true);
         });
@@ -119,7 +119,7 @@ describe('ViewManagerModel', () => {
             ['is false when neither the server nor config allows it', undefined, undefined, false]
         ])('%s', async (_, fromServer, config, expected) => {
             if (fromServer === undefined) {
-                hoistCore.route('POST', 'xhView/allData', () => ({
+                hoistCore.route('GET', 'xhView/allData', () => ({
                     state: {userPinned: {}, autoSave: false},
                     views: []
                 }));
@@ -175,7 +175,7 @@ describe('ViewManagerModel', () => {
             await vmm.selectViewAsync('firm');
             expect(vmm.view.token).toBe('firm');
             expect(vmm.getValue()).toEqual({sortBy: 'sector'});
-            expect(hoistCore.requestsTo('xhView/get').at(-1).form).toEqual({token: 'firm'});
+            expect(hoistCore.requestsTo('xhView/get').at(-1).query).toEqual({token: 'firm'});
         });
 
         // 90.0.0 - a slower, earlier view load replaced a later one.
@@ -265,6 +265,137 @@ describe('ViewManagerModel', () => {
             await hoistCore.settleAsync();
 
             expect(vmm.view.token).toBe('west');
+        });
+
+        it('applies pins and auto-save changed elsewhere', async () => {
+            setState({currentView: 'east'});
+            const vmm = await createAsync();
+
+            setState({userPinned: {west: false}, autoSave: true});
+            await vmm.refreshAsync();
+
+            expect(vmm.isUserPinned(findView(vmm, 'west'))).toBe(false);
+            expect(vmm.autoSave).toBe(true);
+        });
+
+        it('keeps a pin made just before a refresh, and saves it after 500ms', async () => {
+            setState({currentView: 'east'});
+            const vmm = await createAsync();
+            vi.useFakeTimers();
+
+            vmm.userUnpin(findView(vmm, 'west'));
+            await vmm.refreshAsync();
+            expect(vmm.isUserPinned(findView(vmm, 'west'))).toBe(false);
+
+            await vi.advanceTimersByTimeAsync(500);
+            await hoistCore.settleAsync();
+            expect(jsonBlobs.viewState(TYPE).userPinned).toEqual({west: false});
+        });
+
+        it('keeps a pin made while a refresh fetch is in flight', async () => {
+            setState({currentView: 'east'});
+            const vmm = await createAsync();
+
+            const {arrived, release} = holdRequests('xhView/allData'),
+                refresh = vmm.refreshAsync();
+            await arrived;
+            vmm.userUnpin(findView(vmm, 'west'));
+            release();
+            await refresh;
+
+            expect(vmm.isUserPinned(findView(vmm, 'west'))).toBe(false);
+        });
+
+        it('keeps a pin whose write is in flight when a refresh fetch is sent', async () => {
+            setState({currentView: 'east'});
+            const vmm = await createAsync();
+            vi.useFakeTimers();
+
+            const {arrived, release} = holdRequests('xhView/updateState');
+            vmm.userUnpin(findView(vmm, 'west'));
+            await vi.advanceTimersByTimeAsync(500);
+            await arrived;
+            await vmm.refreshAsync();
+            release();
+            await hoistCore.settleAsync();
+
+            expect(vmm.isUserPinned(findView(vmm, 'west'))).toBe(false);
+            expect(jsonBlobs.viewState(TYPE).userPinned).toEqual({west: false});
+        });
+
+        it('keeps an auto-save change whose write is in flight when a refresh is sent', async () => {
+            setState({currentView: 'east'});
+            const vmm = await createAsync();
+            vi.useFakeTimers();
+
+            const {arrived, release} = holdRequests('xhView/updateState');
+            vmm.autoSave = true;
+            await vi.advanceTimersByTimeAsync(500);
+            await arrived;
+            await vmm.refreshAsync();
+            release();
+            await hoistCore.settleAsync();
+
+            expect(vmm.autoSave).toBe(true);
+            expect(jsonBlobs.viewState(TYPE).autoSave).toBe(true);
+        });
+    });
+
+    describe('user state writes', () => {
+        beforeEach(() => addDeskViews());
+
+        it('writes changes made within 500ms of each other as one', async () => {
+            setState({currentView: 'east'});
+            const vmm = await createAsync();
+            vi.useFakeTimers();
+
+            vmm.autoSave = true;
+            await vi.advanceTimersByTimeAsync(400);
+            vmm.userUnpin(findView(vmm, 'west'));
+            await vi.advanceTimersByTimeAsync(400);
+            expect(hoistCore.requestsTo('xhView/updateState')).toHaveLength(0);
+
+            await vi.advanceTimersByTimeAsync(100);
+            await hoistCore.settleAsync();
+            expect(hoistCore.requestsTo('xhView/updateState').map(it => it.json)).toEqual([
+                {userPinned: {west: false}, autoSave: true}
+            ]);
+        });
+
+        it('writes only the keys that changed, keeping a pin made in another tab', async () => {
+            setState({currentView: 'east'});
+            const vmm = await createAsync();
+            vi.useFakeTimers();
+
+            setState({currentView: 'east', userPinned: {west: false}});
+            vmm.autoSave = true;
+            await vi.advanceTimersByTimeAsync(500);
+            await hoistCore.settleAsync();
+
+            expect(hoistCore.requestsTo('xhView/updateState').map(it => it.json)).toEqual([
+                {autoSave: true}
+            ]);
+            expect(jsonBlobs.viewState(TYPE)).toMatchObject({
+                userPinned: {west: false},
+                autoSave: true
+            });
+        });
+
+        it('logs a failed write, and the next refresh applies the server value', async () => {
+            setState({currentView: 'east'});
+            const vmm = await createAsync();
+
+            vi.useFakeTimers();
+
+            failNextStateWrite();
+            vmm.autoSave = true;
+            await vi.advanceTimersByTimeAsync(500);
+            await hoistCore.settleAsync();
+            expect(vmm.autoSave).toBe(true);
+            expect(jsonBlobs.viewState(TYPE).autoSave).toBe(false);
+
+            await vmm.refreshAsync();
+            expect(vmm.autoSave).toBe(false);
         });
     });
 
@@ -486,7 +617,7 @@ describe('ViewManagerModel', () => {
             expect(vmm.views.find(it => it.token === 'desk').group).toBe('Desks/Rates');
         });
 
-        it('pins owned and global views by default, and saves user pins after 1s', async () => {
+        it('pins owned and global views by default, and saves user pins after 500ms', async () => {
             setState({currentView: 'mine', userPinned: {firm: false}});
             const vmm = await createAsync();
             expect(names(vmm.pinnedViews)).toEqual(['My Positions']);
@@ -494,16 +625,14 @@ describe('ViewManagerModel', () => {
             vi.useFakeTimers();
             vmm.userPin(vmm.views.find(it => it.token === 'bobs'));
             expect(names(vmm.pinnedViews)).toEqual(['My Positions', 'Bob Risk']);
-
-            await vi.advanceTimersByTimeAsync(999);
+            await vi.advanceTimersByTimeAsync(499);
             expect(hoistCore.requestsTo('xhView/updateState')).toHaveLength(0);
             await vi.advanceTimersByTimeAsync(1);
-            await vi.waitFor(() =>
-                expect(hoistCore.requestsTo('xhView/updateState')).toHaveLength(1)
-            );
-            expect(hoistCore.requestsTo('xhView/updateState')[0].json).toEqual({
-                userPinned: {firm: false, bobs: true}
-            });
+            await hoistCore.settleAsync();
+
+            const reqs = hoistCore.requestsTo('xhView/updateState');
+            expect(reqs).toHaveLength(1);
+            expect(reqs[0].json).toEqual({userPinned: {firm: false, bobs: true}});
         });
     });
 
@@ -641,8 +770,20 @@ function setState(state: PlainObject) {
 
 /** Answer every `xhView/allData` in this test with a server error. */
 function failLoads() {
-    hoistCore.route('POST', 'xhView/allData', () =>
+    hoistCore.route('GET', 'xhView/allData', () =>
         hoistError(500, {message: 'Database unavailable'})
+    );
+}
+
+/** Answer the next `xhView/updateState` with a server error. */
+function failNextStateWrite() {
+    let failed = false;
+    server.use(
+        http.post(xhUrl('xhView/updateState'), () => {
+            if (failed) return;
+            failed = true;
+            return hoistError(500, {message: 'Database unavailable'});
+        })
     );
 }
 
@@ -663,7 +804,7 @@ function allowGlobalWrites(allow: boolean) {
  */
 function holdRequests(
     path: string,
-    {once = false, filter}: {once?: boolean; filter?: (req: Request) => Promise<boolean>} = {}
+    {once = false, filter}: {once?: boolean; filter?: (req: Request) => boolean} = {}
 ): {arrived: Promise<void>; release: () => void} {
     let onArrived: () => void,
         release: () => void,
@@ -671,9 +812,9 @@ function holdRequests(
     const arrived = new Promise<void>(resolve => (onArrived = resolve)),
         gate = new Promise<void>(resolve => (release = resolve));
     server.use(
-        http.post(xhUrl(path), async ({request}) => {
+        http.all(xhUrl(path), async ({request}) => {
             if (once && held) return;
-            if (filter && !(await filter(request))) return;
+            if (filter && !filter(request)) return;
             held = true;
             onArrived();
             await gate;
@@ -685,7 +826,7 @@ function holdRequests(
 
 /** Hold fetches of one view until released. Fetches of other views go through. */
 function holdView(token: string): {arrived: Promise<void>; release: () => void} {
-    return holdRequests('xhView/get', {filter: async req => (await viewToken(req)) === token});
+    return holdRequests('xhView/get', {filter: req => viewToken(req) === token});
 }
 
 /**
@@ -695,15 +836,15 @@ function holdView(token: string): {arrived: Promise<void>; release: () => void} 
 function failNextView(token: string) {
     let failed = false;
     server.use(
-        http.post(xhUrl('xhView/get'), async ({request}) => {
-            if (failed || (await viewToken(request)) !== token) return;
+        http.get(xhUrl('xhView/get'), ({request}) => {
+            if (failed || viewToken(request) !== token) return;
             failed = true;
             return hoistError(500, {message: 'Database unavailable'});
         })
     );
 }
 
-/** The token of a view fetch, read from a copy of its form-encoded body. */
-async function viewToken(req: Request): Promise<string> {
-    return (await req.clone().formData()).get('token') as string;
+/** The token of a view fetch, read from its query string. */
+function viewToken(req: Request): string {
+    return new URL(req.url).searchParams.get('token');
 }

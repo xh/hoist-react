@@ -1,20 +1,23 @@
 .xh-text-input {
   background: var(--xh-input-bg);
 
-  .text-input,
-  .text-input__label {
-    height: var(--xh-mobile-input-height-px);
-    padding: 0 var(--xh-pad-px);
-  }
-
   &__input {
     flex: 1;
+    min-width: 0;
+    height: var(--xh-input-height);
+    padding: 0 var(--xh-spacing);
+    margin: 0;
+    background: transparent;
+
+    &:disabled {
+      opacity: 0.5;
+    }
   }
 
   &__left-icon {
     display: flex;
     align-items: center;
-    padding-left: var(--xh-pad-px);
+    padding-left: var(--xh-spacing);
     color: var(--xh-text-color-muted);
   }
 

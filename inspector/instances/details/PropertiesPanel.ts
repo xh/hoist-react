@@ -28,7 +28,7 @@ export const propertiesPanel = hoistCmp.factory({
     render({model}) {
         const popupParent = useContextModel(InspectorModel).windowContainer;
         return panel({
-            item: grid({model: model.gridModel, agOptions: {popupParent}}),
+            children: grid({model: model.gridModel, agOptions: {popupParent}}),
             bbar: bbar()
         });
     }
@@ -37,12 +37,12 @@ export const propertiesPanel = hoistCmp.factory({
 const bbar = hoistCmp.factory<PropertiesModel>(({model}) => {
     const {gridModel} = model;
     return toolbar({
-        items: [
+        children: [
             buttonGroupInput({
                 bind: 'quickFilters',
                 enableMulti: true,
                 outlined: true,
-                items: [
+                children: [
                     button({
                         text: 'Own only',
                         value: 'ownPropsOnly',

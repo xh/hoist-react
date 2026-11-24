@@ -5,9 +5,9 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
-import {Some} from '@xh/hoist/core';
-import {Column} from './columns';
-import {GridAutosizeMode} from './enums/GridAutosizeMode';
+import type {Some} from '@xh/hoist/core';
+import type {Column} from './columns';
+import type {GridAutosizeMode} from './enums/GridAutosizeMode';
 
 export interface GridAutosizeOptions {
     /** Mode governing when resize occurs. Defaults to GridAutosizeMode.ON_SIZING_MODE_CHANGE.*/

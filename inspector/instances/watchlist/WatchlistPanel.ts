@@ -40,7 +40,7 @@ export const watchlistPanel = hoistCmp.factory({
                         onClick: () => model.clearInstances()
                     })
                 ],
-                item: grid({model: instancesGridModel, agOptions: {popupParent}})
+                children: grid({model: instancesGridModel, agOptions: {popupParent}})
             }),
             panel({
                 title: 'Properties',
@@ -60,7 +60,7 @@ export const watchlistPanel = hoistCmp.factory({
                     persistWith: {...model.parent.persistWith, path: 'watchlistPropsPanel'},
                     xhImpl: true
                 },
-                item: grid({model: propsModel.gridModel, agOptions: {popupParent}})
+                children: grid({model: propsModel.gridModel, agOptions: {popupParent}})
             })
         );
     }

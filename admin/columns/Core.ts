@@ -5,7 +5,8 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {badge} from '@xh/hoist/cmp/badge';
-import {ColumnSpec, dateTimeSec} from '@xh/hoist/cmp/grid';
+import type {ColumnSpec} from '@xh/hoist/cmp/grid';
+import {dateTimeSec} from '@xh/hoist/cmp/grid';
 import {XH} from '@xh/hoist/core';
 import {dateTimeRenderer} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
@@ -20,7 +21,7 @@ export const badgeCol: ColumnSpec = {
 export function badgeRenderer(v) {
     return v
         ? badge({
-              item: v,
+              children: v,
               className: 'xh-badge-col',
               style: {cursor: 'copy'},
               title: 'Double-click to copy',

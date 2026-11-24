@@ -24,9 +24,9 @@ export const statsPanel = hoistCmp.factory({
             {canForceGC} = XH.inspectorService;
 
         return panel({
-            item: hframe(
+            children: hframe(
                 panel({
-                    item: grid({agOptions: {popupParent}}),
+                    children: grid({agOptions: {popupParent}}),
                     modelConfig: {
                         side: 'left',
                         defaultSize: 550,
@@ -38,13 +38,13 @@ export const statsPanel = hoistCmp.factory({
                 chart()
             ),
             bbar: toolbar({
-                items: [
+                children: [
                     popover({
-                        item: span('JS Heap ', Icon.info()),
+                        children: span('JS Heap ', Icon.info()),
                         interactionKind: 'hover',
                         content: div({
                             className: 'xh-pad',
-                            item: span(
+                            children: span(
                                 'Note that JS heap space is as reported by the ',
                                 code('window.performance.memory'),
                                 ' API.'

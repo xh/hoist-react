@@ -7,25 +7,21 @@
 
 import {box, fragment, hbox} from '@xh/hoist/cmp/layout';
 import {spinner} from '@xh/hoist/cmp/spinner';
-import {
-    hoistCmp,
-    HoistProps,
-    MenuItemLike,
-    TestSupportProps,
-    useLocalModel,
-    uses
-} from '@xh/hoist/core';
-import {ViewManagerModel} from '@xh/hoist/cmp/viewmanager';
-import {button, ButtonProps} from '@xh/hoist/desktop/cmp/button';
+import type {HoistProps, MenuItemLike, TestSupportProps} from '@xh/hoist/core';
+import {hoistCmp, useLocalModel, uses} from '@xh/hoist/core';
+import {splitGroupPath, ViewManagerModel} from '@xh/hoist/cmp/viewmanager';
+import type {ButtonProps} from '@xh/hoist/desktop/cmp/button';
+import {button} from '@xh/hoist/desktop/cmp/button';
 import {Icon} from '@xh/hoist/icon';
 import {popover} from '@xh/hoist/kit/blueprint';
-import {getTestId} from '@xh/hoist/utils/js';
+import {getTestId, pluralize} from '@xh/hoist/utils/js';
 import {useOnVisibleChange} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import {startCase} from 'lodash';
-import {ReactElement} from 'react';
+import type {ReactElement, ReactNode} from 'react';
 import {viewMenu} from './ViewMenu';
 import {ViewManagerLocalModel} from './ViewManagerLocalModel';
+import {groupPathBreadcrumb} from './dialog/GroupPathBreadcrumb';
 import {manageDialog} from './dialog/ManageDialog';
 import {saveAsDialog} from './dialog/SaveAsDialog';
 
@@ -44,6 +40,8 @@ export interface ViewManagerProps extends HoistProps<ViewManagerModel>, TestSupp
     sharedViewIcon?: ReactElement;
     /** Button icon when the selected view is globally shared. Default `Icon.globe`. */
     globalViewIcon?: ReactElement;
+    /** Text for the menu button - see {@link ViewManagerButtonTextMode}. Default 'name'. */
+    buttonTextMode?: ViewManagerButtonTextMode;
 
     /** Default 'whenDirty' */
     showSaveButton?: ViewManagerStateButtonMode;
@@ -70,6 +68,18 @@ export interface ViewManagerProps extends HoistProps<ViewManagerModel>, TestSupp
 export type ViewManagerStateButtonMode = 'whenDirty' | 'always' | 'never';
 
 /**
+ * Text for the ViewManager menu button:
+ *  + 'name' - the selected view's name.
+ *  + 'fullPath' - the selected view's full path, e.g. `My Views › Reports › Monthly`.
+ *  + 'type' - the pluralized view type, e.g. `Views`.
+ *  + null - no text, for an icon-only button.
+ *
+ * With 'type' or null, the button does not show the selected view, so it always shows
+ * `defaultViewIcon`.
+ */
+export type ViewManagerButtonTextMode = 'name' | 'fullPath' | 'type' | null;
+
+/**
  * Desktop ViewManager component - a button-based menu for saving and swapping between named
  * bundles of persisted component state (e.g. grid views, dashboards, and similar).
  *
@@ -91,6 +101,7 @@ export const [ViewManager, viewManager] = hoistCmp.withFactory<ViewManagerProps>
         ownedViewIcon = Icon.bookmark(),
         sharedViewIcon = Icon.users(),
         globalViewIcon = Icon.globe(),
+        buttonTextMode = 'name',
         showSaveButton = 'whenDirty',
         showRevertButton = 'never',
         buttonSide = 'right',
@@ -112,10 +123,12 @@ export const [ViewManager, viewManager] = hoistCmp.withFactory<ViewManagerProps>
             }),
             menu = popover({
                 disabled: !locModel.isVisible, // Prevent orphaned popover menu
-                item: menuButton({
+                children: menuButton({
                     model: locModel,
+                    textMode: buttonTextMode,
                     icon: buttonIcon({
                         model: locModel,
+                        textMode: buttonTextMode,
                         defaultViewIcon,
                         ownedViewIcon,
                         sharedViewIcon,
@@ -126,7 +139,7 @@ export const [ViewManager, viewManager] = hoistCmp.withFactory<ViewManagerProps>
                 }),
                 content: loadObserver.isPending
                     ? box({
-                          item: spinner({compact: true}),
+                          children: spinner({compact: true}),
                           alignItems: 'center',
                           justifyContent: 'center',
                           height: 30,
@@ -145,7 +158,7 @@ export const [ViewManager, viewManager] = hoistCmp.withFactory<ViewManagerProps>
             hbox({
                 className,
                 testId,
-                items: buttonSide == 'left' ? [revert, save, menu] : [menu, save, revert],
+                children: buttonSide == 'left' ? [revert, save, menu] : [menu, save, revert],
                 ref: useOnVisibleChange(isVisible => (locModel.isVisible = isVisible))
             }),
             manageDialog({
@@ -163,17 +176,15 @@ export const [ViewManager, viewManager] = hoistCmp.withFactory<ViewManagerProps>
 
 const menuButton = hoistCmp.factory<ViewManagerLocalModel>({
     // Merge className - the popover clones this target with a className of its own.
-    render({model, icon, className, ...rest}) {
-        const {view, defaultDisplayName, typeDisplayName, isLoading} = model.parent;
+    render({model, icon, textMode, className, ...rest}) {
+        const {isLoading} = model.parent;
         return button({
             className: classNames('xh-view-manager__menu-button', className),
-            text: view.isDefault
-                ? `${startCase(defaultDisplayName)} ${startCase(typeDisplayName)}`
-                : view.name,
+            text: getButtonText(model.parent, textMode),
             icon: !isLoading
                 ? icon
                 : box({
-                      item: spinner({compact: true}),
+                      children: spinner({compact: true}),
                       width: 16.25
                   }),
             rightIcon: Icon.chevronDown(),
@@ -184,8 +195,9 @@ const menuButton = hoistCmp.factory<ViewManagerLocalModel>({
 });
 
 const buttonIcon = hoistCmp.factory<ViewManagerLocalModel>({
-    render({model, ownedViewIcon, sharedViewIcon, globalViewIcon, defaultViewIcon}) {
+    render({model, textMode, ownedViewIcon, sharedViewIcon, globalViewIcon, defaultViewIcon}) {
         const {view} = model.parent;
+        if (textMode === 'type' || textMode === null) return defaultViewIcon;
         if (view.isOwned) return ownedViewIcon;
         if (view.isShared) return sharedViewIcon;
         if (view.isGlobal) return globalViewIcon;
@@ -225,6 +237,35 @@ const revertButton = hoistCmp.factory<ViewManagerLocalModel>({
         });
     }
 });
+
+function getButtonText(model: ViewManagerModel, mode: ViewManagerButtonTextMode): ReactNode {
+    const {view, defaultDisplayName, typeDisplayName} = model;
+    switch (mode) {
+        case null:
+            return null;
+        case 'type':
+            return pluralize(startCase(typeDisplayName));
+    }
+    if (view.isDefault) return `${startCase(defaultDisplayName)} ${startCase(typeDisplayName)}`;
+    if (mode === 'fullPath') {
+        return groupPathBreadcrumb({
+            path: [getPathRoot(model), ...splitGroupPath(view.group), view.name],
+            inheritColor: true,
+            // Never collapse - showing every group is the point of this mode.
+            maxChars: Infinity
+        });
+    }
+    return view.name;
+}
+
+/** Leading segment of a view's full path - the menu section or shared-view owner it sits under. */
+function getPathRoot(model: ViewManagerModel): string {
+    const {view, typeDisplayName, globalDisplayName} = model,
+        pluralName = pluralize(startCase(typeDisplayName));
+    if (view.isOwned) return `My ${pluralName}`;
+    if (view.isGlobal) return `${startCase(globalDisplayName)} ${pluralName}`;
+    return view.info.owner;
+}
 
 function hideStateButton(model: ViewManagerLocalModel, mode: ViewManagerStateButtonMode): boolean {
     const {parent} = model;

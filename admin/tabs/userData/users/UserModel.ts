@@ -7,7 +7,8 @@
 import {exportFilenameWithDate} from '@xh/hoist/admin/AdminUtils';
 import * as Col from '@xh/hoist/admin/columns';
 import {GridModel} from '@xh/hoist/cmp/grid';
-import {HoistModel, LoadSpec, managed, XH} from '@xh/hoist/core';
+import type {LoadSpec} from '@xh/hoist/core';
+import {HoistModel, managed, XH} from '@xh/hoist/core';
 import {bindable} from '@xh/hoist/mobx';
 import {keyBy, keys} from 'lodash';
 

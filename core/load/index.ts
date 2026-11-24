@@ -1,3 +1,3 @@
 export * from './LoadSpec';
-export * from './Loadable';
+export type * from './Loadable';
 export * from './LoadSupport';

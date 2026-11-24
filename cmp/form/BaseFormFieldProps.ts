@@ -5,9 +5,9 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
-import {BoxProps, HoistProps} from '@xh/hoist/core';
-import {ReactNode} from 'react';
-import {FieldModel} from './field/FieldModel';
+import type {BoxProps, HoistProps} from '@xh/hoist/core';
+import type {ReactNode} from 'react';
+import type {FieldModel} from './field/FieldModel';
 
 export interface BaseFormFieldProps extends HoistProps<FieldModel>, BoxProps {
     /**

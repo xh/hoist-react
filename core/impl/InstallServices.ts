@@ -4,7 +4,8 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {HoistService, HoistServiceClass, InitContext, Some, XH} from '@xh/hoist/core';
+import type {HoistService, HoistServiceClass, InitContext, Some} from '@xh/hoist/core';
+import {XH} from '@xh/hoist/core';
 import {instanceManager} from '@xh/hoist/core/impl/InstanceManager';
 import {createSingleton, throwIf} from '@xh/hoist/utils/js';
 import {camelCase, castArray} from 'lodash';
@@ -34,26 +35,39 @@ export async function installServicesAsync(
     const notSvc = serviceClasses.find((it: any) => !it.isHoistService);
     throwIf(notSvc, `Cannot initialize ${notSvc?.name} - does not extend HoistService`);
 
-    const svcs = serviceClasses.map(c => {
-        const svc = createSingleton(c);
-        svc.xhName ??= camelCase(c.name);
-        return svc;
-    });
-    await initServicesInternalAsync(svcs, ctx);
-
-    svcs.forEach(svc => {
-        const clazz = svc.constructor,
-            name = camelCase(clazz.name);
-        throwIf(
-            XH[name],
-            `Service cannot be installed: property '${name}' already exists on target object,
-                indicating duplicate/conflicting service names or an (unsupported) attempt to
-                install the same service twice.`
+    // Check names before creating any instance, so a conflict throws with no side effects.
+    // Names stay reserved until install ends, so a concurrent install of the same name fails too.
+    const names = serviceClasses.map(c => camelCase(c.name)),
+        conflictIdx = names.findIndex(
+            (name, idx) => XH[name] || pendingNames.has(name) || names.indexOf(name) !== idx
         );
-        XH[name] = svc;
-        instanceManager.registerService(svc);
-    });
+    throwIf(
+        conflictIdx >= 0,
+        `Service cannot be installed: property '${names[conflictIdx]}' already exists on target
+            object, indicating duplicate/conflicting service names or an (unsupported) attempt
+            to install the same service twice.`
+    );
+
+    names.forEach(name => pendingNames.add(name));
+    try {
+        const svcs = serviceClasses.map((c, idx) => {
+            const svc = createSingleton(c);
+            svc.xhName ??= names[idx];
+            return svc;
+        });
+        await initServicesInternalAsync(svcs, ctx);
+
+        svcs.forEach((svc, idx) => {
+            XH[names[idx]] = svc;
+            instanceManager.registerService(svc);
+        });
+    } finally {
+        names.forEach(name => pendingNames.delete(name));
+    }
 }
+
+/** Names of services with an install in progress. */
+const pendingNames = new Set<string>();
 
 async function initServicesInternalAsync(svcs: HoistService[], ctx: InitContext) {
     const promises = svcs.map(it => {

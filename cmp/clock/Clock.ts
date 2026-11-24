@@ -5,15 +5,8 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {box, span} from '@xh/hoist/cmp/layout';
-import {
-    BoxProps,
-    hoistCmp,
-    HoistModel,
-    HoistProps,
-    managed,
-    useLocalModel,
-    XH
-} from '@xh/hoist/core';
+import type {BoxProps, HoistProps} from '@xh/hoist/core';
+import {hoistCmp, HoistModel, managed, useLocalModel, XH} from '@xh/hoist/core';
 import {fmtDate, TIME_FMT} from '@xh/hoist/format';
 import {action, observable} from '@xh/hoist/mobx';
 import {Timer} from '@xh/hoist/utils/async';
@@ -52,6 +45,7 @@ export interface ClockProps extends HoistProps, BoxProps {
  */
 export const [Clock, clock] = hoistCmp.withFactory<ClockProps>({
     displayName: 'Clock',
+    model: false,
     className: 'xh-clock',
 
     render({className, testId, ...props}, ref) {
@@ -61,7 +55,7 @@ export const [Clock, clock] = hoistCmp.withFactory<ClockProps>({
             ...getLayoutProps(props),
             testId,
             ref,
-            item: span(impl.display)
+            children: span(impl.display)
         });
     }
 });

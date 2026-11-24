@@ -39,10 +39,10 @@ export const inspectorPanel = hoistCmp.factory({
             tbar: toolbar({
                 compact: true,
                 className: 'xh-inspector__bar',
-                items: [
+                children: [
                     span({
                         className: 'xh-inspector__title',
-                        item: `${XH.appName} - Tab ${XH.tabId}`
+                        children: `${XH.appName} - Tab ${XH.tabId}`
                     }),
                     '-',
                     tabSwitcher({model: tabContainerModel}),
@@ -59,14 +59,14 @@ export const inspectorPanel = hoistCmp.factory({
                     })
                 ]
             }),
-            item: tabContainer({model: tabContainerModel, switcher: false})
+            children: tabContainer({model: tabContainerModel, switcher: false})
         });
 
         // Redirect Blueprint portals (tooltips, popovers, dialogs) into the Inspector window.
         return createPortal(
             portalProvider({
                 portalContainer: windowContainer,
-                item: fragment(ret, messageSource({model: messageSourceModel}))
+                children: fragment(ret, messageSource({model: messageSourceModel}))
             }),
             windowContainer
         );

@@ -4,7 +4,7 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {BaseFieldModel} from '@xh/hoist/cmp/form';
+import type {BaseFieldModel} from '@xh/hoist/cmp/form';
 import {hoistCmp, uses} from '@xh/hoist/core';
 import {formField} from '@xh/hoist/desktop/cmp/form';
 import {
@@ -39,8 +39,9 @@ export const restFormField = hoistCmp.factory({
 
         let config = assign({field, flex: 1}, editor.formField);
 
-        if (!config.item && !config.items) {
-            config = {item: renderDefaultInput(field, model), ...config};
+        // Also check the legacy `item` / `items` keys an app may still provide.
+        if (isNil(config.children ?? config.item ?? config.items)) {
+            config = {...config, children: renderDefaultInput(field, model)};
         }
 
         return formField(config);

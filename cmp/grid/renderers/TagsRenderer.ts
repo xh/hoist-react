@@ -7,13 +7,13 @@
 import {isEmpty} from 'lodash';
 import {div, hbox} from '@xh/hoist/cmp/layout';
 import './TagsRenderer.scss';
-import {ReactNode} from 'react';
+import type {ReactNode} from 'react';
 
 export function tagsRenderer(v): ReactNode {
     if (isEmpty(v)) return null;
 
     return hbox({
         className: 'xh-tags-renderer',
-        items: v.map(tag => div({className: 'xh-tags-renderer__tag', item: tag}))
+        children: v.map(tag => div({className: 'xh-tags-renderer__tag', children: tag}))
     });
 }

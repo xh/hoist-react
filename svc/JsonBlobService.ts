@@ -4,7 +4,8 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {CallContextLike, HoistService, PlainObject, XH} from '@xh/hoist/core';
+import type {CallContextLike, PlainObject} from '@xh/hoist/core';
+import {HoistService, XH} from '@xh/hoist/core';
 import {pick} from 'lodash';
 
 export interface JsonBlob {
@@ -80,6 +81,7 @@ export class JsonBlobService extends HoistService {
             .span('create')
             .fetchJson({
                 url: 'xh/createJsonBlob',
+                method: 'POST',
                 params: {
                     data: JSON.stringify({type, name, acl, value, meta, description})
                 }
@@ -99,6 +101,7 @@ export class JsonBlobService extends HoistService {
                 return XH.fetchJson(
                     {
                         url: 'xh/updateJsonBlob',
+                        method: 'POST',
                         params: {token, update: JSON.stringify(update)}
                     },
                     ctx
@@ -120,6 +123,7 @@ export class JsonBlobService extends HoistService {
                 return XH.fetchJson(
                     {
                         url: 'xh/createOrUpdateJsonBlob',
+                        method: 'POST',
                         params: {type, name, update: JSON.stringify(update)}
                     },
                     ctx
@@ -142,6 +146,7 @@ export class JsonBlobService extends HoistService {
     async archiveAsync(token: string, ctx?: CallContextLike): Promise<JsonBlob> {
         return this.runner(ctx).span('archive').fetchJson({
             url: 'xh/archiveJsonBlob',
+            method: 'POST',
             params: {token}
         });
     }

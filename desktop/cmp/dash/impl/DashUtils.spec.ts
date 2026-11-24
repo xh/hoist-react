@@ -7,7 +7,8 @@
 import type {MenuItemLike} from '@xh/hoist/core';
 import {describe, expect, it} from 'vitest';
 import type {DashViewSpec} from '../DashViewSpec';
-import {createViewSpecMenuItems, groupViewSpecs, ViewSpecGroup} from './DashUtils';
+import type {ViewSpecGroup} from './DashUtils';
+import {createViewSpecMenuItems, groupViewSpecs} from './DashUtils';
 
 /**
  * The add view menus of DashContainer and DashCanvas, and the DashCanvasWidgetChooser, group view

@@ -41,7 +41,7 @@ export const [ZoneMapper, zoneMapper] = hoistCmp.withFactory<ZoneMapperModel>({
 
         return panel({
             className,
-            items: [introText(), zonePicker(), grid({model: impl.gridModel}), sortPicker()],
+            children: [introText(), zonePicker(), grid({model: impl.gridModel}), sortPicker()],
             bbar: [
                 button({
                     omit: !showRestoreDefaults,
@@ -74,7 +74,7 @@ const introText = hoistCmp.factory<ZoneMapperModel>({
     render({model}) {
         return div({
             className: 'xh-zone-mapper__intro-text',
-            items: [
+            children: [
                 p(
                     Icon.questionCircle(),
                     'Click to highlight any of the four quadrants in the sample row below, then check the field(s) you wish to show in that zone.'
@@ -82,7 +82,8 @@ const introText = hoistCmp.factory<ZoneMapperModel>({
                 p('Fields will be shown in the order they are selected.'),
                 p({
                     omit: model.headersAreHidden,
-                    item: 'The first field within the top two zones will always be labelled by the column headers.'
+                    children:
+                        'The first field within the top two zones will always be labelled by the column headers.'
                 })
             ]
         });
@@ -96,17 +97,17 @@ const zonePicker = hoistCmp.factory<ZoneMapperModel>({
 
         return vbox({
             className,
-            items: [
+            children: [
                 hbox({
                     className: `${className}__top`,
-                    items: [
+                    children: [
                         zoneCell({zone: 'tl', flex: leftFlex}),
                         zoneCell({zone: 'tr', flex: rightFlex})
                     ]
                 }),
                 hbox({
                     className: `${className}__bottom`,
-                    items: [
+                    children: [
                         zoneCell({zone: 'bl', flex: leftFlex}),
                         zoneCell({zone: 'br', flex: rightFlex})
                     ]
@@ -130,7 +131,7 @@ const zoneCell = hoistCmp.factory<ZoneMapperModel>({
             ),
             style: {flex},
             onClick: () => (model.selectedZone = zone),
-            items: delimiter ? intersperse(samples, span(delimiter)) : samples
+            children: delimiter ? intersperse(samples, span(delimiter)) : samples
         });
     }
 });
@@ -148,7 +149,7 @@ const sortPicker = hoistCmp.factory<ZoneMapperModel>({
                 gap: true,
                 padding: true
             },
-            items: [
+            children: [
                 select({
                     bind: 'sortByColId',
                     enableFilter: true,

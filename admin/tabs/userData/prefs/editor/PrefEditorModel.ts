@@ -8,8 +8,9 @@ import {exportFilenameWithDate} from '@xh/hoist/admin/AdminUtils';
 import {AppModel} from '@xh/hoist/admin/AppModel';
 import * as Col from '@xh/hoist/admin/columns';
 import {br, fragment} from '@xh/hoist/cmp/layout';
-import {HoistModel, LoadSpec, managed, XH} from '@xh/hoist/core';
-import {FieldSpec} from '@xh/hoist/data';
+import type {LoadSpec} from '@xh/hoist/core';
+import {HoistModel, managed, XH} from '@xh/hoist/core';
+import type {FieldSpec} from '@xh/hoist/data';
 import {textArea} from '@xh/hoist/desktop/cmp/input';
 import {addAction, deleteAction, editAction, RestGridModel} from '@xh/hoist/desktop/cmp/rest';
 import {action, observableRef} from '@xh/hoist/mobx';
@@ -92,7 +93,7 @@ export class PrefEditorModel extends HoistModel {
                 {field: 'groupName'},
                 {field: 'type'},
                 {field: 'defaultValue'},
-                {field: 'notes', formField: {item: textArea({height: 100})}},
+                {field: 'notes', formField: {children: textArea({height: 100})}},
                 {field: 'lastUpdated'},
                 {field: 'lastUpdatedBy'}
             ],

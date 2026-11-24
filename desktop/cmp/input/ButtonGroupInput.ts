@@ -4,9 +4,12 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {HoistInputModel, HoistInputProps, useHoistInputModel} from '@xh/hoist/cmp/input';
-import {hoistCmp, HoistModel, Intent, XH} from '@xh/hoist/core';
-import {Button, buttonGroup, ButtonGroupProps, ButtonProps} from '@xh/hoist/desktop/cmp/button';
+import type {HoistInputProps} from '@xh/hoist/cmp/input';
+import {HoistInputModel, useHoistInputModel} from '@xh/hoist/cmp/input';
+import type {HoistModel, Intent} from '@xh/hoist/core';
+import {hoistCmp, XH} from '@xh/hoist/core';
+import type {ButtonGroupProps, ButtonProps} from '@xh/hoist/desktop/cmp/button';
+import {Button, buttonGroup} from '@xh/hoist/desktop/cmp/button';
 import '@xh/hoist/desktop/register';
 import {throwIf, warnIf, withDefault} from '@xh/hoist/utils/js';
 import {getLayoutProps, getNonLayoutProps} from '@xh/hoist/utils/react';
@@ -154,8 +157,8 @@ const cmp = hoistCmp.factory<ButtonGroupInputModel>(({model, className, ...props
     });
 
     return buttonGroup({
-        items: buttons,
         ...(buttonGroupProps as ButtonGroupProps),
+        children: buttons,
         minimal: withDefault(minimal, outlined, false),
         ...getLayoutProps(props),
         onBlur: model.onBlur,

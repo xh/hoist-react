@@ -6,7 +6,8 @@
  */
 
 import {throwIf} from '@xh/hoist/utils/js';
-import {PersistenceProvider, PersistenceProviderConfig} from '../PersistenceProvider';
+import type {PersistenceProviderConfig} from '../PersistenceProvider';
+import {PersistenceProvider} from '../PersistenceProvider';
 import type {ViewManagerModel} from '@xh/hoist/cmp/viewmanager/ViewManagerModel';
 
 /**

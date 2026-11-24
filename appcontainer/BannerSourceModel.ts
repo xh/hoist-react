@@ -4,7 +4,8 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {XH, HoistModel, managed, BannerSpec} from '@xh/hoist/core';
+import type {BannerSpec} from '@xh/hoist/core';
+import {XH, HoistModel, managed} from '@xh/hoist/core';
 import {action, observableRef} from '@xh/hoist/mobx';
 import {find, reject, sortBy, without, last} from 'lodash';
 

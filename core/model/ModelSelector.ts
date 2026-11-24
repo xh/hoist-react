@@ -5,7 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
-import {HoistModel, HoistModelClass} from './';
+import type {HoistModel, HoistModelClass} from './';
 import {isFunction, isString} from 'lodash';
 import {throwIf} from '@xh/hoist/utils/js';
 

@@ -6,7 +6,7 @@
  */
 
 import {HoistBase} from '@xh/hoist/core';
-import {
+import type {
     StoreValidationMessagesMap,
     StoreValidationResultsMap,
     ValidationState
@@ -15,8 +15,8 @@ import {computed, runInAction, observableRef, computedStruct, compareShallow} fr
 import {sumBy, chunk, isEmpty} from 'lodash';
 import {findIn} from '@xh/hoist/utils/js';
 import {RecordValidator} from './RecordValidator';
-import {Store} from '../Store';
-import {StoreRecord, StoreRecordId} from '../StoreRecord';
+import type {Store} from '../Store';
+import type {StoreRecord, StoreRecordId} from '../StoreRecord';
 
 /**
  * Computes validation state for a Store's uncommitted Records.

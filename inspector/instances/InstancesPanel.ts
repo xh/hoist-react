@@ -20,9 +20,9 @@ export const instancesPanel = hoistCmp.factory({
         const {instancesPanelModel, navTabModel} = model;
 
         return panel({
-            item: hframe(
+            children: hframe(
                 panel({
-                    item: tabContainer({model: navTabModel}),
+                    children: tabContainer({model: navTabModel}),
                     model: instancesPanelModel
                 }),
                 tabContainer({

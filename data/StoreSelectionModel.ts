@@ -8,8 +8,9 @@
 import {HoistModel} from '@xh/hoist/core';
 import {action, computed, observableRef, computedStruct} from '@xh/hoist/mobx';
 import {castArray, compact, remove, isEmpty, isEqual, union, map} from 'lodash';
-import {Store} from './Store';
-import {StoreRecord, StoreRecordId, StoreRecordOrId} from './StoreRecord';
+import type {Store} from './Store';
+import type {StoreRecordId, StoreRecordOrId} from './StoreRecord';
+import {StoreRecord} from './StoreRecord';
 
 /**
  * Configuration for a {@link StoreSelectionModel}. Typically passed via the `selModel` config

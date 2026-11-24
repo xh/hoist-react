@@ -4,8 +4,8 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {PlainObject} from '@xh/hoist/core';
-import {CubeField} from '../CubeField';
+import type {PlainObject} from '@xh/hoist/core';
+import type {CubeField} from '../CubeField';
 
 /**
  * A change at a leaf affecting one field's aggregation, propagated up the leaf's ancestors to
@@ -41,5 +41,13 @@ export class RowUpdate {
         this.leafNewData = leafNewData;
         this.oldValue = this.leafOldValue;
         this.newValue = this.leafNewValue;
+    }
+
+    /** Independent copy for a second aggregation route - see {@link propagateUpdate}. */
+    clone(): RowUpdate {
+        const ret = new RowUpdate(this.field, this.leafOldData, this.leafNewData);
+        ret.oldValue = this.oldValue;
+        ret.newValue = this.newValue;
+        return ret;
     }
 }

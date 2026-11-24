@@ -5,18 +5,11 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {frame} from '@xh/hoist/cmp/layout';
-import {
-    Persistable,
-    PersistableState,
-    PersistenceProvider,
-    PlainObject,
-    RefreshMode,
-    RenderMode,
-    TaskObserver,
-    XH
-} from '@xh/hoist/core';
+import type {Persistable, PlainObject, RefreshMode, RenderMode} from '@xh/hoist/core';
+import {PersistableState, PersistenceProvider, TaskObserver, XH} from '@xh/hoist/core';
 import {DashContainerViewModel} from '@xh/hoist/desktop/cmp/dash/container/DashContainerViewModel';
-import {convertIconToHtml, ResolvedIconProps} from '@xh/hoist/icon';
+import type {ResolvedIconProps} from '@xh/hoist/icon';
+import {convertIconToHtml} from '@xh/hoist/icon';
 import {GoldenLayout} from '@xh/hoist/kit/golden-layout';
 import {action, bindable, runInAction, observableRef} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
@@ -35,9 +28,10 @@ import {
     startCase
 } from 'lodash';
 import {createRoot} from 'react-dom/client';
-import {DashConfig, DashModel} from '../';
-import {DashViewState} from '../DashViewModel';
-import {DashContainerViewSpec} from './DashContainerViewSpec';
+import type {DashConfig} from '../';
+import {DashModel} from '../';
+import type {DashViewState} from '../DashViewModel';
+import type {DashContainerViewSpec} from './DashContainerViewSpec';
 import {dashContainerContextMenu} from './impl/DashContainerContextMenu';
 import {dashContainerMenuButton} from './impl/DashContainerMenuButton';
 import {
@@ -465,6 +459,9 @@ export class DashContainerModel
     }
 
     private onItemDestroyed(item) {
+        const menuRoot = item._xhMenuRoot;
+        if (menuRoot) wait().then(() => menuRoot.unmount());
+
         if (!item.isComponent || this.isDestroyingGoldenLayout) return;
         const id = getViewModelId(item);
         if (id) this.removeViewModel(id);
@@ -528,6 +525,7 @@ export class DashContainerModel
 
         const menuRoot = createRoot(menuContainerEl);
         menuRoot.render(dashContainerMenuButton({dashContainerModel: this, stack}));
+        stack._xhMenuRoot = menuRoot;
 
         // Add context menu listener for adding components.
         // Replace any handler set by a previous render so we never stack handlers.
@@ -747,27 +745,7 @@ export class DashContainerModel
                     model.setViewState(viewState);
                     model.title = title;
                 } else {
-                    model = new DashContainerViewModel({
-                        id: viewModelId,
-                        viewSpec,
-                        title,
-                        viewState,
-                        containerModel: this
-                    });
-
-                    model.addReaction({
-                        track: () => model.fullTitle,
-                        run: () => {
-                            // Item lookup requires a mounted react component and can miss during
-                            // a GL (re)build - the viewModels reaction in the constructor covers it.
-                            const item = this.getItemByViewModel(viewModelId);
-                            if (!item?.tab) return;
-
-                            this.getTitleElement(item.tab.element).textContent = model.fullTitle;
-                        }
-                    });
-
-                    this.addViewModel(model);
+                    model = this.createViewModel(viewModelId, viewSpec, title, viewState);
                 }
 
                 return frame({className: 'xh-dash-tab', ref: model.viewRef});
@@ -779,6 +757,36 @@ export class DashContainerModel
         ret.on('stackCreated', stack => this.onStackCreated(stack));
         ret.init();
         return ret;
+    }
+
+    private createViewModel(
+        viewModelId: string,
+        viewSpec: DashContainerViewSpec,
+        title: string,
+        viewState: PlainObject
+    ): DashContainerViewModel {
+        const model = new DashContainerViewModel({
+            id: viewModelId,
+            viewSpec,
+            title,
+            viewState,
+            containerModel: this
+        });
+
+        model.addReaction({
+            track: () => model.fullTitle,
+            run: () => {
+                // Item lookup requires a mounted react component and can miss during
+                // a GL (re)build - the viewModels reaction in the constructor covers it.
+                const item = this.getItemByViewModel(viewModelId);
+                if (!item?.tab) return;
+
+                this.getTitleElement(item.tab.element).textContent = model.fullTitle;
+            }
+        });
+
+        this.addViewModel(model);
+        return model;
     }
 
     private getTitleElement(tabEl: HTMLElement): HTMLElement {

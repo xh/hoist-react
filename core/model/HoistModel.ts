@@ -7,19 +7,13 @@
 import {action, computed, observableRef, compareShallow} from '@xh/hoist/mobx';
 import {warnIf} from '@xh/hoist/utils/js';
 import {isFunction} from 'lodash';
-import {
-    CallContext,
-    DefaultHoistProps,
-    HoistBase,
-    LoadSpecConfig,
-    managed,
-    PlainObject,
-    TaskObserver
-} from '../';
+import type {CallContext, DefaultHoistProps, LoadSpecConfig, PlainObject, TaskObserver} from '../';
+import {HoistBase, managed} from '../';
 import {instanceManager} from '../impl/InstanceManager';
-import {Loadable, LoadSpec, LoadSupport} from '../load';
-import {ModelSelector} from './';
-import {Class} from 'type-fest';
+import type {Loadable, LoadSpec} from '../load';
+import {LoadSupport} from '../load';
+import type {ModelSelector} from './';
+import type {Class} from 'type-fest';
 
 /**
  * Base class for *stateful Hoist Models*.

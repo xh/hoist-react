@@ -11,4 +11,4 @@ export * from './field/FieldModel';
 export * from './field/SubformsFieldModel';
 export * from './formfieldset/FormFieldSet';
 export * from './formfieldset/FormFieldSetModel';
-export * from './BaseFormFieldProps';
+export type * from './BaseFormFieldProps';

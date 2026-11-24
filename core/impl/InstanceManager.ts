@@ -5,26 +5,30 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
-import {HoistService, HoistModel} from '../';
+import type {HoistBase, HoistService, HoistModel} from '../';
 import {isNil} from 'lodash';
 import type {Cube, Store, View} from '@xh/hoist/data';
-import {observableShallow} from '@xh/hoist/mobx';
+import {observableShallow, runInAction} from '@xh/hoist/mobx';
 import {wait} from '@xh/hoist/promise';
+import {useEffect} from 'react';
 
 /**
  * Generic singleton object for cataloging global models and services.
+ *
+ * Everything is held weakly, so cataloging an object never keeps it in memory. One that is never
+ * destroyed is still collected once nothing else references it.
  * @internal
  */
 class InstanceManager {
-    @observableShallow accessor services: Set<HoistService> = new Set();
+    readonly services = new IterableWeakSet<HoistService>();
 
-    @observableShallow accessor models: Set<HoistModel> = new Set();
+    readonly models = new IterableWeakSet<HoistModel>();
 
-    @observableShallow accessor stores: Set<Store> = new Set();
+    readonly stores = new IterableWeakSet<Store>();
 
-    @observableShallow accessor cubes: Set<Cube> = new Set();
+    readonly cubes = new IterableWeakSet<Cube>();
 
-    @observableShallow accessor views: Set<View> = new Set();
+    readonly views = new IterableWeakSet<View>();
 
     private modelsByTestId: Map<string, HoistModel> = new Map();
     private testSupportedModels = new Set([
@@ -90,5 +94,53 @@ class InstanceManager {
     getModelByTestId(testId: string): HoistModel {
         return this.modelsByTestId.get(testId);
     }
+
+    useTestIdRegistration(testId: string, model: HoistModel) {
+        useEffect(() => {
+            this.registerModelWithTestId(testId, model);
+            return () => this.unregisterModelWithTestId(testId);
+        }, [testId, model]);
+    }
 }
+
+/**
+ * An observable, insertion-ordered collection that holds its members weakly. Members are dropped
+ * when deleted, or when garbage collected.
+ */
+class IterableWeakSet<T extends HoistBase> {
+    @observableShallow private accessor refs: Map<string, WeakRef<T>> = new Map();
+
+    // Called with a member's xhId after the member is garbage collected.
+    private registry = new FinalizationRegistry<string>(xhId => {
+        runInAction(() => this.refs.delete(xhId));
+    });
+
+    /** Number of members, including any collected but not yet finalized. */
+    get size(): number {
+        return this.refs.size;
+    }
+
+    add(member: T) {
+        const {xhId} = member,
+            ref = new WeakRef(member);
+        this.registry.register(member, xhId, ref);
+        this.refs.set(xhId, ref);
+    }
+
+    delete(member: T) {
+        const {xhId} = member,
+            ref = this.refs.get(xhId);
+        if (!ref) return;
+        this.registry.unregister(ref);
+        this.refs.delete(xhId);
+    }
+
+    *[Symbol.iterator](): Iterator<T> {
+        for (const ref of this.refs.values()) {
+            const member = ref.deref();
+            if (member) yield member;
+        }
+    }
+}
+
 export const instanceManager = new InstanceManager();

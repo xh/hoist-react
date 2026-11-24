@@ -9,7 +9,7 @@ import {hoistCmp} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {Icon} from '@xh/hoist/icon';
-import {LeftRightChooserModel} from '../LeftRightChooserModel';
+import type {LeftRightChooserModel} from '../LeftRightChooserModel';
 
 /** @internal */
 export const chooserToolbar = hoistCmp.factory<LeftRightChooserModel>(({model}) => {
@@ -20,7 +20,7 @@ export const chooserToolbar = hoistCmp.factory<LeftRightChooserModel>(({model}) 
         width: 50,
         vertical: true,
         className: 'xh-lr-chooser__toolbar',
-        items: [
+        children: [
             vspacer(10),
             button({
                 icon: Icon.chevronRight(),

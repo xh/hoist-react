@@ -5,15 +5,12 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {div} from '@xh/hoist/cmp/layout';
+import type {AppOptionSpec} from '@xh/hoist/core';
 import {XH} from '@xh/hoist/core';
-import {
-    radioCardInput,
-    RadioCardInputProps,
-    segmentedControl,
-    SegmentedControlProps
-} from '@xh/hoist/desktop/cmp/input';
+import type {RadioCardInputProps, SegmentedControlProps} from '@xh/hoist/desktop/cmp/input';
+import {radioCardInput, segmentedControl} from '@xh/hoist/desktop/cmp/input';
 import {Icon} from '@xh/hoist/icon/Icon';
-import {FormFieldProps} from '@xh/hoist/desktop/cmp/form';
+import type {FormFieldProps} from '@xh/hoist/desktop/cmp/form';
 import '@xh/hoist/desktop/register';
 import type {ReactElement} from 'react';
 import './ThemeAppOption.scss';
@@ -45,12 +42,12 @@ export const themeAppOption = ({
     formFieldProps,
     inputProps,
     previewCards = true
-}: ThemeAppOptionSpec = {}) => {
+}: ThemeAppOptionSpec = {}): AppOptionSpec => {
     return {
         name: 'theme',
         formField: {
             label: 'Theme',
-            item: previewCards
+            children: previewCards
                 ? radioCardInput({
                       options: THEMES.map(({value, label}) => ({
                           value,
@@ -83,14 +80,14 @@ export const themeAppOption = ({
 function themePreview(theme: ThemeValue): ReactElement {
     return div({
         className: `xh-theme-preview xh-theme-preview--${theme}`,
-        items: [
+        children: [
             div({
                 className: 'xh-theme-preview__chrome',
-                items: [0, 1, 2].map(i => div({key: i, className: 'xh-theme-preview__dot'}))
+                children: [0, 1, 2].map(i => div({key: i, className: 'xh-theme-preview__dot'}))
             }),
             div({
                 className: 'xh-theme-preview__content',
-                items: [
+                children: [
                     div({className: 'xh-theme-preview__accent'}),
                     div({className: 'xh-theme-preview__line'}),
                     div({className: 'xh-theme-preview__line xh-theme-preview__line--short'})

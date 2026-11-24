@@ -4,13 +4,15 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {GridModel} from '@xh/hoist/cmp/grid';
+import type {GridLikeModel} from '@xh/hoist/cmp/grid';
+import {isGridLikeModel} from '@xh/hoist/cmp/grid/impl/GridLikeModel';
 import {hoistCmp, useContextModel} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
-import {ExportOptions} from '@xh/hoist/svc';
+import type {ExportOptions} from '@xh/hoist/svc';
 import {logError} from '@xh/hoist/utils/js';
-import {button, ButtonProps} from '../Button';
+import type {ButtonProps} from '../Button';
+import {button} from '../Button';
 
 const EXPORT_TYPE_LABELS: Record<Required<ExportOptions>['type'], string> = {
     excel: 'Excel',
@@ -19,8 +21,11 @@ const EXPORT_TYPE_LABELS: Record<Required<ExportOptions>['type'], string> = {
 };
 
 export interface ExportButtonProps extends ButtonProps {
-    /** GridModel to which this button should bind. Will find nearest in context if not provided. */
-    gridModel?: GridModel;
+    /**
+     * GridModel, ZoneGridModel or CubeGridModel to which this button should bind. Will find the
+     * nearest in context if not provided.
+     */
+    gridModel?: GridLikeModel;
 
     exportOptions?: ExportOptions;
 }
@@ -42,14 +47,22 @@ export const [ExportButton, exportButton] = hoistCmp.withFactory<ExportButtonPro
     model: false,
 
     render(
-        {className, title, tooltip, onClick, gridModel, exportOptions = {}, disabled, ...rest},
+        {
+            className,
+            title,
+            tooltip,
+            onClick,
+            gridModel: boundModel,
+            exportOptions = {},
+            disabled,
+            ...rest
+        },
         ref
     ) {
-        const contextGridModel = useContextModel(GridModel);
+        const contextModel = useContextModel<GridLikeModel>(isGridLikeModel),
+            gridModel = (boundModel ?? contextModel)?.innerGridModel;
 
         if (!onClick) {
-            gridModel = gridModel ?? contextGridModel;
-
             // Validate bound model available and suitable for use.
             if (!gridModel) {
                 logError(

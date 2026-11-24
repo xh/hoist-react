@@ -47,9 +47,9 @@ export const dashCanvasView = hoistCmp.factory({
             className,
             ref,
             ...headerProps,
-            item: box({
+            children: box({
                 ref: useOnResize(dims => model.onContentsResized(dims), {debounce: 100}),
-                item: errorBoundary(
+                children: errorBoundary(
                     elementFromContent(viewSpec.content, {flex: 1, viewModel: model})
                 ),
                 flex: autoHeight ? 'none' : 'auto'
@@ -122,7 +122,7 @@ const headerMenu = hoistCmp.factory<DashCanvasViewModel>(({model}) => {
     return popover({
         position: Position.BOTTOM,
         minimal: true,
-        item: button({
+        children: button({
             icon: Icon.ellipsisVertical()
         }),
         content: contextMenu({menuItems})

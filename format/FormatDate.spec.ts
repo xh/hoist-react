@@ -4,14 +4,18 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
+import {span} from '@xh/hoist/cmp/layout';
 import {
+    compactDateTextRenderer,
     dateRenderer,
     fmtCompactDate,
     fmtDate,
     fmtDateTime,
     fmtDateTimeSec,
     fmtTime,
-    withFormattedTimestamps
+    withFormattedTimestamps,
+    dateTextRenderer,
+    dateTimeTextRenderer
 } from '@xh/hoist/format';
 import {LocalDate} from '@xh/hoist/utils/datetime';
 import moment from 'moment';
@@ -21,8 +25,8 @@ import {beforeEach, describe, expect, it, vi} from 'vitest';
 
 /**
  * Date formatters render dates in grids, forms and displays across every app. These tests pin the
- * default formats, the accepted input types, null and invalid input, tooltips, and the
- * clock-dependent choice of format in fmtCompactDate.
+ * default formats, the accepted input types, null and invalid input, tooltips, the
+ * clock-dependent choice of format in fmtCompactDate, and the string formatters for grid columns.
  */
 
 /** Markup of a rendered element, or a string as-is. */
@@ -177,5 +181,33 @@ describe('withFormattedTimestamps', () => {
         expect(withFormattedTimestamps({startTime: ts}, {format: 'YYYY-MM-DD'})).toEqual({
             startTime: '2026-02-08'
         });
+    });
+});
+
+/** The text renderers, for `Column.textRenderer` - the built-in date column specs use them. */
+describe('dateTextRenderer and friends', () => {
+    const date = moment('2026-10-07 14:05:09').toDate();
+
+    it('format to a string with a format option or a bare format', () => {
+        expect(dateTextRenderer()(date)).toBe('2026-10-07');
+        expect(dateTextRenderer('MMM D')(date)).toBe('Oct 7');
+        expect(dateTextRenderer({fmt: 'YYYY'})(date)).toBe('2026');
+        expect(dateTimeTextRenderer()(date)).toBe('2026-10-07 2:05pm');
+    });
+
+    it('return a string for null and invalid input', () => {
+        expect(dateTextRenderer()(null)).toBe('');
+        expect(dateTextRenderer({nullDisplay: '-'})(null)).toBe('-');
+        expect(dateTextRenderer()('not a date')).toBe('');
+    });
+
+    it('reject options that need markup at compile time', () => {
+        // Each line is a compile error - `pnpm typecheck` fails if one stops being one.
+        // @ts-expect-error - tooltip
+        dateTextRenderer({tooltip: () => 'tip'});
+        // @ts-expect-error - asHtml
+        dateTimeTextRenderer({asHtml: true});
+        // @ts-expect-error - an element for nullDisplay
+        compactDateTextRenderer({nullDisplay: span('-')});
     });
 });

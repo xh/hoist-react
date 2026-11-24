@@ -5,8 +5,10 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {hbox} from '@xh/hoist/cmp/layout';
-import {BoxProps, hoistCmp, HoistProps, Intent, XH} from '@xh/hoist/core';
-import {Button, ButtonProps} from '@xh/hoist/mobile/cmp/button';
+import type {BoxProps, HoistProps, Intent} from '@xh/hoist/core';
+import {hoistCmp, XH} from '@xh/hoist/core';
+import type {ButtonProps} from '@xh/hoist/mobile/cmp/button';
+import {Button} from '@xh/hoist/mobile/cmp/button';
 import '@xh/hoist/mobile/register';
 import {Children, cloneElement, isValidElement} from 'react';
 import './ButtonGroup.scss';
@@ -28,7 +30,7 @@ export const [ButtonGroup, buttonGroup] = hoistCmp.withFactory<ButtonGroupProps>
     render(props, ref) {
         const {children, className, intent, minimal, outlined, ...rest} = props;
 
-        const items = Children.map(children, button => {
+        const buttons = Children.map(children, button => {
             if (!button) return null;
             if (!isValidElement(button) || button.type !== Button) {
                 throw XH.exception('ButtonGroup child must be a Button.');
@@ -46,7 +48,7 @@ export const [ButtonGroup, buttonGroup] = hoistCmp.withFactory<ButtonGroupProps>
         });
 
         return hbox({
-            items,
+            children: buttons,
             className,
             ...rest,
             ref

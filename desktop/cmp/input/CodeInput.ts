@@ -10,38 +10,38 @@ import {
     historyKeymap,
     indentWithTab
 } from '@codemirror/commands';
+import type {LanguageDescription, LanguageSupport} from '@codemirror/language';
 import {
     foldGutter as foldGutterExtension,
     foldKeymap,
-    indentOnInput as indentOnInputExtension,
-    LanguageDescription,
-    LanguageSupport
+    indentOnInput as indentOnInputExtension
 } from '@codemirror/language';
 import {languages} from '@codemirror/language-data';
 import {linter as linterExtension, lintGutter as lintGutterExtension} from '@codemirror/lint';
 
+import type {Extension} from '@codemirror/state';
 import {
     Compartment,
     EditorState,
-    Extension,
     RangeSetBuilder,
     StateEffect,
     StateField
 } from '@codemirror/state';
+import type {DecorationSet, ViewUpdate} from '@codemirror/view';
 import {
     Decoration,
-    DecorationSet,
     EditorView,
     highlightActiveLine as highlightActiveLineExtension,
     highlightActiveLineGutter as highlightActiveLineGutterExtension,
     keymap,
     lineNumbers as lineNumbersExtension,
-    ViewPlugin,
-    ViewUpdate
+    ViewPlugin
 } from '@codemirror/view';
-import {HoistInputModel, HoistInputProps, useHoistInputModel} from '@xh/hoist/cmp/input';
+import type {HoistInputProps} from '@xh/hoist/cmp/input';
+import {HoistInputModel, useHoistInputModel} from '@xh/hoist/cmp/input';
 import {box, div, filler, fragment, frame, hbox, label, span, vbox} from '@xh/hoist/cmp/layout';
-import {hoistCmp, HoistProps, LayoutProps, managed, PlainObject, XH} from '@xh/hoist/core';
+import type {HoistProps, LayoutProps, PlainObject} from '@xh/hoist/core';
+import {hoistCmp, managed, XH} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {clipboardButton} from '@xh/hoist/desktop/cmp/clipboard';
 import {textInput} from '@xh/hoist/desktop/cmp/input/TextInput';
@@ -54,7 +54,7 @@ import {logError, logWarn, withDefault} from '@xh/hoist/utils/js';
 import {getLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import {compact, find, includes, isFunction, isNil, isObject} from 'lodash';
-import {ReactElement} from 'react';
+import type {ReactElement} from 'react';
 import './CodeInput.scss';
 import {githubLight, githubDark} from '@uiw/codemirror-theme-github';
 
@@ -680,9 +680,9 @@ const cmp = hoistCmp.factory<CodeInputModel>(({model, className, ...props}, ref)
         width: 300,
         height: 100,
         ...getLayoutProps(props),
-        item: modalSupport({
+        children: modalSupport({
             model: model.modalSupportModel,
-            item: inputCmp({
+            children: inputCmp({
                 testId: props.testId,
                 domAttrs: props.domAttrs,
                 width: '100%',
@@ -697,16 +697,16 @@ const cmp = hoistCmp.factory<CodeInputModel>(({model, className, ...props}, ref)
 
 const inputCmp = hoistCmp.factory<CodeInputModel>(({model, ...props}, ref) =>
     vbox({
-        items: [
+        onBlur: model.onBlur,
+        onFocus: model.onFocus,
+        ...props,
+        children: [
             div({
                 className: 'xh-code-input__inner-wrapper',
                 ref: model.createCodeEditor
             }),
             model.showToolbar ? toolbarCmp() : actionButtonsCmp()
         ],
-        onBlur: model.onBlur,
-        onFocus: model.onFocus,
-        ...props,
         ref
     })
 );
@@ -716,7 +716,7 @@ const toolbarCmp = hoistCmp.factory<CodeInputModel>(({model}) => {
     return toolbar({
         className: 'xh-code-input__toolbar',
         compact: !fullScreen,
-        items: [searchInputCmp({omit: !showSearchInput}), filler(), ...actionButtons]
+        children: [searchInputCmp({omit: !showSearchInput}), filler(), ...actionButtons]
     });
 });
 
@@ -729,7 +729,7 @@ const searchInputCmp = hoistCmp.factory<CodeInputModel>(({model}) => {
         frame({
             flex: 1,
             maxWidth: !fullScreen ? 225 : 400,
-            item: textInput({
+            children: textInput({
                 width: null,
                 flex: 1,
                 model,
@@ -751,9 +751,9 @@ const searchInputCmp = hoistCmp.factory<CodeInputModel>(({model}) => {
         }),
         label({
             className: classNames('xh-code-input__label', !fullScreen ? 'xh-no-pad' : null),
-            item: matchCount
+            children: matchCount
                 ? `${currentMatchIdx + 1} / ${matchCount}`
-                : span({item: '0 results', className: 'xh-text-color-muted'}),
+                : span({children: '0 results', className: 'xh-text-color-muted'}),
             omit: !query
         }),
         button({
@@ -780,7 +780,7 @@ const actionButtonsCmp = hoistCmp.factory<CodeInputModel>(({model}) => {
     return hasFocus && actionButtons.length
         ? hbox({
               className: 'xh-code-input__action-buttons',
-              items: actionButtons
+              children: actionButtons
           })
         : null;
 });

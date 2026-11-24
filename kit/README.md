@@ -11,7 +11,7 @@ used by Hoist. It serves two purposes:
    `installHighcharts()` functions that applications call during bootstrap to register these
    libraries with Hoist, along with version constraints to ensure compatibility.
 
-2. **Re-exported component libraries** — Blueprint, Onsen, react-select, GoldenLayout, and several
+2. **Re-exported component libraries** — Blueprint, react-select, GoldenLayout, and several
    other UI libraries are imported by Kit, wrapped as needed (with element factories, prop
    stripping, transition disabling, etc.), and re-exported for use by Hoist's own components. Apps
    typically do not import from Kit directly — they use Hoist's higher-level component wrappers
@@ -25,8 +25,9 @@ kit/
 ├── blueprint/            # Blueprint 6 wrappers, element factories, disabled transitions
 ├── golden-layout/        # GoldenLayout v1.5.9 with React 18 patches
 ├── highcharts/           # Highcharts install function with default config
-├── onsen/                # Onsen UI wrappers with HoistModel prop stripping
+├── pdfjs/                # Lazy loader for pdf.js (optional peer dependency)
 ├── react-beautiful-dnd/  # Drag-and-drop re-exports with element factories
+├── react-day-picker/     # Calendar for desktop and mobile DateInput, with shared theme
 ├── react-dropzone/       # File drop zone re-export
 ├── react-markdown/       # Markdown renderer re-export
 ├── react-select/         # Select variants (async, creatable, windowed)
@@ -52,7 +53,7 @@ import {version} from 'ag-grid-community/package.json';
 installAgGrid(AgGridReact, version);
 ```
 
-**Version constraints:** Hoist requires ag-Grid **34.2.0 – 34.\*.\***. Attempting to install an
+**Version constraints:** Hoist requires ag-Grid **36.3.0 – 36.\*.\***. Attempting to install an
 out-of-range version will log an error and leave ag-Grid unavailable.
 
 Kit also re-exports key ag-Grid types (e.g. `GridOptions`, `GridApi`, `ColDef`) and select hooks
@@ -101,22 +102,10 @@ See [`/kit/blueprint/`](./blueprint/README.md) for full coverage, including the 
 stubbing shared with `@xh/hoist-dev-utils` and the checklist for re-verifying Blueprint's
 built-in icons when upgrading the library.
 
-### Onsen UI
-
-[Onsen UI](https://onsen.io/) provides mobile-specific components used by Hoist's `/mobile/`
-package — buttons, pages, tabs, toolbars, dialogs, and navigation.
-
-Kit wraps Onsen components to:
-- **Strip HoistModel props** — Onsen internally serializes component props to JSON, which fails on
-  complex `HoistModel` instances. Kit's wrapper uses `omitBy` to strip any HoistModel-valued props
-  before passing to Onsen
-- **Disable auto-styling** — `onsen.disableAutoStyling()` is called on import
-- **Provide element factories** — Leaf and container components are wrapped with `elementFactory()`
-
 ### react-select
 
 [react-select](https://react-select.com/) powers Hoist's `Select` input component. Kit re-exports
-five variants with element factories:
+four variants with element factories:
 
 | Export | Description |
 |--------|-------------|
@@ -124,7 +113,6 @@ five variants with element factories:
 | `reactCreatableSelect` | Allows creating new options |
 | `reactAsyncSelect` | Loads options asynchronously |
 | `reactAsyncCreatableSelect` | Async + creatable combined |
-| `reactWindowedSelect` | Windowed rendering for large option lists |
 
 ### GoldenLayout
 
@@ -146,7 +134,9 @@ with several patches applied directly to GoldenLayout's internal classes:
 
 | Library | Kit Sub-package | Used By | Purpose |
 |---------|-----------------|---------|---------|
+| pdf.js (`pdfjs-dist`) | `pdfjs/` | PdfViewer | Loaded on first use. Optional peer - apps add it to opt in. See [`/cmp/pdfviewer/`](../cmp/pdfviewer/README.md) |
 | react-beautiful-dnd | `react-beautiful-dnd/` | DashCanvas widget reordering | Drag-and-drop with `DragDropContext`, `Droppable`, `Draggable` |
+| react-day-picker | `react-day-picker/` | Desktop and mobile DateInput | `DayPicker` calendar (v10) and the stylesheet that themes it for both platforms |
 | react-dropzone | `react-dropzone/` | FileChooser | File drop zone via `Dropzone` component |
 | react-markdown | `react-markdown/` | Markdown display | `ReactMarkdown` component for rendering markdown content |
 | Swiper | `swiper/` | Mobile TabContainer | Touch slider with creative effect for swipeable tabs |
@@ -163,7 +153,7 @@ import {installHighcharts} from '@xh/hoist/kit/highcharts';
 import {AgGridReact} from 'ag-grid-react';
 import Highcharts from 'highcharts/highstock';
 
-installAgGrid(AgGridReact, '34.2.1');
+installAgGrid(AgGridReact, '36.3.0');
 installHighcharts(Highcharts);
 ```
 
@@ -221,4 +211,4 @@ for jQuery resolution guidance.
 - [`/desktop/cmp/dash/`](../desktop/cmp/dash/README.md) — Dashboard system built on GoldenLayout
   (imported via Kit)
 - [`/desktop/`](../desktop/README.md) — Desktop components built on Blueprint (imported via Kit)
-- [`/mobile/`](../mobile/README.md) — Mobile components built on Onsen UI (imported via Kit)
+- [`/mobile/`](../mobile/README.md) — Mobile components, built on native elements with no Kit library

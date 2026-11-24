@@ -5,8 +5,8 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {div, hbox, placeholder, vbox} from '@xh/hoist/cmp/layout';
-import {TabContainerModel, TabContainerProps} from '@xh/hoist/cmp/tab';
-import {TabSwitcherProps} from '@xh/hoist/cmp/tab/Types';
+import type {TabContainerModel, TabContainerProps} from '@xh/hoist/cmp/tab';
+import type {TabSwitcherProps} from '@xh/hoist/cmp/tab/Types';
 import {getTestId} from '@xh/hoist/utils/js';
 import {getLayoutProps} from '@xh/hoist/utils/react';
 import {isEmpty, isNull, isObject} from 'lodash';
@@ -42,7 +42,7 @@ export function tabContainerImpl({
         className,
         testId,
         domAttrs,
-        item: getChildren(model, switcherProps, testId, childContainerProps)
+        children: getChildren(model, switcherProps, testId, childContainerProps)
     });
 }
 
@@ -62,7 +62,7 @@ function getChildren(
 ) {
     const {tabs} = model;
     if (isEmpty(tabs)) {
-        return div({className: 'xh-tab-wrapper', item: placeholder(model.emptyText)});
+        return div({className: 'xh-tab-wrapper', children: placeholder(model.emptyText)});
     }
 
     const {activeTabId, dynamicTabSwitcherModel} = model,
@@ -83,7 +83,7 @@ function getChildren(
                 className: 'xh-tab-wrapper',
                 style,
                 key: tabId,
-                item: tab({
+                children: tab({
                     childContainerProps,
                     model: tabModel,
                     testId: getTestId(testId, tabId)

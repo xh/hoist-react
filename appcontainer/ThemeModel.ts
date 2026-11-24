@@ -4,8 +4,81 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {HoistModel, Theme, XH} from '@xh/hoist/core';
+import type {Theme} from '@xh/hoist/core';
+import {HoistModel, XH} from '@xh/hoist/core';
 import {action, observable} from '@xh/hoist/mobx';
+
+/**
+ * Size variables that held unitless numbers before v91 and now require a length (e.g. `8px`).
+ * Checked in development mode to catch app overrides left in the old form, which silently break
+ * every size derived from them.
+ */
+const LENGTH_VARS = [
+    '--xh-appbar-height',
+    '--xh-appbar-title-font-size',
+    '--xh-border-radius',
+    '--xh-border-width',
+    '--xh-button-font-size',
+    '--xh-card-border-radius',
+    '--xh-card-header-font-size',
+    '--xh-card-header-gap',
+    '--xh-card-header-min-height',
+    '--xh-font-size',
+    '--xh-font-size-large',
+    '--xh-font-size-small',
+    '--xh-form-field-info-border-width',
+    '--xh-form-field-invalid-border-width',
+    '--xh-form-field-warning-border-width',
+    '--xh-grid-cell-padding-inline',
+    '--xh-grid-compact-cell-padding-inline',
+    '--xh-grid-compact-font-size',
+    '--xh-grid-compact-header-font-size',
+    '--xh-grid-compact-header-padding-inline',
+    '--xh-grid-font-size',
+    '--xh-grid-header-font-size',
+    '--xh-grid-header-padding-inline',
+    '--xh-grid-large-cell-padding-inline',
+    '--xh-grid-large-font-size',
+    '--xh-grid-large-header-font-size',
+    '--xh-grid-large-header-padding-inline',
+    '--xh-grid-tiny-cell-padding-inline',
+    '--xh-grid-tiny-font-size',
+    '--xh-grid-tiny-header-font-size',
+    '--xh-grid-tiny-header-padding-inline',
+    '--xh-grid-tooltip-font-size',
+    '--xh-input-font-size',
+    '--xh-input-label-font-size',
+    '--xh-panel-border-width',
+    '--xh-panel-collapsed-strip-size',
+    '--xh-panel-splitter-hit-size',
+    '--xh-panel-title-font-size',
+    '--xh-popup-border-width',
+    '--xh-popup-title-font-size',
+    '--xh-radio-card-input-border-radius',
+    '--xh-resizable-border-width',
+    '--xh-resizable-size',
+    '--xh-segmented-control-border-radius',
+    '--xh-segmented-control-padding',
+    '--xh-spacing',
+    '--xh-spacing-double',
+    '--xh-spacing-half',
+    '--xh-tab-font-size',
+    '--xh-title-compact-font-size',
+    '--xh-title-compact-height',
+    '--xh-title-font-size',
+    '--xh-title-height',
+    '--xh-title-icon-size',
+    '--xh-title-padding',
+    '--xh-toolbar-compact-font-size',
+    '--xh-toolbar-compact-min-size',
+    '--xh-toolbar-font-size',
+    '--xh-toolbar-item-spacing',
+    '--xh-toolbar-min-size',
+    '--xh-tooltip-border-radius',
+    '--xh-tooltip-font-size',
+    '--xh-zone-grid-bottom-font-size',
+    '--xh-zone-grid-top-font-size'
+];
 
 /**
  * @internal
@@ -60,6 +133,10 @@ export class ThemeModel extends HoistModel {
 
     init() {
         this.setTheme(XH.getPref('xhTheme'));
+        if (XH.isDevelopmentMode) {
+            this.warnOnUnitlessLengthVars();
+            this.warnOnDocumentRootVars();
+        }
         window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', event => {
             if (XH.getPref('xhTheme') === 'system') {
                 this.setDarkTheme(event.matches);
@@ -76,8 +153,8 @@ export class ThemeModel extends HoistModel {
      * its chrome color from the page background (see the companion `color-scheme` handling above).
      */
     private syncThemeColorMeta() {
-        // Resolve --xh-appbar-bg (a chain of var() fallbacks) to a concrete color via a throwaway
-        // probe - reading computed `color` fully substitutes the var chain.
+        // Resolve --xh-appbar-bg (possibly a chain of var() references) to a concrete color via a
+        // throwaway probe - reading computed `color` fully substitutes the var chain.
         const probe = document.createElement('div');
         probe.style.cssText = 'display: none; color: var(--xh-appbar-bg)';
         document.body.appendChild(probe);
@@ -99,5 +176,73 @@ export class ThemeModel extends HoistModel {
             document.head.appendChild(meta);
         }
         meta.setAttribute('content', color);
+    }
+
+    /**
+     * Warn about any size variable resolving to a bare number - almost always an app override not
+     * yet migrated to v91, where these variables carry units. Checks the current theme only.
+     */
+    private warnOnUnitlessLengthVars() {
+        const style = window.getComputedStyle(document.body),
+            unitless = LENGTH_VARS.filter(name =>
+                /^-?\d*\.?\d+$/.test(style.getPropertyValue(name).trim())
+            );
+        if (unitless.length) {
+            this.logWarn(
+                `CSS size variables must include a unit as of Hoist v91 (e.g. '8px', not '8'). ` +
+                    `Unitless values found for: ${unitless.join(', ')}. ` +
+                    `See docs/upgrade-notes/v91-upgrade-notes.md.`
+            );
+        }
+    }
+
+    /**
+     * Warn about any `--xh-*` variable set on `<html>`, by a stylesheet rule or an inline style.
+     * Hoist declares its defaults on `body`, which take precedence over values inherited from
+     * `<html>`, so these overrides have no effect. Checks the stylesheets loaded at startup.
+     */
+    private warnOnDocumentRootVars() {
+        const root = document.documentElement,
+            names = new Set<string>();
+
+        const collect = (style: CSSStyleDeclaration) => {
+            for (let i = 0; i < style.length; i++) {
+                if (style[i].startsWith('--xh-')) names.add(style[i]);
+            }
+        };
+        const scan = (rules: CSSRuleList) => {
+            for (const rule of Array.from(rules)) {
+                if (rule instanceof CSSStyleRule) {
+                    if (selectorMatches(root, rule.selectorText)) collect(rule.style);
+                } else if ('cssRules' in rule) {
+                    scan((rule as CSSGroupingRule).cssRules);
+                }
+            }
+        };
+
+        for (const sheet of Array.from(document.styleSheets)) {
+            try {
+                scan(sheet.cssRules);
+            } catch {
+                // Cross-origin sheets do not expose their rules - skip them.
+            }
+        }
+        collect(root.style);
+
+        if (names.size) {
+            this.logWarn(
+                `CSS variables set on :root or html have no effect - Hoist's defaults on body take ` +
+                    `precedence. Move these overrides to body.xh-app: ${[...names].join(', ')}. ` +
+                    `See docs/upgrade-notes/v91-upgrade-notes.md.`
+            );
+        }
+    }
+}
+
+function selectorMatches(el: Element, selector: string): boolean {
+    try {
+        return el.matches(selector);
+    } catch {
+        return false;
     }
 }

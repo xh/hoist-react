@@ -8,8 +8,9 @@ import {exportFilenameWithDate} from '@xh/hoist/admin/AdminUtils';
 import {AppModel} from '@xh/hoist/admin/AppModel';
 import {GridModel, tagsRenderer} from '@xh/hoist/cmp/grid';
 import {br, fragment} from '@xh/hoist/cmp/layout';
-import {HoistModel, LoadSpec, managed, PlainObject, XH} from '@xh/hoist/core';
-import {FilterLike, FilterTestFn, RecordActionSpec, StoreRecord} from '@xh/hoist/data';
+import type {LoadSpec, PlainObject} from '@xh/hoist/core';
+import {HoistModel, managed, XH} from '@xh/hoist/core';
+import type {FilterLike, FilterTestFn, RecordActionSpec, StoreRecord} from '@xh/hoist/data';
 import {Icon} from '@xh/hoist/icon';
 import {
     bindable,

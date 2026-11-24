@@ -21,6 +21,7 @@ import idleImage from './IdlePanelImage.png';
  */
 export const idlePanel = hoistCmp.factory({
     displayName: 'IdlePanel',
+    model: false,
 
     render({onReactivate}) {
         return viewport({
@@ -28,12 +29,12 @@ export const idlePanel = hoistCmp.factory({
             justifyContent: 'center',
             flexDirection: 'column',
             className: 'xh-idle-viewport',
-            item: panel({
+            children: panel({
                 title: `${XH.clientAppName} is sleeping`,
                 icon: Icon.moon(),
                 className: 'xh-idle-panel',
                 testId: 'xh-idle-panel',
-                item: div(
+                children: div(
                     img({
                         src: idleImage,
                         width: 300,

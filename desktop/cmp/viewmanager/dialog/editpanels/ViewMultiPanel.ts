@@ -13,7 +13,7 @@ import {select} from '@xh/hoist/desktop/cmp/input';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {pluralize} from '@xh/hoist/utils/js';
 import {isEmpty} from 'lodash';
-import {CSSProperties} from 'react';
+import type {CSSProperties} from 'react';
 import {getVisibilityInfo, getVisibilityOptions} from '../Utils';
 import {formButtons} from './FormButtons';
 import {ViewMultiPanelModel} from './ViewMultiPanelModel';
@@ -36,27 +36,27 @@ export const viewMultiPanel = hoistCmp.factory({
             visInfo = getVisibilityInfo(viewManagerModel, visibility);
 
         return panel({
-            item: form({
+            children: form({
                 fieldDefaults: {
                     commitOnChange: true,
                     minimal: true
                 },
-                item: vframe({
+                children: vframe({
                     className: 'xh-view-manager__manage-dialog__form',
-                    items: [
+                    children: [
                         div({
                             className: 'xh-view-manager__manage-dialog__multi-header',
-                            items: [
+                            children: [
                                 // One icon per view, fanned like a hand of cards - rotation is
                                 // driven by these CSS vars, in ViewManager.scss.
                                 div({
                                     className: 'xh-view-manager__manage-dialog__multi-header__fan',
                                     style: {'--card-n': views.length} as CSSProperties,
-                                    items: views.map((v, i) =>
+                                    children: views.map((v, i) =>
                                         span({
                                             key: v.token,
                                             style: {'--card-i': i} as CSSProperties,
-                                            item: defaultViewIcon
+                                            children: defaultViewIcon
                                         })
                                     )
                                 }),
@@ -69,7 +69,7 @@ export const viewMultiPanel = hoistCmp.factory({
                             formField({
                                 field: 'visibility',
                                 omit: !allEditable || visOptions.length === 1,
-                                item: select({
+                                children: select({
                                     options: visOptions,
                                     enableFilter: false,
                                     placeholder: 'Mixed'

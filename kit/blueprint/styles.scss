@@ -8,7 +8,7 @@
 }
 
 .bp6-tab > svg:first-child {
-  margin-right: var(--xh-pad-half-px);
+  margin-right: var(--xh-spacing-half);
 }
 
 // Vertical tab lists fill their width
@@ -21,43 +21,39 @@
 //------------------------
 .bp6-dialog {
   padding-bottom: 0;
-  border-radius: var(--xh-border-radius-px);
-  border: var(--xh-popup-border-width-px) solid var(--xh-popup-border-color);
+  border-radius: var(--xh-popup-border-radius);
+  border: var(--xh-popup-border-width) solid var(--xh-popup-border-color);
 
   .bp6-dialog-header {
     color: var(--xh-popup-title-text-color);
     background-color: var(--xh-popup-title-bg);
     font-family: var(--xh-popup-title-font-family);
-    font-size: var(--xh-popup-title-font-size-px);
-    padding-left: var(--xh-pad-px);
-    border-top-right-radius: var(--xh-border-radius-px);
-    border-top-left-radius: var(--xh-border-radius-px);
+    font-size: var(--xh-popup-title-font-size);
+    padding-left: var(--xh-spacing);
+    border-top-right-radius: var(--xh-popup-border-radius);
+    border-top-left-radius: var(--xh-popup-border-radius);
 
     .bp6-heading,
     .bp6-icon {
       color: var(--xh-popup-title-text-color);
     }
 
+    .bp6-heading {
+      font-weight: var(--xh-popup-title-font-weight);
+    }
+
     > svg:first-child {
-      margin-right: var(--xh-pad-px);
+      margin-right: var(--xh-spacing);
     }
   }
 
   .bp6-dialog-body {
     margin: 0;
-    padding: var(--xh-pad-double-px);
+    padding: var(--xh-spacing-double);
     background: var(--xh-popup-bg);
 
-    // See https://github.com/xh/hoist-react/issues/862 for why this is necessary. Note need for
-    // datepicker workaround below - indicates that this might be a problematic solution in general
-    // to the original issue, but after a few years that's been the only reported issue, so...
+    // See https://github.com/xh/hoist-react/issues/862 for why this is necessary.
     overflow-wrap: break-word;
-
-    // Ensure that date numbers in the datepicker do not wrap if the datePicker portal is rendered
-    // inside a dialogBody - e.g. `dateEditor` in a grid in a dialog. See comment on #862.
-    .bp6-datepicker {
-      overflow-wrap: normal;
-    }
   }
 }
 
@@ -71,34 +67,55 @@
   }
 }
 
-// Blueprint popover borders use hardcoded SASS color variables with no CSS custom property support.
-// Override the outset 1px border-shadow layer in each theme to use Hoist's `--xh-popup-border-color`,
-// keeping remaining shadow layers (inset highlights, drop shadows) identical to BP defaults.
-.bp6-popover {
+// Popovers read the `--xh-popover-*` variables. Blueprint draws the popover border as an outset
+// box-shadow ring rather than a CSS border, so it takes no layout space and the arrow can overlap it.
+// Hoist keeps that ring and adds the drop shadow as its own layer. Selectors match Blueprint's own
+// `.bp6-dark` variants, which would otherwise outrank these rules in dark theme.
+.bp6-popover,
+.bp6-popover.bp6-dark,
+.bp6-dark .bp6-popover {
+  border-radius: var(--xh-popover-border-radius);
   box-shadow:
-    0 0 0 1px var(--xh-popup-border-color),
-    0 20px 25px -5px rgba(0, 0, 0, 0.1),
-    0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    0 0 0 var(--xh-popover-border-width) var(--xh-popover-border-color),
+    var(--xh-popover-box-shadow);
 
-  // Arrow border matches the popover border; arrow fill matches the popover background.
+  // Clip content to the rounded corners, so a title bar or other square-cornered child does not
+  // cover the inner curve of the border ring.
+  .bp6-popover-content {
+    background: var(--xh-popover-bg);
+    border-radius: var(--xh-popover-border-radius);
+    overflow: hidden;
+  }
+
+  // The arrow fill defaults to the border color. The arrow often meets a title bar or other content
+  // that does not match the popover background. The border path is a filled shape about 1px wide,
+  // so a stroke widens it to match a thicker border.
+  .bp6-popover-arrow::before {
+    box-shadow: none;
+  }
+
   .bp6-popover-arrow-border {
-    fill: var(--xh-popup-border-color);
+    fill: var(--xh-popover-border-color);
     fill-opacity: 1;
+    stroke: var(--xh-popover-border-color);
+    stroke-width: calc(var(--xh-popover-border-width) * 2 - 2px);
   }
 
   .bp6-popover-arrow-fill {
-    fill: var(--xh-popup-bg, var(--xh-bg));
+    fill: var(--xh-popover-arrow-color);
   }
+}
 
-  &.bp6-dark,
-  .bp6-dark & {
+// Blueprint moves the ring and shadow of a submenu onto its content, leaving side padding on the
+// popover itself as a mouse zone. Follow suit.
+.bp6-submenu.bp6-popover,
+.bp6-dark .bp6-submenu.bp6-popover {
+  box-shadow: none;
+
+  > .bp6-popover-content {
     box-shadow:
-      0 0 0 1px var(--xh-popup-border-color),
-      0 0 0 1px inset rgba(255, 255, 255, 0.2),
-      0 20px 25px -5px rgba(0, 0, 0, 0.3),
-      0 0 0.5px 0 inset rgba(255, 255, 255, 0.3),
-      0 0.5px 0 0 inset rgba(255, 255, 255, 0.08),
-      0 10px 30px -5px rgba(0, 0, 0, 0.3);
+      0 0 0 var(--xh-popover-border-width) var(--xh-popover-border-color),
+      var(--xh-popover-box-shadow);
   }
 }
 
@@ -210,7 +227,7 @@
     border-top: none;
     border-bottom: var(--xh-menu-heading-border);
     // Negative side margins cancel the menu's own 4px padding, so the rule runs edge to edge.
-    margin: var(--xh-pad-half-px) -4px 0;
+    margin: var(--xh-spacing-half) -4px 0;
     padding: 0;
 
     &:first-of-type {
@@ -219,11 +236,11 @@
 
     > h6 {
       color: var(--xh-menu-heading-text-color);
-      font-size: var(--xh-menu-heading-font-size-px);
+      font-size: var(--xh-menu-heading-font-size);
       font-weight: var(--xh-menu-heading-font-weight);
       line-height: normal;
       // Left inset lines the label up with the item icons, not the item text.
-      padding: var(--xh-pad-half-px) 10px var(--xh-pad-half-px) 14px;
+      padding: var(--xh-spacing-half) 10px var(--xh-spacing-half) 14px;
     }
   }
 
@@ -234,6 +251,12 @@
 
 .bp6-dark .bp6-menu-divider {
   border-color: rgba(255, 255, 255, 0.15) !important;
+}
+
+// A menu that fills a popover, such as a context menu or a `MenuButton` menu, takes its frame from
+// the popover border. Drop the menu's own border so the two do not stack.
+.bp6-popover-content > .bp6-menu {
+  border: none;
 }
 
 //------------------------
@@ -263,20 +286,21 @@
 // Blueprint inverts tooltip colors relative to the theme (dark tooltips in light theme and vice
 // versa), and the `.bp6-popover` rules above also match tooltips. Style tooltips from the
 // `--xh-tooltip-*` vars instead, so they follow the theme. The doubled `.bp6-tooltip.bp6-popover`
-// selector outranks both BP's `.bp6-dark .bp6-tooltip` rules and the `.bp6-popover` rules above.
+// selector matches or outranks BP's `.bp6-dark .bp6-tooltip` rules and the `.bp6-popover` rules
+// above, and wins ties by coming later. Keep this block below the popover rules.
 .bp6-tooltip.bp6-popover {
   color: var(--xh-tooltip-text-color);
-  border-radius: var(--xh-tooltip-border-radius-px);
+  border-radius: var(--xh-tooltip-border-radius);
   box-shadow: 0 0 0 1px var(--xh-tooltip-border-color);
   // A filter rather than a box-shadow layer, so the shadow follows the arrow and an app can set
-  // `--tooltip-shadow: none` without losing the border ring above.
+  // `--xh-tooltip-shadow: none` without losing the border ring above.
   filter: var(--xh-tooltip-shadow);
 
   .bp6-popover-content {
     color: var(--xh-tooltip-text-color);
     background: var(--xh-tooltip-bg);
-    border-radius: var(--xh-tooltip-border-radius-px);
-    font-size: var(--xh-tooltip-font-size-px);
+    border-radius: var(--xh-tooltip-border-radius);
+    font-size: var(--xh-tooltip-font-size);
     max-width: var(--xh-tooltip-max-width);
     overflow-wrap: break-word;
   }
@@ -293,6 +317,7 @@
   .bp6-popover-arrow-border {
     fill: var(--xh-tooltip-border-color);
     fill-opacity: 1;
+    stroke: none;
   }
 
   .bp6-popover-arrow-fill {
@@ -359,7 +384,10 @@ textarea.bp6-input,
 .bp6-input-ghost {
   color: var(--xh-input-text-color);
   background: var(--xh-input-bg);
-  font-size: var(--xh-font-size);
+  border-radius: var(--xh-input-border-radius);
+  // Follow the surrounding font size (e.g. smaller in compact toolbars and grids) rather than
+  // Blueprint's fixed default.
+  font-size: inherit;
 
   &::placeholder {
     color: var(--xh-input-placeholder-text-color);
@@ -417,7 +445,7 @@ textarea.bp6-input,
     position: absolute;
     top: 0;
     line-height: 1;
-    font-size: var(--xh-font-size-large-px);
+    font-size: var(--xh-font-size-large);
     font-weight: 400;
     font-style: normal;
     -moz-osx-font-smoothing: grayscale;
@@ -469,7 +497,7 @@ textarea.bp6-input,
 // Misc
 //------------------------
 .bp6-hotkey-column {
-  padding: var(--xh-pad-double-px);
+  padding: var(--xh-spacing-double);
 
   .bp6-heading {
     font-weight: normal;

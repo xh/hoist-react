@@ -4,8 +4,9 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {BaseFieldConfig} from '@xh/hoist/cmp/form/field/BaseFieldModel';
-import {XH, AppOptionSpec} from '@xh/hoist/core';
+import type {BaseFieldConfig} from '@xh/hoist/cmp/form/field/BaseFieldModel';
+import type {AppOptionSpec} from '@xh/hoist/core';
+import {XH} from '@xh/hoist/core';
 import {warnIf} from '@xh/hoist/utils/js';
 import {isFunction} from 'lodash';
 
@@ -23,7 +24,7 @@ export class AppOption {
     name: string;
     prefName: string;
     fieldModel: Omit<BaseFieldConfig, 'name'>;
-    formField: any;
+    formField: AppOptionSpec['formField'];
     valueGetter: () => any;
     valueSetter: (s: any) => any;
     reloadRequired: boolean;

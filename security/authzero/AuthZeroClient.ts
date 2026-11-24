@@ -9,11 +9,12 @@ import {Auth0Client} from '@auth0/auth0-spa-js';
 import {XH} from '@xh/hoist/core';
 import {wait} from '@xh/hoist/promise';
 import {Token} from '@xh/hoist/security/Token';
-import {AccessTokenSpec, TokenMap} from '../Types';
+import type {AccessTokenSpec, TokenMap} from '../Types';
 import {SECONDS} from '@xh/hoist/utils/datetime';
 import {mergeDeep, throwIf} from '@xh/hoist/utils/js';
 import {flatMap, union} from 'lodash';
-import {BaseOAuthClient, BaseOAuthClientConfig} from '../BaseOAuthClient';
+import type {BaseOAuthClientConfig} from '../BaseOAuthClient';
+import {BaseOAuthClient} from '../BaseOAuthClient';
 
 /**
  * Configuration for an {@link AuthZeroClient} - the Auth0 OAuth client.

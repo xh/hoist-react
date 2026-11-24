@@ -5,19 +5,22 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
-import {BaseFieldConfig} from '@xh/hoist/cmp/form';
-import {GridConfig, GridContextMenuItemLike, GridModel} from '@xh/hoist/cmp/grid';
-import {ElementSpec, HoistModel, managed, PlainObject, XH} from '@xh/hoist/core';
+import type {BaseFieldConfig} from '@xh/hoist/cmp/form';
+import type {GridConfig, GridContextMenuItemLike} from '@xh/hoist/cmp/grid';
+import {GridModel} from '@xh/hoist/cmp/grid';
+import type {ElementSpec, PlainObject} from '@xh/hoist/core';
+import {HoistModel, managed, XH} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
-import {RecordActionLike, StoreRecord} from '@xh/hoist/data';
-import {RowDoubleClickedEvent} from '@xh/hoist/kit/ag-grid';
-import {ExportOptions} from '@xh/hoist/svc';
+import type {RecordActionLike, StoreRecord} from '@xh/hoist/data';
+import type {RowDoubleClickedEvent} from '@xh/hoist/kit/ag-grid';
+import type {ExportOptions} from '@xh/hoist/svc';
 import {pluralize, throwIf, withDefault} from '@xh/hoist/utils/js';
 import {isFunction} from 'lodash';
-import {ReactNode} from 'react';
-import {FormFieldProps} from '../form';
+import type {ReactNode} from 'react';
+import type {FormFieldProps} from '../form';
 import {addAction, deleteAction, editAction, viewAction} from './Actions';
-import {RestStore, RestStoreConfig} from './data/RestStore';
+import type {RestStoreConfig} from './data/RestStore';
+import {RestStore} from './data/RestStore';
 import {RestFormModel} from './impl/RestFormModel';
 
 /**

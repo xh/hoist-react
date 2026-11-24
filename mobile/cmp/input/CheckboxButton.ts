@@ -5,13 +5,15 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import '@xh/hoist/mobile/register';
-import {HoistInputModel, HoistInputProps, useHoistInputModel} from '@xh/hoist/cmp/input';
+import type {HoistInputProps} from '@xh/hoist/cmp/input';
+import {HoistInputModel, useHoistInputModel} from '@xh/hoist/cmp/input';
 import {hoistCmp} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import './CheckboxButton.scss';
-import {button, ButtonProps} from '@xh/hoist/mobile/cmp/button';
+import type {ButtonProps} from '@xh/hoist/mobile/cmp/button';
+import {button} from '@xh/hoist/mobile/cmp/button';
 import {withDefault} from '@xh/hoist/utils/js';
-import {ReactElement} from 'react';
+import type {ReactElement} from 'react';
 
 export interface CheckboxButtonProps extends ButtonProps, HoistInputProps {
     value?: boolean;
@@ -46,7 +48,7 @@ class CheckboxButtonInputModel extends HoistInputModel {
 const cmp = hoistCmp.factory<CheckboxButtonInputModel>(
     (
         {
-            // HoistInput props - exclude from passthrough to Onsen
+            // HoistInput props - not passed through to the button
             bind,
             value,
             commitOnChange,
@@ -57,7 +59,7 @@ const cmp = hoistCmp.factory<CheckboxButtonInputModel>(
             text,
             checkedIcon,
             uncheckedIcon,
-            // Remainder passed to hoist button & Onsen button
+            // Remainder passed to the button
             ...props
         },
         ref

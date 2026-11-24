@@ -4,11 +4,13 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {HoistModel, HoistRoute} from '../core';
+import type {HoistRoute} from '../core';
+import {HoistModel} from '../core';
 import {action, observableRef} from '@xh/hoist/mobx';
 import {mergeDeep} from '@xh/hoist/utils/js';
 import {isOmitted} from '@xh/hoist/utils/impl';
-import {createRouter, Router, State} from 'router5';
+import type {Router, State} from 'router5';
+import {createRouter} from 'router5';
 import browserPlugin from 'router5-plugin-browser';
 // Required so downstream consumers pick up Router TS augmentation (buildUrl, etc.).
 import 'router5-plugin-browser';
@@ -29,7 +31,9 @@ export class RouterModel extends HoistModel {
     router: Router = this.createRouter();
 
     /**
-     * Does the routing system already have a given route?
+     * Does a route exist with the given fully qualified name, such as `default.grids`?
+     * Check before calling `router.buildPath()` or `buildUrl()` with a name that may not be
+     * registered, as both throw for an unknown route. Apps typically call `XH.hasRoute()`.
      */
     hasRoute(routeName: string): boolean {
         const flatNames = this.getRouteNames(this.router.rootNode);

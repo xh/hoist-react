@@ -6,11 +6,12 @@
  */
 
 import {FormModel} from '@xh/hoist/cmp/form';
-import {ViewInfo, ViewUpdateSpec} from '@xh/hoist/cmp/viewmanager';
+import type {ViewInfo, ViewUpdateSpec} from '@xh/hoist/cmp/viewmanager';
 import {HoistModel, managed} from '@xh/hoist/core';
 import {every, isEmpty, uniq} from 'lodash';
-import {ManageDialogModel} from '../ManageDialogModel';
-import {confirmVisibilityChangeAsync, Visibility} from '../Utils';
+import type {ManageDialogModel} from '../ManageDialogModel';
+import type {Visibility} from '../Utils';
+import {confirmVisibilityChangeAsync} from '../Utils';
 
 /**
  * Backing model for bulk editing of multiple selected views. Group is not editable here - views

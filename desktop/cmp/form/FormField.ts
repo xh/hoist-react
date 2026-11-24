@@ -4,39 +4,22 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {PopoverPosition, PopperBoundary} from '@blueprintjs/core';
-import {
-    BaseFormFieldProps,
-    FieldModel,
-    FormContext,
-    FormContextType,
-    FormFieldSetContext
-} from '@xh/hoist/cmp/form';
+import type {PopoverPosition, PopperBoundary} from '@blueprintjs/core';
+import type {BaseFormFieldProps, FormContextType} from '@xh/hoist/cmp/form';
+import {FieldModel, FormContext, FormFieldSetContext} from '@xh/hoist/cmp/form';
 import {box, div, label as labelEl, li, span, ul} from '@xh/hoist/cmp/layout';
-import {
-    DefaultHoistProps,
-    hoistCmp,
-    HoistProps,
-    HSide,
-    TestSupportProps,
-    uses,
-    XH
-} from '@xh/hoist/core';
+import type {DefaultHoistProps, HoistProps, HSide, TestSupportProps} from '@xh/hoist/core';
+import {hoistCmp, uses, XH} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {instanceManager} from '@xh/hoist/core/impl/InstanceManager';
-import {maxSeverity, ValidationResult} from '@xh/hoist/data';
+import type {ValidationResult} from '@xh/hoist/data';
+import {maxSeverity} from '@xh/hoist/data';
 import {fmtDate, fmtDateTime, fmtJson, fmtNumber} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
 import {tooltip} from '@xh/hoist/kit/blueprint';
 import {isLocalDate} from '@xh/hoist/utils/datetime';
 import {errorIf, getTestId, logWarn, TEST_ID, throwIf, withDefault} from '@xh/hoist/utils/js';
-import {
-    getLayoutProps,
-    getReactElementName,
-    useComposedRefs,
-    useOnMount,
-    useOnUnmount
-} from '@xh/hoist/utils/react';
+import {getLayoutProps, getReactElementName, useComposedRefs} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import {
     first,
@@ -49,15 +32,8 @@ import {
     isUndefined,
     kebabCase
 } from 'lodash';
-import {
-    Children,
-    cloneElement,
-    ReactElement,
-    ReactNode,
-    useContext,
-    useEffect,
-    useState
-} from 'react';
+import type {ReactElement, ReactNode} from 'react';
+import {Children, cloneElement, useContext, useEffect, useState} from 'react';
 import './FormField.scss';
 
 export interface FormFieldProps extends BaseFormFieldProps {
@@ -172,7 +148,7 @@ export const [FormField, formField] = hoistCmp.withFactory<FormFieldProps>({
             requiredIndicator =
                 isRequired && !readonly && requiredStr
                     ? span({
-                          item: ' ' + requiredStr,
+                          children: ' ' + requiredStr,
                           className: 'xh-form-field__required-indicator'
                       })
                     : null;
@@ -219,8 +195,7 @@ export const [FormField, formField] = hoistCmp.withFactory<FormFieldProps>({
 
         // Test ID handling
         const testId = getFormFieldTestId(props, formContext, model?.name);
-        useOnMount(() => instanceManager.registerModelWithTestId(testId, model));
-        useOnUnmount(() => instanceManager.unregisterModelWithTestId(testId));
+        instanceManager.useTestIdRegistration(testId, model);
 
         // Generate actual element child to render
         let childEl: ReactElement =
@@ -244,7 +219,7 @@ export const [FormField, formField] = hoistCmp.withFactory<FormFieldProps>({
 
         if (minimal) {
             childEl = tooltip({
-                item: childEl,
+                children: childEl,
                 className: classNames(
                     'xh-input',
                     severityToDisplay && `xh-input--${severityToDisplay}`,
@@ -270,14 +245,14 @@ export const [FormField, formField] = hoistCmp.withFactory<FormFieldProps>({
                     ? tooltip({
                           openOnTargetFocus: false,
                           className: validationMsgCls,
-                          item: firstMsg + ' (...)',
+                          children: firstMsg + ' (...)',
                           content: getValidationTooltipContent(
                               validationResultsToDisplay
                           ) as ReactElement
                       })
                     : div({
                           className: validationMsgCls,
-                          item: firstMsg
+                          children: firstMsg
                       });
         }
 
@@ -288,11 +263,11 @@ export const [FormField, formField] = hoistCmp.withFactory<FormFieldProps>({
             ...getLayoutProps(props),
             testId,
             domAttrs: props.domAttrs,
-            items: [
+            children: [
                 labelEl({
                     omit: !label,
                     className: 'xh-form-field__label',
-                    items: [label, requiredIndicator],
+                    children: [label, requiredIndicator],
                     // Id lets inputs that are not labelable elements (e.g. RadioCardInput) name
                     // themselves via `aria-labelledby`.
                     id: `${childId}-label`,
@@ -310,12 +285,12 @@ export const [FormField, formField] = hoistCmp.withFactory<FormFieldProps>({
                             ? 'xh-form-field__inner--flex'
                             : 'xh-form-field__inner--block'
                     ),
-                    items: [
+                    children: [
                         childEl,
                         div({
                             className: 'xh-form-field__inner__info-msg',
                             omit: !info,
-                            item: info
+                            children: info
                         }),
                         validationMsgEl
                     ]
@@ -337,7 +312,7 @@ const readonlyChild = hoistCmp.factory<ReadonlyChildProps>({
         return div({
             className: 'xh-form-field__readonly-display',
             [TEST_ID]: testId,
-            item: readonlyRenderer(value, model)
+            children: readonlyRenderer(value, model)
         });
     }
 });
@@ -454,7 +429,7 @@ function getValidationTooltipContent(validationResults: ValidationResult[]): Rea
         const severity = first(validationResults).severity;
         return ul({
             className: `xh-form-field__validation-tooltip xh-form-field__validation-tooltip--${severity}`,
-            items: validationResults.map((it, idx) => li({key: idx, item: it.message}))
+            children: validationResults.map((it, idx) => li({key: idx, children: it.message}))
         });
     }
 }

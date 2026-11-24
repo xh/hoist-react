@@ -4,12 +4,13 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {ContextMenuSpec} from '@xh/hoist/core';
+import type {ContextMenuSpec} from '@xh/hoist/core';
 import {contextMenu} from '@xh/hoist/desktop/cmp/contextmenu/ContextMenu';
 import {showContextMenu} from '@xh/hoist/kit/blueprint';
 import {logError} from '@xh/hoist/utils/js';
 import {isArray, isEmpty, isFunction, isUndefined} from 'lodash';
-import {cloneElement, isValidElement, MouseEvent, ReactElement} from 'react';
+import type {MouseEvent, ReactElement} from 'react';
+import {cloneElement, isValidElement} from 'react';
 
 /**
  * Hook to add a right-click context menu to a component.

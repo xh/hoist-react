@@ -5,12 +5,13 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {FormModel} from '@xh/hoist/cmp/form';
-import {HoistModel, XH, MessageSpec, MessageSuppressSpec, managed} from '@xh/hoist/core';
+import type {MessageSpec, MessageSuppressSpec} from '@xh/hoist/core';
+import {HoistModel, XH, managed} from '@xh/hoist/core';
 import {action, observable} from '@xh/hoist/mobx';
 import {DAYS, HOURS, MINUTES} from '@xh/hoist/utils/datetime';
 import {pluralize, throwIf, warnIf} from '@xh/hoist/utils/js';
 import {isEmpty} from 'lodash';
-import {ReactNode} from 'react';
+import type {ReactNode} from 'react';
 
 /**
  * Model for a single instance of a modal dialog.

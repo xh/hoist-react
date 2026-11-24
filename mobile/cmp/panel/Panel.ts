@@ -5,25 +5,27 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {frame, vbox} from '@xh/hoist/cmp/layout';
-import {
+import type {
     BoxProps,
     TaskObserver,
-    useContextModel,
     Some,
     HoistProps,
     ElementFactory,
-    hoistCmp,
-    HoistModel
+    HoistModel,
+    Intent
 } from '@xh/hoist/core';
+import {useContextModel, hoistCmp} from '@xh/hoist/core';
 import {loadingIndicator} from '@xh/hoist/cmp/loadingindicator';
 import {mask} from '@xh/hoist/cmp/mask';
-import {banner, BannerProps} from '@xh/hoist/mobile/cmp/banner';
+import type {BannerProps} from '@xh/hoist/mobile/cmp/banner';
+import {banner} from '@xh/hoist/mobile/cmp/banner';
 import {toolbar} from '@xh/hoist/mobile/cmp/toolbar';
 import '@xh/hoist/mobile/register';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import {castArray, isString, omitBy} from 'lodash';
-import {Children, cloneElement, isValidElement, ReactNode, ReactElement} from 'react';
+import type {ReactNode, ReactElement} from 'react';
+import {Children, cloneElement, isValidElement} from 'react';
 import {panelHeader} from './impl/PanelHeader';
 import './Panel.scss';
 import {logWarn} from '@xh/hoist/utils/js';
@@ -43,6 +45,12 @@ export interface PanelProps extends HoistProps, Omit<BoxProps, 'title'> {
 
     /** CSS class name specific to the panel's header. */
     headerClassName?: string;
+
+    /**
+     * Intent to color the panel's header. The header takes a solid intent background, and its
+     * title, icon, and minimal header buttons render in white. Default is the standard header.
+     */
+    headerIntent?: Intent;
 
     /** Items to be added to the right-side of the panel's header. */
     headerItems?: ReactNode[];
@@ -68,7 +76,7 @@ export interface PanelProps extends HoistProps, Omit<BoxProps, 'title'> {
      */
     loadingIndicator?: Some<TaskObserver> | ReactElement | boolean | 'onLoad';
 
-    /** Additional props to pass to the inner frame hosting child `items`. */
+    /** Additional props to pass to the inner frame hosting the panel's `children`. */
     contentBoxProps?: BoxProps;
 
     /** Allow the panel content area to scroll vertically. */
@@ -109,6 +117,7 @@ export const [Panel, panel] = hoistCmp.withFactory<PanelProps>({
             title,
             icon,
             headerClassName,
+            headerIntent,
             headerItems,
             mask: maskProp,
             loadingIndicator: loadingIndicatorProp,
@@ -133,8 +142,14 @@ export const [Panel, panel] = hoistCmp.withFactory<PanelProps>({
         return vbox({
             className,
             // Keyed via toArray so a banner appearing or hiding does not remount the content frame.
-            items: Children.toArray([
-                panelHeader({title, icon, className: headerClassName, headerItems}),
+            children: Children.toArray([
+                panelHeader({
+                    title,
+                    icon,
+                    className: headerClassName,
+                    intent: headerIntent,
+                    headerItems
+                }),
                 parseToolbar(tbar),
                 banners.top,
                 frame({
@@ -143,7 +158,7 @@ export const [Panel, panel] = hoistCmp.withFactory<PanelProps>({
                     className: classNames('xh-panel__content', contentBoxProps?.className),
                     flexDirection: contentBoxProps?.flexDirection ?? 'column',
                     overflowY: scrollable ? 'auto' : contentBoxProps?.overflowY,
-                    items: children
+                    children
                 }),
                 banners.bottom,
                 parseToolbar(bbar),

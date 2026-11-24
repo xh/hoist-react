@@ -6,7 +6,8 @@
  */
 import {AgGrid} from '@xh/hoist/cmp/ag-grid';
 import {box, div, fragment, hbox, hframe, p, placeholder, vbox, vframe} from '@xh/hoist/cmp/layout';
-import {BoxProps, hoistCmp, HoistProps, uses, XH} from '@xh/hoist/core';
+import type {BoxProps, HoistProps} from '@xh/hoist/core';
+import {hoistCmp, uses, XH} from '@xh/hoist/core';
 import {errorMessage} from '@xh/hoist/cmp/error';
 import {mask} from '@xh/hoist/cmp/mask';
 import classNames from 'classnames';
@@ -35,8 +36,8 @@ export const [SplitTreeMap, splitTreeMap] = hoistCmp.withFactory<SplitTreeMapPro
             testId,
             ref,
             className,
-            items: errors.length ? errorPanel({errors}) : childMaps(),
-            ...props
+            ...props,
+            children: errors.length ? errorPanel({errors}) : childMaps()
         });
     }
 });
@@ -75,7 +76,7 @@ const childMaps = hoistCmp.factory<SplitTreeMapModel>(({model}) => {
             omit: !pTotal,
             flex: pFlex,
             className: 'xh-split-treemap__map-holder',
-            item: treeMap({model: primaryMapModel})
+            children: treeMap({model: primaryMapModel})
         }),
 
         splitter({omit: !!mapTitleFn || !showSplitter}),
@@ -86,14 +87,14 @@ const childMaps = hoistCmp.factory<SplitTreeMapModel>(({model}) => {
             omit: !sTotal,
             flex: sFlex,
             className: 'xh-split-treemap__map-holder',
-            item: treeMap({model: secondaryMapModel})
+            children: treeMap({model: secondaryMapModel})
         }),
 
         // Mask
         div({
             omit: !isMasking,
             className: 'xh-split-treemap__mask-holder',
-            item: mask({isDisplayed: true, spinner: true})
+            children: mask({isDisplayed: true, spinner: true})
         })
     ]);
 });
@@ -117,9 +118,9 @@ const mapTitle = hoistCmp.factory<SplitTreeMapModel>(({model, isPrimary}) => {
             'xh-split-treemap__header',
             'xh-split-treemap__header--' + titleOrientation
         ),
-        item: div({
+        children: div({
             className: 'xh-split-treemap__header__title',
-            item: mapTitleFn(treeMapModel, isPrimary)
+            children: mapTitleFn(treeMapModel, isPrimary)
         })
     });
 });

@@ -1,3 +1,3 @@
 export * from './Chart';
 export * from './ChartModel';
-export * from './Types';
+export type * from './Types';

@@ -4,14 +4,14 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {
+import type {
     ColChooserConfig,
     ColChooserMode,
     ColumnState,
     GridModel,
     IColChooserModel
 } from '@xh/hoist/cmp/grid';
-import {ColChooserOptionsModel} from '@xh/hoist/appcontainer/ColChooserOptionsModel';
+import type {ColChooserOptionsModel} from '@xh/hoist/appcontainer/ColChooserOptionsModel';
 import {ColumnGroup} from '@xh/hoist/cmp/grid/columns/ColumnGroup';
 import type {ColumnOrGroup} from '@xh/hoist/cmp/grid/Types';
 import {HoistModel, managed, XH} from '@xh/hoist/core';
@@ -53,20 +53,20 @@ export abstract class ColChooserModel extends HoistModel implements IColChooserM
     readonly columnLibraryEnabled: boolean;
 
     //-----------------------
-    // Child-models
+    // Child-models - built on first show, null until then
     //-----------------------
     @managed
-    readonly leftBucketModel: ColChooserBucketModel;
+    leftBucketModel: ColChooserBucketModel = null;
 
     @managed
-    readonly unpinnedBucketModel: ColChooserBucketModel;
+    unpinnedBucketModel: ColChooserBucketModel = null;
 
     @managed
-    readonly rightBucketModel: ColChooserBucketModel;
+    rightBucketModel: ColChooserBucketModel = null;
 
-    /** Library of hidden columns - rendered and wired only when {@link columnLibraryEnabled}. */
+    /** Library of hidden columns - built and wired only when {@link columnLibraryEnabled}. */
     @managed
-    readonly libraryModel: ColLibraryModel;
+    libraryModel: ColLibraryModel = null;
 
     //-----------------------
     // Observable State
@@ -213,8 +213,11 @@ export abstract class ColChooserModel extends HoistModel implements IColChooserM
         this.width = width;
         this.height = height;
         this.libraryWidth = libraryConfig.libraryWidth ?? 250;
+        this.libraryCollapseGroups = !!libraryConfig.collapseGroups;
         this.filterMatchMode = filterMatchMode;
+    }
 
+    private createChildModels() {
         this.leftBucketModel = new ColChooserBucketModel({
             parent: this,
             pinned: 'left',
@@ -239,19 +242,22 @@ export abstract class ColChooserModel extends HoistModel implements IColChooserM
         if (this.columnLibraryEnabled) {
             this.libraryModel = new ColLibraryModel({
                 parent: this,
-                collapseGroups: !!libraryConfig.collapseGroups
+                collapseGroups: this.libraryCollapseGroups
             });
         }
 
         this.addReaction({
             track: () => [this.gridModel.columnState, this.gridModel.columns],
-            run: () => this.syncColumnState(),
-            fireImmediately: true
+            run: () => {
+                if (this.isShown) this.syncColumnState();
+            }
         });
 
         this.addReaction({
             track: () => [this.showGroups, this.showHidden],
-            run: () => this.syncBuckets()
+            run: () => {
+                if (this.isShown) this.syncBuckets();
+            }
         });
 
         // Neither the action cells nor the row classes repaint on their own when this flips.
@@ -286,16 +292,35 @@ export abstract class ColChooserModel extends HoistModel implements IColChooserM
     /** True when the chooser is currently shown in this model's presentation. */
     abstract get isOpen(): boolean;
 
+    /** True when the chooser is shown in any of this model's presentations. */
+    get isShown(): boolean {
+        return this.isOpen;
+    }
+
     /** Show the chooser in this model's presentation. */
     abstract open(): void;
 
     /** Subclass hook to clear presentation-open state. */
     protected abstract hide(): void;
 
+    /**
+     * Subclass hook to call before showing - builds the child models on first show and adopts the
+     * grid's current column state, which is only tracked while shown. No-op if already shown.
+     */
+    @action
+    protected prepareToShow() {
+        if (this.isShown) return;
+        if (!this.unpinnedBucketModel) this.createChildModels();
+        this.adoptColumnState(this.gridModel.columnState);
+    }
+
     /** Hide the chooser - discarding any uncommitted edits, matching an explicit Cancel. */
+    @action
     close() {
+        if (!this.isShown) return;
         this.hide();
-        this.discardPending();
+        // The buckets resync from the grid on the next show.
+        this.workingState = this.baseline;
         this.clearFilter();
     }
 
@@ -315,7 +340,7 @@ export abstract class ColChooserModel extends HoistModel implements IColChooserM
 
     /** Show the chooser if hidden, hide it if shown. */
     toggle() {
-        this.isOpen ? this.close() : this.open();
+        this.isShown ? this.close() : this.open();
     }
 
     //-----------------------
@@ -393,13 +418,6 @@ export abstract class ColChooserModel extends HoistModel implements IColChooserM
         await this.autosizeIfNeeded();
     }
 
-    /** Discard pending edits, reverting the working copy to the last committed baseline. */
-    @action
-    discardPending() {
-        this.workingState = this.baseline;
-        this.syncBuckets();
-    }
-
     async restoreDefaultsAsync() {
         // Adopt the restored state silently rather than as an external conflict. On cancel the grid is
         // left unchanged, so no reaction fires and pending edits survive.
@@ -421,6 +439,8 @@ export abstract class ColChooserModel extends HoistModel implements IColChooserM
     //-----------------------
     /** Last grid columnState synced/committed against - the baseline for {@link isDirty}. */
     @observableRef private accessor baseline: ColumnState[] = null;
+
+    private readonly libraryCollapseGroups: boolean;
 
     /** Guards against stacking resolve-conflict prompts while one is already open. */
     private resolvingConflict = false;

@@ -34,7 +34,7 @@ describe('FormFieldSet', () => {
 
         it('takes the enclosing set as its parent, not itself', () => {
             const {account, contact} = renderAccountForm(m =>
-                formFieldSet({model: m.account, item: fieldSet(m.contact, 'name')})
+                formFieldSet({model: m.account, children: fieldSet(m.contact, 'name')})
             );
 
             expect(contact.parent).toBe(account);
@@ -46,9 +46,9 @@ describe('FormFieldSet', () => {
                 {account} = renderAccountForm(m =>
                     formFieldSet({
                         model: m.account,
-                        item: formFieldSet({
+                        children: formFieldSet({
                             modelRef: innerRef,
-                            item: formField({field: 'name', item: textInput()})
+                            children: formField({field: 'name', children: textInput()})
                         })
                     })
                 );
@@ -59,7 +59,7 @@ describe('FormFieldSet', () => {
         it('takes an enclosing implicit set as its parent', () => {
             const outerRef = createRef<FormFieldSetModel>(),
                 {contact} = renderAccountForm(m =>
-                    formFieldSet({modelRef: outerRef, item: fieldSet(m.contact, 'name')})
+                    formFieldSet({modelRef: outerRef, children: fieldSet(m.contact, 'name')})
                 );
 
             expect(contact.parent).toBe(outerRef.current);
@@ -67,7 +67,7 @@ describe('FormFieldSet', () => {
 
         it('shows validation for the fields it contains', async () => {
             const {account, contact, formModel} = renderAccountForm(m =>
-                formFieldSet({model: m.account, item: fieldSet(m.contact, 'name')})
+                formFieldSet({model: m.account, children: fieldSet(m.contact, 'name')})
             );
 
             await act(() => formModel.validateAsync({display: true}));
@@ -78,7 +78,7 @@ describe('FormFieldSet', () => {
 
         it('disables its fields and the sets nested within it', () => {
             const {account, contact, container} = renderAccountForm(m =>
-                formFieldSet({model: m.account, item: fieldSet(m.contact, 'name')})
+                formFieldSet({model: m.account, children: fieldSet(m.contact, 'name')})
             );
 
             act(() => account.setDisabled(true));
@@ -110,7 +110,7 @@ describe('FormFieldSet', () => {
         it('does not register fields outside it', async () => {
             const {account, contact, billing, formModel, container} = renderAccountPanel(m =>
                 div(
-                    formField({field: 'name', item: textInput()}),
+                    formField({field: 'name', children: textInput()}),
                     fieldSet(m.billing, 'cardNumber')
                 )
             );
@@ -145,13 +145,12 @@ class AccountModel extends HoistModel {
 /** Publishes its model in the default mode, as an app panel usually does. */
 const accountPanel = hoistCmp.factory<AccountModel>({
     model: uses(AccountModel),
-    render: ({model, children}) => accountForm({model, items: children})
+    render: ({model, children}) => accountForm({model, children})
 });
 
 const accountForm = hoistCmp.factory<AccountModel>({
     model: false,
-    render: ({model, children}) =>
-        form({model: model.formModel, testId: 'account', items: children})
+    render: ({model, children}) => form({model: model.formModel, testId: 'account', children})
 });
 
 /** Render a form with no app model in context. */
@@ -168,13 +167,13 @@ function renderAccount(content: (m: AccountModel) => ReactNode, factory: Element
     const model = new AccountModel();
     onTestFinished(() => model.destroy());
 
-    const {container} = render(factory({model, item: content(model)})),
+    const {container} = render(factory({model, children: content(model)})),
         {formModel, account, contact, billing} = model;
     return {formModel, account, contact, billing, container};
 }
 
 function fieldSet(model: FormFieldSetModel, field: string) {
-    return formFieldSet({model, item: formField({field, item: textInput()})});
+    return formFieldSet({model, children: formField({field, children: textInput()})});
 }
 
 function inputFor(container: HTMLElement, field: string): HTMLInputElement {

@@ -5,17 +5,18 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
-import {FormModel} from '@xh/hoist/cmp/form';
+import type {FormModel} from '@xh/hoist/cmp/form';
+import type {ViewManagerModel} from '@xh/hoist/cmp/viewmanager';
 import {
     composeGroupPath,
     getAllGroupPaths,
     normalizeGroupPath,
-    VIEW_GROUP_DELIMITER,
-    ViewManagerModel
+    VIEW_GROUP_DELIMITER
 } from '@xh/hoist/cmp/viewmanager';
 import {HoistModel} from '@xh/hoist/core';
 import {action, bindable, computed, observable} from '@xh/hoist/mobx';
-import {GroupPathOption, normalizeGroupValue, TOP_LEVEL_GROUP_VALUE} from '../Utils';
+import type {GroupPathOption} from '../Utils';
+import {normalizeGroupValue, TOP_LEVEL_GROUP_VALUE} from '../Utils';
 
 export interface GroupFieldModelConfig {
     /** Owning form - must contain a `group` field. */

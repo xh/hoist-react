@@ -17,13 +17,10 @@ import {
     isString,
     isUndefined,
     mergeWith,
-    mixin,
     uniq,
     uniqBy
 } from 'lodash';
-import _inflection from 'lodash-inflection';
-
-mixin(_inflection);
+import * as inflection from 'inflection';
 
 /**
  * Get a cached value on an object, creating it if it does not yet exist.
@@ -179,7 +176,7 @@ export function ensureUniqueBy(arr: any[], uniqueKey: string, exceptionMessage?:
  * Returns the singular version of the plural word passed to it.
  */
 export function singularize(s: string): string {
-    return _inflection.singularize(s);
+    return inflection.singularize(s);
 }
 
 /**
@@ -190,7 +187,9 @@ export function singularize(s: string): string {
  * @param includeCount - include count in the output
  */
 export function pluralize(s: string, count?: number, includeCount?: boolean): string {
-    return _inflection.pluralize(s, count, includeCount);
+    if (count == null) return inflection.pluralize(s);
+    const ret = inflection.inflect(s, count);
+    return includeCount ? `${count} ${ret}` : ret;
 }
 
 /**
@@ -199,7 +198,38 @@ export function pluralize(s: string, count?: number, includeCount?: boolean): st
  * @param n - the number to ordinalize
  */
 export function ordinalize(n: number): string {
-    return _inflection.ordinalize(n);
+    return inflection.ordinalize(String(n));
+}
+
+/**
+ * Generate a random alphanumeric ID using the platform's cryptographic random source.
+ * Suitable for correlation IDs, load IDs and similar - not for secrets.
+ *
+ * @param length - number of characters in the generated ID. Default 8.
+ */
+export function genRandomId(length: number = 8): string {
+    const bytes = crypto.getRandomValues(new Uint8Array(length));
+    return Array.from(bytes, b => ID_CHARS[b % ID_CHARS.length]).join('');
+}
+
+/**
+ * Generate a version 4 UUID, unique across sessions and suitable for IDs stored on a server.
+ * Uses `crypto.randomUUID()` where the browser provides it. Browsers provide it only on HTTPS and
+ * localhost, so on plain HTTP this builds the UUID from `crypto.getRandomValues()`.
+ */
+export function genUuid(): string {
+    return crypto.randomUUID?.() ?? genUuidFromRandomValues();
+}
+
+/**
+ * Return the value of an object's own property, or null. Never returns a property inherited from
+ * `Object.prototype`, such as `constructor` or `toString`. Use it to look up a key that comes from
+ * user input or a server response in a plain object used as a map.
+ *
+ * Unlike lodash `get` and `has`, this treats a dotted key such as `'a.b'` as a single key.
+ */
+export function getOwn<T>(obj: Record<string, T>, key: string): T {
+    return obj != null && isString(key) && Object.hasOwn(obj, key) ? obj[key] : null;
 }
 
 /**
@@ -326,4 +356,20 @@ export function parseTypeName(source: NameSource): string {
     if (source['displayName']) return source['displayName'];
     if (source.constructor) return source.constructor.name;
     return null;
+}
+
+const ID_CHARS = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+
+function genUuidFromRandomValues(): string {
+    const bytes = crypto.getRandomValues(new Uint8Array(16));
+    bytes[6] = (bytes[6] & 0x0f) | 0x40; // Version 4.
+    bytes[8] = (bytes[8] & 0x3f) | 0x80; // The RFC 9562 variant.
+    const hex = Array.from(bytes, b => b.toString(16).padStart(2, '0')).join('');
+    return [
+        hex.slice(0, 8),
+        hex.slice(8, 12),
+        hex.slice(12, 16),
+        hex.slice(16, 20),
+        hex.slice(20)
+    ].join('-');
 }

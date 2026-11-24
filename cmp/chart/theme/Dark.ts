@@ -7,7 +7,7 @@
 
 // Dark theme color vars - see and sync with vars.scss.
 const bg = '#13181B', // --xh-black
-    altBg = '#151e23', // --xh-grid-bg-odd
+    altBg = '#151e23', // --xh-grid-odd-row-bg
     borderColor = '#37474f', // --xh-border-color
     altBorderColor = '#293233', // --xh-grid-border-color
     textColor = '#ffffff', // --xh-text-color
@@ -227,7 +227,7 @@ export const DarkTheme = {
     },
 
     scrollbar: {
-        barBackgroundColor: '#263238', // --xh-scrollbar-thumb
+        barBackgroundColor: '#263238', // --xh-scrollbar-thumb-color
         barBorderColor: '#263238',
         buttonArrowColor: accentColor,
         buttonBackgroundColor: '#263238',

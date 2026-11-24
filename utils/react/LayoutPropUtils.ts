@@ -7,7 +7,7 @@
 import type {LayoutProps, ResolvedLayoutProps, PlainObject} from '@xh/hoist/core';
 import {forOwn, isEmpty, isNumber, isString, isNil, omit, pick} from 'lodash';
 
-const XH_PAD_VAR = 'var(--xh-pad-px)';
+const XH_PAD_VAR = 'var(--xh-spacing)';
 
 /**
  * These utils support accepting the CSS styles enumerated below as top-level props of a Component,
@@ -41,7 +41,7 @@ const XH_PAD_VAR = 'var(--xh-pad-px)';
  * This method implements some minor translations, to allow a more user friendly specification than
  * that afforded by the underlying flexbox styles. In particular, it accepts flex and sizing props
  * as raw numbers rather than strings. Margin, padding, and gap accept a boolean shorthand:
- * `true` resolves to the `--xh-pad-px` CSS var (default 10px), `false` is treated as unset.
+ * `true` resolves to the `--xh-spacing` CSS var (default 10px), `false` is treated as unset.
  */
 export function getLayoutProps(props: PlainObject): ResolvedLayoutProps {
     // Harvest all keys of interest

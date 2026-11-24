@@ -5,12 +5,12 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {RouterModel} from '@xh/hoist/appcontainer/RouterModel';
-import {HoistRoute} from '@xh/hoist/core';
+import type {HoistRoute} from '@xh/hoist/core';
 import {describe, expect, it, onTestFinished, vi} from 'vitest';
 
 /**
  * RouterModel - Hoist's MobX facade over router5, behind `XH.routerState`, `XH.navigate()`,
- * `XH.appendRoute()` and `XH.popRoute()`. Every routed app registers its routes here and reacts to
+ * `XH.appendRoute()`, `XH.popRoute()` and `XH.hasRoute()`. Every routed app registers its routes here and reacts to
  * its observable state, so a break here strands users on the wrong page.
  */
 describe('RouterModel', () => {
@@ -36,6 +36,19 @@ describe('RouterModel', () => {
         });
     });
 
+    describe('hasRoute', () => {
+        it('matches fully qualified names only, for leaf and parent routes alike', () => {
+            const model = createModel();
+
+            expect(model.hasRoute('default')).toBe(true);
+            expect(model.hasRoute('default.grids')).toBe(true);
+            expect(model.hasRoute('default.grids.detail')).toBe(true);
+            expect(model.hasRoute('detail')).toBe(false);
+            expect(model.hasRoute('default.charts')).toBe(false);
+            expect(model.hasRoute(null)).toBe(false);
+        });
+    });
+
     describe('currentState', () => {
         it('is observable, updating as the router navigates', () => {
             const model = createModel(),
@@ -47,6 +60,16 @@ describe('RouterModel', () => {
 
             expect(names).toEqual(['default.grids', 'default.grids.detail']);
             expect(model.currentState.params).toEqual({id: 7});
+        });
+
+        it('round-trips URL-reserved characters in a path param', () => {
+            const model = createModel(),
+                id = 'a/b&c=d?e#f';
+
+            model.router.navigate('default.grids.detail', {id});
+
+            expect(model.currentState.params).toEqual({id});
+            expect(model.currentState.path).toBe('/app/grids/a%2Fb%26c%3Dd%3Fe%23f');
         });
     });
 

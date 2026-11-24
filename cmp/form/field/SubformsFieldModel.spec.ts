@@ -4,7 +4,8 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {type FormConfig, FormModel, SubformsFieldModel} from '@xh/hoist/cmp/form';
+import type {SubformsFieldModel} from '@xh/hoist/cmp/form';
+import {type FormConfig, FormModel} from '@xh/hoist/cmp/form';
 import {required} from '@xh/hoist/data';
 import {wait} from '@xh/hoist/promise';
 import {sumBy} from 'lodash';

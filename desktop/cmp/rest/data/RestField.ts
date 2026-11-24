@@ -4,10 +4,11 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {Field, FieldSpec} from '@xh/hoist/data';
+import type {FieldSpec} from '@xh/hoist/data';
+import {Field} from '@xh/hoist/data';
 import '@xh/hoist/desktop/register';
 import {withDefault} from '@xh/hoist/utils/js';
-import {PlainObject} from '@xh/hoist/core';
+import type {PlainObject} from '@xh/hoist/core';
 
 export interface RestFieldSpec extends FieldSpec {
     /**

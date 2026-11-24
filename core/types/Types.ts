@@ -4,15 +4,22 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {ElementFactory} from '@xh/hoist/core';
-import {LocalDate} from '@xh/hoist/utils/datetime';
-import {MomentInput} from 'moment';
-import {Component, FunctionComponent, ReactElement} from 'react';
-import {DebounceSettings} from 'lodash';
-import {Route} from 'router5';
+import type {ElementFactory} from '@xh/hoist/core';
+import type {LocalDate} from '@xh/hoist/utils/datetime';
+import type {MomentInput} from 'moment';
+import type {Component, FunctionComponent, ReactElement} from 'react';
+import type {DebounceSettings} from 'lodash';
+import type {Route} from 'router5';
 
 /** Values available for intents. */
 export type Intent = 'primary' | 'success' | 'warning' | 'danger';
+
+/**
+ * Sizes a component can be drawn at, chosen by the developer for emphasis or space. Distinct from
+ * `SizingMode`, the density preference that a user can change for the whole app. A component
+ * that takes this type may support only some of the sizes.
+ */
+export type ComponentSize = 'compact' | 'standard' | 'large';
 
 /** Values available for App Theme. */
 export type Theme = 'system' | 'dark' | 'light';

@@ -5,7 +5,8 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {hoistCmp, useContextModel} from '@xh/hoist/core';
-import {button, ButtonProps} from '@xh/hoist/desktop/cmp/button/Button';
+import type {ButtonProps} from '@xh/hoist/desktop/cmp/button/Button';
+import {button} from '@xh/hoist/desktop/cmp/button/Button';
 import {PanelModel} from '@xh/hoist/desktop/cmp/panel';
 import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';

@@ -15,6 +15,7 @@
 | [collapsedTitle / collapsedIcon](#collapsedtitle--collapsedicon) | Identifying collapsed panels with custom titles and icons |
 | [compactHeader](#compactheader) | Reduced-size headers for visual hierarchy |
 | [headerItems](#headeritems) | Inline controls in the panel header |
+| [headerIntent](#headerintent) | Intent-colored headers for major sections |
 | [Persistence](#persistence) | Persisting collapsed state and size across sessions |
 | [Modal Support](#modal-support) | Popping panel content into a near-full-screen dialog |
 | [Configuration Reference](#configuration-reference) | Full Panel props and PanelModel config tables |
@@ -39,7 +40,7 @@ import {panel} from '@xh/hoist/desktop/cmp/panel';
 panel({
     title: 'User Details',
     icon: Icon.user(),
-    item: userForm()
+    children: userForm()
 })
 
 // Panel wrapping a grid with toolbars
@@ -47,8 +48,8 @@ panel({
     title: 'Orders',
     icon: Icon.list(),
     tbar: [refreshButton(), filler(), storeFilterField()],
-    item: grid(),
-    bbar: toolbar({compact: true, items: [filler(), colChooserButton(), exportButton()]})
+    children: grid(),
+    bbar: toolbar({compact: true, children: [filler(), colChooserButton(), exportButton()]})
 })
 ```
 
@@ -95,21 +96,21 @@ classes — without introducing extra wrapper elements or CSS overrides. Pass `c
 panel({
     title: 'Details',
     contentBoxProps: {padding: true},
-    item: detailForm()
+    children: detailForm()
 })
 
 // Horizontal content layout
 panel({
     title: 'Comparison',
     contentBoxProps: {flexDirection: 'row', gap: 5},
-    items: [leftPane(), rightPane()]
+    children: [leftPane(), rightPane()]
 })
 
 // Scrollable content (via contentBoxProps)
 panel({
     title: 'Log',
     contentBoxProps: {overflow: 'auto'},
-    item: logOutput()
+    children: logOutput()
 })
 ```
 
@@ -123,8 +124,8 @@ to `contentBoxProps: {overflowY: 'auto'}` but reads more naturally for the commo
 
 ```typescript
 // These are equivalent:
-panel({scrollable: true, item: longForm()})
-panel({contentBoxProps: {overflowY: 'auto'}, item: longForm()})
+panel({scrollable: true, children: longForm()})
+panel({contentBoxProps: {overflowY: 'auto'}, children: longForm()})
 ```
 
 When both `scrollable` and `contentBoxProps.overflowY` are specified, `scrollable` takes
@@ -161,7 +162,7 @@ Use `compact: true` for reduced-height toolbars. This can be used to keep them m
 panel({
     bbar: toolbar({
         compact: true,
-        items: [filler(), colChooserButton(), exportButton()]
+        children: [filler(), colChooserButton(), exportButton()]
     })
 })
 ```
@@ -205,10 +206,10 @@ const reportPanel = hoistCmp.factory<ReportModel>({
                 '-',
                 storeFilterField()
             ],
-            item: grid(),
+            children: grid(),
             bbar: toolbar({
                 compact: true,
-                items: [
+                children: [
                     filler(),
                     expandToLevelButton(),
                     colChooserButton(),
@@ -240,13 +241,13 @@ has load support. This is the simplest and most common pattern:
 // Model implements doLoadAsync via @managed LoadSupport
 panel({
     mask: 'onLoad',
-    item: grid()
+    children: grid()
 })
 
 // Bind to a specific or multiple tasks for more targeted masking
 panel({
     mask: [model.saveTaskObserver, model.deleteTaskObserver],
-    item: grid()
+    children: grid()
 })
 ```
 
@@ -276,7 +277,7 @@ above the bottom toolbar instead.
 panel({
     title: 'Positions',
     tbar: [storeFilterField(), filler(), refreshButton()],
-    item: grid(),
+    children: grid(),
     // Conditional banners - null entries are ignored.
     banner: [
         model.isStale
@@ -349,7 +350,7 @@ panel({
         side: 'right',
         defaultSize: 380
     },
-    item: detailView()
+    children: detailView()
 })
 
 // Bottom detail panel with percentage sizing
@@ -363,7 +364,7 @@ panel({
         defaultSize: '30%',
         persistWith: {localStorageKey: 'myDetailPanelModel'}
     },
-    item: dashContainer()
+    children: dashContainer()
 })
 
 // Constrained resize range
@@ -374,7 +375,7 @@ panel({
         minSize: 200,
         maxSize: 600
     },
-    item: navTree()
+    children: navTree()
 })
 ```
 
@@ -389,19 +390,54 @@ panel({
 | `minSize` | `0` | Minimum resize size in pixels. |
 | `maxSize` | `null` | Maximum resize size in pixels. |
 | `defaultCollapsed` | `false` | Start collapsed? |
-| `showSplitter` | `resizable \|\| collapsible` | Show a draggable splitter at the panel edge. |
-| `showSplitterCollapseButton` | `showSplitter && collapsible` | Show collapse button on the splitter. |
-| `showHeaderCollapseButton` | `true` | Show collapse button in the panel header (when `collapsible`). |
+| `showSplitter` | `resizable \|\| collapsible` | Show a splitter line at the panel edge. |
+| `showSplitterCollapseButton` | `showSplitter && collapsible` | Show a collapse button on the splitter, on hover. |
+| `showHeaderCollapseButton` | see description | Show a collapse button in the panel header (when `collapsible`). Defaults to `true` when collapsed. When expanded, defaults to `true` only if the splitter has no collapse button. An explicit value applies in both states. |
+| `showCollapsedStrip` | `true` | Show a thin clickable strip when the panel is collapsed and has no title or icon. Set to `false` to collapse to the splitter line only. |
 | `renderMode` | `'lazy'` | How collapsed content is rendered: `'lazy'` (render once, preserve), `'always'`, or `'unmountOnHide'`. |
 | `refreshMode` | `'onShowLazy'` | How collapsed content is refreshed when re-expanded. |
 | `resizeWhileDragging` | `false` | Redraw panel continuously during resize drag. |
 
+### App-Level Defaults
+
+`PanelModel.defaults` sets app-wide defaults for `resizeWhileDragging`,
+`showSplitterCollapseButton`, `showHeaderCollapseButton`, and `showCollapsedStrip`. Set them at app
+startup, for example in your `AppModel` constructor. Instance config takes precedence.
+
+```typescript
+import {PanelModel} from '@xh/hoist/desktop/cmp/panel';
+
+PanelModel.defaults.resizeWhileDragging = true;
+PanelModel.defaults.showHeaderCollapseButton = true; // header chevron on expanded panels too
+```
+
+Leave `showHeaderCollapseButton` at its `null` default to keep the state-aware behavior described
+in the table above.
+
+### Splitter
+
+The splitter is a 1px line with an invisible 8px grab area (20px on touch screens). On hover, an
+accent line and a collapse button fade in.
+
+- Drag to resize. Double-click to reset to `defaultSize`.
+- Drag a collapsible panel below half its `minSize` (at least 24px) to collapse it. The line turns
+  orange and the content dims to preview the collapse. Drag back to cancel.
+- The splitter is focusable. Arrow keys resize by 10px, or 50px with Shift. Enter toggles
+  collapse.
+
+Style it with the `--xh-panel-splitter-*` CSS variables. The strip uses
+`--xh-panel-collapsed-strip-*`.
+
 ### Collapse Behavior
 
 - Double-clicking the header toggles collapse.
+- A single click anywhere on a collapsed header expands the panel.
 - When collapsed to left or right, the header rotates vertically, showing the collapsed title/icon.
 - When collapsed to top or bottom, the header remains horizontal.
-- The splitter collapse button provides an additional collapse/expand affordance.
+- A collapsed panel with no title or icon shows a thin strip with a chevron. Click the strip to
+  expand the panel. Set `showCollapsedStrip: false` to turn the strip off.
+- The splitter collapse button shows on hover in both states. Its chevron points the way the
+  panel will move.
 
 ## collapsedTitle / collapsedIcon
 
@@ -417,7 +453,7 @@ panel({
     collapsedIcon: Icon.detail(),
     compactHeader: true,
     modelConfig: {collapsible: true, side: 'bottom', defaultSize: '30%'},
-    item: dashContainer()
+    children: dashContainer()
 })
 ```
 
@@ -431,14 +467,14 @@ the header's padding and font size, distinguishing it from primary panels with f
 panel({
     title: 'Positions Report',
     icon: Icon.portfolio(),
-    item: hframe(
+    children: hframe(
         gridPanel(),
         // Secondary panel — compact header
         panel({
             title: 'Contract Details',
             compactHeader: true,
             modelConfig: {collapsible: true, side: 'right', defaultSize: 400},
-            item: detailGrid()
+            children: detailGrid()
         })
     )
 })
@@ -458,12 +494,33 @@ panel({
         relativeTimestamp({prefix: 'Refreshed', timestamp: model.lastRefreshed}),
         select({bind: 'client', options: clientNames})
     ],
-    item: grid()
+    children: grid()
 })
 ```
 
 Header items are hidden when the panel is collapsed — only the title, icon, and built-in
 collapse/modal toggle buttons are shown in the collapsed header.
+
+## headerIntent
+
+Set `headerIntent` to give the header a solid intent background. Use it to set apart a major
+section of an app, or a panel whose header should signal a state. The title, icon, and minimal or
+outlined header buttons render in white, in both light and dark themes.
+
+```typescript
+panel({
+    title: 'Live Orders',
+    icon: Icon.bolt(),
+    headerIntent: 'primary',
+    headerItems: [button({icon: Icon.refresh(), onClick: () => model.refreshAsync()})],
+    children: grid()
+})
+```
+
+Other header items keep their own styling. A standard button or an input still shows its usual
+background. The white text color comes from `--xh-panel-title-intent-text-color`. The hover and
+pressed fills of minimal and outlined header buttons come from
+`--xh-panel-title-intent-button-hover-bg` and `--xh-panel-title-intent-button-active-bg`.
 
 ## Persistence
 
@@ -478,7 +535,7 @@ panel({
         defaultSize: '30%',
         persistWith: {localStorageKey: 'myDetailPanelModel'}
     },
-    item: detailView()
+    children: detailView()
 })
 ```
 
@@ -492,7 +549,7 @@ panel({
         defaultSize: 380,
         persistWith: {...model.persistWith, path: 'commentsPanel'}
     },
-    item: commentView()
+    children: commentView()
 })
 ```
 
@@ -514,9 +571,9 @@ panel({
     },
     bbar: toolbar({
         compact: true,
-        items: [filler(), modalToggleButton()]
+        children: [filler(), modalToggleButton()]
     }),
-    item: chart({model: chartModel})
+    children: chart({model: chartModel})
 })
 
 // Object config — custom sizing
@@ -527,7 +584,7 @@ panel({
         side: 'bottom',
         collapsible: false
     },
-    item: rateSheetForm()
+    children: rateSheetForm()
 })
 ```
 
@@ -563,6 +620,7 @@ layouts like dashboards.
 | `collapsedIcon` | `ReactElement` | Icon shown when collapsed. Defaults to `icon`. |
 | `compactHeader` | `boolean` | Reduced-size header styling. |
 | `headerItems` | `ReactNode[]` | Items added to the right side of the header. |
+| `headerIntent` | `Intent` | Solid intent background for the header, with white text. See [headerIntent](#headerintent). |
 | `headerClassName` | `string` | CSS class for the header element. |
 | `tbar` | `ReactNode` | Top toolbar. Array auto-wrapped in `toolbar()`. |
 | `bbar` | `ReactNode` | Bottom toolbar. Array auto-wrapped in `toolbar()`. |
@@ -593,29 +651,31 @@ linked to the panel has LoadSupport enabled, or bind to a specific `TaskObserver
 // ❌ Don't: model has no doLoadAsync — mask: 'onLoad' will not work
 panel({
     mask: 'onLoad',
-    item: grid()
+    children: grid()
 })
 
 // ✅ Do: bind to a specific TaskObserver when the model lacks LoadSupport
 panel({
     mask: model.saveTask,
-    item: grid()
+    children: grid()
 })
 ```
 
 ### Collapsible panel without `collapsedTitle`
 
-A collapsible panel that has no `title`, `collapsedTitle`, or `icon` will not render a header
-when collapsed — it collapses down to just the splitter bar. This is supported and valid, but can
-make it difficult for users to locate the collapsed panel and find the small control on the
-splitter to re-expand it. Setting `collapsedTitle` and/or `collapsedIcon` ensures a visible,
-identifiable header is always shown when collapsed.
+A collapsible panel that has no `title`, `collapsedTitle`, or `icon` has no header to show when
+collapsed. It collapses to a thin strip with a chevron, which users can click to expand it. The
+strip keeps the panel findable, but it does not say what the panel holds. Set `collapsedTitle`
+and/or `collapsedIcon` so users can identify the collapsed panel.
+
+With `showCollapsedStrip: false`, such a panel collapses to just its splitter line. The app must
+then supply its own control to expand it, such as a toolbar toggle.
 
 ```typescript
-// ❌ Avoid: no title or collapsedTitle — collapses to splitter only
+// ❌ Avoid: no title or collapsedTitle - collapses to an unlabeled strip
 panel({
     modelConfig: {collapsible: true, side: 'right', defaultSize: 400},
-    item: detailView()
+    children: detailView()
 })
 
 // ✅ Better: collapsedTitle ensures the panel is identifiable when collapsed
@@ -623,7 +683,7 @@ panel({
     collapsedTitle: 'Details',
     collapsedIcon: Icon.detail(),
     modelConfig: {collapsible: true, side: 'right', defaultSize: 400},
-    item: detailView()
+    children: detailView()
 })
 ```
 
@@ -634,6 +694,9 @@ panel({
 | `desktop/cmp/panel/Panel.ts` | Panel component — vframe layout, mask/toolbar parsing. |
 | `desktop/cmp/panel/PanelModel.ts` | Collapse/resize state, persistence, modal support config. |
 | `desktop/cmp/panel/impl/PanelHeader.ts` | Header rendering, collapsed title/icon switching. |
+| `desktop/cmp/panel/impl/Splitter.ts` | Splitter line, hit area, hover accent, and collapse button. |
+| `desktop/cmp/panel/impl/dragger/DraggerModel.ts` | Pointer drag, keyboard resize, and drag-to-collapse. |
+| `desktop/cmp/panel/impl/CollapsedStrip.ts` | Strip shown for a collapsed panel with no header. |
 | `desktop/cmp/toolbar/Toolbar.ts` | Toolbar with separator shortcut, compact mode, overflow menu. |
 | `desktop/cmp/modalsupport/ModalSupportModel.ts` | Modal pop-out config and state management. |
 | `desktop/cmp/modalsupport/ModalSupport.ts` | Portal-based modal implementation. |

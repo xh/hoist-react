@@ -9,16 +9,14 @@ import type {
     IDynamicTabSwitcherModel,
     TabContainerModelPersistOptions
 } from '@xh/hoist/cmp/tab/Types';
+import type {PlainObject, RefreshMode, RenderMode} from '@xh/hoist/core';
 import {
     HoistModel,
     managed,
     PersistableState,
     PersistenceProvider,
     persistOptions,
-    PlainObject,
     RefreshContextModel,
-    RefreshMode,
-    RenderMode,
     XH
 } from '@xh/hoist/core';
 import {DynamicTabSwitcherModel} from '@xh/hoist/desktop/cmp/tab/dynamic/DynamicTabSwitcherModel';
@@ -38,9 +36,10 @@ import {
     pick,
     without
 } from 'lodash';
-import {ReactNode} from 'react';
+import type {ReactNode} from 'react';
 import type {NavigationOptions} from 'router5';
-import {TabConfig, TabModel} from './TabModel';
+import type {TabConfig} from './TabModel';
+import {TabModel} from './TabModel';
 
 /**
  * Configuration for a {@link TabContainerModel} - the primary tabbed navigation container

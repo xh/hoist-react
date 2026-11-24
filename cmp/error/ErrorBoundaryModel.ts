@@ -4,10 +4,11 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {ExceptionHandlerOptions, HoistModel, XH} from '@xh/hoist/core';
+import type {ExceptionHandlerOptions} from '@xh/hoist/core';
+import {HoistModel, XH} from '@xh/hoist/core';
 import {action, observableRef} from '@xh/hoist/mobx';
 import {isFunction} from 'lodash';
-import {ReactNode} from 'react';
+import type {ReactNode} from 'react';
 
 export interface ErrorBoundaryConfig {
     /**

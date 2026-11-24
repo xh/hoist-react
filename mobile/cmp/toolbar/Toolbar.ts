@@ -5,7 +5,8 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {hbox, vbox} from '@xh/hoist/cmp/layout';
-import {BoxProps, hoistCmp, HoistProps} from '@xh/hoist/core';
+import type {BoxProps, HoistProps} from '@xh/hoist/core';
+import {hoistCmp} from '@xh/hoist/core';
 import '@xh/hoist/mobile/register';
 import {toolbarSeparator} from '@xh/hoist/mobile/cmp/toolbar';
 import {filterConsecutiveToolbarSeparators} from '@xh/hoist/utils/impl';
@@ -35,7 +36,7 @@ export const [Toolbar, toolbar] = hoistCmp.withFactory<ToolbarProps>({
 
         return (vertical ? vbox : hbox)({
             ref,
-            items,
+            children: items,
             className: classNames(className, vertical ? 'xh-toolbar--vertical' : null),
             ...rest
         });

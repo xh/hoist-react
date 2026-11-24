@@ -4,14 +4,16 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {HoistModel, RefreshMode, RenderMode, XH} from '@xh/hoist/core';
+import type {RefreshMode, RenderMode} from '@xh/hoist/core';
+import {HoistModel, managed, XH} from '@xh/hoist/core';
 import {action, bindable, bindableRef} from '@xh/hoist/mobx';
 import {ensureNotEmpty, ensureUniqueBy, throwIf, mergeDeep} from '@xh/hoist/utils/js';
 import {wait} from '@xh/hoist/promise';
-import {find, isEqual, keys} from 'lodash';
-import {Swiper} from 'swiper/types';
+import {difference, find, isEqual, keys} from 'lodash';
+import type {Swiper} from 'swiper/types';
 import '@xh/hoist/mobile/register';
-import {PageConfig, PageModel} from './PageModel';
+import type {PageConfig} from './PageModel';
+import {PageModel} from './PageModel';
 import {findScrollableParent, isDraggableEl} from './impl/Utils';
 
 /**
@@ -64,7 +66,7 @@ export interface NavigatorConfig {
 export class NavigatorModel extends HoistModel {
     @bindable accessor disableAppRefreshButton: boolean;
 
-    @bindableRef accessor stack: PageModel[] = [];
+    @managed @bindableRef accessor stack: PageModel[] = [];
 
     /**
      * Index of the active page, synced from Swiper as each transition completes. Observable so
@@ -220,7 +222,7 @@ export class NavigatorModel extends HoistModel {
     onPageChange = () => {
         // 1) Sync the active index, then clear any pages after it - left over from a back swipe.
         this.activePageIdx = this._swiper.activeIndex;
-        this.stack = this.stack.slice(0, this.activePageIdx + 1);
+        this.replaceStack(this.stack.slice(0, this.activePageIdx + 1));
 
         // 2) Sync route to match the current page stack
         const newRouteName = this.stack.map(it => it.id).join('.'),
@@ -302,7 +304,7 @@ export class NavigatorModel extends HoistModel {
 
         // Immediately set the stack if this is the initial route change
         if (init) {
-            this.stack = stack;
+            this.replaceStack(stack);
             this._swiper.update();
             this.activePageIdx = this.stack.length - 1;
             this._swiper.activeIndex = this.activePageIdx;
@@ -325,7 +327,7 @@ export class NavigatorModel extends HoistModel {
             this._swiper.slidePrev(transitionMs);
         } else {
             // Otherwise, update the stack immediately and navigate to the new page.
-            this.stack = stack;
+            this.replaceStack(stack);
             this._swiper.update();
 
             // Wait for the new stack to be rendered before sliding to the new page.
@@ -338,5 +340,12 @@ export class NavigatorModel extends HoistModel {
                 }
             });
         }
+    }
+
+    @action
+    private replaceStack(stack: PageModel[]) {
+        const dropped = difference(this.stack, stack);
+        this.stack = stack;
+        XH.safeDestroy(dropped);
     }
 }

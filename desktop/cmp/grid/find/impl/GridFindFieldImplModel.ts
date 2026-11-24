@@ -4,12 +4,14 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {Column, GridModel} from '@xh/hoist/cmp/grid';
+import type {Column, GridLikeModel, GridModel} from '@xh/hoist/cmp/grid';
+import {isGridLikeModel} from '@xh/hoist/cmp/grid/impl/GridLikeModel';
+import {DataViewModel} from '@xh/hoist/cmp/dataview';
 import {ZoneGridModel} from '@xh/hoist/cmp/zoneGrid';
 import {HoistModel} from '@xh/hoist/core';
 import type {FilterMatchMode, StoreRecord} from '@xh/hoist/data';
 import {getFilterRegex} from '@xh/hoist/data';
-import {TextInputModel} from '@xh/hoist/desktop/cmp/input';
+import type {TextInputModel} from '@xh/hoist/desktop/cmp/input';
 import {action, bindable, computed, observableRef, compareStructural} from '@xh/hoist/mobx';
 import {stripTags} from '@xh/hoist/utils/js';
 import {createObservableRef} from '@xh/hoist/utils/react';
@@ -84,23 +86,20 @@ export class GridFindFieldImplModel extends HoistModel {
         return !isNil(this.results) && !isEmpty(this.results);
     }
 
-    /** GridModel or ZoneGridModel to search - from props, or the nearest found in context. */
+    /** Model to search - from props, or the nearest found in context. */
     @computed
-    get boundModel(): GridModel | ZoneGridModel {
-        return (
-            this.componentProps.gridModel ??
-            this.lookupModel(it => it instanceof GridModel || it instanceof ZoneGridModel)
-        );
+    get boundModel(): GridLikeModel {
+        return this.componentProps.gridModel ?? this.lookupModel(isGridLikeModel);
     }
 
     //------------------------------------------------------------------
     // Trampoline value to grid
     //------------------------------------------------------------------
     override onLinked() {
-        const {boundModel} = this;
+        const {boundModel, innerGridModel} = this;
         if (!boundModel) {
             this.logError("No GridModel available. Provide via a 'gridModel' prop, or context.");
-        } else if (!boundModel.selModel?.isEnabled) {
+        } else if (!innerGridModel.selModel?.isEnabled) {
             this.logError('GridFindField must be bound to GridModel with selection enabled.');
         }
 
@@ -241,7 +240,7 @@ export class GridFindFieldImplModel extends HoistModel {
             if (!cols) return [];
 
             return cols.map(column => {
-                const {renderer, getValueFn} = column;
+                const {getValueFn, resolvedRenderer} = column;
                 return (record: StoreRecord) => {
                     const ctx = {
                             record,
@@ -253,7 +252,7 @@ export class GridFindFieldImplModel extends HoistModel {
                         },
                         ret = getValueFn(ctx);
 
-                    return renderer ? stripTags(renderer(ret, ctx)) : ret;
+                    return resolvedRenderer ? stripTags(resolvedRenderer(ret, ctx)) : ret;
                 };
             });
         }
@@ -266,16 +265,17 @@ export class GridFindFieldImplModel extends HoistModel {
     }
 
     private get innerGridModel(): GridModel {
-        const {boundModel} = this;
-        return boundModel instanceof ZoneGridModel ? boundModel.gridModel : boundModel;
+        return this.boundModel?.innerGridModel ?? null;
     }
 
     // See corresponding method in StoreFilterFieldImplModel.
     private getSearchColumns(): Column[] {
-        const {boundModel} = this;
+        const {boundModel, innerGridModel} = this;
         if (!boundModel) return [];
-        return boundModel instanceof ZoneGridModel
-            ? boundModel.getMappedColumns()
-            : boundModel.getVisibleLeafColumns();
+        if (boundModel instanceof ZoneGridModel) return boundModel.getMappedColumns();
+        if (boundModel instanceof DataViewModel) {
+            return innerGridModel.getLeafColumns().filter(it => it.field);
+        }
+        return innerGridModel.getVisibleLeafColumns();
     }
 }

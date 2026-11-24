@@ -5,8 +5,9 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {box} from '@xh/hoist/cmp/layout';
-import {BoxProps, hoistCmp, HoistProps} from '@xh/hoist/core';
-import {Store} from '@xh/hoist/data';
+import type {BoxProps, HoistProps} from '@xh/hoist/core';
+import {hoistCmp} from '@xh/hoist/core';
+import type {Store} from '@xh/hoist/data';
 import {fmtNumber} from '@xh/hoist/format';
 import {pluralize, singularize} from '@xh/hoist/utils/js';
 
@@ -28,13 +29,14 @@ export interface StoreCountLabelProps extends HoistProps, BoxProps {
  * Displays the number of (post-filtered) records loaded into a Store.
  */
 export const [StoreCountLabel, storeCountLabel] = hoistCmp.withFactory<StoreCountLabelProps>({
+    model: false,
     className: 'xh-store-count-label',
 
     render({store, unit = 'record', includeChildren = false, ...props}, ref) {
         const count = includeChildren ? store.count : store.rootCount,
             unitLabel = count === 1 ? singularize(unit) : pluralize(unit),
-            item = `${fmtNumber(count, {precision: 0, asHtml: true})} ${unitLabel}`;
+            children = `${fmtNumber(count, {precision: 0, asHtml: true})} ${unitLabel}`;
 
-        return box({...props, ref, item});
+        return box({...props, ref, children});
     }
 });

@@ -6,8 +6,9 @@
  */
 import {hoistCmp} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
-import {textArea, TextAreaProps} from '../../input';
-import {EditorProps} from './EditorProps';
+import type {TextAreaProps} from '../../input';
+import {textArea} from '../../input';
+import type {EditorProps} from './EditorProps';
 import './Editors.scss';
 import {useInlineEditorModel} from './impl/InlineEditorModel';
 

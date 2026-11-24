@@ -4,15 +4,11 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {
-    FieldModel,
-    FormContext,
-    FormContextType,
-    BaseFormFieldProps,
-    FormFieldSetContext
-} from '@xh/hoist/cmp/form';
+import type {FormContextType, BaseFormFieldProps} from '@xh/hoist/cmp/form';
+import {FieldModel, FormContext, FormFieldSetContext} from '@xh/hoist/cmp/form';
 import {box, div, span} from '@xh/hoist/cmp/layout';
-import {DefaultHoistProps, hoistCmp, HoistProps, TestSupportProps, uses, XH} from '@xh/hoist/core';
+import type {DefaultHoistProps, HoistProps, TestSupportProps} from '@xh/hoist/core';
+import {hoistCmp, uses, XH} from '@xh/hoist/core';
 import {instanceManager} from '@xh/hoist/core/impl/InstanceManager';
 import {maxSeverity} from '@xh/hoist/data';
 import {fmtDate, fmtDateTime, fmtNumber} from '@xh/hoist/format';
@@ -20,10 +16,11 @@ import {label as labelCmp} from '@xh/hoist/mobile/cmp/input';
 import '@xh/hoist/mobile/register';
 import {isLocalDate} from '@xh/hoist/utils/datetime';
 import {errorIf, getTestId, TEST_ID, throwIf, withDefault} from '@xh/hoist/utils/js';
-import {getLayoutProps, useComposedRefs, useOnMount, useOnUnmount} from '@xh/hoist/utils/react';
+import {getLayoutProps, useComposedRefs} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import {first, isBoolean, isDate, isEmpty, isFinite, isUndefined} from 'lodash';
-import {Children, cloneElement, ReactNode, useContext, useEffect} from 'react';
+import type {ReactNode} from 'react';
+import {Children, cloneElement, useContext, useEffect} from 'react';
 import './FormField.scss';
 
 export interface FormFieldProps extends BaseFormFieldProps {}
@@ -92,7 +89,7 @@ export const [FormField, formField] = hoistCmp.withFactory<FormFieldProps>({
             requiredIndicator =
                 isRequired && !readonly && requiredStr
                     ? span({
-                          item: ' ' + requiredStr,
+                          children: ' ' + requiredStr,
                           className: 'xh-form-field__required-indicator'
                       })
                     : null,
@@ -127,8 +124,7 @@ export const [FormField, formField] = hoistCmp.withFactory<FormFieldProps>({
 
         // Test ID handling
         const testId = getFormFieldTestId(props, formContext, model?.name);
-        useOnMount(() => instanceManager.registerModelWithTestId(testId, model));
-        useOnUnmount(() => instanceManager.unregisterModelWithTestId(testId));
+        instanceManager.useTestIdRegistration(testId, model);
 
         let childEl =
             readonly || !child
@@ -155,11 +151,11 @@ export const [FormField, formField] = hoistCmp.withFactory<FormFieldProps>({
             domAttrs: props.domAttrs,
             className: classNames(className, classes),
             ...layoutProps,
-            items: [
+            children: [
                 labelCmp({
                     omit: !label,
                     className: 'xh-form-field__label',
-                    items: [label, requiredIndicator]
+                    children: [label, requiredIndicator]
                 }),
                 div({
                     className: classNames(
@@ -168,22 +164,22 @@ export const [FormField, formField] = hoistCmp.withFactory<FormFieldProps>({
                             ? 'xh-form-field__inner--flex'
                             : 'xh-form-field__inner--block'
                     ),
-                    items: [
+                    children: [
                         childEl,
                         div({
                             omit: !info,
                             className: 'xh-form-field__info-msg',
-                            item: info
+                            children: info
                         }),
                         div({
                             omit: minimal || !isPending || !severityToDisplay,
                             className: `xh-form-field__validation-msg xh-form-field__validation-msg--pending`,
-                            item: 'Validating...'
+                            children: 'Validating...'
                         }),
                         div({
                             omit: minimal || !severityToDisplay,
                             className: `xh-form-field__validation-msg xh-form-field__validation-msg--${severityToDisplay}`,
-                            item: first(validationResultsToDisplay)?.message
+                            children: first(validationResultsToDisplay)?.message
                         })
                     ]
                 })
@@ -204,7 +200,7 @@ const readonlyChild = hoistCmp.factory<ReadonlyChildProps>({
         return div({
             [TEST_ID]: testId,
             className: 'xh-form-field__readonly-display',
-            item: readonlyRenderer(value, model)
+            children: readonlyRenderer(value, model)
         });
     }
 });

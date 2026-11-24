@@ -10,7 +10,8 @@ import {box, div, filler, hbox, placeholder, span} from '@xh/hoist/cmp/layout';
 import {hoistCmp, useLocalModel, uses} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {dragDropContext, draggable, droppable} from '@xh/hoist/kit/react-beautiful-dnd';
-import {button, ButtonProps} from '@xh/hoist/mobile/cmp/button';
+import type {ButtonProps} from '@xh/hoist/mobile/cmp/button';
+import {button} from '@xh/hoist/mobile/cmp/button';
 import {select} from '@xh/hoist/mobile/cmp/input';
 import '@xh/hoist/mobile/register';
 import {dialogPanel, panel} from '@xh/hoist/mobile/cmp/panel';
@@ -49,11 +50,11 @@ export const [GroupingChooser, groupingChooser] = hoistCmp.withFactory<GroupingC
             ref,
             className,
             ...layoutProps,
-            items: [
+            children: [
                 button({
                     className: 'xh-grouping-chooser-button',
-                    item: span(label),
                     ...buttonProps,
+                    children: span(label),
                     onClick: () => impl.toggleEditor()
                 }),
                 dialogCmp({model: impl, dialogTitle, emptyText})
@@ -69,7 +70,10 @@ const dialogCmp = hoistCmp.factory<GroupingChooserLocalModel>({
             isOpen: model.editorIsOpen,
             title: dialogTitle,
             icon: Icon.treeList(),
-            items: [editor({emptyText}), favoritesChooser({omit: !parentModel.persistFavorites})],
+            children: [
+                editor({emptyText}),
+                favoritesChooser({omit: !parentModel.persistFavorites})
+            ],
             bbar: [
                 filler(),
                 button({
@@ -94,11 +98,12 @@ const dialogCmp = hoistCmp.factory<GroupingChooserLocalModel>({
 // Editor
 //------------------
 const editor = hoistCmp.factory({
+    model: false,
     render({emptyText}) {
         return panel({
             className: 'xh-grouping-chooser__editor',
             scrollable: true,
-            items: [dimensionList({emptyText}), addDimensionControl()]
+            children: [dimensionList({emptyText}), addDimensionControl()]
         });
     }
 });
@@ -109,20 +114,20 @@ const dimensionList = hoistCmp.factory<GroupingChooserLocalModel>({
             return model.parentModel.allowEmpty
                 ? hbox({
                       className: 'xh-grouping-chooser__row',
-                      items: [filler(), emptyText, filler()]
+                      children: [filler(), emptyText, filler()]
                   })
                 : null;
         }
 
         return dragDropContext({
             onDragEnd: result => model.onDragEnd(result),
-            item: droppable({
+            children: droppable({
                 droppableId: 'dimension-list',
                 children: dndProps =>
                     div({
                         ref: dndProps.innerRef,
                         className: 'xh-grouping-chooser__list',
-                        items: [
+                        children: [
                             ...model.pendingValue.map((dimension, idx) =>
                                 dimensionRow({dimension, idx})
                             ),
@@ -150,15 +155,15 @@ const dimensionRow = hoistCmp.factory<GroupingChooserLocalModel>({
                         'xh-grouping-chooser__row',
                         dndState.isDragging ? 'xh-grouping-chooser__row--dragging' : null
                     ),
-                    items: [
+                    children: [
                         div({
                             className: 'xh-grouping-chooser__row__grabber',
-                            item: Icon.grip({prefix: 'fal'}),
+                            children: Icon.grip({prefix: 'fal'}),
                             ...dndProps.dragHandleProps
                         }),
                         div({
                             className: 'xh-grouping-chooser__row__select',
-                            item: select({
+                            children: select({
                                 options,
                                 value: dimension,
                                 flex: 1,
@@ -189,7 +194,7 @@ const addDimensionControl = hoistCmp.factory<GroupingChooserLocalModel>({
         const options = model.getDimSelectOpts();
         return div({
             className: 'xh-grouping-chooser__add-control',
-            items: [
+            children: [
                 select({
                     // By changing the key each time the options change, we can
                     // ensure the Select loses its internal input state.
@@ -224,7 +229,7 @@ const favoritesChooser = hoistCmp.factory<GroupingChooserLocalModel>({
             icon: Icon.favorite(),
             className: 'xh-grouping-chooser__favorites',
             scrollable: true,
-            items: [
+            children: [
                 ...items,
                 button({
                     text: 'Add current',
@@ -244,7 +249,7 @@ const favoriteItem = hoistCmp.factory<GroupingChooserLocalModel>({
         const {parentModel} = model;
         return hbox({
             className: 'xh-grouping-chooser__favorites__favorite',
-            items: [
+            children: [
                 button({
                     text: label,
                     minimal: true,

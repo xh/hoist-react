@@ -28,8 +28,8 @@ export const roleEditor = hoistCmp.factory({
             onClose: () => model.cancel(),
             icon: role ? Icon.edit() : Icon.add(),
             title: role ? `Editing Role: ${role.name}` : 'New Role',
-            item: panel({
-                item: roleForm(),
+            children: panel({
+                children: roleForm(),
                 mask: savingTask,
                 bbar: [
                     button({

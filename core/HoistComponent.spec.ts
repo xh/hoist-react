@@ -5,12 +5,21 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {div, input, span} from '@xh/hoist/cmp/layout';
-import {creates, hoistCmp, HoistModel, type HoistProps, managed, uses, XH} from '@xh/hoist/core';
+import {
+    creates,
+    elementFactory,
+    hoistCmp,
+    HoistModel,
+    type HoistProps,
+    managed,
+    uses,
+    XH
+} from '@xh/hoist/core';
 import {bindable, bindableRef} from '@xh/hoist/mobx';
 import {initTestAppAsync} from '@xh/hoist/test-support';
 import {act, render, screen} from '@testing-library/react';
-import {createRef, useState} from 'react';
-import {beforeAll, describe, expect, it, onTestFinished} from 'vitest';
+import {createRef, type ReactNode, useState} from 'react';
+import {beforeAll, describe, expect, it, onTestFinished, vi} from 'vitest';
 
 /**
  * The contract of the component layer: how `hoistCmp` element factories pass props and children
@@ -21,7 +30,19 @@ describe('hoistCmp', () => {
     beforeAll(() => initTestAppAsync());
 
     describe('factory', () => {
-        it('passes props to render, with item or items arriving as children', () => {
+        it('passes props to render, with children arriving as children', () => {
+            render(
+                div(
+                    card({title: 'Trades', children: [span('Open'), span('Closed')]}),
+                    card({title: 'Orders', children: span('Pending')})
+                )
+            );
+
+            expect(screen.getByTitle('Trades').textContent).toBe('OpenClosed');
+            expect(screen.getByTitle('Orders').textContent).toBe('Pending');
+        });
+
+        it('accepts the legacy item and items keys as children', () => {
             render(
                 div(
                     card({title: 'Trades', items: [span('Open'), span('Closed')]}),
@@ -33,11 +54,56 @@ describe('hoistCmp', () => {
             expect(screen.getByTitle('Orders').textContent).toBe('Pending');
         });
 
+        it('prefers children over the legacy item and items keys, with a warning', () => {
+            const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+            onTestFinished(() => warn.mockRestore());
+
+            render(card({children: span('Children'), item: span('Item'), items: span('Items')}));
+
+            expect(texts('.test-card')).toEqual(['Children']);
+            expect(warn).toHaveBeenCalledOnce();
+        });
+
+        it('does not require keys on an array of children', () => {
+            // React warns on unkeyed arrays in props.children, but not on rest-arg children.
+            const error = vi.spyOn(console, 'error').mockImplementation(() => {});
+            onTestFinished(() => error.mockRestore());
+
+            render(card({children: [span('Open'), span('Closed')]}));
+
+            expect(texts('.test-card')).toEqual(['OpenClosed']);
+            expect(error).not.toHaveBeenCalled();
+        });
+
+        it('passes a render function in children through to the component', () => {
+            render(countLabel({count: 3, children: (n: number) => span(`${n} open`)}));
+
+            expect(document.body.textContent).toBe('3 open');
+        });
+
         it('accepts children as arguments in its shortcut form', () => {
             // A single element argument is a child, not a config object.
             render(div(card(span('Open'), span('Closed')), card(span('Pending'))));
 
             expect(texts('.test-card')).toEqual(['OpenClosed', 'Pending']);
+        });
+
+        it('warns when passed directly as an array callback', () => {
+            const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+            onTestFinished(() => warn.mockRestore());
+
+            render(div(['Open', 'Closed'].map(span)));
+
+            expect(warn).toHaveBeenCalledOnce();
+        });
+
+        it('warns when given a spec that is not a plain object', () => {
+            const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+            onTestFinished(() => warn.mockRestore());
+
+            render(empty(new CardSpec()));
+
+            expect(warn).toHaveBeenCalledOnce();
         });
 
         it('omits the element when omit is true or returns true', () => {
@@ -113,13 +179,13 @@ describe('hoistCmp', () => {
                     model: uses(ChartModel),
                     render({model}) {
                         chartRenders++;
-                        return span({className: 'chart', item: model.title});
+                        return span({className: 'chart', children: model.title});
                     }
                 }),
                 dashboardView = hoistCmp.factory<DashboardModel>({
                     model: creates(DashboardModel),
                     render: ({model}) =>
-                        div(span({className: 'title', item: model.title}), chartLabel())
+                        div(span({className: 'title', children: model.title}), chartLabel())
                 }),
                 dashboardRef = createRef<DashboardModel>();
 
@@ -141,7 +207,7 @@ describe('hoistCmp', () => {
                 model: creates(() => Object.assign(new FrameModel(), {title: chart.title})),
                 render({model}) {
                     renders++;
-                    return span({className: 'frame', item: model.title});
+                    return span({className: 'frame', children: model.title});
                 }
             });
 
@@ -159,7 +225,7 @@ describe('hoistCmp', () => {
         it('resolves its model from props, then context, then a default', () => {
             const chartOrDefault = hoistCmp.factory<ChartModel>({
                     model: uses(ChartModel, {createDefault: true}),
-                    render: ({model}) => span({className: 'chart', item: model.title})
+                    render: ({model}) => span({className: 'chart', children: model.title})
                 }),
                 orders = new ChartModel({title: 'Orders'});
             onTestFinished(() => orders.destroy());
@@ -203,11 +269,11 @@ describe('hoistCmp', () => {
                         publishMode: 'limited',
                         createDefault: true
                     }),
-                    render: ({children}) => div({items: children})
+                    render: ({children}) => div({children})
                 }),
                 frameTitle = hoistCmp.factory<FrameModel>({
                     model: uses(FrameModel),
-                    render: ({model}) => span({className: 'frame', item: model.title})
+                    render: ({model}) => span({className: 'frame', children: model.title})
                 });
 
             render(dashboardPanel(frame(dashboardTitle(), frameTitle())));
@@ -220,14 +286,15 @@ describe('hoistCmp', () => {
             // E.g. a grid() rebinding when its app model swaps in a new GridModel.
             const optionalChart = hoistCmp.factory<ChartModel>({
                     model: uses(ChartModel, {optional: true}),
-                    render: ({model}) => span({className: 'chart', item: model?.title ?? 'None'})
+                    render: ({model}) =>
+                        span({className: 'chart', children: model?.title ?? 'None'})
                 }),
                 report = new ReportModel(),
                 positions = new ChartModel({title: 'Positions'}),
                 orders = new ChartModel({title: 'Orders'});
             onTestFinished(() => XH.safeDestroy(report, positions, orders));
 
-            render(container({model: report, item: optionalChart()}));
+            render(container({model: report, children: optionalChart()}));
             expect(texts('.chart')).toEqual(['None']);
 
             act(() => {
@@ -248,7 +315,7 @@ describe('hoistCmp', () => {
                     model: uses(ChartModel),
                     render({model}) {
                         const [initialTitle] = useState(model.title);
-                        return span({className: 'chart', item: initialTitle});
+                        return span({className: 'chart', children: initialTitle});
                     }
                 }),
                 positions = new ChartModel({title: 'Positions'}),
@@ -259,6 +326,22 @@ describe('hoistCmp', () => {
             rerender(chartHeader({model: orders}));
 
             expect(texts('.chart')).toEqual(['Orders']);
+        });
+
+        it('shows an error, not a crash, when its model goes missing between renders', () => {
+            // The failed lookup returned before later hooks ran, so React threw on the hook count.
+            // A dev-server hot reload of a model class leaves a component in this state.
+            const error = vi.spyOn(console, 'error').mockImplementation(() => {});
+            onTestFinished(() => error.mockRestore());
+            const positions = new ChartModel({title: 'Positions'});
+            onTestFinished(() => positions.destroy());
+
+            const {rerender} = render(chartView({model: positions}));
+            rerender(chartView({model: null}));
+            expect(document.body.textContent).toBe('No model found');
+
+            rerender(chartView({model: positions}));
+            expect(texts('.chart')).toEqual(['Positions']);
         });
     });
 
@@ -314,13 +397,26 @@ interface CardProps extends HoistProps {
 const card = hoistCmp.factory<CardProps>({
     model: false,
     className: 'test-card',
-    render: ({title, className, children}) => div({title, className, items: children})
+    render: ({title, className, children}) => div({title, className, children})
 });
+
+/** Renders nothing, so a misread spec cannot fail the render. */
+const empty = hoistCmp.factory<CardProps>({model: false, render: () => null});
+
+class CardSpec {
+    title = 'Trades';
+}
 
 const tagList = hoistCmp.factory<HoistProps & {items: string[]}>({
     model: false,
-    render: ({items}) => div(items.map(it => span({key: it, className: 'test-tag', item: it})))
+    render: ({items}) => div(items.map(it => span({key: it, className: 'test-tag', children: it})))
 });
+
+/** A plain React component that takes a render function as its children. */
+function CountLabel({count, children}: {count: number; children: (count: number) => ReactNode}) {
+    return children(count);
+}
+const countLabel = elementFactory(CountLabel);
 
 const textField = hoistCmp.factory<HoistProps>({
     model: false,
@@ -329,22 +425,22 @@ const textField = hoistCmp.factory<HoistProps>({
 
 /** Publishes the model passed to it in props to its children. */
 const container = hoistCmp.factory({
-    render: ({children}) => div({items: children})
+    render: ({children}) => div({children})
 });
 
 const dashboardPanel = hoistCmp.factory<DashboardModel>({
     model: creates(DashboardModel),
-    render: ({children}) => div({items: children})
+    render: ({children}) => div({children})
 });
 
 /** A typical app view, with the default `uses('*')` spec - it renders the nearest model. */
 const dashboardTitle = hoistCmp.factory<DashboardModel>(({model}) =>
-    span({className: 'title', item: model.title})
+    span({className: 'title', children: model.title})
 );
 
 const chartView = hoistCmp.factory<ChartModel>({
     model: uses(ChartModel),
-    render: ({model}) => span({className: 'chart', item: model.title})
+    render: ({model}) => span({className: 'chart', children: model.title})
 });
 
 function texts(selector: string): string[] {

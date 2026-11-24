@@ -187,8 +187,8 @@ import {observable} from 'mobx';
 
 ### Type Imports
 
-Use `import type` for type-only imports that are erased at compile time. This can be a standalone
-`import type` statement or inline `type` qualifiers within a regular import:
+Use `import type` for type-only imports that are erased at compile time. ESLint enforces this, and
+`eslint --fix` writes a separate `import type` statement. Inline `type` qualifiers also pass:
 
 ```typescript
 // Standalone type import
@@ -492,6 +492,26 @@ const tradeDetail = hoistCmp.factory<TradeDetailProps>({
 });
 ```
 
+### Choosing an Element Factory Call Form
+
+Element factories take either a config object or children as arguments. Pick the form by what the
+call passes:
+
+```typescript
+// Only children - use the shortcut form
+toolbar(refreshButton(), filler(), exportButton());
+p('No trades match the current filter.');
+
+// Any other prop - use the config object form, with children in `children`
+toolbar({compact: true, children: [refreshButton(), filler(), exportButton()]});
+p({className: 'empty-msg', children: 'No trades match the current filter.'});
+```
+
+Never write `{children: ...}` as the only key, and never pass a factory directly as an array
+callback. `rows.map(span)` also renders each row's index and the whole array - write
+`rows.map(it => span(it))`. Hoist logs a warning when it detects that call, or a spec that is not
+a plain object.
+
 ### Model Binding
 
 The `model` option in `hoistCmp.withFactory` declares how a component finds its model:
@@ -504,7 +524,8 @@ The `model` option in `hoistCmp.withFactory` declares how a component finds its 
 
 The `useLocalModel` hook creates a model tied to the lifecycle of a component that will not be
 discoverable to child components. This is useful when a component needs internal state specific to
-a single instance or otherwise irrelevant to the primary model.
+a single instance or otherwise irrelevant to the primary model. It works in any `HoistComponent`,
+including one with `model: false`.
 
 Prefer the name **`impl`** for local models.
 
@@ -535,13 +556,13 @@ own app-specific prefix.
 ### Element Factories vs JSX
 
 Hoist strongly prefers element factory calls over JSX. Factories are functions that take a config
-object with an `item`/`items` key for children:
+object with a `children` key for children:
 
 ```typescript
 // ✅ Preferred: Element factory style
 panel({
     title: 'Users',
-    items: [grid({model: gridModel})],
+    children: [grid({model: gridModel})],
     bbar: toolbar(button({text: 'Save'}))
 })
 
@@ -557,12 +578,10 @@ Factories also accept children as direct arguments when no other props are neede
 hbox(leftPanel(), rightPanel())
 ```
 
-**`items` in, `children` out**: `item`/`items` is Hoist's *calling* API. When authoring a
-component, the render function receives those values as the standard React `children` prop, not as
-`items`. The canonical container pattern is to destructure `children` from props and pass them on
-to an inner factory as `items`. See
-[Authoring a Container Component](../core/README.md#authoring-a-container-component-items-in-children-out)
-in the core README for the full explanation.
+Use `children`, not the legacy `item` / `items` aliases. A container component destructures
+`children` from props and passes it on as `children` to an inner factory. See
+[Authoring a Container Component](../core/README.md#authoring-a-container-component) in the core
+README.
 
 ## Export Patterns
 
@@ -618,6 +637,20 @@ properties and return values. Properties are initialized to `null` rather than l
 ```typescript
 @observable accessor selectedId: string = null;
 @observableRef accessor lastResponse: Response = null;
+```
+
+### No `| null` or `| undefined` Types
+
+The compiler runs without `strictNullChecks`, and `null` is the universal "no value", so any
+property, parameter, or return may be null. Do not widen types to spell that out:
+
+```typescript
+// ✅ Do
+selectedRecord: StoreRecord;
+
+// ❌ Don't
+selectedRecord: StoreRecord | null;
+selectedRecord: StoreRecord | undefined;
 ```
 
 ### `== null` Pattern
@@ -1016,6 +1049,11 @@ can reference these variables for consistent theming but should not define new v
 --xh-intent-primary
 --xh-grid-bg
 ```
+
+Names follow a `--xh-{component}-{element}-{state}-{property}` grammar (e.g.
+`--xh-grid-row-hover-bg`), and size variables carry their unit in the value (`--xh-spacing: 10px`).
+When adding a variable to Hoist, follow the
+[naming conventions](../styles/README.md#naming-conventions) in the styles README.
 
 ## Key Source Files
 

@@ -13,6 +13,23 @@ module.exports = defineConfig([
         }
     },
 
+    // Mark type-only imports and exports, so a build that compiles one file at a time erases them.
+    {
+        files: ['**/*.ts', '**/*.tsx'],
+        rules: {
+            '@typescript-eslint/consistent-type-imports': [
+                'error',
+                {
+                    prefer: 'type-imports',
+                    fixStyle: 'separate-type-imports',
+                    disallowTypeAnnotations: true
+                }
+            ],
+            '@typescript-eslint/consistent-type-exports': 'error',
+            '@typescript-eslint/no-import-type-side-effects': 'error'
+        }
+    },
+
     // Repo automation scripts run under Node, not in the browser.
     {
         files: ['.github/scripts/**/*.mjs', 'scripts/**/*'],
@@ -24,7 +41,6 @@ module.exports = defineConfig([
         '.vitest/**/*',
         'build/**/*',
         'node_modules/**/*',
-        'mcp/**/*',
         'bin/**/*',
         'docs/codemod/**/*',
         'docs/planning/**/*',

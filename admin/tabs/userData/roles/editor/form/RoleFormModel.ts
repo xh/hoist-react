@@ -7,23 +7,17 @@
 import {FormModel} from '@xh/hoist/cmp/form';
 import {GridModel} from '@xh/hoist/cmp/grid';
 import {box, hbox, span, vbox} from '@xh/hoist/cmp/layout';
-import {
-    HoistModel,
-    managed,
-    PlainObject,
-    ReactionSpec,
-    SelectOption,
-    TaskObserver,
-    XH
-} from '@xh/hoist/core';
-import {RecordActionSpec, required} from '@xh/hoist/data';
+import type {PlainObject, ReactionSpec, SelectOption} from '@xh/hoist/core';
+import {HoistModel, managed, TaskObserver, XH} from '@xh/hoist/core';
+import type {RecordActionSpec} from '@xh/hoist/data';
+import {required} from '@xh/hoist/data';
 import {actionCol, calcActionColWidth, selectEditor} from '@xh/hoist/desktop/cmp/grid';
 import {Icon} from '@xh/hoist/icon';
 import {action, computed, observable, observableRef} from '@xh/hoist/mobx';
 import {compact, groupBy, isNil, isString, keyBy, map, sortBy, uniq, without} from 'lodash';
-import {ReactNode} from 'react';
+import type {ReactNode} from 'react';
 import {RoleModel} from '../../RoleModel';
-import {DirectoryGroupInfo, HoistRole, RoleMemberType, RoleModuleConfig} from '../../Types';
+import type {DirectoryGroupInfo, HoistRole, RoleMemberType, RoleModuleConfig} from '../../Types';
 
 export class RoleFormModel extends HoistModel {
     override telemetryPrefix = 'xh.client.admin.roles';
@@ -264,13 +258,13 @@ export class RoleFormModel extends HoistModel {
                         const {displayName, error} = record.data;
                         return hbox({
                             alignItems: 'center',
-                            items: [
+                            children: [
                                 box({
-                                    item:
+                                    children:
                                         entity === 'DIRECTORY_GROUP'
                                             ? (displayName ?? RoleModel.fmtDirectoryGroup(v))
                                             : v,
-                                    paddingRight: 'var(--xh-pad-half-px)'
+                                    paddingRight: 'var(--xh-spacing-half)'
                                 }),
                                 Icon.warning({omit: !error, intent: 'warning'})
                             ]
@@ -411,7 +405,7 @@ export class RoleFormModel extends HoistModel {
         return vbox(
             span(opt.label),
             span({
-                item: detail,
+                children: detail,
                 omit: !detail,
                 className: 'xh-text-color-muted xh-font-size-small'
             })
