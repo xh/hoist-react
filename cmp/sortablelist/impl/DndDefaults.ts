@@ -98,6 +98,33 @@ export class ScopedDragStyles extends Plugin<DragDropManager> {
 
 const POINTER_DRAG_CLS = 'xh-dnd-pointer-drag';
 
+/**
+ * Cancels a pointer drag on Escape, wherever focus is. PointerSensor hears Escape only once it
+ * bubbles to the body, and a Blueprint overlay - a popover, a dialog - stops it first and closes.
+ */
+export class CancelOnEscape extends Plugin<DragDropManager> {
+    constructor(manager: DragDropManager) {
+        super(manager);
+        const onKeyDown = (event: KeyboardEvent) => {
+                if (event.key !== 'Escape') return;
+                event.preventDefault();
+                event.stopPropagation();
+                manager.actions.stop({event, canceled: true});
+            },
+            stopListening = () => window.removeEventListener('keydown', onKeyDown, true),
+            offStart = manager.monitor.addEventListener('dragstart', ({nativeEvent}) => {
+                if (this.isDisabled() || nativeEvent instanceof KeyboardEvent) return;
+                window.addEventListener('keydown', onKeyDown, true);
+            }),
+            offEnd = manager.monitor.addEventListener('dragend', stopListening);
+        this.registerEffect(() => () => {
+            offStart();
+            offEnd();
+            stopListening();
+        });
+    }
+}
+
 const ACCESSIBILITY = Accessibility.configure({
         announcements: {
             dragstart: ({operation: {source}}) =>
@@ -123,6 +150,6 @@ const ACCESSIBILITY = Accessibility.configure({
                 'moves it one place.'
         }
     }),
-    REST = [Feedback.configure({dropAnimation: DND_TRANSITION}), ScopedDragStyles];
+    REST = [Feedback.configure({dropAnimation: DND_TRANSITION}), ScopedDragStyles, CancelOnEscape];
 
 export const DND_PLUGINS = dndPlugins();
