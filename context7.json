@@ -9,7 +9,8 @@
         "docs/superpowers",
         "scripts",
         ".github",
-        ".claude"
+        ".claude",
+        "changelog.d"
     ],
     "excludeFiles": [
         "CHANGELOG.md",
@@ -34,6 +35,9 @@
     ],
     "previousVersions": [
         {
+            "tag": "v91.0.0"
+        },
+        {
             "tag": "v90.1.0"
         },
         {
@@ -47,9 +51,6 @@
         },
         {
             "tag": "v86.4.2"
-        },
-        {
-            "tag": "v85.0.0"
         }
     ],
     "url": "https://context7.com/xh/hoist-react",

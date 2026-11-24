@@ -98,9 +98,13 @@ jobs:
           id: snapshot
           # Pinned to commit SHA of xh/hoist-dev-utils master at time of pinning.
           # Bumped by Dependabot when newer versions of the action are released.
-          uses: xh/hoist-dev-utils/.github/actions/prepare-npm-snapshot-version@84d74ddb32d3a5114770362f9a12ce52043a48dc # master
+          uses: xh/hoist-dev-utils/.github/actions/prepare-npm-snapshot-version@3e286bdc09b126ef9b51a34415a73cc44ed5374d # master
           with:
               version: ${{ inputs.version }}
+
+        # List the unreleased changelog fragments in the published CHANGELOG.md. Not committed.
+        - name: Add unreleased changelog entries
+          run: pnpm changelog snapshot
 
         # `--no-git-checks` disables pnpm's own publish guards, which do not fit this workflow:
         # snapshots publish from develop rather than pnpm's expected master/main (which prompts

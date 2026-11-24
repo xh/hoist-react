@@ -1,0 +1,26 @@
+# Changelog - Validates the changelog fragments in changelog.d/ on each pull request.
+#
+# Fails on a malformed fragment or on entries written straight into CHANGELOG.md. Warns when the
+# pull request adds or edits no fragment, unless it has the `no-changelog` label. See
+# docs/changelog-format.md.
+
+name: Changelog
+
+on:
+    pull_request:
+        branches: [ "develop" ]
+        types: [ opened, synchronize, reopened, labeled, unlabeled ]
+
+jobs:
+    check:
+        runs-on: ubuntu-latest
+        permissions:
+            contents: read
+
+        steps:
+        - uses: actions/checkout@v7
+          with:
+              fetch-depth: 0
+
+        - name: Check changelog fragments
+          uses: xh/hoist-dev-utils/.github/actions/check-changelog@3e286bdc09b126ef9b51a34415a73cc44ed5374d # master

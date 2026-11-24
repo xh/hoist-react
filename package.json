@@ -1,6 +1,6 @@
 {
   "name": "@xh/hoist",
-  "version": "91.0.0-SNAPSHOT",
+  "version": "92.0.0-SNAPSHOT",
   "description": "Hoist add-on for building and deploying React Applications.",
   "repository": {
     "type": "git",
@@ -15,6 +15,7 @@
     "lint:all": "pnpm lint:code && pnpm lint:styles",
     "lint:code": "eslint .",
     "lint:styles": "stylelint \"**/*.s?(a|c)ss\"",
+    "changelog": "xh-changelog",
     "check:vendored": "node scripts/check-vendored.mjs",
     "generate:pdfjs-css": "node scripts/generate-pdfjs-css.mjs",
     "typecheck": "tsc --noEmit",
@@ -136,7 +137,7 @@
     "@types/react-dom": "^19.3.0",
     "@vitest/ui": "^5.1.1",
     "@xh/eslint-config": "^8.1.0",
-    "@xh/hoist-dev-utils": "^16.5.0",
+    "@xh/hoist-dev-utils": "^16.6.0",
     "@xh/hoist-docs-builder": "^1.0.0",
     "ag-grid-community": "~36.3.0",
     "ag-grid-react": "~36.3.0",
@@ -156,10 +157,10 @@
     "react-dom": "^19.3.1",
     "stylelint": "^18.0.0",
     "stylelint-config-recommended-scss": "^18.0.0",
-    "type-fest": "^5.10.0",
+    "type-fest": "^6.0.1",
     "typescript": "^7.0.2",
     "vite": "^8.3.8",
     "vitest": "^5.1.1"
   },
-  "packageManager": "pnpm@12.7.0+sha512.9c56477e360068d6e9dca6a92efb4e46b3dc5a52fcebf3d84d78b9736c0ded589a561621a52f68219a7a39facc63cdc079c3226ef9c9d5f02b79f74e69a807b6"
+  "packageManager": "pnpm@12.23.0"
 }

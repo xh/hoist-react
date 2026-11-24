@@ -40,58 +40,10 @@ signature, docs, and a member summary, and `hoist-get-members` with `filter` giv
 Prefer the package barrel import path when one is shown. `impl/` and `admin/` code is excluded
 unless you pass `includeInternal: true`.
 
-### GitHub MCP Server (opt-in)
+### GitHub
 
-A Docker-based server providing GitHub API tools (issues, PRs, code search, etc.) via the
-official `github-mcp-server` image. Configured in `.mcp.json` but **not enabled by default** —
-it requires Docker and an authenticated GitHub CLI, which not every developer keeps running.
-
-**To enable:**
-
-1. Install and start **Docker**.
-2. Install the **GitHub CLI** (`brew install gh`) and authenticate with `gh auth login`. The
-   server invokes `gh auth token` at startup to fetch a token from the macOS Keychain (or
-   `gh`'s credential store on other platforms), so no plaintext token needs to live in your
-   shell environment.
-3. Add `"github"` to `enabledMcpjsonServers` in `.claude/settings.local.json` (local settings
-   merge with the shared `settings.json` — enabling locally does not affect other developers):
-   ```json
-   {
-     "enabledMcpjsonServers": ["hoist-docs", "github"]
-   }
-   ```
-
-If Docker is not running or `gh` is not authenticated when the server is enabled, Claude Code
-may show errors on startup — remove `"github"` from your local settings to resolve.
-
-**Fallback when not enabled:** The `gh` CLI provides functionally equivalent access to the same
-operations (`gh pr view`, `gh issue list`, `gh api`, `gh pr create`, etc.). Prefer `gh` over
-crafting raw `curl` calls to the GitHub API.
-
-### JetBrains IntelliJ MCP Server (`idea`)
-
-IntelliJ registers its own MCP server in `.mcp.json` under the name `idea`, providing tools for
-interacting with the IDE (file navigation, code inspections, refactoring, terminal commands, etc.).
-It requires a running IDE instance with the MCP server enabled in IntelliJ's settings.
-
-**Not enabled by default** - the server fails to connect when no IDE is running, which shows as a
-startup error. Add `"idea"` to `enabledMcpjsonServers` in `.claude/settings.local.json` to enable it
-for yourself (local settings merge with the shared `settings.json`):
-
-```json
-{
-  "enabledMcpjsonServers": ["hoist-docs", "idea"]
-}
-```
-
-A read-only subset of its tools (search, read, symbol lookup, inspections) is pre-approved in the
-shared permissions allowlist, so no extra local config is needed once the server is on. Write and
-execute tools - `apply_patch`, `execute_terminal_command`, `execute_sql_query`, the `xdebug_*`
-family - are deliberately left out and still prompt.
-
-IntelliJ rewrites its own entry in `.mcp.json` on startup. Take its changes rather than reverting
-them, or it will keep prompting. Note that it hardcodes the default port `64342`, so a second IDE
-instance on another port needs a local override.
+Use the GitHub CLI (`gh`) for GitHub operations: `gh pr view`, `gh issue list`, `gh pr create`,
+and `gh api` for anything else. Prefer it over raw `curl` calls to the GitHub API.
 
 ### Chrome DevTools MCP Server (`chrome-devtools`)
 
@@ -124,8 +76,12 @@ profile. To check that the port is open, run `curl -s http://127.0.0.1:9222/json
 ### hoist-ai plugin (`xh@hoist-ai`)
 
 The shared `.claude/settings.json` enables XH's `xh@hoist-ai` plugin, the same plugin that Hoist
-applications install. Claude Code offers to install it on your first session here. Three of its
-skills apply in this repo:
+applications use. Enabling it does not install it. Each developer should install it once per
+machine at user scope, which covers every repo and worktree and auto-updates. If no `xh:` skills
+appear in your available skills, tell the developer the plugin is missing and give them the
+command `claude plugin install xh@hoist-ai --scope user`. Offer to run it for them.
+
+Three of its skills apply in this repo:
 
 - `xh:clear-writing` - house style for CHANGELOG entries, PR descriptions, docs, and comments.
   Prose written here follows its rules. Lint a draft with its script before you commit it.
@@ -346,40 +302,40 @@ important guidelines to internalize:
 
 ## Git Workflow
 
-**Branching, committing, and pushing all require an explicit ask — never do them unprompted.**
+**Branching, committing, and pushing all require an explicit ask - never do them unprompted.**
 When it isn't abundantly clear that the user wants one of these, ask first.
 
 Pushing is a deliberate gatekeeping step: never push to any remote unless the user explicitly asks.
-Some developers hard-block pushes entirely, others allow or request them — so it stays open as a
+Some developers hard-block pushes entirely, others allow or request them - so it stays open as a
 possibility, but always confirm before pushing.
 
 Committing is the most context-dependent of these, varying by developer and by situation. Default to
-asking — especially in an interactive session working directly on `develop`, where each commit is
+asking - especially in an interactive session working directly on `develop`, where each commit is
 the developer's call. The exception is orchestrated multi-agent work on a feature branch: when a plan
 fans out independent units of work, the go-ahead to commit comes from that plan or orchestration
 rather than a per-commit prompt, and agents are expected to make their own discrete, well-scoped
 commits as directed.
 
 A skill or third-party plugin instructing you to commit (e.g. "make a small commit after each
-step") does NOT by itself authorize a commit — that is a default baked into the tool, not the
+step") does NOT by itself authorize a commit - that is a default baked into the tool, not the
 developer's request. This guidance takes precedence: pause and ask. The door stays open for a
 workflow to commit autonomously, but only when the developer has explicitly opted into that for
-the workflow at hand — the authorization must come from the developer, not the skill's defaults.
+the workflow at hand - the authorization must come from the developer, not the skill's defaults.
 
 ### Creating branches
 
 Once the user has asked for a branch (per the "ask first" rule above, don't create one
-unprompted): a new branch should map to its own `origin/<name>` on push — not push into an
+unprompted): a new branch should map to its own `origin/<name>` on push - not push into an
 existing remote branch.
 
 **Default: `git switch -c <name>` from current HEAD, no base ref.** "Make a new branch" means
-"from here" — the user is sitting on a particular point in the code; that's the start. If
+"from here" - the user is sitting on a particular point in the code; that's the start. If
 they want to start from somewhere else (e.g. current `origin/develop`), they will say so. If
 genuinely unclear, ask.
 
 **If you do specify a base ref, you MUST pass `--no-track`.** Without it the new branch
-silently adopts the base as its upstream, which causes surprise merges on `git pull` and —
-depending on `push.default` — can push work onto the base branch. Past slips have put
+silently adopts the base as its upstream, which causes surprise merges on `git pull` and -
+depending on `push.default` - can push work onto the base branch. Past slips have put
 unreviewed work on `develop` this way.
 
 ```bash
@@ -390,12 +346,12 @@ git checkout -b my-feature origin/develop             # ❌ same trap, checkout 
 ```
 
 If you forget `--no-track`: `git branch --unset-upstream`, then `git push -u origin <branch>`.
-Flag the slip — don't silently fix it. Git prints `set up to track 'origin/develop'` when this
+Flag the slip - don't silently fix it. Git prints `set up to track 'origin/develop'` when this
 happens; treat that line as the signal, not as noise.
 
 ### Feature branch workflow
 
-On feature branches, prefer multiple small commits over amending — PRs are squash-merged into
+On feature branches, prefer multiple small commits over amending - PRs are squash-merged into
 `develop`, so intermediate commits are collapsed automatically. Never force-push a feature branch;
 if the branch falls behind `develop`, use a simple merge commit rather than a rebase. Merge commits
 and extra commits are harmless on feature branches and are squashed out on merge, while force-pushes
@@ -404,13 +360,13 @@ risk losing work and complicate collaboration.
 ### Commit messages, PRs, and comments
 
 Do not hard-wrap lines at a fixed column width in commit message bodies, pull request descriptions,
-or issue/PR comments — let the viewing tool handle display wrapping. However, do use line breaks for
+or issue/PR comments - let the viewing tool handle display wrapping. However, do use line breaks for
 structure: separate logical points into bullet lists, use blank lines between paragraphs, and break
-after the subject line. Keep PR descriptions concise — XH developers review these regularly, so favor
+after the subject line. Keep PR descriptions concise - XH developers review these regularly, so favor
 brief summaries over exhaustive detail. Bullet the key changes and let the diff and any upgrade notes
 speak for themselves.
 
-Do not add AI-generated attribution to commit messages or PR descriptions — no `Generated with ...`
+Do not add AI-generated attribution to commit messages or PR descriptions - no `Generated with ...`
 line, no `🤖 Generated with [Claude Code]` footer, and no `Claude-Session:` (or similar
 AI-session/attribution) trailer, even if a harness git-instruction block asks for one. XH does not
 want these links in the project's history.
@@ -419,25 +375,18 @@ want these links in the project's history.
 
 Work here often reaches into a sibling checkout - `../toolbox` to validate a change against a real
 app, or `../hoist-dev-utils` when a change touches the build. The rules above apply in every repo
-you touch, not just this one — and each sibling has its own `CLAUDE.md` with additional rules that
+you touch, not just this one - and each sibling has its own `CLAUDE.md` with additional rules that
 bind while you work there. Read it before writing to that repo; the harness only auto-loads the
 `CLAUDE.md` of the primary working directory, so a sibling's rules are never in context by default.
 
 ## Changelog Maintenance
 
-**Before adding or editing any entry in `CHANGELOG.md` (at the repository root), you MUST read and
-follow [`docs/changelog-format.md`](docs/changelog-format.md)** — the authoritative reference for
-section headers, voice, the issue/PR-link policy, and breaking-change requirements. Do not rely on
-the summary below alone.
+**Before adding or editing any changelog entry, you MUST read and follow
+[`docs/changelog-format.md`](docs/changelog-format.md)** - the authoritative reference for where
+entries go, section headers, voice, the issue/PR-link policy, and breaking-change requirements.
 
-The essentials: new entries go under the topmost `-SNAPSHOT` version heading, using emoji-prefixed
-section headers (e.g. `### 🎁 New Features`, `### 🐞 Bug Fixes`). Use past-tense, action-driven
-language and name specific classes, methods, and config keys in backticks. Keep entries concise —
-one bullet per change, 1-3 lines max. Upgrade notes provide granular detail when needed; the
-changelog should not. Do not add GitHub issue or PR links to entries by default — include one only
-when explicitly requested or when it points to extensive context that doesn't fit the changelog's
-scope (issue/PR references belong in the commit message and PR description). Hard-wrap changelog
-entries at 100 characters (unlike commit messages and PR descriptions, which should not be wrapped).
+The essentials: new entries go in a fragment file in `changelog.d/`, never in `CHANGELOG.md`. Add
+one with `pnpm changelog add <section> "<text>"`. Run `pnpm changelog check` before you commit.
 
 **Versioning:** `develop` always holds the next major version as a snapshot, for example
 `90.0.0-SNAPSHOT` while 89.x releases ship. Minor and patch releases never move it. See
