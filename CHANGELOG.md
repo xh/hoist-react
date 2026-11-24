@@ -31,12 +31,18 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 * Added `SortableList`, a list users reorder by dragging or with the keyboard. Callers render each
   item, and the list supplies handles, the drop placeholder, auto-scrolling and screen reader
   announcements, then reports each completed move once via `bind` or `onReorder`. A `variant`
-  frames the items - plain, divided or spaced. `removable` (or `onRemove`) and `onAdd` add remove
-  buttons and an Add row, with focus and announcements handled. `isItemMovable` and
+  frames the items - plain, divided or spaced. `removable` (or `onRemove`) adds remove buttons. An
+  Add row holds a built-in button (`getNewItem`) or the caller's own picker (`addRenderer`), with
+  focus and announcements handled, and `emptyText` fills an empty list. `isItemMovable` and
   `isItemRemovable` exempt individual items. A drag starts on a short hold or, with a mouse, as
   soon as it moves. Items can expand to show a detail under their row, opened by a chevron or a
   click on the row. See
   [`cmp/sortablelist/README.md`](cmp/sortablelist/README.md).
+* Added `FormField.rightItems`, for per-field buttons or menus such as a reset, and
+  `FormField.inputRenderer`, to wrap or replace a field's bound input, on desktop and mobile. Both
+  can be set form-wide through `fieldDefaults`. Inline, the items follow the input. Stacked, they
+  sit at the right end of the label's row. Desktop `rightItemsWidth` reserves their width so an
+  inline form's inputs end at one edge.
 * `GroupingChooser` and the mobile column chooser can now be reordered with the keyboard, and
   `GroupingChooser` dimensions can be removed with Delete or Backspace on their handle.
 * Added `Icon.gripVertical()`.
@@ -58,6 +64,11 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 * Removed the `xh-grouping-chooser__row--dragging` class. A dragged row is styled by `SortableList`.
 * `GroupingChooser` rows use `SortableList`'s grip handle, and its desktop dimension selects show a
   dropdown chevron and a hover tint. Removed the `xh-grouping-chooser__row__grabber` class.
+* `GroupingChooser`'s "Add level..." select now sits in `SortableList`'s Add row,
+  `xh-sortable-list__add`. Removed the `xh-grouping-chooser__add-control` and
+  `xh-grouping-chooser__add-control__icon` classes.
+* Added `xh-form-field__input-row`, `xh-form-field__right-items` and `xh-form-field--right-items`
+  for the new `FormField.rightItems`. Fields without items keep their existing DOM.
 
 ### 📚 Libraries
 

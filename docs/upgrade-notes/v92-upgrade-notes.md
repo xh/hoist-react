@@ -78,7 +78,7 @@ sortableList({
     value: model.widgets,
     getItemLabel: w => w.title,
     onReorder: e => model.moveWidget(e.item.id, e.toIndex),
-    renderItem: w => widgetRow({w})
+    itemRenderer: w => widgetRow({w})
 });
 ```
 

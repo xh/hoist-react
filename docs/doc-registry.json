@@ -101,7 +101,7 @@
             "mcpCategory": "package",
             "viewerCategory": "components",
             "description": "Form infrastructure for data entry with validation.",
-            "keywords": ["FormModel", "FieldModel", "SubformsFieldModel", "validation rules", "data binding"]
+            "keywords": ["FormModel", "FieldModel", "SubformsFieldModel", "validation rules", "data binding", "rightItems", "rightItemsWidth", "inputRenderer"]
         },
         {
             "id": "cmp/input/README.md",
@@ -165,7 +165,7 @@
             "mcpCategory": "package",
             "viewerCategory": "components",
             "description": "List users reorder by dragging or with the keyboard: caller-rendered items, handles, bind or onReorder, detail rows, and the dnd-kit wrapper underneath.",
-            "keywords": ["SortableList", "sortable", "reorder", "drag and drop", "dnd", "dnd-kit", "onReorder", "drag handle", "keyboard reorder", "renderDetail", "useSortable"]
+            "keywords": ["SortableList", "sortable", "reorder", "drag and drop", "dnd", "dnd-kit", "onReorder", "drag handle", "keyboard reorder", "detailRenderer", "itemRenderer", "addRenderer", "getNewItem", "emptyText", "useSortable"]
         },
         {
             "id": "cmp/chip/README.md",
