@@ -403,7 +403,8 @@ export const [SortableList, sortableList] = hoistCmp.withFactory<SortableListPro
             const row: HTMLElement = addRef.current,
                 control = row?.matches('button') ? row : row?.querySelector<HTMLElement>(FOCUSABLE);
             control?.focus();
-            return !!control;
+            // A disabled input with a tabindex matches FOCUSABLE but refuses focus.
+            return !!control && document.activeElement === control;
         };
 
         useLayoutEffect(() => {
@@ -603,7 +604,7 @@ interface SortableItemActions {
     toggle: (key: SortableKey) => void;
     remove: (key: SortableKey) => void;
     move: (key: SortableKey, fromIndex: number, toIndex: number) => void;
-    /** Focuses the Add row's control if an add asked for it. False if it didn't, or has none. */
+    /** Focuses the Add row's control if an add asked for it. False unless the control took it. */
     focusAddControl: () => boolean;
 }
 

@@ -592,6 +592,24 @@ describe('SortableList', () => {
                 expect(document.activeElement).toBe(handles(el)[3]);
             });
 
+            // As a disabled Select does, whose input keeps tabindex 0.
+            it('focuses the added item when the add leaves a control that refuses focus', () => {
+                const model = new DimsModel(),
+                    el = renderList({
+                        model,
+                        bind: 'dims',
+                        addRenderer: ({add}) =>
+                            model.dims.length > 3
+                                ? input({className: 'picker', disabled: true, tabIndex: 0})
+                                : remountingPicker({dimsModel: model, add})
+                    });
+
+                el.querySelector<HTMLElement>('.picker').focus();
+                fireEvent.click(el.querySelector('.picker'));
+                expect(el.querySelector('input.picker')).not.toBeNull();
+                expect(document.activeElement).toBe(handles(el)[3]);
+            });
+
             // As GroupingChooser's select does, keyed on its options to clear its typed text.
             it('refocuses a control that remounts on the add', () => {
                 const model = new DimsModel(),
