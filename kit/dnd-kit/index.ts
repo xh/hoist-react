@@ -25,7 +25,8 @@ export {
     PointerSensor,
     PreventSelection
 } from '@dnd-kit/dom';
-export type {DragEndEvent, DragOverEvent, DragStartEvent} from '@dnd-kit/dom';
+export type {DragDropManager, DragEndEvent, DragOverEvent, DragStartEvent} from '@dnd-kit/dom';
+export {Plugin} from '@dnd-kit/abstract';
 export {RestrictToHorizontalAxis, RestrictToVerticalAxis} from '@dnd-kit/abstract/modifiers';
 
 export type DragDropProviderProps = SetOptional<

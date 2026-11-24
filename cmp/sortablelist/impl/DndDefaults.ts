@@ -4,17 +4,16 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import type {DragDropProviderProps} from '@xh/hoist/kit/dnd-kit';
+import type {DragDropManager, DragDropProviderProps} from '@xh/hoist/kit/dnd-kit';
 import {
     Accessibility,
     AutoScroller,
-    Cursor,
     Feedback,
     isSortable,
     KeyboardSensor,
     PointerActivationConstraints,
     PointerSensor,
-    PreventSelection
+    Plugin
 } from '@xh/hoist/kit/dnd-kit';
 
 /**
@@ -54,6 +53,29 @@ export function dndPlugins(
     return [ACCESSIBILITY, AutoScroller.configure({acceleration: scrollAcceleration}), ...REST];
 }
 
+/**
+ * Clears any text selection while a drag is in progress. Stands in for dnd-kit's PreventSelection,
+ * which - like its Cursor plugin - adds and removes a page-wide `*` style rule on every drag,
+ * making the browser restyle and lay out the whole page as the drag starts.
+ */
+export class ClearSelection extends Plugin<DragDropManager> {
+    constructor(manager: DragDropManager) {
+        super(manager);
+        const clear = () => document.getSelection()?.removeAllRanges(),
+            stopClearing = () => document.removeEventListener('selectionchange', clear, true),
+            offStart = manager.monitor.addEventListener('dragstart', () => {
+                clear();
+                document.addEventListener('selectionchange', clear, true);
+            }),
+            offEnd = manager.monitor.addEventListener('dragend', stopClearing);
+        this.destroy = () => {
+            offStart();
+            offEnd();
+            stopClearing();
+        };
+    }
+}
+
 const ACCESSIBILITY = Accessibility.configure({
         announcements: {
             dragstart: ({operation: {source}}) =>
@@ -79,6 +101,6 @@ const ACCESSIBILITY = Accessibility.configure({
                 'moves it one place.'
         }
     }),
-    REST = [Cursor, Feedback.configure({dropAnimation: DND_TRANSITION}), PreventSelection];
+    REST = [Feedback.configure({dropAnimation: DND_TRANSITION}), ClearSelection];
 
 export const DND_PLUGINS = dndPlugins();
