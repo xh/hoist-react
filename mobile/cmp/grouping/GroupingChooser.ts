@@ -53,7 +53,7 @@ export const [GroupingChooser, groupingChooser] = hoistCmp.withFactory<GroupingC
                 button({
                     className: 'xh-grouping-chooser-button',
                     ...buttonProps,
-                    children: span(label),
+                    text: span(label),
                     onClick: () => impl.toggleEditor()
                 }),
                 dialogCmp({model: impl, dialogTitle, emptyText})

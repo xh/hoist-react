@@ -95,6 +95,8 @@ detailed, step-by-step upgrade instructions with before/after code examples.
   `--xh-font-family`.
 * Fixed a `SegmentedControl` with an `intent` tinting every unselected option in that intent, so no
   option read as selected. Only an option with its own `intent` is tinted while unselected.
+* Fixed the mobile `GroupingChooser` button, which rendered blank instead of showing the current
+  grouping.
 
 ### ⚙️ Typescript API Adjustments
 
