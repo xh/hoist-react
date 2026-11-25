@@ -1,7 +1,8 @@
 # Changelog
 
 <!--
-  Entry conventions: docs/changelog-format.md - read it before adding entries here.
+  New entries go in a fragment in changelog.d/, not in this file. A release assembles them here.
+  Entry conventions: docs/changelog-format.md - read it before adding or editing entries.
 
   The three rules that account for most review feedback:
 
@@ -14,16 +15,42 @@
 
 ## 92.0.0-SNAPSHOT - unreleased
 
+## 91.1.0 - 2026-11-24
+
 ### 🎁 New Features
 
-* Added `GridFindField.mode`. Set it to `cells` to find matching column headers and grid cells
-  and move between them as Excel's Find does, stepping from the focused cell without changing row
-  selection. The default `rows` mode finds and selects matching records, as before.
-* Added `GridFindField.enableHotkey` to let Ctrl+F focus the field in place of the browser's find.
+* Enhanced `ChangelogDialog` to render release notes as markdown, so code spans, links, bold text
+  and sub-bullets show as written. Apps need `@xh/hoist-dev-utils` 16.6, which also keeps wrapped
+  lines. Older builds supply plain text, which the dialog shows as before.
+* Refreshed the `ChangelogDialog` layout. Each version shows its number, release date and a
+  "Current" or "Unreleased" tag, with a header that stays in view while its notes scroll. Section
+  headings show an icon and intent color, and links open in a new tab. `ChangelogVersion` adds
+  `date` and `isUnreleased`.
 
-### ✨ Styles
+### 🐞 Bug Fixes
 
-* Added `--xh-grid-cell-find-match-bg` to tint the cells matching a `GridFindField` in `cells` mode.
+* Fixed `ChangelogService` showing the "What's New" prompt for an unreleased SNAPSHOT version, which
+  a user could never mark as read. The prompt now tracks the latest released version.
+* Addressed potential memory leaks:
+    * Grid column header filters could retain models after closing.
+    * Mobile `Navigator` could retain pages replaced by a route change.
+    * `Sparkline` tooltips could retain first-render props.
+    * `DashContainer` could retain old layouts after a rebuild.
+    * Hoist components could retain their first-render props until unmount.
+    * `useOnResize`, `useOnVisibleChange` and `useOnScroll` could hold on to the callback from the
+      first render rather than the latest one.
+* Fixed mobile `GroupingChooser` button rendering without its label, a regression in v91.
+* Fixed mobile `Button` ignoring `children`. It now renders them after `text`, as the desktop
+  `Button` does.
+* Fixed mobile `Button` ignoring a margin set by an app or component class, a regression in v90.
+
+### ⚙️ Technical
+
+* Moved changelog entries to fragments. Each pull request adds its entries to a file in
+  `changelog.d/`, and a release assembles them into `CHANGELOG.md` with `pnpm changelog release`.
+  See `docs/changelog-format.md`.
+* `InstanceManager` now holds models, stores, cubes and views weakly, so models that are never
+  destroyed can still be garbage collected.
 
 ## 91.0.0 - 2026-11-20
 

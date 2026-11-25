@@ -453,7 +453,7 @@
             "mcpCategory": "devops",
             "viewerCategory": "devops",
             "description": "Conventions for writing and reviewing CHANGELOG entries in the hoist-react library CHANGELOG — section headers, voice/tense, difficulty ratings, breaking changes, libraries.",
-            "keywords": ["changelog", "CHANGELOG", "format", "conventions", "release notes", "versioning", "breaking changes", "upgrade difficulty", "section headers", "entry structure"]
+            "keywords": ["changelog", "CHANGELOG", "changelog.d", "fragment", "format", "conventions", "release notes", "versioning", "breaking changes", "upgrade difficulty", "section headers", "entry structure"]
         },
         {
             "id": "docs/upgrade-notes/v73-upgrade-notes.md",
