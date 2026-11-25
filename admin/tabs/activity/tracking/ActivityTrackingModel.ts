@@ -545,7 +545,6 @@ export class ActivityTrackingModel extends HoistModel implements ActivityDetailP
     private getDfRenderer(df: ActivityTrackingDataFieldSpec): ColumnRenderer {
         switch (df.type) {
             case 'int':
-                return numberRenderer({precision: 0});
             case 'number':
                 return numberRenderer();
             case 'date':
