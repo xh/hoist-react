@@ -1,5 +1,5 @@
 ### 🐞 Bug Fixes
 
-* Fixed a bulk `Cube.updateDataAsync()` re-aggregating every group once per changed leaf for an
-  aggregator with no incremental `replace()`, such as an app's own. A large update could freeze the
-  browser. Such a field now aggregates each group once.
+* Fixed a large `Cube` data update freezing the browser when a field used an aggregator that does
+  not override `replace()`, such as a custom one. The View re-aggregated each group once per changed
+  leaf. It now aggregates each group once.

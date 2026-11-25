@@ -129,8 +129,6 @@ describe('View', () => {
         });
 
         it('re-aggregates each group once in a bulk update, for an aggregator with no incremental replace', async () => {
-            // A full re-aggregation per leaf, as before, scanned every leaf below each ancestor once
-            // for each leaf updated - a bulk update froze the browser for over a minute.
             const counting = new CountingSum(),
                 cube = autoDestroy(
                     new Cube({
