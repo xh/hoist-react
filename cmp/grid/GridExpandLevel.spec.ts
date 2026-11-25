@@ -96,6 +96,31 @@ describe('Grid expand level', () => {
     });
 });
 
+describe('Grid expand cycle', () => {
+    it('expands one level per call from expandLevel, then collapses all', async () => {
+        const {gridModel} = await renderGridAsync({expandLevel: 0}),
+            levels = [];
+        vi.spyOn(gridModel, 'maxDepth', 'get').mockReturnValue(2);
+
+        for (let i = 0; i < 4; i++) {
+            gridModel.cycleExpandLevel();
+            levels.push(gridModel.expandLevel);
+        }
+        expect(levels).toEqual([1, 2, 0, 1]);
+    });
+
+    it('collapses a grid expanded to all levels, or past its depth', async () => {
+        const {gridModel} = await renderGridAsync();
+        vi.spyOn(gridModel, 'maxDepth', 'get').mockReturnValue(2);
+
+        for (const level of [-1, 3]) {
+            gridModel.expandToLevel(level);
+            gridModel.cycleExpandLevel();
+            expect(gridModel.expandLevel).toBe(0);
+        }
+    });
+});
+
 async function renderGridAsync(config: GridConfig = {}) {
     const gridModel = new GridModel({columns: [{field: 'name'}, {field: 'qty'}], ...config});
     onTestFinished(() => gridModel.destroy());

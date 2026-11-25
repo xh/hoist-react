@@ -312,7 +312,7 @@ popover({
 | Sub-package | Description |
 |-------------|-------------|
 | `/appOption/` | App-wide configuration options (theme, sizing mode, auto-refresh) |
-| `/button/grid/` | Grid action buttons: `colAutosizeButton`, `colChooserButton`, `expandCollapseButton`, `expandToLevelButton` |
+| `/button/grid/` | Grid action buttons: `colAutosizeButton`, `colChooserButton`, `expandCollapseButton`, `expandCycleButton`, `expandToLevelButton` |
 | `/button/zoneGrid/` | `zoneMapperButton` for ZoneGrid column configuration |
 | `/card/` | Card header implementation |
 | `/error/` | Error message display |
