@@ -261,8 +261,7 @@ interface SegmentedControlImplProps extends HoistProps {
 
 /**
  * The segments, as a radio group of buttons. Arrow keys move the selection, and only the selected
- * segment is in the tab order. Renders the same elements and class names as Blueprint's
- * `SegmentedControl`, so its styles and app CSS keyed to them apply.
+ * segment is in the tab order.
  */
 const segmentedControlImpl = hoistCmp.factory<SegmentedControlImplProps>({
     displayName: 'SegmentedControlImpl',

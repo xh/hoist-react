@@ -8,7 +8,7 @@ import {useEffect} from 'react';
 
 /**
  * Classes set on the body while any modal layer is open, which stop the page behind it from
- * scrolling. Includes Blueprint's class, for its CSS and app CSS keyed to it.
+ * scrolling.
  */
 const LOCK_CLASSES = ['xh-overlay-open'];
 

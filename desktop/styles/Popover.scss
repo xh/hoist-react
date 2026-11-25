@@ -391,8 +391,8 @@ span.xh-popover__target-wrapper {
 //-----------------------------------------------
 // Popovers read the `--xh-popover-*` variables. Blueprint draws the popover border as an outset
 // box-shadow ring rather than a CSS border, so it takes no layout space and the arrow can overlap it.
-// Hoist keeps that ring and adds the drop shadow as its own layer. Selectors match Blueprint's own
-// dark variants, which would otherwise outrank these rules in dark theme.
+// Hoist keeps that ring and adds the drop shadow as its own layer. Selectors match the dark
+// variants in the base styles above, which would otherwise outrank these rules in dark theme.
 .xh-popover__content-wrapper,
 .xh-dark .xh-popover__content-wrapper {
   border-radius: var(--xh-popover-border-radius);
@@ -430,7 +430,7 @@ span.xh-popover__target-wrapper {
 // Blueprint inverts tooltip colors relative to the theme (dark tooltips in light theme and vice
 // versa), and the popover rules above also match tooltips. Style tooltips from the
 // `--xh-tooltip-*` vars instead, so they follow the theme. The doubled `.xh-tooltip.xh-popover__content-wrapper`
-// selector matches or outranks Blueprint's dark tooltip rules and the popover rules
+// selector matches or outranks the base dark tooltip rules and the popover rules
 // above, and wins ties by coming later. Keep this block below the popover rules.
 .xh-tooltip.xh-popover__content-wrapper {
   color: var(--xh-tooltip-text-color);
@@ -491,7 +491,8 @@ span.xh-popover__target-wrapper {
   }
 }
 
-// Padding set at Blueprint's own specificity, so that `xh-tooltip--compact` tooltips keep their tighter padding.
+// Padding set at the base styles' specificity, so that `xh-tooltip--compact` tooltips keep their
+// tighter padding.
 .xh-tooltip .xh-popover__content {
   padding: var(--xh-tooltip-padding);
 }

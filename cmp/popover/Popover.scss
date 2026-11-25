@@ -15,7 +15,7 @@
   width: 100%;
 }
 
-// Mobile does not load the Blueprint base styles that frame desktop popovers, so frame them here.
+// Mobile does not load the desktop popover styles in desktop/styles/Popover.scss, so frame them here.
 .xh-mobile {
   .xh-popover__floating {
     display: flex;

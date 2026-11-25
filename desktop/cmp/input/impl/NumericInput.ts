@@ -45,8 +45,7 @@ export interface NumericInputProps {
 
 /**
  * A text input for numbers, stepped by the arrow keys. It shows no stepper buttons and applies no
- * min or max, which `NumberInput` checks itself. Renders the elements and class names of
- * Blueprint's `NumericInput`.
+ * min or max, which `NumberInput` checks itself.
  * @internal
  */
 export const numericInput = hoistCmp.factory<NumericInputProps>({

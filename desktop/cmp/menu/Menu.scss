@@ -624,10 +624,10 @@ button.xh-menu-item {
     }
   }
 
-  // Section headings - see MenuHeading, rendered here as a titled Blueprint divider. Label is
+  // Section headings - see MenuHeading, rendered here as a titled menu divider. Label is
   // aligned with the item text rather than the item icons, matching the grid context menu.
   .xh-menu-header {
-    // Blueprint puts the rule above its header - Hoist moves it below, tying the label to the
+    // The base styles put the rule above the header - Hoist moves it below, tying the label to the
     // items it introduces and sparing a leading header a stray rule at the top of the menu.
     border-top: none;
     border-bottom: var(--xh-menu-heading-border);

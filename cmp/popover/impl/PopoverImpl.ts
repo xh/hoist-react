@@ -60,7 +60,7 @@ import {popoverArrow, POPOVER_ARROW_SIZE} from './PopoverArrow';
 /** Gap kept between a popover and the edge of its boundary as it flips or shifts. */
 const VIEWPORT_PADDING = 8;
 
-/** Elements whose click closes the popover that holds them, by Hoist's or Blueprint's class. */
+/** Elements whose click closes the popover that holds them. */
 const DISMISS_SELECTOR = '.xh-popover-dismiss';
 
 /** Options for Hoist's own components built on the popover, beyond the public `PopoverProps`. */

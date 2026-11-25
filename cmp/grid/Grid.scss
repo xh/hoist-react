@@ -510,7 +510,7 @@
 }
 
 // Non-interactive heading within a context menu - see MenuHeading.
-// Styled to match the Blueprint menu headers used by our other menus: a bold label with a rule
+// Styled to match the headers used by our other menus: a bold label with a rule
 // above it, suppressed when the heading leads the menu. The rule is drawn on each cell so that it
 // spans the full width of the menu, as ag-Grid does for its own separators.
 .xh-grid-menu-heading {

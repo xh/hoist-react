@@ -178,8 +178,8 @@
     position: absolute;
   }
 
-  // The top and left edges of a toast's position. The Blueprint base styles hold the bottom and
-  // right edges.
+  // The top and left edges of a toast's position. The base styles above hold the bottom and right
+  // edges.
   &.xh-toast-container--top {
     top: 0;
   }

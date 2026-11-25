@@ -35,8 +35,7 @@ export interface SliderImplProps {
 
 /**
  * A single or range slider, dragged by pointer or stepped by the WAI-ARIA slider keys, including
- * Home/End and PageUp/PageDown. Renders the elements and class names of Blueprint's `Slider` and
- * `RangeSlider`, which `Slider.scss` and Hoist's label fitting target.
+ * Home/End and PageUp/PageDown.
  * @internal
  */
 export const sliderImpl = hoistCmp.factory<SliderImplProps>({
