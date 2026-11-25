@@ -16,20 +16,44 @@ import {Icon} from '@xh/hoist/icon';
 import {consumeEvent} from '@xh/hoist/utils/js';
 import {useComposedRefs, splitLayoutProps} from '@xh/hoist/utils/react';
 import './GridFindField.scss';
+import type {BaseGridFindImplModel} from './impl/BaseGridFindImplModel';
 import {findFieldControls} from './impl/FindFieldControls';
+import {GridCellFindImplModel} from './impl/GridCellFindImplModel';
 import {GridFindFieldImplModel} from './impl/GridFindFieldImplModel';
 
+/**
+ * What a {@link GridFindField} finds and moves between:
+ * - `rows` - matching records, which it selects.
+ * - `cells` - matching column headers and cells, as Excel's Find does, leaving row selection alone.
+ */
+export type GridFindFieldMode = 'rows' | 'cells';
+
 export interface GridFindFieldProps extends TextInputProps, LayoutProps {
+    /**
+     * True to focus this field on Ctrl+F (Cmd+F on Mac), in place of the browser's own find. With
+     * several such fields on screen, Ctrl+F goes to the one whose grid has focus, else the one last
+     * used, else the browser handles it. Default false.
+     */
+    enableHotkey?: boolean;
+
     /**
      * Model whose data this control should search. When given a GridModel or CubeGridModel, this
      * component will, by default, use the fields for all *visible* columns when
      * matching, as well as any groupBy field. When given a ZoneGridModel, it
-     * uses the fields currently mapped to any of its zones.
+     * uses the fields currently mapped to any of its zones. Mode `cells` supports GridModel and
+     * CubeGridModel only.
      */
     gridModel?: GridLikeModel;
 
-    /** Mode to use when searching (default 'startWord'). */
+    /** Mode to use when searching - default 'startWord' in mode `rows`, 'any' in mode `cells`. */
     matchMode?: FilterMatchMode;
+
+    /**
+     * What this field finds - matching rows, which it selects, or matching column headers and
+     * cells, which it moves between without changing selection. Read once, when the field mounts.
+     * Default 'rows'.
+     */
+    mode?: GridFindFieldMode;
 
     /**
      * Delay (in ms) to buffer searching the grid after the value changes from user input.
@@ -38,11 +62,15 @@ export interface GridFindFieldProps extends TextInputProps, LayoutProps {
     queryBuffer?: number;
 
     /**
-     * Names of field(s) to include in search. Cannot be used with `excludeFields`.
+     * Names of field(s) to include in search. Cannot be used with `excludeFields`. In mode `cells`,
+     * limits the search to the headers and cells of columns for these fields.
      */
     includeFields?: string[];
 
-    /** Names of field(s) to exclude from search. Cannot be used with `includeFields`. */
+    /**
+     * Names of field(s) to exclude from search. Cannot be used with `includeFields`. In mode
+     * `cells`, skips the headers and cells of columns for these fields.
+     */
     excludeFields?: string[];
 }
 
@@ -60,6 +88,16 @@ export interface GridFindFieldProps extends TextInputProps, LayoutProps {
  * Fields to be searched can be automatically determined from the bound Grid's Store, and/or
  * customized via the include/excludeFields props. See prop comments for details.
  *
+ * Set `mode: 'cells'` to find matching column headers and cells instead, and move between them as
+ * Excel's Find does. Matches are found within the text a header or cell shows. A column matches on
+ * its own header or that of any group above it - hidden columns are skipped. Cells match across all
+ * rows, including those scrolled out of view or within collapsed groups, and every matching cell is
+ * tinted. As headers are the first row in Excel, header matches come first, then cell matches row
+ * by row, left to right. Each step starts from the cell the user last focused in the grid, or from
+ * the selected row, and the active match is outlined. Esc clears the search and focuses the matched
+ * cell, or for a header, that column's cell in the focused row. Row selection is left unchanged,
+ * so the grid need not enable it.
+ *
  * This component supports all props available to TextInput and will pass them along to its
  * underlying TextInput.
  */
@@ -67,9 +105,11 @@ export const [GridFindField, gridFindField] = hoistCmp.withFactory<GridFindField
     displayName: 'GridFindField',
     className: 'xh-grid-find-field',
     model: false,
-    render({className, ...props}, ref) {
+    render({className, mode, enableHotkey, ...props}, ref) {
         let [layoutProps, restProps] = splitLayoutProps(props);
-        const impl = useLocalModel(GridFindFieldImplModel);
+        const impl = useLocalModel<BaseGridFindImplModel>(
+            mode === 'cells' ? GridCellFindImplModel : GridFindFieldImplModel
+        );
 
         return hbox({
             width: 240,
@@ -101,6 +141,11 @@ export const [GridFindField, gridFindField] = hoistCmp.withFactory<GridFindField
                             case 'ArrowDown':
                                 if (e.shiftKey) return;
                                 impl.selectNext();
+                                consumeEvent(e);
+                                break;
+                            case 'Escape':
+                                if (!(impl instanceof GridCellFindImplModel)) return;
+                                impl.endFind();
                                 consumeEvent(e);
                                 break;
                         }

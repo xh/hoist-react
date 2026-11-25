@@ -1,0 +1,255 @@
+/*
+ * This file belongs to Hoist, an application development toolkit
+ * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
+ *
+ * Copyright © 2026 Extremely Heavy Industries Inc.
+ */
+import {grid, type GridConfig, GridModel} from '@xh/hoist/cmp/grid';
+import {vbox} from '@xh/hoist/cmp/layout';
+import type {PlainObject} from '@xh/hoist/core';
+import {initTestAppAsync} from '@xh/hoist/test-support';
+import {installAgGridForTests} from '@xh/hoist/test-support/agGrid';
+import {act, fireEvent, render, waitFor} from '@testing-library/react';
+import {beforeAll, describe, expect, it, onTestFinished} from 'vitest';
+import {gridFindField, type GridFindFieldProps} from './GridFindField';
+
+/**
+ * `GridFindField` finds matching rows and selects them, or with `mode: 'cells'`, finds matching
+ * column headers and cells and moves between them as Excel's Find does. These tests pin down the
+ * order of matches, where each step starts from, and that `cells` mode leaves selection alone.
+ */
+describe('GridFindField', () => {
+    beforeAll(async () => {
+        await initTestAppAsync();
+        installAgGridForTests();
+    });
+
+    describe('cells mode', () => {
+        it('finds matching headers first, then cells row by row, left to right', async () => {
+            const {gridModel, find} = await renderAsync();
+
+            await find.typeAsync('a');
+            expect(find.countLabel()).toBe('1/6');
+            expect(gridModel._findActiveHeader).toBe('name');
+
+            const order = [];
+            for (let i = 0; i < 6; i++) {
+                order.push(activeMatch(gridModel));
+                find.press('Enter');
+            }
+            expect(order).toEqual([
+                'header:name',
+                '1:name', // Alpha
+                '1:city', // Paris
+                '2:name', // Beta
+                '3:name', // Gamma
+                '3:city' // Madrid
+            ]);
+        });
+
+        it('wraps at either end, stepping back with Shift+Enter', async () => {
+            const {gridModel, find} = await renderAsync();
+
+            await find.typeAsync('a');
+            expect(activeMatch(gridModel)).toBe('header:name');
+
+            find.press('Enter', {shiftKey: true});
+            expect(activeMatch(gridModel)).toBe('3:city');
+            expect(find.countLabel()).toBe('6/6');
+            find.press('Enter');
+            expect(activeMatch(gridModel)).toBe('header:name');
+        });
+
+        it('steps from the cell the user last focused', async () => {
+            const {gridModel, find} = await renderAsync();
+
+            await find.typeAsync('a');
+            act(() => gridModel.agApi.setFocusedCell(1, 'qty')); // Beta's qty cell
+            find.press('Enter');
+            expect(activeMatch(gridModel)).toBe('3:name');
+
+            find.press('Enter');
+            expect(activeMatch(gridModel)).toBe('3:city');
+        });
+
+        it('starts a new query from the focused cell, including that cell', async () => {
+            const {gridModel, find} = await renderAsync();
+
+            act(() => gridModel.agApi.setFocusedCell(1, 'name')); // Beta
+            await find.typeAsync('a');
+            expect(activeMatch(gridModel)).toBe('2:name');
+        });
+
+        it('stays on the active match while the query is refined', async () => {
+            const {gridModel, find} = await renderAsync();
+
+            await find.typeAsync('a');
+            find.press('Enter');
+            find.press('Enter');
+            expect(activeMatch(gridModel)).toBe('1:city');
+
+            await find.typeAsync('ar');
+            expect(activeMatch(gridModel)).toBe('1:city');
+        });
+
+        it('tints every matching cell and outlines the active one', async () => {
+            const {container, find} = await renderAsync();
+
+            await find.typeAsync('ma');
+            await waitFor(() =>
+                expect(cellsWithClass(container, 'xh-cell--find-match')).toEqual([
+                    'Gamma',
+                    'Madrid'
+                ])
+            );
+            expect(cellsWithClass(container, 'xh-cell--find-active')).toEqual(['Gamma']);
+
+            find.press('Enter');
+            await waitFor(() =>
+                expect(cellsWithClass(container, 'xh-cell--find-active')).toEqual(['Madrid'])
+            );
+        });
+
+        it('matches the text a renderer shows', async () => {
+            const {gridModel, find} = await renderAsync({
+                columns: [
+                    {field: 'name'},
+                    {field: 'qty', renderer: v => `<b>${v.toLocaleString()}</b>`}
+                ]
+            });
+
+            await find.typeAsync('1,234');
+            expect(find.countLabel()).toBe('1/1');
+            expect(activeMatch(gridModel)).toBe('2:qty');
+        });
+
+        it('searches only the columns for includeFields', async () => {
+            const {gridModel, find} = await renderAsync({}, {includeFields: ['city']});
+
+            await find.typeAsync('a');
+            expect(find.countLabel()).toBe('1/2');
+            expect(activeMatch(gridModel)).toBe('1:city');
+        });
+
+        it('does not need or change row selection', async () => {
+            const {gridModel, find} = await renderAsync({selModel: 'single'});
+            gridModel.selectAsync(2);
+            await waitFor(() => expect(gridModel.selectedId).toBe(2));
+
+            await find.typeAsync('a');
+            find.press('Enter');
+            find.press('Enter');
+            expect(gridModel.selectedId).toBe(2);
+        });
+
+        it('keeps the active match as data updates, and drops matches no longer found', async () => {
+            const {gridModel, find} = await renderAsync();
+
+            await find.typeAsync('a');
+            find.press('Enter');
+            find.press('Enter');
+            expect(activeMatch(gridModel)).toBe('1:city');
+
+            act(() => gridModel.store.modifyRecords({id: 3, name: 'Delta'}));
+            await waitFor(() => expect(find.countLabel()).toBe('3/6'));
+            expect(activeMatch(gridModel)).toBe('1:city');
+
+            act(() => gridModel.store.modifyRecords({id: 1, city: 'Oslo'}));
+            await waitFor(() => expect(find.countLabel()).toBe('0/5'));
+            expect(gridModel._findActiveCell).toBeNull();
+        });
+
+        it('clears the search on Esc, and focuses the matched cell', async () => {
+            const {gridModel, find} = await renderAsync();
+
+            await find.typeAsync('beta');
+            find.press('Escape');
+
+            await waitFor(() => expect(find.input.value).toBe(''));
+            expect(gridModel._findMatches).toBeNull();
+            expect(gridModel._findActiveCell).toBeNull();
+            expect(gridModel.agApi.getFocusedCell()).toMatchObject({rowIndex: 1});
+            expect(gridModel.agApi.getFocusedCell().column.getColId()).toBe('name');
+        });
+    });
+
+    describe('rows mode', () => {
+        it('selects the first matching record by default', async () => {
+            const {gridModel, find} = await renderAsync({selModel: 'single'}, {mode: undefined});
+
+            await find.typeAsync('gam');
+            await waitFor(() => expect(gridModel.selectedId).toBe(3));
+            expect(gridModel._findMatches).toBeNull();
+        });
+    });
+});
+
+//------------------------
+// Helpers
+//------------------------
+const DATA: PlainObject[] = [
+    {id: 1, name: 'Alpha', qty: 10, city: 'Paris'},
+    {id: 2, name: 'Beta', qty: 1234, city: 'Oslo'},
+    {id: 3, name: 'Gamma', qty: 7, city: 'Madrid'}
+];
+
+async function renderAsync(config: GridConfig = {}, findProps: GridFindFieldProps = {}) {
+    const gridModel = new GridModel({
+        columns: [
+            {field: 'name', headerName: 'Name'},
+            {field: 'qty', headerName: 'Qty'},
+            {field: 'city', headerName: 'City'}
+        ],
+        ...config
+    });
+    onTestFinished(() => gridModel.destroy());
+    gridModel.loadData(DATA);
+
+    const {container} = render(
+        vbox({
+            width: 600,
+            height: 400,
+            children: [
+                gridFindField({gridModel, mode: 'cells', queryBuffer: 0, ...findProps}),
+                grid({model: gridModel, flex: 1})
+            ]
+        })
+    );
+    await waitFor(() => expect(container.querySelectorAll('.ag-row')).toHaveLength(3));
+
+    const input = container.querySelector('.xh-grid-find-field input') as HTMLInputElement,
+        find = {
+            input,
+            countLabel: () =>
+                container.querySelector('.xh-grid-find-field__count-label')?.textContent ?? null,
+            press: (key: string, opts: KeyboardEventInit = {}) =>
+                act(() => {
+                    fireEvent.keyDown(input, {key, ...opts});
+                }),
+            typeAsync: async (value: string) => {
+                fireEvent.change(input, {target: {value}});
+                await waitFor(() =>
+                    expect(
+                        container.querySelector('.xh-grid-find-field__count-label')
+                    ).not.toBeNull()
+                );
+                // Let the buffered search run.
+                await act(() => new Promise(resolve => setTimeout(resolve, 10)));
+            }
+        };
+    return {gridModel, container, find};
+}
+
+// The active match as `header:colId`, or `recordId:colId` for a cell.
+function activeMatch(gridModel: GridModel): string {
+    const header = gridModel._findActiveHeader,
+        cell = gridModel._findActiveCell;
+    if (header) return `header:${header}`;
+    return cell ? `${cell.recordId}:${cell.colId}` : null;
+}
+
+function cellsWithClass(container: HTMLElement, className: string): string[] {
+    return Array.from(container.querySelectorAll(`.ag-cell.${className}`)).map(
+        it => it.textContent
+    );
+}

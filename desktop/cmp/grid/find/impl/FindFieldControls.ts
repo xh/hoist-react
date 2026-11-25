@@ -31,29 +31,32 @@ interface FindFieldControlsProps extends HoistProps {
  * Match count and previous / next buttons, shown beside the input of a grid find field.
  * @internal
  */
-export const findFieldControls = hoistCmp.factory<FindFieldControlsProps>(({impl}) => {
-    const {hasFocus, hasQuery, hasResults, countLabel} = impl;
-    if (!hasFocus && !hasQuery) return null;
-    return hbox({
-        className: 'xh-grid-find-field__controls',
-        children: [
-            span({
-                omit: !countLabel,
-                className: 'xh-grid-find-field__count-label',
-                children: countLabel
-            }),
-            vbox(
-                button({
-                    disabled: !hasResults,
-                    icon: Icon.chevronUp(),
-                    onClick: () => impl.selectPrev()
+export const findFieldControls = hoistCmp.factory<FindFieldControlsProps>({
+    model: false,
+    render({impl}) {
+        const {hasFocus, hasQuery, hasResults, countLabel} = impl;
+        if (!hasFocus && !hasQuery) return null;
+        return hbox({
+            className: 'xh-grid-find-field__controls',
+            children: [
+                span({
+                    omit: !countLabel,
+                    className: 'xh-grid-find-field__count-label',
+                    children: countLabel
                 }),
-                button({
-                    disabled: !hasResults,
-                    icon: Icon.chevronDown(),
-                    onClick: () => impl.selectNext()
-                })
-            )
-        ]
-    });
+                vbox(
+                    button({
+                        disabled: !hasResults,
+                        icon: Icon.chevronUp(),
+                        onClick: () => impl.selectPrev()
+                    }),
+                    button({
+                        disabled: !hasResults,
+                        icon: Icon.chevronDown(),
+                        onClick: () => impl.selectNext()
+                    })
+                )
+            ]
+        });
+    }
 });

@@ -55,7 +55,6 @@ import type {
     CellDoubleClickedEvent,
     CellEditingStartedEvent,
     CellEditingStoppedEvent,
-    IRowNode,
     RowClickedEvent,
     RowDoubleClickedEvent
 } from '@xh/hoist/kit/ag-grid';
@@ -632,14 +631,17 @@ export class GridModel extends HoistModel implements GridLikeModel {
     @observableRef accessor _syncedRs: RecordSet = null;
 
     /**
-     * @internal - cell holding the active match of a `GridCellFindField`, which each Column marks
-     * with a cell class. Not observable, as every cell render reads it.
+     * @internal - colIds of the cells matching a `GridFindField` in `cells` mode, by record id,
+     * which each Column marks with a cell class. Not observable, as every cell render reads it.
      */
-    _findActiveCell: {node: IRowNode; colId: string} = null;
+    _findMatches: Map<StoreRecordId, Set<string>> = null;
+
+    /** @internal - cell holding the active match of a `GridFindField` in `cells` mode. */
+    _findActiveCell: {recordId: StoreRecordId; colId: string} = null;
 
     /**
-     * @internal - colId of the column whose header holds the active match of a
-     * `GridCellFindField`, which its header marks with a class.
+     * @internal - colId of the column whose header holds the active match of a `GridFindField` in
+     * `cells` mode, which its header marks with a class.
      */
     _findActiveHeader: string = null;
 

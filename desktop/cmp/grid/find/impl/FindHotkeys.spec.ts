@@ -13,7 +13,7 @@ import {
 } from './FindHotkeys';
 
 /**
- * Ctrl+F routing for `GridCellFindField({enableHotkey: true})` - which box it focuses when several
+ * Ctrl+F routing for `GridFindField({enableHotkey: true})` - which box it focuses when several
  * are on the page, and when it leaves the key to the browser.
  */
 describe('resolveFindHotkeyTarget', () => {

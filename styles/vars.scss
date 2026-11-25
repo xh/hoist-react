@@ -593,6 +593,7 @@ body {
   --xh-grid-border-color: #{mc('grey', '200')};
   --xh-grid-cell-focused-border-color: var(--xh-focus-outline-color);
   --xh-grid-cell-changed-bg: #{mc-trans('yellow', '400', 0.6)};
+  --xh-grid-cell-find-match-bg: #{mc-trans('amber', '400', 0.35)};
   --xh-grid-cell-padding-inline: 11px;
   --xh-grid-empty-text-color: var(--xh-text-color-muted);
   --xh-grid-font-family: var(--xh-font-family);
@@ -675,6 +676,7 @@ body {
     --xh-grid-odd-row-bg: hsl(200, 26%, 11%);
     --xh-grid-border-color: hsl(186, 11%, 18%);
     --xh-grid-cell-changed-bg: #{mc-trans('orange', '800', 0.8)};
+    --xh-grid-cell-find-match-bg: #{mc-trans('amber', '700', 0.4)};
     --xh-grid-group-bg: #{mc('blue-grey', '800')};
     --xh-grid-group-border-color: #{mc('blue-grey', '700')};
     --xh-grid-tree-group-bg: hsl(200, 50%, 18%);

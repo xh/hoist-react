@@ -4,17 +4,13 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import type {Column, GridLikeModel, GridModel} from '@xh/hoist/cmp/grid';
-import {isGridLikeModel} from '@xh/hoist/cmp/grid/impl/GridLikeModel';
+import type {Column} from '@xh/hoist/cmp/grid';
 import {DataViewModel} from '@xh/hoist/cmp/dataview';
 import {ZoneGridModel} from '@xh/hoist/cmp/zoneGrid';
-import {HoistModel} from '@xh/hoist/core';
 import type {FilterMatchMode, StoreRecord} from '@xh/hoist/data';
 import {getFilterRegex} from '@xh/hoist/data';
-import type {TextInputModel} from '@xh/hoist/desktop/cmp/input';
-import {action, bindable, computed, observableRef, compareStructural} from '@xh/hoist/mobx';
+import {action, computed, observableRef, compareStructural} from '@xh/hoist/mobx';
 import {stripTags} from '@xh/hoist/utils/js';
-import {createObservableRef} from '@xh/hoist/utils/react';
 import {
     filter,
     flatMap,
@@ -27,20 +23,15 @@ import {
     without
 } from 'lodash';
 
+import {BaseGridFindImplModel} from './BaseGridFindImplModel';
+
 /**
+ * Impl model for `GridFindField` in `rows` mode - finds matching records and selects them.
  * @internal
  */
-export class GridFindFieldImplModel extends HoistModel {
-    override xhImpl = true;
-
-    @bindable accessor query: string = null;
-
+export class GridFindFieldImplModel extends BaseGridFindImplModel {
     get matchMode(): FilterMatchMode {
         return this.componentProps.matchMode ?? 'startWord';
-    }
-
-    get queryBuffer(): number {
-        return this.componentProps.queryBuffer ?? 200;
     }
 
     get includeFields(): string[] {
@@ -52,7 +43,6 @@ export class GridFindFieldImplModel extends HoistModel {
     }
 
     @observableRef accessor results;
-    inputRef = createObservableRef<TextInputModel>();
     _records: StoreRecord[] = null;
 
     get count(): number {
@@ -72,30 +62,16 @@ export class GridFindFieldImplModel extends HoistModel {
         return `${match}/${count}`;
     }
 
-    get hasFocus() {
-        return this.inputRef?.current?.hasFocus;
-    }
-
-    @computed
-    get hasQuery(): boolean {
-        return !isNil(this.query) && this.query.length > 0;
-    }
-
     @computed
     get hasResults(): boolean {
         return !isNil(this.results) && !isEmpty(this.results);
-    }
-
-    /** Model to search - from props, or the nearest found in context. */
-    @computed
-    get boundModel(): GridLikeModel {
-        return this.componentProps.gridModel ?? this.lookupModel(isGridLikeModel);
     }
 
     //------------------------------------------------------------------
     // Trampoline value to grid
     //------------------------------------------------------------------
     override onLinked() {
+        super.onLinked();
         const {boundModel, innerGridModel} = this;
         if (!boundModel) {
             this.logError("No GridModel available. Provide via a 'gridModel' prop, or context.");
@@ -262,10 +238,6 @@ export class GridFindFieldImplModel extends HoistModel {
         return fieldName.includes('.')
             ? (rec: StoreRecord) => get(rec.data, fieldName)
             : (rec: StoreRecord) => rec.data[fieldName];
-    }
-
-    private get innerGridModel(): GridModel {
-        return this.boundModel?.innerGridModel ?? null;
     }
 
     // See corresponding method in StoreFilterFieldImplModel.

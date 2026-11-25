@@ -226,43 +226,44 @@ List only the fields that need custom config. Set `filterable: false` to disable
 
 ### Finding
 
-Two desktop components find text in a grid without filtering it. Both bind to the nearest
-`GridModel` in context, or to the one given as `gridModel`.
+The desktop `gridFindField` finds text in a grid without filtering it. It binds to the nearest
+`GridModel` in context, or to the one given as `gridModel`. Its `mode` prop sets what it finds:
 
-- `gridFindField` finds matching **rows** and selects them, so the grid needs selection enabled.
-  It matches record fields like `StoreFilterField`, with `matchMode`, `includeFields` and
-  `excludeFields`.
-- `gridCellFindField` finds matching **column headers and cells** and moves between them, like
-  Excel's Find. It leaves row selection alone, which suits wide and editable grids.
-
-`gridCellFindField` is built on ag-Grid's Enterprise Find feature. Register `FindModule` in the
-app's `Bootstrap.ts`. Without it, the field logs an error and is disabled.
+- `rows` (the default) finds matching **records** and selects them, so the grid needs selection
+  enabled. It matches record fields like `StoreFilterField`, with `matchMode`, `includeFields`
+  and `excludeFields`.
+- `cells` finds matching **column headers and cells** and moves between them, like Excel's Find.
+  It leaves row selection alone, which suits wide and editable grids.
 
 ```typescript
-import {FindModule} from 'ag-grid-enterprise';
-ModuleRegistry.registerModules([FindModule]);  // Alongside the app's other modules
-
 panel({
-    tbar: [gridCellFindField({enableHotkey: true}), filler(), exportButton()],
+    tbar: [gridFindField({mode: 'cells', enableHotkey: true}), filler(), exportButton()],
     children: grid()
 });
 ```
 
-- **Matching** finds the query anywhere in the text a header or cell displays, ignoring case. A
-  column matches on its own header or on any column group above it. Hidden columns are skipped.
-  Cells match in every row, including rows scrolled out of view or inside collapsed groups.
+In `cells` mode:
+
+- **Matching** finds the query in the text a header or cell shows, ignoring case - anywhere in
+  the text by default, or as `matchMode` sets. A column matches on its own header or on any
+  column group above it. Hidden columns are skipped, and `includeFields` / `excludeFields` limit
+  the search to the columns for those fields. Cells match in every row, including rows scrolled
+  out of view or inside collapsed groups. Group rows and pinned summary rows are not searched.
 - **Order** puts header matches first, as Excel treats headers as its first row. Cell matches
   follow, row by row and left to right.
-- **Keys** - Enter and Shift+Enter step forward and back, wrapping at either end. Each step starts
-  from the cell the user last focused. Esc clears the search and focuses the matched cell.
-- **Ctrl+F** (Cmd+F on Mac) focuses a field set with `enableHotkey`, in place of the browser's
-  find. With several on screen it picks the one whose grid has focus, then the one last used. If
-  neither applies and more than one is on screen, the browser handles the key.
-- **Renderers** - a column with a `renderer` is searched by the text it displays, cached by value.
-  Set `rendererIsComplex` if the renderer reads other fields of the record. A renderer given as
-  `agOptions.cellRenderer` is searched by its raw value unless `agOptions.getFindText` says
-  otherwise. ag-Grid highlights the matched text in plain and `textRenderer` cells; in other
-  cells, only the active match is outlined.
+- **Keys** - Enter and Shift+Enter (or the up and down arrows) step forward and back, wrapping at
+  either end. Each step starts from the cell the user last focused, else the selected row. Esc
+  clears the search and focuses the matched cell.
+- **Marking** - every matching cell is tinted with `--xh-grid-cell-find-match-bg`, and the active
+  match, cell or header, is outlined. A step to a cell in a collapsed group expands the group.
+- **Renderers** - a column with a `renderer` is searched by the text it shows, with its markup
+  stripped. A column with a `textRenderer` is searched by the text it returns. Text is cached for
+  each record, so a renderer whose output depends on state outside the record can be searched
+  by stale text until the record changes.
+
+In either mode, **Ctrl+F** (Cmd+F on Mac) focuses a field set with `enableHotkey`, in place of
+the browser's find. With several on screen it picks the one whose grid has focus, then the one
+last used. If neither applies and more than one is on screen, the browser handles the key.
 
 ### Inline Editing
 

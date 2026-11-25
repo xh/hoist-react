@@ -153,7 +153,12 @@ describe('Column.getAgSpec', () => {
                 col = createColumn({textRenderer, cellClassRules: {shared: () => true}}),
                 rules = col.getAgSpec().cellClassRules as Record<string, Function>;
 
-            expect(Object.keys(rules)).toEqual(['pos', 'shared', 'xh-cell--find-active']);
+            expect(Object.keys(rules)).toEqual([
+                'pos',
+                'shared',
+                'xh-cell--find-match',
+                'xh-cell--find-active'
+            ]);
             expect(rules.shared({})).toBe(true);
         });
 
@@ -167,6 +172,7 @@ describe('Column.getAgSpec', () => {
                 'xh-pos-val',
                 'xh-neg-val',
                 'xh-neutral-val',
+                'xh-cell--find-match',
                 'xh-cell--find-active',
                 'custom'
             ]);
@@ -179,7 +185,10 @@ describe('Column.getAgSpec', () => {
 
             expect(spec.valueFormatter).toBeNull();
             expect(spec.cellRenderer).toBeTypeOf('function');
-            expect(Object.keys(spec.cellClassRules)).toEqual(['xh-cell--find-active']);
+            expect(Object.keys(spec.cellClassRules)).toEqual([
+                'xh-cell--find-match',
+                'xh-cell--find-active'
+            ]);
         });
 
         it('keeps its cellClassRules when set as the renderer, like any renderer', () => {
@@ -187,7 +196,11 @@ describe('Column.getAgSpec', () => {
                 spec = createColumn({renderer}).getAgSpec();
 
             expect(spec.cellRenderer).toBeTypeOf('function');
-            expect(Object.keys(spec.cellClassRules)).toEqual(['pos', 'xh-cell--find-active']);
+            expect(Object.keys(spec.cellClassRules)).toEqual([
+                'pos',
+                'xh-cell--find-match',
+                'xh-cell--find-active'
+            ]);
         });
 
         it('shows its text in a tree column, through the group cell renderer', () => {
@@ -331,48 +344,33 @@ describe('Column.getAgSpec', () => {
         });
     });
 
-    describe('getFindText', () => {
-        it('is omitted where ag-Grid Find can search the formatted value', () => {
-            expect(createColumn({}).getAgSpec().getFindText).toBeUndefined();
-            expect(
-                createColumn({textRenderer: v => `${v}!`}).getAgSpec().getFindText
-            ).toBeUndefined();
-        });
+    describe('find match cells', () => {
+        const ruleFor = (gridModel: GridModel, colId: string, cls: string) =>
+            gridModel.getColumn(colId).getAgSpec().cellClassRules[cls] as Function;
 
-        it('gives the text a renderer displays, stripped of markup', () => {
-            const findText = (renderer, value) =>
-                createColumn({renderer})
-                    .getAgSpec()
-                    .getFindText({value} as any);
-
-            expect(findText(v => `<b>${v}</b> &amp; co`, 'a')).toBe('a & co');
-            expect(findText(numberRenderer({precision: 2, colorSpec: true}), 1234.5)).toBe(
-                '1,234.50'
-            );
-            expect(findText(() => null, 'a')).toBeNull();
-        });
-
-        it('yields to a cellRenderer supplied via agOptions', () => {
-            const spec = createColumn({renderer: v => v, agOptions: {cellRenderer: () => null}});
-            expect(spec.getAgSpec().getFindText).toBeUndefined();
-        });
-    });
-
-    describe('find active cell', () => {
-        it('marks only the cell holding the active match of a GridCellFindField', () => {
+        it('marks the cells matching a GridFindField in cells mode', () => {
             const gridModel = createGridModel({}, [{field: 'name'}, {field: 'other'}]),
-                node = {} as any,
-                rule = (colId: string) =>
-                    gridModel.getColumn(colId).getAgSpec().cellClassRules[
-                        'xh-cell--find-active'
-                    ] as Function;
+                rule = (colId: string) => ruleFor(gridModel, colId, 'xh-cell--find-match');
 
-            expect(rule('name')({node} as any)).toBe(false);
+            expect(rule('name')({data: {id: 1}} as any)).toBe(false);
 
-            gridModel._findActiveCell = {node, colId: 'name'};
-            expect(rule('name')({node} as any)).toBe(true);
-            expect(rule('other')({node} as any)).toBe(false);
-            expect(rule('name')({node: {}} as any)).toBe(false);
+            gridModel._findMatches = new Map([[1, new Set(['name'])]]);
+            expect(rule('name')({data: {id: 1}} as any)).toBe(true);
+            expect(rule('other')({data: {id: 1}} as any)).toBe(false);
+            expect(rule('name')({data: {id: 2}} as any)).toBe(false);
+            expect(rule('name')({data: null} as any)).toBe(false);
+        });
+
+        it('marks only the cell holding the active match', () => {
+            const gridModel = createGridModel({}, [{field: 'name'}, {field: 'other'}]),
+                rule = (colId: string) => ruleFor(gridModel, colId, 'xh-cell--find-active');
+
+            expect(rule('name')({data: {id: 1}} as any)).toBe(false);
+
+            gridModel._findActiveCell = {recordId: 1, colId: 'name'};
+            expect(rule('name')({data: {id: 1}} as any)).toBe(true);
+            expect(rule('other')({data: {id: 1}} as any)).toBe(false);
+            expect(rule('name')({data: {id: 2}} as any)).toBe(false);
         });
 
         it('marks only the header of the column holding the active header match', () => {
