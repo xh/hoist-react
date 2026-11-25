@@ -132,8 +132,8 @@ export interface ColumnSpec {
     headerTooltip?: string;
 
     /**
-     * True if this column header will host an expand/collapse all icon. `Column.isTreeColumn`
-     * must be enabled. Defaults to true.
+     * True if this column header will host an icon that steps through expand levels, as per
+     * {@link GridModel.cycleExpandLevel}. `Column.isTreeColumn` must be enabled. Defaults to true.
      */
     headerHasExpandCollapse?: boolean;
 

@@ -5,6 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {grid, type GridConfig, GridModel} from '@xh/hoist/cmp/grid';
+import {nextExpandStepTitle} from '@xh/hoist/cmp/grid/impl/Utils';
 import {runInAction} from '@xh/hoist/mobx';
 import {initTestAppAsync} from '@xh/hoist/test-support';
 import {installAgGridForTests} from '@xh/hoist/test-support/agGrid';
@@ -118,6 +119,21 @@ describe('Grid expand cycle', () => {
             gridModel.cycleExpandLevel();
             expect(gridModel.expandLevel).toBe(0);
         }
+    });
+
+    it('names the next step, using levelLabels when set', async () => {
+        const {gridModel} = await renderGridAsync({
+                expandLevel: 0,
+                levelLabels: ['Total', 'Fund', 'Trader']
+            }),
+            titles = [];
+        vi.spyOn(gridModel, 'maxDepth', 'get').mockReturnValue(2);
+
+        for (let i = 0; i < 3; i++) {
+            titles.push(nextExpandStepTitle(gridModel));
+            gridModel.cycleExpandLevel();
+        }
+        expect(titles).toEqual(['Expand to Fund', 'Expand all', 'Collapse all']);
     });
 });
 

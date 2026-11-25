@@ -4,8 +4,9 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import type {GridLikeModel, GridModel} from '@xh/hoist/cmp/grid';
+import type {GridLikeModel} from '@xh/hoist/cmp/grid';
 import {isGridLikeModel} from '@xh/hoist/cmp/grid/impl/GridLikeModel';
+import {nextExpandStepTitle} from '@xh/hoist/cmp/grid/impl/Utils';
 import {hoistCmp, useContextModel} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
@@ -26,7 +27,8 @@ export interface ExpandCycleButtonProps extends ButtonProps {
  * the next click collapses it and the cycle starts again. The default tooltip names the next
  * step. See {@link GridModel.cycleExpandLevel}.
  *
- * The recommended toolbar control for expanding grouped and tree grids. See
+ * The recommended toolbar control for expanding grouped grids. A tree grid has the same control
+ * in its tree column header, as per {@link ColumnSpec.headerHasExpandCollapse}. See
  * {@link ExpandToLevelButton} for a menu that jumps straight to a labelled level.
  */
 export const [ExpandCycleButton, expandCycleButton] = hoistCmp.withFactory<ExpandCycleButtonProps>({
@@ -56,7 +58,7 @@ export const [ExpandCycleButton, expandCycleButton] = hoistCmp.withFactory<Expan
         return button({
             ref,
             icon,
-            title: title ?? tooltip ?? nextStepTitle(gridModel),
+            title: title ?? tooltip ?? nextExpandStepTitle(gridModel),
             disabled: withDefault(disabled, !gridModel.maxDepth || gridModel.empty),
             className,
             onClick: onClick ?? (() => gridModel.cycleExpandLevel()),
@@ -64,12 +66,3 @@ export const [ExpandCycleButton, expandCycleButton] = hoistCmp.withFactory<Expan
         });
     }
 });
-
-function nextStepTitle(gridModel: GridModel): string {
-    const {nextExpandLevel: level, maxDepth, resolvedLevelLabels} = gridModel;
-    if (level === 0) return 'Collapse all';
-    if (level >= maxDepth) return 'Expand all';
-
-    const label = resolvedLevelLabels?.[level];
-    return label ? `Expand to ${label}` : 'Expand one level';
-}

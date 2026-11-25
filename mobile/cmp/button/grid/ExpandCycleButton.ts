@@ -25,7 +25,8 @@ export interface ExpandCycleButtonProps extends ButtonProps {
  * A button to expand a grouped or tree grid one level per tap. Once the grid is fully expanded,
  * the next tap collapses it and the cycle starts again. See {@link GridModel.cycleExpandLevel}.
  *
- * The recommended toolbar control for expanding grouped and tree grids. See
+ * The recommended toolbar control for expanding grouped grids. A tree grid has the same control
+ * in its tree column header, as per {@link ColumnSpec.headerHasExpandCollapse}. See
  * {@link ExpandToLevelButton} for a menu that jumps straight to a labelled level.
  */
 export const [ExpandCycleButton, expandCycleButton] = hoistCmp.withFactory<ExpandCycleButtonProps>({
