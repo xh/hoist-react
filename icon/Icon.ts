@@ -413,6 +413,9 @@ export const iconFactories = {
     cube(p?: IconProps) {
         return Icon.icon({...p, faName: 'cube'});
     },
+    dashboard(p?: IconProps) {
+        return Icon.icon({...p, faName: 'objects-column'});
+    },
     database(p?: IconProps) {
         return Icon.icon({...p, faName: 'database'});
     },
@@ -829,6 +832,9 @@ export const iconFactories = {
     },
     thumbsUp(p?: IconProps) {
         return Icon.icon({...p, faName: 'thumbs-up'});
+    },
+    tiles(p?: IconProps) {
+        return Icon.icon({...p, faName: 'grid-2'});
     },
     toast(p?: IconProps) {
         return Icon.icon({...p, faName: 'bread-slice'});
