@@ -467,6 +467,9 @@ export const iconFactories = {
     fileChart(p?: IconProps) {
         return Icon.icon({...p, faName: 'file-chart-column'});
     },
+    fileCode(p?: IconProps) {
+        return Icon.icon({...p, faName: 'file-code'});
+    },
     fileCsv(p?: IconProps) {
         return Icon.icon({...p, faName: 'file-csv'});
     },
@@ -475,6 +478,9 @@ export const iconFactories = {
     },
     fileImage(p?: IconProps) {
         return Icon.icon({...p, faName: 'file-image'});
+    },
+    fileMarkdown(p?: IconProps) {
+        return Icon.icon({...p, faName: 'file-md'});
     },
     filePdf(p?: IconProps) {
         return Icon.icon({...p, faName: 'file-pdf'});
@@ -1299,6 +1305,11 @@ function getFileIconConfig(filename: string) {
             return {factory: Icon.filePdf, className: 'xh-file-icon-pdf'};
         case 'txt':
             return {factory: Icon.fileText};
+        case 'md':
+        case 'markdown':
+            return {factory: Icon.fileMarkdown};
+        case 'json':
+            return {factory: Icon.fileCode};
         case 'xml':
             return {factory: Icon.fileXml};
         case 'zip':
