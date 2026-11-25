@@ -177,6 +177,8 @@ Icon.star({prefix: 'fat'})      // thin stroke
 Icon.fileIcon({filename: 'report.pdf'})    // → filePdf with xh-file-icon-pdf
 Icon.fileIcon({filename: 'data.xlsx'})     // → fileExcel with xh-file-icon-excel
 Icon.fileIcon({filename: 'photo.jpg'})     // → fileImage
+Icon.fileIcon({filename: 'notes.md'})      // → fileMarkdown
+Icon.fileIcon({filename: 'config.json'})   // → fileCode
 Icon.fileIcon({filename: 'unknown.xyz'})   // → file (generic fallback)
 ```
 
