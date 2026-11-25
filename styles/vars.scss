@@ -435,14 +435,28 @@ body {
   --xh-menu-bg: var(--xh-bg);
   --xh-menu-border: var(--xh-border-solid);
   --xh-menu-item-font-size: var(--xh-font-size);
+  --xh-menu-item-font-weight: 400;
   // Highlight applied on hover for desktop, press for mobile.
   --xh-menu-item-highlight-bg: var(--xh-grid-row-hover-bg);
   --xh-menu-item-text-color: var(--xh-text-color);
-  // Non-interactive section headings within a menu - see MenuHeading.
+  // Non-interactive section headings within a menu - see MenuHeading. Defaults render a small,
+  // muted, uppercase label that reads as a section marker rather than an item.
+  --xh-menu-heading-bg: transparent;
   --xh-menu-heading-border: var(--xh-menu-border);
-  --xh-menu-heading-font-size: var(--xh-font-size);
+  --xh-menu-heading-font-size: var(--xh-font-size-small);
   --xh-menu-heading-font-weight: 600;
-  --xh-menu-heading-text-color: var(--xh-text-color);
+  --xh-menu-heading-letter-spacing: normal;
+  --xh-menu-heading-padding-bottom: var(--xh-spacing-half);
+  // Space above a heading that follows other items. A heading that leads its menu omits it.
+  --xh-menu-heading-padding-top: var(--xh-spacing);
+  // Stronger than `--xh-text-color-muted` in both themes, to keep the small label legible on the
+  // menu bg and distinct from disabled items.
+  --xh-menu-heading-text-color: var(--xh-blue-gray);
+  --xh-menu-heading-text-transform: uppercase;
+
+  &:where(.xh-dark) {
+    --xh-menu-heading-text-color: #{mc('blue-grey', '200')};
+  }
 
   &:where(.xh-mobile) {
     --xh-menu-item-height: 40px;

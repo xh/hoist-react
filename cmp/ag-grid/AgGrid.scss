@@ -439,6 +439,11 @@ body.xh-app {
     font-family: var(--xh-font-family);
     font-size: var(--xh-menu-item-font-size);
 
+    // ag-Grid hardcodes a 500 weight on menu items, with no theme param to change it.
+    .ag-menu-option {
+      font-weight: var(--xh-menu-item-font-weight);
+    }
+
     .ag-menu-option.ag-menu-option-active {
       background-color: var(--xh-menu-item-highlight-bg);
     }
