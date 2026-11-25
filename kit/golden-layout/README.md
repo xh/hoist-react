@@ -38,3 +38,4 @@ impl/
 - **Patches folded in**: React 18 `createRoot` mount/unmount in `ReactComponentHandler`,
   touch-drag fixes in `DragListener` (incl. tap-and-hold contextmenu), and the offset-aware
   `_$createRootItemAreas` (upstream PR #457). All live in the source now.
+- **Titles as text**: `Tab` and `DragProxy` set titles with `textContent`, and `stripTags` is gone.
