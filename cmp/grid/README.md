@@ -470,8 +470,15 @@ Key categories of `ColumnSpec` properties:
 | Tree | `isTreeColumn`, `headerHasExpandCollapse`                                                                    |
 | Autosize | `autosizable`, `autosizeIncludeHeader`, `autosizeIncludeHeaderIcons`, `autosizeMinWidth`, `autosizeMaxWidth` |
 
-\* `description` defaults from `Field.description` and serves as the default for both
-`headerTooltip` and `chooserDescription` when those are not explicitly set.
+\* `description` defaults from `Field.description` and serves as the default for
+`chooserDescription` when that is not explicitly set.
+
+**Header tooltips** - a column with no `headerTooltip` gets a default tooltip. It shows the
+`displayName` in bold, with the `description` below when there is one. Without a description, it
+shows only when the header label does not show the full `displayName` already: an abbreviated
+`headerName`, an icon, or a label truncated to fit its width. A blank header shows none. A
+`ColumnGroup` does the same with its `chooserName`. Set `headerTooltip: null` for no tooltip at all.
+ag-Grid's tool panels and drop zones show the `description` as plain text.
 
 ## Extension Points
 

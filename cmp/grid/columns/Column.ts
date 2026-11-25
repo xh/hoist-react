@@ -37,6 +37,7 @@ import type {FunctionComponent, ReactElement, ReactNode} from 'react';
 import {createElement, forwardRef, isValidElement, useLayoutEffect, useRef} from 'react';
 import type {GridModel} from '../GridModel';
 import {GridSorter} from '../GridSorter';
+import {headerTooltipComponent} from '../impl/HeaderTooltip';
 import {getAgHeaderClassFn, withErrorCell} from '../impl/Utils';
 import type {
     ColumnCellClassFn,
@@ -116,8 +117,8 @@ export interface ColumnSpec {
 
     /**
      * Supplementary descriptive text for this Column. Sourced from the corresponding data
-     * `Field.description` if available. Used as the default value for `headerTooltip` and
-     * `chooserDescription` when those are not explicitly set.
+     * `Field.description` if available. Shown in the default header tooltip, and used as the
+     * default value for `chooserDescription` when that is not explicitly set.
      */
     description?: string;
 
@@ -128,7 +129,12 @@ export interface ColumnSpec {
      */
     headerName?: ColumnHeaderNameFn | ReactNode;
 
-    /** Tooltip text for grid header. Defaults from `description` when not explicitly set. */
+    /**
+     * Tooltip text for grid header. When not set, the header shows a default tooltip with the
+     * Column's `displayName` and `description`. Without a description, the default shows only
+     * when the header label does not already show the full `displayName` - an abbreviated, icon,
+     * or truncated label, but not a blank one. Set to null for no tooltip.
+     */
     headerTooltip?: string;
 
     /**
@@ -462,6 +468,14 @@ export interface ColumnSpec {
     appData?: PlainObject;
 }
 
+// ag-Grid tooltip locations within a row - all others show the column's header tooltip.
+const ROW_TOOLTIP_LOCATIONS: ITooltipParams['location'][] = [
+    'cell',
+    'cellEditor',
+    'cellFormula',
+    'fullWidthRow'
+];
+
 /**
  * Cross-platform definition and API for a standardized Grid column.
  *
@@ -680,7 +694,7 @@ export class Column {
         // GridModel may have defaulted it from the field's `shortDisplayName` already.
         this.headerName = withDefault(headerName, this.displayName);
 
-        this.headerTooltip = withDefault(headerTooltip, this.description);
+        this.headerTooltip = headerTooltip;
         this.headerHasExpandCollapse = withDefault(headerHasExpandCollapse, true);
         this.headerAlign = headerAlign || align;
         this.headerClass = headerClass;
@@ -820,7 +834,10 @@ export class Column {
                     return isString(ret) ? ret : displayName;
                 },
                 headerClass: getAgHeaderClassFn(this),
-                headerTooltip: this.headerTooltip,
+                // A plain string, for ag-Grid's tool panels and drop zones. Without an explicit
+                // tooltip, ColumnHeader supplies a richer default for the grid header itself.
+                headerTooltip: withDefault(this.headerTooltip, this.description),
+                tooltipComponent: this.agTooltipComponent,
                 valueFormatter: this.agValueFormatter,
                 // Undefined keeps ag-Grid's current visibility on update.
                 hide: gridModel.isColumnHiddenByGrouping(this.colId) ? undefined : this.hidden,
@@ -905,7 +922,11 @@ export class Column {
                           ? 'tooltip'
                           : null;
                   };
-            ret.tooltipComponent = this.agTooltipComponent;
+        } else {
+            // Required, not a default - the header tooltip sets `tooltipComponent` on every
+            // column, and ag-Grid shows that component on hover of a full-width group row unless
+            // cell tooltips are disabled outright.
+            ret.tooltip = false;
         }
 
         // Generate CSS classes for cells. Default alignment classes are mixed in with any
@@ -1128,11 +1149,14 @@ export class Column {
                 isCustom = !validationMessages && isElement,
                 validationCount = validationMessages?.length ?? 0;
 
+            // Any location outside a row - the grid header, ag-Grid's tool panels and drop zones -
+            // shows the header tooltip.
+            const isRowLevel = ROW_TOOLTIP_LOCATIONS.includes(location);
+
             useLayoutEffect(() => {
+                if (!isRowLevel) return;
                 let xhToolTipClassNames: string[];
-                if (location === 'header') {
-                    xhToolTipClassNames = ['ag-tooltip'];
-                } else if (isCustom) {
+                if (isCustom) {
                     xhToolTipClassNames = ['xh-grid-tooltip'];
                 } else {
                     xhToolTipClassNames = [
@@ -1150,9 +1174,9 @@ export class Column {
                 const container = wrapperRef.current?.closest('.ag-react-container');
                 container?.classList.add(...xhToolTipClassNames);
                 return () => container?.classList.remove(...xhToolTipClassNames);
-            }, [isCustom, validationCount, location]);
+            }, [isCustom, validationCount, isRowLevel]);
 
-            if (location === 'header') return div({ref: wrapperRef, children: this.headerTooltip});
+            if (!isRowLevel) return createElement(headerTooltipComponent, agParams);
             if (!hasRecord) return div();
 
             // Validation messages supersede the column's own tooltip - resolved above.

@@ -243,11 +243,37 @@ describe('Column.getAgSpec', () => {
         });
     });
 
+    describe('headerTooltip', () => {
+        it('gives ag-Grid an explicit tooltip, null for none, or else the description', () => {
+            const tooltipFor = (spec: Partial<ColumnSpec>) =>
+                createColumn(spec).getAgSpec().headerTooltip;
+
+            expect(tooltipFor({headerTooltip: 'Custom', description: 'Desc'})).toBe('Custom');
+            expect(tooltipFor({headerTooltip: null, description: 'Desc'})).toBeNull();
+            expect(tooltipFor({description: 'Desc'})).toBe('Desc');
+        });
+
+        it('renders a default tooltip as the name over the description', () => {
+            const Cmp = createColumn({}).getAgSpec().tooltipComponent,
+                {container} = render(
+                    createElement(Cmp, {
+                        location: 'header',
+                        value: {name: 'Quantity', description: 'Shares held'}
+                    })
+                );
+            expect(container.querySelector('.xh-grid-header-tooltip__name').textContent).toBe(
+                'Quantity'
+            );
+            expect(
+                container.querySelector('.xh-grid-header-tooltip__description').textContent
+            ).toBe('Shares held');
+        });
+    });
+
     describe('tooltip', () => {
-        it('is not configured for a column with neither tooltip nor editor', () => {
-            const spec = createColumn({}).getAgSpec();
-            expect(spec.tooltip).toBeUndefined();
-            expect(spec.tooltipComponent).toBeUndefined();
+        it('disables cell tooltips for a column with neither tooltip nor editor', () => {
+            // Its header tooltip component must not show for full-width group rows.
+            expect(createColumn({}).getAgSpec().tooltip).toBe(false);
         });
 
         it('shows for any record when configured, but not for rows without a record', () => {
