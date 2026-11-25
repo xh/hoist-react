@@ -10,11 +10,6 @@ import {initTestAppAsync} from '@xh/hoist/test-support';
 import {act, render} from '@testing-library/react';
 import {beforeAll, describe, expect, it, onTestFinished, vi} from 'vitest';
 
-/**
- * Highcharts observes the element a chart renders into for resizes and never stops, not even when
- * the chart is destroyed. A Chart rebuilds on each config change, so every rebuild must leave the
- * previous build's observer watching an element that has left the page.
- */
 describe('Chart', () => {
     beforeAll(() => initTestAppAsync());
 
@@ -50,8 +45,7 @@ async function settle() {
     await act(() => new Promise(resolve => setTimeout(resolve, 0)));
 }
 
-// A Highcharts whose every chart leaves its render target observed, as 12.x's setReflow() does: the
-// targets it observes, which a resize still reaches while they are in the page.
+// A fake Highcharts that records each chart's render target, which 12.x's setReflow() observes for good.
 function installLeakyHighcharts() {
     const observed: HTMLElement[] = [],
         build = vi.fn((config: any) => {
