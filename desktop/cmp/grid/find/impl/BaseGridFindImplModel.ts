@@ -13,7 +13,7 @@ import {createObservableRef} from '@xh/hoist/utils/react';
 import {isEmpty} from 'lodash';
 import type {FindFieldControlsModel} from './FindFieldControls';
 import type {FindHotkeyTarget} from './FindHotkeys';
-import {registerFindHotkeyTarget, unregisterFindHotkeyTarget} from './FindHotkeys';
+import {isOnScreen, registerFindHotkeyTarget, unregisterFindHotkeyTarget} from './FindHotkeys';
 
 /**
  * Base for the impl models behind `GridFindField` - one per mode. Holds the query, the bound grid
@@ -76,8 +76,12 @@ export abstract class BaseGridFindImplModel
     // FindHotkeyTarget
     //------------------------
     get canFocus(): boolean {
-        const el = this.inputRef.current?.domEl;
-        return !!this.innerGridModel && !!el && el.getClientRects().length > 0;
+        const el = this.inputEl;
+        return !!this.innerGridModel && !!el && isOnScreen(el);
+    }
+
+    get inputEl(): Element {
+        return this.inputRef.current?.domEl ?? null;
     }
 
     contains(el: Element): boolean {

@@ -30,9 +30,11 @@ export type GridFindFieldMode = 'rows' | 'cells';
 
 export interface GridFindFieldProps extends TextInputProps, LayoutProps {
     /**
-     * True to focus this field on Ctrl+F (Cmd+F on Mac), in place of the browser's own find. With
-     * several such fields on screen, Ctrl+F goes to the one whose grid has focus, else the one last
-     * used, else the browser handles it. Default false.
+     * True to focus this field on Ctrl+F (Cmd+F on Mac), in place of the browser's own find. A
+     * focused component or app handler that handles the key first keeps it. With several such
+     * fields on screen, Ctrl+F goes to the one whose grid has focus, else the next one after the
+     * focused element in focus order. A field that is covered, as by a dialog, or off screen is
+     * skipped. If no field can take focus, the browser handles the key. Default false.
      */
     enableHotkey?: boolean;
 

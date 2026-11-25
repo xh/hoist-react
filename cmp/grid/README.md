@@ -262,8 +262,11 @@ In `cells` mode:
   by stale text until the record changes.
 
 In either mode, **Ctrl+F** (Cmd+F on Mac) focuses a field set with `enableHotkey`, in place of
-the browser's find. With several on screen it picks the one whose grid has focus, then the one
-last used. If neither applies and more than one is on screen, the browser handles the key.
+the browser's find. The focused component and any app key handlers see the key first, and one
+that handles it - by stopping the event or calling `preventDefault()` - keeps it. With several
+fields on screen, Ctrl+F picks the one whose grid has focus, else the next one after the focused
+element in focus order, wrapping to the first. Fields that are covered, as by a dialog, or off
+screen are skipped. If no field can take focus, the browser handles the key.
 
 ### Inline Editing
 

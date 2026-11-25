@@ -4,15 +4,17 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {maxBy} from 'lodash';
 
 /**
  * A find box that Ctrl+F (Cmd+F on Mac) can focus.
  * @internal
  */
 export interface FindHotkeyTarget {
-    /** True if the box can take focus now - enabled and on screen. */
+    /** True if the box can take focus now - enabled, on screen and not covered. */
     readonly canFocus: boolean;
+
+    /** The box's input element, which places it in the page's focus order. */
+    readonly inputEl: Element;
 
     /** True if the element is within the box or the grid it searches. */
     contains(el: Element): boolean;
@@ -21,73 +23,92 @@ export interface FindHotkeyTarget {
     focusInput(): void;
 }
 
-/** A target with its last use - a rising sequence number, 0 if never used. */
-export type FindHotkeyEntry = [target: FindHotkeyTarget, lastUsed: number];
-
 /**
- * Choose the box Ctrl+F focuses: the one whose grid (or itself) holds focus, else the one last
- * used, else the only one on screen. Null if none fits, leaving Ctrl+F to the browser.
+ * Choose the box Ctrl+F focuses, from those that can take focus:
+ * 1. the box whose own input or grid holds focus.
+ * 2. else the next box after the focused element in focus order, wrapping to the first - the
+ *    first box on the page when nothing is focused.
+ * Null if no box can take focus, leaving Ctrl+F to the browser.
+ *
+ * Focus order is taken as document order, which matches tab order unless an element sets a
+ * positive `tabIndex`.
  * @internal
  */
 export function resolveFindHotkeyTarget(
-    entries: FindHotkeyEntry[],
+    targets: FindHotkeyTarget[],
     activeEl: Element
 ): FindHotkeyTarget {
-    const eligible = entries.filter(([target]) => target.canFocus),
-        focused = activeEl ? eligible.find(([target]) => target.contains(activeEl)) : null;
-    if (focused) return focused[0];
+    const eligible = targets
+        .filter(it => it.canFocus && it.inputEl)
+        .sort((a, b) => compareDocumentOrder(a.inputEl, b.inputEl));
+    if (!eligible.length) return null;
 
-    const lastUsed = maxBy(
-        eligible.filter(([, used]) => used > 0),
-        ([, used]) => used
+    // The body holds focus when no element does.
+    const focused = activeEl && activeEl !== activeEl.ownerDocument?.body ? activeEl : null;
+    if (!focused) return eligible[0];
+
+    return (
+        eligible.find(it => it.contains(focused)) ??
+        eligible.find(it => compareDocumentOrder(focused, it.inputEl) < 0) ??
+        eligible[0]
     );
-    if (lastUsed) return lastUsed[0];
-
-    return eligible.length === 1 ? eligible[0][0] : null;
 }
 
 /**
- * Register a box to take Ctrl+F. Page-wide listeners are installed while any box is registered.
+ * True if the element is in the viewport and not covered by another element, such as a dialog
+ * or its backdrop - tested at the element's center.
+ * @internal
+ */
+export function isOnScreen(el: Element): boolean {
+    const {left, top, width, height} = el.getBoundingClientRect();
+    if (!width || !height) return false;
+
+    const x = left + width / 2,
+        y = top + height / 2;
+    if (x < 0 || y < 0 || x >= window.innerWidth || y >= window.innerHeight) return false;
+
+    const hit = document.elementFromPoint?.(x, y);
+    return !!hit && el.contains(hit);
+}
+
+/**
+ * Register a box to take Ctrl+F. A page-wide listener is installed while any box is registered.
  * @internal
  */
 export function registerFindHotkeyTarget(target: FindHotkeyTarget) {
-    if (!entries.size) {
-        document.addEventListener('keydown', onKeyDown, true);
-        document.addEventListener('focusin', onFocusIn, true);
-    }
-    if (!entries.has(target)) entries.set(target, 0);
+    if (!targets.size) window.addEventListener('keydown', onKeyDown);
+    targets.add(target);
 }
 
 /** @internal */
 export function unregisterFindHotkeyTarget(target: FindHotkeyTarget) {
-    if (!entries.delete(target) || entries.size) return;
-    document.removeEventListener('keydown', onKeyDown, true);
-    document.removeEventListener('focusin', onFocusIn, true);
+    if (!targets.delete(target) || targets.size) return;
+    window.removeEventListener('keydown', onKeyDown);
 }
 
 //------------------------
 // Implementation
 //------------------------
-const entries = new Map<FindHotkeyTarget, number>();
-let useSeq = 0;
+const targets = new Set<FindHotkeyTarget>();
 
+// Listen on the window as the key bubbles up, so the focused component and any app handlers on
+// the way see Ctrl+F first. One that handles it stops the event or marks it handled.
 function onKeyDown(e: KeyboardEvent) {
+    if (e.defaultPrevented) return;
+
     const isFind =
         (e.ctrlKey || e.metaKey) && !e.altKey && !e.shiftKey && e.key?.toLowerCase() === 'f';
     if (!isFind) return;
 
-    const target = resolveFindHotkeyTarget([...entries], document.activeElement);
+    const target = resolveFindHotkeyTarget([...targets], document.activeElement);
     if (!target) return;
 
     e.preventDefault();
     target.focusInput();
 }
 
-// Note the box whose grid (or itself) the user last worked in.
-function onFocusIn(e: FocusEvent) {
-    const el = e.target as Element;
-    if (!(el instanceof Element)) return;
-    for (const target of entries.keys()) {
-        if (target.contains(el)) entries.set(target, ++useSeq);
-    }
+// Negative if `a` comes before `b` in the document, positive if after, 0 if the same element.
+function compareDocumentOrder(a: Element, b: Element): number {
+    if (a === b) return 0;
+    return a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING ? -1 : 1;
 }
