@@ -14,12 +14,19 @@
  *      stylesheet they are renamed when the same compound selector names that component, as in
  *      `.bp6-button.bp6-minimal`  →  `.xh-button.xh-button--minimal`.
  *
+ *   3. A `bp6-button` after `bp6-segmented-control` in the same selector is a SegmentedControl
+ *      option, and becomes `xh-segmented-control__option`, with its modifiers.
+ *
  * Everything else is reported, not rewritten, with the file and line:
  *   - a generic modifier with no component class in its compound, such as `&.bp6-minimal` nested
  *     under a component rule or `bp6-active` alone in a class string;
  *   - a class with more than one Hoist equivalent, such as `bp6-input` (an InputGroup input or a
  *     TextArea) or `bp6-overlay-backdrop` (a Dialog, Overlay or popover backdrop);
+ *   - a `bp6-button` nested inside a `bp6-segmented-control` block in a stylesheet, a
+ *     SegmentedControl option that a rule written on one line would have named;
  *   - a class Hoist never renders, such as `bp6-icon` or Blueprint's typography classes;
+ *   - a `bp6-` class the rewrite did not reach, such as one in a string nested inside a template
+ *     literal;
  *   - a Blueprint custom property, such as `var(--bp-intent-primary-rest)`. Hoist no longer
  *     defines them - use a value or an `--xh-*` variable.
  * The upgrade notes' mapping table lists the Hoist name for each reported class.
@@ -154,6 +161,7 @@ const AMBIGUOUS = {
     'overlay-content': '`xh-dialog__container` on a Dialog, `xh-overlay__content` on an Overlay',
     'overlay-backdrop': '`xh-dialog__backdrop`, `xh-overlay__backdrop` or `xh-popover__content-overlay`',
     'overlay-open': 'nothing on the overlay itself, `xh-overlay-open` on the body',
+    'overlay-scroll-container': '`xh-dialog__overlay` on a Dialog, `xh-overlay--scroll-container` on an Overlay',
     'heading': '`xh-dialog__title` on a dialog title, `xh-menu-header__title` on a menu heading'
 };
 
@@ -215,9 +223,12 @@ function rewriteCompound(compound) {
     return {out, unresolved};
 }
 
-// A SegmentedControl option was a bp6-button inside bp6-segmented-control. Its bp6-minimal marked
-// an unselected option - Hoist marks the selected one instead.
-const SEGMENT_OPTION = /(\.bp6-segmented-control\s*>\s*)\.bp6-button((?:\.bp6-[\w-]+|:not\(\.bp6-[\w-]+\)|::?[\w-]+(?:\([^)]*\))?)*)/g;
+// A SegmentedControl option was a bp6-button inside bp6-segmented-control, as a child or any
+// descendant within the same selector. Its bp6-minimal marked an unselected option - Hoist marks
+// the selected one instead.
+const SEGMENT_OPTION = /(\.bp6-segmented-control(?![\w-])[^,{}]*?)\.bp6-button(?![\w-])((?:\.bp6-[\w-]+|:not\(\.bp6-[\w-]+\)|::?[\w-]+(?:\([^)]*\))?)*)/g;
+const SEGMENTED = /\.bp6-segmented-control(?![\w-])/;
+const BUTTON = /^\.bp6-button(?![\w-])/;
 const OPTION = '.xh-segmented-control__option';
 function rewriteSegmentOption(line) {
     return line.replace(SEGMENT_OPTION, (whole, pre, rest) =>
@@ -227,6 +238,32 @@ function rewriteSegmentOption(line) {
             .replace(/\.bp6-minimal/g, `:not(${OPTION}--selected)`)
             .replace(/\.bp6-disabled/g, `${OPTION}--disabled`)
     );
+}
+
+/**
+ * Track a stylesheet's open blocks across lines, and return true if this line has a `.bp6-button`
+ * inside a `.bp6-segmented-control` block, as in nested SCSS - an option, which SEGMENT_OPTION
+ * cannot see from one line. `state` holds the stack of open blocks, each true if its selector
+ * names the segmented control, and the text of the selector being read.
+ */
+function scanSegmentBlock(line, state) {
+    let found = false;
+    for (let i = 0; i < line.length; i++) {
+        const ch = line[i];
+        if (ch === '{') {
+            state.stack.push(SEGMENTED.test(state.sel));
+            state.sel = '';
+        } else if (ch === '}' || ch === ';' || ch === ',') {
+            if (ch === '}') state.stack.pop();
+            state.sel = '';
+        } else {
+            if (BUTTON.test(line.slice(i)) && (state.stack.includes(true) || SEGMENTED.test(state.sel))) {
+                found = true;
+            }
+            state.sel += ch;
+        }
+    }
+    return found;
 }
 
 function rewriteStyleLine(line) {
@@ -245,7 +282,7 @@ function rewriteCodeLine(line) {
     // Class tokens inside string and template literals.
     const out = line.replace(/(['"`])((?:(?!\1).)*?)\1/g, (whole, q, body) => {
         if (!body.includes('bp6-')) return whole;
-        const next = body.replace(/(^|[\s.])bp6-([\w-]+)/g, (m, pre, name) => {
+        const next = rewriteSegmentOption(body).replace(/(^|[\s.])bp6-([\w-]+)/g, (m, pre, name) => {
             if (COMPONENTS[name]) return pre + COMPONENTS[name][0];
             unresolved.push(name);
             return m;
@@ -257,6 +294,8 @@ function rewriteCodeLine(line) {
 
 function explain(name) {
     if (AMBIGUOUS[name]) return `\`bp6-${name}\` has more than one Hoist name: ${AMBIGUOUS[name]}`;
+    if (COMPONENTS[name])
+        return `\`bp6-${name}\` was not rewritten here - its Hoist name is \`${COMPONENTS[name][0]}\``;
     if (MODIFIERS.has(name) || /^intent-/.test(name))
         return `\`bp6-${name}\` is a generic modifier - use the modifier of the component it sits on`;
     return `\`bp6-${name}\` has no Hoist equivalent - Hoist never renders it`;
@@ -269,20 +308,30 @@ async function processFile(file) {
     const text = await fs.readFile(file, 'utf8');
     if (!/bp6-|--bp-/.test(text)) return 0;
     const lines = text.split('\n');
+    const segState = {stack: [], sel: ''};
     let changed = 0;
     lines.forEach((line, i) => {
         if (isDoc) {
             if (/bp6-/.test(line)) note(file, i + 1, line, 'mentions a `bp6-` class');
             return;
         }
+        // Scan every style line, so the block stack stays in step with the file's braces.
+        const nestedOption = isStyle && scanSegmentBlock(rewriteSegmentOption(line), segState);
         if (/var\(--bp6?-/.test(line)) note(file, i + 1, line, 'reads a Blueprint custom property, which Hoist no longer defines');
         if (!line.includes('bp6-')) return;
+        if (nestedOption) {
+            note(file, i + 1, line, '`bp6-button` inside a `bp6-segmented-control` block is a SegmentedControl option - use `xh-segmented-control__option`, and see the upgrade notes for its modifiers');
+            return;
+        }
         const {out, unresolved} = isStyle ? rewriteStyleLine(line) : rewriteCodeLine(line);
         if (out !== line) {
             lines[i] = out;
             changed++;
         }
-        for (const name of new Set(unresolved)) note(file, i + 1, out, explain(name));
+        // Also report any bp6- class left in place that the rewrite did not see, such as one in a
+        // string nested inside a template literal.
+        const left = [...out.matchAll(/(?<![\w-])bp6-([\w-]+)/g)].map(m => m[1]);
+        for (const name of new Set([...unresolved, ...left])) note(file, i + 1, out, explain(name));
     });
     if (changed && !dry) await fs.writeFile(file, lines.join('\n'));
     return changed;

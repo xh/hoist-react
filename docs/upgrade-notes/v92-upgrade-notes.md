@@ -251,6 +251,7 @@ Blueprint's typography classes - `bp6-code`, `bp6-key`, `bp6-running-text`, `bp6
 | `bp6-overlay-content` | `xh-dialog__container` on a Dialog, `xh-overlay__content` on an Overlay | |
 | `bp6-overlay-backdrop` | `xh-dialog__backdrop`, `xh-overlay__backdrop` or `xh-popover__content-overlay` | |
 | `bp6-overlay-open` | nothing on the overlay itself, `xh-overlay-open` on the body | |
+| `bp6-overlay-scroll-container` | `xh-dialog__overlay` on a Dialog, `xh-overlay--scroll-container` on an Overlay | |
 | `bp6-heading` | `xh-dialog__title` on a dialog title, `xh-menu-header__title` on a menu heading | |
 | `bp6-button` inside `bp6-segmented-control` | `xh-segmented-control__option` | `bp6-disabled` → `xh-segmented-control__option--disabled`. Blueprint's `bp6-minimal` marked an unselected option - Hoist marks the selected one with `xh-segmented-control__option--selected` |
 

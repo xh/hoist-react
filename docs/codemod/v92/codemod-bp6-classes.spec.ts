@@ -62,6 +62,58 @@ describe('codemod-bp6-classes', () => {
         );
     });
 
+    it('turns a segmented control option into xh-segmented-control__option under any combinator', () => {
+        const {read} = run({
+            'src/app.scss':
+                '.x .bp6-segmented-control .bp6-button.bp6-disabled { color: red; }\n' +
+                '.bp6-segmented-control .y .bp6-button, .bp6-button { color: red; }\n',
+            'src/Panel.ts': "el.querySelector('.bp6-segmented-control .bp6-button');\n"
+        });
+        expect(read('src/app.scss')).toBe(
+            '.x .xh-segmented-control__options .xh-segmented-control__option.xh-segmented-control__option--disabled { color: red; }\n' +
+                '.xh-segmented-control__options .y .xh-segmented-control__option, .xh-button { color: red; }\n'
+        );
+        expect(read('src/Panel.ts')).toBe(
+            "el.querySelector('.xh-segmented-control__options .xh-segmented-control__option');\n"
+        );
+    });
+
+    it('reports a button nested in a segmented control block, and leaves it as written', () => {
+        const files = {
+            'src/app.scss':
+                '.bp6-segmented-control {\n' +
+                '    .bp6-button.bp6-intent-primary { color: red; }\n' +
+                '}\n' +
+                '.bp6-button { color: red; }\n' +
+                '.bp6-segmented-control { .bp6-button { color: red; } }\n'
+        };
+        const {output, read} = run(files);
+        expect(read('src/app.scss')).toBe(
+            '.xh-segmented-control__options {\n' +
+                '    .bp6-button.bp6-intent-primary { color: red; }\n' +
+                '}\n' +
+                '.xh-button { color: red; }\n' +
+                '.bp6-segmented-control { .bp6-button { color: red; } }\n'
+        );
+        expect(output).toContain('app.scss:2  `bp6-button` inside a `bp6-segmented-control` block');
+        expect(output).toContain('app.scss:5  `bp6-button` inside a `bp6-segmented-control` block');
+        expect(output).not.toContain('app.scss:4');
+    });
+
+    it('reports a bp6 class it could not reach in a nested string', () => {
+        const files = {'src/Panel.ts': "const c = `${x ? 'bp6-button' : ''} y`;\n"};
+        const {output, read} = run(files);
+        expect(read('src/Panel.ts')).toBe(files['src/Panel.ts']);
+        expect(output).toContain('`bp6-button` was not rewritten here - its Hoist name is `xh-button`');
+    });
+
+    it('reports bp6-overlay-scroll-container with its Hoist names', () => {
+        const {output} = run({'src/app.scss': '.bp6-overlay-scroll-container { color: red; }\n'});
+        expect(output).toContain(
+            '`bp6-overlay-scroll-container` has more than one Hoist name: `xh-dialog__overlay` on a Dialog, `xh-overlay--scroll-container` on an Overlay'
+        );
+    });
+
     it('renames component classes in TypeScript class strings', () => {
         const {read} = run({
             'src/Panel.ts': "const a = 'bp6-button my-class';\nconst b = `bp6-tab ${extra}`;\n"
