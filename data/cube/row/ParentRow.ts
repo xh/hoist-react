@@ -141,13 +141,6 @@ export abstract class ParentRow extends BaseRow {
         }
     }
 
-    /** Aggregate fields again, as a bulk update deferred them. See {@link View._deferredAggs}. */
-    reaggregate(fields: Set<CubeField>) {
-        const {data, children, view} = this,
-            ctx = view._aggContext;
-        fields.forEach(field => (data[field.name] = ctx.aggregate(children, field, this)));
-    }
-
     //-------------------
     // Aggregation
     //--------------------
@@ -219,10 +212,12 @@ export abstract class ParentRow extends BaseRow {
         return changed;
     }
 
-    // Re-aggregate a single field in place, returning true if anything our parent aggregates over
-    // changed - the published value, or the aggregator state a parent composes from, which may
-    // differ behind an unchanged value.
-    private recomputeAggregate(field: CubeField): boolean {
+    /**
+     * Re-aggregate a single field in place, returning true if anything our parent aggregates over
+     * changed - the published value, or the aggregator state a parent composes from, which may
+     * differ behind an unchanged value.
+     */
+    recomputeAggregate(field: CubeField): boolean {
         const {children, data, view} = this,
             {name} = field,
             prevState = this.aggStates?.[name];

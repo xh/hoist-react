@@ -221,7 +221,7 @@ export class View
      * During a value-only update, the fields each row must aggregate again once every leaf is in,
      * for aggregators with no incremental replace. Null otherwise.
      */
-    _deferredAggs: Map<ParentRow, Set<CubeField>> = null;
+    _deferredAggs: Map<BaseRow, Set<CubeField>> = null;
     _rowCache: RowCache = null;
 
     /** @internal - applications should use {@link Cube.createView} */
@@ -539,14 +539,11 @@ export class View
 
         // `_records` left stale by design - simple updates never touch filter/dim/bucket fields.
         this._deferredAggs = new Map();
-        try {
-            updates.forEach(rec => {
-                _leafMap.get(rec.id)?.applyLeafDataUpdate(rec, checkFields, changed);
-            });
-            this.applyDeferredAggs();
-        } finally {
-            this._deferredAggs = null;
-        }
+        updates.forEach(rec => {
+            _leafMap.get(rec.id)?.applyLeafDataUpdate(rec, checkFields, changed);
+        });
+        this.applyDeferredAggs();
+        this._deferredAggs = null;
 
         changed.rows.forEach(row => BaseRow.assignDigest(row.data as ViewRowData));
 
@@ -565,11 +562,11 @@ export class View
     private applyDeferredAggs() {
         const deferred = this._deferredAggs,
             settle = (row: BaseRow) => {
-                const fields = deferred.get(row as ParentRow);
+                const fields = deferred.get(row);
                 if (!fields) return;
-                deferred.delete(row as ParentRow);
+                deferred.delete(row);
                 row.children.forEach(settle);
-                (row as ParentRow).reaggregate(fields);
+                fields.forEach(field => (row as ParentRow).recomputeAggregate(field));
             };
         [...deferred.keys()].forEach(settle);
     }

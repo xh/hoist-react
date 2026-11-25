@@ -40,6 +40,7 @@ export abstract class Aggregator {
      * True if {@link replace} takes one child's change without aggregating every child again. A View
      * applying many value changes at once re-aggregates each row just once for an aggregator
      * without one, rather than once per changed leaf below it.
+     * @internal
      */
     get hasIncrementalReplace(): boolean {
         return this.replace !== Aggregator.prototype.replace;
