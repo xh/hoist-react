@@ -54,6 +54,14 @@ Presses inside overlays opened from within a popover do not close it. That cover
 select dropdowns, AG Grid popups and other overlays, which each mount their own layer on the
 page after the popover's.
 
+## Styling the Target
+
+The target sits inside a wrapper element, `xh-popover__target-wrapper`, which takes
+`xh-popover__target-wrapper--open` while the popover is open. The target itself carries
+`xh-popover__target`. While an uncontrolled click popover is open, the target also takes
+`xh-popover__target--active`, so a button that opens a menu looks pressed with no code of its own.
+A controlled popover (one passed `isOpen`) does not set it - pass `active` to its button instead.
+
 ## Portals
 
 A popover renders in a portal on `document.body`, so no clipping ancestor cuts it off. Set

@@ -463,12 +463,14 @@ function renderTarget({
         // A hover popover that opens on focus needs a target that can take focus.
         tabIndex = isHover && openOnTargetFocus && !disabled ? 0 : undefined;
 
+    // The element the user presses carries `xh-popover__target`. A rendered target is both that
+    // element and the wrapper, so it carries both classes.
     if (renderTargetFn) {
         return renderTargetFn({
             ...wrapperProps,
             ...ariaProps,
             tabIndex,
-            className: classNames(className, 'xh-popover__target-wrapper', {
+            className: classNames(className, 'xh-popover__target-wrapper', 'xh-popover__target', {
                 'xh-popover__target-wrapper--open': open,
                 'xh-popover__target--active': isActive
             }),
@@ -500,7 +502,7 @@ function renderTarget({
         cloneElement(el, {
             ...ariaProps,
             tabIndex: el.props.tabIndex ?? tabIndex,
-            className: classNames(el.props.className, {
+            className: classNames(el.props.className, 'xh-popover__target', {
                 'xh-popover__target--active': isActive
             })
         })

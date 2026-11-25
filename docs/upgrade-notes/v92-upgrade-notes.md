@@ -189,6 +189,7 @@ Blueprint's typography classes - `bp6-code`, `bp6-key`, `bp6-running-text`, `bp6
 | `bp6-popover-arrow-fill` | `xh-popover__arrow-fill` |  |
 | `bp6-popover-target` | `xh-popover__target-wrapper` |  |
 | `bp6-popover-open` | `xh-popover__target-wrapper--open` |  |
+| `bp6-active` on a popover's target | `xh-popover__target--active` | Set while an uncontrolled click popover is open. The target itself carries `xh-popover__target` |
 | `bp6-popover-transition-container` | `xh-popover__floating` |  |
 | `bp6-popover-dismiss` | `xh-popover-dismiss` |  |
 | `bp6-popover-match-target-width` | `xh-popover__content-wrapper--match-target-width` |  |

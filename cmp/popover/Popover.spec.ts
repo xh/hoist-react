@@ -34,6 +34,14 @@ describe('Popover', () => {
         await waitFor(() => expect(screen.queryByText('Body')).toBeNull());
     });
 
+    it('marks the element it targets, inside its wrapper', () => {
+        render(withPopover());
+        const button = screen.getByText('Open');
+        expect(button.classList.contains('xh-popover__target')).toBe(true);
+        expect(button.parentElement.classList.contains('xh-popover__target-wrapper')).toBe(true);
+        expect(button.parentElement.classList.contains('xh-popover__target')).toBe(false);
+    });
+
     it('marks its target active while open, unless controlled', async () => {
         const {unmount} = render(withPopover());
         const isActive = () =>
