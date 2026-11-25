@@ -14,6 +14,7 @@ export * from './ThemeToggleButton';
 export * from './WhatsNewButton';
 export * from './grid/ColAutosizeButton';
 export * from './grid/ColChooserButton';
+export * from './grid/ExpandCycleButton';
 export * from './grid/ExpandToLevelButton';
 export * from './grid/ExportButton';
 export * from './zoneGrid/ZoneMapperButton';
