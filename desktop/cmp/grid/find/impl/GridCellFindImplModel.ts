@@ -26,8 +26,8 @@ interface FocusedCell {
 }
 
 /**
- * Position in the grid's display order, compared row first: headers are row -2, pinned top rows
- * -1, then the body rows in order, then pinned bottom rows. A column of -1 is the start of a row.
+ * Position in the grid's display order, compared row first: headers are row -1, then the body rows
+ * in order. A column of -1 is the start of a row.
  */
 type FindKey = [row: number, col: number];
 
@@ -147,7 +147,7 @@ export class GridCellFindImplModel extends BaseGridFindImplModel {
         if (match.record) {
             const node = agApi.getRowNode(match.record.agId);
             if (node?.rowIndex != null) {
-                agApi.setFocusedCell(node.rowIndex, match.colId, node.rowPinned);
+                agApi.setFocusedCell(node.rowIndex, match.colId);
             }
         } else if (agApi.getDisplayedRowCount()) {
             agApi.ensureIndexVisible(rowIndex);
@@ -307,18 +307,15 @@ export class GridCellFindImplModel extends BaseGridFindImplModel {
 
     private keyOf({record, colId}: FindMatch): FindKey {
         const col = this.colOrdinals.get(colId) ?? -1;
-        return record ? [this.rowOrdinals.get(record.id) ?? -1, col] : [-2, col];
+        return record ? [this.rowOrdinals.get(record.id) ?? -1, col] : [-1, col];
     }
 
     // Key of the focused cell, else the start of the selected row, else null.
     private getAnchorKey(focus: FocusedCell): FindKey {
         if (focus) {
             const {node, colId} = focus,
-                col = this.colOrdinals.get(colId) ?? -1;
-            if (node.rowPinned === 'top') return [-1, col];
-            if (node.rowPinned === 'bottom') return [Infinity, col];
-
-            const row = this.getRowOrdinal(node);
+                col = this.colOrdinals.get(colId) ?? -1,
+                row = this.getRowOrdinal(node);
             // A group row sits above its first record, so starts the row of that record.
             if (row != null) return [row, node.data ? col : -1];
         }
@@ -343,16 +340,13 @@ export class GridCellFindImplModel extends BaseGridFindImplModel {
     private getFocusedCell(): FocusedCell {
         const agApi = this.innerGridModel?.agApi,
             focused = agApi?.getFocusedCell();
-        if (!focused) return null;
 
-        const {rowIndex, rowPinned, column} = focused,
-            node =
-                rowPinned === 'top'
-                    ? agApi.getPinnedTopRow(rowIndex)
-                    : rowPinned === 'bottom'
-                      ? agApi.getPinnedBottomRow(rowIndex)
-                      : agApi.getDisplayedRowAtIndex(rowIndex);
-        return node ? {node, colId: column.getColId()} : null;
+        // A pinned row, such as a summary, is not searched. Focus there counts as no focus, so a
+        // step moves on from the active match, else from the selected row.
+        if (!focused || focused.rowPinned) return null;
+
+        const node = agApi.getDisplayedRowAtIndex(focused.rowIndex);
+        return node ? {node, colId: focused.column.getColId()} : null;
     }
 
     private hasFocusMoved(focus: FocusedCell): boolean {
@@ -395,7 +389,6 @@ export class GridCellFindImplModel extends BaseGridFindImplModel {
             colIds.add(colId);
         });
 
-        if (isEqual(byRecord, gridModel._findMatches)) return;
         gridModel._findMatches = byRecord;
         this.refreshCells();
     }
@@ -419,10 +412,11 @@ export class GridCellFindImplModel extends BaseGridFindImplModel {
         }
     }
 
-    // Re-apply cell classes to the rendered cells - ag-Grid renders only those in view.
+    // Re-apply cell classes to the rendered cells. ag-Grid renders only those in view, and
+    // re-renders a cell only if its value has changed.
     private refreshCells() {
         const agApi = this.innerGridModel?.agApi;
-        if (agApi && !agApi.isDestroyed()) agApi.refreshCells({force: true, suppressFlash: true});
+        if (agApi && !agApi.isDestroyed()) agApi.refreshCells();
     }
 }
 

@@ -4,7 +4,7 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {describe, expect, it, onTestFinished, vi} from 'vitest';
+import {describe, expect, it, onTestFinished} from 'vitest';
 import type {FindHotkeyTarget} from './FindHotkeys';
 import {
     isOnScreen,
@@ -123,28 +123,26 @@ describe('registerFindHotkeyTarget', () => {
 });
 
 /**
- * jsdom has no layout, so these tests give the element a position and set what lies on top of it.
+ * jsdom has no layout, so these tests set the element a browser reports at a point. Browsers report
+ * none for a point outside the viewport.
  */
 describe('isOnScreen', () => {
-    it('is true for an element in the viewport with nothing on top of it', () => {
+    it('is true for the element shown at its center', () => {
         const [el] = addElements(1);
-        placeAt(el, {left: 10, top: 10}, el);
+        setElementAtPoint(el);
         expect(isOnScreen(el)).toBe(true);
     });
 
     it('is false for an element covered by another, such as a dialog backdrop', () => {
         const [el, backdrop] = addElements(2);
-        placeAt(el, {left: 10, top: 10}, backdrop);
+        setElementAtPoint(backdrop);
         expect(isOnScreen(el)).toBe(false);
     });
 
-    it('is false for an element with no size, or outside the viewport', () => {
-        const [hidden, offscreen] = addElements(2);
-        placeAt(hidden, {left: 10, top: 10, width: 0, height: 0}, hidden);
-        placeAt(offscreen, {left: 10, top: window.innerHeight + 100}, offscreen);
-
-        expect(isOnScreen(hidden)).toBe(false);
-        expect(isOnScreen(offscreen)).toBe(false);
+    it('is false for an element with nothing shown at its center, as outside the viewport', () => {
+        const [el] = addElements(1);
+        setElementAtPoint(null);
+        expect(isOnScreen(el)).toBe(false);
     });
 });
 
@@ -195,31 +193,10 @@ function pressFind(el: Element, mods: KeyboardEventInit): KeyboardEvent {
     return e;
 }
 
-// Give the element a box, and make `topEl` the element found at any point on screen.
-function placeAt(
-    el: Element,
-    {
-        left,
-        top,
-        width = 100,
-        height = 20
-    }: {left: number; top: number; width?: number; height?: number},
-    topEl: Element
-) {
-    vi.spyOn(el, 'getBoundingClientRect').mockReturnValue({
-        left,
-        top,
-        width,
-        height,
-        right: left + width,
-        bottom: top + height,
-        x: left,
-        y: top,
-        toJSON: () => null
-    } as DOMRect);
-
+// Make `el` the element found at any point on screen.
+function setElementAtPoint(el: Element) {
     const prev = document.elementFromPoint;
-    document.elementFromPoint = () => topEl;
+    document.elementFromPoint = () => el;
     onTestFinished(() => {
         document.elementFromPoint = prev;
     });

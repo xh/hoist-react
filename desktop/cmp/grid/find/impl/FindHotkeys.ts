@@ -55,19 +55,13 @@ export function resolveFindHotkeyTarget(
 }
 
 /**
- * True if the element is in the viewport and not covered by another element, such as a dialog
- * or its backdrop - tested at the element's center.
+ * True if the element is the one shown at its own center - so not hidden, outside the viewport,
+ * or covered by another element such as a dialog or its backdrop.
  * @internal
  */
 export function isOnScreen(el: Element): boolean {
-    const {left, top, width, height} = el.getBoundingClientRect();
-    if (!width || !height) return false;
-
-    const x = left + width / 2,
-        y = top + height / 2;
-    if (x < 0 || y < 0 || x >= window.innerWidth || y >= window.innerHeight) return false;
-
-    const hit = document.elementFromPoint?.(x, y);
+    const {left, top, width, height} = el.getBoundingClientRect(),
+        hit = document.elementFromPoint?.(left + width / 2, top + height / 2);
     return !!hit && el.contains(hit);
 }
 
