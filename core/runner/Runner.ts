@@ -4,7 +4,15 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import type {CallContextLike, FullSpanConfig, Some, SpanConfig, TrackOptions} from '@xh/hoist/core';
+import type {
+    CallContextLike,
+    FullSpanConfig,
+    MetricConfig,
+    MetricTags,
+    Some,
+    SpanConfig,
+    TrackOptions
+} from '@xh/hoist/core';
 import {XH} from '@xh/hoist/core';
 import {CallContext} from './CallContext';
 import type {PromiseLinkSpec} from '@xh/hoist/promise';
@@ -32,8 +40,8 @@ export class Runner {
     private debugMsgs: Some<unknown> = null;
     private trackOptions: TrackOptions;
     private linkSpec: PromiseLinkSpec;
-    private counterMetric: {name: string; tags?: Record<string, string>} = null;
-    private timerMetric: {name: string; tags?: Record<string, string>} = null;
+    private counterMetric: MetricConfig = null;
+    private timerMetric: MetricConfig = null;
 
     static create(ctx: CallContextLike = null, caller?: NameSource) {
         return new Runner(ctx, caller);
@@ -49,13 +57,12 @@ export class Runner {
     //---------------------------
     /** Configure a new trace span within this context. */
     span(config: string | SpanConfig): this {
-        config = isString(config) ? {name: config} : config;
-        const {caller, ctx} = this,
-            prefix = (caller as any)?.telemetryPrefix,
-            name = prefix ? `${prefix}.${config.name}` : config.name,
+        const {useNamePrefix, ...rest}: SpanConfig = isString(config) ? {name: config} : config,
+            {caller, ctx} = this,
+            name = this.applyPrefix(rest.name, useNamePrefix),
             // Explicit remote traceparent (config.parent) wins; else nest under call-context span.
-            parent = config.parent ?? ctx.span;
-        this.spanConfig = {...config, name, parent, caller};
+            parent = rest.parent ?? ctx.span;
+        this.spanConfig = {...rest, name, parent, caller};
         return this;
     }
 
@@ -92,18 +99,24 @@ export class Runner {
     /**
      * Increment a metric counter on completion of the wrapped fn. An `xh.outcome` tag is
      * added with value `success` or `failure` based on whether the fn threw.
+     * The name is combined with the caller's `telemetryPrefix`, if set.
      */
-    counter(name: string, tags?: Record<string, string>): this {
-        this.counterMetric = {name, tags};
+    counter(name: string, tags?: MetricTags): this;
+    counter(config: MetricConfig): this;
+    counter(config: string | MetricConfig, tags?: MetricTags): this {
+        this.counterMetric = this.parseMetric(config, tags);
         return this;
     }
 
     /**
      * Record elapsed time for the wrapped fn. Recorded regardless of success or failure;
      * an `xh.outcome` tag is added with value `success` or `failure`.
+     * The name is combined with the caller's `telemetryPrefix`, if set.
      */
-    timer(name: string, tags?: Record<string, string>): this {
-        this.timerMetric = {name, tags};
+    timer(name: string, tags?: MetricTags): this;
+    timer(config: MetricConfig): this;
+    timer(config: string | MetricConfig, tags?: MetricTags): this {
+        this.timerMetric = this.parseMetric(config, tags);
         return this;
     }
 
@@ -174,6 +187,20 @@ export class Runner {
     //-------------------------
     // Implementation
     //--------------------------
+    /**
+     * Prepend the caller's `telemetryPrefix` to a span or metric name. A name that already starts
+     * with the prefix is returned as-is, so callers may pass either a short or a full name.
+     */
+    private applyPrefix(name: string, useNamePrefix: boolean = true): string {
+        const prefix = useNamePrefix ? (this.caller as any)?.telemetryPrefix : null;
+        return !prefix || name?.startsWith(`${prefix}.`) ? name : `${prefix}.${name}`;
+    }
+
+    private parseMetric(config: string | MetricConfig, tags: MetricTags): MetricConfig {
+        const {name, useNamePrefix, ...rest} = isString(config) ? {name: config, tags} : config;
+        return {...rest, name: this.applyPrefix(name, useNamePrefix)};
+    }
+
     private executeWrapped<T>(fn: RunFunction<T>): Promise<T> {
         fn = this.wrapMetrics(fn);
         fn = this.wrapLink(fn);
