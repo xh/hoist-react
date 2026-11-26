@@ -10,10 +10,6 @@ import {installAgGridForTests} from '@xh/hoist/test-support/agGrid';
 import {render, waitFor} from '@testing-library/react';
 import {beforeAll, describe, expect, it, onTestFinished, vi} from 'vitest';
 
-/**
- * A grid's group row options change on a mounted grid, as an app's settings or a designer's edit
- * changes them, with no new GridModel - which would rebuild the store, columns and every row.
- */
 describe('Grid group row options', () => {
     beforeAll(async () => {
         installAgGridForTests();
@@ -36,12 +32,18 @@ describe('Grid group row options', () => {
         await waitFor(() => expect(params().suppressCount).toBe(false));
     });
 
-    it('measures rows again when groupRowHeight changes', async () => {
-        const {gridModel} = await renderGridAsync(),
-            resetRowHeights = vi.spyOn(gridModel.agApi, 'resetRowHeights');
+    // ag-Grid's grouping module is enterprise-only, so this checks the height handed to ag-Grid.
+    it('sizes group rows to a changed groupRowHeight', async () => {
+        const {gridModel} = await renderGridAsync({groupBy: 'name'}),
+            {agApi} = gridModel,
+            groupRowHeight = () =>
+                agApi.getGridOption('getRowHeight')({node: {group: true}} as any),
+            resetRowHeights = vi.spyOn(agApi, 'resetRowHeights');
+        expect(groupRowHeight()).not.toBe(40);
 
         gridModel.groupRowHeight = 40;
 
+        await waitFor(() => expect(groupRowHeight()).toBe(40));
         await waitFor(() => expect(resetRowHeights).toHaveBeenCalled());
     });
 });
@@ -55,6 +57,6 @@ async function renderGridAsync(config: GridConfig = {}) {
     ]);
 
     const {container} = render(grid({model: gridModel, width: 600, height: 400}));
-    await waitFor(() => expect(container.querySelectorAll('.ag-row')).toHaveLength(2));
+    await waitFor(() => expect(container.querySelector('.ag-row')).not.toBeNull());
     return {gridModel};
 }

@@ -558,11 +558,7 @@ export class GridLocalModel extends HoistModel {
                 const params = agApi?.getGridOption('groupRowRendererParams');
                 if (!params || params.suppressCount === !show) return;
                 agApi.setGridOption('groupRowRendererParams', {...params, suppressCount: !show});
-                const groupRows = [];
-                agApi.forEachNode(node => {
-                    if (node.group) groupRows.push(node);
-                });
-                agApi.redrawRows({rowNodes: groupRows});
+                agApi.redrawRows();
             }
         };
     }
