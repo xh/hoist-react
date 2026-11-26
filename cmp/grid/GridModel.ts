@@ -1272,6 +1272,23 @@ export class GridModel extends HoistModel implements GridLikeModel {
     }
 
     /**
+     * Expand a grouped or tree grid one level past `expandLevel`, or collapse it if `expandLevel`
+     * already opens every level. Repeated calls step through every level, then back to collapsed.
+     *
+     * Each call leaves the grid uniformly expanded. Steps are taken from `expandLevel`, which rows
+     * opened or closed by hand do not change.
+     */
+    cycleExpandLevel() {
+        this.expandToLevel(this.nextExpandLevel);
+    }
+
+    /** The level the next call to {@link cycleExpandLevel} will expand to, or 0 to collapse. */
+    get nextExpandLevel(): number {
+        const {expandLevel, maxDepth} = this;
+        return expandLevel < 0 || expandLevel >= maxDepth ? 0 : expandLevel + 1;
+    }
+
+    /**
      * @internal - true if the current `expandLevel` opens a group row at the given depth. A
      * negative level opens every depth.
      */
