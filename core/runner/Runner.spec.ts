@@ -41,6 +41,15 @@ describe('Runner', () => {
             expect(span.name).toBe('myApp.portfolio.refresh');
         });
 
+        it('applies tags passed with a span name', async () => {
+            const span = await new PortfolioModel()
+                .runner()
+                .span('refresh', {region: 'emea'})
+                .run(async ctx => ctx.span);
+
+            expect(span.tags).toMatchObject({region: 'emea'});
+        });
+
         it('uses the span name as given when useNamePrefix is false', async () => {
             const model = new PortfolioModel(),
                 span = await model

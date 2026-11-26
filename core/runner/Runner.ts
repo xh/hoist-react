@@ -9,6 +9,7 @@ import type {
     FullSpanConfig,
     MetricConfig,
     MetricTags,
+    PlainObject,
     Some,
     SpanConfig,
     TrackOptions
@@ -56,8 +57,12 @@ export class Runner {
     // Span configuration
     //---------------------------
     /** Configure a new trace span within this context. */
-    span(config: string | SpanConfig): this {
-        const {useNamePrefix, ...rest}: SpanConfig = isString(config) ? {name: config} : config,
+    span(name: string, tags?: PlainObject): this;
+    span(config: SpanConfig): this;
+    span(config: string | SpanConfig, tags?: PlainObject): this {
+        const {useNamePrefix, ...rest}: SpanConfig = isString(config)
+                ? {name: config, tags}
+                : config,
             {caller, ctx} = this,
             name = this.applyPrefix(rest.name, useNamePrefix),
             // Explicit remote traceparent (config.parent) wins; else nest under call-context span.

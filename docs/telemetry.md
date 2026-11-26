@@ -37,11 +37,11 @@ await this.runner({loadSpec})
 
 | Method | Purpose |
 |--------|---------|
-| `span(name \| SpanConfig)` | Open a trace span around the work. |
+| `span(name, tags?)` / `span(SpanConfig)` | Open a trace span around the work. |
 | `logInfo(msgs)` / `logDebug(msgs)` | Time the work and log on completion (via `withInfo`/`withDebug`). |
 | `track(opts \| message)` | Record an activity-tracking event with timing. |
 | `linkTo(spec)` | Link to a `TaskObserver` for loading masks / progress messages. |
-| `counter(name \| MetricConfig, tags?)` / `timer(name \| MetricConfig, tags?)` | Record a metric on completion (see [Metrics](#metrics)). |
+| `counter(name, tags?)` / `counter(MetricConfig)`, same for `timer` | Record a metric on completion (see [Metrics](#metrics)). |
 
 **Terminal methods** (exactly one, executes the work):
 

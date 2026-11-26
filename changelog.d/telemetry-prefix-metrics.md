@@ -1,8 +1,11 @@
 ### 🎁 New Features
 
 * `runner().span()`, `runner().timer()` and `runner().counter()` accept `useNamePrefix: false` to
-  use a name as given, without the caller's `telemetryPrefix`. `timer()` and `counter()` now also
-  take a `MetricConfig` object. This matches the `useNamePrefix` option in hoist-core.
+  use a name as given, without the caller's `telemetryPrefix`. This matches the `useNamePrefix`
+  option in hoist-core.
+* `runner().span()`, `runner().timer()` and `runner().counter()` all take either a name with
+  optional tags or a config object. `span(name, tags)` and `timer()` / `counter()` with a
+  `MetricConfig` are new.
 
 ### 🐞 Bug Fixes
 
