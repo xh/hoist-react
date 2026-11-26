@@ -13,6 +13,16 @@
   former button rules used doubled classes, which outranked many app and component rules that
   style buttons. Those rules now apply as written. Check app CSS that targets `.xh-button`.
 
+### 🎁 New Features
+
+* Added `ButtonProps.size` - `'compact'`, `'standard'` or `'large'`, as for `Callout` and `StatCard`.
+  A `ButtonGroup` passes its `size` on to its buttons.
+* Added `ButtonProps.loading`, `true` or a `TaskObserver`, to show a spinner while a task runs.
+  The spinner takes the place of the icon, or covers a button with none. A loading button keeps
+  its size and focus, and ignores clicks.
+* Added `SplitButton` to `@xh/hoist/cmp/button`, a button for a primary action joined to an arrow
+  button that opens a menu of related actions, on desktop and mobile.
+
 ### ✨ Styles
 
 * Button styles now come from one stylesheet for desktop and mobile, a sixth the size of the

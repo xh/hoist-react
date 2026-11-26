@@ -40,6 +40,7 @@ See [`docs-roadmap.md`](./planning/docs-roadmap.md) for documentation coverage t
 | Display a PDF document (page nav, zoom, find, download) | [`/cmp/pdfviewer/`](../cmp/pdfviewer/README.md) |
 | Show the fields of a record as labeled values | [`/cmp/propertytable/`](../cmp/propertytable/README.md) |
 | Set off a note, caveat or warning within content | [`/cmp/callout/`](../cmp/callout/README.md) |
+| Add buttons, button groups and split buttons, on desktop or mobile | [`/cmp/button/`](../cmp/button/README.md) |
 | Show progress or usage against a limit as a bar | [`/cmp/tooltip/`](../cmp/tooltip/README.md) | Short label shown beside a target on hover or focus, a hover Popover with tooltip defaults | Tooltip, TooltipProps, content, intent, compact, position, targetTagName |
 | [`/cmp/progressbar/`](../cmp/progressbar/README.md) |
 | Open content beside a target on click or hover | [`/cmp/popover/`](../cmp/popover/README.md) |
@@ -99,6 +100,7 @@ See [`docs-roadmap.md`](./planning/docs-roadmap.md) for documentation coverage t
 | [`/cmp/form/`](../cmp/form/README.md) | Form infrastructure for data entry with validation | FormModel, FieldModel, SubformsFieldModel, validation rules, data binding |
 | [`/cmp/input/`](../cmp/input/README.md) | Base classes and interfaces for input components | HoistInputModel, change/commit lifecycle, value binding, focus management |
 | [`/cmp/callout/`](../cmp/callout/README.md) | Short note set off within content, tinted by its intent | Callout, intent, icon, title, Callout or Banner or Card, untrusted text |
+| [`/cmp/button/`](../cmp/button/README.md) | Buttons shared by desktop and mobile | Button, ButtonGroup, SplitButton, size, loading, minimal, outlined, platform differences |
 | [`/cmp/layout/`](../cmp/layout/README.md) | Flexbox-based layout containers | Box, VBox, HBox, Frame, Viewport, Separator, LayoutProps, pixel conversion |
 | [`/cmp/popover/`](../cmp/popover/README.md) | Content that floats beside a target, opened by click or hover, built on Floating UI | Popover, PopoverProps, position, interactionKind, isOpen, onInteraction, xh-popover-dismiss |
 | [`/cmp/propertytable/`](../cmp/propertytable/README.md) | Display-only list of labeled values, such as the fields of a record in a detail panel | PropertyTable, PropertyTableEntry, entries, labelSide, columns, minColumnWidth, PropertyTable or read-only Form |

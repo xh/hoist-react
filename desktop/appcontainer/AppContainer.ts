@@ -35,6 +35,7 @@ import {DynamicTabSwitcherModel, installDesktopImpls} from '@xh/hoist/dynamics/d
 import {inspectorPanel} from '@xh/hoist/inspector/InspectorPanel';
 import {consumeEvent} from '@xh/hoist/utils/js';
 import {elementFromContent, useOnMount} from '@xh/hoist/utils/react';
+import {menuButton as menuButtonImpl} from '@xh/hoist/desktop/cmp/menu';
 import {isEmpty} from 'lodash';
 import type {ReactElement} from 'react';
 import {aboutDialog} from './AboutDialog';
@@ -74,7 +75,8 @@ installDesktopImpls({
     cardHeaderImpl,
     statCardInfoImpl,
     pdfViewerToolbarImpl,
-    sparklineTooltipImpl
+    sparklineTooltipImpl,
+    menuButtonImpl
 });
 
 // Show focus outlines only to keyboard users, once per page.

@@ -232,7 +232,9 @@ Key props:
 
 ### Button (`/cmp/button/`)
 
-Desktop buttons:
+`Button`, `ButtonGroup` and `SplitButton` are shared with mobile - see
+[`/cmp/button/`](../cmp/button/README.md). This package re-exports them, beside desktop buttons
+such as `RefreshButton`, `AppMenuButton` and the grid buttons.
 
 ```typescript
 import {button} from '@xh/hoist/desktop/cmp/button';
