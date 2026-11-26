@@ -13,6 +13,7 @@ import {Icon} from '@xh/hoist/icon';
 import {columnHeaderFilter, ColumnHeaderFilterModel} from '@xh/hoist/dynamics/desktop';
 import {createObservableRef} from '@xh/hoist/utils/react';
 import {debounced, consumeEvent} from '@xh/hoist/utils/js';
+import {nextExpandStepTitle} from './Utils';
 import {olderThan} from '@xh/hoist/utils/datetime';
 import {
     filter,
@@ -80,8 +81,7 @@ export const columnHeader = hoistCmp.factory<ColumnHeaderProps>({
         };
 
         const expandCollapseIcon = () => {
-            const {xhColumn} = model,
-                {store} = model.gridModel;
+            const {store} = gridModel;
             if (
                 !xhColumn ||
                 !xhColumn.isTreeColumn ||
@@ -92,13 +92,12 @@ export const columnHeader = hoistCmp.factory<ColumnHeaderProps>({
                 return null;
             }
 
-            const icon = model.majorityIsExpanded
-                ? Icon.groupRowExpanded({prefix: 'fal'})
-                : Icon.groupRowCollapsed({prefix: 'fal'});
-
             return div({
                 className: 'xh-grid-header-expand-collapse-icon',
-                children: icon,
+                title: isDesktop ? model.expandCollapseTitle : null,
+                children: model.showsExpanded
+                    ? Icon.groupRowExpanded({prefix: 'fal'})
+                    : Icon.groupRowCollapsed({prefix: 'fal'}),
                 onClick: model.onExpandOrCollapse,
                 onTouchStart: model.onExpandOrCollapse
             });
@@ -241,19 +240,49 @@ class ColumnHeaderModel extends HoistModel {
         return !isEmpty(expandState) && size(expandState) > store.rootCount / 2;
     }
 
+    // What the next click does. At either end of the cycle, rows opened or closed by hand decide.
+    get nextAction(): 'collapseAll' | 'expandAll' | 'cycle' {
+        const {gridModel, majorityIsExpanded} = this;
+        if (gridModel.expandLevel === 0 && majorityIsExpanded) return 'collapseAll';
+        if (gridModel.nextExpandLevel === 0 && !majorityIsExpanded) return 'expandAll';
+        return 'cycle';
+    }
+
+    get showsExpanded(): boolean {
+        const {nextAction} = this;
+        return (
+            nextAction === 'collapseAll' ||
+            (nextAction === 'cycle' && this.gridModel.expandLevel !== 0)
+        );
+    }
+
+    get expandCollapseTitle(): string {
+        switch (this.nextAction) {
+            case 'collapseAll':
+                return 'Collapse all';
+            case 'expandAll':
+                return 'Expand all';
+            default:
+                return nextExpandStepTitle(this.gridModel);
+        }
+    }
+
     // Desktop click handling
     onMouseDown = () => {
         this._lastMouseDown = Date.now();
     };
 
     onExpandOrCollapse = e => {
-        const {gridModel, majorityIsExpanded} = this;
+        const {gridModel} = this;
 
         consumeEvent(e);
-        if (majorityIsExpanded) {
-            gridModel.collapseAll();
-        } else {
-            gridModel.expandAll();
+        switch (this.nextAction) {
+            case 'collapseAll':
+                return gridModel.collapseAll();
+            case 'expandAll':
+                return gridModel.expandAll();
+            default:
+                return gridModel.cycleExpandLevel();
         }
     };
 

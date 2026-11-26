@@ -136,9 +136,6 @@ detailed, step-by-step upgrade instructions with before/after code examples.
 
 ### 🐞 Bug Fixes
 
-* Fixed desktop submenus clipping to the popover that holds their parent menu, as in the
-  `ViewManager` menu and `MenuButton` menus. Submenus now render in a portal, as context menu
-  submenus already did.
 * Fixed mobile `FormField` ignoring the `--xh-form-field-inline-label-*` custom properties for
   inline labels - it referenced stale names left behind by an earlier rename.
 * Fixed `StatCard` titles and values not lining up across a `StatCardStrip` whose cards differ in

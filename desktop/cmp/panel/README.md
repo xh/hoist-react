@@ -211,7 +211,7 @@ const reportPanel = hoistCmp.factory<ReportModel>({
                 compact: true,
                 children: [
                     filler(),
-                    expandToLevelButton(),
+                    expandCycleButton(),
                     colChooserButton(),
                     exportButton()
                 ]
