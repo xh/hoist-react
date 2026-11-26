@@ -5,6 +5,9 @@
   and `xh-tab-list__tab`. Run `docs/codemod/v92/codemod-bp6-classes.mjs` to rename app selectors
   and class strings - Step 3 of the upgrade notes maps every class. Hoist logs a
   development-mode warning naming any `bp6-*` class or `--bp-*` variable left in a stylesheet.
+* Renamed SegmentedControl option classes on desktop and mobile to BEM names, such as
+  `xh-segmented-control__option--intent-danger` for `xh-segmented-control-option--danger`. The
+  codemod renames these too.
 
 ### ✨ Styles
 

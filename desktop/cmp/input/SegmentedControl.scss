@@ -302,7 +302,7 @@
     // selected option as a solid fill in the intent color, and tints unselected options' text
     // so an intent (e.g. danger) reads as such even before it is chosen.
     @each $intent in (primary, success, warning, danger) {
-      > .xh-segmented-control__option.xh-segmented-control-option--#{$intent} {
+      > .xh-segmented-control__option.xh-segmented-control__option--intent-#{$intent} {
         &:not(.xh-segmented-control__option--selected) {
           color: var(--xh-intent-#{$intent}-text-color);
         }
