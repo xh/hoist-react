@@ -37,11 +37,11 @@ await this.runner({loadSpec})
 
 | Method | Purpose |
 |--------|---------|
-| `span(name \| SpanConfig)` | Open a trace span around the work. |
+| `span(name, tags?)` / `span(SpanConfig)` | Open a trace span around the work. |
 | `logInfo(msgs)` / `logDebug(msgs)` | Time the work and log on completion (via `withInfo`/`withDebug`). |
 | `track(opts \| message)` | Record an activity-tracking event with timing. |
 | `linkTo(spec)` | Link to a `TaskObserver` for loading masks / progress messages. |
-| `counter(name, tags?)` / `timer(name, tags?)` | Record a metric on completion (see [Metrics](#metrics)). |
+| `counter(name, tags?)` / `counter(MetricConfig)`, same for `timer` | Record a metric on completion (see [Metrics](#metrics)). |
 
 **Terminal methods** (exactly one, executes the work):
 
@@ -69,15 +69,30 @@ The framework wires the span's `parent` (from the chain's context, or `loadSpec.
 
 ### telemetryPrefix
 
-Set `telemetryPrefix` on a `HoistBase` subclass to namespace every span (and metric) name it
-emits — the prefix is prepended with a `.` separator:
+Set `telemetryPrefix` on a `HoistBase` subclass to namespace every span and metric name its
+`runner()` chains emit. The prefix is prepended with a `.` separator. A name that already starts
+with the prefix is left as-is, so the prefix is never applied twice:
 
 ```typescript
 class PortfolioService extends HoistService {
     override telemetryPrefix = 'myApp.portfolio';
-    // runner().span('load') → span named 'myApp.portfolio.load'
+    // runner().span('load')                      → span named 'myApp.portfolio.load'
+    // runner().timer('loadTime')                 → timer named 'myApp.portfolio.loadTime'
+    // runner().timer('myApp.portfolio.loadTime') → timer named 'myApp.portfolio.loadTime'
 }
 ```
+
+To record a span or metric outside the caller's namespace, pass `useNamePrefix: false` to use the
+name as given:
+
+```typescript
+this.runner()
+    .span({name: 'myApp.shared.refresh', useNamePrefix: false})
+    .timer({name: 'myApp.shared.refreshTime', useNamePrefix: false})
+    .run(() => this.refreshAsync());
+```
+
+Direct `XH.metricsService` calls do not apply the prefix.
 
 Hoist's own framework classes use `xh.client.*` prefixes (e.g. `xh.client.auth`,
 `xh.client.app`). Apps should adopt their own top-level namespace.
@@ -98,6 +113,7 @@ and `xh.source` of `'hoist'` or `'app'`). Supply your own via `SpanConfig`:
 | `kind` | `SpanKind` | `'internal'` (default), `'client'`, `'server'`, `'producer'`, `'consumer'`. |
 | `tags` | `PlainObject` | Key/value attributes. Set a value to `null` to suppress a default tag. |
 | `parent` | `Span \| string` | A live `Span` (in-process nesting) or a W3C `traceparent` string (remote). Usually omitted — nesting is derived from the call context. |
+| `useNamePrefix` | `boolean` | False to use `name` as given, without `telemetryPrefix`. Default true. |
 
 Exceptions thrown during a traced operation are stamped with the span's `traceId` for
 correlation with server-side traces.
@@ -176,16 +192,18 @@ XH.track('Opened settings dialog');
 the server's Micrometer registry. The fluent way to record is via the `Runner` chain:
 
 ```typescript
-// Record elapsed time + a success/failure count for a unit of work
+// Record elapsed time + a success/failure count for a unit of work. With a telemetryPrefix of
+// 'myApp.portfolio', these record as 'myApp.portfolio.loadTime' and 'myApp.portfolio.loadCount'.
 await this.runner()
-    .timer('myApp.portfolio.loadTime')
-    .counter('myApp.portfolio.loadCount')
+    .timer('loadTime')
+    .counter('loadCount')
     .run(() => this.loadPositionsAsync());
 ```
 
 Both attach an `xh.outcome` tag (`success` / `failure`) based on whether the work threw, making
 it trivial to slice by success rate. Direct `XH.metricsService.recordTimer()` /
-`recordCount(name, value?, tags?)` calls are available for cases outside a chain.
+`recordCount(name, value?, tags?)` calls are available for cases outside a chain. They take the
+full metric name and do not apply `telemetryPrefix`.
 
 ## Threading context
 
