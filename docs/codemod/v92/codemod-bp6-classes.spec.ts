@@ -61,6 +61,17 @@ describe('codemod-bp6-classes', () => {
         );
     });
 
+    it('maps the navbar divider to the shared separator, and reports the removed toolbar separator', () => {
+        const {read, output} = run({
+            'src/app.scss':
+                '.bp6-navbar-divider { color: red; }\n' + '.xh-toolbar__separator { color: red; }\n'
+        });
+        expect(read('src/app.scss')).toBe(
+            '.xh-separator { color: red; }\n' + '.xh-toolbar__separator { color: red; }\n'
+        );
+        expect(output).toContain('app.scss:2  `xh-toolbar__separator` is gone.');
+    });
+
     it('keeps the weight of a paired selector by repeating the class', () => {
         const {read} = run({'src/app.scss': '.xh-button.bp6-button { color: red; }\n'});
         expect(read('src/app.scss')).toBe('.xh-button.xh-button { color: red; }\n');

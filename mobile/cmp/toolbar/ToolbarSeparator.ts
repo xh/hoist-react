@@ -4,23 +4,23 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {span} from '@xh/hoist/cmp/layout';
+import {separator} from '@xh/hoist/cmp/layout';
 import {hoistCmp} from '@xh/hoist/core';
 import '@xh/hoist/mobile/register';
 import './Toolbar.scss';
 
 /**
- * Convenience component to insert a pre-styled separator | between Toolbar items.
+ * A separator between the items of a Toolbar - a shared `Separator`, which the toolbar sizes and
+ * colors. A `'-'` in a Toolbar's items renders one too.
  */
 export const [ToolbarSeparator, toolbarSeparator] = hoistCmp.withFactory({
     displayName: 'ToolbarSeparator',
-    className: 'xh-toolbar__separator',
     model: false,
     memo: false,
     observer: false,
 
-    render({className, ...props}) {
-        return span({role: 'separator', className, ...props});
+    render(props, ref) {
+        return separator({ref, vertical: true, ...props});
     }
 });
 

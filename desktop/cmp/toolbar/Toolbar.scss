@@ -49,9 +49,8 @@
       border-top: 1px solid var(--xh-toolbar-border-color);
     }
 
-    .xh-toolbar__separator {
-      border-left: 1px solid var(--xh-toolbar-separator-color);
-      height: 20px; // matches BluePrint navBarSeparator
+    .xh-separator {
+      height: 20px;
       margin-left: calc(var(--xh-toolbar-item-spacing) * 2);
       margin-right: var(--xh-toolbar-item-spacing);
     }
@@ -67,8 +66,7 @@
       margin-left: 0;
     }
 
-    .xh-toolbar__separator {
-      border-bottom: 1px solid var(--xh-toolbar-separator-color);
+    .xh-separator {
       width: 20px;
     }
 
@@ -93,7 +91,7 @@
       min-height: unset;
       height: var(--xh-toolbar-compact-min-size);
 
-      .xh-toolbar__separator {
+      .xh-separator {
         height: 12px;
       }
     }
@@ -101,7 +99,7 @@
     &.xh-toolbar--vertical {
       width: var(--xh-toolbar-compact-min-size);
 
-      .xh-toolbar__separator {
+      .xh-separator {
         width: 12px;
       }
     }
@@ -241,10 +239,33 @@
         margin: 2px var(--xh-toolbar-item-spacing);
       }
 
-      .xh-toolbar__separator {
-        border-bottom: 1px solid var(--xh-toolbar-separator-color);
+      .xh-separator {
         align-self: stretch;
       }
     }
+  }
+}
+
+//------------------------
+// Separators
+//------------------------
+// A toolbar separator is a shared Separator, drawn as a short rule in the toolbar's color. It
+// renders as a vertical rule, for a row of items. A vertical toolbar, and the overflow menu, stack
+// their items, so turn it into a horizontal rule there.
+.xh-toolbar .xh-separator,
+.xh-toolbar-overflow-popover .xh-separator {
+  --xh-separator-border-color: var(--xh-toolbar-separator-color);
+  align-self: center;
+}
+
+.xh-toolbar--vertical .xh-separator,
+.xh-toolbar-overflow-popover .xh-separator {
+  flex-direction: row;
+  min-height: 0;
+
+  &::before {
+    min-height: 0;
+    border-left-width: 0;
+    border-top-width: var(--xh-separator-border-width);
   }
 }

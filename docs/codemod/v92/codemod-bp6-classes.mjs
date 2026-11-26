@@ -32,7 +32,8 @@
  *   - a `bp6-` class the rewrite did not reach, such as one in a string nested inside a template
  *     literal;
  *   - a Blueprint custom property, such as `var(--bp-intent-primary-rest)`. Hoist no longer
- *     defines them - use a value or an `--xh-*` variable.
+ *     defines them - use a value or an `--xh-*` variable;
+ *   - a Hoist class removed in v92, such as `xh-toolbar__separator`.
  * The upgrade notes' mapping table lists the Hoist name for each reported class.
  *
  * Markdown files are never rewritten. The script lists their lines that mention a `bp6-` class.
@@ -151,7 +152,7 @@ const COMPONENTS = {
     'tab-indicator': ['xh-tab-list__indicator'],
     'navbar': ['xh-appbar'],
     'navbar-group': ['xh-appbar__group', {'align-left': 'xh-appbar__group--left', 'align-right': 'xh-appbar__group--right'}],
-    'navbar-divider': ['xh-appbar-separator'],
+    'navbar-divider': ['xh-separator'],
     'overflow-list': ['xh-overflow-list'],
     'overflow-list-spacer': ['xh-overflow-list__spacer'],
     'dark': ['xh-dark'],
@@ -178,6 +179,12 @@ const HOIST_RENAMES = {
 };
 const HOIST_RENAMED = new RegExp(`(?<![\\w-])(${Object.keys(HOIST_RENAMES).join('|')})(?![\\w-])`, 'g');
 const renameHoistClasses = line => line.replace(HOIST_RENAMED, name => HOIST_RENAMES[name]);
+
+// Hoist's own classes removed in v92, reported with a hint.
+const HOIST_REMOVED = {
+    'xh-toolbar__separator': 'Toolbar separators are now a shared `xh-separator` - target `.xh-toolbar .xh-separator`'
+};
+const HOIST_REMOVED_RE = new RegExp(`(?<![\\w-])(${Object.keys(HOIST_REMOVED).join('|')})(?![\\w-])`, 'g');
 
 // Generic modifiers - renamed only beside a component class in the same compound selector.
 const MODIFIERS = new Set([
@@ -320,7 +327,7 @@ async function processFile(file) {
     const isStyle = STYLE_EXTS.has(ext), isCode = CODE_EXTS.has(ext), isDoc = DOC_EXTS.has(ext);
     if (!isStyle && !isCode && !isDoc) return 0;
     const text = await fs.readFile(file, 'utf8');
-    if (!/bp6-|--bp-|xh-segmented-control-option/.test(text)) return 0;
+    if (!/bp6-|--bp-|xh-segmented-control-option|xh-toolbar__separator/.test(text)) return 0;
     const lines = text.split('\n');
     const segState = {stack: [], sel: ''};
     let changed = 0;
@@ -332,6 +339,7 @@ async function processFile(file) {
         const line = renameHoistClasses(original);
         // Scan every style line, so the block stack stays in step with the file's braces.
         const nestedOption = isStyle && scanSegmentBlock(rewriteSegmentOption(line), segState);
+        for (const [, name] of line.matchAll(HOIST_REMOVED_RE)) note(file, i + 1, line, `\`${name}\` is gone. ${HOIST_REMOVED[name]}`);
         if (/var\(--bp6?-/.test(line)) note(file, i + 1, line, 'reads a Blueprint custom property, which Hoist no longer defines');
         let out = line;
         if (line.includes('bp6-')) {

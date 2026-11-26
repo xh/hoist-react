@@ -242,7 +242,7 @@ Blueprint's typography classes - `bp6-code`, `bp6-key`, `bp6-running-text`, `bp6
 | `bp6-tab-indicator` | `xh-tab-list__indicator` |  |
 | `bp6-navbar` | `xh-appbar` |  |
 | `bp6-navbar-group` | `xh-appbar__group` | `bp6-align-left` → `xh-appbar__group--left`, `bp6-align-right` → `xh-appbar__group--right` |
-| `bp6-navbar-divider` | `xh-appbar-separator` |  |
+| `bp6-navbar-divider` | `xh-separator` | AppBar and Toolbar separators are both a shared `Separator` |
 | `bp6-overflow-list` | `xh-overflow-list` |  |
 | `bp6-overflow-list-spacer` | `xh-overflow-list__spacer` |  |
 | `bp6-dark` | `xh-dark` |  |
@@ -265,6 +265,13 @@ same BEM names. The codemod renames these too:
 | `xh-segmented-control-option--selected` | `xh-segmented-control__option--selected` |
 | `xh-segmented-control-option--{intent}` | `xh-segmented-control__option--intent-{intent}` |
 | `xh-segmented-control-option__label` | `xh-segmented-control__option-text` |
+
+Toolbar separators no longer carry `xh-toolbar__separator`. They render the shared `Separator` from
+`@xh/hoist/cmp/layout`, as AppBar separators do. Restyle them with `.xh-toolbar .xh-separator`, or
+with the `--xh-separator-*` variables. The codemod lists each use of the old class.
+
+`appBarSeparator` is deprecated. Put `'-'` in `AppBarProps.leftItems` or `rightItems`, as in a
+Toolbar's items, or use `toolbarSep`.
 
 ### 4. Check the UI
 

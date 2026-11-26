@@ -8,11 +8,12 @@
 import {div, span} from '@xh/hoist/cmp/layout';
 import type {HoistProps, HSide, TestSupportProps} from '@xh/hoist/core';
 import {hoistCmp, XH} from '@xh/hoist/core';
-import {appBarSeparator} from '@xh/hoist/desktop/cmp/appbar';
 import type {AppMenuButtonProps} from '@xh/hoist/desktop/cmp/button';
 import {appMenuButton, refreshButton} from '@xh/hoist/desktop/cmp/button';
 import {whatsNewButton} from '@xh/hoist/desktop/cmp/button/WhatsNewButton';
+import {toolbarSeparator} from '@xh/hoist/desktop/cmp/toolbar';
 import '@xh/hoist/desktop/register';
+import {filterConsecutiveToolbarSeparators} from '@xh/hoist/utils/impl';
 import {TEST_ID, withDefault} from '@xh/hoist/utils/js';
 import {isEmpty} from 'lodash';
 import type {ReactElement, ReactNode} from 'react';
@@ -37,10 +38,16 @@ export interface AppBarProps extends HoistProps, TestSupportProps {
     /** Icon to display to the left of the title. */
     icon?: ReactElement;
 
-    /** Items to be added to the left side of the AppBar, immediately after the title. */
+    /**
+     * Items to be added to the left side of the AppBar, immediately after the title. A `'-'`
+     * renders a separator.
+     */
     leftItems?: ReactNode[];
 
-    /** Items to be added to the right side of the AppBar, before the standard buttons. */
+    /**
+     * Items to be added to the right side of the AppBar, before the standard buttons. A `'-'`
+     * renders a separator.
+     */
     rightItems?: ReactNode[];
 
     /** Title to display to the left side of the AppBar. Defaults to XH.clientAppName. */
@@ -88,14 +95,14 @@ export const [AppBar, appBar] = hoistCmp.withFactory<AppBarProps>({
                         }),
                         icon ? span({className: 'xh-appbar-icon', children: icon}) : null,
                         title ? span({className: 'xh-appbar-title', children: title}) : null,
-                        appBarSeparator({omit: isEmpty(leftItems)}),
-                        ...(leftItems ?? [])
+                        toolbarSeparator({omit: isEmpty(leftItems)}),
+                        ...items(leftItems)
                     ]
                 }),
                 div({
                     className: 'xh-appbar__group xh-appbar__group--right',
                     children: [
-                        ...(rightItems ?? []),
+                        ...items(rightItems),
                         whatsNewButton({omit: hideWhatsNewButton}),
                         refreshButton({omit: hideRefreshButton}),
                         appMenuButton({
@@ -109,3 +116,12 @@ export const [AppBar, appBar] = hoistCmp.withFactory<AppBarProps>({
         });
     }
 });
+
+//------------------------
+// Implementation
+//------------------------
+function items(items: ReactNode[]): ReactNode[] {
+    return (items ?? [])
+        .filter(filterConsecutiveToolbarSeparators())
+        .map(it => (it === '-' ? toolbarSeparator() : it));
+}
