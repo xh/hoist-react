@@ -1,7 +1,6 @@
-// Export button first as others (e.g. AppMenuButton) depend on its static propTypes.
+// Button and ButtonGroup are shared by desktop and mobile.
+export * from '@xh/hoist/cmp/button';
 export * from './AppMenuButton';
-export * from './Button';
-export * from './ButtonGroup';
 export * from './DashCanvasAddViewButton';
 export * from './FeedbackButton';
 export * from './LaunchAdminButton';

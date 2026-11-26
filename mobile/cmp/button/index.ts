@@ -4,8 +4,8 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-export * from './Button';
-export * from './ButtonGroup';
+// Button and ButtonGroup are shared by desktop and mobile.
+export * from '@xh/hoist/cmp/button';
 export * from './grid/ColAutosizeButton';
 export * from './grid/ColChooserButton';
 export * from './grid/ExpandCollapseButton';

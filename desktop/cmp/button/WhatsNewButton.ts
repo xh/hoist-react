@@ -5,8 +5,8 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {hoistCmp, XH} from '@xh/hoist/core';
-import type {ButtonProps} from '@xh/hoist/desktop/cmp/button/Button';
-import {button} from '@xh/hoist/desktop/cmp/button/Button';
+import type {ButtonProps} from '@xh/hoist/cmp/button';
+import {button} from '@xh/hoist/cmp/button';
 import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
 

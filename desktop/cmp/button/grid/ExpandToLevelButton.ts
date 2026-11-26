@@ -16,8 +16,8 @@ import {Icon} from '@xh/hoist/icon';
 import {menu} from '@xh/hoist/desktop/cmp/menu';
 import {logError, withDefault} from '@xh/hoist/utils/js';
 import type {ReactNode} from 'react';
-import type {ButtonProps} from '../Button';
-import {button} from '../Button';
+import type {ButtonProps} from '@xh/hoist/cmp/button';
+import {button} from '@xh/hoist/cmp/button';
 
 export interface ExpandToLevelButtonProps extends Omit<ButtonProps, 'title'> {
     /**

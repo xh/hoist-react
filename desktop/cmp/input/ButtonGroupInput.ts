@@ -159,7 +159,8 @@ const cmp = hoistCmp.factory<ButtonGroupInputModel>(({model, className, ...props
     return buttonGroup({
         ...(buttonGroupProps as ButtonGroupProps),
         children: buttons,
-        minimal: withDefault(minimal, outlined, false),
+        minimal: withDefault(minimal, false),
+        outlined: withDefault(outlined, false),
         ...getLayoutProps(props),
         onBlur: model.onBlur,
         onFocus: model.onFocus,

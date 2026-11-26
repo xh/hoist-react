@@ -7,8 +7,8 @@
 import {hoistCmp, XH} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
-import type {ButtonProps} from './Button';
-import {button} from './Button';
+import type {ButtonProps} from '@xh/hoist/cmp/button';
+import {button} from '@xh/hoist/cmp/button';
 
 export type ThemeToggleButtonProps = ButtonProps;
 

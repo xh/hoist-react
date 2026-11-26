@@ -7,6 +7,7 @@
 import '@xh/hoist/mobile/register';
 import type {HoistInputProps} from '@xh/hoist/cmp/input';
 import {HoistInputModel, useHoistInputModel} from '@xh/hoist/cmp/input';
+import type {HoistModel} from '@xh/hoist/core';
 import {hoistCmp} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import './CheckboxButton.scss';
@@ -15,7 +16,8 @@ import {button} from '@xh/hoist/mobile/cmp/button';
 import {withDefault} from '@xh/hoist/utils/js';
 import type {ReactElement} from 'react';
 
-export interface CheckboxButtonProps extends ButtonProps, HoistInputProps {
+export interface CheckboxButtonProps
+    extends Omit<ButtonProps<HoistModel>, 'onChange'>, HoistInputProps {
     value?: boolean;
 
     /** Icon to display when checked. Defaults to a solid check-square icon with primary intent. */
