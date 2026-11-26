@@ -9,7 +9,7 @@ import type {FilterMatchMode, StoreRecord, StoreRecordId} from '@xh/hoist/data';
 import {getFilterRegex} from '@xh/hoist/data';
 import type {AgColumn, IRowNode} from '@xh/hoist/kit/ag-grid';
 import {action, compareStructural, computed, observable, observableRef} from '@xh/hoist/mobx';
-import {compact, findLastIndex, isEmpty, isEqual, isNil, min} from 'lodash';
+import {compact, findLastIndex, isEmpty, isEqual, isNil, min, sortBy} from 'lodash';
 import {BaseGridFindImplModel} from './BaseGridFindImplModel';
 import {getCellText, isHeaderMatch} from './FindUtils';
 
@@ -32,11 +32,13 @@ interface FocusedCell {
 type FindKey = [row: number, col: number];
 
 /**
- * Impl model for `GridFindField` in `cells` mode - finds matching column headers and cells and
- * moves between them, as Excel's Find does, selecting the row of each matching cell.
+ * Impl model for `GridFindField` in `cells` mode - finds matching cells, and column headers if
+ * `includeHeaders` is set, and moves between them, as Excel's Find does, selecting the row of each
+ * matching cell.
  *
  * Matches run in one sequence, as in Excel, where headers are the cells of the first row: matching
- * headers first, then matching cells row by row, left to right. Cells are matched on the text they
+ * headers first, then matching cells row by row, left to right. Columns hidden by a collapsed
+ * column group are searched in their place, and a step to one expands the group. Cells are matched on the text they
  * show, cached for each record - an updated record is a new instance, with no cached text.
  * @internal
  */
@@ -49,6 +51,10 @@ export class GridCellFindImplModel extends BaseGridFindImplModel {
 
     get matchMode(): FilterMatchMode {
         return this.componentProps.matchMode ?? 'any';
+    }
+
+    get includeHeaders(): boolean {
+        return !!this.componentProps.includeHeaders;
     }
 
     @computed
@@ -107,7 +113,12 @@ export class GridCellFindImplModel extends BaseGridFindImplModel {
                 debounce: this.queryBuffer
             },
             {
-                track: () => [this.includeFields, this.excludeFields, this.matchMode],
+                track: () => [
+                    this.includeFields,
+                    this.excludeFields,
+                    this.matchMode,
+                    this.includeHeaders
+                ],
                 run: () => this.updateMatches(false),
                 equals: compareStructural
             }
@@ -170,7 +181,7 @@ export class GridCellFindImplModel extends BaseGridFindImplModel {
         }
 
         const regex = getFilterRegex(query, this.matchMode),
-            agColumns = agApi.getAllDisplayedColumns(),
+            agColumns = this.getAgColumns(),
             activeFields = new Set(this.getActiveFields()),
             columns = compact(agColumns.map(it => gridModel.getColumn(it.getColId()))).filter(it =>
                 activeFields.has(it.field)
@@ -180,12 +191,14 @@ export class GridCellFindImplModel extends BaseGridFindImplModel {
             prevActive = this.activeMatch,
             matches: FindMatch[] = [];
 
-        agColumns.forEach(it => {
-            const colId = it.getColId();
-            if (searchedIds.has(colId) && this.headerMatches(it, regex)) {
-                matches.push({colId, record: null});
-            }
-        });
+        if (this.includeHeaders) {
+            agColumns.forEach(it => {
+                const colId = it.getColId();
+                if (searchedIds.has(colId) && this.headerMatches(it, regex)) {
+                    matches.push({colId, record: null});
+                }
+            });
+        }
         records.forEach(record => {
             columns.forEach(column => {
                 if (regex.test(this.getText(record, column))) {
@@ -213,10 +226,21 @@ export class GridCellFindImplModel extends BaseGridFindImplModel {
         }
     }
 
+    /**
+     * The grid's visible columns in display order, pinned left first and pinned right last. This
+     * includes columns that a collapsed column group hides, which ag-Grid does not display.
+     */
+    private getAgColumns(): AgColumn[] {
+        const cols = this.innerGridModel.agApi.getAllGridColumns().filter(it => it.isVisible());
+        return sortBy(cols, it =>
+            it.getPinned() === 'left' ? 0 : it.getPinned() === 'right' ? 2 : 1
+        );
+    }
+
     // True if the column's header, or that of any group above it, matches.
     private headerMatches(agColumn: AgColumn, regex: RegExp): boolean {
         const groupIds = [];
-        for (let group = agColumn.getParent(); group; group = group.getParent()) {
+        for (let group = agColumn.getOriginalParent(); group; group = group.getOriginalParent()) {
             if (!group.isPadding()) groupIds.push(group.getGroupId());
         }
         return isHeaderMatch(this.innerGridModel, agColumn.getColId(), groupIds, regex);
@@ -344,7 +368,8 @@ export class GridCellFindImplModel extends BaseGridFindImplModel {
     /**
      * Make a match active, marking it in the grid.
      * @param reveal - true to select the match's row, if the grid has selection enabled, and scroll
-     *      the match into view, expanding any collapsed rows above it.
+     *      the match into view, expanding any collapsed rows above it and any column group that
+     *      hides its column.
      */
     @action
     private setActive(idx: number, reveal: boolean) {
@@ -356,12 +381,33 @@ export class GridCellFindImplModel extends BaseGridFindImplModel {
 
     private async revealAsync({record, colId}: FindMatch) {
         const gridModel = this.innerGridModel;
+        this.showColumn(colId);
         if (record) {
             await (gridModel.selModel.isEnabled
                 ? gridModel.selectAsync(record)
                 : gridModel.ensureRecordsVisibleAsync(record));
         }
         gridModel.agApi?.ensureColumnVisible(colId);
+    }
+
+    /**
+     * Expand or collapse the column groups above a column, as needed to display it. A column set to
+     * show only while its group is collapsed needs that group collapsed.
+     */
+    private showColumn(colId: string) {
+        const gridModel = this.innerGridModel,
+            agColumn = gridModel.agApi?.getColumn(colId);
+        if (!agColumn?.isVisible()) return;
+
+        let child: AgColumn | ReturnType<AgColumn['getOriginalParent']> = agColumn;
+        for (let group = agColumn.getOriginalParent(); group; group = group.getOriginalParent()) {
+            const show = child.getColumnGroupShow(),
+                expand = show === 'open' ? true : show === 'closed' ? false : null;
+            if (expand != null && group.isExpanded() !== expand) {
+                gridModel.setColumnGroupExpanded(group.getGroupId(), expand);
+            }
+            child = group;
+        }
     }
 
     // Mark the active match for its cell's `xh-cell--find-active` rule, or its header's class.

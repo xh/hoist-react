@@ -232,8 +232,8 @@ The desktop `gridFindField` finds text in a grid without filtering it. It binds 
 - `rows` (the default) finds matching **records** and selects them, so the grid needs selection
   enabled. It matches record fields like `StoreFilterField`, with `matchMode`, `includeFields`
   and `excludeFields`.
-- `cells` finds matching **column headers and cells** and moves between them, like Excel's Find.
-  It selects the row of each matching cell if the grid has selection enabled, and works without
+- `cells` finds matching **cells** and moves between them, like Excel's Find. Set
+  `includeHeaders` to find column headers too. It selects the row of each matching cell if the grid has selection enabled, and works without
   it. It suits wide grids, and grids where a user looks for a value rather than a record.
 
 ```typescript
@@ -245,19 +245,23 @@ panel({
 
 In `cells` mode:
 
-- **Matching** finds the query in the text a header or cell shows, ignoring case - anywhere in
-  the text by default, or as `matchMode` sets. A column matches on its own header or on any
-  column group above it. It searches the same fields as `rows` mode: the store fields of the
-  visible columns, limited by `includeFields` / `excludeFields`. Hidden columns are skipped, as
-  they have no cell to move to. Cells match in every row, including rows scrolled out of view or
-  inside collapsed groups. Group rows and pinned summary rows are not searched.
+- **Matching** finds the query in the text a cell shows, ignoring case - anywhere in the text by
+  default, or as `matchMode` sets. It searches the same fields as `rows` mode: the store fields
+  of the visible columns, limited by `includeFields` / `excludeFields`. Hidden columns are
+  skipped, as they have no cell to move to. Columns inside a collapsed column group are
+  searched. Cells match in every row, including rows scrolled out of view or inside collapsed
+  row groups. Group rows and pinned summary rows are not searched.
+- **Headers** are searched only with `includeHeaders`. A column matches on its own header or on
+  any column group above it.
 - **Order** puts header matches first, as Excel treats headers as its first row. Cell matches
   follow, row by row and left to right.
 - **Keys** - Enter and Shift+Enter (or the up and down arrows) step forward and back, wrapping at
-  either end. The keys keep working after a click on the step buttons, which never take focus. Each step starts from the cell the user last focused, else the selected row. Esc
+  either end. The keys keep working after a click on the step buttons, which never take focus.
+  Each step starts from the cell the user last focused, else the selected row. Esc
   clears the search and focuses the matched cell.
 - **Moving** - the active match, cell or header, is outlined. A step to a cell selects its row,
-  if the grid has selection enabled, and expands any collapsed group above it.
+  if the grid has selection enabled, and expands any collapsed row group above it. A step to a
+  column that a collapsed column group hides expands that group.
 - **Renderers** - a column with a `renderer` is searched by the text it shows, with its markup
   stripped. A column with a `textRenderer` is searched by the text it returns. Text is cached for
   each record, so a renderer whose output depends on state outside the record can be searched

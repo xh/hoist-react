@@ -47,6 +47,14 @@ describe('GridFindField', () => {
             ]);
         });
 
+        it('skips headers unless includeHeaders is set', async () => {
+            const {gridModel, find} = await renderAsync({}, {includeHeaders: false});
+
+            await find.typeAsync('a');
+            expect(find.countLabel()).toBe('1/5');
+            expect(activeMatch(gridModel)).toBe('1:name');
+        });
+
         it('wraps at either end, stepping back with Shift+Enter', async () => {
             const {gridModel, find} = await renderAsync();
 
@@ -176,6 +184,34 @@ describe('GridFindField', () => {
             expect(gridModel.selectedId).toBeNull();
         });
 
+        it('finds cells in a collapsed column group, expanding it to show the match', async () => {
+            const {gridModel, find} = await renderAsync({
+                columns: [
+                    {field: 'name', headerName: 'Name'},
+                    {
+                        groupId: 'details',
+                        collapsed: true,
+                        children: [
+                            {field: 'qty', groupShowMode: 'collapsed'},
+                            {field: 'city', groupShowMode: 'expanded'}
+                        ]
+                    }
+                ]
+            });
+            expect(displayedColIds(gridModel)).toEqual(['name', 'qty']);
+
+            await find.typeAsync('madrid');
+            expect(find.countLabel()).toBe('1/1');
+            expect(activeMatch(gridModel)).toBe('3:city');
+            expect(gridModel.isColumnGroupExpanded('details')).toBe(true);
+            expect(displayedColIds(gridModel)).toEqual(['name', 'city']);
+
+            // A column shown only while its group is collapsed collapses the group again.
+            await find.typeAsync('1234');
+            expect(activeMatch(gridModel)).toBe('2:qty');
+            expect(gridModel.isColumnGroupExpanded('details')).toBe(false);
+        });
+
         it('keeps the active match as data updates, and drops matches no longer found', async () => {
             const {gridModel, find} = await renderAsync();
 
@@ -213,6 +249,29 @@ describe('GridFindField', () => {
             await find.typeAsync('gam');
             await waitFor(() => expect(gridModel.selectedId).toBe(3));
             expect(gridModel._findActiveCell).toBeNull();
+        });
+
+        it('matches columns in a collapsed column group', async () => {
+            const {gridModel, find} = await renderAsync(
+                {
+                    selModel: 'single',
+                    columns: [
+                        {field: 'name'},
+                        {
+                            groupId: 'details',
+                            collapsed: true,
+                            children: [
+                                {field: 'qty', groupShowMode: 'collapsed'},
+                                {field: 'city', groupShowMode: 'expanded'}
+                            ]
+                        }
+                    ]
+                },
+                {mode: undefined}
+            );
+
+            await find.typeAsync('madrid');
+            await waitFor(() => expect(gridModel.selectedId).toBe(3));
         });
     });
 
@@ -257,7 +316,14 @@ async function renderAsync(config: GridConfig = {}, findProps: GridFindFieldProp
             width: 600,
             height: 400,
             children: [
-                gridFindField({gridModel, mode: 'cells', queryBuffer: 0, ...findProps}),
+                // Most tests check where header matches fall, so turn them on by default.
+                gridFindField({
+                    gridModel,
+                    mode: 'cells',
+                    includeHeaders: true,
+                    queryBuffer: 0,
+                    ...findProps
+                }),
                 grid({model: gridModel, flex: 1})
             ]
         })
@@ -293,6 +359,10 @@ function activeMatch(gridModel: GridModel): string {
         cell = gridModel._findActiveCell;
     if (header) return `header:${header}`;
     return cell ? `${cell.recordId}:${cell.colId}` : null;
+}
+
+function displayedColIds(gridModel: GridModel): string[] {
+    return gridModel.agApi.getAllDisplayedColumns().map(it => it.getColId());
 }
 
 function cellsWithClass(container: HTMLElement, className: string): string[] {

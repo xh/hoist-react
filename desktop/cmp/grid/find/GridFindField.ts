@@ -24,8 +24,8 @@ import {GridFindFieldImplModel} from './impl/GridFindFieldImplModel';
 /**
  * What a {@link GridFindField} finds and moves between:
  * - `rows` - matching records, which it selects.
- * - `cells` - matching column headers and cells, as Excel's Find does, selecting the row of each
- *   matching cell.
+ * - `cells` - matching cells, as Excel's Find does, selecting the row of each match. Column headers
+ *   are also searched if `includeHeaders` is set.
  */
 export type GridFindFieldMode = 'rows' | 'cells';
 
@@ -48,12 +48,18 @@ export interface GridFindFieldProps extends TextInputProps, LayoutProps {
      */
     gridModel?: GridLikeModel;
 
+    /**
+     * True to also find matching column headers in mode `cells`, ahead of the cell matches, as
+     * Excel treats headers as its first row. Default false.
+     */
+    includeHeaders?: boolean;
+
     /** Mode to use when searching - default 'startWord' in mode `rows`, 'any' in mode `cells`. */
     matchMode?: FilterMatchMode;
 
     /**
-     * What this field finds - matching rows, which it selects, or matching column headers and
-     * cells, which it moves between. Read once, when the field mounts. Default 'rows'.
+     * What this field finds - matching rows, which it selects, or matching cells, which it moves
+     * between. Read once, when the field mounts. Default 'rows'.
      */
     mode?: GridFindFieldMode;
 
@@ -90,12 +96,13 @@ export interface GridFindFieldProps extends TextInputProps, LayoutProps {
  * Fields to be searched can be automatically determined from the bound Grid's Store, and/or
  * customized via the include/excludeFields props. See prop comments for details.
  *
- * Set `mode: 'cells'` to find matching column headers and cells instead, and move between them as
- * Excel's Find does. Matches are found within the text a header or cell shows, in the same fields
- * as mode `rows` searches. A column matches on its own header or that of any group above it -
- * hidden columns are skipped. Cells match across all rows, including those scrolled out of view or
- * within collapsed groups. As headers are the first row in Excel, header matches come first, then
- * cell matches row by row, left to right. Each step starts from the cell the user last focused in
+ * Set `mode: 'cells'` to find matching cells instead, and move between them as Excel's Find does.
+ * Matches are found within the text a cell shows, in the same fields as mode `rows` searches.
+ * Hidden columns are skipped, but columns within a collapsed column group are searched, and a step
+ * to one expands its group. Cells match across all rows, including those scrolled out of view or
+ * within collapsed row groups, and are visited row by row, left to right. With `includeHeaders`,
+ * column headers are searched too, and their matches come first. A column matches on its own
+ * header or that of any group above it. Each step starts from the cell the user last focused in
  * the grid, or from the selected row. The active match is outlined, and if the grid has selection
  * enabled, the row of a matching cell is selected. Esc clears the search and focuses the matched
  * cell, or for a header, that column's cell in the focused row.
@@ -107,7 +114,7 @@ export const [GridFindField, gridFindField] = hoistCmp.withFactory<GridFindField
     displayName: 'GridFindField',
     className: 'xh-grid-find-field',
     model: false,
-    render({className, mode, enableHotkey, ...props}, ref) {
+    render({className, mode, enableHotkey, includeHeaders, ...props}, ref) {
         let [layoutProps, restProps] = splitLayoutProps(props);
         const impl = useLocalModel<BaseGridFindImplModel>(
             mode === 'cells' ? GridCellFindImplModel : GridFindFieldImplModel
