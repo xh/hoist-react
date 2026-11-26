@@ -631,12 +631,9 @@ export class GridModel extends HoistModel implements GridLikeModel {
     @observableRef accessor _syncedRs: RecordSet = null;
 
     /**
-     * @internal - colIds of the cells matching a `GridFindField` in `cells` mode, by record id,
-     * which each Column marks with a cell class. Not observable, as every cell render reads it.
+     * @internal - cell holding the active match of a `GridFindField` in `cells` mode, which each
+     * Column marks with a cell class. Not observable, as every cell render reads it.
      */
-    _findMatches: Map<StoreRecordId, Set<string>> = null;
-
-    /** @internal - cell holding the active match of a `GridFindField` in `cells` mode. */
     _findActiveCell: {recordId: StoreRecordId; colId: string} = null;
 
     /**

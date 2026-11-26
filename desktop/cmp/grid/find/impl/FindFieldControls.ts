@@ -9,6 +9,7 @@ import type {HoistProps} from '@xh/hoist/core';
 import {hoistCmp} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {Icon} from '@xh/hoist/icon';
+import type {MouseEvent} from 'react';
 
 /**
  * Model behind a grid find field's count label and previous / next buttons.
@@ -46,11 +47,13 @@ export const findFieldControls = hoistCmp.factory<FindFieldControlsProps>({
                 }),
                 vbox(
                     button({
+                        ...STEP_BUTTON_PROPS,
                         disabled: !hasResults,
                         icon: Icon.chevronUp(),
                         onClick: () => impl.selectPrev()
                     }),
                     button({
+                        ...STEP_BUTTON_PROPS,
                         disabled: !hasResults,
                         icon: Icon.chevronDown(),
                         onClick: () => impl.selectNext()
@@ -60,3 +63,9 @@ export const findFieldControls = hoistCmp.factory<FindFieldControlsProps>({
         });
     }
 });
+
+// The step buttons never take focus, so it stays in the input and its keys keep working.
+const STEP_BUTTON_PROPS = {
+    tabIndex: -1,
+    onMouseDown: (e: MouseEvent) => e.preventDefault()
+};

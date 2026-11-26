@@ -153,12 +153,7 @@ describe('Column.getAgSpec', () => {
                 col = createColumn({textRenderer, cellClassRules: {shared: () => true}}),
                 rules = col.getAgSpec().cellClassRules as Record<string, Function>;
 
-            expect(Object.keys(rules)).toEqual([
-                'pos',
-                'shared',
-                'xh-cell--find-match',
-                'xh-cell--find-active'
-            ]);
+            expect(Object.keys(rules)).toEqual(['pos', 'shared', 'xh-cell--find-active']);
             expect(rules.shared({})).toBe(true);
         });
 
@@ -172,7 +167,6 @@ describe('Column.getAgSpec', () => {
                 'xh-pos-val',
                 'xh-neg-val',
                 'xh-neutral-val',
-                'xh-cell--find-match',
                 'xh-cell--find-active',
                 'custom'
             ]);
@@ -185,10 +179,7 @@ describe('Column.getAgSpec', () => {
 
             expect(spec.valueFormatter).toBeNull();
             expect(spec.cellRenderer).toBeTypeOf('function');
-            expect(Object.keys(spec.cellClassRules)).toEqual([
-                'xh-cell--find-match',
-                'xh-cell--find-active'
-            ]);
+            expect(Object.keys(spec.cellClassRules)).toEqual(['xh-cell--find-active']);
         });
 
         it('keeps its cellClassRules when set as the renderer, like any renderer', () => {
@@ -196,11 +187,7 @@ describe('Column.getAgSpec', () => {
                 spec = createColumn({renderer}).getAgSpec();
 
             expect(spec.cellRenderer).toBeTypeOf('function');
-            expect(Object.keys(spec.cellClassRules)).toEqual([
-                'pos',
-                'xh-cell--find-match',
-                'xh-cell--find-active'
-            ]);
+            expect(Object.keys(spec.cellClassRules)).toEqual(['pos', 'xh-cell--find-active']);
         });
 
         it('shows its text in a tree column, through the group cell renderer', () => {
@@ -344,22 +331,9 @@ describe('Column.getAgSpec', () => {
         });
     });
 
-    describe('find match cells', () => {
+    describe('find active match', () => {
         const ruleFor = (gridModel: GridModel, colId: string, cls: string) =>
             gridModel.getColumn(colId).getAgSpec().cellClassRules[cls] as Function;
-
-        it('marks the cells matching a GridFindField in cells mode', () => {
-            const gridModel = createGridModel({}, [{field: 'name'}, {field: 'other'}]),
-                rule = (colId: string) => ruleFor(gridModel, colId, 'xh-cell--find-match');
-
-            expect(rule('name')({data: {id: 1}} as any)).toBe(false);
-
-            gridModel._findMatches = new Map([[1, new Set(['name'])]]);
-            expect(rule('name')({data: {id: 1}} as any)).toBe(true);
-            expect(rule('other')({data: {id: 1}} as any)).toBe(false);
-            expect(rule('name')({data: {id: 2}} as any)).toBe(false);
-            expect(rule('name')({data: null} as any)).toBe(false);
-        });
 
         it('marks only the cell holding the active match', () => {
             const gridModel = createGridModel({}, [{field: 'name'}, {field: 'other'}]),

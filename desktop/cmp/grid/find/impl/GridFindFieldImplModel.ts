@@ -4,25 +4,11 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import type {Column} from '@xh/hoist/cmp/grid';
-import {DataViewModel} from '@xh/hoist/cmp/dataview';
-import {ZoneGridModel} from '@xh/hoist/cmp/zoneGrid';
 import type {FilterMatchMode, StoreRecord} from '@xh/hoist/data';
 import {getFilterRegex} from '@xh/hoist/data';
 import {action, computed, observableRef, compareStructural} from '@xh/hoist/mobx';
 import {stripTags} from '@xh/hoist/utils/js';
-import {
-    filter,
-    flatMap,
-    get,
-    intersection,
-    isArray,
-    isEmpty,
-    isFinite,
-    isNil,
-    without
-} from 'lodash';
-
+import {filter, flatMap, get, isEmpty, isFinite, isNil} from 'lodash';
 import {BaseGridFindImplModel} from './BaseGridFindImplModel';
 
 /**
@@ -32,14 +18,6 @@ import {BaseGridFindImplModel} from './BaseGridFindImplModel';
 export class GridFindFieldImplModel extends BaseGridFindImplModel {
     get matchMode(): FilterMatchMode {
         return this.componentProps.matchMode ?? 'startWord';
-    }
-
-    get includeFields(): string[] {
-        return this.componentProps.includeFields;
-    }
-
-    get excludeFields(): string[] {
-        return this.componentProps.excludeFields;
     }
 
     @observableRef accessor results;
@@ -168,43 +146,6 @@ export class GridFindFieldImplModel extends BaseGridFindImplModel {
         return (this._records ??= this.innerGridModel.getSortedRecords());
     }
 
-    private getActiveFields(): string[] {
-        const {innerGridModel, includeFields, excludeFields} = this,
-            searchCols = this.getSearchColumns();
-
-        let ret = ['id', ...innerGridModel.store.fieldNames];
-        if (includeFields) ret = intersection(ret, includeFields);
-        if (excludeFields) ret = without(ret, ...excludeFields);
-
-        // Push on dot-delimited grid column fields. These are supported by Grid and traverse
-        // sub-objects in StoreRecord.data to display nested properties. Given that Grid treats these
-        // as first-class fields and displays them w/o the need for renderers, we want to
-        // include them here. (But only if their "root" is in the field list derived from the
-        // Store and any given include/excludeField configs.)
-        searchCols.forEach(col => {
-            const {fieldPath} = col;
-            if (!isArray(fieldPath)) return;
-
-            const rootFieldPath = fieldPath[0];
-            if (ret.includes(rootFieldPath)) {
-                ret.push(col.field);
-            }
-        });
-
-        // Run exclude once more to support explicitly excluding a dot-sep field added above.
-        if (excludeFields) ret = without(ret, ...excludeFields);
-
-        // Final filter for column visibility, or explicit request for inclusion. Deliberately not
-        // keyed to groupBy, so query results stay stable across regrouping (see #4070).
-        ret = ret.filter(f => {
-            return (
-                (includeFields && includeFields.includes(f)) || searchCols.find(c => c.field === f)
-            );
-        });
-
-        return ret;
-    }
-
     private getValGetters(fieldName: string) {
         const {innerGridModel} = this,
             {store} = innerGridModel,
@@ -238,16 +179,5 @@ export class GridFindFieldImplModel extends BaseGridFindImplModel {
         return fieldName.includes('.')
             ? (rec: StoreRecord) => get(rec.data, fieldName)
             : (rec: StoreRecord) => rec.data[fieldName];
-    }
-
-    // See corresponding method in StoreFilterFieldImplModel.
-    private getSearchColumns(): Column[] {
-        const {boundModel, innerGridModel} = this;
-        if (!boundModel) return [];
-        if (boundModel instanceof ZoneGridModel) return boundModel.getMappedColumns();
-        if (boundModel instanceof DataViewModel) {
-            return innerGridModel.getLeafColumns().filter(it => it.field);
-        }
-        return innerGridModel.getVisibleLeafColumns();
     }
 }

@@ -92,22 +92,23 @@ describe('GridFindField', () => {
             expect(activeMatch(gridModel)).toBe('1:city');
         });
 
-        it('tints every matching cell and outlines the active one', async () => {
+        it('outlines the active match, cell or header, and nothing else', async () => {
             const {container, find} = await renderAsync();
 
-            await find.typeAsync('ma');
+            await find.typeAsync('a');
             await waitFor(() =>
-                expect(cellsWithClass(container, 'xh-cell--find-match')).toEqual([
-                    'Gamma',
-                    'Madrid'
-                ])
+                expect(
+                    container.querySelector('.ag-header-cell.xh-column-header--find-active')
+                        ?.textContent
+                ).toBe('Name')
             );
-            expect(cellsWithClass(container, 'xh-cell--find-active')).toEqual(['Gamma']);
+            expect(cellsWithClass(container, 'xh-cell--find-active')).toEqual([]);
 
             find.press('Enter');
             await waitFor(() =>
-                expect(cellsWithClass(container, 'xh-cell--find-active')).toEqual(['Madrid'])
+                expect(cellsWithClass(container, 'xh-cell--find-active')).toEqual(['Alpha'])
             );
+            expect(container.querySelector('.xh-column-header--find-active')).toBeNull();
         });
 
         it('matches the text a renderer shows', async () => {
@@ -123,6 +124,18 @@ describe('GridFindField', () => {
             expect(activeMatch(gridModel)).toBe('2:qty');
         });
 
+        it('searches only the store fields of visible columns, as rows mode does', async () => {
+            const {find} = await renderAsync({
+                columns: [
+                    {field: 'name', headerName: 'Name'},
+                    {colId: 'town', headerName: 'Town', getValueFn: () => 'Townsville'}
+                ]
+            });
+
+            await find.typeAsync('town');
+            expect(find.countLabel()).toBe('0/0');
+        });
+
         it('searches only the columns for includeFields', async () => {
             const {gridModel, find} = await renderAsync({}, {includeFields: ['city']});
 
@@ -131,15 +144,36 @@ describe('GridFindField', () => {
             expect(activeMatch(gridModel)).toBe('1:city');
         });
 
-        it('does not need or change row selection', async () => {
+        it('selects the row of each cell match, leaving it on a header match', async () => {
             const {gridModel, find} = await renderAsync({selModel: 'single'});
             gridModel.selectAsync(2);
             await waitFor(() => expect(gridModel.selectedId).toBe(2));
 
             await find.typeAsync('a');
-            find.press('Enter');
-            find.press('Enter');
+            expect(activeMatch(gridModel)).toBe('2:name');
             expect(gridModel.selectedId).toBe(2);
+
+            find.press('Enter');
+            await waitFor(() => expect(gridModel.selectedId).toBe(3));
+
+            find.press('Enter', {shiftKey: true});
+            find.press('Enter', {shiftKey: true});
+            find.press('Enter', {shiftKey: true});
+            expect(activeMatch(gridModel)).toBe('1:name');
+            await waitFor(() => expect(gridModel.selectedId).toBe(1));
+
+            find.press('Enter', {shiftKey: true});
+            expect(activeMatch(gridModel)).toBe('header:name');
+            expect(gridModel.selectedId).toBe(1);
+        });
+
+        it('steps between cells in a grid without selection', async () => {
+            const {gridModel, find} = await renderAsync({selModel: 'disabled'});
+
+            await find.typeAsync('a');
+            find.press('Enter');
+            expect(activeMatch(gridModel)).toBe('1:name');
+            expect(gridModel.selectedId).toBeNull();
         });
 
         it('keeps the active match as data updates, and drops matches no longer found', async () => {
@@ -166,7 +200,6 @@ describe('GridFindField', () => {
             find.press('Escape');
 
             await waitFor(() => expect(find.input.value).toBe(''));
-            expect(gridModel._findMatches).toBeNull();
             expect(gridModel._findActiveCell).toBeNull();
             expect(gridModel.agApi.getFocusedCell()).toMatchObject({rowIndex: 1});
             expect(gridModel.agApi.getFocusedCell().column.getColId()).toBe('name');
@@ -179,7 +212,21 @@ describe('GridFindField', () => {
 
             await find.typeAsync('gam');
             await waitFor(() => expect(gridModel.selectedId).toBe(3));
-            expect(gridModel._findMatches).toBeNull();
+            expect(gridModel._findActiveCell).toBeNull();
+        });
+    });
+
+    describe('step buttons', () => {
+        it('never take focus, so the input keeps it and its keys keep working', async () => {
+            const {container, find} = await renderAsync();
+            await find.typeAsync('a');
+
+            const buttons = container.querySelectorAll('.xh-grid-find-field__controls button');
+            expect(buttons).toHaveLength(2);
+            buttons.forEach(it => {
+                expect(it.getAttribute('tabindex')).toBe('-1');
+                expect(fireEvent.mouseDown(it)).toBe(false); // default, which moves focus, prevented
+            });
         });
     });
 });

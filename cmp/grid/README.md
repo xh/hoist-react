@@ -233,7 +233,8 @@ The desktop `gridFindField` finds text in a grid without filtering it. It binds 
   enabled. It matches record fields like `StoreFilterField`, with `matchMode`, `includeFields`
   and `excludeFields`.
 - `cells` finds matching **column headers and cells** and moves between them, like Excel's Find.
-  It leaves row selection alone, which suits wide and editable grids.
+  It selects the row of each matching cell if the grid has selection enabled, and works without
+  it. It suits wide grids, and grids where a user looks for a value rather than a record.
 
 ```typescript
 panel({
@@ -246,16 +247,17 @@ In `cells` mode:
 
 - **Matching** finds the query in the text a header or cell shows, ignoring case - anywhere in
   the text by default, or as `matchMode` sets. A column matches on its own header or on any
-  column group above it. Hidden columns are skipped, and `includeFields` / `excludeFields` limit
-  the search to the columns for those fields. Cells match in every row, including rows scrolled
-  out of view or inside collapsed groups. Group rows and pinned summary rows are not searched.
+  column group above it. It searches the same fields as `rows` mode: the store fields of the
+  visible columns, limited by `includeFields` / `excludeFields`. Hidden columns are skipped, as
+  they have no cell to move to. Cells match in every row, including rows scrolled out of view or
+  inside collapsed groups. Group rows and pinned summary rows are not searched.
 - **Order** puts header matches first, as Excel treats headers as its first row. Cell matches
   follow, row by row and left to right.
 - **Keys** - Enter and Shift+Enter (or the up and down arrows) step forward and back, wrapping at
-  either end. Each step starts from the cell the user last focused, else the selected row. Esc
+  either end. The keys keep working after a click on the step buttons, which never take focus. Each step starts from the cell the user last focused, else the selected row. Esc
   clears the search and focuses the matched cell.
-- **Marking** - every matching cell is tinted with `--xh-grid-cell-find-match-bg`, and the active
-  match, cell or header, is outlined. A step to a cell in a collapsed group expands the group.
+- **Moving** - the active match, cell or header, is outlined. A step to a cell selects its row,
+  if the grid has selection enabled, and expands any collapsed group above it.
 - **Renderers** - a column with a `renderer` is searched by the text it shows, with its markup
   stripped. A column with a `textRenderer` is searched by the text it returns. Text is cached for
   each record, so a renderer whose output depends on state outside the record can be searched

@@ -110,12 +110,8 @@
     padding-right: 0;
   }
 
-  // Matches of a GridFindField in `cells` mode - every matching cell tinted, and the active match
-  // (cell or header) outlined as Excel outlines its active cell.
-  .ag-cell.xh-cell--find-match {
-    background-color: var(--xh-grid-cell-find-match-bg);
-  }
-
+  // The active match of a GridFindField in `cells` mode, cell or header, outlined as Excel outlines
+  // its active cell.
   .ag-cell.xh-cell--find-active,
   .ag-header-cell.xh-column-header--find-active {
     box-shadow: inset 0 0 0 2px var(--xh-grid-cell-focused-border-color);

@@ -996,7 +996,6 @@ export class Column {
 
         ret.cellClassRules = {
             ...ret.cellClassRules,
-            'xh-cell--find-match': this.agIsFindMatchCell,
             'xh-cell--find-active': this.agIsFindActiveCell
         };
 
@@ -1058,15 +1057,6 @@ export class Column {
 
             // Add wrapping span for styling purposes
             return span({className: 'xh-cell-inner-wrapper', children: ret});
-        };
-    }
-
-    // Marks the cells matching a GridFindField in `cells` mode.
-    @computeOnce
-    private get agIsFindMatchCell(): ColumnCellClassRuleFn {
-        return ({data}) => {
-            const matches = this.gridModel._findMatches;
-            return !!matches && !!data && !!matches.get(data.id)?.has(this.colId);
         };
     }
 

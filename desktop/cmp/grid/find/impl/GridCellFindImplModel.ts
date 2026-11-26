@@ -33,7 +33,7 @@ type FindKey = [row: number, col: number];
 
 /**
  * Impl model for `GridFindField` in `cells` mode - finds matching column headers and cells and
- * moves between them, as Excel's Find does, without changing row selection.
+ * moves between them, as Excel's Find does, selecting the row of each matching cell.
  *
  * Matches run in one sequence, as in Excel, where headers are the cells of the first row: matching
  * headers first, then matching cells row by row, left to right. Cells are matched on the text they
@@ -49,14 +49,6 @@ export class GridCellFindImplModel extends BaseGridFindImplModel {
 
     get matchMode(): FilterMatchMode {
         return this.componentProps.matchMode ?? 'any';
-    }
-
-    get includeFields(): string[] {
-        return this.componentProps.includeFields;
-    }
-
-    get excludeFields(): string[] {
-        return this.componentProps.excludeFields;
     }
 
     @computed
@@ -179,8 +171,9 @@ export class GridCellFindImplModel extends BaseGridFindImplModel {
 
         const regex = getFilterRegex(query, this.matchMode),
             agColumns = agApi.getAllDisplayedColumns(),
+            activeFields = new Set(this.getActiveFields()),
             columns = compact(agColumns.map(it => gridModel.getColumn(it.getColId()))).filter(it =>
-                this.isSearched(it)
+                activeFields.has(it.field)
             ),
             searchedIds = new Set(columns.map(it => it.colId)),
             records = gridModel.getSortedRecords(),
@@ -204,7 +197,6 @@ export class GridCellFindImplModel extends BaseGridFindImplModel {
         this.colOrdinals = new Map(agColumns.map((it, idx) => [it.getColId(), idx]));
         this.rowOrdinals = new Map(records.map((it, idx) => [it.id, idx]));
         this.matches = matches;
-        this.markMatches(matches);
 
         if (isNewQuery) {
             // Stay on the active match while the user refines the query, unless they have moved.
@@ -219,13 +211,6 @@ export class GridCellFindImplModel extends BaseGridFindImplModel {
             const idx = prevActive ? matches.findIndex(it => isSameMatch(it, prevActive)) : -1;
             this.setActive(idx >= 0 ? idx : null, false);
         }
-    }
-
-    private isSearched(column: Column): boolean {
-        const {includeFields, excludeFields} = this,
-            {field} = column;
-        if (includeFields && !includeFields.includes(field)) return false;
-        return !excludeFields?.includes(field);
     }
 
     // True if the column's header, or that of any group above it, matches.
@@ -254,7 +239,6 @@ export class GridCellFindImplModel extends BaseGridFindImplModel {
         this.matches = null;
         this.rowOrdinals = new Map();
         this.colOrdinals = new Map();
-        this.markMatches([]);
         this.setActive(null, false);
     }
 
@@ -359,7 +343,8 @@ export class GridCellFindImplModel extends BaseGridFindImplModel {
     //------------------------
     /**
      * Make a match active, marking it in the grid.
-     * @param reveal - true to scroll the match into view, expanding any collapsed rows above it.
+     * @param reveal - true to select the match's row, if the grid has selection enabled, and scroll
+     *      the match into view, expanding any collapsed rows above it.
      */
     @action
     private setActive(idx: number, reveal: boolean) {
@@ -371,26 +356,12 @@ export class GridCellFindImplModel extends BaseGridFindImplModel {
 
     private async revealAsync({record, colId}: FindMatch) {
         const gridModel = this.innerGridModel;
-        if (record) await gridModel.ensureRecordsVisibleAsync(record);
+        if (record) {
+            await (gridModel.selModel.isEnabled
+                ? gridModel.selectAsync(record)
+                : gridModel.ensureRecordsVisibleAsync(record));
+        }
         gridModel.agApi?.ensureColumnVisible(colId);
-    }
-
-    // Mark every matching cell for each Column's `xh-cell--find-match` rule.
-    private markMatches(matches: FindMatch[]) {
-        const gridModel = this.innerGridModel;
-        if (!gridModel) return;
-
-        let byRecord: Map<StoreRecordId, Set<string>> = null;
-        matches.forEach(({record, colId}) => {
-            if (!record) return;
-            byRecord ??= new Map();
-            let colIds = byRecord.get(record.id);
-            if (!colIds) byRecord.set(record.id, (colIds = new Set()));
-            colIds.add(colId);
-        });
-
-        gridModel._findMatches = byRecord;
-        this.refreshCells();
     }
 
     // Mark the active match for its cell's `xh-cell--find-active` rule, or its header's class.
