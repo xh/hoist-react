@@ -9,6 +9,7 @@ export * from './ButtonGroup';
 export * from './grid/ColAutosizeButton';
 export * from './grid/ColChooserButton';
 export * from './grid/ExpandCollapseButton';
+export * from './grid/ExpandCycleButton';
 export * from './grid/ExpandToLevelButton';
 export * from './FeedbackButton';
 export * from './ThemeToggleButton';

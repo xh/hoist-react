@@ -31,6 +31,35 @@ describe('Runner', () => {
             expect(span.name).toBe('myApp.portfolio.refresh');
         });
 
+        it('does not prefix a span name that already starts with the telemetryPrefix', async () => {
+            const model = new PortfolioModel(),
+                span = await model
+                    .runner()
+                    .span('myApp.portfolio.refresh')
+                    .run(async ctx => ctx.span);
+
+            expect(span.name).toBe('myApp.portfolio.refresh');
+        });
+
+        it('applies tags passed with a span name', async () => {
+            const span = await new PortfolioModel()
+                .runner()
+                .span('refresh', {region: 'emea'})
+                .run(async ctx => ctx.span);
+
+            expect(span.tags).toMatchObject({region: 'emea'});
+        });
+
+        it('uses the span name as given when useNamePrefix is false', async () => {
+            const model = new PortfolioModel(),
+                span = await model
+                    .runner()
+                    .span({name: 'myApp.shared.refresh', useNamePrefix: false})
+                    .run(async ctx => ctx.span);
+
+            expect(span.name).toBe('myApp.shared.refresh');
+        });
+
         it('nests the span under the span of the call context', async () => {
             const model = new PortfolioModel();
             let outer: Span, inner: Span;
@@ -89,6 +118,69 @@ describe('Runner', () => {
         });
     });
 
+    describe('metrics', () => {
+        it("prefixes timer and counter names with the caller's telemetryPrefix", async () => {
+            await new PortfolioModel()
+                .runner()
+                .timer('loadTime')
+                .counter('loadCount')
+                .run(async () => {});
+
+            expect(await pushedMetricNamesAsync()).toEqual([
+                'myApp.portfolio.loadTime',
+                'myApp.portfolio.loadCount'
+            ]);
+        });
+
+        it('does not prefix a metric name that already starts with the telemetryPrefix', async () => {
+            await new PortfolioModel()
+                .runner()
+                .timer('myApp.portfolio.loadTime')
+                .counter('myApp.portfolio.loadCount')
+                .run(async () => {});
+
+            expect(await pushedMetricNamesAsync()).toEqual([
+                'myApp.portfolio.loadTime',
+                'myApp.portfolio.loadCount'
+            ]);
+        });
+
+        it('prefixes a name that only shares a partial segment with the telemetryPrefix', async () => {
+            await new PortfolioModel()
+                .runner()
+                .counter('myApp.portfolioCount')
+                .run(async () => {});
+
+            expect(await pushedMetricNamesAsync()).toEqual([
+                'myApp.portfolio.myApp.portfolioCount'
+            ]);
+        });
+
+        it('uses metric names as given when useNamePrefix is false', async () => {
+            await new PortfolioModel()
+                .runner()
+                .timer({name: 'myApp.shared.loadTime', useNamePrefix: false})
+                .counter({name: 'myApp.shared.loadCount', tags: {a: 'b'}, useNamePrefix: false})
+                .run(async () => {});
+
+            await XH.metricsService.pushPendingAsync();
+            const [{json}] = hoistCore.requestsTo('xh/recordMetrics');
+            expect(json.entries).toMatchObject([
+                {type: 'timer', name: 'myApp.shared.loadTime'},
+                {type: 'count', name: 'myApp.shared.loadCount', tags: {a: 'b'}}
+            ]);
+        });
+
+        it('uses metric names as given when the caller has no telemetryPrefix', async () => {
+            await new TrackedModel()
+                .runner()
+                .timer('loadTime')
+                .run(async () => {});
+
+            expect(await pushedMetricNamesAsync()).toEqual(['loadTime']);
+        });
+    });
+
     describe('run', () => {
         it('passes a load spec that carries the new span and still tracks staleness', async () => {
             // v86 (b6a3f1b9e) - the copy of the LoadSpec made for the span must not read as stale.
@@ -139,6 +231,12 @@ describe('Runner', () => {
 //------------------
 // Helpers
 //------------------
+/** Flush pending metrics and return the names sent to the server. */
+async function pushedMetricNamesAsync(): Promise<string[]> {
+    await XH.metricsService.pushPendingAsync();
+    return hoistCore.requestsTo('xh/recordMetrics').flatMap(r => r.json.entries.map(e => e.name));
+}
+
 class PortfolioModel extends HoistModel {
     override telemetryPrefix = 'myApp.portfolio';
 

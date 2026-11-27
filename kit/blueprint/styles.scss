@@ -1,5 +1,12 @@
 @import '@blueprintjs/core/src/common/react-transition';
 
+// Blueprint resets `font-family` to this var on the root of each portal (`.bp6-theme-root`), which
+// hosts popovers, menus, tooltips and dialogs. Point it at the Hoist font so that content matches
+// the rest of the app.
+body.xh-app {
+  --bp-typography-family-default: var(--xh-font-family);
+}
+
 //------------------------
 // Tabs
 //------------------------
@@ -173,6 +180,7 @@
     // more specifically if this is a problem in any other contexts.
     align-items: center;
     color: var(--xh-menu-item-text-color);
+    font-weight: var(--xh-menu-item-font-weight);
     padding: 5px 10px;
 
     .bp6-menu-item-icon {
@@ -226,21 +234,25 @@
     // items it introduces and sparing a leading header a stray rule at the top of the menu.
     border-top: none;
     border-bottom: var(--xh-menu-heading-border);
+    background-color: var(--xh-menu-heading-bg);
     // Negative side margins cancel the menu's own 4px padding, so the rule runs edge to edge.
-    margin: var(--xh-spacing-half) -4px 0;
+    margin: 0 -4px;
     padding: 0;
-
-    &:first-of-type {
-      margin-top: 0;
-    }
 
     > h6 {
       color: var(--xh-menu-heading-text-color);
       font-size: var(--xh-menu-heading-font-size);
       font-weight: var(--xh-menu-heading-font-weight);
+      letter-spacing: var(--xh-menu-heading-letter-spacing);
       line-height: normal;
+      text-transform: var(--xh-menu-heading-text-transform);
       // Left inset lines the label up with the item icons, not the item text.
-      padding: var(--xh-spacing-half) 10px var(--xh-spacing-half) 14px;
+      padding: var(--xh-menu-heading-padding-top) 10px var(--xh-menu-heading-padding-bottom) 14px;
+    }
+
+    // A heading that leads the menu needs no space above it.
+    &:first-child > h6 {
+      padding-top: var(--xh-menu-heading-padding-bottom);
     }
   }
 

@@ -94,8 +94,9 @@ export abstract class HoistBase {
     persistWith: PersistOptions = null;
 
     /**
-     * Optional prefix applied to span names produced for this object.
-     * When non-null, the string "[prefix]." is pre-pended to the supplied span name.
+     * Optional prefix applied to span and metric names produced by this object's `runner()`.
+     * When non-null, the string "[prefix]." is prepended to the supplied name, unless the name
+     * already starts with it or the call passes `useNamePrefix: false`.
      */
     telemetryPrefix: string = null;
 

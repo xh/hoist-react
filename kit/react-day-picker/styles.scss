@@ -24,6 +24,11 @@
     font-size: var(--xh-font-size);
   }
 
+  // Reserve room for the absolutely-positioned nav buttons, widening the month if wide fonts need it.
+  &:not([data-nav-layout='around'], [data-nav-layout='after']) .rdp-month_caption {
+    padding-inline-end: calc(2 * var(--rdp-nav_button-width));
+  }
+
   .rdp-dropdown_root {
     padding: 0 var(--xh-spacing-half);
     border-radius: var(--xh-border-radius);

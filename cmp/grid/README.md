@@ -132,7 +132,21 @@ gridModel.setGroupBy(['region']);
 gridModel.expandAll();
 gridModel.collapseAll();
 gridModel.expandToLevel(2);
+gridModel.cycleExpandLevel();  // One level past expandLevel, or collapse all once fully expanded
 ```
+
+For a grouped grid, add `expandCycleButton()` to a toolbar. Each click expands the grid one level
+past its `expandLevel`, and the click after full expansion collapses it. Every click leaves the grid
+uniformly expanded, so rows opened or closed by hand do not change the next step. On desktop, its
+tooltip names the next step, using `levelLabels` when set ("Expand to Trader").
+
+A tree grid needs no button. The icon in its tree column header steps through levels the same way.
+At either end of the cycle it follows rows changed by hand. If most were opened from a collapsed
+grid, it collapses them. If most were closed from a fully expanded grid, it expands them again. Set
+`headerHasExpandCollapse: false` on the tree column to remove it.
+
+`expandToLevelButton()` shows a menu of the labelled levels instead. Use it when users need to jump
+straight to a named level.
 
 ### Column Groups
 
