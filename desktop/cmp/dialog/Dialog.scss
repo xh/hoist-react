@@ -135,6 +135,8 @@ h2.xh-dialog__title {
   .xh-dialog__header {
     color: var(--xh-popup-title-text-color);
     background-color: var(--xh-popup-title-bg);
+    // A single line under the title bar. A ring around it would double the dialog's own border.
+    box-shadow: 0 1px 0 var(--xh-popup-border-color);
     font-family: var(--xh-popup-title-font-family);
     font-size: var(--xh-popup-title-font-size);
     padding-left: var(--xh-spacing);

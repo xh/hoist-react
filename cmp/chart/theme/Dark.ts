@@ -4,15 +4,17 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
+import {range} from 'lodash';
 
-// Dark theme color vars - see and sync with vars.scss.
-const bg = '#13181B', // --xh-black
-    altBg = '#151e23', // --xh-grid-odd-row-bg
-    borderColor = '#37474f', // --xh-border-color
-    altBorderColor = '#293233', // --xh-grid-border-color
-    textColor = '#ffffff', // --xh-text-color
-    textColorMuted = '#757575', // --xh-text-color-muted
-    accentColor = '#039be5'; // --xh-blue-light
+// Theme colors, read from the Hoist CSS vars so charts follow app-level theme overrides.
+const bg = 'var(--xh-bg)',
+    altBg = 'var(--xh-grid-odd-row-bg)',
+    borderColor = 'var(--xh-border-color)',
+    altBorderColor = 'var(--xh-grid-border-color)',
+    textColor = 'var(--xh-text-color)',
+    textColorMuted = 'var(--xh-text-color-muted)',
+    accentColor = 'var(--xh-blue-light)',
+    seriesColors = range(1, 11).map(i => `var(--xh-chart-color-${i})`);
 
 // Font-related vars.
 const fontFamily =
@@ -24,19 +26,7 @@ const fontFamily =
  * @internal
  */
 export const DarkTheme = {
-    colors: [
-        '#2b908f',
-        '#90ee7e',
-        '#f45b5b',
-        '#7798BF',
-        '#aaeeee',
-        '#ff0066',
-        '#eeaaee',
-        '#55BF3B',
-        '#DF5353',
-        '#7798BF',
-        '#aaeeee'
-    ],
+    colors: seriesColors,
 
     chart: {
         backgroundColor: bg,

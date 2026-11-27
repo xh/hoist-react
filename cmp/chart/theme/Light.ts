@@ -4,15 +4,17 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
+import {range} from 'lodash';
 
-// Light theme color vars - see and sync with vars.scss.
-const bg = '#ffffff',
-    altBg = '#f5f5f5', // --xh-grid-odd-row-bg
-    borderColor = '#bdbdbd', // --xh-border-color
-    altBorderColor = '#e6e6e6', // --xh-grid-border-color
-    textColor = '#263238', // --xh-text-color
-    textColorMuted = '#757575', // --xh-text-color-muted
-    accentColor = '#039be5'; // --xh-blue-light
+// Theme colors, read from the Hoist CSS vars so charts follow app-level theme overrides.
+const bg = 'var(--xh-bg)',
+    altBg = 'var(--xh-grid-odd-row-bg)',
+    borderColor = 'var(--xh-border-color)',
+    altBorderColor = 'var(--xh-grid-border-color)',
+    textColor = 'var(--xh-text-color)',
+    textColorMuted = 'var(--xh-text-color-muted)',
+    accentColor = 'var(--xh-blue-light)',
+    seriesColors = range(1, 11).map(i => `var(--xh-chart-color-${i})`);
 
 // Font-related vars.
 const fontFamily =
@@ -24,6 +26,8 @@ const fontFamily =
  * @internal
  */
 export const LightTheme = {
+    colors: seriesColors,
+
     chart: {
         backgroundColor: bg,
         style: {fontFamily},
