@@ -67,6 +67,32 @@ describe('Menu (mobile)', () => {
         expect(onDismiss).toHaveBeenCalledOnce();
     });
 
+    it('renders an item with an href as a link that opens in its target', () => {
+        const actionFn = vi.fn(),
+            onDismiss = vi.fn();
+        renderMenu(
+            [{text: 'Home', actionFn, href: 'https://xh.io', target: '_blank', testId: 'home'}],
+            onDismiss
+        );
+
+        const home = screen.getByTestId('home');
+        expect(home.tagName).toBe('A');
+        expect(home.getAttribute('href')).toBe('https://xh.io');
+        expect(home.getAttribute('target')).toBe('_blank');
+
+        fireEvent.click(home);
+        expect(actionFn).toHaveBeenCalledOnce();
+        expect(onDismiss).toHaveBeenCalledOnce();
+    });
+
+    it('does not render a disabled item with an href as a link', () => {
+        renderMenu([{text: 'Home', href: 'https://xh.io', disabled: true, testId: 'home'}]);
+
+        const home = screen.getByTestId('home');
+        expect(home.tagName).toBe('DIV');
+        expect(home.hasAttribute('href')).toBe(false);
+    });
+
     it('renders dividers and headings, and omits hidden items', () => {
         const {container} = renderMenu([
             {heading: 'Edit'},

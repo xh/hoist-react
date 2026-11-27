@@ -4,8 +4,8 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import {div, hspacer, vbox} from '@xh/hoist/cmp/layout';
-import type {MenuItemLike} from '@xh/hoist/core';
+import {a, div, hspacer, vbox} from '@xh/hoist/cmp/layout';
+import type {ElementFactory, MenuItemLike} from '@xh/hoist/core';
 import {
     hoistCmp,
     HoistModel,
@@ -25,7 +25,7 @@ import {
 } from '@xh/hoist/cmp/menu/impl/Menus';
 import classNames from 'classnames';
 import {clone, isEmpty} from 'lodash';
-import type {ReactNode} from 'react';
+import type {AnchorHTMLAttributes, ReactNode} from 'react';
 import {useEffect} from 'react';
 
 import './Menu.scss';
@@ -113,6 +113,9 @@ class MenuLocalModel extends HoistModel {
                         icon,
                         className,
                         actionFn,
+                        disabled,
+                        href,
+                        target,
                         hidden,
                         active,
                         keepMenuOpen,
@@ -121,8 +124,16 @@ class MenuLocalModel extends HoistModel {
                     } = item,
                     labelItems = icon ? [icon, hspacer(10), text] : [text];
 
-                return div({
+                // An item with an `href` is a link, so a long-press offers the browser's link menu.
+                const isLink = href && !disabled,
+                    itemFactory: ElementFactory<AnchorHTMLAttributes<HTMLElement>> = isLink
+                        ? a
+                        : div;
+
+                return itemFactory({
                     key: idx,
+                    href: isLink ? href : null,
+                    target: isLink ? target : null,
                     className: classNames(
                         'xh-menu__list__item',
                         idx === pressedIdx ? 'xh-menu__list__item--pressed' : null,

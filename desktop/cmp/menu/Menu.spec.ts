@@ -167,6 +167,53 @@ describe('Menu', () => {
         await waitFor(() => expect(actionFn).toHaveBeenCalledTimes(1));
     });
 
+    const linkMenu = () =>
+        menu({
+            menuItems: [
+                {text: 'Home', testId: 'home', href: 'https://xh.io', target: '_blank'},
+                {text: 'Offline', testId: 'offline', href: 'https://xh.io', disabled: true},
+                {
+                    text: 'Docs',
+                    testId: 'docs',
+                    rightElement: createElement(
+                        'a',
+                        {href: 'https://xh.io', 'data-testid': 'docs-link'},
+                        'Open'
+                    )
+                }
+            ]
+        });
+
+    it('renders only an enabled item with an href as a link, opening in its target', () => {
+        render(linkMenu());
+
+        const home = screen.getByTestId('home');
+        expect(home.getAttribute('href')).toBe('https://xh.io');
+        expect(home.getAttribute('target')).toBe('_blank');
+        expect(screen.getByTestId('offline').tagName).toBe('DIV');
+        expect(screen.getByTestId('docs').tagName).toBe('DIV');
+    });
+
+    it('shows the browser menu on a right-click on a link, and on nothing else in the menu', () => {
+        render(linkMenu());
+
+        // fireEvent returns false when a handler called preventDefault().
+        expect(fireEvent.contextMenu(screen.getByTestId('home'))).toBe(true);
+        expect(fireEvent.contextMenu(screen.getByTestId('docs-link'))).toBe(true);
+        expect(fireEvent.contextMenu(screen.getByTestId('docs'))).toBe(false);
+        expect(fireEvent.contextMenu(screen.getByTestId('offline'))).toBe(false);
+    });
+
+    it('keeps a right-click within the menu from reaching a context menu beneath it', () => {
+        const onContextMenu = vi.fn();
+        render(createElement('div', {onContextMenu}, linkMenu()));
+
+        fireEvent.contextMenu(screen.getByTestId('home'));
+        fireEvent.contextMenu(screen.getByTestId('docs-link'));
+        fireEvent.contextMenu(screen.getByTestId('docs'));
+        expect(onContextMenu).not.toHaveBeenCalled();
+    });
+
     it('opens a submenu with ArrowRight and closes it with ArrowLeft', async () => {
         render(
             menu({

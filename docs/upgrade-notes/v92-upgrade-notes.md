@@ -73,7 +73,7 @@ Mobile apps import `popover` from `@xh/hoist/cmp/popover` in place of the remove
 | `dialogBody`, `dialogFooter`, `dialogFooterActions` | The same names from `@xh/hoist/desktop/cmp/dialog` |
 | `popover`, `Popover` | The same names from `@xh/hoist/cmp/popover` |
 | `tooltip`, `Tooltip` | The same names from `@xh/hoist/cmp/tooltip` |
-| `menuItem`, `menuDivider` | A `MenuItem` config, and `'-'` or `{heading}` for a divider. Map `onClick` to `actionFn`, `labelElement` to `rightElement`, and `shouldDismissPopover: false` to `keepMenuOpen: true` |
+| `menuItem`, `menuDivider` | A `MenuItem` config, and `'-'` or `{heading}` for a divider. Map `onClick` to `actionFn`, `labelElement` to `rightElement`, and `shouldDismissPopover: false` to `keepMenuOpen: true`. `href` and `target` keep their names |
 | `menu` | `menu` or `menuButton` from `@xh/hoist/desktop/cmp/menu`, with `MenuItem` configs |
 | `showContextMenu` | `useContextMenu` from `@xh/hoist/desktop/hooks`, or `PanelProps.contextMenu` |
 | `useHotkeys`, `HotkeyConfig` | The same names from `@xh/hoist/desktop/hooks` |

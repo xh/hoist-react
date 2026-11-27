@@ -358,6 +358,22 @@ export interface MenuItem<T = MenuToken, C = MenuContext> extends TestSupportPro
     /** Executed when the user clicks the menu item. */
     actionFn?: (e: MouseEvent | PointerEvent, context?: C) => void;
 
+    /**
+     * URL to open when the user clicks the item. The item renders as a link, so the user can also
+     * open it in a new tab or window - with a modifier key, a middle-click, or the browser's own
+     * right-click menu.
+     *
+     * A click loads the URL in full, so use `href` for links that leave the app. For a route
+     * within the app, use `actionFn` with `XH.navigate()`.
+     *
+     * On an item with `items`, a click follows the link and hovering opens the submenu. Touch
+     * users may not reach the submenu, so consider putting the link inside it.
+     */
+    href?: string;
+
+    /** Where to open `href`, as for a link - e.g. `_blank` for a new tab. */
+    target?: string;
+
     /** Executed before the item is shown. Use to adjust properties dynamically. */
     prepareFn?: (me: MenuItem<T, C>, context?: C) => void;
 
