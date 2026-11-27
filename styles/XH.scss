@@ -47,8 +47,16 @@ body.xh-app {
     background-color: var(--xh-scrollbar-bg);
   }
 
+  // A transparent border insets the thumb from the track edge, since a thumb takes no margin.
   ::-webkit-scrollbar-thumb {
     background-color: var(--xh-scrollbar-thumb-color);
+    background-clip: padding-box;
+    border: var(--xh-scrollbar-thumb-inset) solid transparent;
+    border-radius: var(--xh-scrollbar-thumb-border-radius);
+
+    &:hover {
+      background-color: var(--xh-scrollbar-thumb-hover-color);
+    }
   }
 
   h1,

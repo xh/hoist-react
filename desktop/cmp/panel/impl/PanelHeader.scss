@@ -6,6 +6,8 @@
   padding: var(--xh-title-padding);
   background-color: var(--xh-panel-title-bg);
   color: var(--xh-panel-title-text-color);
+  // An optional line along the bottom edge, to separate a header from another directly below it.
+  box-shadow: inset 0 -1px 0 var(--xh-panel-title-border-color);
 
   &__title {
     text-overflow: ellipsis;

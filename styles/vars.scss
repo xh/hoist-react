@@ -468,6 +468,31 @@ body {
   //------------------------
   --xh-chart-font-family: var(--xh-font-family);
 
+  // Series colors, assigned to chart series in order.
+  --xh-chart-color-1: #2caffe;
+  --xh-chart-color-2: #544fc5;
+  --xh-chart-color-3: #00e272;
+  --xh-chart-color-4: #fe6a35;
+  --xh-chart-color-5: #6b8abc;
+  --xh-chart-color-6: #d568fb;
+  --xh-chart-color-7: #2ee0ca;
+  --xh-chart-color-8: #fa4b42;
+  --xh-chart-color-9: #feb56a;
+  --xh-chart-color-10: #91e8e1;
+
+  &:where(.xh-dark) {
+    --xh-chart-color-1: #2b908f;
+    --xh-chart-color-2: #90ee7e;
+    --xh-chart-color-3: #f45b5b;
+    --xh-chart-color-4: #7798bf;
+    --xh-chart-color-5: #aaeeee;
+    --xh-chart-color-6: #ff0066;
+    --xh-chart-color-7: #eeaaee;
+    --xh-chart-color-8: #55bf3b;
+    --xh-chart-color-9: #df5353;
+    --xh-chart-color-10: #7798bf;
+  }
+
 
   //------------------------
   // Focus
@@ -871,6 +896,7 @@ body {
   --xh-panel-border-color: var(--xh-border-color);
   --xh-panel-border-width: 0px;
   --xh-panel-title-bg: var(--xh-title-bg);
+  --xh-panel-title-border-color: transparent;
   --xh-panel-title-font-family: var(--xh-title-font-family);
   --xh-panel-title-font-size: var(--xh-title-font-size);
   --xh-panel-title-font-weight: var(--xh-title-font-weight);
@@ -1011,6 +1037,10 @@ body {
   //------------------------
   --xh-scrollbar-bg: #{mc('blue-grey', '100')};
   --xh-scrollbar-thumb-color: #{mc('blue-grey', '300')};
+  --xh-scrollbar-thumb-hover-color: var(--xh-scrollbar-thumb-color);
+  --xh-scrollbar-thumb-border-radius: 0;
+  // Gap between the thumb and the edge of the track.
+  --xh-scrollbar-thumb-inset: 0px;
   --xh-scrollbar-size: 10px;
 
   &:where(.xh-dark) {
@@ -1272,6 +1302,8 @@ body {
   // DashCanvas
   //------------------------
   --xh-dash-canvas-grid-cell-color: #{mc-muted('blue-grey', '50', 0%, 4%)};
+  --xh-dash-canvas-widget-title-bg: var(--xh-panel-title-bg);
+  --xh-dash-canvas-widget-title-text-color: var(--xh-panel-title-text-color);
 
   &:where(.xh-dark) {
     --xh-dash-canvas-grid-cell-color: hsl(202, 17%, 8%);

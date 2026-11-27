@@ -103,21 +103,20 @@
 
     > .xh-panel {
       > .xh-panel__inner {
+        // A compact header. Its colors default to the standard panel title colors.
         > .xh-panel-header {
-          background-color: var(--xh-intent-neutral-trans1);
           height: 24px;
-          border-bottom: var(--xh-border-solid);
+
+          // Set through the panel title vars, so the title, icon and header tools all follow.
+          &:not(.xh-panel-header--intent) {
+            --xh-panel-title-bg: var(--xh-dash-canvas-widget-title-bg);
+            --xh-panel-title-text-color: var(--xh-dash-canvas-widget-title-text-color);
+          }
 
           .xh-panel-header__title,
           > svg {
-            color: var(--xh-gray);
             font-size: 12px;
             margin-right: var(--xh-spacing-half);
-          }
-
-          // Header "tool" buttons.
-          .xh-button--minimal.xh-button--intent-none {
-            color: var(--xh-gray) !important;
           }
         }
       }

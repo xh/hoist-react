@@ -236,21 +236,24 @@
   //------------------------
   // Tree grid styling modes
   //------------------------
-  // Generate a set of selectors targeting all expected max-depth levels, then style all rows
-  // *not* at that max depth with parent/group row highlights or colors. For trees with mixed-depth
-  // branches, some such "parent" rows might not actually have children and therefore won't be
-  // identified as groups by AG-Grid row classes, but this keeps the styling consistent for all
-  // rows at the same level.
+  // Generate a set of selectors targeting all expected max-depth levels, as the depth of the tree
+  // sets how far each level's highlight fades.
+  // Highlights fill expanded parents only, so a collapsed tree does not read as a solid block of
+  // color. All other rows style as standard rows, including stripes.
+  // Colors fill every row *not* at the max depth. On mixed-depth branches some of those rows have
+  // no children, but this keeps the styling consistent for all rows at the same level.
   @for $i from 0 to 10 {
     // With highlights
     &.xh-grid--tree-style-highlights.xh-grid--max-depth-#{$i} {
       @for $level from 0 to 9 {
-        $l: 94 + (math.div($level, ($i + 1)) * 6);
+        // Fade the group color toward the grid background as rows get deeper.
+        $pct: math.max(0, math.div($i + 1 - $level, $i + 1)) * 100%;
+        $bg: color-mix(in srgb, var(--xh-grid-tree-group-bg) $pct, var(--xh-grid-bg));
 
-        .ag-row.ag-row-level-#{$level}:not(.ag-row-level-#{$i}) {
+        .ag-row.ag-row-level-#{$level}.ag-row-group-expanded {
           &:not(.ag-row-selected),
           &.ag-row.ag-row-odd:not(.ag-full-width-row):not(.ag-row-selected) {
-            background-color: hsl(205, 70%, $l * 1%);
+            background-color: $bg;
           }
         }
       }
@@ -309,49 +312,6 @@
 .xh-grid--flat:not(.xh-data-view) {
   .ag-ltr .ag-row-group-leaf-indent {
     margin-left: 0;
-  }
-}
-
-.xh-dark .xh-grid--hierarchical:not(.xh-data-view) {
-  @for $i from 0 to 10 {
-    // With highlights
-    &.xh-grid--tree-style-highlights.xh-grid--max-depth-#{$i} {
-      @for $level from 0 to 9 {
-        $l: 18 - (math.div($level, ($i + 1)) * 11);
-
-        .ag-row.ag-row-level-#{$level}:not(.ag-row-level-#{$i}) {
-          &:not(.ag-row-selected),
-          &.ag-row.ag-row-odd:not(.ag-full-width-row):not(.ag-row-selected) {
-            background-color: hsl(200, 50%, $l * 1%);
-          }
-        }
-      }
-
-      .xh-ag-grid--show-hover {
-        .ag-row:not(.ag-row-level-#{$i}) {
-          &.ag-row.ag-row-hover:not(.ag-full-width-row):not(.ag-row-selected):not(.ag-row-pinned) {
-            background-color: var(--xh-grid-row-hover-bg);
-          }
-        }
-      }
-    }
-
-    // With colors
-    &.xh-grid--tree-style-colors.xh-grid--max-depth-#{$i} {
-      .ag-grid-pinned-bottom-rows-container,
-      .ag-grid-pinned-top-rows-container {
-        background-color: var(--xh-grid-tree-group-level-0-bg);
-      }
-
-      @for $level from 0 to 9 {
-        .ag-row.ag-row-level-#{$level}:not(.ag-row-level-#{$i}) {
-          &:not(.ag-row-selected),
-          &.ag-row.ag-row-odd:not(.ag-full-width-row):not(.ag-row-selected) {
-            background-color: var(--xh-grid-tree-group-level-#{$level}-bg);
-          }
-        }
-      }
-    }
   }
 }
 
