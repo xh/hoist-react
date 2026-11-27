@@ -630,6 +630,18 @@ export class GridModel extends HoistModel implements GridLikeModel {
     /** @internal - latest RecordSet applied to ag-Grid, maintained by the Grid component. */
     @observableRef accessor _syncedRs: RecordSet = null;
 
+    /**
+     * @internal - cell holding the active match of a `GridFindField` in `cells` mode, which each
+     * Column marks with a cell class. Not observable, as every cell render reads it.
+     */
+    _findActiveCell: {recordId: StoreRecordId; colId: string} = null;
+
+    /**
+     * @internal - colId of the column whose header holds the active match of a `GridFindField` in
+     * `cells` mode, which its header marks with a class.
+     */
+    _findActiveHeader: string = null;
+
     // Kept alive, as the primary reader `getColumn()` is often called outside of a reaction.
     @computed({keepAlive: true})
     private get leafColumnMap(): Map<string, Column> {

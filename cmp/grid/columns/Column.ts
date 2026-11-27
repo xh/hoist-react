@@ -994,6 +994,11 @@ export class Column {
             ret.cellClassRules = {...flagRules, ...ret.cellClassRules};
         }
 
+        ret.cellClassRules = {
+            ...ret.cellClassRules,
+            'xh-cell--find-active': this.agIsFindActiveCell
+        };
+
         // Finally, apply explicit app requests.  The customer is always right....
         const spec = {...ret, ...agOptions};
 
@@ -1052,6 +1057,15 @@ export class Column {
 
             // Add wrapping span for styling purposes
             return span({className: 'xh-cell-inner-wrapper', children: ret});
+        };
+    }
+
+    // Marks the cell holding the active match of a GridFindField in `cells` mode.
+    @computeOnce
+    private get agIsFindActiveCell(): ColumnCellClassRuleFn {
+        return ({data}) => {
+            const cell = this.gridModel._findActiveCell;
+            return !!cell && !!data && cell.recordId === data.id && cell.colId === this.colId;
         };
     }
 

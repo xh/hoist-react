@@ -5,19 +5,19 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import type {Column, GridLikeModel, GridModel} from '@xh/hoist/cmp/grid';
+import {CellTextCache, getMatchTextGetters} from '@xh/hoist/cmp/grid/impl/FindUtils';
 import {isGridLikeModel} from '@xh/hoist/cmp/grid/impl/GridLikeModel';
 import {DataViewModel} from '@xh/hoist/cmp/dataview';
 import {ZoneGridModel} from '@xh/hoist/cmp/zoneGrid';
 import {HoistModel, lookup} from '@xh/hoist/core';
-import type {FilterMatchMode, StoreRecord, Store} from '@xh/hoist/data';
+import type {FilterMatchMode, FilterMatchOn, StoreRecord, Store} from '@xh/hoist/data';
 import {appendFilter, getFilterRegex} from '@xh/hoist/data';
 import {action, compareStructural, computed} from '@xh/hoist/mobx';
-import {stripTags, throwIf, warnIf} from '@xh/hoist/utils/js';
+import {throwIf, warnIf} from '@xh/hoist/utils/js';
 import {
     debounce,
     filter,
     flatMap,
-    get,
     intersection,
     isArray,
     isEmpty,
@@ -36,8 +36,15 @@ export class StoreFilterFieldImplModel extends HoistModel {
     private filter: (rec: StoreRecord) => boolean;
     private bufferedApplyFilter;
 
+    // Text shown by cells, kept between filters.
+    private textCache = new CellTextCache();
+
     get matchMode(): FilterMatchMode {
         return this.componentProps.matchMode ?? 'startWord';
+    }
+
+    get matchOn(): FilterMatchOn {
+        return this.componentProps.matchOn ?? 'value';
     }
 
     /** Model to filter - from props, or the nearest found in context. */
@@ -76,7 +83,10 @@ export class StoreFilterFieldImplModel extends HoistModel {
                 fireImmediately: true
             },
             {
-                track: () => [this.componentProps.includeFields, this.componentProps.excludeFields],
+                track: () => {
+                    const {includeFields, excludeFields} = this.componentProps;
+                    return [includeFields, excludeFields, this.matchMode, this.matchOn];
+                },
                 run: () => this.regenerateFilter(),
                 equals: compareStructural
             }
@@ -187,50 +197,9 @@ export class StoreFilterFieldImplModel extends HoistModel {
     }
 
     getValGetters(fieldName: string) {
-        const {boundModel} = this;
-
-        // If a GridModel has been configured, the user is looking at rendered values in a grid and
-        // would reasonably expect the filter to work off what they see. Rendering can be expensive,
-        // so currently supported for Date-type fields only. (Dates *require* a rendered value to
-        // have any hope of matching.) This could be extended to other types if needed, perhaps
-        // with a flag to manage performance tradeoffs.
-        //
-        // Note corresponding impl. in GridFindFieldModel - review together if updating.
-        if (boundModel) {
-            const {store} = boundModel,
-                field = store.getField(fieldName);
-
-            if (field?.type === 'date' || field?.type === 'localDate') {
-                const cols = filter(this.getSearchColumns(), {field: fieldName});
-
-                // Empty return if no columns - even if this field has been force-included,
-                // we can't match it if we can't render it.
-                if (!cols) return [];
-
-                return cols.map(column => {
-                    const {getValueFn, resolvedRenderer} = column;
-                    return (record: StoreRecord) => {
-                        const ctx = {
-                                record,
-                                field: field.name,
-                                column,
-                                gridModel: this.innerGridModel,
-                                store,
-                                agParams: null
-                            },
-                            ret = getValueFn(ctx);
-
-                        return resolvedRenderer ? stripTags(resolvedRenderer(ret, ctx)) : ret;
-                    };
-                });
-            }
-        }
-
-        // Otherwise just match raw.
-        // Use expensive get() only when needed to support dot-separated paths.
-        return fieldName.includes('.')
-            ? (rec: StoreRecord) => get(rec.data, fieldName)
-            : (rec: StoreRecord) => rec.data[fieldName];
+        const {boundModel, store} = this,
+            columns = boundModel ? filter(this.getSearchColumns(), {field: fieldName}) : null;
+        return getMatchTextGetters(fieldName, store, columns, this.matchOn, this.textCache);
     }
 
     private get innerGridModel(): GridModel {

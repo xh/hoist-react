@@ -4,55 +4,23 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import type {Column, GridLikeModel, GridModel} from '@xh/hoist/cmp/grid';
-import {isGridLikeModel} from '@xh/hoist/cmp/grid/impl/GridLikeModel';
-import {DataViewModel} from '@xh/hoist/cmp/dataview';
-import {ZoneGridModel} from '@xh/hoist/cmp/zoneGrid';
-import {HoistModel} from '@xh/hoist/core';
+import {getMatchTextGetters} from '@xh/hoist/cmp/grid/impl/FindUtils';
 import type {FilterMatchMode, StoreRecord} from '@xh/hoist/data';
 import {getFilterRegex} from '@xh/hoist/data';
-import type {TextInputModel} from '@xh/hoist/desktop/cmp/input';
-import {action, bindable, computed, observableRef, compareStructural} from '@xh/hoist/mobx';
-import {stripTags} from '@xh/hoist/utils/js';
-import {createObservableRef} from '@xh/hoist/utils/react';
-import {
-    filter,
-    flatMap,
-    get,
-    intersection,
-    isArray,
-    isEmpty,
-    isFinite,
-    isNil,
-    without
-} from 'lodash';
+import {action, computed, observableRef, compareStructural} from '@xh/hoist/mobx';
+import {filter, flatMap, isEmpty, isFinite, isNil} from 'lodash';
+import {BaseGridFindImplModel} from './BaseGridFindImplModel';
 
 /**
+ * Impl model for `GridFindField` in `rows` mode - finds matching records and selects them.
  * @internal
  */
-export class GridFindFieldImplModel extends HoistModel {
-    override xhImpl = true;
-
-    @bindable accessor query: string = null;
-
+export class GridFindFieldImplModel extends BaseGridFindImplModel {
     get matchMode(): FilterMatchMode {
         return this.componentProps.matchMode ?? 'startWord';
     }
 
-    get queryBuffer(): number {
-        return this.componentProps.queryBuffer ?? 200;
-    }
-
-    get includeFields(): string[] {
-        return this.componentProps.includeFields;
-    }
-
-    get excludeFields(): string[] {
-        return this.componentProps.excludeFields;
-    }
-
     @observableRef accessor results;
-    inputRef = createObservableRef<TextInputModel>();
     _records: StoreRecord[] = null;
 
     get count(): number {
@@ -72,30 +40,16 @@ export class GridFindFieldImplModel extends HoistModel {
         return `${match}/${count}`;
     }
 
-    get hasFocus() {
-        return this.inputRef?.current?.hasFocus;
-    }
-
-    @computed
-    get hasQuery(): boolean {
-        return !isNil(this.query) && this.query.length > 0;
-    }
-
     @computed
     get hasResults(): boolean {
         return !isNil(this.results) && !isEmpty(this.results);
-    }
-
-    /** Model to search - from props, or the nearest found in context. */
-    @computed
-    get boundModel(): GridLikeModel {
-        return this.componentProps.gridModel ?? this.lookupModel(isGridLikeModel);
     }
 
     //------------------------------------------------------------------
     // Trampoline value to grid
     //------------------------------------------------------------------
     override onLinked() {
+        super.onLinked();
         const {boundModel, innerGridModel} = this;
         if (!boundModel) {
             this.logError("No GridModel available. Provide via a 'gridModel' prop, or context.");
@@ -127,7 +81,7 @@ export class GridFindFieldImplModel extends HoistModel {
                 debounce: this.queryBuffer
             },
             {
-                track: () => [this.includeFields, this.excludeFields, this.matchMode],
+                track: () => [this.includeFields, this.excludeFields, this.matchMode, this.matchOn],
                 run: () => this.updateResults(),
                 equals: compareStructural
             }
@@ -174,7 +128,17 @@ export class GridFindFieldImplModel extends HoistModel {
         }
 
         const regex = getFilterRegex(query, this.matchMode),
-            valGetters = flatMap(activeFields, fieldPath => this.getValGetters(fieldPath));
+            {store} = innerGridModel,
+            searchCols = this.getSearchColumns(),
+            valGetters = flatMap(activeFields, field =>
+                getMatchTextGetters(
+                    field,
+                    store,
+                    filter(searchCols, {field}),
+                    this.matchOn,
+                    this.textCache
+                )
+            );
 
         this.results = this.getRecords()
             .filter(rec => {
@@ -190,92 +154,5 @@ export class GridFindFieldImplModel extends HoistModel {
 
     private getRecords(): StoreRecord[] {
         return (this._records ??= this.innerGridModel.getSortedRecords());
-    }
-
-    private getActiveFields(): string[] {
-        const {innerGridModel, includeFields, excludeFields} = this,
-            searchCols = this.getSearchColumns();
-
-        let ret = ['id', ...innerGridModel.store.fieldNames];
-        if (includeFields) ret = intersection(ret, includeFields);
-        if (excludeFields) ret = without(ret, ...excludeFields);
-
-        // Push on dot-delimited grid column fields. These are supported by Grid and traverse
-        // sub-objects in StoreRecord.data to display nested properties. Given that Grid treats these
-        // as first-class fields and displays them w/o the need for renderers, we want to
-        // include them here. (But only if their "root" is in the field list derived from the
-        // Store and any given include/excludeField configs.)
-        searchCols.forEach(col => {
-            const {fieldPath} = col;
-            if (!isArray(fieldPath)) return;
-
-            const rootFieldPath = fieldPath[0];
-            if (ret.includes(rootFieldPath)) {
-                ret.push(col.field);
-            }
-        });
-
-        // Run exclude once more to support explicitly excluding a dot-sep field added above.
-        if (excludeFields) ret = without(ret, ...excludeFields);
-
-        // Final filter for column visibility, or explicit request for inclusion. Deliberately not
-        // keyed to groupBy, so query results stay stable across regrouping (see #4070).
-        ret = ret.filter(f => {
-            return (
-                (includeFields && includeFields.includes(f)) || searchCols.find(c => c.field === f)
-            );
-        });
-
-        return ret;
-    }
-
-    private getValGetters(fieldName: string) {
-        const {innerGridModel} = this,
-            {store} = innerGridModel,
-            field = store.getField(fieldName);
-
-        // See corresponding method in StoreFilterFieldImplModel for notes on this implementation.
-        if (field?.type === 'date' || field?.type === 'localDate') {
-            const cols = filter(this.getSearchColumns(), {field: fieldName});
-            if (!cols) return [];
-
-            return cols.map(column => {
-                const {getValueFn, resolvedRenderer} = column;
-                return (record: StoreRecord) => {
-                    const ctx = {
-                            record,
-                            field: fieldName,
-                            column,
-                            gridModel: innerGridModel,
-                            store,
-                            agParams: null
-                        },
-                        ret = getValueFn(ctx);
-
-                    return resolvedRenderer ? stripTags(resolvedRenderer(ret, ctx)) : ret;
-                };
-            });
-        }
-
-        // Otherwise just match raw.
-        // Use expensive get() only when needed to support dot-separated paths.
-        return fieldName.includes('.')
-            ? (rec: StoreRecord) => get(rec.data, fieldName)
-            : (rec: StoreRecord) => rec.data[fieldName];
-    }
-
-    private get innerGridModel(): GridModel {
-        return this.boundModel?.innerGridModel ?? null;
-    }
-
-    // See corresponding method in StoreFilterFieldImplModel.
-    private getSearchColumns(): Column[] {
-        const {boundModel, innerGridModel} = this;
-        if (!boundModel) return [];
-        if (boundModel instanceof ZoneGridModel) return boundModel.getMappedColumns();
-        if (boundModel instanceof DataViewModel) {
-            return innerGridModel.getLeafColumns().filter(it => it.field);
-        }
-        return innerGridModel.getVisibleLeafColumns();
     }
 }

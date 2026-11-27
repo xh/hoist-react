@@ -7,7 +7,7 @@
 import type {GridLikeModel} from '@xh/hoist/cmp/grid';
 import type {DefaultHoistProps, HoistModel} from '@xh/hoist/core';
 import {hoistCmp, useLocalModel, XH} from '@xh/hoist/core';
-import type {FilterMatchMode, FilterTestFn, Store} from '@xh/hoist/data';
+import type {FilterMatchMode, FilterMatchOn, FilterTestFn, Store} from '@xh/hoist/data';
 import {storeFilterFieldImpl as desktopStoreFilterFieldImpl} from '@xh/hoist/dynamics/desktop';
 import {storeFilterFieldImpl as mobileStoreFilterFieldImpl} from '@xh/hoist/dynamics/mobile';
 import {StoreFilterFieldImplModel} from './impl/StoreFilterFieldImplModel';
@@ -56,6 +56,12 @@ export interface StoreFilterFieldProps extends DefaultHoistProps {
 
     /** Mode to use when filtering (default 'startWord'). */
     matchMode?: FilterMatchMode;
+
+    /**
+     * What to match - each field's raw value, the text its grid column shows, or either. Default
+     * 'value'. See {@link FilterMatchOn}, including the cost of 'rendered' on large grids.
+     */
+    matchOn?: FilterMatchOn;
 
     /** Optional model for raw value binding - see comments on the `bind` prop for details. */
     model?: HoistModel;
