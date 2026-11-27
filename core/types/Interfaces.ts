@@ -391,8 +391,7 @@ export interface MenuItem<T = MenuToken, C = MenuContext> extends TestSupportPro
      * keyboard shortcut.
      *
      * A click on a button or other control within it goes to that control alone, without running
-     * `actionFn` or closing the menu. A click elsewhere within it acts as a click on the item. A
-     * right-click on a link within it shows the browser's own menu, to open the link in a new tab.
+     * `actionFn` or closing the menu. A click elsewhere within it acts as a click on the item.
      */
     rightElement?: ReactNode;
 
