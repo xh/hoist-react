@@ -55,82 +55,33 @@
   a:hover {
   color: #ffffff;
 }
-.xh-toast.xh-toast--intent-primary {
-  background-color: #2d72d2;
-  color: #ffffff;
+// Intent toasts take the Hoist intent colors, with a white label as on a standard button.
+@each $intent in (primary, success, warning, danger) {
+  .xh-toast.xh-toast--intent-#{$intent} {
+    background-color: var(--xh-intent-#{$intent});
+    color: #ffffff;
+
+    .xh-button {
+      background-color: var(--xh-intent-#{$intent}) !important;
+      color: #ffffff !important;
+
+      &:hover {
+        background-color: var(--xh-intent-#{$intent}-darker) !important;
+        color: #ffffff !important;
+      }
+
+      &:active {
+        background-color: var(--xh-intent-#{$intent}-darkest) !important;
+        color: #ffffff !important;
+      }
+
+      &:focus {
+        outline-color: rgba(255, 255, 255, 0.75);
+      }
+    }
+  }
 }
-.xh-toast.xh-toast--intent-primary .xh-button {
-  background-color: #2d72d2 !important;
-  color: #ffffff !important;
-}
-.xh-toast.xh-toast--intent-primary .xh-button:hover {
-  background-color: #215db0 !important;
-  color: #ffffff !important;
-}
-.xh-toast.xh-toast--intent-primary .xh-button:active {
-  background-color: #184a90 !important;
-  color: #ffffff !important;
-}
-.xh-toast.xh-toast--intent-primary .xh-button:focus {
-  outline-color: rgba(255, 255, 255, 0.75);
-}
-.xh-toast.xh-toast--intent-success {
-  background-color: #238551;
-  color: #ffffff;
-}
-.xh-toast.xh-toast--intent-success .xh-button {
-  background-color: #238551 !important;
-  color: #ffffff !important;
-}
-.xh-toast.xh-toast--intent-success .xh-button:hover {
-  background-color: #1c6e42 !important;
-  color: #ffffff !important;
-}
-.xh-toast.xh-toast--intent-success .xh-button:active {
-  background-color: #165a36 !important;
-  color: #ffffff !important;
-}
-.xh-toast.xh-toast--intent-success .xh-button:focus {
-  outline-color: rgba(255, 255, 255, 0.75);
-}
-.xh-toast.xh-toast--intent-warning {
-  background-color: #fbb360;
-  color: #1c2127;
-}
-.xh-toast.xh-toast--intent-warning .xh-button {
-  background-color: #fbb360 !important;
-  color: #1c2127 !important;
-}
-.xh-toast.xh-toast--intent-warning .xh-button:hover {
-  background-color: #ec9a3c !important;
-  color: #1c2127 !important;
-}
-.xh-toast.xh-toast--intent-warning .xh-button:active {
-  background-color: #c87619 !important;
-  color: #1c2127 !important;
-}
-.xh-toast.xh-toast--intent-warning .xh-button:focus {
-  outline-color: rgba(28, 33, 39, 0.75);
-}
-.xh-toast.xh-toast--intent-danger {
-  background-color: #cd4246;
-  color: #ffffff;
-}
-.xh-toast.xh-toast--intent-danger .xh-button {
-  background-color: #cd4246 !important;
-  color: #ffffff !important;
-}
-.xh-toast.xh-toast--intent-danger .xh-button:hover {
-  background-color: #ac2f33 !important;
-  color: #ffffff !important;
-}
-.xh-toast.xh-toast--intent-danger .xh-button:active {
-  background-color: #8e292c !important;
-  color: #ffffff !important;
-}
-.xh-toast.xh-toast--intent-danger .xh-button:focus {
-  outline-color: rgba(255, 255, 255, 0.75);
-}
+
 .xh-toast__message {
   flex: 1 1 auto;
   padding: 11px;

@@ -49,6 +49,7 @@ const formFieldSetContextProvider = elementFactory(FormFieldSetContext.Provider)
  */
 export const [FormFieldSet, formFieldSet] = hoistCmp.withFactory<FormFieldSetProps>({
     displayName: 'FormFieldSet',
+    className: 'xh-form-field-set',
     model: uses(FormFieldSetModel, {
         fromContext: false,
         publishMode: 'limited',

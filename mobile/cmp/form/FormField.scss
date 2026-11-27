@@ -61,16 +61,9 @@
     }
   }
 
-  &--invalid .xh-form-field__label {
+  // The label keeps its own color. The required marker, outline and message carry the error.
+  &--invalid .xh-form-field__required-indicator {
     color: var(--xh-form-field-invalid-text-color);
-  }
-
-  &--warning .xh-form-field__label {
-    color: var(--xh-form-field-warning-text-color);
-  }
-
-  &--info .xh-form-field__label {
-    color: var(--xh-form-field-info-text-color);
   }
 
   &.xh-form-field--readonly {

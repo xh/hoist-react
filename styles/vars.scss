@@ -73,7 +73,11 @@ body {
   //-------------------------------
   --xh-pos-val-color: var(--xh-intent-success-text-color);
   --xh-neg-val-color: var(--xh-intent-danger-text-color);
-  --xh-neutral-val-color: var(--xh-gray);
+  --xh-neutral-val-color: var(--xh-neutral-8);
+
+  &:where(.xh-dark) {
+    --xh-neutral-val-color: var(--xh-gray);
+  }
 
   //--------------------------------------------------------
   // Neutral ramp
@@ -100,14 +104,14 @@ body {
   &:where(.xh-dark) {
     // Lightness added to every dark surface and border step. Text steps do not move.
     --xh-neutral-depth: 0;
-    --xh-neutral-0: oklch(calc(0.155 + var(--xh-neutral-depth)) calc(0.008 * var(--xh-neutral-tint)) var(--xh-neutral-hue)); // sunken: tracks, wells
-    --xh-neutral-1: oklch(calc(0.19 + var(--xh-neutral-depth)) calc(0.01 * var(--xh-neutral-tint)) var(--xh-neutral-hue)); // app background
-    --xh-neutral-2: oklch(calc(0.215 + var(--xh-neutral-depth)) calc(0.011 * var(--xh-neutral-tint)) var(--xh-neutral-hue)); // stripe
-    --xh-neutral-3: oklch(calc(0.245 + var(--xh-neutral-depth)) calc(0.013 * var(--xh-neutral-tint)) var(--xh-neutral-hue)); // chrome: toolbars, app bar, sidebars
-    --xh-neutral-4: oklch(calc(0.285 + var(--xh-neutral-depth)) calc(0.015 * var(--xh-neutral-tint)) var(--xh-neutral-hue)); // raised, hover fill
-    --xh-neutral-5: oklch(calc(0.33 + var(--xh-neutral-depth)) calc(0.016 * var(--xh-neutral-tint)) var(--xh-neutral-hue)); // hairlines
-    --xh-neutral-6: oklch(calc(0.39 + var(--xh-neutral-depth)) calc(0.018 * var(--xh-neutral-tint)) var(--xh-neutral-hue)); // border
-    --xh-neutral-7: oklch(calc(0.55 + var(--xh-neutral-depth)) calc(0.02 * var(--xh-neutral-tint)) var(--xh-neutral-hue)); // control outline
+    --xh-neutral-0: oklch(calc(0.135 + var(--xh-neutral-depth)) calc(0.008 * var(--xh-neutral-tint)) var(--xh-neutral-hue)); // sunken: tracks, wells
+    --xh-neutral-1: oklch(calc(0.17 + var(--xh-neutral-depth)) calc(0.01 * var(--xh-neutral-tint)) var(--xh-neutral-hue)); // app background
+    --xh-neutral-2: oklch(calc(0.195 + var(--xh-neutral-depth)) calc(0.011 * var(--xh-neutral-tint)) var(--xh-neutral-hue)); // stripe
+    --xh-neutral-3: oklch(calc(0.225 + var(--xh-neutral-depth)) calc(0.013 * var(--xh-neutral-tint)) var(--xh-neutral-hue)); // chrome: toolbars, app bar, sidebars
+    --xh-neutral-4: oklch(calc(0.265 + var(--xh-neutral-depth)) calc(0.015 * var(--xh-neutral-tint)) var(--xh-neutral-hue)); // raised, hover fill
+    --xh-neutral-5: oklch(calc(0.31 + var(--xh-neutral-depth)) calc(0.016 * var(--xh-neutral-tint)) var(--xh-neutral-hue)); // hairlines
+    --xh-neutral-6: oklch(calc(0.37 + var(--xh-neutral-depth)) calc(0.018 * var(--xh-neutral-tint)) var(--xh-neutral-hue)); // border
+    --xh-neutral-7: oklch(calc(0.53 + var(--xh-neutral-depth)) calc(0.02 * var(--xh-neutral-tint)) var(--xh-neutral-hue)); // control outline
     --xh-neutral-8: oklch(0.72 calc(0.018 * var(--xh-neutral-tint)) var(--xh-neutral-hue)); // muted text
     --xh-neutral-9: oklch(0.8 calc(0.015 * var(--xh-neutral-tint)) var(--xh-neutral-hue)); // secondary text
     --xh-neutral-10: oklch(0.94 calc(0.008 * var(--xh-neutral-tint)) var(--xh-neutral-hue)); // body text
@@ -128,35 +132,35 @@ body {
   // Primary - default blue - indicates a prominent call-to-action button/element.
   --xh-intent-primary-h: 206;
   --xh-intent-primary-s: 100%;
-  --xh-intent-primary-l1: 23%;
+  --xh-intent-primary-l1: 22%;
   --xh-intent-primary-l2: 26%;
   --xh-intent-primary-l3: 30%;
-  --xh-intent-primary-l4: 85%;
-  --xh-intent-primary-l5: 95%;
+  --xh-intent-primary-l4: 83.5%;
+  --xh-intent-primary-l5: 94%;
   // Success - default green - indicates OK, confirm, or a successful result.
-  --xh-intent-success-h: 123;
-  --xh-intent-success-s: 43%;
-  --xh-intent-success-l1: 26%;
-  --xh-intent-success-l2: 30%;
-  --xh-intent-success-l3: 37%;
-  --xh-intent-success-l4: 85%;
-  --xh-intent-success-l5: 95%;
+  --xh-intent-success-h: 128;
+  --xh-intent-success-s: 60%;
+  --xh-intent-success-l1: 22%;
+  --xh-intent-success-l2: 25.5%;
+  --xh-intent-success-l3: 29%;
+  --xh-intent-success-l4: 80.5%;
+  --xh-intent-success-l5: 92.5%;
   // Warning - default orange - indicates need for caution, or a potential error condition.
-  --xh-intent-warning-h: 30;
-  --xh-intent-warning-s: 100%;
-  --xh-intent-warning-l1: 34%;
-  --xh-intent-warning-l2: 38%;
-  --xh-intent-warning-l3: 43%;
-  --xh-intent-warning-l4: 85%;
-  --xh-intent-warning-l5: 95%;
+  --xh-intent-warning-h: 25;
+  --xh-intent-warning-s: 90%;
+  --xh-intent-warning-l1: 33%;
+  --xh-intent-warning-l2: 37.5%;
+  --xh-intent-warning-l3: 41.5%;
+  --xh-intent-warning-l4: 80.5%;
+  --xh-intent-warning-l5: 92.5%;
   // Danger - default red - indicates dangerous operation, delete, or a serious error condition.
-  --xh-intent-danger-h: 0;
+  --xh-intent-danger-h: 359;
   --xh-intent-danger-s: 73%;
-  --xh-intent-danger-l1: 26%;
-  --xh-intent-danger-l2: 30%;
+  --xh-intent-danger-l1: 31.5%;
+  --xh-intent-danger-l2: 35%;
   --xh-intent-danger-l3: 40%;
   --xh-intent-danger-l4: 85%;
-  --xh-intent-danger-l5: 95%;
+  --xh-intent-danger-l5: 94.5%;
 
   &:where(.xh-dark) {
     // Dark theme Neutral intent
@@ -168,37 +172,37 @@ body {
     --xh-intent-neutral-l4: 44%;
     --xh-intent-neutral-l5: 50%;
     // Dark theme Primary intent
-    --xh-intent-primary-h: 206;
-    --xh-intent-primary-s: 100%;
-    --xh-intent-primary-l1: 25%;
-    --xh-intent-primary-l2: 30%;
-    --xh-intent-primary-l3: 45%;
-    --xh-intent-primary-l4: 65%;
-    --xh-intent-primary-l5: 75%;
+    --xh-intent-primary-h: 209;
+    --xh-intent-primary-s: 89%;
+    --xh-intent-primary-l1: 34%;
+    --xh-intent-primary-l2: 38.5%;
+    --xh-intent-primary-l3: 43%;
+    --xh-intent-primary-l4: 68.5%;
+    --xh-intent-primary-l5: 77%;
     // Dark theme Success intent
-    --xh-intent-success-h: 123;
-    --xh-intent-success-s: 50%;
-    --xh-intent-success-l1: 23%;
-    --xh-intent-success-l2: 30%;
-    --xh-intent-success-l3: 40%;
-    --xh-intent-success-l4: 60%;
-    --xh-intent-success-l5: 75%;
+    --xh-intent-success-h: 132;
+    --xh-intent-success-s: 62%;
+    --xh-intent-success-l1: 25%;
+    --xh-intent-success-l2: 28.5%;
+    --xh-intent-success-l3: 32%;
+    --xh-intent-success-l4: 59.5%;
+    --xh-intent-success-l5: 69.5%;
     // Dark theme Warning intent
-    --xh-intent-warning-h: 30;
-    --xh-intent-warning-s: 100%;
-    --xh-intent-warning-l1: 25%;
-    --xh-intent-warning-l2: 30%;
-    --xh-intent-warning-l3: 40%;
-    --xh-intent-warning-l4: 65%;
-    --xh-intent-warning-l5: 75%;
+    --xh-intent-warning-h: 28;
+    --xh-intent-warning-s: 88%;
+    --xh-intent-warning-l1: 28.5%;
+    --xh-intent-warning-l2: 32.5%;
+    --xh-intent-warning-l3: 37%;
+    --xh-intent-warning-l4: 62%;
+    --xh-intent-warning-l5: 71%;
     // Dark theme Danger intent
     --xh-intent-danger-h: 0;
-    --xh-intent-danger-s: 70%;
-    --xh-intent-danger-l1: 25%;
-    --xh-intent-danger-l2: 30%;
-    --xh-intent-danger-l3: 38%;
-    --xh-intent-danger-l4: 55%;
-    --xh-intent-danger-l5: 65%;
+    --xh-intent-danger-s: 69%;
+    --xh-intent-danger-l1: 35%;
+    --xh-intent-danger-l2: 39%;
+    --xh-intent-danger-l3: 44%;
+    --xh-intent-danger-l4: 70%;
+    --xh-intent-danger-l5: 75.5%;
   }
 
   // Alpha (opacity) variants for use in the `trans` variants below.
@@ -242,18 +246,18 @@ body {
   --xh-intent-danger-trans1: hsla(var(--xh-intent-danger-h), var(--xh-intent-danger-s), var(--xh-intent-danger-l3), var(--xh-intent-a1));
   --xh-intent-danger-trans2: hsla(var(--xh-intent-danger-h), var(--xh-intent-danger-s), var(--xh-intent-danger-l3), var(--xh-intent-a2));
 
-  // Text and icons in an intent color use these -text variants, never a fill shade. They are darker
-  // than the fill in the light theme and lighter in the dark theme, for legibility.
-  --xh-intent-primary-text-color: var(--xh-intent-primary-darker);
-  --xh-intent-success-text-color: var(--xh-intent-success-darker);
-  --xh-intent-warning-text-color: var(--xh-intent-warning-darker);
-  --xh-intent-danger-text-color: var(--xh-intent-danger-darker);
+  // Text and icons in an intent color use these -text variants, never a fill shade. Each takes the
+  // hue and saturation of its intent at a lightness that is legible on the page and on a tint.
+  --xh-intent-primary-text-color: hsl(var(--xh-intent-primary-h), var(--xh-intent-primary-s), 32.5%);
+  --xh-intent-success-text-color: hsl(var(--xh-intent-success-h), var(--xh-intent-success-s), 27.5%);
+  --xh-intent-warning-text-color: hsl(var(--xh-intent-warning-h), var(--xh-intent-warning-s), 31.5%);
+  --xh-intent-danger-text-color: hsl(var(--xh-intent-danger-h), var(--xh-intent-danger-s), 39%);
 
   &:where(.xh-dark) {
     --xh-intent-primary-text-color: var(--xh-intent-primary-lighter);
-    --xh-intent-success-text-color: hsl(123, 60%, 55%);
+    --xh-intent-success-text-color: var(--xh-intent-success-lighter);
     --xh-intent-warning-text-color: var(--xh-intent-warning-lighter);
-    --xh-intent-danger-text-color: hsl(356, 85%, 62%);
+    --xh-intent-danger-text-color: var(--xh-intent-danger-lighter);
   }
 
 
@@ -265,13 +269,13 @@ body {
   --xh-appbar-box-shadow: #{0 0 0 1px rgb(17 20 24 / 10%), 0 1px 1px rgb(17 20 24 / 20%)};
   --xh-appbar-text-color: var(--xh-text-color);
   --xh-appbar-height: 42px;
-  --xh-appbar-title-text-color: #{mc('blue-grey', '700')};
+  --xh-appbar-title-text-color: var(--xh-neutral-9);
   --xh-appbar-title-font-size: calc(var(--xh-font-size) * 1.9);
   --xh-appbar-user-profile-hover-color: var(--xh-orange);
 
   &:where(.xh-dark) {
-    --xh-appbar-border-color: #{mc('blue-grey', '700')};
-    --xh-appbar-title-text-color: #{mc('blue-grey', '50')};
+    --xh-appbar-border-color: var(--xh-neutral-5);
+    --xh-appbar-title-text-color: var(--xh-neutral-10);
   }
 
   &:where(.xh-mobile) {
@@ -304,16 +308,16 @@ body {
   // Primary background color for the application and component chrome.
   --xh-bg: white;
   // Secondary/alternate background for sidebars, toolbars, and header areas.
-  --xh-bg-alt: var(--xh-blue-gray-light);
+  --xh-bg-alt: var(--xh-neutral-2);
   // Background highlight color for selections, hovers, and emphasis.
-  --xh-bg-highlight: hsl(205, 85%, 85%);
+  --xh-bg-highlight: oklch(0.92 0.042 245);
   // Alternate background highlight color for secondary emphasis.
   --xh-bg-highlight-alt: hsl(45, 100%, 70%);
 
   &:where(.xh-dark) {
-    --xh-bg: var(--xh-black);
-    --xh-bg-alt: var(--xh-blue-gray-dark);
-    --xh-bg-highlight: hsl(200, 40%, 20%);
+    --xh-bg: var(--xh-neutral-1);
+    --xh-bg-alt: var(--xh-neutral-3);
+    --xh-bg-highlight: oklch(calc(0.32 + var(--xh-neutral-depth)) 0.065 245);
     --xh-bg-highlight-alt: hsl(45, 80%, 35%);
   }
 
@@ -334,13 +338,10 @@ body {
   // Borders
   //------------------------
   // Default border color used throughout the application.
-  --xh-border-color: #{mc('grey', '400')};
+  --xh-border-color: var(--xh-neutral-5);
   // Default border width.
   --xh-border-width: 1px;
 
-  &:where(.xh-dark) {
-    --xh-border-color: #{mc('blue-grey', '800')};
-  }
 
   // Borders - one-stop definitions
   --xh-border-solid: #{(var(--xh-border-width) solid var(--xh-border-color))};
@@ -489,12 +490,9 @@ body {
   --xh-menu-heading-padding-top: var(--xh-spacing);
   // Stronger than `--xh-text-color-muted` in both themes, to keep the small label legible on the
   // menu bg and distinct from disabled items.
-  --xh-menu-heading-text-color: var(--xh-blue-gray);
+  --xh-menu-heading-text-color: var(--xh-neutral-9);
   --xh-menu-heading-text-transform: uppercase;
 
-  &:where(.xh-dark) {
-    --xh-menu-heading-text-color: #{mc('blue-grey', '200')};
-  }
 
   &:where(.xh-mobile) {
     --xh-menu-item-height: 40px;
@@ -507,28 +505,28 @@ body {
   --xh-chart-font-family: var(--xh-font-family);
 
   // Series colors, assigned to chart series in order.
-  --xh-chart-color-1: #2caffe;
-  --xh-chart-color-2: #544fc5;
-  --xh-chart-color-3: #00e272;
-  --xh-chart-color-4: #fe6a35;
-  --xh-chart-color-5: #6b8abc;
-  --xh-chart-color-6: #d568fb;
-  --xh-chart-color-7: #2ee0ca;
-  --xh-chart-color-8: #fa4b42;
-  --xh-chart-color-9: #feb56a;
-  --xh-chart-color-10: #91e8e1;
+  --xh-chart-color-1: #257de0;
+  --xh-chart-color-2: #f47230;
+  --xh-chart-color-3: #00b894;
+  --xh-chart-color-4: #f2a600;
+  --xh-chart-color-5: #ee7fac;
+  --xh-chart-color-6: #008a17;
+  --xh-chart-color-7: #6a4ce2;
+  --xh-chart-color-8: #ec4647;
+  --xh-chart-color-9: #257de0;
+  --xh-chart-color-10: #f47230;
 
   &:where(.xh-dark) {
-    --xh-chart-color-1: #2b908f;
-    --xh-chart-color-2: #90ee7e;
-    --xh-chart-color-3: #f45b5b;
-    --xh-chart-color-4: #7798bf;
-    --xh-chart-color-5: #aaeeee;
-    --xh-chart-color-6: #ff0066;
-    --xh-chart-color-7: #eeaaee;
-    --xh-chart-color-8: #55bf3b;
-    --xh-chart-color-9: #df5353;
-    --xh-chart-color-10: #7798bf;
+    --xh-chart-color-1: #338ced;
+    --xh-chart-color-2: #e76624;
+    --xh-chart-color-3: #00a888;
+    --xh-chart-color-4: #d28e05;
+    --xh-chart-color-5: #e24d8b;
+    --xh-chart-color-6: #0aac23;
+    --xh-chart-color-7: #9887ef;
+    --xh-chart-color-8: #eb6263;
+    --xh-chart-color-9: #338ced;
+    --xh-chart-color-10: #e76624;
   }
 
 
@@ -583,17 +581,18 @@ body {
   --xh-form-field-padding: 3px;
 
   // Box shadow + focus border
-  --xh-form-field-box-shadow: #{inset 0 0 0 1px var(--xh-form-field-box-shadow-color-top), inset 0 1px 1px var(--xh-form-field-box-shadow-color-bottom)};
-  --xh-form-field-box-shadow-color-bottom: #{mc-trans('blue-grey', '100', 0.2)};
-  --xh-form-field-box-shadow-color-top: #{mc-trans('blue-grey', '100', 0.15)};
+  --xh-form-field-box-shadow: inset 0 0 0 1px var(--xh-form-field-box-shadow-color-top);
+  --xh-form-field-box-shadow-color-bottom: oklch(0.78 calc(0.016 * var(--xh-neutral-tint)) var(--xh-neutral-hue));
+  --xh-form-field-box-shadow-color-top: oklch(0.78 calc(0.016 * var(--xh-neutral-tint)) var(--xh-neutral-hue));
   --xh-form-field-focused-border-color: var(--xh-focus-outline-color);
   --xh-form-field-focused-box-shadow: #{inset 0 0 0 1px var(--xh-form-field-focused-border-color), inset 0 1px 1px var(--xh-form-field-focused-border-color)};
+  --xh-form-field-hover-box-shadow: inset 0 0 0 1px color-mix(in oklch, var(--xh-form-field-box-shadow-color-top), var(--xh-text-color) 30%);
 
   // Label styling - common to all variants
-  --xh-form-field-label-text-color: var(--xh-text-color);
-  --xh-form-field-label-font-size: var(--xh-font-size);
+  --xh-form-field-label-text-color: var(--xh-neutral-9);
+  --xh-form-field-label-font-size: calc(var(--xh-font-size) * 0.92);
   --xh-form-field-label-font-style: normal;
-  --xh-form-field-label-font-weight: normal;
+  --xh-form-field-label-font-weight: 500;
   --xh-form-field-label-text-transform: none;
 
   // Label borders + padding - editable, not inline - the default case.
@@ -612,7 +611,7 @@ body {
   --xh-form-field-inline-label-padding: var(--xh-form-field-label-padding);
 
   // Messages (general info text + validation results)
-  --xh-form-field-message-font-size: var(--xh-font-size-small);
+  --xh-form-field-message-font-size: calc(var(--xh-font-size) * 0.885);
   --xh-form-field-message-line-height: 1.5em;
   --xh-form-field-message-margin: var(--xh-spacing-half) 0 0 0;
   --xh-form-field-message-text-transform: none;
@@ -644,8 +643,8 @@ body {
   --xh-input-intent-danger-box-shadow: #{inset 0 0 0 1px var(--xh-intent-danger-text-color), inset 0 1px 1px var(--xh-intent-danger-text-color)};
 
   &:where(.xh-dark) {
-    --xh-form-field-box-shadow-color-top: #{mc-trans('blue-grey', '800', 0.15)};
-    --xh-form-field-box-shadow-color-bottom: #{mc-trans('blue-grey', '800', 0.2)};
+    --xh-form-field-box-shadow-color-top: oklch(calc(0.39 + var(--xh-neutral-depth)) calc(0.018 * var(--xh-neutral-tint)) var(--xh-neutral-hue));
+    --xh-form-field-box-shadow-color-bottom: oklch(calc(0.39 + var(--xh-neutral-depth)) calc(0.018 * var(--xh-neutral-tint)) var(--xh-neutral-hue));
   }
 
 
@@ -664,20 +663,20 @@ body {
   //------------------------
   // Grids
   //------------------------
-  --xh-grid-row-hover-bg: hsl(205, 85%, 90%);
-  --xh-grid-odd-row-bg: #{mc('grey', '100')};
+  --xh-grid-row-hover-bg: oklch(0.943 0.015 240);
+  --xh-grid-odd-row-bg: oklch(0.97 calc(0.003 * var(--xh-neutral-tint)) var(--xh-neutral-hue));
   --xh-grid-bg: var(--xh-bg);
-  --xh-grid-border-color: #{mc('grey', '200')};
+  --xh-grid-border-color: var(--xh-neutral-4);
   --xh-grid-cell-focused-border-color: var(--xh-focus-outline-color);
   --xh-grid-cell-changed-bg: #{mc-trans('yellow', '400', 0.6)};
   --xh-grid-cell-padding-inline: 11px;
   --xh-grid-empty-text-color: var(--xh-text-color-muted);
   --xh-grid-font-family: var(--xh-font-family);
   --xh-grid-font-size: var(--xh-font-size);
-  --xh-grid-group-bg: #{mc('blue-grey', '400')};
-  --xh-grid-group-border-color: #{mc('blue-grey', '200')};
-  --xh-grid-group-text-color: white;
-  --xh-grid-tree-group-bg: hsl(205, 85%, 94%);
+  --xh-grid-group-bg: oklch(0.91 calc(0.01 * var(--xh-neutral-tint)) var(--xh-neutral-hue));
+  --xh-grid-group-border-color: var(--xh-neutral-5);
+  --xh-grid-group-text-color: var(--xh-neutral-11);
+  --xh-grid-tree-group-bg: oklch(0.955 0.02 245);
   --xh-grid-tree-group-border-color: var(--xh-grid-row-selected-bg);
   --xh-grid-total-row-bg: var(--xh-grid-tree-group-bg);
   --xh-grid-header-bg: var(--xh-grid-bg);
@@ -700,7 +699,7 @@ body {
   --xh-grid-header-font-size: var(--xh-grid-font-size);
   --xh-grid-header-font-weight: 600;
   --xh-grid-header-text-color: var(--xh-text-color-muted);
-  --xh-grid-pinned-column-border-color: #{mc('grey', '300')};
+  --xh-grid-pinned-column-border-color: var(--xh-neutral-5);
   --xh-grid-row-selected-bg: var(--xh-bg-highlight);
   --xh-grid-row-selected-text-color: var(--xh-grid-text-color);
   --xh-grid-summary-row-border-color: var(--xh-grid-border-color);
@@ -748,21 +747,21 @@ body {
 
   // Dark Grid
   &:where(.xh-dark) {
-    --xh-grid-row-hover-bg: hsl(200, 50%, 22%);
-    --xh-grid-odd-row-bg: hsl(200, 26%, 11%);
-    --xh-grid-border-color: hsl(186, 11%, 18%);
+    --xh-grid-row-hover-bg: oklch(calc(0.245 + var(--xh-neutral-depth)) 0.03 245);
+    --xh-grid-odd-row-bg: var(--xh-neutral-2);
+    --xh-grid-border-color: var(--xh-neutral-3);
     --xh-grid-cell-changed-bg: #{mc-trans('orange', '800', 0.8)};
-    --xh-grid-group-bg: #{mc('blue-grey', '800')};
-    --xh-grid-group-border-color: #{mc('blue-grey', '700')};
-    --xh-grid-tree-group-bg: hsl(200, 50%, 18%);
+    --xh-grid-group-bg: oklch(calc(0.28 + var(--xh-neutral-depth)) calc(0.024 * var(--xh-neutral-tint)) var(--xh-neutral-hue));
+    --xh-grid-group-border-color: var(--xh-neutral-6);
+    --xh-grid-tree-group-bg: oklch(calc(0.23 + var(--xh-neutral-depth)) 0.03 245);
     --xh-grid-total-row-bg: var(--xh-grid-tree-group-bg);
-    --xh-grid-tree-group-level-0-bg: hsl(205, 65%, 15%);
-    --xh-grid-tree-group-level-1-bg: hsl(250, 65%, 15%);
-    --xh-grid-tree-group-level-2-bg: hsl(295, 65%, 15%);
-    --xh-grid-tree-group-level-3-bg: hsl(340, 65%, 15%);
-    --xh-grid-tree-group-level-4-bg: hsl(385, 65%, 15%);
-    --xh-grid-tree-group-level-5-bg: hsl(60, 25%, 15%);
-    --xh-grid-pinned-column-border-color: #{mc('grey', '800')};
+    --xh-grid-tree-group-level-0-bg: oklch(calc(0.25 + var(--xh-neutral-depth)) 0.04 235);
+    --xh-grid-tree-group-level-1-bg: oklch(calc(0.25 + var(--xh-neutral-depth)) 0.04 275);
+    --xh-grid-tree-group-level-2-bg: oklch(calc(0.25 + var(--xh-neutral-depth)) 0.04 320);
+    --xh-grid-tree-group-level-3-bg: oklch(calc(0.25 + var(--xh-neutral-depth)) 0.04 5);
+    --xh-grid-tree-group-level-4-bg: oklch(calc(0.25 + var(--xh-neutral-depth)) 0.04 50);
+    --xh-grid-tree-group-level-5-bg: oklch(calc(0.25 + var(--xh-neutral-depth)) 0.04 105);
+    --xh-grid-group-text-color: var(--xh-neutral-10);
   }
 
   // Mobile Grid
@@ -782,7 +781,7 @@ body {
   --xh-input-font-family: var(--xh-font-family);
   --xh-input-font-feature-settings: var(--xh-font-feature-settings);
   --xh-input-text-color: var(--xh-text-color);
-  --xh-input-placeholder-text-color: rgb(175, 183, 191);
+  --xh-input-placeholder-text-color: var(--xh-neutral-7);
   --xh-input-disabled-checkmark-svg: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill-rule='evenodd' clip-rule='evenodd' d='M12 5c-.28 0-.53.11-.71.29L7 9.59l-2.29-2.3a1.003 1.003 0 00-1.42 1.42l3 3c.18.18.43.29.71.29s.53-.11.71-.29l5-5A1.003 1.003 0 0012 5z' fill='rgba(92, 112, 128, 0.5)'/%3e%3c/svg%3e");
 
   &:where(.xh-dark) {
@@ -805,6 +804,7 @@ body {
   &:where(.xh-dark) {
     // Tray bg follows --xh-bg-alt in both themes - no dark-mode override needed.
     --xh-segmented-control-selected-bg: #{mc('blue-grey', '700')};
+    --xh-input-placeholder-text-color: oklch(0.64 calc(0.018 * var(--xh-neutral-tint)) var(--xh-neutral-hue));
   }
 
   //------------------------
@@ -856,7 +856,7 @@ body {
   --xh-property-table-compact-row-gap: 2px;
   --xh-property-table-danger-color: var(--xh-intent-danger-text-color);
   --xh-property-table-divider-border: var(--xh-border-solid);
-  --xh-property-table-empty-text-color: var(--xh-blue-gray);
+  --xh-property-table-empty-text-color: var(--xh-neutral-9);
   --xh-property-table-font-size: inherit;
   --xh-property-table-label-font-size: inherit;
   --xh-property-table-label-font-weight: normal;
@@ -864,7 +864,7 @@ body {
   --xh-property-table-label-gap: var(--xh-spacing);
   // Widest a column of labels gets, when the label is on the left. Longer labels wrap.
   --xh-property-table-label-max-width: 16em;
-  --xh-property-table-label-text-color: var(--xh-blue-gray);
+  --xh-property-table-label-text-color: var(--xh-neutral-9);
   --xh-property-table-null-text-color: var(--xh-text-color-muted);
   --xh-property-table-primary-color: var(--xh-intent-primary-text-color);
   --xh-property-table-row-gap: var(--xh-spacing-half);
@@ -885,15 +885,14 @@ body {
   --xh-mask-text-bg: var(--xh-bg-alt);
   --xh-mask-text-border: var(--xh-border-solid);
   --xh-mask-text-color: var(--xh-text-color);
-  --xh-loading-indicator-bg: #{mc('blue-grey', '100')};
+  --xh-loading-indicator-bg: var(--xh-neutral-4);
   --xh-loading-indicator-border-color: var(--xh-border-color);
-  --xh-loading-indicator-text-color: #{mc('blue-grey', '600')};
+  --xh-loading-indicator-text-color: var(--xh-neutral-9);
   --xh-loading-indicator-spinner-color: var(--xh-loading-indicator-text-color);
 
   &:where(.xh-dark) {
     --xh-mask-bg: rgba(0, 0, 0, 0.4);
-    --xh-loading-indicator-bg: #{mc('blue-grey', '700')};
-    --xh-loading-indicator-text-color: #{mc('blue-grey', '200')};
+    --xh-loading-indicator-bg: var(--xh-neutral-5);
   }
 
 
@@ -952,6 +951,10 @@ body {
       --xh-panel-title-bg: #{mc('blue-grey', '900')};
       --xh-panel-title-text-color: #{mc('blue-grey', '50')};
     }
+  }
+
+  &:where(.xh-dark) {
+    --xh-panel-title-border-color: var(--xh-bg);
   }
 
   //------------------------
@@ -1030,14 +1033,14 @@ body {
   //------------------------
   // Resizable splitters
   //------------------------
-  --xh-resizable-bg: #{mc('blue-grey', '50')};
-  --xh-resizable-border-color: #{mc('blue-grey', '100')};
+  --xh-resizable-bg: var(--xh-neutral-2);
+  --xh-resizable-border-color: var(--xh-neutral-5);
   --xh-resizable-border-width: 1px;
   --xh-resizable-size: 8px;
 
   &:where(.xh-dark) {
-    --xh-resizable-bg: #{mc('blue-grey', '800')};
-    --xh-resizable-border-color: #{mc('blue-grey', '900')};
+    --xh-resizable-bg: var(--xh-neutral-4);
+    --xh-resizable-border-color: var(--xh-neutral-3);
   }
 
   //------------------------
@@ -1053,9 +1056,9 @@ body {
   --xh-panel-splitter-button-border-color: #{mc('blue-grey', '200')};
   --xh-panel-splitter-button-icon-color: var(--xh-text-color);
   --xh-panel-collapsed-strip-size: 20px;
-  --xh-panel-collapsed-strip-bg: #{mc('blue-grey', '50')};
-  --xh-panel-collapsed-strip-hover-bg: #{mc('blue-grey', '100')};
-  --xh-panel-collapsed-strip-icon-color: var(--xh-blue-gray);
+  --xh-panel-collapsed-strip-bg: var(--xh-neutral-2);
+  --xh-panel-collapsed-strip-hover-bg: var(--xh-neutral-4);
+  --xh-panel-collapsed-strip-icon-color: var(--xh-neutral-9);
 
   @media (pointer: coarse) {
     --xh-panel-splitter-hit-size: 20px;
@@ -1063,27 +1066,26 @@ body {
 
   &:where(.xh-dark) {
     --xh-panel-splitter-button-border-color: #{mc('blue-grey', '700')};
-    --xh-panel-splitter-button-icon-color: #{mc('blue-grey', '100')};
-    --xh-panel-collapsed-strip-bg: #{mc('blue-grey', '900')};
-    --xh-panel-collapsed-strip-hover-bg: #{mc('blue-grey', '800')};
-    --xh-panel-collapsed-strip-icon-color: #{mc('blue-grey', '300')};
+    --xh-panel-splitter-button-icon-color: var(--xh-neutral-9);
+    --xh-panel-collapsed-strip-bg: var(--xh-neutral-3);
+    --xh-panel-collapsed-strip-icon-color: var(--xh-neutral-8);
   }
 
 
   //------------------------
   // Scrollbars
   //------------------------
-  --xh-scrollbar-bg: #{mc('blue-grey', '100')};
-  --xh-scrollbar-thumb-color: #{mc('blue-grey', '300')};
-  --xh-scrollbar-thumb-hover-color: var(--xh-scrollbar-thumb-color);
-  --xh-scrollbar-thumb-border-radius: 0;
+  --xh-scrollbar-bg: var(--xh-neutral-2);
+  --xh-scrollbar-thumb-color: oklch(0.72 calc(0.026 * var(--xh-neutral-tint)) var(--xh-neutral-hue));
+  --xh-scrollbar-thumb-hover-color: color-mix(in oklch, var(--xh-scrollbar-thumb-color), var(--xh-text-color) 30%);
+  --xh-scrollbar-thumb-border-radius: 10px;
   // Gap between the thumb and the edge of the track.
-  --xh-scrollbar-thumb-inset: 0px;
+  --xh-scrollbar-thumb-inset: 2px;
   --xh-scrollbar-size: 10px;
 
   &:where(.xh-dark) {
-    --xh-scrollbar-bg: var(--xh-black);
-    --xh-scrollbar-thumb-color: #{mc('blue-grey', '900')};
+    --xh-scrollbar-bg: var(--xh-neutral-1);
+    --xh-scrollbar-thumb-color: oklch(calc(0.37 + var(--xh-neutral-depth)) calc(0.025 * var(--xh-neutral-tint)) var(--xh-neutral-hue));
   }
 
 
@@ -1091,7 +1093,7 @@ body {
   // Separators
   //------------------------
   --xh-separator-border-color: var(--xh-border-color);
-  --xh-separator-label-text-color: var(--xh-blue-gray);
+  --xh-separator-label-text-color: var(--xh-neutral-9);
   --xh-separator-label-font-size: var(--xh-font-size-small-relative);
   // Gap between a label and the rule on each side of it.
   --xh-separator-label-gap: var(--xh-spacing);
@@ -1240,21 +1242,18 @@ body {
   // Text
   //------------------------
   // Primary text color for the application.
-  --xh-text-color: var(--xh-blue-gray-dark);
+  --xh-text-color: var(--xh-neutral-10);
   // Accent text color for emphasis and branding.
   --xh-text-color-accent: var(--xh-orange);
   // Text color for headings. Defaults to `--xh-text-color`.
   --xh-text-color-headings: var(--xh-text-color);
   // Text color for highlighted/emphasized content.
-  --xh-text-color-highlight: #{mc('blue-grey', '800')};
+  --xh-text-color-highlight: var(--xh-neutral-11);
   // Muted/secondary text color for labels, placeholders, and de-emphasized content.
-  --xh-text-color-muted: var(--xh-gray);
+  --xh-text-color-muted: var(--xh-neutral-8);
 
   &:where(.xh-dark) {
-    --xh-text-color: white;
     --xh-text-color-accent: var(--xh-orange);
-    --xh-text-color-highlight: white;
-    --xh-text-color-muted: #{mc('grey', '500')};
   }
 
 
@@ -1277,24 +1276,27 @@ body {
   }
 
 
+  &:where(.xh-dark) {
+    --xh-title-bg: oklch(calc(0.31 + var(--xh-neutral-depth)) calc(0.035 * var(--xh-neutral-tint)) var(--xh-neutral-hue));
+    --xh-title-text-color: var(--xh-neutral-10);
+  }
+
   //------------------------
   // Toolbars
   //------------------------
   --xh-toolbar-bg: var(--xh-bg-alt);
-  --xh-toolbar-border-color: #{mc('grey', '400')};
+  --xh-toolbar-border-color: var(--xh-neutral-5);
   --xh-toolbar-item-spacing: var(--xh-spacing-half);
   --xh-toolbar-font-size: var(--xh-font-size);
   --xh-toolbar-min-size: 41px;
-  --xh-toolbar-separator-color: #{mc('grey', '400')};
+  --xh-toolbar-separator-color: var(--xh-neutral-6);
   --xh-toolbar-text-color: var(--xh-text-color);
   --xh-toolbar-compact-font-size: var(--xh-font-size-small);
   --xh-toolbar-compact-min-size: 24px;
   --xh-toolbar-compact-item-height: calc(var(--xh-toolbar-compact-min-size) - 4px);
 
   &:where(.xh-dark) {
-    --xh-toolbar-bg: #{mc('blue-grey', '900')};
-    --xh-toolbar-border-color: #{mc('blue-grey', '800')};
-    --xh-toolbar-separator-color: #{mc('blue-grey', '600')};
+    --xh-toolbar-bg: var(--xh-neutral-3);
   }
 
   &:where(.xh-mobile) {
@@ -1340,10 +1342,12 @@ body {
   // DashCanvas
   //------------------------
   --xh-dash-canvas-grid-cell-color: #{mc-muted('blue-grey', '50', 0%, 4%)};
-  --xh-dash-canvas-widget-title-bg: var(--xh-panel-title-bg);
-  --xh-dash-canvas-widget-title-text-color: var(--xh-panel-title-text-color);
+  --xh-dash-canvas-widget-title-bg: oklch(0.92 calc(0.007 * var(--xh-neutral-tint)) var(--xh-neutral-hue));
+  --xh-dash-canvas-widget-title-text-color: oklch(0.38 calc(0.02 * var(--xh-neutral-tint)) var(--xh-neutral-hue));
 
   &:where(.xh-dark) {
-    --xh-dash-canvas-grid-cell-color: hsl(202, 17%, 8%);
+    --xh-dash-canvas-grid-cell-color: var(--xh-neutral-0);
+    --xh-dash-canvas-widget-title-bg: var(--xh-panel-title-bg);
+    --xh-dash-canvas-widget-title-text-color: var(--xh-panel-title-text-color);
   }
 }
