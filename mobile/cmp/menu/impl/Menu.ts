@@ -113,6 +113,7 @@ class MenuLocalModel extends HoistModel {
                         icon,
                         className,
                         actionFn,
+                        disabled,
                         href,
                         target,
                         hidden,
@@ -124,14 +125,15 @@ class MenuLocalModel extends HoistModel {
                     labelItems = icon ? [icon, hspacer(10), text] : [text];
 
                 // An item with an `href` is a link, so a long-press offers the browser's link menu.
-                const itemFactory: ElementFactory<AnchorHTMLAttributes<HTMLElement>> = href
-                    ? a
-                    : div;
+                const isLink = href && !disabled,
+                    itemFactory: ElementFactory<AnchorHTMLAttributes<HTMLElement>> = isLink
+                        ? a
+                        : div;
 
                 return itemFactory({
                     key: idx,
-                    href,
-                    target,
+                    href: isLink ? href : null,
+                    target: isLink ? target : null,
                     className: classNames(
                         'xh-menu__list__item',
                         idx === pressedIdx ? 'xh-menu__list__item--pressed' : null,

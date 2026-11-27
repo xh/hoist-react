@@ -363,6 +363,9 @@ export interface MenuItem<T = MenuToken, C = MenuContext> extends TestSupportPro
      * open it in a new tab or window - with a modifier key, a middle-click, or the browser's own
      * right-click menu.
      *
+     * A click loads the URL in full, so use `href` for links that leave the app. For a route
+     * within the app, use `actionFn` with `XH.navigate()`.
+     *
      * On an item with `items`, a click follows the link and hovering opens the submenu. Touch
      * users may not reach the submenu, so consider putting the link inside it.
      */

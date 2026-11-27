@@ -184,13 +184,14 @@ describe('Menu', () => {
             ]
         });
 
-    it('renders an item with an href as a link that opens in its target, unless disabled', () => {
+    it('renders only an enabled item with an href as a link, opening in its target', () => {
         render(linkMenu());
 
         const home = screen.getByTestId('home');
         expect(home.getAttribute('href')).toBe('https://xh.io');
         expect(home.getAttribute('target')).toBe('_blank');
-        expect(screen.getByTestId('offline').hasAttribute('href')).toBe(false);
+        expect(screen.getByTestId('offline').tagName).toBe('DIV');
+        expect(screen.getByTestId('docs').tagName).toBe('DIV');
     });
 
     it('shows the browser menu on a right-click on a link, and on nothing else in the menu', () => {

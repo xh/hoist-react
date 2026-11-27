@@ -213,8 +213,9 @@ export const menuItem = hoistCmp.factory<MenuItemElementProps>({
             }
         };
 
-        const anchor = h(
-            'a',
+        // Only an item with an `href` is a link, so a link in `rightElement` is not nested in one.
+        const itemEl = h(
+            htmlProps.href && !disabled ? 'a' : 'div',
             {
                 role: 'menuitem',
                 ...htmlProps,
@@ -265,7 +266,7 @@ export const menuItem = hoistCmp.factory<MenuItemElementProps>({
             hasSubmenu ? caretIcon() : null
         );
 
-        if (!hasSubmenu) return h('li', {ref: liRef, role: 'none'}, anchor);
+        if (!hasSubmenu) return h('li', {ref: liRef, role: 'none'}, itemEl);
 
         return h(
             'li',
@@ -301,7 +302,7 @@ export const menuItem = hoistCmp.factory<MenuItemElementProps>({
                     },
                     menuList({children})
                 ),
-                children: anchor
+                children: itemEl
             })
         );
     }

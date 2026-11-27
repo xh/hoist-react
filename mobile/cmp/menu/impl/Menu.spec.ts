@@ -85,6 +85,14 @@ describe('Menu (mobile)', () => {
         expect(onDismiss).toHaveBeenCalledOnce();
     });
 
+    it('does not render a disabled item with an href as a link', () => {
+        renderMenu([{text: 'Home', href: 'https://xh.io', disabled: true, testId: 'home'}]);
+
+        const home = screen.getByTestId('home');
+        expect(home.tagName).toBe('DIV');
+        expect(home.hasAttribute('href')).toBe(false);
+    });
+
     it('renders dividers and headings, and omits hidden items', () => {
         const {container} = renderMenu([
             {heading: 'Edit'},
