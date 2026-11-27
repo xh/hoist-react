@@ -4,11 +4,11 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
+import {getMatchTextGetters} from '@xh/hoist/cmp/grid/impl/FindUtils';
 import type {FilterMatchMode, StoreRecord} from '@xh/hoist/data';
 import {getFilterRegex} from '@xh/hoist/data';
 import {action, computed, observableRef, compareStructural} from '@xh/hoist/mobx';
-import {stripTags} from '@xh/hoist/utils/js';
-import {filter, flatMap, get, isEmpty, isFinite, isNil} from 'lodash';
+import {filter, flatMap, isEmpty, isFinite, isNil} from 'lodash';
 import {BaseGridFindImplModel} from './BaseGridFindImplModel';
 
 /**
@@ -81,7 +81,7 @@ export class GridFindFieldImplModel extends BaseGridFindImplModel {
                 debounce: this.queryBuffer
             },
             {
-                track: () => [this.includeFields, this.excludeFields, this.matchMode],
+                track: () => [this.includeFields, this.excludeFields, this.matchMode, this.matchOn],
                 run: () => this.updateResults(),
                 equals: compareStructural
             }
@@ -128,7 +128,17 @@ export class GridFindFieldImplModel extends BaseGridFindImplModel {
         }
 
         const regex = getFilterRegex(query, this.matchMode),
-            valGetters = flatMap(activeFields, fieldPath => this.getValGetters(fieldPath));
+            {store} = innerGridModel,
+            searchCols = this.getSearchColumns(),
+            valGetters = flatMap(activeFields, field =>
+                getMatchTextGetters(
+                    field,
+                    store,
+                    filter(searchCols, {field}),
+                    this.matchOn,
+                    this.textCache
+                )
+            );
 
         this.results = this.getRecords()
             .filter(rec => {
@@ -144,40 +154,5 @@ export class GridFindFieldImplModel extends BaseGridFindImplModel {
 
     private getRecords(): StoreRecord[] {
         return (this._records ??= this.innerGridModel.getSortedRecords());
-    }
-
-    private getValGetters(fieldName: string) {
-        const {innerGridModel} = this,
-            {store} = innerGridModel,
-            field = store.getField(fieldName);
-
-        // See corresponding method in StoreFilterFieldImplModel for notes on this implementation.
-        if (field?.type === 'date' || field?.type === 'localDate') {
-            const cols = filter(this.getSearchColumns(), {field: fieldName});
-            if (!cols) return [];
-
-            return cols.map(column => {
-                const {getValueFn, resolvedRenderer} = column;
-                return (record: StoreRecord) => {
-                    const ctx = {
-                            record,
-                            field: fieldName,
-                            column,
-                            gridModel: innerGridModel,
-                            store,
-                            agParams: null
-                        },
-                        ret = getValueFn(ctx);
-
-                    return resolvedRenderer ? stripTags(resolvedRenderer(ret, ctx)) : ret;
-                };
-            });
-        }
-
-        // Otherwise just match raw.
-        // Use expensive get() only when needed to support dot-separated paths.
-        return fieldName.includes('.')
-            ? (rec: StoreRecord) => get(rec.data, fieldName)
-            : (rec: StoreRecord) => rec.data[fieldName];
     }
 }

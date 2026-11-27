@@ -117,3 +117,15 @@ export function isFilterValueSource(v: unknown): v is FilterValueSource {
  *   - `any`: match anywhere within candidate strings.
  */
 export type FilterMatchMode = 'start' | 'startWord' | 'any';
+
+/**
+ * What {@link StoreFilterField} and related components match a query against, for a grid's fields:
+ *   - `value`: each field's raw value. Dates match on the text their column shows, as a raw date
+ *     does not read as one.
+ *   - `rendered`: the text each column shows, from its renderer. The first search renders every
+ *     searched cell and blocks the browser while it runs, so this currently suits small grids only.
+ *   - `all`: either of the above.
+ *
+ * Without a grid, as for a field bound only to a store, raw values are matched in every mode.
+ */
+export type FilterMatchOn = 'value' | 'rendered' | 'all';

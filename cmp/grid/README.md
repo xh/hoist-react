@@ -244,11 +244,11 @@ The desktop `gridFindField` finds text in a grid without filtering it. It binds 
 `GridModel` in context, or to the one given as `gridModel`. Its `mode` prop sets what it finds:
 
 - `rows` (the default) finds matching **records** and selects them, so the grid needs selection
-  enabled. It matches record fields like `StoreFilterField`, with `matchMode`, `includeFields`
-  and `excludeFields`.
+  enabled. It matches record fields like `StoreFilterField`, with `matchMode`, `matchOn`,
+  `includeFields` and `excludeFields`.
 - `cells` finds matching **cells** and moves between them, like Excel's Find. Set
-  `includeHeaders` to find column headers too. It selects the row of each matching cell if the grid has selection enabled, and works without
-  it. It suits wide grids, and grids where a user looks for a value rather than a record.
+  `includeHeaders` to find column headers too. It selects the row of each matching cell if the
+  grid has selection enabled, and works without it. It suits wide grids, and grids where a user looks for a value rather than a record.
 
 ```typescript
 panel({
@@ -259,8 +259,9 @@ panel({
 
 In `cells` mode:
 
-- **Matching** finds the query in the text a cell shows, ignoring case - anywhere in the text by
-  default, or as `matchMode` sets. It searches the same fields as `rows` mode: the store fields
+- **Matching** finds the query in each cell, ignoring case - anywhere in its text by default, or
+  as `matchMode` sets. `matchOn` sets whether a cell matches on its raw value or the text it
+  shows, as described below. It searches the same fields as `rows` mode: the store fields
   of the visible columns, limited by `includeFields` / `excludeFields`. Hidden columns are
   skipped, as they have no cell to move to. Columns inside a collapsed column group are
   searched. Cells match in every row, including rows scrolled out of view or inside collapsed
@@ -276,10 +277,25 @@ In `cells` mode:
 - **Moving** - the active match, cell or header, is outlined. A step to a cell selects its row,
   if the grid has selection enabled, and expands any collapsed row group above it. A step to a
   column that a collapsed column group hides expands that group.
-- **Renderers** - a column with a `renderer` is searched by the text it shows, with its markup
-  stripped. A column with a `textRenderer` is searched by the text it returns. Text is cached for
-  each record, so a renderer whose output depends on state outside the record can be searched
-  by stale text until the record changes.
+
+`StoreFilterField` and `GridFindField`, in both modes, take `matchOn` to set what a query matches:
+
+- `value` (the default) - each field's raw value, so a number matches on its digits, as `1234.5`.
+  Date fields match on the text their column shows, as a raw date does not read as one.
+- `rendered` - the text each column shows, as `1,234.50`. A column with a `renderer` matches on
+  that text with its markup stripped, and one with a `textRenderer` on the text it returns. A
+  field with no searched column matches on its raw value.
+- `all` - either of the above.
+
+Without a grid, as for a `StoreFilterField` bound only to a store, raw values are matched in every
+mode.
+
+`rendered` and `all` are currently suited to small grids only. The first search renders the text
+of every searched cell, and the browser does not respond until it ends. On a grid with many
+thousands of cells, that can take seconds. Later searches reuse the text - kept once for each
+distinct value of a column, or once for each record if the column sets `rendererIsComplex`. A
+renderer whose output depends on state outside the record can be matched on stale text until its
+value or record changes. On a large grid, keep the default `value`, which renders only date fields.
 
 In either mode, **Ctrl+F** (Cmd+F on Mac) focuses a field set with `enableHotkey`, in place of
 the browser's find. The focused component and any app key handlers see the key first, and one
@@ -358,7 +374,8 @@ columns: [
 - **With a renderer** - the `renderer` wins, and `Column` ignores the text renderer and its rules.
   This lets `{...number, renderer}` override a built-in spec.
 - **Outside the cell** - autosize, header filters and `ZoneGrid` use the text, as do
-  `StoreFilterField` and `GridFindField` on date fields. Copy and both exports send the cell's
+  `StoreFilterField` and `GridFindField` on date fields, and on every field with `matchOn`
+  set to `rendered` or `all`. Copy and both exports send the cell's
   value, as for any column.
 
 ### Custom Renderers

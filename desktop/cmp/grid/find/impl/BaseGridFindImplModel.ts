@@ -5,10 +5,12 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import type {Column, GridLikeModel, GridModel} from '@xh/hoist/cmp/grid';
+import {CellTextCache} from '@xh/hoist/cmp/grid/impl/FindUtils';
 import {isGridLikeModel} from '@xh/hoist/cmp/grid/impl/GridLikeModel';
 import {DataViewModel} from '@xh/hoist/cmp/dataview';
 import {ZoneGridModel} from '@xh/hoist/cmp/zoneGrid';
 import {HoistModel} from '@xh/hoist/core';
+import type {FilterMatchOn} from '@xh/hoist/data';
 import type {TextInputModel} from '@xh/hoist/desktop/cmp/input';
 import {bindable, computed} from '@xh/hoist/mobx';
 import {createObservableRef} from '@xh/hoist/utils/react';
@@ -32,6 +34,9 @@ export abstract class BaseGridFindImplModel
 
     inputRef = createObservableRef<TextInputModel>();
 
+    /** Text shown by cells, kept between searches. */
+    protected textCache = new CellTextCache();
+
     abstract get hasResults(): boolean;
     abstract get countLabel(): string;
     abstract selectNext(): void;
@@ -43,6 +48,10 @@ export abstract class BaseGridFindImplModel
 
     get excludeFields(): string[] {
         return this.componentProps.excludeFields;
+    }
+
+    get matchOn(): FilterMatchOn {
+        return this.componentProps.matchOn ?? 'value';
     }
 
     get queryBuffer(): number {

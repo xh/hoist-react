@@ -120,18 +120,24 @@ describe('GridFindField', () => {
             expect(container.querySelector('.xh-column-header--find-active')).toBeNull();
         });
 
-        it('matches the text a renderer shows', async () => {
-            const {gridModel, find} = await renderAsync({
-                columns: [
-                    {field: 'name'},
-                    {field: 'qty', renderer: v => `<b>${v.toLocaleString()}</b>`}
-                ]
-            });
+        it.each([
+            {matchOn: undefined, raw: '1/1', shown: '0/0'},
+            {matchOn: 'rendered', raw: '0/0', shown: '1/1'},
+            {matchOn: 'all', raw: '1/1', shown: '1/1'}
+        ] as const)(
+            'matches raw values, or the text a renderer shows, per matchOn $matchOn',
+            async ({matchOn, raw, shown}) => {
+                const {find} = await renderAsync(
+                    {columns: [{field: 'name'}, {field: 'qty', renderer: QTY_RENDERER}]},
+                    {matchOn}
+                );
 
-            await find.typeAsync('1,234');
-            expect(find.countLabel()).toBe('1/1');
-            expect(activeMatch(gridModel)).toBe('2:qty');
-        });
+                await find.typeAsync('1234');
+                expect(find.countLabel()).toBe(raw);
+                await find.typeAsync('1,234');
+                expect(find.countLabel()).toBe(shown);
+            }
+        );
 
         it('searches only the store fields of visible columns, as rows mode does', async () => {
             const {find} = await renderAsync({
@@ -284,6 +290,19 @@ describe('GridFindField', () => {
             expect(gridModel._findActiveCell).toBeNull();
         });
 
+        it('matches the text a renderer shows with matchOn rendered', async () => {
+            const {gridModel, find} = await renderAsync(
+                {
+                    selModel: 'single',
+                    columns: [{field: 'name'}, {field: 'qty', renderer: QTY_RENDERER}]
+                },
+                {mode: undefined, matchOn: 'rendered'}
+            );
+
+            await find.typeAsync('1,234');
+            await waitFor(() => expect(gridModel.selectedId).toBe(2));
+        });
+
         it('matches columns in a collapsed column group', async () => {
             const {gridModel, find} = await renderAsync(
                 {selModel: 'single', columns: GROUPED_COLUMNS},
@@ -318,6 +337,8 @@ const DATA: PlainObject[] = [
     {id: 2, name: 'Beta', qty: 1234, city: 'Oslo'},
     {id: 3, name: 'Gamma', qty: 7, city: 'Madrid'}
 ];
+
+const QTY_RENDERER = (v: number) => `<b>${v.toLocaleString('en-US')}</b>`;
 
 // City shows only while the group is expanded, and qty only while it is collapsed, as it starts.
 const GROUPED_COLUMNS: GridConfig['columns'] = [

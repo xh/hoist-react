@@ -4,8 +4,8 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import type {Column} from '@xh/hoist/cmp/grid';
 import {DataViewModel} from '@xh/hoist/cmp/dataview';
+import {getMatchTextGetters, isHeaderMatch} from '@xh/hoist/cmp/grid/impl/FindUtils';
 import {ZoneGridModel} from '@xh/hoist/cmp/zoneGrid';
 import type {FilterMatchMode, StoreRecord, StoreRecordId} from '@xh/hoist/data';
 import {getFilterRegex} from '@xh/hoist/data';
@@ -14,7 +14,6 @@ import {action, compareStructural, computed, observable, observableRef} from '@x
 import {wait} from '@xh/hoist/promise';
 import {compact, findLastIndex, isEmpty, isEqual, isNil, min, sortBy} from 'lodash';
 import {BaseGridFindImplModel} from './BaseGridFindImplModel';
-import {getCellText, isHeaderMatch} from './FindUtils';
 
 /** A match - a column header if `record` is null, else the cell of that record and column. */
 interface FindMatch {
@@ -42,8 +41,8 @@ type FindKey = [row: number, col: number];
  *
  * Matches run in one sequence, as in Excel, where headers are the cells of the first row: matching
  * headers first, then matching cells row by row, left to right. Columns hidden by a collapsed
- * column group are searched in their place, and a step to one expands the group. Cells are matched on the text they
- * show, cached for each record - an updated record is a new instance, with no cached text.
+ * column group are searched in their place, and a step to one expands the group. Cells match per
+ * `matchOn`, on their raw value, the text they show, or either.
  * @internal
  */
 export class GridCellFindImplModel extends BaseGridFindImplModel {
@@ -80,9 +79,6 @@ export class GridCellFindImplModel extends BaseGridFindImplModel {
     // Display-order positions of the records and columns searched by the latest update.
     private rowOrdinals = new Map<StoreRecordId, number>();
     private colOrdinals = new Map<string, number>();
-
-    // Text shown by each cell, by record and then column.
-    private textCache = new WeakMap<StoreRecord, Map<Column, string>>();
 
     // The grid's focused cell as of the latest step, to tell when the user has moved since.
     private lastFocus: FocusedCell = null;
@@ -126,6 +122,7 @@ export class GridCellFindImplModel extends BaseGridFindImplModel {
                     this.includeFields,
                     this.excludeFields,
                     this.matchMode,
+                    this.matchOn,
                     this.includeHeaders
                 ],
                 run: () => this.updateMatches(false),
@@ -197,6 +194,10 @@ export class GridCellFindImplModel extends BaseGridFindImplModel {
                 activeFields.has(it.field)
             ),
             searchedIds = new Set(columns.map(it => it.colId)),
+            {store} = gridModel,
+            getters = columns.map(it =>
+                getMatchTextGetters(it.field, store, [it], this.matchOn, this.textCache)
+            ),
             records = gridModel.getSortedRecords(),
             prevActive = this.activeMatch,
             matches: FindMatch[] = [];
@@ -210,8 +211,8 @@ export class GridCellFindImplModel extends BaseGridFindImplModel {
             });
         }
         records.forEach(record => {
-            columns.forEach(column => {
-                if (regex.test(this.getText(record, column))) {
+            columns.forEach((column, idx) => {
+                if (getters[idx].some(fn => regex.test(fn(record)))) {
                     matches.push({colId: column.colId, record});
                 }
             });
@@ -254,18 +255,6 @@ export class GridCellFindImplModel extends BaseGridFindImplModel {
             if (!group.isPadding()) groupIds.push(group.getGroupId());
         }
         return isHeaderMatch(this.innerGridModel, agColumn.getColId(), groupIds, regex);
-    }
-
-    private getText(record: StoreRecord, column: Column): string {
-        let byColumn = this.textCache.get(record);
-        if (!byColumn) this.textCache.set(record, (byColumn = new Map()));
-
-        let ret = byColumn.get(column);
-        if (ret === undefined) {
-            ret = getCellText(column, record);
-            byColumn.set(column, ret);
-        }
-        return ret;
     }
 
     @action

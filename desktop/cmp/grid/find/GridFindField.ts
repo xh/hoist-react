@@ -8,7 +8,7 @@ import type {GridLikeModel} from '@xh/hoist/cmp/grid';
 import {hbox} from '@xh/hoist/cmp/layout';
 import type {LayoutProps} from '@xh/hoist/core';
 import {hoistCmp, useLocalModel} from '@xh/hoist/core';
-import type {FilterMatchMode} from '@xh/hoist/data';
+import type {FilterMatchMode, FilterMatchOn} from '@xh/hoist/data';
 import type {TextInputProps} from '@xh/hoist/desktop/cmp/input';
 import {textInput} from '@xh/hoist/desktop/cmp/input';
 import '@xh/hoist/desktop/register';
@@ -58,6 +58,12 @@ export interface GridFindFieldProps extends TextInputProps, LayoutProps {
     matchMode?: FilterMatchMode;
 
     /**
+     * What to match - each field's raw value, the text its column shows, or either. Default
+     * 'value'. See {@link FilterMatchOn}, including the cost of 'rendered' on large grids.
+     */
+    matchOn?: FilterMatchOn;
+
+    /**
      * What this field finds - matching rows, which it selects, or matching cells, which it moves
      * between. Read once, when the field mounts. Default 'rows'.
      */
@@ -97,7 +103,7 @@ export interface GridFindFieldProps extends TextInputProps, LayoutProps {
  * customized via the include/excludeFields props. See prop comments for details.
  *
  * Set `mode: 'cells'` to find matching cells instead, and move between them as Excel's Find does.
- * Matches are found within the text a cell shows, in the same fields as mode `rows` searches.
+ * Cells match on the same fields and `matchOn` setting as mode `rows`.
  * Hidden columns are skipped, but columns within a collapsed column group are searched, and a step
  * to one expands its group. Cells match across all rows, including those scrolled out of view or
  * within collapsed row groups, and are visited row by row, left to right. With `includeHeaders`,
