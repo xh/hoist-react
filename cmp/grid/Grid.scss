@@ -363,6 +363,16 @@
 }
 
 //------------------------
+// Cell range selection
+//------------------------
+// A solid border and a light tint, drawn over the selected-row style. Takes precedence over
+// `--no-cell-focus`, which hides the range border along with the focus border.
+.xh-grid--cell-selection .xh-ag-grid {
+  --ag-range-selection-border-color: var(--xh-grid-range-border-color);
+  --ag-range-selection-background-color: var(--xh-grid-range-bg);
+}
+
+//------------------------
 // Tooltips
 //------------------------
 .xh-grid-tooltip {

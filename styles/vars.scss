@@ -638,6 +638,8 @@ body {
   --xh-grid-header-font-weight: 600;
   --xh-grid-header-text-color: var(--xh-text-color-muted);
   --xh-grid-pinned-column-border-color: #{mc('grey', '300')};
+  --xh-grid-range-bg: var(--xh-intent-primary-trans1);
+  --xh-grid-range-border-color: var(--xh-intent-primary);
   --xh-grid-row-selected-bg: var(--xh-bg-highlight);
   --xh-grid-row-selected-text-color: var(--xh-grid-text-color);
   --xh-grid-summary-row-border-color: var(--xh-grid-border-color);
