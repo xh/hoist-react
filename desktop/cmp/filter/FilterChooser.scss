@@ -63,7 +63,7 @@
 
   .name {
     margin-right: var(--xh-spacing-half);
-    color: var(--xh-intent-primary);
+    color: var(--xh-intent-primary-text-color);
   }
 
   .operator {
@@ -109,7 +109,7 @@
 
     .name {
       margin-left: var(--xh-spacing-half);
-      color: var(--xh-intent-primary);
+      color: var(--xh-intent-primary-text-color);
     }
 
     .operators {
@@ -128,7 +128,7 @@
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-    color: var(--xh-intent-primary);
+    color: var(--xh-intent-primary-text-color);
   }
 }
 
