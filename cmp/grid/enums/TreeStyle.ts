@@ -9,9 +9,10 @@
  * Options controlling treeMode-specific styles (row background highlights and borders) for Grids.
  */
 export const TreeStyle = Object.freeze({
-    /** Highlight parent nodes in tree */
+    /** Highlight expanded parent nodes in tree */
     HIGHLIGHTS: 'highlights',
 
+    /** Color expanded parent nodes in tree, with a distinct color for each level */
     COLORS: 'colors',
 
     /** Separate groups by placing a border above top level parent nodes */
