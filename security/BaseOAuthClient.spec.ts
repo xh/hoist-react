@@ -7,8 +7,9 @@
 import {XH} from '@xh/hoist/core';
 import type {AccessTokenSpec, BaseOAuthClientConfig, TokenMap} from '@xh/hoist/security';
 import {BaseOAuthClient, Token} from '@xh/hoist/security';
+import {initTestAppAsync} from '@xh/hoist/test-support';
 import {MINUTES, SECONDS} from '@xh/hoist/utils/datetime';
-import {afterEach, describe, expect, it, onTestFinished, vi} from 'vitest';
+import {afterEach, beforeAll, describe, expect, it, onTestFinished, vi} from 'vitest';
 
 /**
  * The provider-neutral half of Hoist's OAuth support, driven through a minimal provider. Every
@@ -56,8 +57,58 @@ describe('BaseOAuthClient', () => {
             expect(Object.keys(tokens).sort()).toEqual(['id', 'trades']);
             expect(handleException).toHaveBeenCalledOnce();
             expect(handleException.mock.lastCall[0]).toMatchObject({message: 'Consent required'});
-            const requested = client.fetchAccessToken.mock.calls.map(([spec]) => spec.scopes[0]);
+            expect(requestedScopes(client)).not.toContain('api://reports/read');
+        });
+    });
+
+    describe('autoRefreshSecs', () => {
+        // initAsync() logs token expiry with app-dependent formatting, so needs a booted app.
+        beforeAll(() => initTestAppAsync());
+
+        const accessTokens: Record<string, AccessTokenSpec> = {
+            trades: {scopes: ['api://trades/read']},
+            reports: {scopes: ['api://reports/read'], fetchMode: 'lazy'}
+        };
+
+        it('never requests a lazy token the app has not asked for', async () => {
+            // A lazy token may be one that only some users can get - others must never ask for it.
+            vi.useFakeTimers();
+            const client = createClient({autoRefreshSecs: 60, accessTokens});
+            await client.initAsync();
+
+            await vi.advanceTimersByTimeAsync(5 * MINUTES);
+
+            const requested = requestedScopes(client);
+            expect(requested.filter(it => it === 'api://trades/read').length).toBeGreaterThan(1);
             expect(requested).not.toContain('api://reports/read');
+        });
+
+        it('keeps a lazy token fresh once the app has loaded it', async () => {
+            vi.useFakeTimers();
+            const client = createClient({autoRefreshSecs: 60, accessTokens});
+            await client.initAsync();
+            await client.getAccessTokenAsync('reports');
+            client.fetchAccessToken.mockClear();
+
+            await vi.advanceTimersByTimeAsync(61 * SECONDS);
+
+            expect(requestedScopes(client)).toContain('api://reports/read');
+        });
+
+        it('does not retry a lazy token the user was denied', async () => {
+            vi.useFakeTimers();
+            const client = createClient({autoRefreshSecs: 60, accessTokens});
+            client.fetchAccessToken.mockImplementation(async spec => {
+                if (spec.scopes[0] === 'api://reports/read') throw new Error('Access denied');
+                return token(60 * MINUTES);
+            });
+            await client.initAsync();
+            await expect(client.getAccessTokenAsync('reports')).rejects.toThrow('Access denied');
+            client.fetchAccessToken.mockClear();
+
+            await vi.advanceTimersByTimeAsync(5 * MINUTES);
+
+            expect(requestedScopes(client)).not.toContain('api://reports/read');
         });
     });
 
@@ -245,6 +296,11 @@ function createClient(config: Partial<TestConfig> = {}): TestOAuthClient {
     const ret = new TestOAuthClient({clientId: 'test-client-id', ...config});
     onTestFinished(() => ret.destroy());
     return ret;
+}
+
+/** First scope of each access token the client has asked its provider for, in call order. */
+function requestedScopes(client: TestOAuthClient): string[] {
+    return client.fetchAccessToken.mock.calls.map(([spec]) => spec.scopes[0]);
 }
 
 /** A Token for an unsigned JWT that expires the given number of ms from now. */

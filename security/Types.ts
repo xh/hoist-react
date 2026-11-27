@@ -13,7 +13,8 @@ export interface AccessTokenSpec {
      *      - eager (or undefined) - load on overall initialization, but do not block on failure.
      *        Useful for tokens that an app is almost certain to require during a user session.
      *      - lazy - defer loading until first requested by client. Useful for tokens that might
-     *        never be needed by the app during a given user session.
+     *        never be needed by the app during a given user session. Once loaded, the token is
+     *        kept fresh by `autoRefreshSecs` like an eager token.
      */
     fetchMode?: 'eager' | 'lazy';
 

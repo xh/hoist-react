@@ -16,7 +16,7 @@ import type {AccessTokenSpec, AuthMethod, TokenMap} from './Types';
 import {Timer} from '@xh/hoist/utils/async';
 import {MINUTES, olderThan, ONE_MINUTE, SECONDS} from '@xh/hoist/utils/datetime';
 import {genRandomId, isJSON, logError, throwIf} from '@xh/hoist/utils/js';
-import {compact, find, forEach, head, isEmpty, isObject, keys, map, pickBy, union} from 'lodash';
+import {compact, find, forEach, head, isEmpty, isObject, keys, pickBy, union} from 'lodash';
 
 export type LoginMethod = 'REDIRECT' | 'POPUP';
 
@@ -53,7 +53,9 @@ export interface BaseOAuthClientConfig<S extends AccessTokenSpec> {
     loginMethodMobile?: LoginMethod;
 
     /**
-     * Governs an optional refresh timer that will work to keep the tokens fresh.
+     * Governs an optional refresh timer that will work to keep the tokens fresh. The timer
+     * refreshes the ID token, all eager access tokens, and any lazy access tokens that have
+     * already been loaded. It never requests a lazy token that the app has not asked for.
      *
      * A typical refresh will use the underlying provider cache, and should not result in
      * network activity. However, if any token would expire before the next autoRefresh,
@@ -130,6 +132,7 @@ export abstract class BaseOAuthClient<
     lastAuthMethod: AuthMethod = null;
 
     @managed private timer: Timer;
+    private loadedAccessKeys = new Set<string>();
     private lastRefreshAttempt: number;
     private TIMER_INTERVAL = 2 * SECONDS;
     private pendingRelogin: Promise<void> = null;
@@ -210,10 +213,11 @@ export abstract class BaseOAuthClient<
      * Get an Access token.
      */
     async getAccessTokenAsync(key: string): Promise<Token> {
-        const spec = this.accessSpecs[key];
-        if (!spec) throw XH.exception(`No access token spec configured for key "${key}"`);
+        if (!this.accessSpecs[key]) {
+            throw XH.exception(`No access token spec configured for key "${key}"`);
+        }
 
-        return this.getWithRetry(() => this.fetchAccessTokenAsync(spec, true));
+        return this.getWithRetry(() => this.loadAccessTokenAsync(key, true));
     }
 
     /**
@@ -374,23 +378,9 @@ export abstract class BaseOAuthClient<
             useCache = opts?.useCache ?? true,
             accessSpecs = eagerOnly
                 ? pickBy(this.accessSpecs, spec => spec.fetchMode !== 'lazy') // specs are eager by default - opt-in to lazy
-                : this.accessSpecs,
-            ret: TokenMap = {};
+                : this.accessSpecs;
 
-        await Promise.allSettled(
-            map(accessSpecs, async (spec, key) => {
-                try {
-                    ret[key] = await this.fetchAccessTokenAsync(spec, useCache);
-                } catch (e) {
-                    XH.handleException(e, {logOnServer: true, showAlert: false});
-                }
-            })
-        );
-
-        // Do this after getting any access tokens --which can also populate the idToken cache!
-        ret.id = await this.fetchIdTokenSafeAsync(useCache);
-
-        return ret;
+        return this.fetchTokensAsync(keys(accessSpecs), useCache);
     }
 
     protected getLocalStorage(key: string, defaultValue: any = null): any {
@@ -411,6 +401,39 @@ export abstract class BaseOAuthClient<
     //-------------------
     // Implementation
     //-------------------
+    private async fetchTokensAsync(accessKeys: string[], useCache: boolean): Promise<TokenMap> {
+        const ret: TokenMap = {};
+
+        await Promise.allSettled(
+            accessKeys.map(async key => {
+                try {
+                    ret[key] = await this.loadAccessTokenAsync(key, useCache);
+                } catch (e) {
+                    XH.handleException(e, {logOnServer: true, showAlert: false});
+                }
+            })
+        );
+
+        // Do this after getting any access tokens --which can also populate the idToken cache!
+        ret.id = await this.fetchIdTokenSafeAsync(useCache);
+
+        return ret;
+    }
+
+    private async loadAccessTokenAsync(key: string, useCache: boolean): Promise<Token> {
+        const ret = await this.fetchAccessTokenAsync(this.accessSpecs[key], useCache);
+        this.loadedAccessKeys.add(key);
+        return ret;
+    }
+
+    /** Keys of tokens to keep fresh - all eager tokens, plus any lazy tokens already loaded. */
+    private get refreshKeys(): string[] {
+        const {accessSpecs, loadedAccessKeys} = this;
+        return keys(accessSpecs).filter(
+            key => accessSpecs[key].fetchMode !== 'lazy' || loadedAccessKeys.has(key)
+        );
+    }
+
     private async fetchIdTokenSafeAsync(useCache: boolean): Promise<Token> {
         // Client libraries can apparently return expired id tokens when using local cache.
         // See: https://github.com/auth0/auth0-spa-js/issues/1089 and
@@ -486,21 +509,21 @@ export abstract class BaseOAuthClient<
 
     @action
     private async onTimerAsync(): Promise<void> {
-        const {config, lastRefreshAttempt} = this,
+        const {config, lastRefreshAttempt, refreshKeys} = this,
             refreshSecs = config.autoRefreshSecs * SECONDS,
             skipCacheSecs = refreshSecs + 5 * SECONDS;
 
         if (olderThan(lastRefreshAttempt, refreshSecs)) {
             this.lastRefreshAttempt = Date.now();
             try {
-                this.logDebug('Refreshing all tokens:');
-                let tokens = await this.fetchAllTokensAsync(),
+                this.logDebug('Refreshing tokens:');
+                let tokens = await this.fetchTokensAsync(refreshKeys, true),
                     aging = pickBy(tokens, v => v.expiresWithin(skipCacheSecs));
                 if (!isEmpty(aging)) {
                     this.logDebug(
                         `Tokens [${keys(aging).join(', ')}] have < ${skipCacheSecs}s remaining, reloading without cache.`
                     );
-                    tokens = await this.fetchAllTokensAsync({useCache: false});
+                    tokens = await this.fetchTokensAsync(refreshKeys, false);
                 }
                 this.logTokensDebug(tokens);
             } catch (e) {
