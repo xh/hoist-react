@@ -90,8 +90,12 @@ const targets = new Set<FindHotkeyTarget>();
 function onKeyDown(e: KeyboardEvent) {
     if (e.defaultPrevented) return;
 
+    // Also check the physical key, as `key` is another letter on a non-Latin layout.
     const isFind =
-        (e.ctrlKey || e.metaKey) && !e.altKey && !e.shiftKey && e.key?.toLowerCase() === 'f';
+        (e.ctrlKey || e.metaKey) &&
+        !e.altKey &&
+        !e.shiftKey &&
+        (e.key?.toLowerCase() === 'f' || e.code === 'KeyF');
     if (!isFind) return;
 
     const target = resolveFindHotkeyTarget([...targets], document.activeElement);

@@ -6,7 +6,8 @@
  */
 import {grid, type GridConfig, GridModel} from '@xh/hoist/cmp/grid';
 import {vbox} from '@xh/hoist/cmp/layout';
-import type {PlainObject} from '@xh/hoist/core';
+import {HoistModel, type PlainObject} from '@xh/hoist/core';
+import {bindable} from '@xh/hoist/mobx';
 import {initTestAppAsync} from '@xh/hoist/test-support';
 import {installAgGridForTests} from '@xh/hoist/test-support/agGrid';
 import {act, fireEvent, render, waitFor} from '@testing-library/react';
@@ -185,19 +186,7 @@ describe('GridFindField', () => {
         });
 
         it('finds cells in a collapsed column group, expanding it to show the match', async () => {
-            const {gridModel, find} = await renderAsync({
-                columns: [
-                    {field: 'name', headerName: 'Name'},
-                    {
-                        groupId: 'details',
-                        collapsed: true,
-                        children: [
-                            {field: 'qty', groupShowMode: 'collapsed'},
-                            {field: 'city', groupShowMode: 'expanded'}
-                        ]
-                    }
-                ]
-            });
+            const {gridModel, find} = await renderAsync({columns: GROUPED_COLUMNS});
             expect(displayedColIds(gridModel)).toEqual(['name', 'qty']);
 
             await find.typeAsync('madrid');
@@ -210,6 +199,38 @@ describe('GridFindField', () => {
             await find.typeAsync('1234');
             expect(activeMatch(gridModel)).toBe('2:qty');
             expect(gridModel.isColumnGroupExpanded('details')).toBe(false);
+        });
+
+        it('scrolls to a header match after expanding its column group', async () => {
+            const {gridModel, find} = await renderAsync({columns: GROUPED_COLUMNS}),
+                agApi = gridModel.agApi,
+                ensureColumnVisible = agApi.ensureColumnVisible.bind(agApi),
+                displayedAtScroll: string[][] = [];
+            agApi.ensureColumnVisible = (colId, position) => {
+                displayedAtScroll.push(displayedColIds(gridModel));
+                ensureColumnVisible(colId, position);
+            };
+
+            await find.typeAsync('city');
+            expect(activeMatch(gridModel)).toBe('header:city');
+            await waitFor(() => expect(displayedAtScroll).toHaveLength(1));
+            expect(displayedAtScroll[0]).toContain('city');
+        });
+
+        it('steps on from the active match after other rows move under the focused cell', async () => {
+            const {gridModel, find} = await renderAsync();
+            act(() => gridModel.agApi.setFocusedCell(2, 'name')); // Gamma
+
+            await find.typeAsync('a');
+            expect(activeMatch(gridModel)).toBe('3:name');
+
+            // Focus stays at its row index, which now holds Alpha. A re-sort, or rows opening
+            // above it, does this. The user has not moved, so the step goes on from Gamma.
+            act(() => gridModel.setSortBy('name|desc'));
+            await waitFor(() => expect(gridModel.agApi.getDisplayedRowAtIndex(2).id).toBe('ag_1'));
+
+            find.press('Enter');
+            expect(activeMatch(gridModel)).toBe('3:city');
         });
 
         it('keeps the active match as data updates, and drops matches no longer found', async () => {
@@ -240,6 +261,18 @@ describe('GridFindField', () => {
             expect(gridModel.agApi.getFocusedCell()).toMatchObject({rowIndex: 1});
             expect(gridModel.agApi.getFocusedCell().column.getColId()).toBe('name');
         });
+
+        it('leaves Esc to a parent when there is nothing to clear', async () => {
+            const {find} = await renderAsync();
+            expect(fireEvent.keyDown(find.input, {key: 'Escape'})).toBe(true); // not prevented
+        });
+
+        it('ignores a model prop, which the text input would otherwise bind to', async () => {
+            const {gridModel, find} = await renderAsync({}, {model: new OtherModel()});
+
+            await find.typeAsync('beta');
+            expect(activeMatch(gridModel)).toBe('2:name');
+        });
     });
 
     describe('rows mode', () => {
@@ -253,20 +286,7 @@ describe('GridFindField', () => {
 
         it('matches columns in a collapsed column group', async () => {
             const {gridModel, find} = await renderAsync(
-                {
-                    selModel: 'single',
-                    columns: [
-                        {field: 'name'},
-                        {
-                            groupId: 'details',
-                            collapsed: true,
-                            children: [
-                                {field: 'qty', groupShowMode: 'collapsed'},
-                                {field: 'city', groupShowMode: 'expanded'}
-                            ]
-                        }
-                    ]
-                },
+                {selModel: 'single', columns: GROUPED_COLUMNS},
                 {mode: undefined}
             );
 
@@ -298,6 +318,23 @@ const DATA: PlainObject[] = [
     {id: 2, name: 'Beta', qty: 1234, city: 'Oslo'},
     {id: 3, name: 'Gamma', qty: 7, city: 'Madrid'}
 ];
+
+// City shows only while the group is expanded, and qty only while it is collapsed, as it starts.
+const GROUPED_COLUMNS: GridConfig['columns'] = [
+    {field: 'name', headerName: 'Name'},
+    {
+        groupId: 'details',
+        collapsed: true,
+        children: [
+            {field: 'qty', headerName: 'Qty', groupShowMode: 'collapsed'},
+            {field: 'city', headerName: 'City', groupShowMode: 'expanded'}
+        ]
+    }
+];
+
+class OtherModel extends HoistModel {
+    @bindable accessor query: string = null;
+}
 
 async function renderAsync(config: GridConfig = {}, findProps: GridFindFieldProps = {}) {
     const gridModel = new GridModel({

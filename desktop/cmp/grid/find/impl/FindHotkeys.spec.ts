@@ -78,6 +78,16 @@ describe('registerFindHotkeyTarget', () => {
         expect(target.focusCount).toBe(2);
     });
 
+    it('takes Ctrl+F by its physical key on a non-Latin layout', () => {
+        const target = register(fakeTarget({input: addElements(1)[0]}));
+
+        // Ctrl+F on a Russian layout reports the Cyrillic letter in `key`.
+        expect(
+            pressFind(document.body, {ctrlKey: true, key: 'а', code: 'KeyF'}).defaultPrevented
+        ).toBe(true);
+        expect(target.focusCount).toBe(1);
+    });
+
     it('ignores F with Shift or Alt, and without Ctrl or Cmd', () => {
         const target = register(fakeTarget({input: addElements(1)[0]}));
 

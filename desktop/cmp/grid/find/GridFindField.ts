@@ -114,7 +114,7 @@ export const [GridFindField, gridFindField] = hoistCmp.withFactory<GridFindField
     displayName: 'GridFindField',
     className: 'xh-grid-find-field',
     model: false,
-    render({className, mode, enableHotkey, includeHeaders, ...props}, ref) {
+    render({className, model, mode, enableHotkey, includeHeaders, ...props}, ref) {
         let [layoutProps, restProps] = splitLayoutProps(props);
         const impl = useLocalModel<BaseGridFindImplModel>(
             mode === 'cells' ? GridCellFindImplModel : GridFindFieldImplModel
@@ -153,7 +153,10 @@ export const [GridFindField, gridFindField] = hoistCmp.withFactory<GridFindField
                                 consumeEvent(e);
                                 break;
                             case 'Escape':
-                                if (!(impl instanceof GridCellFindImplModel)) return;
+                                // Leave Esc to a parent, such as a dialog, once there is nothing to clear.
+                                if (!(impl instanceof GridCellFindImplModel) || !impl.hasQuery) {
+                                    return;
+                                }
                                 impl.endFind();
                                 consumeEvent(e);
                                 break;

@@ -5,10 +5,13 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import type {Column} from '@xh/hoist/cmp/grid';
+import {DataViewModel} from '@xh/hoist/cmp/dataview';
+import {ZoneGridModel} from '@xh/hoist/cmp/zoneGrid';
 import type {FilterMatchMode, StoreRecord, StoreRecordId} from '@xh/hoist/data';
 import {getFilterRegex} from '@xh/hoist/data';
 import type {AgColumn, IRowNode} from '@xh/hoist/kit/ag-grid';
 import {action, compareStructural, computed, observable, observableRef} from '@xh/hoist/mobx';
+import {wait} from '@xh/hoist/promise';
 import {compact, findLastIndex, isEmpty, isEqual, isNil, min, sortBy} from 'lodash';
 import {BaseGridFindImplModel} from './BaseGridFindImplModel';
 import {getCellText, isHeaderMatch} from './FindUtils';
@@ -19,8 +22,9 @@ interface FindMatch {
     record: StoreRecord;
 }
 
-/** A cell the grid has focused, or a row node and column to step from. */
+/** A cell the grid has focused, with the row node now at its index. */
 interface FocusedCell {
+    rowIndex: number;
     node: IRowNode;
     colId: string;
 }
@@ -90,6 +94,11 @@ export class GridCellFindImplModel extends BaseGridFindImplModel {
             this.logError("No GridModel available. Provide via a 'gridModel' prop, or context.");
             return;
         }
+        const {boundModel} = this;
+        if (boundModel instanceof ZoneGridModel || boundModel instanceof DataViewModel) {
+            this.logError("Mode 'cells' supports GridModel and CubeGridModel only.");
+            return;
+        }
 
         this.addReaction(
             {
@@ -141,7 +150,7 @@ export class GridCellFindImplModel extends BaseGridFindImplModel {
     endFind() {
         const match = this.activeMatch,
             agApi = this.innerGridModel?.agApi,
-            rowIndex = agApi?.getFocusedCell()?.rowIndex ?? 0;
+            rowIndex = this.getFocusedCell()?.rowIndex ?? 0;
 
         this.query = null;
         this.clearMatches();
@@ -150,6 +159,7 @@ export class GridCellFindImplModel extends BaseGridFindImplModel {
         if (match.record) {
             const node = agApi.getRowNode(match.record.agId);
             if (node?.rowIndex != null) {
+                agApi.ensureIndexVisible(node.rowIndex);
                 agApi.setFocusedCell(node.rowIndex, match.colId);
             }
         } else if (agApi.getDisplayedRowCount()) {
@@ -354,12 +364,14 @@ export class GridCellFindImplModel extends BaseGridFindImplModel {
         if (!focused || focused.rowPinned) return null;
 
         const node = agApi.getDisplayedRowAtIndex(focused.rowIndex);
-        return node ? {node, colId: focused.column.getColId()} : null;
+        return node ? {rowIndex: focused.rowIndex, node, colId: focused.column.getColId()} : null;
     }
 
+    // Compared by position, as the grid keeps focus at a row index while rows above it expand or
+    // re-sort. Only the user moves it.
     private hasFocusMoved(focus: FocusedCell): boolean {
         const last = this.lastFocus;
-        return !!focus && (focus.node !== last?.node || focus.colId !== last?.colId);
+        return !!focus && (focus.rowIndex !== last?.rowIndex || focus.colId !== last?.colId);
     }
 
     //------------------------
@@ -381,7 +393,9 @@ export class GridCellFindImplModel extends BaseGridFindImplModel {
 
     private async revealAsync({record, colId}: FindMatch) {
         const gridModel = this.innerGridModel;
+        // Let the grid apply any column group change, which waits for this action to end.
         this.showColumn(colId);
+        await wait();
         if (record) {
             await (gridModel.selModel.isEnabled
                 ? gridModel.selectAsync(record)
