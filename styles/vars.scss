@@ -76,6 +76,45 @@ body {
   --xh-neutral-val-color: var(--xh-gray);
 
   //--------------------------------------------------------
+  // Neutral ramp
+  //--------------------------------------------------------
+  // The grays of the theme, as steps from surface to text. Every step reads two seeds, so an app
+  // can re-tint its whole theme by setting them:
+  //   --xh-neutral-hue  - OKLCH hue shared by every step.
+  //   --xh-neutral-tint - multiplier on the chroma of every step. 0 gives a pure gray.
+  // Each step holds its lightness when the seeds change, so contrast between steps is stable.
+  --xh-neutral-hue: 232;
+  --xh-neutral-tint: 1;
+  --xh-neutral-1: oklch(0.985 calc(0.002 * var(--xh-neutral-tint)) var(--xh-neutral-hue)); // stripe, subtle fill
+  --xh-neutral-2: oklch(0.968 calc(0.004 * var(--xh-neutral-tint)) var(--xh-neutral-hue)); // chrome: toolbars, app bar, sidebars
+  --xh-neutral-3: oklch(0.94 calc(0.006 * var(--xh-neutral-tint)) var(--xh-neutral-hue)); // hover fill, tracks
+  --xh-neutral-4: oklch(0.915 calc(0.007 * var(--xh-neutral-tint)) var(--xh-neutral-hue)); // hairlines
+  --xh-neutral-5: oklch(0.87 calc(0.009 * var(--xh-neutral-tint)) var(--xh-neutral-hue)); // quiet border
+  --xh-neutral-6: oklch(0.8 calc(0.012 * var(--xh-neutral-tint)) var(--xh-neutral-hue)); // defined border
+  --xh-neutral-7: oklch(0.63 calc(0.016 * var(--xh-neutral-tint)) var(--xh-neutral-hue)); // control outline
+  --xh-neutral-8: oklch(0.53 calc(0.02 * var(--xh-neutral-tint)) var(--xh-neutral-hue)); // muted text
+  --xh-neutral-9: oklch(0.45 calc(0.025 * var(--xh-neutral-tint)) var(--xh-neutral-hue)); // secondary text
+  --xh-neutral-10: oklch(0.31 calc(0.02 * var(--xh-neutral-tint)) var(--xh-neutral-hue)); // body text
+  --xh-neutral-11: oklch(0.24 calc(0.018 * var(--xh-neutral-tint)) var(--xh-neutral-hue)); // strong text
+
+  &:where(.xh-dark) {
+    // Lightness added to every dark surface and border step. Text steps do not move.
+    --xh-neutral-depth: 0;
+    --xh-neutral-0: oklch(calc(0.155 + var(--xh-neutral-depth)) calc(0.008 * var(--xh-neutral-tint)) var(--xh-neutral-hue)); // sunken: tracks, wells
+    --xh-neutral-1: oklch(calc(0.19 + var(--xh-neutral-depth)) calc(0.01 * var(--xh-neutral-tint)) var(--xh-neutral-hue)); // app background
+    --xh-neutral-2: oklch(calc(0.215 + var(--xh-neutral-depth)) calc(0.011 * var(--xh-neutral-tint)) var(--xh-neutral-hue)); // stripe
+    --xh-neutral-3: oklch(calc(0.245 + var(--xh-neutral-depth)) calc(0.013 * var(--xh-neutral-tint)) var(--xh-neutral-hue)); // chrome: toolbars, app bar, sidebars
+    --xh-neutral-4: oklch(calc(0.285 + var(--xh-neutral-depth)) calc(0.015 * var(--xh-neutral-tint)) var(--xh-neutral-hue)); // raised, hover fill
+    --xh-neutral-5: oklch(calc(0.33 + var(--xh-neutral-depth)) calc(0.016 * var(--xh-neutral-tint)) var(--xh-neutral-hue)); // hairlines
+    --xh-neutral-6: oklch(calc(0.39 + var(--xh-neutral-depth)) calc(0.018 * var(--xh-neutral-tint)) var(--xh-neutral-hue)); // border
+    --xh-neutral-7: oklch(calc(0.55 + var(--xh-neutral-depth)) calc(0.02 * var(--xh-neutral-tint)) var(--xh-neutral-hue)); // control outline
+    --xh-neutral-8: oklch(0.72 calc(0.018 * var(--xh-neutral-tint)) var(--xh-neutral-hue)); // muted text
+    --xh-neutral-9: oklch(0.8 calc(0.015 * var(--xh-neutral-tint)) var(--xh-neutral-hue)); // secondary text
+    --xh-neutral-10: oklch(0.94 calc(0.008 * var(--xh-neutral-tint)) var(--xh-neutral-hue)); // body text
+    --xh-neutral-11: oklch(0.98 calc(0.004 * var(--xh-neutral-tint)) var(--xh-neutral-hue)); // strong text
+  }
+
+  //--------------------------------------------------------
   // Intent Colors - HSL supports varying lightness w/o hue
   //--------------------------------------------------------
   // Neutral (no intent) - default gray - e.g. standard buttons.
