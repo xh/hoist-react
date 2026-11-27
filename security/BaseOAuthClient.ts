@@ -213,9 +213,7 @@ export abstract class BaseOAuthClient<
      * Get an Access token.
      */
     async getAccessTokenAsync(key: string): Promise<Token> {
-        if (!this.accessSpecs[key]) {
-            throw XH.exception(`No access token spec configured for key "${key}"`);
-        }
+        throwIf(!this.accessSpecs[key], `No access token spec configured for key "${key}"`);
 
         return this.getWithRetry(() => this.loadAccessTokenAsync(key, true));
     }
