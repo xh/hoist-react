@@ -38,6 +38,8 @@ See [`docs-roadmap.md`](./planning/docs-roadmap.md) for documentation coverage t
 | Save and restore named view configurations | [`/cmp/viewmanager/`](../cmp/viewmanager/README.md)                                                                 |
 | Select a period or date range (presets, lookbacks, months, custom) | [`/cmp/daterange/`](../cmp/daterange/README.md)                                                                   |
 | Display a PDF document (page nav, zoom, find, download) | [`/cmp/pdfviewer/`](../cmp/pdfviewer/README.md) |
+| [`/cmp/listdisplay/`](../cmp/listdisplay/README.md) | Short, static list of entries with a title, description, icon and trailing detail | ListDisplay, ListDisplayEntry, entries, intent, numbered, onClick, ListDisplay or DataView |
+| Show a short list of alerts, activity or search results | [`/cmp/listdisplay/`](../cmp/listdisplay/README.md) |
 | Show the fields of a record as labeled values | [`/cmp/propertytable/`](../cmp/propertytable/README.md) |
 | Set off a note, caveat or warning within content | [`/cmp/callout/`](../cmp/callout/README.md) |
 | Show progress or usage against a limit as a bar | [`/cmp/progressbar/`](../cmp/progressbar/README.md) |
