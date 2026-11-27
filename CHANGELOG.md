@@ -13,7 +13,41 @@
   3. Plain ASCII punctuation only. Use " - " for in-sentence breaks, never an em dash.
 -->
 
-## 92.0.0-SNAPSHOT - unreleased
+## 91.2.0 - 2026-11-27
+
+### 🎁 New Features
+
+* The expand/collapse icon in a tree column header now steps through levels the same way, and its
+  tooltip names the next step. Use the grid context menu's "Expand All" to open every level at once.
+* Added `ExpandCycleButton`, now the recommended toolbar control for grouped grids. Each click
+  expands one more level, or collapses all once fully expanded. See `GridModel.cycleExpandLevel()`.
+* `runner().span()`, `runner().timer()` and `runner().counter()` accept `useNamePrefix: false` to
+  use a name as given, without the caller's `telemetryPrefix`. This matches the `useNamePrefix`
+  option in hoist-core.
+* `runner().span()`, `runner().timer()` and `runner().counter()` all take either a name with
+  optional tags or a config object. `span(name, tags)` and `timer()` / `counter()` with a
+  `MetricConfig` are new.
+
+### 🐞 Bug Fixes
+
+* Fixed the `DateInput` calendar's month and year menus running under its previous/next arrows with
+  wider fonts such as Inter.
+* Fixed `BaseOAuthClient` auto-refresh to skip lazy access tokens until the app first loads them.
+  The timer previously requested every configured token, including lazy tokens a user may not be
+  permitted to get.
+* Fixed Blueprint popovers, menus, tooltips and dialogs rendering in the system font instead of
+  `--xh-font-family`.
+* `runner().timer()` and `runner().counter()` now prepend the caller's `telemetryPrefix` to metric
+  names, as they already did for span names. A name that already starts with the prefix is used as
+  given. Apps that passed short metric names from a class with a `telemetryPrefix` will see those
+  metrics renamed.
+
+### ✨ Styles
+
+* Restyled menu headings as small, muted, uppercase labels, and fixed their spacing and alignment in
+  grid context menus. Added `--xh-menu-heading-*` vars to customize them.
+* Matched the font weight of grid menu items to other menus. Added `--xh-menu-item-font-weight` to
+  customize it.
 
 ## 91.1.0 - 2026-11-24
 
