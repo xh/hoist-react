@@ -203,11 +203,12 @@ body {
   --xh-intent-danger-trans1: hsla(var(--xh-intent-danger-h), var(--xh-intent-danger-s), var(--xh-intent-danger-l3), var(--xh-intent-a1));
   --xh-intent-danger-trans2: hsla(var(--xh-intent-danger-h), var(--xh-intent-danger-s), var(--xh-intent-danger-l3), var(--xh-intent-a2));
 
-  // Add -text variants - customized to lighter values for dark theme to optimize for legibility and contrast.
-  --xh-intent-primary-text-color: var(--xh-intent-primary);
-  --xh-intent-success-text-color: var(--xh-intent-success);
-  --xh-intent-warning-text-color: var(--xh-intent-warning);
-  --xh-intent-danger-text-color: var(--xh-intent-danger);
+  // Text and icons in an intent color use these -text variants, never a fill shade. They are darker
+  // than the fill in the light theme and lighter in the dark theme, for legibility.
+  --xh-intent-primary-text-color: var(--xh-intent-primary-darker);
+  --xh-intent-success-text-color: var(--xh-intent-success-darker);
+  --xh-intent-warning-text-color: var(--xh-intent-warning-darker);
+  --xh-intent-danger-text-color: var(--xh-intent-danger-darker);
 
   &:where(.xh-dark) {
     --xh-intent-primary-text-color: var(--xh-intent-primary-lighter);
@@ -401,14 +402,12 @@ body {
   --xh-callout-title-gap: 2px;
   --xh-callout-title-text-color: var(--xh-callout-text-color);
   --xh-callout-warning-bg: var(--xh-intent-warning-trans1);
-  // The standard warning color is too light for an icon on the tinted background.
-  --xh-callout-warning-color: var(--xh-intent-warning-darker);
+  --xh-callout-warning-color: var(--xh-intent-warning-text-color);
 
   &:where(.xh-dark) {
     --xh-callout-color: var(--xh-text-color-muted);
     // The standard danger tint barely shows on a dark background.
     --xh-callout-danger-bg: var(--xh-intent-danger-trans2);
-    --xh-callout-warning-color: var(--xh-intent-warning-text-color);
   }
 
 

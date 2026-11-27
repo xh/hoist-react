@@ -58,7 +58,7 @@
     margin-right: var(--xh-spacing-half);
     border-radius: 9px;
     background-color: var(--xh-intent-primary-trans2);
-    color: var(--xh-intent-primary);
+    color: var(--xh-intent-primary-text-color);
     font-size: var(--xh-font-size-small);
     font-weight: 500;
     line-height: 1;
@@ -179,7 +179,7 @@
 
   &__footer-action {
     cursor: pointer;
-    color: var(--xh-intent-primary);
+    color: var(--xh-intent-primary-text-color);
 
     &:hover {
       text-decoration: underline;
@@ -244,7 +244,7 @@
     min-width: 24px;
     text-align: center;
     margin-right: 2px;
-    color: var(--xh-intent-primary);
+    color: var(--xh-intent-primary-text-color);
   }
 
   &__option-label {

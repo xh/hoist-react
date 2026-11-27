@@ -92,12 +92,6 @@
       min-height: 0;
       padding: 0;
       font-size: var(--xh-grid-font-size);
-
-      // Match the per-row action checkbox, which uses the lighter primary tone - not the base tone the
-      // Icon `intent` prop applies.
-      .xh-intent-primary {
-        color: var(--xh-intent-primary-lighter);
-      }
     }
 
     // Drop the line segment on the side the label hugs, so its placement cues the pin direction.

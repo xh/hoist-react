@@ -110,10 +110,10 @@ body.xh-app {
   .xh-yellow-light { color: var(--xh-yellow-light); }
 
   // Colors - intents
-  .xh-intent-primary { color: var(--xh-intent-primary); }
-  .xh-intent-danger { color: var(--xh-intent-danger); }
-  .xh-intent-success { color: var(--xh-intent-success); }
-  .xh-intent-warning { color: var(--xh-intent-warning); }
+  .xh-intent-primary { color: var(--xh-intent-primary-text-color); }
+  .xh-intent-danger { color: var(--xh-intent-danger-text-color); }
+  .xh-intent-success { color: var(--xh-intent-success-text-color); }
+  .xh-intent-warning { color: var(--xh-intent-warning-text-color); }
   .xh-bg-intent-primary {
     background-color: var(--xh-intent-primary);
     color: white;
