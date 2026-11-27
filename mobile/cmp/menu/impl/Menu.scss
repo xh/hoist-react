@@ -60,6 +60,8 @@
       font-size: var(--xh-menu-item-font-size);
       font-weight: var(--xh-menu-item-font-weight);
       color: var(--xh-menu-item-text-color);
+      // An item with an `href` renders as a link - keep it looking like the other items.
+      text-decoration: none;
       background-color: var(--xh-menu-bg);
       transition: background-color 0.2s linear;
 

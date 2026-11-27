@@ -106,6 +106,8 @@ export function parseMenuItems(
                 intent: item.intent,
                 className: item.className,
                 onClick: actionFn ? e => wait().then(() => actionFn(e, context)) : null, // do async to allow menu to close
+                href: item.href,
+                target: item.target,
                 disabled: item.disabled,
                 active: item.active,
                 rightElement: item.rightElement,

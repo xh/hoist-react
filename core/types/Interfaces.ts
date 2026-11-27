@@ -358,6 +358,19 @@ export interface MenuItem<T = MenuToken, C = MenuContext> extends TestSupportPro
     /** Executed when the user clicks the menu item. */
     actionFn?: (e: MouseEvent | PointerEvent, context?: C) => void;
 
+    /**
+     * URL to open when the user clicks the item. The item renders as a link, so the user can also
+     * open it in a new tab or window - with a modifier key, a middle-click, or the browser's own
+     * right-click menu.
+     *
+     * On an item with `items`, a click follows the link and hovering opens the submenu. Touch
+     * users may not reach the submenu, so consider putting the link inside it.
+     */
+    href?: string;
+
+    /** Where to open `href`, as for a link - e.g. `_blank` for a new tab. */
+    target?: string;
+
     /** Executed before the item is shown. Use to adjust properties dynamically. */
     prepareFn?: (me: MenuItem<T, C>, context?: C) => void;
 
@@ -375,7 +388,8 @@ export interface MenuItem<T = MenuToken, C = MenuContext> extends TestSupportPro
      * keyboard shortcut.
      *
      * A click on a button or other control within it goes to that control alone, without running
-     * `actionFn` or closing the menu. A click elsewhere within it acts as a click on the item.
+     * `actionFn` or closing the menu. A click elsewhere within it acts as a click on the item. A
+     * right-click on a link within it shows the browser's own menu, to open the link in a new tab.
      */
     rightElement?: ReactNode;
 

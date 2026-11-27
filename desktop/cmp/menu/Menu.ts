@@ -59,11 +59,13 @@ export const [Menu, menu] = hoistCmp.withFactory<MenuProps, MenuDefaults>({
 export type {MenuDefaults};
 
 /**
- * A right-click on a menu should neither show the browser menu nor reach a context menu on the
- * component beneath. The popover renders in a portal, but React events still bubble up the tree.
+ * A right-click on a menu should not reach a context menu on the component beneath. The popover
+ * renders in a portal, but React events still bubble up the tree. The browser's own menu shows only
+ * for a link - an item with an `href`, or a link in an item's `rightElement` - so a user can open
+ * it in a new tab or window. Other items render as anchors without an `href`, which do not count.
  * @internal
  */
 export function swallowContextMenu(e: MouseEvent) {
-    e.preventDefault();
     e.stopPropagation();
+    if (!(e.target as Element).closest?.('a[href]')) e.preventDefault();
 }
