@@ -118,7 +118,7 @@ describe('GridModel', () => {
             expect(pnl).toMatchObject({
                 displayName: 'P&L',
                 headerName: 'P&L',
-                headerTooltip: 'Profit and loss',
+                description: 'Profit and loss',
                 align: 'right'
             });
             expect(pnl.sortingOrder).toEqual(Column.DESC_FIRST);

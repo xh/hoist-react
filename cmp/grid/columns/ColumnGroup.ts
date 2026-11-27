@@ -4,6 +4,7 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
+import {headerTooltipComponent} from '@xh/hoist/cmp/grid/impl/HeaderTooltip';
 import {getAgHeaderClassFn} from '@xh/hoist/cmp/grid/impl/Utils';
 import type {HAlign, PlainObject, Some, Thunkable} from '@xh/hoist/core';
 import {XH} from '@xh/hoist/core';
@@ -45,7 +46,11 @@ export interface ColumnGroupSpec {
     headerClass?: Some<string> | ColumnHeaderClassFn;
     /** Horizontal alignment of header contents. */
     headerAlign?: HAlign;
-    /** Tooltip text for grid header. */
+    /**
+     * Tooltip text for grid header. When not set, the header shows its `chooserName` in a default
+     * tooltip if the header label does not already show it in full - an abbreviated, icon, or
+     * truncated label. Set to null for no tooltip.
+     */
     headerTooltip?: string;
     /**
      * Name to display within the column chooser. Defaults to `headerName` when that is a string,
@@ -200,6 +205,7 @@ export class ColumnGroup {
             },
             headerClass: getAgHeaderClassFn(this),
             headerTooltip: this.headerTooltip,
+            tooltipComponent: headerTooltipComponent,
             columnGroupShow: toAgColumnGroupShow(this.groupShowMode),
             openByDefault: !this.collapsed,
             headerGroupComponentParams: {gridModel, xhColumnGroup: this},

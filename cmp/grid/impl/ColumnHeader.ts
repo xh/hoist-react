@@ -15,19 +15,12 @@ import {createObservableRef} from '@xh/hoist/utils/react';
 import {debounced, consumeEvent} from '@xh/hoist/utils/js';
 import {nextExpandStepTitle} from './Utils';
 import {olderThan} from '@xh/hoist/utils/datetime';
-import {
-    filter,
-    size,
-    findIndex,
-    isEmpty,
-    isFunction,
-    isFinite,
-    isUndefined,
-    isString
-} from 'lodash';
+import {filter, size, findIndex, isEmpty, isFunction, isFinite} from 'lodash';
 import classNames from 'classnames';
+import {useDefaultHeaderTooltip} from './HeaderTooltip';
 
 import type {ReactNode} from 'react';
+import {useRef} from 'react';
 
 import type {IHeaderParams, AgColumn} from '@xh/hoist/kit/ag-grid';
 
@@ -49,9 +42,18 @@ export const columnHeader = hoistCmp.factory<ColumnHeaderProps>({
     className: 'xh-grid-header',
     model: creates(() => ColumnHeaderModel),
 
-    render({className, model, enableMenu, showColumnMenu, displayName}) {
+    render({className, model, enableMenu, showColumnMenu, setTooltip, api, displayName}) {
         const {gridModel, xhColumn} = model,
-            {isDesktop} = XH;
+            labelRef = useRef<HTMLSpanElement>(null);
+
+        useDefaultHeaderTooltip({
+            setTooltip,
+            api,
+            labelRef,
+            owner: xhColumn,
+            name: xhColumn?.displayName,
+            description: xhColumn?.description
+        });
 
         const sortIcon = () => {
             const {abs, sort} = model.activeGridSorter ?? {};
@@ -118,19 +120,6 @@ export const columnHeader = hoistCmp.factory<ColumnHeaderProps>({
                 : xhColumn.headerName;
         }
 
-        // If no app tooltip dynamically toggle a tooltip to display elided header
-        let onMouseEnter = null;
-        if (isDesktop && isUndefined(xhColumn?.headerTooltip)) {
-            onMouseEnter = ({target: el}) => {
-                if (el.offsetWidth < el.scrollWidth) {
-                    const title = isString(headerElem) ? headerElem : displayName;
-                    el.setAttribute('title', title);
-                } else {
-                    el.removeAttribute('title');
-                }
-            };
-        }
-
         return div({
             className: classNames(className, extraClasses),
             onClick: model.onClick,
@@ -141,7 +130,7 @@ export const columnHeader = hoistCmp.factory<ColumnHeaderProps>({
 
             children: [
                 expandCollapseIcon(),
-                span({onMouseEnter, children: headerElem}),
+                span({ref: labelRef, children: headerElem}),
                 sortIcon(),
                 menuIcon()
             ]

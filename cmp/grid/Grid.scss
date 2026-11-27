@@ -393,6 +393,21 @@
   }
 }
 
+// Column header tooltip - the full name in bold, with any description below. Container chrome
+// comes from ag-Grid's own `ag-tooltip` class. Capped to the same width as cell tooltips.
+.xh-grid-header-tooltip {
+  max-width: var(--xh-grid-tooltip-max-width);
+
+  &__name {
+    font-weight: bold;
+  }
+
+  &__description {
+    margin-top: 2px;
+    white-space: pre-wrap;
+  }
+}
+
 // Standard grid-tooltip chrome, applied by Hoist to any tooltip content it renders itself, and
 // available to apps for a custom (element) tooltip - which is otherwise left unframed so that it
 // can supply its own chrome.

@@ -7,12 +7,14 @@
 import type {ColumnGroup, GridModel} from '@xh/hoist/cmp/grid';
 import {div, span} from '@xh/hoist/cmp/layout';
 import type {HoistProps} from '@xh/hoist/core';
-import {XH, hoistCmp, HoistModel, creates} from '@xh/hoist/core';
+import {hoistCmp, HoistModel, creates} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
 import {bindable} from '@xh/hoist/mobx';
 import classNames from 'classnames';
-import {isFunction, isString, isUndefined} from 'lodash';
+import {isFunction} from 'lodash';
 import type {ReactNode} from 'react';
+import {useRef} from 'react';
+import {useDefaultHeaderTooltip} from './HeaderTooltip';
 
 import type {AgProvidedColumnGroup, IHeaderGroupParams} from '@xh/hoist/kit/ag-grid';
 
@@ -32,7 +34,26 @@ export const columnGroupHeader = hoistCmp.factory<ColumnGroupHeaderProps>({
     className: 'xh-grid-group-header',
     model: creates(() => ColumnGroupHeaderModel),
 
-    render({model, className, xhColumnGroup, gridModel, setExpanded, displayName}) {
+    render({
+        model,
+        className,
+        xhColumnGroup,
+        gridModel,
+        setExpanded,
+        setTooltip,
+        api,
+        displayName
+    }) {
+        const labelRef = useRef<HTMLSpanElement>(null);
+        useDefaultHeaderTooltip({
+            setTooltip,
+            api,
+            labelRef,
+            owner: xhColumnGroup,
+            name: xhColumnGroup?.chooserName,
+            description: null
+        });
+
         const {isExpandable, isExpanded} = model;
         const expandIcon = () => {
             if (!isExpandable) return null;
@@ -56,25 +77,12 @@ export const columnGroupHeader = hoistCmp.factory<ColumnGroupHeaderProps>({
             });
         }
 
-        // If no app tooltip dynamically toggle a tooltip to display elided header
-        let onMouseEnter = null;
-        if (XH.isDesktop && isUndefined(xhColumnGroup?.headerTooltip)) {
-            onMouseEnter = ({target: el}) => {
-                if (el.offsetWidth < el.scrollWidth) {
-                    const title = isString(headerName) ? headerName : displayName;
-                    el.setAttribute('title', title);
-                } else {
-                    el.removeAttribute('title');
-                }
-            };
-        }
-
         return div({
             className: classNames(
                 className,
                 isExpandable ? 'xh-grid-group-header--expandable' : null
             ),
-            children: [span({onMouseEnter, children: headerName}), expandIcon()],
+            children: [span({ref: labelRef, children: headerName}), expandIcon()],
             onClick: e => {
                 if (!isExpandable) return;
 
