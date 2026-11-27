@@ -62,7 +62,7 @@ also record it as an `xh.auth.method` tag on the `xh.client.auth` span.
 | `postLogoutRedirectUrl` | `string` | Where to go after logout. Default `'APP_BASE_URL'` |
 | `loginMethodDesktop` | `'REDIRECT' \| 'POPUP'` | Login method on desktop. Default `'REDIRECT'` |
 | `loginMethodMobile` | `'REDIRECT' \| 'POPUP'` | Login method on mobile. Default `'REDIRECT'` |
-| `autoRefreshSecs` | `number` | Background token refresh interval. Default `-1` (disabled). Should be significantly shorter than minimum token lifetime |
+| `autoRefreshSecs` | `number` | Background token refresh interval. Default `-1` (disabled). Should be significantly shorter than minimum token lifetime. Refreshes eager tokens, plus lazy tokens only once loaded |
 | `idScopes` | `string[]` | Additional scopes beyond the always-requested `['openid', 'email']` |
 | `accessTokens` | `Record<string, AccessTokenSpec>` | Named specs for access tokens to load for back-end resources |
 | `reloginEnabled` | `boolean` | Allow interactive popup re-login on token expiration. Default `false` |
@@ -191,6 +191,10 @@ accessTokens: {
 ```
 
 Retrieve tokens at runtime via `oAuthClient.getAccessTokenAsync('hoistApi')`.
+
+The `autoRefreshSecs` timer leaves a lazy token alone until the app first loads it. After that, the
+timer keeps it fresh along with the eager tokens. A lazy token suits a resource that only some users
+can access - users who never request it never ask the provider for it.
 
 ## Token Class
 
