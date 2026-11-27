@@ -4,7 +4,7 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import type {ColumnRenderer, ColumnOrGroup, GroupRowRenderer} from '@xh/hoist/cmp/grid';
+import type {ColumnRenderer, ColumnOrGroup, GridModel, GroupRowRenderer} from '@xh/hoist/cmp/grid';
 import {Column} from '@xh/hoist/cmp/grid';
 import type {StoreRecord} from '@xh/hoist/data';
 import type {HeaderClassParams} from '@xh/hoist/kit/ag-grid';
@@ -84,4 +84,17 @@ export function getAgHeaderClassFn(column: ColumnOrGroup): (params: HeaderClassP
 
         return r;
     };
+}
+
+/**
+ * Describe the step {@link GridModel.cycleExpandLevel} will take next, for use as a tooltip.
+ * @internal
+ */
+export function nextExpandStepTitle(gridModel: GridModel): string {
+    const {nextExpandLevel: level, maxDepth, resolvedLevelLabels} = gridModel;
+    if (level === 0) return 'Collapse all';
+    if (level >= maxDepth) return 'Expand all';
+
+    const label = resolvedLevelLabels?.[level];
+    return label ? `Expand to ${label}` : 'Expand one level';
 }

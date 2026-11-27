@@ -69,6 +69,12 @@ export interface SpanConfig {
      * call-context span, if any.
      */
     parent?: Span | string;
+
+    /**
+     * False to use `name` as given, without the caller's `telemetryPrefix`. Applies to spans
+     * opened via `runner().span()`. Default true.
+     */
+    useNamePrefix?: boolean;
 }
 
 /**
@@ -98,6 +104,18 @@ export interface FullSpanConfig extends SpanConfig {
 /** Key/value tags attached to a metric recorded via {@link MetricsService}. */
 export interface MetricTags {
     [tag: string]: string;
+}
+
+/** Configuration for a metric recorded via `runner().timer()` or `runner().counter()`. */
+export interface MetricConfig {
+    /** Metric name - combined with the caller's `telemetryPrefix`, if set. */
+    name: string;
+
+    /** Tags attached to the metric. */
+    tags?: MetricTags;
+
+    /** False to use `name` as given, without the caller's `telemetryPrefix`. Default true. */
+    useNamePrefix?: boolean;
 }
 
 //------------------------
