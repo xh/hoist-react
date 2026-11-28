@@ -14,8 +14,8 @@ import type {ZoneMapperModel} from '@xh/hoist/cmp/zoneGrid/impl/ZoneMapperModel'
 import {zoneMapper} from '@xh/hoist/desktop/cmp/zoneGrid/impl/ZoneMapper';
 import {Icon} from '@xh/hoist/icon';
 import {logError, stopPropagation, withDefault} from '@xh/hoist/utils/js';
-import type {ButtonProps} from '../Button';
-import {button} from '../Button';
+import type {ButtonProps} from '@xh/hoist/cmp/button';
+import {button} from '@xh/hoist/cmp/button';
 
 export interface ZoneMapperButtonProps extends ButtonProps {
     /** ZoneGridModel to which this button should bind. Will find nearest in context if not provided. */

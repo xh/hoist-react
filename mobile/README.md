@@ -25,7 +25,7 @@ the cross-platform package.
     ├── Input components (Select, DateInput, NumberInput, etc.)
     ├── Navigator (page-based navigation with pull-to-refresh)
     ├── Panel, DialogPanel, Header/AppBar, Toolbar
-    ├── Button (+ grid sub-buttons: ColChooser, ColAutosize, ExpandCollapse)
+    ├── Buttons (re-exports the shared Button; + grid sub-buttons: ColChooser, ColAutosize, ExpandCollapse)
     ├── Dialog, Popover, MenuButton
     ├── Grid/Tab implementations, PinPad
     ├── Card, Mask, Error display
@@ -42,6 +42,7 @@ Mobile components extend cross-platform models and components:
 | TabContainerModel | TabContainer with swipeable tabs |
 | FormModel, FieldModel | FormField with mobile inputs |
 | Store, StoreFilterField | SearchInput for filtering |
+| Button, ButtonGroup, SplitButton | Shared as-is - see [`/cmp/button/`](../cmp/button/README.md) |
 
 **Example:** Grid uses `GridModel` from `/cmp/grid/` but renders with mobile-appropriate
 selection behavior (disabled by default) and touch-optimized scrolling.

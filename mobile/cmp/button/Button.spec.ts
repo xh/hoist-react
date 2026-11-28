@@ -6,7 +6,7 @@
  */
 import {span} from '@xh/hoist/cmp/layout';
 import {Icon} from '@xh/hoist/icon';
-import {button} from '@xh/hoist/mobile/cmp/button';
+import {button, splitButton} from '@xh/hoist/mobile/cmp/button';
 import {initTestAppAsync} from '@xh/hoist/test-support';
 import {fireEvent, render, screen} from '@testing-library/react';
 import {beforeAll, describe, expect, it, vi} from 'vitest';
@@ -64,6 +64,27 @@ describe('Button (mobile)', () => {
         const el = screen.getByTestId('x');
         expect(el.classList.contains('xh-button')).toBe(true);
         classes.forEach(cls => expect(el.classList.contains(cls)).toBe(true));
+    });
+
+    it('renders a SplitButton as two button-role elements, the second opening a menu', async () => {
+        const onClick = vi.fn();
+        render(
+            splitButton({
+                text: 'Save',
+                onClick,
+                menuItems: [{text: 'Save As...', actionFn: () => {}}],
+                testId: 'split'
+            })
+        );
+        const primary = screen.getByTestId('split-button'),
+            arrow = screen.getByTestId('split-menu-button');
+        expect(primary.getAttribute('role')).toBe('button');
+        expect(arrow.getAttribute('role')).toBe('button');
+
+        fireEvent.click(primary);
+        expect(onClick).toHaveBeenCalledOnce();
+        fireEvent.click(arrow);
+        expect(await screen.findByText('Save As...')).toBeTruthy();
     });
 
     it('passes layout props as inline style', () => {

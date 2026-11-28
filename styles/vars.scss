@@ -325,6 +325,21 @@ body {
   --xh-button-font-size: var(--xh-font-size);
   --xh-button-text-color: var(--xh-text-color);
 
+  // Buttons - sizes. Each `ButtonProps.size` swaps in its own height, padding and font size.
+  --xh-button-gap: 8px;
+  --xh-button-height: 30px;
+  --xh-button-min-width: 30px;
+  --xh-button-padding: var(--xh-spacing-half) var(--xh-spacing);
+  --xh-button-minimal-padding: var(--xh-spacing-half);
+  --xh-button-compact-height: 24px;
+  --xh-button-compact-padding: 2px 8px;
+  --xh-button-compact-minimal-padding: 2px 4px;
+  --xh-button-compact-font-size: var(--xh-font-size-small-relative);
+  --xh-button-large-height: 38px;
+  --xh-button-large-padding: 8px 16px;
+  --xh-button-large-minimal-padding: 8px 10px;
+  --xh-button-large-font-size: var(--xh-font-size-large-relative);
+
   // Buttons - override available to color active button in buttonGroups w/standard (null/neutral) intent styling.
   --xh-button-active-bg: var(--xh-button-bg-darkest);
   --xh-button-active-text-color: var(--xh-button-text-color);
@@ -354,6 +369,15 @@ body {
     // the 44px toolbar/touch-target max, which reads as oversized for XH's denser style. Toolbars
     // derive their own slightly smaller button height from the bar size (see Toolbar.scss).
     --xh-button-height: 40px;
+    --xh-button-min-width: auto;
+    --xh-button-padding: 4px 10px;
+    --xh-button-minimal-padding: 4px 10px;
+    --xh-button-compact-height: 32px;
+    --xh-button-compact-padding: 2px 8px;
+    --xh-button-compact-minimal-padding: 2px 8px;
+    --xh-button-large-height: 48px;
+    --xh-button-large-padding: 6px 16px;
+    --xh-button-large-minimal-padding: 6px 16px;
     // Slightly rounder corners to suit the taller mobile button (the desktop default is tighter).
     --xh-button-border-radius: 8px;
 

@@ -6,7 +6,7 @@
  */
 import type {HoistInputProps} from '@xh/hoist/cmp/input';
 import {HoistInputModel, useHoistInputModel} from '@xh/hoist/cmp/input';
-import type {HoistProps} from '@xh/hoist/core';
+import type {HoistModel} from '@xh/hoist/core';
 import {hoistCmp, XH} from '@xh/hoist/core';
 import type {ButtonGroupProps, ButtonProps} from '@xh/hoist/mobile/cmp/button';
 import {Button, buttonGroup} from '@xh/hoist/mobile/cmp/button';
@@ -18,7 +18,8 @@ import type {ReactNode} from 'react';
 import {Children, cloneElement, isValidElement} from 'react';
 import './ButtonGroupInput.scss';
 
-export interface ButtonGroupInputProps extends HoistProps, HoistInputProps, ButtonGroupProps {
+export interface ButtonGroupInputProps
+    extends Omit<ButtonGroupProps<HoistModel>, 'onChange'>, HoistInputProps {
     /**
      * True to allow buttons to be unselected (aka inactivated). Used when enableMulti is false.
      * Defaults to false.

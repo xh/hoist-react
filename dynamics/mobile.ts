@@ -25,6 +25,7 @@ export let errorMessageImpl = null;
 export let maskImpl = null;
 export let cardHeaderImpl = null;
 export let pdfViewerToolbarImpl = null;
+export let menuButtonImpl = null;
 
 /**
  * Provide implementations of functions and classes exported in this file.
@@ -42,4 +43,5 @@ export function installMobileImpls(impls) {
     maskImpl = impls.maskImpl;
     cardHeaderImpl = impls.cardHeaderImpl;
     pdfViewerToolbarImpl = impls.pdfViewerToolbarImpl;
+    menuButtonImpl = impls.menuButtonImpl;
 }

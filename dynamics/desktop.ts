@@ -37,6 +37,7 @@ export let cardHeaderImpl = null;
 export let statCardInfoImpl = null;
 export let pdfViewerToolbarImpl = null;
 export let sparklineTooltipImpl = null;
+export let menuButtonImpl = null;
 /**
  * Provide implementations of functions and classes exported in this file.
  *
@@ -65,4 +66,5 @@ export function installDesktopImpls(impls) {
     statCardInfoImpl = impls.statCardInfoImpl;
     pdfViewerToolbarImpl = impls.pdfViewerToolbarImpl;
     sparklineTooltipImpl = impls.sparklineTooltipImpl;
+    menuButtonImpl = impls.menuButtonImpl;
 }

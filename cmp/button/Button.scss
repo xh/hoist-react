@@ -1,0 +1,486 @@
+/*
+ * This file belongs to Hoist, an application development toolkit
+ * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
+ *
+ * Copyright © 2026 Extremely Heavy Industries Inc.
+ */
+
+// Button and ButtonGroup, on desktop and mobile.
+
+// Each style (standard, minimal, outlined), intent and theme sets the private `--_*` variables
+// below, and one set of rules draws every button from them. Change a button's look by setting the
+// public `--xh-button-*` and `--xh-intent-*` variables, or the private ones on a modifier.
+
+// A popover marks the target it opened with `xh-popover__target--active`, so a button that opens an
+// uncontrolled click popover, such as a menu, takes the active look with no code of its own.
+
+//------------------------
+// Tokens
+//------------------------
+// Shadows. Only standard buttons have them, and only on desktop.
+.xh-button {
+  --_shadow: none;
+  --_shadow-hover: var(--_shadow);
+  --_shadow-pressed: var(--_shadow);
+  --_shadow-active: var(--_shadow);
+}
+
+.xh-button--standard {
+  --_shadow-border: inset 0 0 0 1px
+    color-mix(in oklch, var(--xh-base-surface-border-color-strong) 90%, #111418);
+  --_shadow: var(--_shadow-border), 0 1px 2px color-mix(in oklch, #111418 10%, transparent);
+  --_shadow-hover: var(--_shadow-border), 0 1px 2px color-mix(in oklch, #111418 20%, transparent);
+  --_shadow-pressed: var(--_shadow-hover);
+  --_shadow-active: var(--xh-button-active-box-shadow);
+}
+
+.xh-dark .xh-button--standard {
+  --_shadow-border: inset 0 0 0 1px
+    color-mix(in oklch, var(--xh-base-surface-border-color) 50%, transparent);
+  --_shadow: var(--_shadow-border), 0 1px 2px color-mix(in oklch, #111418 20%, transparent);
+  --_shadow-hover: var(--_shadow);
+  --_shadow-pressed: var(--_shadow-border), 0 1px 2px color-mix(in oklch, #111418 40%, transparent);
+
+  &.xh-button--intent-none {
+    --_shadow-hover: var(--_shadow-pressed);
+  }
+}
+
+.xh-mobile .xh-button.xh-button--standard {
+  --_shadow: none;
+  --_shadow-hover: none;
+  --_shadow-pressed: none;
+  --_shadow-active: none;
+}
+
+// Colors with no intent - by style, theme and platform.
+.xh-button--intent-none {
+  --_bg: var(--xh-button-bg-lightest);
+  --_bg-hover: var(--xh-button-bg-lighter);
+  --_bg-pressed: var(--xh-button-bg-darkest);
+  --_bg-active: var(--xh-button-active-bg);
+  --_fg: var(--xh-button-text-color);
+  --_fg-active: var(--xh-button-active-text-color);
+  --_border-color: var(--xh-button-border-color);
+
+  &:is(.xh-button--minimal, .xh-button--outlined) {
+    --_bg: transparent;
+    --_bg-hover: var(--xh-button-bg-darker);
+  }
+}
+
+.xh-dark .xh-button--intent-none {
+  --_bg: var(--xh-button-bg);
+  --_bg-hover: var(--xh-button-bg-darker);
+
+  &:is(.xh-button--minimal, .xh-button--outlined) {
+    --_bg: transparent;
+    --_bg-pressed: var(--xh-button-bg-lighter);
+  }
+}
+
+.xh-mobile .xh-button--intent-none {
+  --_bg: var(--xh-button-bg);
+
+  &:is(.xh-button--minimal, .xh-button--outlined) {
+    --_bg: transparent;
+    --_bg-pressed: var(--xh-button-bg-darker);
+    --_fg: var(--xh-text-color);
+    --_border-color: var(--xh-button-bg);
+  }
+}
+
+.xh-mobile.xh-dark .xh-button--intent-none {
+  --_bg-pressed: var(--xh-button-bg-lightest);
+
+  &:is(.xh-button--minimal, .xh-button--outlined) {
+    --_bg-pressed: var(--xh-button-bg-lighter);
+  }
+}
+
+// Colors with an intent - by style and theme.
+@each $intent in (primary, success, warning, danger) {
+  .xh-button--intent-#{$intent} {
+    --_bg: var(--xh-intent-#{$intent});
+    --_bg-hover: var(--xh-intent-#{$intent}-darker);
+    --_bg-pressed: var(--xh-intent-#{$intent}-darkest);
+    --_bg-active: var(--_bg-pressed);
+    --_fg: white;
+    --_fg-active: white;
+    --_border-color: var(--xh-intent-#{$intent});
+
+    &:is(.xh-button--minimal, .xh-button--outlined) {
+      --_bg: transparent;
+      --_bg-hover: var(--xh-intent-#{$intent}-trans1);
+      --_bg-pressed: var(--xh-intent-#{$intent}-trans2);
+      --_fg: var(--xh-intent-#{$intent}-darker);
+      --_fg-active: var(--_fg);
+    }
+  }
+
+  .xh-dark .xh-button--intent-#{$intent}:is(.xh-button--minimal, .xh-button--outlined) {
+    --_fg: var(--xh-intent-#{$intent}-lighter);
+    --_border-color: var(--xh-intent-#{$intent}-lighter);
+  }
+}
+
+//------------------------
+// Sizes
+//------------------------
+// A size swaps in its variables, so the rules below draw every size. A group passes its size on to
+// the buttons in it.
+.xh-button--compact,
+.xh-button-group--compact {
+  --xh-button-height: var(--xh-button-compact-height);
+  --xh-button-min-width: var(--xh-button-compact-height);
+  --xh-button-padding: var(--xh-button-compact-padding);
+  --xh-button-minimal-padding: var(--xh-button-compact-minimal-padding);
+  --xh-button-font-size: var(--xh-button-compact-font-size);
+}
+
+.xh-button--large,
+.xh-button-group--large {
+  --xh-button-height: var(--xh-button-large-height);
+  --xh-button-min-width: var(--xh-button-large-height);
+  --xh-button-padding: var(--xh-button-large-padding);
+  --xh-button-minimal-padding: var(--xh-button-large-minimal-padding);
+  --xh-button-font-size: var(--xh-button-large-font-size);
+}
+
+//------------------------
+// Button
+//------------------------
+.xh-button {
+  display: inline-flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: var(--xh-button-gap);
+  box-sizing: border-box;
+  min-width: var(--xh-button-min-width);
+  min-height: var(--xh-button-height);
+  padding: var(--xh-button-padding);
+  border: 0 solid var(--_border-color);
+  border-radius: var(--xh-button-border-radius);
+  background-color: var(--_bg);
+  box-shadow: var(--_shadow);
+  color: var(--_fg);
+  cursor: pointer;
+  font-family: var(--xh-button-font-family);
+  font-size: var(--xh-button-font-size);
+  text-align: left;
+  vertical-align: middle;
+  white-space: nowrap;
+
+  > * {
+    flex: 0 0 auto;
+  }
+
+  &:empty {
+    padding: 0;
+  }
+
+  &--minimal,
+  &--outlined {
+    padding: var(--xh-button-minimal-padding);
+  }
+
+  &--outlined {
+    border-width: 1px;
+  }
+
+  // Hover and press - for enabled buttons only, so a disabled button does not look live.
+  &--enabled:not(.xh-button--loading) {
+    &:hover:not(:active, .xh-button--active, .xh-popover__target--active) {
+      background-color: var(--_bg-hover);
+      box-shadow: var(--_shadow-hover);
+    }
+
+    &:active {
+      background-color: var(--_bg-pressed);
+
+      &:not(.xh-button--active, .xh-popover__target--active) {
+        box-shadow: var(--_shadow-pressed);
+      }
+    }
+  }
+
+  // Pressed in, as a toggle that is on or a button whose popover is open.
+  &--active,
+  &.xh-popover__target--active {
+    background-color: var(--_bg-active);
+    box-shadow: var(--_shadow-active);
+    color: var(--_fg-active);
+  }
+
+  &--disabled {
+    cursor: not-allowed;
+    opacity: var(--xh-button-disabled-opacity);
+
+    &:not(.xh-button--active, .xh-popover__target--active) {
+      box-shadow: none;
+    }
+  }
+
+  &__text {
+    flex: 0 1 auto;
+  }
+
+  // Hoist shows focus outlines only after a Tab key press (see `installFocusStyle()`). Always
+  // show one on a button that took focus on mount, so it is clear that it has focus.
+  &--autofocus-enabled:focus {
+    outline: var(--xh-focus-outline) !important;
+    outline-offset: var(--xh-focus-outline-offset) !important;
+  }
+
+  // Loading - a spinner in place of the icon, or over the content of a button without one. The
+  // button keeps its size.
+  &--loading {
+    cursor: progress;
+  }
+
+  // The spinner takes the size and color of the button's text.
+  &__spinner.xh-spinner {
+    width: 1em;
+    height: 1em;
+    color: inherit;
+    font-size: 1em;
+  }
+
+  &--loading-cover {
+    position: relative;
+
+    > :not(.xh-button__spinner) {
+      visibility: hidden;
+    }
+
+    > .xh-button__spinner {
+      position: absolute;
+      inset: 0;
+      margin: auto;
+    }
+  }
+}
+
+// Mobile buttons fill a block container, at a fixed height, and truncate their text. They have no
+// hover look, which would stick after a tap.
+.xh-mobile .xh-button {
+  --_bg-hover: var(--_bg);
+  display: flex;
+  position: relative;
+  height: var(--xh-button-height);
+  min-height: auto;
+  overflow: hidden;
+  line-height: 32px;
+  text-overflow: ellipsis;
+  user-select: none;
+
+  &--disabled {
+    pointer-events: none;
+  }
+
+  .xh-button__text {
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}
+
+//------------------------
+// Header buttons
+//------------------------
+// Minimal buttons in panel, dock and dialog headers tint the header in the light theme.
+.xh-app:not(.xh-dark)
+  :is(
+    .xh-dialog__header,
+    .xh-dock-view__header,
+    .xh-panel-header__items,
+    .xh-panel-header--right,
+    .xh-panel-header--left
+  )
+  .xh-button--minimal.xh-button--intent-none {
+  --_bg-hover: var(--xh-intent-neutral-trans1);
+  --_bg-pressed: var(--xh-intent-neutral-trans2);
+}
+
+// A dialog's title bar keeps its color in the dark theme, so the standard dark hover - a darker
+// background - shows as a dark block on it. Tint with the title text color instead.
+.xh-dark .xh-dialog__header .xh-button--minimal.xh-button--intent-none {
+  --_bg-hover: color-mix(in srgb, currentColor 15%, transparent);
+  --_bg-pressed: color-mix(in srgb, currentColor 25%, transparent);
+}
+
+//------------------------
+// Button group
+//------------------------
+.xh-button-group {
+  display: inline-flex;
+
+  > .xh-button,
+  > .xh-popover__target-wrapper > .xh-button {
+    position: relative;
+    flex: 0 0 auto;
+    // Minimal buttons have no edges to join, and look more natural with square corners.
+    border-radius: 0;
+
+    &.xh-button--minimal,
+    &.xh-button--outlined {
+      padding: var(--xh-button-padding);
+    }
+
+    // Raise a button over its neighbors' shared edges while it shows a state of its own.
+    &:not(.xh-button--intent-none) {
+      z-index: 1;
+    }
+
+    &:hover,
+    &:focus,
+    &:active,
+    &.xh-button--active,
+    &.xh-popover__target--active {
+      z-index: 2;
+    }
+
+    // Show focus on a button the group focuses itself, as ButtonGroupInput does on its active
+    // button, without waiting for a Tab key press.
+    .xh-app:not(.xh-mobile) &.xh-button--enabled:focus {
+      outline: var(--xh-focus-outline) !important;
+      outline-offset: var(--xh-focus-outline-offset) !important;
+    }
+  }
+
+  // A popover target, such as a menu button's, sits in the group like a plain button.
+  > .xh-popover__target-wrapper {
+    display: flex;
+    flex: 1 1 auto;
+  }
+
+  &--fill {
+    display: flex;
+    width: 100%;
+
+    > .xh-button,
+    > .xh-popover__target-wrapper > .xh-button {
+      flex: 1 1 auto;
+    }
+  }
+
+  // Join the edges of adjacent buttons - round only the outer corners of standard and outlined
+  // buttons, overlap the edges of a standard group, and drop the doubled inner borders of
+  // outlined buttons.
+  &:not(.xh-button-group--vertical) {
+    > :first-child:is(.xh-button--standard, .xh-button--outlined),
+    > :first-child > :is(.xh-button--standard, .xh-button--outlined) {
+      border-top-left-radius: var(--xh-button-border-radius);
+      border-bottom-left-radius: var(--xh-button-border-radius);
+    }
+
+    > :last-child:is(.xh-button--standard, .xh-button--outlined),
+    > :last-child > :is(.xh-button--standard, .xh-button--outlined) {
+      border-top-right-radius: var(--xh-button-border-radius);
+      border-bottom-right-radius: var(--xh-button-border-radius);
+    }
+
+    .xh-app:not(.xh-mobile) &:not(.xh-button-group--minimal, .xh-button-group--outlined) {
+      > .xh-button--standard:not(:last-child),
+      > :not(:last-child) > .xh-button--standard {
+        margin-right: -1px;
+      }
+    }
+
+    > .xh-button--outlined:not(:last-child),
+    > :not(:last-child) > .xh-button--outlined {
+      border-right-width: 0;
+    }
+  }
+
+  &--vertical {
+    flex-direction: column;
+    align-items: stretch;
+    vertical-align: top;
+
+    &.xh-button-group--fill {
+      width: unset;
+      height: 100%;
+    }
+
+    > .xh-button,
+    > .xh-popover__target-wrapper > .xh-button {
+      width: 100%;
+    }
+
+    > :first-child:is(.xh-button--standard, .xh-button--outlined),
+    > :first-child > :is(.xh-button--standard, .xh-button--outlined) {
+      border-top-left-radius: var(--xh-button-border-radius);
+      border-top-right-radius: var(--xh-button-border-radius);
+    }
+
+    > :last-child:is(.xh-button--standard, .xh-button--outlined),
+    > :last-child > :is(.xh-button--standard, .xh-button--outlined) {
+      border-bottom-left-radius: var(--xh-button-border-radius);
+      border-bottom-right-radius: var(--xh-button-border-radius);
+    }
+
+    .xh-app:not(.xh-mobile) &:not(.xh-button-group--minimal, .xh-button-group--outlined) {
+      > .xh-button:not(:last-child),
+      > :not(:last-child) > .xh-button {
+        margin-bottom: -1px;
+      }
+    }
+
+    > .xh-button--outlined:not(:last-child),
+    > :not(:last-child) > .xh-button--outlined {
+      border-bottom-width: 0;
+    }
+  }
+}
+
+// Mobile groups fill their row, round the outer corners of every button, and space their buttons
+// apart rather than join their edges.
+.xh-mobile .xh-button-group {
+  display: flex;
+
+  > .xh-button,
+  > .xh-popover__target-wrapper > .xh-button {
+    flex-shrink: 1;
+    border-radius: var(--xh-button-border-radius);
+  }
+
+  > .xh-button:not(:first-child),
+  > :not(:first-child) > .xh-button {
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+  }
+
+  > .xh-button:not(:last-child),
+  > :not(:last-child) > .xh-button {
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+
+    &:not(.xh-button--outlined) {
+      margin-right: 1px;
+    }
+  }
+}
+
+//------------------------
+// Split button
+//------------------------
+// The arrow button is narrow - its icon and a little padding either side.
+.xh-split-button__menu-button {
+  --xh-button-padding: var(--xh-spacing-half) 6px;
+  --xh-button-minimal-padding: var(--xh-spacing-half) 6px;
+  --xh-button-min-width: 0;
+}
+
+// A minimal split button has no edges, so draw a faint line between its two buttons.
+.xh-split-button .xh-split-button__menu-button.xh-button--minimal:not(.xh-button--outlined) {
+  --_shadow: inset 1px 0 0 var(--xh-button-border-color);
+  --_shadow-hover: var(--_shadow);
+  --_shadow-pressed: var(--_shadow);
+  --_shadow-active: var(--_shadow);
+}
+
+// A standard split button shares one fill, so mark the seam between its buttons in the text color.
+.xh-split-button .xh-split-button__menu-button.xh-button--standard {
+  border-left: 1px solid color-mix(in srgb, currentColor 25%, transparent);
+}

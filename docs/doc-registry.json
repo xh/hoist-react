@@ -160,6 +160,14 @@
             "keywords": ["PropertyTable", "PropertyTableEntry", "key value", "label value", "labeled values", "detail panel", "record fields", "description list", "labelSide", "minColumnWidth", "read-only form"]
         },
         {
+            "id": "cmp/button/README.md",
+            "title": "Button Package",
+            "mcpCategory": "package",
+            "viewerCategory": "components",
+            "description": "Button, ButtonGroup and SplitButton, shared by desktop and mobile - styles, sizes, the loading state, split buttons and platform differences.",
+            "keywords": ["Button", "ButtonGroup", "SplitButton", "button", "size", "compact", "large", "loading", "spinner", "minimal", "outlined", "intent", "menu", "TaskObserver"]
+        },
+        {
             "id": "cmp/callout/README.md",
             "title": "Callout Package",
             "mcpCategory": "package",

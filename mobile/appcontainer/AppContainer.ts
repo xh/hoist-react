@@ -21,6 +21,7 @@ import {storeFilterFieldImpl} from '@xh/hoist/mobile/cmp/store/impl/StoreFilterF
 import {tabContainerImpl} from '@xh/hoist/mobile/cmp/tab/impl/TabContainer';
 import {zoneMapper} from '@xh/hoist/mobile/cmp/zoneGrid/impl/ZoneMapper';
 import {elementFromContent, useOnMount} from '@xh/hoist/utils/react';
+import {menuButton as menuButtonImpl} from '@xh/hoist/mobile/cmp/menu';
 import {isEmpty} from 'lodash';
 import {aboutDialog} from './AboutDialog';
 import {appBanner} from './AppBanner';
@@ -46,7 +47,8 @@ installMobileImpls({
     errorMessageImpl,
     maskImpl,
     cardHeaderImpl,
-    pdfViewerToolbarImpl
+    pdfViewerToolbarImpl,
+    menuButtonImpl
 });
 
 /**

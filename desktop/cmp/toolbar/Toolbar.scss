@@ -105,20 +105,14 @@
     }
 
     // Compact toolbar buttons
-    .xh-app.xh-dark.xh-dark &,
-    .xh-app & {
-      button.xh-button.xh-button.xh-button--minimal,
-      button.xh-button.xh-button.xh-button--standard,
-      button.xh-button.xh-button.xh-button--outlined {
-        padding: 3px var(--xh-spacing-half);
-        min-height: var(--xh-toolbar-compact-item-height);
-        max-height: var(--xh-toolbar-compact-item-height);
-        font-size: var(--xh-toolbar-compact-font-size);
+    --xh-button-gap: 4px;
+    --xh-button-height: var(--xh-toolbar-compact-item-height);
+    --xh-button-padding: 3px var(--xh-spacing-half);
+    --xh-button-minimal-padding: 3px var(--xh-spacing-half);
+    --xh-button-font-size: var(--xh-toolbar-compact-font-size);
 
-        svg:not(:last-child) {
-          margin-right: 4px;
-        }
-      }
+    button.xh-button {
+      max-height: var(--xh-toolbar-compact-item-height);
     }
 
     // Compact toolbar inputs

@@ -11,8 +11,8 @@ import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
 import type {ExportOptions} from '@xh/hoist/svc';
 import {logError} from '@xh/hoist/utils/js';
-import type {ButtonProps} from '../Button';
-import {button} from '../Button';
+import type {ButtonProps} from '@xh/hoist/cmp/button';
+import {button} from '@xh/hoist/cmp/button';
 
 const EXPORT_TYPE_LABELS: Record<Required<ExportOptions>['type'], string> = {
     excel: 'Excel',
