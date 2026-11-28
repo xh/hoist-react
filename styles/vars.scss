@@ -121,145 +121,94 @@ body {
   }
 
   //--------------------------------------------------------
-  // Intent Colors - HSL supports varying lightness w/o hue
+  // Intent Colors
   //--------------------------------------------------------
-  // Neutral (no intent) - default gray - e.g. standard buttons.
-  --xh-intent-neutral-h: 180;
-  --xh-intent-neutral-s: 10%;
-  --xh-intent-neutral-l1: 82%;
-  --xh-intent-neutral-l2: 86%;
-  --xh-intent-neutral-l3: 90%;
-  --xh-intent-neutral-l4: 94%;
-  --xh-intent-neutral-l5: 98%;
-  // Primary - default blue - indicates a prominent call-to-action button/element.
-  --xh-intent-primary-h: 206;
-  --xh-intent-primary-s: 100%;
-  --xh-intent-primary-l1: 22%;
-  --xh-intent-primary-l2: 26%;
-  --xh-intent-primary-l3: 30%;
-  --xh-intent-primary-l4: 83.5%;
-  --xh-intent-primary-l5: 94%;
-  // Success - default green - indicates OK, confirm, or a successful result.
-  --xh-intent-success-h: 128;
-  --xh-intent-success-s: 60%;
-  --xh-intent-success-l1: 22%;
-  --xh-intent-success-l2: 25.5%;
-  --xh-intent-success-l3: 29%;
-  --xh-intent-success-l4: 80.5%;
-  --xh-intent-success-l5: 92.5%;
-  // Warning - default orange - indicates need for caution, or a potential error condition.
-  --xh-intent-warning-h: 25;
-  --xh-intent-warning-s: 90%;
-  --xh-intent-warning-l1: 33%;
-  --xh-intent-warning-l2: 37.5%;
-  --xh-intent-warning-l3: 41.5%;
-  --xh-intent-warning-l4: 80.5%;
-  --xh-intent-warning-l5: 92.5%;
-  // Danger - default red - indicates dangerous operation, delete, or a serious error condition.
-  --xh-intent-danger-h: 359;
-  --xh-intent-danger-s: 73%;
-  --xh-intent-danger-l1: 31.5%;
-  --xh-intent-danger-l2: 35%;
-  --xh-intent-danger-l3: 40%;
-  --xh-intent-danger-l4: 85%;
-  --xh-intent-danger-l5: 94.5%;
-
-  &:where(.xh-dark) {
-    // Dark theme Neutral intent
-    --xh-intent-neutral-h: 180;
-    --xh-intent-neutral-s: 10%;
-    --xh-intent-neutral-l1: 20%;
-    --xh-intent-neutral-l2: 25%;
-    --xh-intent-neutral-l3: 32%;
-    --xh-intent-neutral-l4: 44%;
-    --xh-intent-neutral-l5: 50%;
-    // Dark theme Primary intent
-    --xh-intent-primary-h: 209;
-    --xh-intent-primary-s: 89%;
-    --xh-intent-primary-l1: 34%;
-    --xh-intent-primary-l2: 38.5%;
-    --xh-intent-primary-l3: 43%;
-    --xh-intent-primary-l4: 68.5%;
-    --xh-intent-primary-l5: 77%;
-    // Dark theme Success intent
-    --xh-intent-success-h: 132;
-    --xh-intent-success-s: 62%;
-    --xh-intent-success-l1: 25%;
-    --xh-intent-success-l2: 28.5%;
-    --xh-intent-success-l3: 32%;
-    --xh-intent-success-l4: 59.5%;
-    --xh-intent-success-l5: 69.5%;
-    // Dark theme Warning intent
-    --xh-intent-warning-h: 28;
-    --xh-intent-warning-s: 88%;
-    --xh-intent-warning-l1: 28.5%;
-    --xh-intent-warning-l2: 32.5%;
-    --xh-intent-warning-l3: 37%;
-    --xh-intent-warning-l4: 62%;
-    --xh-intent-warning-l5: 71%;
-    // Dark theme Danger intent
-    --xh-intent-danger-h: 0;
-    --xh-intent-danger-s: 69%;
-    --xh-intent-danger-l1: 35%;
-    --xh-intent-danger-l2: 39%;
-    --xh-intent-danger-l3: 44%;
-    --xh-intent-danger-l4: 70%;
-    --xh-intent-danger-l5: 75.5%;
-  }
-
-  // Alpha (opacity) variants for use in the `trans` variants below.
+  // Each intent is one fill color per theme, in `--xh-intent-<name>`. Every other shade derives from
+  // the fill, so an app re-colors an intent by setting that one var.
+  //   -darker, -darkest   - hover and pressed fills.
+  //   -lighter, -lightest - pale fills in the light theme, bright shades in the dark theme.
+  //   -trans1, -trans2    - tints of the fill, at the alphas below.
+  //   -text-color         - text and icons in the intent color. Do not use a fill shade for text.
   --xh-intent-a1: 0.15;
   --xh-intent-a2: 0.3;
 
-  // Bake intent HSL values into a set of seven defined colors per-intent.
-  --xh-intent-neutral-darkest: hsl(var(--xh-intent-neutral-h), var(--xh-intent-neutral-s), var(--xh-intent-neutral-l1));
-  --xh-intent-neutral-darker: hsl(var(--xh-intent-neutral-h), var(--xh-intent-neutral-s), var(--xh-intent-neutral-l2));
-  --xh-intent-neutral: hsl(var(--xh-intent-neutral-h), var(--xh-intent-neutral-s), var(--xh-intent-neutral-l3));
-  --xh-intent-neutral-lighter: hsl(var(--xh-intent-neutral-h), var(--xh-intent-neutral-s), var(--xh-intent-neutral-l4));
-  --xh-intent-neutral-lightest: hsl(var(--xh-intent-neutral-h), var(--xh-intent-neutral-s), var(--xh-intent-neutral-l5));
-  --xh-intent-neutral-trans1: hsla(var(--xh-intent-neutral-h), var(--xh-intent-neutral-s), var(--xh-intent-neutral-l3), var(--xh-intent-a1));
-  --xh-intent-neutral-trans2: hsla(var(--xh-intent-neutral-h), var(--xh-intent-neutral-s), var(--xh-intent-neutral-l3), var(--xh-intent-a2));
-  --xh-intent-primary-darkest: hsl(var(--xh-intent-primary-h), var(--xh-intent-primary-s), var(--xh-intent-primary-l1));
-  --xh-intent-primary-darker: hsl(var(--xh-intent-primary-h), var(--xh-intent-primary-s), var(--xh-intent-primary-l2));
-  --xh-intent-primary: hsl(var(--xh-intent-primary-h), var(--xh-intent-primary-s), var(--xh-intent-primary-l3));
-  --xh-intent-primary-lighter: hsl(var(--xh-intent-primary-h), var(--xh-intent-primary-s), var(--xh-intent-primary-l4));
-  --xh-intent-primary-lightest: hsl(var(--xh-intent-primary-h), var(--xh-intent-primary-s), var(--xh-intent-primary-l5));
-  --xh-intent-primary-trans1: hsla(var(--xh-intent-primary-h), var(--xh-intent-primary-s), var(--xh-intent-primary-l3), var(--xh-intent-a1));
-  --xh-intent-primary-trans2: hsla(var(--xh-intent-primary-h), var(--xh-intent-primary-s), var(--xh-intent-primary-l3), var(--xh-intent-a2));
-  --xh-intent-success-darkest: hsl(var(--xh-intent-success-h), var(--xh-intent-success-s), var(--xh-intent-success-l1));
-  --xh-intent-success-darker: hsl(var(--xh-intent-success-h), var(--xh-intent-success-s), var(--xh-intent-success-l2));
-  --xh-intent-success: hsl(var(--xh-intent-success-h), var(--xh-intent-success-s), var(--xh-intent-success-l3));
-  --xh-intent-success-lighter: hsl(var(--xh-intent-success-h), var(--xh-intent-success-s), var(--xh-intent-success-l4));
-  --xh-intent-success-lightest: hsl(var(--xh-intent-success-h), var(--xh-intent-success-s), var(--xh-intent-success-l5));
-  --xh-intent-success-trans1: hsla(var(--xh-intent-success-h), var(--xh-intent-success-s), var(--xh-intent-success-l3), var(--xh-intent-a1));
-  --xh-intent-success-trans2: hsla(var(--xh-intent-success-h), var(--xh-intent-success-s), var(--xh-intent-success-l3), var(--xh-intent-a2));
-  --xh-intent-warning-darkest: hsl(var(--xh-intent-warning-h), var(--xh-intent-warning-s), var(--xh-intent-warning-l1));
-  --xh-intent-warning-darker: hsl(var(--xh-intent-warning-h), var(--xh-intent-warning-s), var(--xh-intent-warning-l2));
-  --xh-intent-warning: hsl(var(--xh-intent-warning-h), var(--xh-intent-warning-s), var(--xh-intent-warning-l3));
-  --xh-intent-warning-lighter: hsl(var(--xh-intent-warning-h), var(--xh-intent-warning-s), var(--xh-intent-warning-l4));
-  --xh-intent-warning-lightest: hsl(var(--xh-intent-warning-h), var(--xh-intent-warning-s), var(--xh-intent-warning-l5));
-  --xh-intent-warning-trans1: hsla(var(--xh-intent-warning-h), var(--xh-intent-warning-s), var(--xh-intent-warning-l3), var(--xh-intent-a1));
-  --xh-intent-warning-trans2: hsla(var(--xh-intent-warning-h), var(--xh-intent-warning-s), var(--xh-intent-warning-l3), var(--xh-intent-a2));
-  --xh-intent-danger-darkest: hsl(var(--xh-intent-danger-h), var(--xh-intent-danger-s), var(--xh-intent-danger-l1));
-  --xh-intent-danger-darker: hsl(var(--xh-intent-danger-h), var(--xh-intent-danger-s), var(--xh-intent-danger-l2));
-  --xh-intent-danger: hsl(var(--xh-intent-danger-h), var(--xh-intent-danger-s), var(--xh-intent-danger-l3));
-  --xh-intent-danger-lighter: hsl(var(--xh-intent-danger-h), var(--xh-intent-danger-s), var(--xh-intent-danger-l4));
-  --xh-intent-danger-lightest: hsl(var(--xh-intent-danger-h), var(--xh-intent-danger-s), var(--xh-intent-danger-l5));
-  --xh-intent-danger-trans1: hsla(var(--xh-intent-danger-h), var(--xh-intent-danger-s), var(--xh-intent-danger-l3), var(--xh-intent-a1));
-  --xh-intent-danger-trans2: hsla(var(--xh-intent-danger-h), var(--xh-intent-danger-s), var(--xh-intent-danger-l3), var(--xh-intent-a2));
+  // Neutral (no intent) - fixed grays - e.g. standard buttons.
+  --xh-intent-neutral-darkest: hsl(180, 10%, 82%);
+  --xh-intent-neutral-darker: hsl(180, 10%, 86%);
+  --xh-intent-neutral: hsl(180, 10%, 90%);
+  --xh-intent-neutral-lighter: hsl(180, 10%, 94%);
+  --xh-intent-neutral-lightest: hsl(180, 10%, 98%);
+  --xh-intent-neutral-trans1: hsla(180, 10%, 90%, var(--xh-intent-a1));
+  --xh-intent-neutral-trans2: hsla(180, 10%, 90%, var(--xh-intent-a2));
 
-  // Text and icons in an intent color use these -text variants, never a fill shade. Each takes the
-  // hue and saturation of its intent at a lightness that is legible on the page and on a tint.
-  --xh-intent-primary-text-color: hsl(var(--xh-intent-primary-h), var(--xh-intent-primary-s), 32.5%);
-  --xh-intent-success-text-color: hsl(var(--xh-intent-success-h), var(--xh-intent-success-s), 27.5%);
-  --xh-intent-warning-text-color: hsl(var(--xh-intent-warning-h), var(--xh-intent-warning-s), 31.5%);
-  --xh-intent-danger-text-color: hsl(var(--xh-intent-danger-h), var(--xh-intent-danger-s), 39%);
+  // Primary - a prominent call-to-action button or element.
+  --xh-intent-primary: oklch(0.45 0.128 250);
+  --xh-intent-primary-darker: oklch(from var(--xh-intent-primary) calc(l - 0.05) c h);
+  --xh-intent-primary-darkest: oklch(from var(--xh-intent-primary) calc(l - 0.1) c h);
+  --xh-intent-primary-lighter: oklch(from var(--xh-intent-primary) 0.86 calc(c * 0.45) h);
+  --xh-intent-primary-lightest: oklch(from var(--xh-intent-primary) 0.95 calc(c * 0.2) h);
+  --xh-intent-primary-trans1: rgb(from var(--xh-intent-primary) r g b / var(--xh-intent-a1));
+  --xh-intent-primary-trans2: rgb(from var(--xh-intent-primary) r g b / var(--xh-intent-a2));
+  --xh-intent-primary-text-color: oklch(from var(--xh-intent-primary) 0.48 c h);
+
+  // Success - a successful or positive operation or state.
+  --xh-intent-success: oklch(0.5 0.14 145);
+  --xh-intent-success-darker: oklch(from var(--xh-intent-success) calc(l - 0.05) c h);
+  --xh-intent-success-darkest: oklch(from var(--xh-intent-success) calc(l - 0.1) c h);
+  --xh-intent-success-lighter: oklch(from var(--xh-intent-success) 0.86 calc(c * 0.45) h);
+  --xh-intent-success-lightest: oklch(from var(--xh-intent-success) 0.95 calc(c * 0.2) h);
+  --xh-intent-success-trans1: rgb(from var(--xh-intent-success) r g b / var(--xh-intent-a1));
+  --xh-intent-success-trans2: rgb(from var(--xh-intent-success) r g b / var(--xh-intent-a2));
+  --xh-intent-success-text-color: oklch(from var(--xh-intent-success) 0.48 c h);
+
+  // Warning - a warning or a state that needs attention.
+  --xh-intent-warning: oklch(0.6 0.16 48);
+  --xh-intent-warning-darker: oklch(from var(--xh-intent-warning) calc(l - 0.05) c h);
+  --xh-intent-warning-darkest: oklch(from var(--xh-intent-warning) calc(l - 0.1) c h);
+  --xh-intent-warning-lighter: oklch(from var(--xh-intent-warning) 0.86 calc(c * 0.45) h);
+  --xh-intent-warning-lightest: oklch(from var(--xh-intent-warning) 0.95 calc(c * 0.2) h);
+  --xh-intent-warning-trans1: rgb(from var(--xh-intent-warning) r g b / var(--xh-intent-a1));
+  --xh-intent-warning-trans2: rgb(from var(--xh-intent-warning) r g b / var(--xh-intent-a2));
+  --xh-intent-warning-text-color: oklch(from var(--xh-intent-warning) 0.48 c h);
+
+  // Danger - an error, or a dangerous or destructive action.
+  --xh-intent-danger: oklch(0.488 0.182 27);
+  --xh-intent-danger-darker: oklch(from var(--xh-intent-danger) calc(l - 0.05) c h);
+  --xh-intent-danger-darkest: oklch(from var(--xh-intent-danger) calc(l - 0.1) c h);
+  --xh-intent-danger-lighter: oklch(from var(--xh-intent-danger) 0.86 calc(c * 0.45) h);
+  --xh-intent-danger-lightest: oklch(from var(--xh-intent-danger) 0.95 calc(c * 0.2) h);
+  --xh-intent-danger-trans1: rgb(from var(--xh-intent-danger) r g b / var(--xh-intent-a1));
+  --xh-intent-danger-trans2: rgb(from var(--xh-intent-danger) r g b / var(--xh-intent-a2));
+  --xh-intent-danger-text-color: oklch(from var(--xh-intent-danger) 0.48 c h);
 
   &:where(.xh-dark) {
-    --xh-intent-primary-text-color: var(--xh-intent-primary-lighter);
-    --xh-intent-success-text-color: var(--xh-intent-success-lighter);
-    --xh-intent-warning-text-color: var(--xh-intent-warning-lighter);
-    --xh-intent-danger-text-color: var(--xh-intent-danger-lighter);
+    --xh-intent-neutral-darkest: hsl(180, 10%, 20%);
+    --xh-intent-neutral-darker: hsl(180, 10%, 25%);
+    --xh-intent-neutral: hsl(180, 10%, 32%);
+    --xh-intent-neutral-lighter: hsl(180, 10%, 44%);
+    --xh-intent-neutral-lightest: hsl(180, 10%, 50%);
+    --xh-intent-neutral-trans1: hsla(180, 10%, 32%, var(--xh-intent-a1));
+    --xh-intent-neutral-trans2: hsla(180, 10%, 32%, var(--xh-intent-a2));
+
+    --xh-intent-primary: oklch(0.55 0.17 254);
+    --xh-intent-primary-lighter: oklch(from var(--xh-intent-primary) 0.76 c h);
+    --xh-intent-primary-lightest: oklch(from var(--xh-intent-primary) 0.84 c h);
+    --xh-intent-primary-text-color: oklch(from var(--xh-intent-primary) 0.76 c h);
+
+    --xh-intent-success: oklch(0.54 0.15 146);
+    --xh-intent-success-lighter: oklch(from var(--xh-intent-success) 0.76 c h);
+    --xh-intent-success-lightest: oklch(from var(--xh-intent-success) 0.84 c h);
+    --xh-intent-success-text-color: oklch(from var(--xh-intent-success) 0.76 c h);
+
+    --xh-intent-warning: oklch(0.56 0.14 52);
+    --xh-intent-warning-lighter: oklch(from var(--xh-intent-warning) 0.76 c h);
+    --xh-intent-warning-lightest: oklch(from var(--xh-intent-warning) 0.84 c h);
+    --xh-intent-warning-text-color: oklch(from var(--xh-intent-warning) 0.76 c h);
+
+    --xh-intent-danger: oklch(0.52 0.19 27);
+    --xh-intent-danger-lighter: oklch(from var(--xh-intent-danger) 0.76 c h);
+    --xh-intent-danger-lightest: oklch(from var(--xh-intent-danger) 0.84 c h);
+    --xh-intent-danger-text-color: oklch(from var(--xh-intent-danger) 0.76 c h);
   }
 
 

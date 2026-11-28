@@ -12,6 +12,8 @@ Desktop overlays and controls look and behave as before, with keyboard and focus
   Replace each Blueprint import with Hoist's equivalent component.
 - **Blueprint class names removed (required if your app CSS targets `bp6-*` classes)** - see
   Step 3. A codemod renames them to Hoist's `xh-*` classes.
+- **Intent color variables changed (required if your app CSS sets `--xh-intent-*-h/-s/-l*`)** - see
+  Step 4. Set one fill color for each intent.
 
 The most significant impacts are:
 
@@ -256,7 +258,41 @@ Blueprint's typography classes - `bp6-code`, `bp6-key`, `bp6-running-text`, `bp6
 | `bp6-heading` | `xh-dialog__title` on a dialog title, `xh-menu-header__title` on a menu heading | |
 | `bp6-button` inside `bp6-segmented-control` | `xh-segmented-control__option` | `bp6-disabled` → `xh-segmented-control__option--disabled`. Blueprint's `bp6-minimal` marked an unselected option - Hoist marks the selected one with `xh-segmented-control__option--selected` |
 
-### 4. Check the UI
+### 4. Update Intent Color Overrides
+
+Skip this step if your app CSS sets none of the `--xh-intent-*-h`, `--xh-intent-*-s` or
+`--xh-intent-*-l1` to `-l5` variables.
+
+Hoist removed those variables. Each intent is now one fill color per theme, in
+`--xh-intent-<name>`. Hoist derives the hover, pressed, tint and text shades from that fill, so an
+app re-colors an intent by setting one variable for each theme.
+
+Before:
+
+```scss
+body {
+  --xh-intent-primary-h: 280;
+  --xh-intent-primary-s: 60%;
+  --xh-intent-primary-l3: 35%;
+}
+```
+
+After:
+
+```scss
+body {
+  --xh-intent-primary: hsl(280, 60%, 35%);
+
+  &.xh-dark {
+    --xh-intent-primary: hsl(280, 60%, 50%);
+  }
+}
+```
+
+Choose a fill that is dark enough for a white button label. To set a derived shade yourself,
+override it directly, for example `--xh-intent-primary-darker`.
+
+### 5. Check the UI
 
 Start the app in development mode and review it in both light and dark themes, and on mobile if
 applicable. Check the popovers, menus, dialogs, tooltips and toasts your app opens.
@@ -272,6 +308,7 @@ After completing all steps:
 - [ ] Test automation that found buttons by title still finds them (Step 2).
 - [ ] The Blueprint class codemod report has been reviewed, and the app loads in development mode
   without the warning about Blueprint classes or variables (Step 3).
+- [ ] App CSS sets no `--xh-intent-*-h`, `-s` or `-l*` variable (Step 4).
 
 ## Reference
 

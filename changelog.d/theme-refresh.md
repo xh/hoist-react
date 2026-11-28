@@ -1,3 +1,10 @@
+### 💥 Breaking Changes
+
+* Removed the `--xh-intent-*-h`, `--xh-intent-*-s` and `--xh-intent-*-l1` to `-l5` CSS variables.
+  Each intent is now one fill color in `--xh-intent-<name>`, and Hoist derives its other shades
+  from that fill. An app that set the removed variables sets the fill for each theme - see Step 4
+  of the upgrade notes.
+
 ### 🎁 New Features
 
 * Added a neutral color ramp, `--xh-neutral-0` to `--xh-neutral-11`, that the grays of both themes
@@ -12,8 +19,7 @@
 * Refreshed the light and dark themes. Surfaces, borders and text now come from the neutral ramp.
   Charts have new series palettes for each theme.
 * Adjusted the intent colors so that a white button label and intent-colored text meet 4.5:1
-  contrast. The one exception is a warning button in the light theme, at 4.2:1. The
-  `--xh-intent-*-h/-s/-l*` variables keep their meaning.
+  contrast. The one exception is a warning button in the light theme, at 4.2:1.
 * Text and icons in an intent color now all read `--xh-intent-*-text-color`. Before, buttons, menu
   items, grid menu options and the `xh-intent-*` classes each used a different shade.
 * Toasts with an intent now take the Hoist intent colors, not fixed colors.
