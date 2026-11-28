@@ -24,6 +24,8 @@
   items, grid menu options and the `xh-intent-*` classes each used a different shade.
 * Standard buttons and the neutral intent now take the hue and tint of the neutral ramp, at the
   lightness they had before. The light page background is step 0 of the ramp, which is white.
+* Desktop buttons, segmented controls, sliders, popovers and inputs now take their text, disabled
+  text and outline colors from the theme. Before, they used fixed grays kept from Blueprint.
 * Toasts with an intent now take the Hoist intent colors, not fixed colors.
 * A `FormField` label keeps its color when the field is invalid. The required marker, the outline
   and the message show the error. A `FormFieldSet` shows a problem in its header and keeps a
