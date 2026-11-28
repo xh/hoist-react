@@ -620,8 +620,8 @@
             "title": "v92 Upgrade Notes",
             "mcpCategory": "devops",
             "viewerCategory": "upgrade",
-            "description": "Upgrade guide from v91.x to v92.0.0. Medium difficulty. Covers the removal of Blueprint - replacing @xh/hoist/kit/blueprint and @blueprintjs/core imports with Hoist's own Dialog, Popover, Tooltip, menus, hotkeys, toasts and inputs, and button tooltips that no longer set the native title.",
-            "keywords": ["upgrade", "migration", "breaking changes", "v92", "v91", "blueprint", "@blueprintjs/core", "kit/blueprint", "popover", "tooltip", "dialog", "menuItem", "MenuItem", "Position", "PopoverPosition", "hotkeys", "toaster", "Floating UI"]
+            "description": "Upgrade guide from v91.x to v92.0.0. Medium difficulty. Covers the removal of Blueprint - replacing @xh/hoist/kit/blueprint and @blueprintjs/core imports with Hoist's own Dialog, Popover, Tooltip, menus, hotkeys, toasts and inputs, button tooltips that no longer set the native title, and the removal of Blueprint's bp6-* class names and --bp-* variables, with a codemod.",
+            "keywords": ["upgrade", "migration", "breaking changes", "v92", "v91", "blueprint", "@blueprintjs/core", "kit/blueprint", "popover", "tooltip", "dialog", "menuItem", "MenuItem", "Position", "PopoverPosition", "hotkeys", "toaster", "Floating UI", "bp6-", "--bp-", "codemod", "class names"]
         }
     ]
 }

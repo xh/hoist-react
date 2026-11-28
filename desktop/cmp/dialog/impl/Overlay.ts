@@ -10,6 +10,7 @@ import {usePortalContainer} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
 import type {KeyboardEvent, ReactElement, ReactNode} from 'react';
 import {Children, cloneElement, createElement as h, isValidElement, useEffect, useRef} from 'react';
+import '@xh/hoist/desktop/register';
 import {useBodyScrollLock} from './BodyScrollLock';
 import './Overlay.scss';
 
@@ -67,7 +68,7 @@ export const overlay = hoistCmp.factory<OverlayProps>({
                       tabIndex: autoFocus ? 0 : undefined,
                       className: classNames(
                           (child as ReactElement<any>).props.className,
-                          'xh-overlay__content bp6-overlay-content'
+                          'xh-overlay__content'
                       )
                   })
                 : child;
@@ -75,8 +76,8 @@ export const overlay = hoistCmp.factory<OverlayProps>({
         const layer = h(
             'div',
             {
-                className: classNames('xh-overlay', 'bp6-overlay', 'bp6-overlay-open', className, {
-                    'xh-overlay--inline bp6-overlay-inline': !usePortal
+                className: classNames('xh-overlay', className, {
+                    'xh-overlay--inline': !usePortal
                 }),
                 'aria-live': 'polite',
                 onKeyDown: (e: KeyboardEvent) => {
@@ -86,7 +87,7 @@ export const overlay = hoistCmp.factory<OverlayProps>({
                     }
                 }
             },
-            hasBackdrop ? h('div', {className: 'xh-overlay__backdrop bp6-overlay-backdrop'}) : null,
+            hasBackdrop ? h('div', {className: 'xh-overlay__backdrop'}) : null,
             content
         );
 
@@ -95,4 +96,4 @@ export const overlay = hoistCmp.factory<OverlayProps>({
 });
 
 /** Class for an overlay that scrolls its content, as Blueprint's `Classes.OVERLAY_SCROLL_CONTAINER`. */
-export const OVERLAY_SCROLL_CONTAINER = 'xh-overlay--scroll-container bp6-overlay-scroll-container';
+export const OVERLAY_SCROLL_CONTAINER = 'xh-overlay--scroll-container';

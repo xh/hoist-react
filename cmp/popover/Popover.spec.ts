@@ -9,7 +9,7 @@ import {portalContainerProvider} from '@xh/hoist/cmp/popover/impl/PortalContaine
 import {XH} from '@xh/hoist/core';
 import {initTestAppAsync} from '@xh/hoist/test-support';
 import {act, fireEvent, render, screen, waitFor} from '@testing-library/react';
-import {createElement} from 'react';
+import {createElement, Fragment} from 'react';
 import {beforeAll, describe, expect, it, vi} from 'vitest';
 
 /**
@@ -32,6 +32,42 @@ describe('Popover', () => {
 
         fireEvent.click(screen.getByText('Open'));
         await waitFor(() => expect(screen.queryByText('Body')).toBeNull());
+    });
+
+    it('marks the element it targets, inside its wrapper', () => {
+        render(withPopover());
+        const button = screen.getByText('Open');
+        expect(button.classList.contains('xh-popover__target')).toBe(true);
+        expect(button.parentElement.classList.contains('xh-popover__target-wrapper')).toBe(true);
+        expect(button.parentElement.classList.contains('xh-popover__target')).toBe(false);
+    });
+
+    it('marks its target active while open, unless controlled', async () => {
+        const {unmount} = render(withPopover());
+        const isActive = () =>
+            screen.getByText('Open').classList.contains('xh-popover__target--active');
+        expect(isActive()).toBe(false);
+        fireEvent.click(screen.getByText('Open'));
+        await screen.findByText('Body');
+        expect(isActive()).toBe(true);
+        unmount();
+
+        render(withPopover({isOpen: true}));
+        await screen.findByText('Body');
+        expect(isActive()).toBe(false);
+    });
+
+    it('targets the child of a fragment given as its target', async () => {
+        const error = vi.spyOn(console, 'error').mockImplementation(() => {});
+        render(withPopover({children: createElement(Fragment, null, target())}));
+
+        const button = screen.getByText('Open');
+        expect(button.getAttribute('aria-haspopup')).toBe('menu');
+        expect(error).not.toHaveBeenCalled();
+        error.mockRestore();
+
+        fireEvent.click(button);
+        await screen.findByText('Body');
     });
 
     it('closes when the route changes', async () => {

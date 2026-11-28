@@ -291,7 +291,6 @@ const cmp = hoistCmp.factory<NumberInputModel>(({model, className, ...props}, re
     return numericInput({
         value: renderValue,
         allowNumericCharactersOnly: !props.enableShorthandUnits && !props.displayWithCommas,
-        buttonPosition: 'none',
         disabled: props.disabled,
         inputRef: useComposedRefs(model.inputRef as Ref<HTMLInputElement>, props.inputRef),
         leftIcon: props.leftIcon,

@@ -5,6 +5,165 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
+//-----------------------------------------------
+// Base dialog styles
+//-----------------------------------------------
+.xh-dialog__title {
+  color: #1c2127;
+  font-weight: 600;
+}
+.xh-dark .xh-dialog__title {
+  color: #f6f7f9;
+}
+.xh-dialog__title {
+  margin: 0 0 12px;
+  padding: 0;
+}
+h2.xh-dialog__title {
+  font-size: 28px;
+  line-height: 32px;
+}
+.xh-dialog__container {
+  opacity: 1;
+  transform: scale(1);
+}
+.xh-dialog__container {
+  align-items: center;
+  display: flex;
+  justify-content: center;
+  min-height: 100%;
+  pointer-events: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  width: 100%;
+}
+.xh-dialog {
+  background: #f6f7f9;
+  border-radius: 4px;
+  box-shadow:
+    0 0 0 1px rgba(17, 20, 24, 0.1),
+    0 20px 25px -5px rgba(0, 0, 0, 0.1),
+    0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  margin: 32px 0;
+  pointer-events: all;
+  -webkit-user-select: text;
+  -moz-user-select: text;
+  -ms-user-select: text;
+  user-select: text;
+  width: 500px;
+}
+.xh-dialog:focus {
+  outline: 0;
+}
+.xh-dark .xh-dialog {
+  background: #1c2127;
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.2),
+    0 20px 25px -5px rgba(0, 0, 0, 0.3),
+    inset 0 0 0.5px 0 rgba(255, 255, 255, 0.3),
+    inset 0 0.5px 0 0 rgba(255, 255, 255, 0.08),
+    0 10px 30px -5px rgba(0, 0, 0, 0.3);
+  color: #f6f7f9;
+}
+@media (forced-colors: active) and (prefers-color-scheme: dark) {
+  .xh-dialog {
+    border: 1px solid buttonborder;
+  }
+}
+.xh-dialog__header {
+  align-items: center;
+  background: #ffffff;
+  border-radius: 4px 4px 0 0;
+  box-shadow: 0 1px 0 rgba(17, 20, 24, 0.15);
+  display: flex;
+  flex: 0 0 auto;
+  min-height: 38px;
+  padding: 4px;
+  padding-left: 16px;
+  z-index: 0;
+}
+.xh-dialog__header .xh-dialog__title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow-wrap: normal;
+  flex: 1 1 auto;
+  font-size: 14px;
+  line-height: inherit;
+  margin: 0;
+}
+.xh-dialog__header .xh-dialog__title:last-child {
+  margin-right: 16px;
+}
+.xh-dark .xh-dialog__header {
+  background: #2f343c;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.2);
+}
+@media (forced-colors: active) and (prefers-color-scheme: dark) {
+  .xh-dialog__header {
+    border-bottom: 1px solid buttonborder;
+  }
+}
+.xh-dialog__body {
+  flex: 1 1 auto;
+  margin: 16px;
+}
+.xh-dialog__footer {
+  flex: 0 0 auto;
+  margin: 16px;
+}
+.xh-dialog__footer-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+.xh-dialog__footer-actions .xh-button {
+  margin-left: 8px;
+}
+
+//-----------------------------------------------
+// Hoist dialog styles
+//-----------------------------------------------
+.xh-dialog {
+  padding-bottom: 0;
+  border-radius: var(--xh-popup-border-radius);
+  border: var(--xh-popup-border-width) solid var(--xh-popup-border-color);
+
+  .xh-dialog__header {
+    color: var(--xh-popup-title-text-color);
+    background-color: var(--xh-popup-title-bg);
+    font-family: var(--xh-popup-title-font-family);
+    font-size: var(--xh-popup-title-font-size);
+    padding-left: var(--xh-spacing);
+    border-top-right-radius: var(--xh-popup-border-radius);
+    border-top-left-radius: var(--xh-popup-border-radius);
+
+    .xh-dialog__title {
+      color: var(--xh-popup-title-text-color);
+    }
+
+    .xh-dialog__title {
+      font-weight: var(--xh-popup-title-font-weight);
+    }
+
+    > svg:first-child {
+      margin-right: var(--xh-spacing);
+    }
+  }
+
+  .xh-dialog__body {
+    margin: 0;
+    padding: var(--xh-spacing-double);
+    background: var(--xh-popup-bg);
+
+    // See https://github.com/xh/hoist-react/issues/862 for why this is necessary.
+    overflow-wrap: break-word;
+  }
+}
+
 // The close button sits on the header's background, so its icon takes the title color rather than
 // the default button text color. Set on the icon, which the button's own color rules do not reach.
 .xh-dialog__header .xh-dialog__close-button svg {

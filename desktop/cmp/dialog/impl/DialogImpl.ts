@@ -94,12 +94,12 @@ const dialogInner = hoistCmp.factory<DialogProps>({
                 title != null
                     ? h(
                           'div',
-                          {className: 'xh-dialog__header bp6-dialog-header'},
+                          {className: 'xh-dialog__header'},
                           icon ?? null,
-                          h('h2', {id: titleId, className: 'xh-dialog__title bp6-heading'}, title),
+                          h('h2', {id: titleId, className: 'xh-dialog__title'}, title),
                           isCloseButtonShown
                               ? button({
-                                    className: 'xh-dialog__close-button bp6-dialog-close-button',
+                                    className: 'xh-dialog__close-button',
                                     icon: Icon.close(),
                                     'aria-label': 'Close',
                                     onClick: e => onClose?.(e)
@@ -115,7 +115,7 @@ const dialogInner = hoistCmp.factory<DialogProps>({
                     role: 'dialog',
                     'aria-modal': enforceFocus,
                     'aria-labelledby': title != null ? titleId : undefined,
-                    className: classNames('xh-dialog', 'bp6-dialog', className),
+                    className: classNames('xh-dialog', className),
                     style,
                     tabIndex: -1,
                     [TEST_ID]: testId
@@ -127,17 +127,16 @@ const dialogInner = hoistCmp.factory<DialogProps>({
             content = h(
                 'div',
                 {
-                    className:
-                        'xh-dialog__overlay bp6-overlay bp6-overlay-open bp6-overlay-scroll-container',
+                    className: 'xh-dialog__overlay',
                     onKeyDown
                 },
                 h('div', {
-                    className: 'xh-dialog__backdrop bp6-overlay-backdrop',
+                    className: 'xh-dialog__backdrop',
                     onMouseDown: onBackdropMouseDown
                 }),
                 h(
                     'div',
-                    {className: 'xh-dialog__container bp6-dialog-container bp6-overlay-content'},
+                    {className: 'xh-dialog__container'},
                     h(FloatingFocusManager, {
                         context,
                         modal: enforceFocus,

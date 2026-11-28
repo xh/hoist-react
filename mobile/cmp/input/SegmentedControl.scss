@@ -23,7 +23,7 @@
 
     // Options - buttons receding into the tray by default. Override the minimal Button base so
     // the tray background shows through and our segmented text color applies.
-    .xh-button.xh-segmented-control-option {
+    .xh-button.xh-segmented-control__option {
       flex: 0 0 auto;
       // Fill the tray height (via the tray's align-items: stretch) instead of the fixed button
       // height, so tray padding does not add on top of a full-height button.
@@ -42,7 +42,7 @@
     }
 
     // Label - truncate with an ellipsis when its segment is too narrow to fit the full text.
-    .xh-segmented-control-option__label {
+    .xh-segmented-control__option-text {
       overflow: hidden;
       min-width: 0;
       text-overflow: ellipsis;
@@ -50,7 +50,7 @@
     }
 
     // Selected option - a solid tile standing out from the tray.
-    .xh-button.xh-segmented-control-option--selected {
+    .xh-button.xh-segmented-control__option--selected {
       background-color: var(--xh-segmented-control-selected-bg);
       color: var(--xh-segmented-control-selected-text-color);
     }
@@ -59,11 +59,11 @@
     // option as a solid fill in the intent color, and tints unselected options' text so an intent
     // (e.g. danger) reads as such even before it is chosen.
     @each $intent in (primary, success, warning, danger) {
-      .xh-button.xh-segmented-control-option--#{$intent} {
+      .xh-button.xh-segmented-control__option--intent-#{$intent} {
         color: var(--xh-intent-#{$intent}-text-color);
       }
 
-      .xh-button.xh-segmented-control-option--#{$intent}.xh-segmented-control-option--selected {
+      .xh-button.xh-segmented-control__option--intent-#{$intent}.xh-segmented-control__option--selected {
         background-color: var(--xh-intent-#{$intent});
         color: var(--xh-white);
       }
@@ -74,7 +74,7 @@
     // leftover space is shared out - a wider label yields a wider segment. The equal-widths rule
     // below (the default) overrides this basis. Options still shrink + ellipsis (see above) when
     // the set genuinely cannot fit.
-    &.xh-segmented-control--fill .xh-button.xh-segmented-control-option {
+    &.xh-segmented-control--fill .xh-button.xh-segmented-control__option {
       flex: 1 1 auto;
     }
 
@@ -82,7 +82,7 @@
     // the row into equal parts regardless of label length, the conventional segmented-control
     // appearance. Higher specificity than the content-basis rule above, so it wins when applied.
     &.xh-segmented-control--fill.xh-segmented-control--equal-widths
-      .xh-button.xh-segmented-control-option {
+      .xh-button.xh-segmented-control__option {
       flex-basis: 0;
     }
 
@@ -99,11 +99,11 @@
       // Reserve border space on every option so selecting one does not shift the row. With no
       // tray there is no recessed backdrop to set a filled tile against, so indicate selection
       // with a ring instead - currentColor keeps it in step with the option's text / intent color.
-      .xh-button.xh-segmented-control-option {
+      .xh-button.xh-segmented-control__option {
         border: 1px solid transparent;
       }
 
-      .xh-button.xh-segmented-control-option--selected {
+      .xh-button.xh-segmented-control__option--selected {
         border-color: currentColor;
         background-color: transparent;
       }
@@ -114,11 +114,11 @@
     // to the left of each option after the first, and suppressed on either side of the selected
     // option so they never crowd it.
     &.xh-segmented-control--dividers {
-      .xh-button.xh-segmented-control-option {
+      .xh-button.xh-segmented-control__option {
         position: relative;
       }
 
-      .xh-segmented-control-option + .xh-segmented-control-option::before {
+      .xh-segmented-control__option + .xh-segmented-control__option::before {
         content: '';
         position: absolute;
         left: calc(var(--xh-segmented-control-padding) / -2);
@@ -128,8 +128,8 @@
         background-color: var(--xh-border-color);
       }
 
-      .xh-segmented-control-option--selected::before,
-      .xh-segmented-control-option--selected + .xh-segmented-control-option::before {
+      .xh-segmented-control__option--selected::before,
+      .xh-segmented-control__option--selected + .xh-segmented-control__option::before {
         display: none;
       }
     }

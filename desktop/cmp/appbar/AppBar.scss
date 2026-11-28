@@ -42,10 +42,62 @@
 }
 
 //------------------------
-// Blueprint overrides
+// Base app bar styles
 //------------------------
-.bp6-navbar,
-.bp6-dark .bp6-navbar {
+.xh-appbar {
+  background-color: #ffffff;
+  box-shadow:
+    0 0 0 1px rgba(17, 20, 24, 0.1),
+    0 1px 3px 0 rgba(0, 0, 0, 0.1),
+    0 1px 2px -1px rgba(0, 0, 0, 0.1);
+  height: 50px;
+  padding: 0 16px;
+  position: relative;
+  width: 100%;
+  z-index: 10;
+}
+.xh-dark .xh-appbar {
+  background-color: #252a31;
+}
+.xh-dark .xh-appbar {
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.2),
+    0 1px 10px 0 rgba(0, 0, 0, 0.2),
+    inset 0 0 0.5px 0 rgba(255, 255, 255, 0.3),
+    inset 0 0.5px 0 0 rgba(255, 255, 255, 0.08),
+    0 1px 10px -1px rgba(0, 0, 0, 0.2);
+}
+@media (forced-colors: active) and (prefers-color-scheme: dark) {
+  .xh-appbar {
+    border: 1px solid buttonborder;
+  }
+}
+.xh-appbar__group {
+  align-items: center;
+  display: flex;
+  height: 50px;
+}
+.xh-appbar__group.xh-appbar__group--left {
+  float: left;
+}
+.xh-appbar__group.xh-appbar__group--right {
+  float: right;
+}
+.xh-overflow-list {
+  display: flex;
+  flex-wrap: nowrap;
+  min-width: 0;
+}
+.xh-overflow-list__spacer {
+  flex-shrink: 1;
+  width: 1px;
+}
+
+//------------------------
+// Hoist app bar styles
+//------------------------
+.xh-appbar,
+.xh-dark .xh-appbar {
   display: flex;
   align-items: center;
   flex-wrap: nowrap;
@@ -59,8 +111,12 @@
   // Curiously, Admin Log Viewer would cause appbar to shrink without min-height
   min-height: var(--xh-appbar-height);
 
-  .bp6-navbar-divider {
-    border-left-color: var(--xh-toolbar-separator-color);
+  // A separator is a shared Separator, drawn as a short rule in the toolbar's color.
+  .xh-separator {
+    --xh-separator-border-color: var(--xh-toolbar-separator-color);
+    align-self: center;
+    height: 20px;
+    margin: 0 8px;
   }
 
   > * {
@@ -68,17 +124,11 @@
     flex-shrink: 0;
   }
 
-  .bp6-navbar-heading {
-    color: var(--xh-appbar-title-text-color);
-    font-size: var(--xh-appbar-title-font-size);
-    margin-left: var(--xh-spacing);
-  }
-
-  .bp6-navbar-group {
+  .xh-appbar__group {
     overflow: hidden;
     height: var(--xh-appbar-height);
 
-    .bp6-navbar-divider {
+    .xh-separator {
       margin: 0 var(--xh-spacing);
     }
 
@@ -89,7 +139,7 @@
       margin: 0 5px 0 0;
     }
 
-    &.bp6-align-left {
+    &.xh-appbar__group--left {
       // Flex simulates left alignment
       flex: 1;
 
@@ -99,13 +149,13 @@
       }
     }
 
-    &.bp6-align-right {
+    &.xh-appbar__group--right {
       // Apply standardized spacing to extra appBar items, excepting dividers and xh-no-pad elements.
-      > *:not(.bp6-navbar-divider):not(.xh-no-pad) {
+      > *:not(.xh-separator):not(.xh-no-pad) {
         margin-left: var(--xh-spacing);
       }
 
-      .bp6-navbar-divider {
+      .xh-separator {
         margin-right: 0;
       }
     }

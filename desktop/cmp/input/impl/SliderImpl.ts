@@ -35,8 +35,7 @@ export interface SliderImplProps {
 
 /**
  * A single or range slider, dragged by pointer or stepped by the WAI-ARIA slider keys, including
- * Home/End and PageUp/PageDown. Renders the elements and class names of Blueprint's `Slider` and
- * `RangeSlider`, which `Slider.scss` and Hoist's label fitting target.
+ * Home/End and PageUp/PageDown.
  * @internal
  */
 export const sliderImpl = hoistCmp.factory<SliderImplProps>({
@@ -190,9 +189,9 @@ export const sliderImpl = hoistCmp.factory<SliderImplProps>({
                 return h('div', {
                     key: `track-${i}`,
                     className: classNames(
-                        'bp6-slider-progress',
+                        'xh-slider__progress',
                         showTrackFill && i === fillIdx && intent && intent !== 'none'
-                            ? `bp6-intent-${intent}`
+                            ? `xh-slider__progress--intent-${intent}`
                             : null
                     ),
                     style
@@ -207,7 +206,7 @@ export const sliderImpl = hoistCmp.factory<SliderImplProps>({
                           'div',
                           {
                               key: i,
-                              className: 'bp6-slider-label',
+                              className: 'xh-slider__label',
                               style: vertical ? {bottom: pct(ratioOf(v))} : {left: pct(ratioOf(v))}
                           },
                           formatLabel(v, false)
@@ -229,10 +228,10 @@ export const sliderImpl = hoistCmp.factory<SliderImplProps>({
                     role: 'slider',
                     tabIndex: disabled ? -1 : 0,
                     ...htmlProps,
-                    className: classNames('bp6-slider-handle', {
-                        'bp6-start': isRange && idx === 0,
-                        'bp6-end': isRange && idx === 1,
-                        'bp6-active': dragIdx === idx
+                    className: classNames('xh-slider__handle', {
+                        'xh-slider__handle--start': isRange && idx === 0,
+                        'xh-slider__handle--end': isRange && idx === 1,
+                        'xh-slider__handle--active': dragIdx === idx
                     }),
                     style: vertical ? {bottom: offset} : {left: offset},
                     'aria-valuemin': lo,
@@ -244,7 +243,7 @@ export const sliderImpl = hoistCmp.factory<SliderImplProps>({
                     onKeyDown: disabled ? undefined : e => onHandleKeyDown(idx, e),
                     onKeyUp: disabled ? undefined : release
                 },
-                label == null ? null : h('span', {className: 'bp6-slider-label'}, label)
+                label == null ? null : h('span', {className: 'xh-slider__label'}, label)
             );
         });
 
@@ -252,11 +251,11 @@ export const sliderImpl = hoistCmp.factory<SliderImplProps>({
             'div',
             {
                 className: classNames(
-                    'bp6-slider',
+                    'xh-slider__body',
                     {
-                        'bp6-disabled': disabled,
-                        'bp6-slider-unlabeled': labelRenderer === false,
-                        'bp6-vertical': vertical
+                        'xh-slider__body--disabled': disabled,
+                        'xh-slider__body--unlabeled': labelRenderer === false,
+                        'xh-slider__body--vertical': vertical
                     },
                     className
                 ),
@@ -266,8 +265,8 @@ export const sliderImpl = hoistCmp.factory<SliderImplProps>({
                 onPointerUp,
                 onPointerCancel: onPointerUp
             },
-            h('div', {className: 'bp6-slider-track', ref: trackRef}, tracks),
-            h('div', {className: 'bp6-slider-axis'}, axisLabels),
+            h('div', {className: 'xh-slider__track', ref: trackRef}, tracks),
+            h('div', {className: 'xh-slider__axis'}, axisLabels),
             handles
         );
     }

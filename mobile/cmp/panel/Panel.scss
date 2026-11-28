@@ -50,8 +50,7 @@
         }
 
         &.xh-button--enabled:active,
-        &.xh-button--active,
-        &.bp6-active {
+        &.xh-button--active {
           background-color: var(--xh-panel-title-intent-button-active-bg) !important;
         }
       }

@@ -48,7 +48,7 @@ describe('Toolbar overflow with simulated layout', () => {
         renderWithRoom(6, {});
         expect(visibleItems()).toEqual(['A', 'B', 'C', 'D', 'E', 'F']);
         expect(
-            document.querySelector('.xh-toolbar-overflow-popover, .bp6-popover-target')
+            document.querySelector('.xh-toolbar-overflow-popover, .xh-popover__target-wrapper')
         ).toBeNull();
     });
 
@@ -77,7 +77,7 @@ describe('Toolbar overflow with simulated layout', () => {
         const spy = vi
             .spyOn(HTMLElement.prototype, 'offsetWidth', 'get')
             .mockImplementation(function (this: HTMLElement) {
-                if (!this.classList.contains('bp6-overflow-list-spacer')) return 0;
+                if (!this.classList.contains('xh-overflow-list__spacer')) return 0;
                 const count = this.parentElement.querySelectorAll(':scope > .xh-button').length;
                 return count <= room ? 10 : 0;
             });
@@ -86,12 +86,12 @@ describe('Toolbar overflow with simulated layout', () => {
     }
 
     function visibleItems(): string[] {
-        const list = document.querySelector('.bp6-overflow-list');
+        const list = document.querySelector('.xh-overflow-list');
         return Array.from(list.querySelectorAll(':scope > .xh-button')).map(it => it.textContent);
     }
 
     async function menuItems(): Promise<string[]> {
-        fireEvent.click(document.querySelector('.bp6-popover-target button'));
+        fireEvent.click(document.querySelector('.xh-popover__target-wrapper button'));
         const menu = await waitFor(() => {
             const ret = document.querySelector('.xh-toolbar-overflow-popover');
             expect(ret).not.toBeNull();
@@ -104,7 +104,7 @@ describe('Toolbar overflow with simulated layout', () => {
 /** Render a toolbar with its overflow menu open, so every item is in the document. */
 async function renderWithMenuOpenAsync(items: ReactNode[]) {
     const {container} = render(toolbar({enableOverflowMenu: true, children: items}));
-    const overflowButton = container.querySelector('.bp6-popover-target button');
+    const overflowButton = container.querySelector('.xh-popover__target-wrapper button');
     if (overflowButton) {
         fireEvent.click(overflowButton);
         await waitFor(() =>

@@ -52,11 +52,11 @@
   .xh-text-input {
     width: 100%;
 
-    .bp6-input {
+    :is(.xh-input-group__input, .xh-text-area) {
       height: 36px;
     }
 
-    .bp6-input:not(:first-child) {
+    :is(.xh-input-group__input, .xh-text-area):not(:first-child) {
       padding-left: 34px;
     }
 

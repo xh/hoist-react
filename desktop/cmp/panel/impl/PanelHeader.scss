@@ -38,8 +38,8 @@
     color: var(--xh-panel-title-text-color) !important;
   }
 
-  // Ensure text color correct for Blueprint controls, e.g. a switch in headerItems
-  .bp6-control {
+  // Ensure text color correct for checkbox and switch controls, e.g. a switch in headerItems
+  .xh-control {
     color: var(--xh-panel-title-text-color);
   }
 
@@ -63,20 +63,19 @@
       }
 
       &.xh-button--enabled:active,
-      &.xh-button--active,
-      &.bp6-active {
+      &.xh-button--active {
         background-color: var(--xh-panel-title-intent-button-active-bg) !important;
       }
     }
 
     // Switch, checkbox, and radio indicators - a dark track when off and a light one when on,
     // as the default checked color can match the header's own intent.
-    .bp6-control input ~ .bp6-control-indicator {
+    .xh-control input ~ .xh-control__indicator {
       background-color: rgba(0, 0, 0, 0.25) !important;
       box-shadow: none !important;
     }
 
-    .bp6-control input:checked ~ .bp6-control-indicator {
+    .xh-control input:checked ~ .xh-control__indicator {
       background-color: rgba(255, 255, 255, 0.45) !important;
     }
   }

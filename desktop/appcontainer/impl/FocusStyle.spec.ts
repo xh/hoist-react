@@ -21,14 +21,14 @@ describe('installFocusStyle', () => {
 
         fireEvent.mouseDown(root);
         expect(root.classList).toContain('xh-focus-disabled');
-        expect(root.classList).toContain('bp6-focus-disabled');
+        expect(root.classList).toContain('xh-focus-disabled');
 
         fireEvent.keyDown(root, {key: 'a'});
         expect(root.classList).toContain('xh-focus-disabled');
 
         fireEvent.keyDown(root, {key: 'Tab'});
         expect(root.classList).not.toContain('xh-focus-disabled');
-        expect(root.classList).not.toContain('bp6-focus-disabled');
+        expect(root.classList).not.toContain('xh-focus-disabled');
 
         fireEvent.mouseDown(root);
         expect(root.classList).toContain('xh-focus-disabled');

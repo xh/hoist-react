@@ -36,8 +36,7 @@ export interface ControlProps {
 
 /**
  * A native checkbox or radio input styled as a checkbox, radio button or switch, wrapped in a
- * `<label>` with its indicator and label text. Renders the same elements and class names as
- * Blueprint's controls, so their styles and app CSS keyed to them apply.
+ * `<label>` with its indicator and label text.
  * @internal
  */
 export function control({
@@ -59,23 +58,21 @@ export function control({
             className: classNames(
                 'xh-control',
                 `xh-control--${kind}`,
-                'bp6-control',
-                `bp6-${kind}`,
                 {
-                    'bp6-disabled': inputProps.disabled,
-                    'bp6-inline': inline,
-                    [`bp6-align-${alignIndicator}`]: alignIndicator
+                    'xh-control--disabled': inputProps.disabled,
+                    'xh-control--inline': inline,
+                    [`xh-control--align-${alignIndicator}`]: alignIndicator
                 },
                 className
             )
         },
         createElement('input', {
             ...inputProps,
-            className: 'xh-control__input bp6-control-input',
+            className: 'xh-control__input',
             ref: inputRef,
             type: kind === 'radio' ? 'radio' : 'checkbox'
         }),
-        createElement('span', {className: 'xh-control__indicator bp6-control-indicator'}),
+        createElement('span', {className: 'xh-control__indicator'}),
         label ?? null
     );
 }

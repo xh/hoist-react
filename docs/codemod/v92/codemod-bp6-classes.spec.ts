@@ -1,0 +1,181 @@
+/*
+ * This file belongs to Hoist, an application development toolkit
+ * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
+ *
+ * Copyright © 2026 Extremely Heavy Industries Inc.
+ */
+import {execFileSync} from 'node:child_process';
+import {mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync} from 'node:fs';
+import {tmpdir} from 'node:os';
+import {dirname, join} from 'node:path';
+import {afterEach, describe, expect, it} from 'vitest';
+
+const CODEMOD = join(__dirname, 'codemod-bp6-classes.mjs');
+
+/**
+ * The v92 Blueprint class codemod. It runs as a script, so each case writes files to a temp
+ * folder, runs the codemod over it, and checks the rewritten files and the printed report.
+ */
+describe('codemod-bp6-classes', () => {
+    let dir: string;
+
+    afterEach(() => rmSync(dir, {recursive: true, force: true}));
+
+    function run(files: Record<string, string>, ...args: string[]) {
+        dir = mkdtempSync(join(tmpdir(), 'codemod-bp6-classes-'));
+        for (const [name, text] of Object.entries(files)) {
+            mkdirSync(join(dir, dirname(name)), {recursive: true});
+            writeFileSync(join(dir, name), text);
+        }
+        const output = execFileSync('node', [CODEMOD, ...args, 'src'], {cwd: dir, encoding: 'utf8'});
+        return {output, read: (name: string) => readFileSync(join(dir, name), 'utf8')};
+    }
+
+    it('renames component classes and the modifiers beside them in a stylesheet', () => {
+        const {read} = run({
+            'src/app.scss':
+                '.x .bp6-button.bp6-minimal:hover { color: red; }\n' +
+                '.bp6-dark .bp6-menu > .bp6-menu-item.bp6-intent-danger { color: red; }\n' +
+                '.bp6-tabs.bp6-vertical .bp6-tab[aria-selected=true] { color: red; }\n'
+        });
+        expect(read('src/app.scss')).toBe(
+            '.x .xh-button.xh-button--minimal:hover { color: red; }\n' +
+                '.xh-dark .xh-menu-list > .xh-menu-item.xh-menu-item--intent-danger { color: red; }\n' +
+                '.xh-tab-list.xh-tab-list--vertical .xh-tab-list__tab[aria-selected=true] { color: red; }\n'
+        );
+    });
+
+    it('renames the segmented control option classes Hoist renamed', () => {
+        const {read} = run({
+            'src/app.scss':
+                '.xh-segmented-control-option.xh-segmented-control-option--selected { color: red; }\n' +
+                '.xh-segmented-control-option--danger .xh-segmented-control-option__label { color: red; }\n',
+            'src/Panel.ts': "el.querySelector('.xh-segmented-control-option--primary');\n"
+        });
+        expect(read('src/app.scss')).toBe(
+            '.xh-segmented-control__option.xh-segmented-control__option--selected { color: red; }\n' +
+                '.xh-segmented-control__option--intent-danger .xh-segmented-control__option-text { color: red; }\n'
+        );
+        expect(read('src/Panel.ts')).toBe(
+            "el.querySelector('.xh-segmented-control__option--intent-primary');\n"
+        );
+    });
+
+    it('maps the navbar divider to the shared separator, and reports the removed toolbar separator', () => {
+        const {read, output} = run({
+            'src/app.scss':
+                '.bp6-navbar-divider { color: red; }\n' + '.xh-toolbar__separator { color: red; }\n'
+        });
+        expect(read('src/app.scss')).toBe(
+            '.xh-separator { color: red; }\n' + '.xh-toolbar__separator { color: red; }\n'
+        );
+        expect(output).toContain('app.scss:2  `xh-toolbar__separator` is gone.');
+    });
+
+    it('keeps the weight of a paired selector by repeating the class', () => {
+        const {read} = run({'src/app.scss': '.xh-button.bp6-button { color: red; }\n'});
+        expect(read('src/app.scss')).toBe('.xh-button.xh-button { color: red; }\n');
+    });
+
+    it('turns a segmented control option into xh-segmented-control__option', () => {
+        const {read} = run({
+            'src/app.scss':
+                '.bp6-segmented-control > .bp6-button.bp6-minimal { color: red; }\n' +
+                '.bp6-segmented-control > .bp6-button:not(.bp6-minimal) { color: red; }\n'
+        });
+        expect(read('src/app.scss')).toBe(
+            '.xh-segmented-control__options > .xh-segmented-control__option:not(.xh-segmented-control__option--selected) { color: red; }\n' +
+                '.xh-segmented-control__options > .xh-segmented-control__option.xh-segmented-control__option--selected { color: red; }\n'
+        );
+    });
+
+    it('turns a segmented control option into xh-segmented-control__option under any combinator', () => {
+        const {read} = run({
+            'src/app.scss':
+                '.x .bp6-segmented-control .bp6-button.bp6-disabled { color: red; }\n' +
+                '.bp6-segmented-control .y .bp6-button, .bp6-button { color: red; }\n',
+            'src/Panel.ts': "el.querySelector('.bp6-segmented-control .bp6-button');\n"
+        });
+        expect(read('src/app.scss')).toBe(
+            '.x .xh-segmented-control__options .xh-segmented-control__option.xh-segmented-control__option--disabled { color: red; }\n' +
+                '.xh-segmented-control__options .y .xh-segmented-control__option, .xh-button { color: red; }\n'
+        );
+        expect(read('src/Panel.ts')).toBe(
+            "el.querySelector('.xh-segmented-control__options .xh-segmented-control__option');\n"
+        );
+    });
+
+    it('reports a button nested in a segmented control block, and leaves it as written', () => {
+        const files = {
+            'src/app.scss':
+                '.bp6-segmented-control {\n' +
+                '    .bp6-button.bp6-intent-primary { color: red; }\n' +
+                '}\n' +
+                '.bp6-button { color: red; }\n' +
+                '.bp6-segmented-control { .bp6-button { color: red; } }\n'
+        };
+        const {output, read} = run(files);
+        expect(read('src/app.scss')).toBe(
+            '.xh-segmented-control__options {\n' +
+                '    .bp6-button.bp6-intent-primary { color: red; }\n' +
+                '}\n' +
+                '.xh-button { color: red; }\n' +
+                '.bp6-segmented-control { .bp6-button { color: red; } }\n'
+        );
+        expect(output).toContain('app.scss:2  `bp6-button` inside a `bp6-segmented-control` block');
+        expect(output).toContain('app.scss:5  `bp6-button` inside a `bp6-segmented-control` block');
+        expect(output).not.toContain('app.scss:4');
+    });
+
+    it('reports a bp6 class it could not reach in a nested string', () => {
+        const files = {'src/Panel.ts': "const c = `${x ? 'bp6-button' : ''} y`;\n"};
+        const {output, read} = run(files);
+        expect(read('src/Panel.ts')).toBe(files['src/Panel.ts']);
+        expect(output).toContain('`bp6-button` was not rewritten here - its Hoist name is `xh-button`');
+    });
+
+    it('reports bp6-overlay-scroll-container with its Hoist names', () => {
+        const {output} = run({'src/app.scss': '.bp6-overlay-scroll-container { color: red; }\n'});
+        expect(output).toContain(
+            '`bp6-overlay-scroll-container` has more than one Hoist name: `xh-dialog__overlay` on a Dialog, `xh-overlay--scroll-container` on an Overlay'
+        );
+    });
+
+    it('renames component classes in TypeScript class strings', () => {
+        const {read} = run({
+            'src/Panel.ts': "const a = 'bp6-button my-class';\nconst b = `bp6-tab ${extra}`;\n"
+        });
+        expect(read('src/Panel.ts')).toBe(
+            "const a = 'xh-button my-class';\nconst b = `xh-tab-list__tab ${extra}`;\n"
+        );
+    });
+
+    it('reports what it cannot rename, and leaves it as written', () => {
+        const files = {
+            'src/app.scss':
+                '.y { &.bp6-active { color: red; } }\n' +
+                '.bp6-input { color: var(--bp-palette-white); }\n' +
+                '.bp6-code { color: red; }\n'
+        };
+        const {output, read} = run(files);
+        expect(read('src/app.scss')).toBe(files['src/app.scss']);
+        expect(output).toContain('`bp6-active` is a generic modifier');
+        expect(output).toContain('`bp6-input` has more than one Hoist name');
+        expect(output).toContain('`bp6-code` has no Hoist equivalent');
+        expect(output).toContain('reads a Blueprint custom property');
+    });
+
+    it('reports markdown mentions without rewriting them', () => {
+        const files = {'src/README.md': 'Style `.bp6-button` here.\n'};
+        const {output, read} = run(files);
+        expect(read('src/README.md')).toBe(files['src/README.md']);
+        expect(output).toContain('README.md:1');
+    });
+
+    it('writes nothing in a dry run', () => {
+        const files = {'src/app.scss': '.bp6-button { color: red; }\n'};
+        const {output, read} = run(files, '--dry');
+        expect(read('src/app.scss')).toBe(files['src/app.scss']);
+        expect(output).toContain('Would rewrite 1 line(s) in 1 file(s).');
+    });
+});

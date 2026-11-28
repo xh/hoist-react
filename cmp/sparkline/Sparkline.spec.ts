@@ -50,7 +50,7 @@ describe('Sparkline', () => {
             fireEvent.mouseEnter(root);
             await new Promise(resolve => setTimeout(resolve, 150));
             expect(document.querySelector('.xh-sparkline').className).not.toContain(
-                'popover-target'
+                'xh-popover__target-wrapper'
             );
         });
 
@@ -77,7 +77,7 @@ describe('Sparkline', () => {
 
             const root = container.querySelector<HTMLElement>('.xh-sparkline');
             expect(root.parentElement).toBe(container);
-            expect(root.className).toContain('popover-target');
+            expect(root.className).toContain('xh-popover__target-wrapper');
             expect(root.style.width).toBe('100%');
             expect(ref.current).toBe(root);
         });
@@ -90,7 +90,7 @@ describe('Sparkline', () => {
             await vi.waitFor(() => expect(tooltip).toHaveBeenCalled());
 
             expect(document.querySelector('.xh-sparkline').className).not.toContain(
-                'popover-target'
+                'xh-popover__target-wrapper'
             );
         });
 

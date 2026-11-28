@@ -202,4 +202,39 @@ describe('Menu', () => {
         const submenuItem = await screen.findByTestId('csv');
         expect(parent.closest('.xh-menu-list').contains(submenuItem)).toBe(false);
     });
+
+    it('marks items, headings and submenus with xh-* classes only', async () => {
+        const {container} = render(
+            menu({
+                menuItems: [
+                    {heading: 'Section'},
+                    {text: 'Go', testId: 'go', intent: 'danger', active: true},
+                    {text: 'Off', testId: 'off', disabled: true},
+                    '-',
+                    {text: 'More', testId: 'more', items: [{text: 'Sub', testId: 'sub'}]}
+                ]
+            })
+        );
+        const go = screen.getByTestId('go'),
+            more = screen.getByTestId('more');
+        expect(go.className).toContain('xh-menu-item--intent-danger');
+        expect(go.className).toContain('xh-menu-item--active');
+        expect(screen.getByTestId('off').className).toContain('xh-menu-item--disabled');
+        expect(container.querySelector('.xh-menu-header__title').textContent).toBe('Section');
+        expect(container.querySelector('.xh-menu-divider')).not.toBeNull();
+        expect(more.querySelector('.xh-menu-item__submenu-icon')).not.toBeNull();
+
+        more.focus();
+        key('ArrowRight');
+        const sub = await screen.findByTestId('sub');
+        expect(sub.closest('.xh-menu__submenu')).not.toBeNull();
+        for (const el of [container, sub.closest('.xh-menu__submenu')]) {
+            const classes = [el, ...el.querySelectorAll('*')].flatMap(e => [...e.classList]);
+            expect(
+                classes.filter(c =>
+                    /^bp6-(menu|submenu|heading|icon|fill|text|intent|active|disabled)/.test(c)
+                )
+            ).toEqual([]);
+        }
+    });
 });

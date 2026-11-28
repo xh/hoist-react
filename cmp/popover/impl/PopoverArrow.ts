@@ -37,7 +37,7 @@ export function popoverArrow(
         {
             ref,
             'aria-hidden': true,
-            className: 'xh-popover__arrow bp6-popover-arrow',
+            className: 'xh-popover__arrow',
             style: {
                 position: 'absolute',
                 width: POPOVER_ARROW_SIZE,
@@ -56,10 +56,10 @@ export function popoverArrow(
                 style: {display: 'block', transform: `rotate(${angle}deg)`}
             },
             h('path', {
-                className: 'xh-popover__arrow-border bp6-popover-arrow-border',
+                className: 'xh-popover__arrow-border',
                 d: BORDER_PATH
             }),
-            h('path', {className: 'xh-popover__arrow-fill bp6-popover-arrow-fill', d: FILL_PATH})
+            h('path', {className: 'xh-popover__arrow-fill', d: FILL_PATH})
         )
     );
 }

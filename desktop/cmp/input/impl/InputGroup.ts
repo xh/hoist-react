@@ -35,8 +35,7 @@ export interface InputGroupProps extends InputHTMLAttributes<HTMLInputElement> {
 
 /**
  * A native text input with optional elements inside it at either end, padded so typed text does
- * not run under them. Renders the same elements and class names as Blueprint's `InputGroup`, so
- * its styles and app CSS keyed to them apply.
+ * not run under them.
  * @internal
  */
 export const inputGroup = hoistCmp.factory<InputGroupProps>({
@@ -77,7 +76,11 @@ export const inputGroup = hoistCmp.factory<InputGroupProps>({
 
         let left: ReactNode = null;
         if (leftElement != null) {
-            left = h('span', {className: 'bp6-input-left-container', ref: leftRef}, leftElement);
+            left = h(
+                'span',
+                {className: 'xh-input-group__left-element', ref: leftRef},
+                leftElement
+            );
         } else if (leftIcon != null) {
             left = leftIcon;
         }
@@ -85,10 +88,10 @@ export const inputGroup = hoistCmp.factory<InputGroupProps>({
         return h(
             'div',
             {
-                className: classNames('xh-input-group', 'bp6-input-group', groupClassName, {
-                    'bp6-disabled': disabled,
-                    'bp6-read-only': readOnly,
-                    'xh-input-group--round bp6-round': round
+                className: classNames('xh-input-group', groupClassName, {
+                    'xh-input-group--disabled': disabled,
+                    'xh-input-group--read-only': readOnly,
+                    'xh-input-group--round': round
                 })
             },
             left,
@@ -98,7 +101,7 @@ export const inputGroup = hoistCmp.factory<InputGroupProps>({
                 disabled,
                 readOnly,
                 'aria-disabled': disabled,
-                className: 'xh-input-group__input bp6-input',
+                className: 'xh-input-group__input',
                 ref: inputRef,
                 style: {
                     ...style,
@@ -107,7 +110,11 @@ export const inputGroup = hoistCmp.factory<InputGroupProps>({
                 }
             }),
             rightElement != null
-                ? h('span', {className: 'bp6-input-action', ref: rightRef}, rightElement)
+                ? h(
+                      'span',
+                      {className: 'xh-input-group__right-element', ref: rightRef},
+                      rightElement
+                  )
                 : null
         );
     }

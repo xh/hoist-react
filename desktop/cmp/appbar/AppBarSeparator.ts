@@ -6,16 +6,25 @@
  */
 import {hoistCmp} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
-import {div} from '@xh/hoist/cmp/layout';
+import {toolbarSeparator} from '@xh/hoist/desktop/cmp/toolbar';
+import {apiDeprecated} from '@xh/hoist/utils/js';
 
 /**
- * Convenience component for adding a separator between AppBar items.
+ * A separator between AppBar items.
+ * @deprecated - use `'-'` in `AppBarProps.leftItems` or `rightItems`, or `toolbarSep`. Will be
+ *      removed in v94.
  */
 export const [AppBarSeparator, appBarSeparator] = hoistCmp.withFactory({
     displayName: 'AppBarSeparator',
     model: false,
+    observer: false,
 
-    render() {
-        return div({className: 'xh-appbar-separator bp6-navbar-divider', role: 'separator'});
+    render(props, ref) {
+        apiDeprecated('appBarSeparator', {
+            v: 'v94',
+            msg: "Use '-' in AppBar items, or toolbarSep, instead.",
+            source: 'AppBarSeparator'
+        });
+        return toolbarSeparator({ref, ...props});
     }
 });

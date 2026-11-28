@@ -10,6 +10,7 @@ import type {Intent} from '@xh/hoist/core';
 import {hoistCmp} from '@xh/hoist/core';
 import classNames from 'classnames';
 import {stopRightElementControlEvent} from '@xh/hoist/cmp/menu/impl/Menus';
+import '@xh/hoist/desktop/register';
 import {useComposedRefs} from '@xh/hoist/utils/react';
 import type {
     AnchorHTMLAttributes,
@@ -20,6 +21,7 @@ import type {
     Ref
 } from 'react';
 import {createContext, createElement as h, useContext, useEffect, useRef, useState} from 'react';
+import '../Menu.scss';
 
 /** A list of menu items, as rendered within a popover or a context menu. */
 export interface MenuListProps extends HTMLAttributes<HTMLUListElement> {
@@ -136,7 +138,7 @@ export const menuList = hoistCmp.factory<MenuListProps>({
                     ...rest,
                     ref,
                     onKeyDown: handleKeyDown,
-                    className: classNames(className, 'xh-menu-list', 'bp6-menu')
+                    className: classNames(className, 'xh-menu-list')
                 },
                 children
             )
@@ -237,30 +239,24 @@ export const menuItem = hoistCmp.factory<MenuItemElementProps>({
                     : {}),
                 className: classNames(
                     'xh-menu-item',
-                    'bp6-menu-item',
-                    intent ? [`xh-menu-item--intent-${intent}`, `bp6-intent-${intent}`] : null,
+                    intent ? `xh-menu-item--intent-${intent}` : null,
                     {
-                        'xh-menu-item--active bp6-active': active,
-                        'xh-menu-item--disabled bp6-disabled': disabled,
-                        'xh-popover-dismiss bp6-popover-dismiss':
-                            shouldDismissPopover && !disabled && !hasSubmenu
+                        'xh-menu-item--active': active,
+                        'xh-menu-item--disabled': disabled,
+                        'xh-popover-dismiss': shouldDismissPopover && !disabled && !hasSubmenu
                     },
                     className
                 )
             },
             icon != null
-                ? h(
-                      'span',
-                      {className: 'xh-menu-item__icon bp6-menu-item-icon', 'aria-hidden': true},
-                      icon
-                  )
+                ? h('span', {className: 'xh-menu-item__icon', 'aria-hidden': true}, icon)
                 : null,
-            h('div', {className: 'xh-menu-item__text bp6-fill bp6-text-overflow-ellipsis'}, text),
+            h('div', {className: 'xh-menu-item__text'}, text),
             rightElement != null
                 ? h(
                       'span',
                       {
-                          className: 'xh-menu-item__label bp6-menu-item-label',
+                          className: 'xh-menu-item__label',
                           onClick: stopRightElementControlEvent
                       },
                       rightElement
@@ -273,7 +269,7 @@ export const menuItem = hoistCmp.factory<MenuItemElementProps>({
 
         return h(
             'li',
-            {ref: liRef, role: 'none', className: 'xh-menu-item--submenu bp6-submenu'},
+            {ref: liRef, role: 'none', className: 'xh-menu-item--submenu'},
             popoverImpl({
                 interactionKind: 'hover',
                 position: 'right-top',
@@ -290,11 +286,7 @@ export const menuItem = hoistCmp.factory<MenuItemElementProps>({
                 popoverRef: subPopoverRef,
                 // Shift up so the submenu's first item lines up with this one.
                 offset: {crossAxis: -5},
-                popoverClassName: classNames(
-                    'xh-menu__submenu',
-                    'bp6-submenu',
-                    popoverProps?.popoverClassName
-                ),
+                popoverClassName: classNames('xh-menu__submenu', popoverProps?.popoverClassName),
                 content: h(
                     SubmenuContext.Provider,
                     {
@@ -328,12 +320,9 @@ export const menuDivider = hoistCmp.factory<MenuDividerElementProps>({
             'li',
             {
                 role: 'separator',
-                className: classNames(
-                    title ? 'xh-menu-header bp6-menu-header' : 'xh-menu-divider bp6-menu-divider',
-                    className
-                )
+                className: classNames(title ? 'xh-menu-header' : 'xh-menu-divider', className)
             },
-            title ? h('h6', {className: 'bp6-heading'}, title) : null
+            title ? h('h6', {className: 'xh-menu-header__title'}, title) : null
         );
     }
 });
@@ -412,7 +401,7 @@ function caretIcon() {
     return h(
         'span',
         {
-            className: 'xh-menu-item__submenu-icon bp6-icon bp6-icon-caret-right bp6-submenu-icon',
+            className: 'xh-menu-item__submenu-icon',
             'aria-hidden': true
         },
         h(
