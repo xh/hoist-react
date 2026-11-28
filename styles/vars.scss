@@ -90,6 +90,7 @@ body {
   // The dark theme sets its own hue, to match the blue of its selection and hover fills.
   --xh-neutral-hue: 232;
   --xh-neutral-tint: 1;
+  --xh-neutral-0: oklch(1 0 var(--xh-neutral-hue)); // page
   --xh-neutral-1: oklch(0.985 calc(0.002 * var(--xh-neutral-tint)) var(--xh-neutral-hue)); // stripe, subtle fill
   --xh-neutral-2: oklch(0.968 calc(0.004 * var(--xh-neutral-tint)) var(--xh-neutral-hue)); // chrome: toolbars, app bar, sidebars
   --xh-neutral-3: oklch(0.94 calc(0.006 * var(--xh-neutral-tint)) var(--xh-neutral-hue)); // hover fill, tracks
@@ -132,14 +133,14 @@ body {
   --xh-intent-a1: 0.15;
   --xh-intent-a2: 0.3;
 
-  // Neutral (no intent) - fixed grays - e.g. standard buttons.
-  --xh-intent-neutral-darkest: hsl(180, 10%, 82%);
-  --xh-intent-neutral-darker: hsl(180, 10%, 86%);
-  --xh-intent-neutral: hsl(180, 10%, 90%);
-  --xh-intent-neutral-lighter: hsl(180, 10%, 94%);
-  --xh-intent-neutral-lightest: hsl(180, 10%, 98%);
-  --xh-intent-neutral-trans1: hsla(180, 10%, 90%, var(--xh-intent-a1));
-  --xh-intent-neutral-trans2: hsla(180, 10%, 90%, var(--xh-intent-a2));
+  // Neutral (no intent) - grays on the hue and tint of the neutral ramp - e.g. standard buttons.
+  --xh-intent-neutral-darkest: oklch(0.868 calc(0.009 * var(--xh-neutral-tint)) var(--xh-neutral-hue));
+  --xh-intent-neutral-darker: oklch(0.898 calc(0.008 * var(--xh-neutral-tint)) var(--xh-neutral-hue));
+  --xh-intent-neutral: oklch(0.927 calc(0.007 * var(--xh-neutral-tint)) var(--xh-neutral-hue));
+  --xh-intent-neutral-lighter: oklch(0.957 calc(0.005 * var(--xh-neutral-tint)) var(--xh-neutral-hue));
+  --xh-intent-neutral-lightest: oklch(0.986 calc(0.002 * var(--xh-neutral-tint)) var(--xh-neutral-hue));
+  --xh-intent-neutral-trans1: rgb(from var(--xh-intent-neutral) r g b / var(--xh-intent-a1));
+  --xh-intent-neutral-trans2: rgb(from var(--xh-intent-neutral) r g b / var(--xh-intent-a2));
 
   // Primary - a prominent call-to-action button or element.
   --xh-intent-primary: oklch(0.45 0.128 250);
@@ -182,13 +183,11 @@ body {
   --xh-intent-danger-text-color: oklch(from var(--xh-intent-danger) 0.48 c h);
 
   &:where(.xh-dark) {
-    --xh-intent-neutral-darkest: hsl(180, 10%, 20%);
-    --xh-intent-neutral-darker: hsl(180, 10%, 25%);
-    --xh-intent-neutral: hsl(180, 10%, 32%);
-    --xh-intent-neutral-lighter: hsl(180, 10%, 44%);
-    --xh-intent-neutral-lightest: hsl(180, 10%, 50%);
-    --xh-intent-neutral-trans1: hsla(180, 10%, 32%, var(--xh-intent-a1));
-    --xh-intent-neutral-trans2: hsla(180, 10%, 32%, var(--xh-intent-a2));
+    --xh-intent-neutral-darkest: oklch(0.332 calc(0.017 * var(--xh-neutral-tint)) var(--xh-neutral-hue));
+    --xh-intent-neutral-darker: oklch(0.383 calc(0.018 * var(--xh-neutral-tint)) var(--xh-neutral-hue));
+    --xh-intent-neutral: oklch(0.453 calc(0.019 * var(--xh-neutral-tint)) var(--xh-neutral-hue));
+    --xh-intent-neutral-lighter: oklch(0.566 calc(0.02 * var(--xh-neutral-tint)) var(--xh-neutral-hue));
+    --xh-intent-neutral-lightest: oklch(0.621 calc(0.02 * var(--xh-neutral-tint)) var(--xh-neutral-hue));
 
     --xh-intent-primary: oklch(0.55 0.17 254);
     --xh-intent-primary-lighter: oklch(from var(--xh-intent-primary) 0.76 c h);
@@ -257,7 +256,7 @@ body {
   // Background (app / components in general)
   //-----------------------------------------
   // Primary background color for the application and component chrome.
-  --xh-bg: white;
+  --xh-bg: var(--xh-neutral-0);
   // Secondary/alternate background for sidebars, toolbars, and header areas.
   --xh-bg-alt: var(--xh-neutral-2);
   // Background highlight color for selections, hovers, and emphasis.
@@ -306,11 +305,11 @@ body {
   // Buttons
   //------------------------
   --xh-button-border-color: var(--xh-border-color);
-  --xh-button-bg: hsl(200, 8%, 88%);
-  --xh-button-bg-darker: hsl(200, 8%, 82%);
-  --xh-button-bg-darkest: hsl(200, 8%, 76%);
-  --xh-button-bg-lighter: hsl(200, 8%, 93%);
-  --xh-button-bg-lightest: hsl(200, 8%, 97%);
+  --xh-button-bg: oklch(0.908 calc(0.007 * var(--xh-neutral-tint)) var(--xh-neutral-hue));
+  --xh-button-bg-darker: oklch(0.862 calc(0.009 * var(--xh-neutral-tint)) var(--xh-neutral-hue));
+  --xh-button-bg-darkest: oklch(0.814 calc(0.011 * var(--xh-neutral-tint)) var(--xh-neutral-hue));
+  --xh-button-bg-lighter: oklch(0.947 calc(0.006 * var(--xh-neutral-tint)) var(--xh-neutral-hue));
+  --xh-button-bg-lightest: oklch(0.977 calc(0.003 * var(--xh-neutral-tint)) var(--xh-neutral-hue));
   --xh-button-border-radius: var(--xh-border-radius);
   --xh-button-disabled-opacity: 0.4;
   --xh-button-font-family: var(--xh-font-family);
@@ -323,11 +322,11 @@ body {
   --xh-button-active-box-shadow: #{inset 0 0 0 1px rgba(16, 22, 26, 0.2), inset 0 1px 2px rgba(16, 22, 26, 0.2)};
 
   &:where(.xh-dark) {
-    --xh-button-bg: hsl(200, 8%, 22%);
-    --xh-button-bg-darker: hsl(200, 8%, 18%);
-    --xh-button-bg-darkest: hsl(200, 8%, 14%);
-    --xh-button-bg-lighter: hsl(200, 8%, 30%);
-    --xh-button-bg-lightest: hsl(200, 8%, 38%);
+    --xh-button-bg: oklch(0.342 calc(0.017 * var(--xh-neutral-tint)) var(--xh-neutral-hue));
+    --xh-button-bg-darker: oklch(0.302 calc(0.016 * var(--xh-neutral-tint)) var(--xh-neutral-hue));
+    --xh-button-bg-darkest: oklch(0.26 calc(0.015 * var(--xh-neutral-tint)) var(--xh-neutral-hue));
+    --xh-button-bg-lighter: oklch(0.42 calc(0.019 * var(--xh-neutral-tint)) var(--xh-neutral-hue));
+    --xh-button-bg-lightest: oklch(0.494 calc(0.02 * var(--xh-neutral-tint)) var(--xh-neutral-hue));
 
     // This breaks the standard of having the active button bg default to the pressed bg, but in
     // dark mode having the active button take the darkest color simply does not read as "active" -

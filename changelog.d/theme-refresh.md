@@ -22,6 +22,8 @@
   contrast. The one exception is a warning button in the light theme, at 4.2:1.
 * Text and icons in an intent color now all read `--xh-intent-*-text-color`. Before, buttons, menu
   items, grid menu options and the `xh-intent-*` classes each used a different shade.
+* Standard buttons and the neutral intent now take the hue and tint of the neutral ramp, at the
+  lightness they had before. The light page background is step 0 of the ramp, which is white.
 * Toasts with an intent now take the Hoist intent colors, not fixed colors.
 * A `FormField` label keeps its color when the field is invalid. The required marker, the outline
   and the message show the error. A `FormFieldSet` shows a problem in its header and keeps a
