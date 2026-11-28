@@ -2,7 +2,8 @@
 
 * Added a neutral color ramp, `--xh-neutral-0` to `--xh-neutral-11`, that the grays of both themes
   now read. Two seed variables drive every step: `--xh-neutral-hue` and `--xh-neutral-tint`. An app
-  can set them to re-tint its whole theme, and contrast between steps holds.
+  can set them to re-tint its whole theme, and contrast between steps holds. The dark theme
+  sets its own hue, so set the hue for both themes to change it.
 * Added CSS variables for chart colors, scrollbar shape, tree grid group fills, the panel title
   border and the hover outline of an input (`--xh-form-field-hover-box-shadow`).
 

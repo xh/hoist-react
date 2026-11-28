@@ -87,6 +87,7 @@ body {
   //   --xh-neutral-hue  - OKLCH hue shared by every step.
   //   --xh-neutral-tint - multiplier on the chroma of every step. 0 gives a pure gray.
   // Each step holds its lightness when the seeds change, so contrast between steps is stable.
+  // The dark theme sets its own hue, to match the blue of its selection and hover fills.
   --xh-neutral-hue: 232;
   --xh-neutral-tint: 1;
   --xh-neutral-1: oklch(0.985 calc(0.002 * var(--xh-neutral-tint)) var(--xh-neutral-hue)); // stripe, subtle fill
@@ -104,6 +105,7 @@ body {
   &:where(.xh-dark) {
     // Lightness added to every dark surface and border step. Text steps do not move.
     --xh-neutral-depth: 0;
+    --xh-neutral-hue: 245;
     --xh-neutral-0: oklch(calc(0.135 + var(--xh-neutral-depth)) calc(0.008 * var(--xh-neutral-tint)) var(--xh-neutral-hue)); // sunken: tracks, wells
     --xh-neutral-1: oklch(calc(0.17 + var(--xh-neutral-depth)) calc(0.01 * var(--xh-neutral-tint)) var(--xh-neutral-hue)); // app background
     --xh-neutral-2: oklch(calc(0.195 + var(--xh-neutral-depth)) calc(0.011 * var(--xh-neutral-tint)) var(--xh-neutral-hue)); // stripe
@@ -1260,7 +1262,7 @@ body {
   //------------------------------
   // Titles (e.g. panels, dialogs)
   //------------------------------
-  --xh-title-bg: var(--xh-blue-gray);
+  --xh-title-bg: oklch(0.522 calc(0.036 * var(--xh-neutral-tint)) var(--xh-neutral-hue));
   --xh-title-text-color: var(--xh-blue-gray-light);
   --xh-title-font-family: var(--xh-font-family-headings);
   --xh-title-font-size: var(--xh-font-size-large);
