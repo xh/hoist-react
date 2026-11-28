@@ -36,6 +36,10 @@
         }
       }
 
+      &:hover:not(.xh-select__control--is-focused, .xh-select__control--is-disabled) {
+        box-shadow: var(--xh-form-field-hover-box-shadow);
+      }
+
       &--is-focused {
         box-shadow: var(--xh-form-field-focused-box-shadow);
       }

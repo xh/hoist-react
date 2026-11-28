@@ -9,3 +9,9 @@ ul.xh-form-field-set-tooltip {
   margin: 0;
   padding: 0 1em 0 2em;
 }
+
+// A field set shows a validation problem in its header. Its border stays neutral, so a form with
+// errors does not become a stack of colored boxes.
+.xh-form-field-set:is(.xh-card--intent-danger, .xh-card--intent-warning) {
+  border-color: var(--xh-card-border-color);
+}

@@ -962,6 +962,14 @@ textarea.xh-text-area,
   box-shadow: var(--xh-form-field-box-shadow);
 }
 
+// A stronger outline on hover shows that an input is live before it takes focus.
+:is(.xh-input-group__input, .xh-text-area):is(.xh-input-group__input, .xh-text-area):hover:not(
+    :focus,
+    :disabled
+  ) {
+  box-shadow: var(--xh-form-field-hover-box-shadow);
+}
+
 .xh-control,
 .xh-dark .xh-control {
   input:focus ~ .xh-control__indicator {

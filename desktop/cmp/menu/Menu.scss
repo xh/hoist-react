@@ -590,37 +590,19 @@ button.xh-menu-item {
     }
 
     &.xh-menu-item--intent-primary {
-      color: var(--xh-intent-primary);
+      color: var(--xh-intent-primary-text-color);
     }
 
     &.xh-menu-item--intent-success {
-      color: var(--xh-intent-success);
+      color: var(--xh-intent-success-text-color);
     }
 
     &.xh-menu-item--intent-warning {
-      color: var(--xh-intent-warning);
+      color: var(--xh-intent-warning-text-color);
     }
 
     &.xh-menu-item--intent-danger {
-      color: var(--xh-intent-danger);
-    }
-
-    .xh-dark & {
-      &.xh-menu-item--intent-primary {
-        color: var(--xh-intent-primary-lighter);
-      }
-
-      &.xh-menu-item--intent-success {
-        color: var(--xh-intent-success-lighter);
-      }
-
-      &.xh-menu-item--intent-warning {
-        color: var(--xh-intent-warning-lighter);
-      }
-
-      &.xh-menu-item--intent-danger {
-        color: var(--xh-intent-danger-lighter);
-      }
+      color: var(--xh-intent-danger-text-color);
     }
   }
 

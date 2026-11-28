@@ -2521,7 +2521,7 @@ a.xh-button.xh-button--disabled {
       }
 
       &.xh-button--intent-primary {
-        color: var(--xh-intent-primary-darker);
+        color: var(--xh-intent-primary-text-color);
         background-color: transparent;
         border-color: var(--xh-intent-primary);
         &.xh-button--active,
@@ -2539,7 +2539,7 @@ a.xh-button.xh-button--disabled {
       }
 
       &.xh-button--intent-success {
-        color: var(--xh-intent-success-darker);
+        color: var(--xh-intent-success-text-color);
         background-color: transparent;
         border-color: var(--xh-intent-success);
         &.xh-button--active,
@@ -2557,7 +2557,7 @@ a.xh-button.xh-button--disabled {
       }
 
       &.xh-button--intent-warning {
-        color: var(--xh-intent-warning-darker);
+        color: var(--xh-intent-warning-text-color);
         background-color: transparent;
         border-color: var(--xh-intent-warning);
         &.xh-button--active,
@@ -2575,7 +2575,7 @@ a.xh-button.xh-button--disabled {
       }
 
       &.xh-button--intent-danger {
-        color: var(--xh-intent-danger-darker);
+        color: var(--xh-intent-danger-text-color);
         background-color: transparent;
         border-color: var(--xh-intent-danger);
         &.xh-button--active,
@@ -2713,7 +2713,7 @@ a.xh-button.xh-button--disabled {
       }
 
       &.xh-button--intent-primary {
-        color: var(--xh-intent-primary-lighter);
+        color: var(--xh-intent-primary-text-color);
         background-color: transparent;
         border-color: var(--xh-intent-primary-lighter);
         &.xh-button--active,
@@ -2731,7 +2731,7 @@ a.xh-button.xh-button--disabled {
       }
 
       &.xh-button--intent-success {
-        color: var(--xh-intent-success-lighter);
+        color: var(--xh-intent-success-text-color);
         background-color: transparent;
         border-color: var(--xh-intent-success-lighter);
         &.xh-button--active,
@@ -2749,7 +2749,7 @@ a.xh-button.xh-button--disabled {
       }
 
       &.xh-button--intent-warning {
-        color: var(--xh-intent-warning-lighter);
+        color: var(--xh-intent-warning-text-color);
         background-color: transparent;
         border-color: var(--xh-intent-warning-lighter);
         &.xh-button--active,
@@ -2767,7 +2767,7 @@ a.xh-button.xh-button--disabled {
       }
 
       &.xh-button--intent-danger {
-        color: var(--xh-intent-danger-lighter);
+        color: var(--xh-intent-danger-text-color);
         background-color: transparent;
         border-color: var(--xh-intent-danger-lighter);
         &.xh-button--active,

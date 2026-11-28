@@ -10,22 +10,20 @@
 //-----------------------------------------------
 // Theme variables
 //-----------------------------------------------
-// Colors that the base component styles take from Blueprint, which differ between themes.
+// Colors that the base component styles share. Each reads the neutral ramp or a theme text color,
+// so it follows the theme.
 body {
-  --xh-base-surface-bg: oklch(from #5f6b7c calc(l * 1.909) calc(c * 0) h);
-  --xh-base-surface-border-color: oklch(from #5f6b7c l c h / 0.12);
-  --xh-base-surface-border-color-strong: oklch(from #5f6b7c l c h / 0.25);
-  --xh-base-text-color: #1c2127;
-  --xh-base-text-color-muted: #5f6b7c;
-  --xh-base-text-color-disabled: oklch(from #5f6b7c l c h / 0.6);
+  --xh-base-surface-bg: var(--xh-bg);
+  --xh-base-surface-border-color: oklch(from var(--xh-neutral-8) l c h / 0.12);
+  --xh-base-surface-border-color-strong: oklch(from var(--xh-neutral-8) l c h / 0.25);
+  --xh-base-text-color: var(--xh-text-color);
+  --xh-base-text-color-muted: var(--xh-text-color-muted);
+  --xh-base-text-color-disabled: oklch(from var(--xh-base-text-color-muted) l c h / 0.6);
 
   &.xh-dark {
-    --xh-base-surface-bg: oklch(from #5f6b7c calc(l * 0.362) calc(c * 0.308) calc(h + -1.44));
-    --xh-base-surface-border-color: oklch(from #fff l c h / 0.2);
-    --xh-base-surface-border-color-strong: oklch(from #fff l c h / 0.3);
-    --xh-base-text-color: #f6f7f9;
-    --xh-base-text-color-muted: #abb3bf;
-    --xh-base-text-color-disabled: oklch(from #abb3bf l c h / 0.6);
+    --xh-base-surface-bg: var(--xh-neutral-2);
+    --xh-base-surface-border-color: oklch(from var(--xh-neutral-11) l c h / 0.2);
+    --xh-base-surface-border-color-strong: oklch(from var(--xh-neutral-11) l c h / 0.3);
   }
 }
 

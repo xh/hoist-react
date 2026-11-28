@@ -47,8 +47,16 @@ body.xh-app {
     background-color: var(--xh-scrollbar-bg);
   }
 
+  // A transparent border insets the thumb from the track edge, since a thumb takes no margin.
   ::-webkit-scrollbar-thumb {
     background-color: var(--xh-scrollbar-thumb-color);
+    background-clip: padding-box;
+    border: var(--xh-scrollbar-thumb-inset) solid transparent;
+    border-radius: var(--xh-scrollbar-thumb-border-radius);
+
+    &:hover {
+      background-color: var(--xh-scrollbar-thumb-hover-color);
+    }
   }
 
   h1,
@@ -102,10 +110,10 @@ body.xh-app {
   .xh-yellow-light { color: var(--xh-yellow-light); }
 
   // Colors - intents
-  .xh-intent-primary { color: var(--xh-intent-primary); }
-  .xh-intent-danger { color: var(--xh-intent-danger); }
-  .xh-intent-success { color: var(--xh-intent-success); }
-  .xh-intent-warning { color: var(--xh-intent-warning); }
+  .xh-intent-primary { color: var(--xh-intent-primary-text-color); }
+  .xh-intent-danger { color: var(--xh-intent-danger-text-color); }
+  .xh-intent-success { color: var(--xh-intent-success-text-color); }
+  .xh-intent-warning { color: var(--xh-intent-warning-text-color); }
   .xh-bg-intent-primary {
     background-color: var(--xh-intent-primary);
     color: white;

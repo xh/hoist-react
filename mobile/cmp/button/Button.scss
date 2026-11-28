@@ -99,7 +99,7 @@
       }
 
       &.xh-button--intent-primary {
-        color: var(--xh-intent-primary-darker);
+        color: var(--xh-intent-primary-text-color);
         &.xh-button--active,
         &.xh-button--enabled:active {
           background-color: var(--xh-intent-primary-trans2);
@@ -107,7 +107,7 @@
       }
 
       &.xh-button--intent-success {
-        color: var(--xh-intent-success-darker);
+        color: var(--xh-intent-success-text-color);
         &.xh-button--active,
         &.xh-button--enabled:active {
           background-color: var(--xh-intent-success-trans2);
@@ -115,7 +115,7 @@
       }
 
       &.xh-button--intent-warning {
-        color: var(--xh-intent-warning-darker);
+        color: var(--xh-intent-warning-text-color);
         &.xh-button--active,
         &.xh-button--enabled:active {
           background-color: var(--xh-intent-warning-trans2);
@@ -123,7 +123,7 @@
       }
 
       &.xh-button--intent-danger {
-        color: var(--xh-intent-danger-darker);
+        color: var(--xh-intent-danger-text-color);
         &.xh-button--active,
         &.xh-button--enabled:active {
           background-color: var(--xh-intent-danger-trans2);
@@ -149,7 +149,7 @@
       }
 
       &.xh-button--intent-primary {
-        color: var(--xh-intent-primary-darker);
+        color: var(--xh-intent-primary-text-color);
         border-color: var(--xh-intent-primary);
         &.xh-button--active,
         &.xh-button--enabled:active {
@@ -158,7 +158,7 @@
       }
 
       &.xh-button--intent-success {
-        color: var(--xh-intent-success-darker);
+        color: var(--xh-intent-success-text-color);
         border-color: var(--xh-intent-success);
         &.xh-button--active,
         &.xh-button--enabled:active {
@@ -167,7 +167,7 @@
       }
 
       &.xh-button--intent-warning {
-        color: var(--xh-intent-warning-darker);
+        color: var(--xh-intent-warning-text-color);
         border-color: var(--xh-intent-warning);
         &.xh-button--active,
         &.xh-button--enabled:active {
@@ -176,7 +176,7 @@
       }
 
       &.xh-button--intent-danger {
-        color: var(--xh-intent-danger-darker);
+        color: var(--xh-intent-danger-text-color);
         border-color: var(--xh-intent-danger);
         &.xh-button--active,
         &.xh-button--enabled:active {
@@ -209,22 +209,18 @@
       }
 
       &.xh-button--intent-primary {
-        color: var(--xh-intent-primary-lighter);
         border-color: var(--xh-intent-primary-lighter);
       }
 
       &.xh-button--intent-success {
-        color: var(--xh-intent-success-lighter);
         border-color: var(--xh-intent-success-lighter);
       }
 
       &.xh-button--intent-warning {
-        color: var(--xh-intent-warning-lighter);
         border-color: var(--xh-intent-warning-lighter);
       }
 
       &.xh-button--intent-danger {
-        color: var(--xh-intent-danger-lighter);
         border-color: var(--xh-intent-danger-lighter);
       }
     }
