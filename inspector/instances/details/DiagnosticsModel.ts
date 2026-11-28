@@ -11,9 +11,9 @@ import {BaseDiagnostics} from '@xh/hoist/core/impl/BaseDiagnostics';
 import {fmtDate, numberRenderer} from '@xh/hoist/format';
 import {action} from '@xh/hoist/mobx';
 import {Cube} from '@xh/hoist/data';
+import {parseNameSource} from '@xh/hoist/utils/js';
 import {forIn, isEmpty, isFinite} from 'lodash';
-import {instanceLabel} from '../impl/InspectorUtils';
-import type {InstancesModel} from './InstancesModel';
+import type {InstancesModel} from '../InstancesModel';
 
 /**
  * Displays the data-pipeline `diagnostics` published by any currently selected instances that
@@ -57,7 +57,7 @@ export class DiagnosticsModel extends HoistModel {
     private get diagnosticSources(): DiagnosticSource[] {
         const ret: DiagnosticSource[] = [];
         this.parent.selectedInstances.forEach(inst => {
-            const label = instanceLabel(inst),
+            const label = parseNameSource(inst),
                 diag = (inst as any).diagnostics;
             if (diag instanceof BaseDiagnostics) {
                 ret.push({xhId: inst.xhId, diag, label});
@@ -65,7 +65,7 @@ export class DiagnosticsModel extends HoistModel {
                 ret.push({
                     xhId: inst.xhId,
                     diag: inst.store.diagnostics,
-                    label: `${label} › ${instanceLabel(inst.store)}`
+                    label: `${label} › ${parseNameSource(inst.store)}`
                 });
             }
         });
