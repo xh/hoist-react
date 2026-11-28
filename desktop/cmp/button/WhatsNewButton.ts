@@ -25,7 +25,7 @@ export const [WhatsNewButton, whatsNewButton] = hoistCmp.withFactory<WhatsNewBut
         if (!XH.changelogService.currentVersionIsUnread) return null;
         return button({
             icon: Icon.gift(),
-            title: `What's New?`,
+            tooltip: props.title ? null : `What's New?`,
             intent: 'primary',
             onClick: () => XH.showChangelog(),
             ...props

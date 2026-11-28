@@ -13,7 +13,7 @@ import {formField} from '@xh/hoist/desktop/cmp/form';
 import {select, textArea, textInput} from '@xh/hoist/desktop/cmp/input';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
-import {dialog} from '@xh/hoist/kit/blueprint';
+import {dialog} from '@xh/hoist/desktop/cmp/dialog';
 import {getTestId} from '@xh/hoist/utils/js';
 import {startCase} from 'lodash';
 import {groupField} from './editpanels/GroupField';
@@ -50,8 +50,8 @@ const formPanel = hoistCmp.factory<SaveAsDialogModel>({
             visOptions = getVisibilityOptions(parent),
             visInfo = getVisibilityInfo(parent, visibility);
 
-        // Blueprint's Dialog does not pass `data-testid` through, so tag the panel within it.
-        // The form takes the same testId to derive one for each field.
+        // The panel takes the testId, so tests can target the dialog's content. The form takes
+        // the same testId to derive one for each field.
         return panel({
             testId,
             children: form({

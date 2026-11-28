@@ -8,6 +8,7 @@ import {form} from '@xh/hoist/cmp/form';
 import type {GridModel} from '@xh/hoist/cmp/grid';
 import {grid, gridCountLabel} from '@xh/hoist/cmp/grid';
 import {filler, hbox, hframe, hspacer, span, strong, vbox, vframe} from '@xh/hoist/cmp/layout';
+import {tooltip} from '@xh/hoist/cmp/tooltip';
 import type {HoistProps} from '@xh/hoist/core';
 import {hoistCmp, uses} from '@xh/hoist/core';
 import {banner} from '@xh/hoist/desktop/cmp/banner';
@@ -20,7 +21,6 @@ import {recordActionBar} from '@xh/hoist/desktop/cmp/record';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {capitalizeWords} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
-import {tooltip} from '@xh/hoist/kit/blueprint';
 import type {RoleMemberType} from '../../Types';
 import {RoleFormModel} from './RoleFormModel';
 

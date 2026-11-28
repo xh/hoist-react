@@ -24,6 +24,64 @@
     background: var(--xh-slider-track-bg);
   }
 
+  // A vertical slider, for `SliderProps.vertical`. The track runs bottom to top, filling the height
+  // of the wrapper within its padding, with labels to its right.
+  .bp6-slider.bp6-vertical {
+    width: 40px;
+    min-width: 40px;
+    height: 100%;
+
+    .bp6-slider-track {
+      top: 0;
+      bottom: 0;
+      left: 5px;
+      width: 6px;
+      height: auto;
+    }
+
+    .bp6-slider-progress {
+      width: 6px;
+      height: auto;
+    }
+
+    .bp6-slider-label {
+      transform: translate(20px, 50%);
+    }
+
+    .bp6-slider-handle {
+      top: auto;
+
+      .bp6-slider-label {
+        margin-left: 0;
+        margin-top: -8px;
+      }
+
+      // Range handles are half-height, each flush against its value.
+      &.bp6-start,
+      &.bp6-end {
+        width: 16px;
+        height: 8px;
+        margin-left: 0;
+      }
+
+      &.bp6-start {
+        border-top-left-radius: 0;
+        border-bottom-right-radius: var(--bp-surface-border-radius);
+
+        .bp6-slider-label {
+          transform: translate(20px);
+        }
+      }
+
+      &.bp6-end {
+        margin-bottom: 8px;
+        border-top-left-radius: var(--bp-surface-border-radius);
+        border-bottom-left-radius: 0;
+        border-bottom-right-radius: 0;
+      }
+    }
+  }
+
   .bp6-slider-label {
     white-space: nowrap;
   }

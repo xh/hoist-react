@@ -4,7 +4,6 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import type {ButtonGroupProps as BpButtonGroupProps} from '@blueprintjs/core';
 import type {
     DomAttrsProps,
     HoistModel,
@@ -15,10 +14,11 @@ import type {
 } from '@xh/hoist/core';
 import {hoistCmp} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
-import {buttonGroup as bpButtonGroup} from '@xh/hoist/kit/blueprint';
 import {TEST_ID} from '@xh/hoist/utils/js';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
-import type {SetOptional} from 'type-fest';
+import classNames from 'classnames';
+import type {HTMLAttributes} from 'react';
+import {createElement} from 'react';
 
 export interface ButtonGroupProps<M extends HoistModel = null>
     extends
@@ -27,19 +27,23 @@ export interface ButtonGroupProps<M extends HoistModel = null>
         StyleProps,
         TestSupportProps,
         DomAttrsProps,
-        SetOptional<Omit<BpButtonGroupProps, 'ref'>, 'children'> {
+        HTMLAttributes<HTMLDivElement> {
     /** True to have all buttons fill available width equally. */
     fill?: boolean;
 
     /** True to render each button with minimal surrounding chrome (default false). */
     minimal?: boolean;
 
+    /** True to render each button with an outline (default false). */
+    outlined?: boolean;
+
     /** True to render in a vertical orientation. */
     vertical?: boolean;
 }
 
 /**
- * Wrapper around Blueprint's ButtonGroup component, with LayoutSupport.
+ * Joins adjacent buttons into a single control, with LayoutSupport. Relays any other native `<div>`
+ * attributes and event handlers to the underlying element.
  */
 export const [ButtonGroup, buttonGroup] = hoistCmp.withFactory<ButtonGroupProps>({
     displayName: 'ButtonGroup',
@@ -47,12 +51,13 @@ export const [ButtonGroup, buttonGroup] = hoistCmp.withFactory<ButtonGroupProps>
     className: 'xh-button-group',
 
     render(props, ref) {
-        const [layoutProps, {fill, minimal, vertical, style, testId, domAttrs, ...rest}] =
-            splitLayoutProps(props);
-        return bpButtonGroup({
-            fill,
-            minimal,
-            vertical,
+        const [
+            layoutProps,
+            {className, fill, minimal, outlined, vertical, style, testId, domAttrs, ...rest}
+        ] = splitLayoutProps(props);
+
+        // Blueprint's class names are kept, so its styles and app CSS keyed to them apply.
+        return createElement('div', {
             [TEST_ID]: testId,
             ...domAttrs,
             style: {
@@ -60,7 +65,17 @@ export const [ButtonGroup, buttonGroup] = hoistCmp.withFactory<ButtonGroupProps>
                 ...layoutProps
             },
             ref,
-            ...(rest as BpButtonGroupProps)
+            ...rest,
+            className: classNames(
+                'bp6-button-group',
+                {
+                    'xh-button-group--fill bp6-fill': fill,
+                    'xh-button-group--minimal bp6-minimal': minimal,
+                    'xh-button-group--outlined bp6-outlined': outlined,
+                    'xh-button-group--vertical bp6-vertical': vertical
+                },
+                className
+            )
         });
     }
 });

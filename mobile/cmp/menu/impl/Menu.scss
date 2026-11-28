@@ -82,6 +82,14 @@
         min-height: var(--xh-menu-item-height);
         line-height: 1.2em;
       }
+
+      // Holds `MenuItem.rightElement`.
+      &__right {
+        display: flex;
+        flex: none;
+        align-items: center;
+        margin-left: var(--xh-spacing);
+      }
     }
   }
 }

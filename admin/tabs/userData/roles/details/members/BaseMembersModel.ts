@@ -7,10 +7,9 @@
 import type {RowDoubleClickedEvent} from '@xh/hoist/kit/ag-grid';
 import type {ColumnRenderer, ColumnTooltipFn} from '@xh/hoist/cmp/grid';
 import {GridModel} from '@xh/hoist/cmp/grid';
-import {hbox} from '@xh/hoist/cmp/layout';
+import {div, hbox} from '@xh/hoist/cmp/layout';
 import type {PlainObject} from '@xh/hoist/core';
 import {HoistModel, lookup, managed} from '@xh/hoist/core';
-import {tag} from '@xh/hoist/kit/blueprint';
 import classNames from 'classnames';
 import {partition, sortBy, uniq} from 'lodash';
 import type {ReactNode} from 'react';
@@ -75,12 +74,11 @@ export abstract class BaseMembersModel extends HoistModel {
             className: 'roles-renderer',
             children: sources.map(role => {
                 const isThisRole = role === this.selectedRole.name;
-                return tag({
+                return roleTag({
                     className: classNames(
                         'roles-renderer__role',
                         !isThisRole && 'roles-renderer__role--effective'
                     ),
-                    minimal: true,
                     children: isThisRole ? '<Direct>' : role,
                     onDoubleClick: isThisRole ? null : () => this.roleModel.selectRoleAsync(role)
                 });
@@ -145,4 +143,25 @@ export abstract class BaseMembersModel extends HoistModel {
         const data = role ? this.getGridData(role) : [];
         this.gridModel.loadData(data);
     }
+}
+
+/**
+ * A tag naming a role, styled as a `tagsRenderer` tag.
+ * @internal
+ */
+export function roleTag({
+    className,
+    children,
+    ...rest
+}: {
+    className?: string;
+    children: string;
+    title?: string;
+    onDoubleClick?: () => void;
+}) {
+    return div({
+        ...rest,
+        className: classNames('xh-tags-renderer__tag', className),
+        children
+    });
 }

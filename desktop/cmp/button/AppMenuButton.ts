@@ -5,14 +5,14 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {div} from '@xh/hoist/cmp/layout';
+import {popover} from '@xh/hoist/cmp/popover';
 import type {HoistProps, HoistUser, MenuItemLike} from '@xh/hoist/core';
 import {hoistCmp, XH} from '@xh/hoist/core';
 import type {ButtonProps} from '@xh/hoist/desktop/cmp/button';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
-import {menu, popover} from '@xh/hoist/kit/blueprint';
-import {parseMenuItems} from '@xh/hoist/desktop/cmp/menu/impl/MenuItems';
+import {menu} from '@xh/hoist/desktop/cmp/menu';
 import {withDefault} from '@xh/hoist/utils/js';
 import {isFunction} from 'lodash';
 import type {ReactNode} from 'react';
@@ -107,7 +107,7 @@ export const [AppMenuButton, appMenuButton] = hoistCmp.withFactory<AppMenuButton
             popoverClassName: 'xh-app-menu-popover',
             content: menu({
                 className: 'xh-app-menu',
-                children: buildMenuItems(props)
+                menuItems: buildMenuItems(props)
             })
         });
     }
@@ -130,7 +130,7 @@ const userProfile = hoistCmp.factory<
     }
 });
 
-function buildMenuItems(props: AppMenuButtonProps) {
+function buildMenuItems(props: AppMenuButtonProps): MenuItemLike[] {
     let {
         hideAboutItem,
         hideAdminItem,
@@ -205,5 +205,5 @@ function buildMenuItems(props: AppMenuButtonProps) {
         }
     ];
 
-    return parseMenuItems([...extraItems, '-', ...defaultItems]);
+    return [...extraItems, '-', ...defaultItems];
 }

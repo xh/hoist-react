@@ -19,7 +19,8 @@ import type {HoistProps, TestSupportProps} from '@xh/hoist/core';
 import {elementFactory, hoistCmp, refreshContextView, uses} from '@xh/hoist/core';
 import {dashCanvasAddViewButton} from '@xh/hoist/desktop/cmp/button/DashCanvasAddViewButton';
 import '@xh/hoist/desktop/register';
-import {Classes, overlay, showContextMenu} from '@xh/hoist/kit/blueprint';
+import {OVERLAY_SCROLL_CONTAINER, overlay} from '@xh/hoist/desktop/cmp/dialog/impl/Overlay';
+import {showContextMenu} from '@xh/hoist/desktop/cmp/contextmenu/impl/ShowContextMenu';
 import {consumeEvent, mergeDeep, TEST_ID} from '@xh/hoist/utils/js';
 import classNames from 'classnames';
 import {useCallback, useEffect, useRef, useState} from 'react';
@@ -193,12 +194,11 @@ const emptyContainerOverlay = hoistCmp.factory<DashCanvasModel>(({model}) => {
     if (!isEmpty) return null;
 
     return overlay({
-        className: `xh-dash-canvas--empty-overlay ${Classes.OVERLAY_SCROLL_CONTAINER}`,
+        className: `xh-dash-canvas--empty-overlay ${OVERLAY_SCROLL_CONTAINER}`,
         autoFocus: true,
         isOpen: true,
         canEscapeKeyClose: false,
         usePortal: false,
-        enforceFocus: false,
         children: vbox({
             alignItems: 'center',
             children: [div(emptyText), vspacer(10), dashCanvasAddViewButton()]

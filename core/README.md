@@ -707,17 +707,15 @@ is a slightly more direct alternative.
 #### The `$items` / `$item` / `$omit` Escape Hatch
 
 The factory treats `item`, `items`, and `omit` as spec keys, so a component with its own prop of
-one of those names cannot receive it directly. Blueprint's `OverflowList` is one example. Prefix
+one of those names cannot receive it directly. A third-party list component with an `items` prop is one example. Prefix
 the key with `$` to pass it through as a real prop. The factory strips the `$` before the prop
 reaches the component.
 
 ```typescript
-// `overflowList` is from Blueprint and has its own `items` prop.
+// `tagList` is a component with its own `items` prop.
 // Use `$items` to pass an array as a regular prop (not as Hoist children).
-overflowList({
-    $items: Children.toArray(children),
-    minVisibleItems: 3,
-    visibleItemRenderer: item => item
+tagList({
+    $items: ['Equities', 'Rates']
 });
 ```
 

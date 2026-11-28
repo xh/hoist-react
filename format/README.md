@@ -641,7 +641,7 @@ Hoist does not yet offer built-in localization, but it is on the roadmap. Today 
 and US conventions: its own UI text (buttons, menus, prompts) is English, `fmtDate()` uses MomentJS's
 default `en` locale, `fmtNumber()` uses `Intl.NumberFormat` fixed to `en-US`, and the calendars of
 both desktop and mobile `DateInput` are fixed to date-fns' `en-US` locale. Each of these libraries -
-along with ag-Grid, Highcharts, and Blueprint - supports other locales, so localizing a Hoist app is
+along with ag-Grid and Highcharts - supports other locales, so localizing a Hoist app is
 achievable, but it means coordinating all of them and is not yet a turnkey setting.
 
 ## Related Packages

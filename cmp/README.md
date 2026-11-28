@@ -19,7 +19,7 @@ Components in `/cmp/` fall into two categories:
 ├── Used directly by apps OR wrapped by platform packages
 │
 ├── /desktop/
-│   ├── Extends /cmp/ components with Blueprint UI
+│   ├── Extends /cmp/ components with mouse- and keyboard-oriented UI
 │   ├── Adds desktop-specific inputs, panels, toolbars
 │   └── Desktop app container and shell
 │
@@ -35,7 +35,7 @@ Both `GridModel` and the `Grid` component itself are fully cross-platform - appl
 and use them identically on desktop and mobile. The platform-specific packages provide *helper*
 components built with platform-appropriate UI libraries:
 
-- `/desktop/cmp/grid/` - Cell editors, column chooser dialog, filter UI (using Blueprint)
+- `/desktop/cmp/grid/` - Cell editors, column chooser dialog, filter UI
 - `/mobile/cmp/grid/` - Column chooser sheet
 
 The core grid functionality (sorting, grouping, selection, data binding) works the same everywhere.
@@ -211,6 +211,7 @@ techniques.
 | `/markdown/` | Markdown rendering component |
 | `/pdfviewer/` | PDF document viewer built on pdf.js. [See README](./pdfviewer/README.md) |
 | `/pinpad/` | PIN entry interface |
+| `/popover/` | Content that floats beside a target, opened by click or hover (Popover). [See README](./popover/README.md) |
 | `/relativetimestamp/` | Human-readable relative time display |
 | `/websocket/` | WebSocket indicator component |
 
@@ -357,6 +358,11 @@ in as many columns as the width allows. See the
 A short note set off within a body of content, with an intent, its icon, an optional title and a
 body. Use it for a caveat or a warning inside content, and a `Banner` for a status strip in panel
 chrome. See the [Callout README](./callout/README.md).
+
+### Popover (`/popover/`)
+
+Content that floats beside a target element, opened by a click or hover on the target. Desktop
+menus, pickers and choosers open in it. See the [Popover README](./popover/README.md).
 
 ### ProgressBar (`/progressbar/`)
 

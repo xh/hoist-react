@@ -37,7 +37,7 @@ export const [RefreshButton, refreshButton] = hoistCmp.withFactory<RefreshButton
         return button({
             ref,
             icon: Icon.refresh(),
-            title: 'Refresh',
+            tooltip: props.title ? null : 'Refresh',
             intent: 'success',
             onClick,
             ...props

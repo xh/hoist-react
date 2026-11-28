@@ -4,7 +4,6 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import bpPkg from '@blueprintjs/core/package.json';
 import type {InitContext} from '@xh/hoist/core';
 import {HoistService, XH} from '@xh/hoist/core';
 import {agGridVersion} from '@xh/hoist/kit/ag-grid';
@@ -71,7 +70,6 @@ export class EnvironmentService extends HoistService {
                             hoistReactVersion: hoistPkg.version,
                             agGridVersion,
                             mobxVersion: mobxPkg.version,
-                            blueprintCoreVersion: bpPkg.version,
                             clientTimeZone,
                             clientTimeZoneOffset
                         },

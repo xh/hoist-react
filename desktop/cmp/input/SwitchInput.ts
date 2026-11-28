@@ -9,9 +9,9 @@ import {HoistInputModel, useHoistInputModel} from '@xh/hoist/cmp/input';
 import type {HoistProps, HSide, StyleProps} from '@xh/hoist/core';
 import {hoistCmp} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
-import {switchControl} from '@xh/hoist/kit/blueprint';
 import {TEST_ID, withDefault} from '@xh/hoist/utils/js';
 import type {ReactNode} from 'react';
+import {control} from './impl/Control';
 import './SwitchInput.scss';
 
 export interface SwitchInputProps extends HoistProps, HoistInputProps, StyleProps {
@@ -51,25 +51,29 @@ class SwitchInputModel extends HoistInputModel {
 const cmp = hoistCmp.factory<SwitchInputModel>(({model, className, ...props}, ref) => {
     const labelSide = withDefault(props.labelSide, 'right');
 
-    return switchControl({
-        checked: !!model.renderValue,
+    const alignIndicator = labelSide === 'left' ? 'right' : 'left',
+        inline = withDefault(props.inline, true),
+        inputProps = {
+            checked: !!model.renderValue,
+            disabled: props.disabled,
+            tabIndex: props.tabIndex,
+            id: props.id,
+            [TEST_ID]: props.testId,
+            ...props.domAttrs,
+            onBlur: model.onBlur,
+            onFocus: model.onFocus,
+            onChange: e => model.noteValueChange(e.target.checked)
+        };
 
-        alignIndicator: labelSide === 'left' ? 'right' : 'left',
-        disabled: props.disabled,
-        inline: withDefault(props.inline, true),
+    return control({
+        kind: 'switch',
+        alignIndicator,
+        inline,
         label: props.label,
-        style: props.style,
-        tabIndex: props.tabIndex,
-
-        id: props.id,
         className,
-
-        [TEST_ID]: props.testId,
-        ...props.domAttrs,
-        onBlur: model.onBlur,
-        onFocus: model.onFocus,
-        onChange: e => model.noteValueChange(e.target.checked),
-        inputRef: model.inputRef,
-        ref
+        style: props.style,
+        ref,
+        inputRef: model.inputRef as any,
+        inputProps
     });
 });

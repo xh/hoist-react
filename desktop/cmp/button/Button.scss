@@ -42,8 +42,8 @@
     }
 
     &.xh-button--autofocus-enabled {
-      // Hoist calls FocusStyleManager.onlyShowFocusOnTabs(), which by default hides focus indicators
-      // unless a component has been tabbed into via keyboard. Override here to always show a focus
+      // Hoist hides focus indicators (see `installFocusStyle()`) unless a component has been
+      // tabbed into via keyboard. Override here to always show a focus
       // indicator for an autoFocus button so it's clear that it has focus.
       &:focus {
         outline: var(--xh-focus-outline) !important;
@@ -71,13 +71,46 @@
       }
 
       &.xh-button--enabled {
-        // Hoist calls FocusStyleManager.onlyShowFocusOnTabs(), which by default hides focus indicators
-        // unless a component has been tabbed into via keyboard. Override here to always show a focus
+        // Hoist hides focus indicators (see `installFocusStyle()`) unless a component has been
+        // tabbed into via keyboard. Override here to always show a focus
         // indicator for a programmatically focused button so it's clear that it has focus.
         &:focus {
           outline: var(--xh-focus-outline) !important;
           outline-offset: var(--xh-focus-outline-offset) !important;
         }
+      }
+    }
+
+    // A popover target, such as a menu button's, sits in the group like a plain button.
+    > .xh-popover__target-wrapper {
+      display: flex;
+      flex: 1 1 auto;
+    }
+
+    &--fill {
+      display: flex;
+      width: 100%;
+    }
+
+    &--vertical {
+      flex-direction: column;
+      align-items: stretch;
+      vertical-align: top;
+
+      &.xh-button-group--fill {
+        width: unset;
+        height: 100%;
+      }
+
+      .xh-button {
+        width: 100%;
+      }
+
+      // Standard buttons overlap their borders top to bottom, rather than side to side.
+      &:not(.xh-button-group--minimal):not(.xh-button-group--outlined)
+        > .xh-button:not(:last-child) {
+        margin-right: 0;
+        margin-bottom: calc(-1 * var(--bp-surface-border-width));
       }
     }
 
@@ -528,10 +561,11 @@
 }
 
 //------------------------
-// Header "tool" buttons in panels and docks
+// Header "tool" buttons in panels, docks and dialogs
 // Adjustment needed only in light theme.
 //------------------------
 *:not(.xh-dark) {
+  .xh-dialog__header,
   .xh-dock-view__header,
   .xh-panel-header__items,
   .xh-panel-header--right,
@@ -545,6 +579,24 @@
           &:active {
             background-color: var(--xh-intent-neutral-trans2);
           }
+        }
+      }
+    }
+  }
+}
+
+// A dialog's title bar keeps its color in the dark theme, so the standard dark hover - a darker
+// background - shows as a dark block on it. Tint with the title text color instead.
+.xh-app.xh-dark,
+.xh-app.xh-dark.bp6-dark {
+  .xh-dialog__header .xh-button.bp6-button.xh-button--minimal {
+    &.xh-button--intent-none {
+      &.xh-button--enabled {
+        &:hover:not(:active):not(.xh-button--active):not(.bp6-active) {
+          background-color: color-mix(in srgb, currentColor 15%, transparent);
+        }
+        &:active {
+          background-color: color-mix(in srgb, currentColor 25%, transparent);
         }
       }
     }

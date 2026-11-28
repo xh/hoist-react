@@ -16,7 +16,7 @@ import {button, refreshButton} from '@xh/hoist/desktop/cmp/button';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {toolbar, toolbarSep} from '@xh/hoist/desktop/cmp/toolbar';
 import {Icon} from '@xh/hoist/icon';
-import {dialog} from '@xh/hoist/kit/blueprint';
+import {dialog} from '@xh/hoist/desktop/cmp/dialog';
 import {getTestId, pluralize} from '@xh/hoist/utils/js';
 import classNames from 'classnames';
 import {capitalize} from 'lodash';
@@ -67,7 +67,7 @@ export const manageDialog = hoistCmp.factory({
                     ),
                     // Anchors this dialog's toasts within it - see ManageDialogModel.toastOpts.
                     ref: model.dialogRef,
-                    // Blueprint's Dialog does not pass `data-testid` through - tag this panel.
+                    // The panel takes the testId, so tests can target the dialog's content.
                     testId,
                     mask: [updateTask, loadTask]
                 })

@@ -58,7 +58,8 @@ export const [ExpandCycleButton, expandCycleButton] = hoistCmp.withFactory<Expan
         return button({
             ref,
             icon,
-            title: title ?? tooltip ?? nextExpandStepTitle(gridModel),
+            title,
+            tooltip: title ? tooltip : (tooltip ?? nextExpandStepTitle(gridModel)),
             disabled: withDefault(disabled, !gridModel.maxDepth || gridModel.empty),
             className,
             onClick: onClick ?? (() => gridModel.cycleExpandLevel()),

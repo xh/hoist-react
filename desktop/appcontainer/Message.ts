@@ -12,7 +12,7 @@ import {button} from '@xh/hoist/desktop/cmp/button';
 import {formField} from '@xh/hoist/desktop/cmp/form';
 import {checkbox, textInput} from '@xh/hoist/desktop/cmp/input';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
-import {dialog, dialogBody} from '@xh/hoist/kit/blueprint';
+import {dialog, dialogBody} from '@xh/hoist/desktop/cmp/dialog';
 import {withDefault} from '@xh/hoist/utils/js';
 import classNames from 'classnames';
 import './Message.scss';

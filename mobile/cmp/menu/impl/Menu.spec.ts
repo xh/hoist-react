@@ -9,6 +9,7 @@ import {HoistModel} from '@xh/hoist/core';
 import {menu} from '@xh/hoist/mobile/cmp/menu/impl/Menu';
 import {initTestAppAsync} from '@xh/hoist/test-support';
 import {fireEvent, render, screen, waitFor} from '@testing-library/react';
+import {createElement} from 'react';
 import {beforeAll, describe, expect, it, onTestFinished, vi} from 'vitest';
 
 /**
@@ -35,6 +36,35 @@ describe('Menu (mobile)', () => {
         );
         fireEvent.click(screen.getByTestId('tog'));
         expect(onDismiss).not.toHaveBeenCalled();
+    });
+
+    it('leaves a tap on a control in rightElement to that control', () => {
+        const actionFn = vi.fn(),
+            onDelete = vi.fn(),
+            onDismiss = vi.fn();
+        renderMenu(
+            [
+                {
+                    text: 'Favorite',
+                    actionFn,
+                    testId: 'fav',
+                    rightElement: createElement(
+                        'button',
+                        {'data-testid': 'fav-delete', onClick: onDelete},
+                        'x'
+                    )
+                }
+            ],
+            onDismiss
+        );
+        fireEvent.click(screen.getByTestId('fav-delete'));
+        expect(onDelete).toHaveBeenCalledOnce();
+        expect(actionFn).not.toHaveBeenCalled();
+        expect(onDismiss).not.toHaveBeenCalled();
+
+        fireEvent.click(screen.getByTestId('fav'));
+        expect(actionFn).toHaveBeenCalledOnce();
+        expect(onDismiss).toHaveBeenCalledOnce();
     });
 
     it('renders dividers and headings, and omits hidden items', () => {

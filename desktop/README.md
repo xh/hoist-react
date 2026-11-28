@@ -2,21 +2,20 @@
 
 | Section | Description |
 |---------|-------------|
-| [Overview](#overview) | Desktop platform, Blueprint foundation |
+| [Overview](#overview) | Desktop platform |
 | [Architecture](#architecture) | Directory structure and key sub-packages |
 | [Relationship to /cmp/](#relationship-to-cmp) | Platform-specific vs. cross-platform components |
 | [AppContainer](#appcontainer) | Desktop app shell and lifecycle |
 | [Component Sub-Packages](#component-sub-packages) | Panel, Toolbar, Button, Grid, Dashboard, Tabs, Inputs, and more |
-| [Dialogs](#dialogs) | Custom modal dialogs via Blueprint Kit export |
+| [Dialogs](#dialogs) | Custom modal dialogs with `Dialog` |
 | [Desktop Hooks](#desktop-hooks) | useContextMenu |
-| [Common Patterns](#common-patterns) | Blueprint wrappers, Popover, ContextMenu |
+| [Common Patterns](#common-patterns) | Building a panel, forms with desktop inputs |
 | [Related Packages](#related-packages) | Links to cross-platform and utility packages |
 
 ## Overview
 
-The `/desktop/` package provides Hoist's desktop-specific UI components, incorporating the
-[Blueprint](https://blueprintjs.com/) UI library for a number of key components (buttons, inputs,
-dialogs, popovers, and more). These components extend the cross-platform foundation from `/cmp/`
+The `/desktop/` package provides Hoist's desktop-specific UI components - buttons, inputs, dialogs,
+menus, toolbars, and more. These components extend the cross-platform foundation from `/cmp/`
 with desktop-appropriate styling, interactions, and features optimized for mouse/keyboard input and
 larger screens.
 
@@ -52,7 +51,7 @@ Desktop components extend cross-platform models and components:
 | Cross-platform (`/cmp/`) | Desktop extensions (`/desktop/cmp/`) |
 |--------------------------|--------------------------------------|
 | GridModel, Grid | Cell editors, column chooser, filter dialogs |
-| TabContainerModel | TabContainer with Blueprint tab styling |
+| TabContainerModel | TabContainer with desktop tab styling |
 | FormModel, FieldModel | FormField wrapper with desktop inputs |
 | ChartModel, Chart | Context menu integration |
 | Store, StoreFilterField | StoreFilterField with text input |
@@ -97,7 +96,7 @@ containers are the rare exception.
 
 ### Input Components (`/cmp/input/`)
 
-Desktop form inputs with Blueprint styling:
+Desktop form inputs:
 
 | Component | Description |
 |-----------|-------------|
@@ -233,7 +232,7 @@ Key props:
 
 ### Button (`/cmp/button/`)
 
-Desktop buttons with Blueprint styling:
+Desktop buttons:
 
 ```typescript
 import {button} from '@xh/hoist/desktop/cmp/button';
@@ -318,7 +317,7 @@ See [`/desktop/cmp/dash/README.md`](./cmp/dash/README.md) for complete dashboard
 
 ### Tab Container (`/cmp/tab/`)
 
-Tabbed interface with Blueprint styling:
+Tabbed interface:
 
 ```typescript
 import {tabContainer} from '@xh/hoist/desktop/cmp/tab';
@@ -377,6 +376,7 @@ leftRightChooser({model})
 | `/appOption/` | App-wide configuration options UI |
 | `/clipboard/` | Clipboard operations (copy with feedback) |
 | `/contextmenu/` | Right-click context menu support |
+| `/dialog/` | Modal `Dialog` and its body and footer parts |
 | `/daterange/` | Date range picker - presets, relative lookbacks, months and years, custom ranges (see [Date Range README](../cmp/daterange/README.md)) |
 | `/filechooser/` | File selection input |
 | `/filter/` | Filter chooser and filter editor |
@@ -394,14 +394,15 @@ leftRightChooser({model})
 For simple alerts and confirmations, use the built-in `XH.message()` and `XH.confirm()` methods
 (see the [appcontainer README](../appcontainer/README.md#messages)).
 
-For custom dialogs with rich content (forms, grids, etc.), use the Blueprint `dialog` element
-factory from `@xh/hoist/kit/blueprint`. This is the standard Hoist pattern for modal dialogs -
-Blueprint's Dialog is re-exported through Kit with transitions disabled for snappy rendering.
+For custom dialogs with rich content (forms, grids, etc.), use the `dialog` element factory from
+`@xh/hoist/desktop/cmp/dialog`. A dialog holds keyboard focus while open, closes on Escape or a
+click outside it (unless `canOutsideClickClose` is false), and returns focus when it closes. Wrap
+padded content in `dialogBody`, and buttons in `dialogFooter` and `dialogFooterActions`.
 
 The typical pattern uses a dedicated model to manage the dialog's open/closed state and content,
 with the parent component always rendering the dialog component alongside its other children.
-The dialog renders as a Blueprint portal overlay when open and returns null when closed, so it
-can be included unconditionally in the parent's item list.
+The dialog renders in a portal over the app when open and returns null when closed, so it can be
+included unconditionally in the parent's children.
 
 ```typescript
 // TaskDialogModel.ts - manages dialog open/closed state and form data
@@ -473,17 +474,12 @@ export const todoPanel = hoistCmp.factory({
 ```
 
 Key points:
-- Import `dialog` from `@xh/hoist/kit/blueprint` (not from Blueprint directly) to get
-  Hoist's transition-disabled wrapper.
+- Import `dialog` from `@xh/hoist/desktop/cmp/dialog`.
 - The parent model owns the dialog model as a `@managed` property and calls `open()`/`close()`.
 - The parent component renders the dialog factory in its `children` alongside other children -
   the dialog shows/hides itself based on its model's `isOpen` state.
 - Use `onClose` to handle the dialog's close button and outside-click-to-close.
 - Wrap dialog content in a `panel()` when you need toolbars, masks, or standard layout.
-
-Note: Hoist does not yet provide its own first-class Dialog component wrapper
-([#861](https://github.com/xh/hoist-react/issues/861)) - the Blueprint Kit re-export is the
-established pattern used throughout the framework and applications.
 
 ## Desktop Hooks
 
@@ -584,4 +580,4 @@ form({
 - [`/cmp/`](../cmp/README.md) - Cross-platform components and models
 - [`/mobile/`](../mobile/README.md) - Mobile platform components
 - [`/core/`](../core/README.md) - HoistModel, hoistCmp, XH singleton
-- [`/kit/`](../kit/README.md) - Third-party library wrappers (Blueprint, ag-Grid, Highcharts, etc.)
+- [`/kit/`](../kit/README.md) - Third-party library wrappers (ag-Grid, Highcharts, etc.)

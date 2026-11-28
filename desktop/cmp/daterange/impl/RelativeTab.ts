@@ -10,7 +10,6 @@ import {div, hbox, span, vbox} from '@xh/hoist/cmp/layout';
 import {hoistCmp} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {numberInput, segmentedControl} from '@xh/hoist/desktop/cmp/input';
-import {controlGroup} from '@xh/hoist/kit/blueprint';
 import {getTestId, TEST_ID} from '@xh/hoist/utils/js';
 import {sectionHeader} from './TabUtils';
 
@@ -26,7 +25,9 @@ export const relativeTab = hoistCmp.factory<DateRangePickerLocalModel>(({model, 
                 className: 'xh-date-range-picker-popover__rel-row',
                 children: [
                     span({className: 'xh-date-range-picker-popover__rel-prefix', children: 'Prev'}),
-                    controlGroup({
+                    div({
+                        role: 'group',
+                        className: 'bp6-control-group',
                         children: [
                             button({
                                 text: '−',

@@ -18,6 +18,7 @@ import {
     vbox,
     vframe
 } from '@xh/hoist/cmp/layout';
+import {popover} from '@xh/hoist/cmp/popover';
 import type {Side} from '@xh/hoist/core';
 import {hoistCmp, useLocalModel, uses} from '@xh/hoist/core';
 import type {ButtonProps} from '@xh/hoist/desktop/cmp/button';
@@ -27,7 +28,7 @@ import {panel} from '@xh/hoist/desktop/cmp/panel';
 import '@xh/hoist/desktop/register';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {Icon} from '@xh/hoist/icon';
-import {menu, menuItem, popover} from '@xh/hoist/kit/blueprint';
+import {menu} from '@xh/hoist/desktop/cmp/menu';
 import {dragDropContext, draggable, droppable} from '@xh/hoist/kit/react-beautiful-dnd';
 import {elemWithin, getTestId} from '@xh/hoist/utils/js';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
@@ -408,32 +409,22 @@ const favoritesChooser = hoistCmp.factory<GroupingChooserLocalModel>({
                 }),
                 hasFavorites
                     ? menu({
-                          children: options.map(it => favoriteMenuItem(it))
+                          menuItems: options.map(({value, label}) => ({
+                              text: label,
+                              className: 'xh-grouping-chooser__favorites__favorite',
+                              actionFn: () => {
+                                  model.setPendingValue(value);
+                                  model.commitPendingValueAndClose();
+                              },
+                              rightElement: button({
+                                  icon: Icon.delete(),
+                                  intent: 'danger',
+                                  onClick: () => parentModel.removeFavorite(value)
+                              })
+                          }))
                       })
                     : placeholder('No favorites saved.')
             ]
-        });
-    }
-});
-
-const favoriteMenuItem = hoistCmp.factory<GroupingChooserLocalModel>({
-    render({model, value, label}) {
-        const {parentModel} = model;
-        return menuItem({
-            text: label,
-            className: 'xh-grouping-chooser__favorites__favorite',
-            onClick: () => {
-                model.setPendingValue(value);
-                model.commitPendingValueAndClose();
-            },
-            labelElement: button({
-                icon: Icon.delete(),
-                intent: 'danger',
-                onClick: e => {
-                    parentModel.removeFavorite(value);
-                    e.stopPropagation();
-                }
-            })
         });
     }
 });

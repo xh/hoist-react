@@ -8,6 +8,7 @@ import {DataFieldsEditorModel} from '@xh/hoist/admin/tabs/activity/tracking/data
 import type {FormModel} from '@xh/hoist/cmp/form';
 import {form} from '@xh/hoist/cmp/form';
 import {br, filler, hbox, hspacer, placeholder, span, vspacer} from '@xh/hoist/cmp/layout';
+import {popover} from '@xh/hoist/cmp/popover';
 import {hoistCmp, uses} from '@xh/hoist/core';
 import {FieldType} from '@xh/hoist/data';
 import {button, buttonGroup} from '@xh/hoist/desktop/cmp/button';
@@ -15,7 +16,6 @@ import {formField} from '@xh/hoist/desktop/cmp/form';
 import {checkbox, select, textInput} from '@xh/hoist/desktop/cmp/input';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {Icon} from '@xh/hoist/icon';
-import {popover} from '@xh/hoist/kit/blueprint';
 import {isEmpty} from 'lodash';
 
 export const dataFieldsEditor = hoistCmp.factory({

@@ -1,0 +1,45 @@
+/*
+ * This file belongs to Hoist, an application development toolkit
+ * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
+ *
+ * Copyright © 2026 Extremely Heavy Industries Inc.
+ */
+
+// A dimmed backdrop, from `backdrop: true`, on either platform.
+.xh-popover__layer .xh-popover__content-overlay.xh-popover__content-overlay--backdrop {
+  background-color: var(--xh-popover-backdrop-bg);
+}
+
+// Fill the floating element, which `matchTargetWidth` sizes to the target.
+.xh-popover__content-wrapper--match-target-width {
+  width: 100%;
+}
+
+// Mobile does not load the Blueprint base styles that frame desktop popovers, so frame them here.
+.xh-mobile {
+  .xh-popover__floating {
+    display: flex;
+    z-index: 21;
+  }
+
+  .xh-popover__content-wrapper {
+    background-color: var(--xh-popover-bg);
+    border-radius: var(--xh-popover-border-radius);
+    // Clip content to the rounded corners, so a menu title or other square-cornered child does
+    // not cover the inner curve of the border ring.
+    overflow: hidden;
+    box-shadow:
+      0 0 0 var(--xh-popover-border-width) var(--xh-popover-border-color),
+      var(--xh-popover-box-shadow);
+  }
+
+  .xh-popover__content-overlay {
+    position: fixed;
+    top: var(--xh-safe-area-inset-top);
+    bottom: var(--xh-safe-area-inset-bottom);
+    left: var(--xh-safe-area-inset-left);
+    right: var(--xh-safe-area-inset-right);
+    z-index: 10;
+    background-color: transparent;
+  }
+}

@@ -6,7 +6,7 @@
  */
 import type {ContextMenuSpec} from '@xh/hoist/core';
 import {contextMenu} from '@xh/hoist/desktop/cmp/contextmenu/ContextMenu';
-import {showContextMenu} from '@xh/hoist/kit/blueprint';
+import {showContextMenu} from '@xh/hoist/desktop/cmp/contextmenu/impl/ShowContextMenu';
 import {logError} from '@xh/hoist/utils/js';
 import {isArray, isEmpty, isFunction, isUndefined} from 'lodash';
 import type {MouseEvent, ReactElement} from 'react';
@@ -44,7 +44,7 @@ export function useContextMenu(child?: ReactElement<any>, spec?: ContextMenuSpec
             contextMenuOutput = null;
         }
 
-        // 2) Render via blueprint.
+        // 2) Show it at the pointer.
         if (contextMenuOutput) {
             showContextMenu(contextMenuOutput, {left: e.clientX, top: e.clientY});
         }

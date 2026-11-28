@@ -9,10 +9,11 @@ import {HoistInputModel, useHoistInputModel} from '@xh/hoist/cmp/input';
 import type {HoistProps, HSide, StyleProps} from '@xh/hoist/core';
 import {hoistCmp} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
-import {checkbox as bpCheckbox} from '@xh/hoist/kit/blueprint';
 import {TEST_ID, withDefault} from '@xh/hoist/utils/js';
 import {isNil} from 'lodash';
 import type {ReactNode} from 'react';
+import {useEffect} from 'react';
+import {control} from './impl/Control';
 
 import './Checkbox.scss';
 
@@ -66,25 +67,37 @@ const cmp = hoistCmp.factory<CheckboxInputModel>(({model, className, ...props}, 
         displayUnsetState = withDefault(props.displayUnsetState, false),
         valueIsUnset = isNil(renderValue);
 
-    return bpCheckbox({
-        autoFocus: props.autoFocus,
-        checked: !!renderValue,
-        indeterminate: valueIsUnset && displayUnsetState,
-        alignIndicator: labelSide === 'left' ? 'right' : 'left',
-        disabled: props.disabled,
-        inline: withDefault(props.inline, true),
+    const indeterminate = valueIsUnset && displayUnsetState,
+        alignIndicator = labelSide === 'left' ? 'right' : 'left',
+        inline = withDefault(props.inline, true),
+        inputProps = {
+            autoFocus: props.autoFocus,
+            checked: !!renderValue,
+            disabled: props.disabled,
+            tabIndex: props.tabIndex,
+            id: props.id,
+            [TEST_ID]: props.testId,
+            ...props.domAttrs,
+            onBlur: model.onBlur,
+            onFocus: model.onFocus,
+            onChange: e => model.noteValueChange(e.target.checked)
+        };
+
+    // The indeterminate state has no HTML attribute - set it on the element.
+    useEffect(() => {
+        const input = model.inputRef.current as HTMLInputElement;
+        if (input) input.indeterminate = indeterminate;
+    }, [indeterminate, model]);
+
+    return control({
+        kind: 'checkbox',
+        alignIndicator,
+        inline,
         label: props.label,
-        tabIndex: props.tabIndex,
-        id: props.id,
-        [TEST_ID]: props.testId,
-        ...props.domAttrs,
         className,
         style: props.style,
-
-        onBlur: model.onBlur,
-        onFocus: model.onFocus,
-        onChange: e => model.noteValueChange(e.target.checked),
-        inputRef: model.inputRef,
-        ref
+        ref,
+        inputRef: model.inputRef as any,
+        inputProps
     });
 });

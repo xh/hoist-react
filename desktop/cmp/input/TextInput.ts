@@ -12,12 +12,12 @@ import {hoistCmp} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
-import {inputGroup} from '@xh/hoist/kit/blueprint';
 import {getTestId, TEST_ID, withDefault} from '@xh/hoist/utils/js';
 import {useComposedRefs, getLayoutProps} from '@xh/hoist/utils/react';
 import type {Property} from 'csstype';
 import {isEmpty} from 'lodash';
 import type {FocusEvent, KeyboardEventHandler, ReactElement, ReactNode, Ref} from 'react';
+import {inputGroup} from './impl/InputGroup';
 
 export interface TextInputProps
     extends HoistProps, HoistInputProps, PasswordManagerSupportProps, LayoutProps, StyleProps {

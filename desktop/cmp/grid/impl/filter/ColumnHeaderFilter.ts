@@ -6,9 +6,9 @@
  */
 
 import {div, span} from '@xh/hoist/cmp/layout';
+import {popover} from '@xh/hoist/cmp/popover';
 import {hoistCmp, uses} from '@xh/hoist/core';
 import {Icon} from '@xh/hoist/icon';
-import {popover} from '@xh/hoist/kit/blueprint';
 import './ColumnHeaderFilter.scss';
 import classNames from 'classnames';
 import {ColumnHeaderFilterModel} from './ColumnHeaderFilterModel';

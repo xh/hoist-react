@@ -22,10 +22,9 @@
 
   &__items {
     align-items: center;
-
-    > :not(:last-child) {
-      margin-right: var(--xh-toolbar-item-spacing);
-    }
+    // A gap, not margins keyed to :last-child - an open popover adds focus-guard spans after its
+    // target, which are out of flow but would otherwise make the target a non-last child.
+    gap: var(--xh-toolbar-item-spacing);
   }
 
   // Header glyph.

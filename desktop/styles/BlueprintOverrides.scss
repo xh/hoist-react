@@ -1,11 +1,12 @@
-@import '@blueprintjs/core/src/common/react-transition';
+/*
+ * This file belongs to Hoist, an application development toolkit
+ * developed by Extremely Heavy Industries (www.xh.io | info@xh.io)
+ *
+ * Copyright © 2026 Extremely Heavy Industries Inc.
+ */
 
-// Blueprint resets `font-family` to this var on the root of each portal (`.bp6-theme-root`), which
-// hosts popovers, menus, tooltips and dialogs. Point it at the Hoist font so that content matches
-// the rest of the app.
-body.xh-app {
-  --bp-typography-family-default: var(--xh-font-family);
-}
+// Hoist's adjustments to the Blueprint base styles in `BlueprintBase.css`, for desktop components
+// that render Blueprint's `bp6-*` class names.
 
 //------------------------
 // Tabs
@@ -187,7 +188,21 @@ body.xh-app {
       color: inherit;
     }
 
-    &:hover {
+    // The submenu caret follows the item text color, as the item icons do, in either theme.
+    .xh-menu-item__submenu-icon {
+      color: inherit;
+
+      svg {
+        display: block;
+        fill: currentColor;
+      }
+    }
+
+    // Highlight the focused item, as keyboard focus shows no outline after mouse use. A parent
+    // item stays highlighted while its submenu is open.
+    &:hover,
+    &:focus,
+    &[aria-expanded='true'] {
       background-color: var(--xh-menu-item-highlight-bg);
       border-radius: 0;
     }
@@ -245,6 +260,7 @@ body.xh-app {
       font-weight: var(--xh-menu-heading-font-weight);
       letter-spacing: var(--xh-menu-heading-letter-spacing);
       line-height: normal;
+      margin: 0;
       text-transform: var(--xh-menu-heading-text-transform);
       // Left inset lines the label up with the item icons, not the item text.
       padding: var(--xh-menu-heading-padding-top) 10px var(--xh-menu-heading-padding-bottom) 14px;
@@ -258,6 +274,11 @@ body.xh-app {
 
   .bp6-submenu {
     padding: 0;
+  }
+
+  // The popover target around a parent item fills the row, so the item does too.
+  .xh-menu-item--submenu > .xh-popover__target-wrapper {
+    display: block;
   }
 }
 
@@ -508,11 +529,3 @@ textarea.bp6-input,
 //------------------------
 // Misc
 //------------------------
-.bp6-hotkey-column {
-  padding: var(--xh-spacing-double);
-
-  .bp6-heading {
-    font-weight: normal;
-    margin-top: 0;
-  }
-}

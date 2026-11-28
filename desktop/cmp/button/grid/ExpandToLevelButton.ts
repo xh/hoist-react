@@ -7,13 +7,13 @@
 import type {GridLikeModel} from '@xh/hoist/cmp/grid';
 import {isGridLikeModel} from '@xh/hoist/cmp/grid/impl/GridLikeModel';
 import {div, vbox} from '@xh/hoist/cmp/layout';
+import type {PopoverPosition} from '@xh/hoist/cmp/popover';
+import {popover} from '@xh/hoist/cmp/popover';
 import type {MenuItemLike} from '@xh/hoist/core';
 import {hoistCmp, useContextModel} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
-import type {Position} from '@xh/hoist/kit/blueprint';
-import {menu, popover} from '@xh/hoist/kit/blueprint';
-import {parseMenuItems} from '@xh/hoist/desktop/cmp/menu/impl/MenuItems';
+import {menu} from '@xh/hoist/desktop/cmp/menu';
 import {logError, withDefault} from '@xh/hoist/utils/js';
 import type {ReactNode} from 'react';
 import type {ButtonProps} from '../Button';
@@ -26,8 +26,8 @@ export interface ExpandToLevelButtonProps extends Omit<ButtonProps, 'title'> {
      */
     gridModel?: GridLikeModel;
 
-    /** Position for menu, as per Blueprint docs. */
-    popoverPosition?: Position;
+    /** Position for menu, relative to the button. Default 'auto'. */
+    popoverPosition?: PopoverPosition;
 
     /** Title for the menu popover - defaults to "Expand To Level". */
     title?: ReactNode;
@@ -95,7 +95,7 @@ export const [ExpandToLevelButton, expandToLevelButton] =
                 }),
                 content: vbox(
                     div({className: 'xh-popup__title', children: title, omit: !title}),
-                    menu(parseMenuItems(menuItems))
+                    menu({menuItems})
                 )
             });
         }

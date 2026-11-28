@@ -293,12 +293,13 @@ menuButton({
 
 Menu items are `MenuItemLike` objects with `text`, `icon`, and `actionFn` properties.
 
-### Popover (`/cmp/popover/`)
+### Popover
 
-Touch-triggered popover for additional content:
+Mobile uses the cross-platform `Popover` from `@xh/hoist/cmp/popover` - see the
+[Popover README](../cmp/popover/README.md#on-mobile).
 
 ```typescript
-import {popover} from '@xh/hoist/mobile/cmp/popover';
+import {popover} from '@xh/hoist/cmp/popover';
 
 popover({
     children: button({icon: Icon.info()}),
@@ -459,8 +460,8 @@ form({
 ### Importing desktop components in a mobile app
 
 Mobile apps should import platform-specific components from `@xh/hoist/mobile/` and shared models
-from `@xh/hoist/cmp/`. Accidentally importing from `@xh/hoist/desktop/` will pull in Blueprint
-dependencies and desktop-styled components that won't render correctly in a mobile context.
+from `@xh/hoist/cmp/`. Accidentally importing from `@xh/hoist/desktop/` will pull in desktop-only code, styles and
+dependencies, and components that won't render correctly in a mobile context.
 
 ```typescript
 // ✅ Do: Import cross-platform components from /cmp/ and mobile components from /mobile/

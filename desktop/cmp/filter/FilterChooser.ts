@@ -4,17 +4,17 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import type {FilterChooserFilter} from '@xh/hoist/cmp/filter';
 import {FilterChooserModel} from '@xh/hoist/cmp/filter';
 import {box, div, hbox, hframe, vbox} from '@xh/hoist/cmp/layout';
-import type {HoistProps, LayoutProps} from '@xh/hoist/core';
+import {popover} from '@xh/hoist/cmp/popover';
+import type {HoistProps, LayoutProps, MenuItemLike} from '@xh/hoist/core';
 import {hoistCmp, HoistModel, lookup, useLocalModel, uses} from '@xh/hoist/core';
 import {bindable} from '@xh/hoist/mobx';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {select} from '@xh/hoist/desktop/cmp/input';
 import '@xh/hoist/desktop/register';
 import {Icon} from '@xh/hoist/icon';
-import {menu, menuDivider, menuItem, popover} from '@xh/hoist/kit/blueprint';
+import {menu} from '@xh/hoist/desktop/cmp/menu';
 import {elemWithin, withDefault} from '@xh/hoist/utils/js';
 import {getLayoutProps, splitLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
@@ -361,48 +361,32 @@ const favoritesMenu = hoistCmp.factory<FilterChooserModel>({
     render({model}) {
         const options = getFavoritesOptions(model),
             isFavorite = model.isFavorite(model.value),
-            omitAdd = isEmpty(model.value) || isFavorite,
-            items = [];
+            omitAdd = isEmpty(model.value) || isFavorite;
 
-        if (isEmpty(options)) {
-            items.push(menuItem({text: 'No favorites saved...', disabled: true}));
-        } else {
-            items.push(...options.map(it => favoriteMenuItem(it)));
-        }
+        const items: MenuItemLike[] = isEmpty(options)
+            ? [{text: 'No favorites saved...', disabled: true}]
+            : options.map(({value, labels}) => ({
+                  text: hbox(labels.map(label => favoriteTag({label}))),
+                  className: 'xh-filter-chooser-favorite',
+                  actionFn: () => model.setValue(value),
+                  rightElement: button({
+                      icon: Icon.delete(),
+                      onClick: () => model.removeFavorite(value)
+                  })
+              }));
 
-        items.push(
-            menuDivider({omit: omitAdd}),
-            menuItem({
+        if (!omitAdd) {
+            items.push('-', {
                 icon: Icon.add({intent: 'success'}),
                 text: 'Add current',
-                omit: omitAdd,
-                onClick: () => model.addFavorite(model.value)
-            })
-        );
+                actionFn: () => model.addFavorite(model.value)
+            });
+        }
 
         return vbox(
             div({className: 'xh-popup__title', children: 'Favorites'}),
-            menu({children: items})
+            menu({menuItems: items})
         );
-    }
-});
-
-const favoriteMenuItem = hoistCmp.factory<
-    HoistProps<FilterChooserModel> & {value: FilterChooserFilter; labels: string[]}
->({
-    render({model, value, labels}) {
-        return menuItem({
-            text: hbox(labels.map(label => favoriteTag({label}))),
-            className: 'xh-filter-chooser-favorite',
-            onClick: () => model.setValue(value),
-            labelElement: button({
-                icon: Icon.delete(),
-                onClick: e => {
-                    model.removeFavorite(value);
-                    e.stopPropagation();
-                }
-            })
-        });
     }
 });
 

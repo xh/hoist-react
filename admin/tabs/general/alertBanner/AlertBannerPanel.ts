@@ -21,7 +21,8 @@ import {
     vbox
 } from '@xh/hoist/cmp/layout';
 import {getRelativeTimestamp, relativeTimestamp} from '@xh/hoist/cmp/relativetimestamp';
-import {creates, hoistCmp, XH} from '@xh/hoist/core';
+import {popover} from '@xh/hoist/cmp/popover';
+import {creates, hoistCmp, type MenuItem, type PlainObject, XH} from '@xh/hoist/core';
 import {appBanner} from '@xh/hoist/desktop/appcontainer/AppBanner';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {formField} from '@xh/hoist/desktop/cmp/form';
@@ -37,7 +38,7 @@ import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {dateTimeRenderer} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
-import {menu, menuItem, popover} from '@xh/hoist/kit/blueprint';
+import {menu} from '@xh/hoist/desktop/cmp/menu';
 import {LocalDate} from '@xh/hoist/utils/datetime';
 import {isEmpty} from 'lodash';
 import type {ReactNode} from 'react';
@@ -238,50 +239,40 @@ const previewPanel = hoistCmp.factory<AlertBannerModel>(({model}) => {
 const presetMenu = hoistCmp.factory<AlertBannerModel>({
     render({model}) {
         const {savedPresets} = model,
-            items = isEmpty(savedPresets)
-                ? [menuItem({text: 'No presets saved...', disabled: true})]
-                : savedPresets.map(preset => presetMenuItem({preset}));
+            menuItems: MenuItem[] = isEmpty(savedPresets)
+                ? [{text: 'No presets saved...', disabled: true}]
+                : savedPresets.map(preset => presetMenuItem(preset, model));
 
-        return menu({
-            children: items,
-            style: {maxHeight: '400px', overflowY: 'auto'},
-            className: `${baseClassName}__preset-menu`
-        });
+        return menu({menuItems, className: `${baseClassName}__preset-menu`});
     }
 });
 
-const presetMenuItem = hoistCmp.factory<AlertBannerModel>({
-    render({model, preset}) {
-        const {iconName, intent, message, dateCreated, createdBy, clientApps} = preset;
+function presetMenuItem(preset: PlainObject, model: AlertBannerModel): MenuItem {
+    const {iconName, intent, message, dateCreated, createdBy, clientApps} = preset;
 
-        return menuItem({
-            icon:
-                (iconName ? Icon.get(iconName, {intent, prefix: 'fas', size: 'lg'}) : null) ??
-                Icon.placeholder({size: 'lg'}),
-            text: vbox({
-                children: [
-                    span({children: message, className: 'xh-text-overflow-ellipsis'}),
-                    clientAppCellContainer(clientApps),
-                    span({
-                        children: `Saved by ${createdBy} ${getRelativeTimestamp(dateCreated)}`,
-                        className: 'xh-font-size-small xh-text-color-muted'
-                    })
-                ],
-                className: `${baseClassName}__menu-item`
-            }),
-            multiline: true,
-            onClick: () => model.loadPreset(preset),
-            labelElement: button({
-                icon: Icon.delete(),
-                intent: 'danger',
-                onClick: e => {
-                    model.removePreset(preset);
-                    e.stopPropagation();
-                }
-            })
-        });
-    }
-});
+    return {
+        icon:
+            (iconName ? Icon.get(iconName, {intent, prefix: 'fas', size: 'lg'}) : null) ??
+            Icon.placeholder({size: 'lg'}),
+        text: vbox({
+            children: [
+                span({children: message, className: 'xh-text-overflow-ellipsis'}),
+                clientAppCellContainer(clientApps),
+                span({
+                    children: `Saved by ${createdBy} ${getRelativeTimestamp(dateCreated)}`,
+                    className: 'xh-font-size-small xh-text-color-muted'
+                })
+            ],
+            className: `${baseClassName}__menu-item`
+        }),
+        actionFn: () => model.loadPreset(preset),
+        rightElement: button({
+            icon: Icon.delete(),
+            intent: 'danger',
+            onClick: () => model.removePreset(preset)
+        })
+    };
+}
 
 const clientAppCellContainer = (clientApps: string[]): ReactNode => {
     const isClientAppsEmpty = isEmpty(clientApps);

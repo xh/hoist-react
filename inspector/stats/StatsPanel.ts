@@ -7,6 +7,7 @@
 import {chart} from '@xh/hoist/cmp/chart';
 import {grid} from '@xh/hoist/cmp/grid';
 import {code, div, filler, span} from '@xh/hoist/cmp/layout';
+import {popover} from '@xh/hoist/cmp/popover';
 import {creates, hoistCmp, useContextModel, XH} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
@@ -14,7 +15,6 @@ import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
 import {Icon} from '@xh/hoist/icon';
 import {InspectorModel} from '@xh/hoist/inspector/InspectorModel';
 import {StatsModel} from '@xh/hoist/inspector/stats/StatsModel';
-import {popover} from '@xh/hoist/kit/blueprint';
 
 export const statsPanel = hoistCmp.factory({
     model: creates(StatsModel),

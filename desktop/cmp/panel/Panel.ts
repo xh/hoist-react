@@ -19,9 +19,8 @@ import {mask} from '@xh/hoist/cmp/mask';
 import type {BannerProps} from '@xh/hoist/desktop/cmp/banner';
 import {banner} from '@xh/hoist/desktop/cmp/banner';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
-import {useContextMenu, useHotkeys} from '@xh/hoist/desktop/hooks';
+import {type HotkeyConfig, useContextMenu, useHotkeys} from '@xh/hoist/desktop/hooks';
 import '@xh/hoist/desktop/register';
-import type {HotkeyConfig} from '@xh/hoist/kit/blueprint';
 import {logWarn} from '@xh/hoist/utils/js';
 import {splitLayoutProps} from '@xh/hoist/utils/react';
 import classNames from 'classnames';
@@ -61,7 +60,7 @@ export interface PanelProps<M extends PanelModel = PanelModel>
     contextMenu?: ContextMenuSpec;
 
     /**
-     * Specification of hotkeys as prescribed by blueprint.
+     * Keyboard shortcuts for the panel, listed in the hotkeys dialog (press `?`).
      * @see useHotkeys() for more information on accepted values for this prop.
      */
     hotkeys?: HotkeyConfig[];

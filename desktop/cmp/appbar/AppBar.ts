@@ -5,7 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 
-import {span} from '@xh/hoist/cmp/layout';
+import {div, span} from '@xh/hoist/cmp/layout';
 import type {HoistProps, HSide, TestSupportProps} from '@xh/hoist/core';
 import {hoistCmp, XH} from '@xh/hoist/core';
 import {appBarSeparator} from '@xh/hoist/desktop/cmp/appbar';
@@ -13,8 +13,8 @@ import type {AppMenuButtonProps} from '@xh/hoist/desktop/cmp/button';
 import {appMenuButton, refreshButton} from '@xh/hoist/desktop/cmp/button';
 import {whatsNewButton} from '@xh/hoist/desktop/cmp/button/WhatsNewButton';
 import '@xh/hoist/desktop/register';
-import {navbar, navbarGroup} from '@xh/hoist/kit/blueprint';
 import {TEST_ID, withDefault} from '@xh/hoist/utils/js';
+import classNames from 'classnames';
 import {isEmpty} from 'lodash';
 import type {ReactElement, ReactNode} from 'react';
 import './AppBar.scss';
@@ -77,11 +77,12 @@ export const [AppBar, appBar] = hoistCmp.withFactory<AppBarProps>({
 
         const title = withDefault(props.title, XH.clientAppName);
 
-        return navbar({
-            className,
+        // Blueprint's navbar class names are kept, so its styles and app CSS apply.
+        return div({
+            className: classNames('bp6-navbar', className),
             children: [
-                navbarGroup({
-                    align: 'left',
+                div({
+                    className: 'xh-appbar__group bp6-navbar-group bp6-align-left',
                     children: [
                         appMenuButton({
                             omit: hideAppMenuButton || appMenuButtonPosition != 'left',
@@ -93,8 +94,8 @@ export const [AppBar, appBar] = hoistCmp.withFactory<AppBarProps>({
                         ...(leftItems ?? [])
                     ]
                 }),
-                navbarGroup({
-                    align: 'right',
+                div({
+                    className: 'xh-appbar__group bp6-navbar-group bp6-align-right',
                     children: [
                         ...(rightItems ?? []),
                         whatsNewButton({omit: hideWhatsNewButton}),

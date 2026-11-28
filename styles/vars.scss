@@ -920,6 +920,8 @@ body {
   // theme, where the drop shadow does most of the work, and lighter in dark theme, where a drop
   // shadow alone does not read.
   --xh-popover-arrow-color: var(--xh-popover-border-color);
+  // Dims the page behind a popover shown with `backdrop: true`.
+  --xh-popover-backdrop-bg: rgb(128, 128, 128, 0.2);
   --xh-popover-bg: var(--xh-popup-bg);
   --xh-popover-border-color: color-mix(in srgb, var(--xh-popup-border-color), var(--xh-text-color) 20%);
   --xh-popover-border-radius: var(--xh-popup-border-radius);
@@ -928,18 +930,16 @@ body {
   --xh-popover-box-shadow: #{0 2px 4px rgba(0, 0, 0, 0.08), 0 8px 24px rgba(0, 0, 0, 0.16)};
 
   &:where(.xh-dark) {
+    --xh-popover-backdrop-bg: rgb(0, 0, 0, 0.2);
     --xh-popover-border-color: color-mix(in srgb, var(--xh-popup-border-color), var(--xh-text-color) 45%);
     // A dark halo around the lighter border keeps it legible over light content beneath.
     --xh-popover-box-shadow: #{0 0 0 3px rgba(0, 0, 0, 0.5), 0 12px 32px rgba(0, 0, 0, 0.8)};
   }
 
   &:where(.xh-mobile) {
-    // Mobile popovers can show a backdrop - see the mobile `Popover` `backdrop` prop.
-    --xh-popover-backdrop-bg: rgb(128, 128, 128, 0.2);
     --xh-popover-box-shadow: #{0 0 20px rgba(0, 0, 0, 0.4)};
 
     &:where(.xh-dark) {
-      --xh-popover-backdrop-bg: rgb(0, 0, 0, 0.2);
       --xh-popover-box-shadow: #{0 0 0 3px rgba(0, 0, 0, 0.5), 0 0 20px rgba(0, 0, 0, 0.7)};
     }
   }

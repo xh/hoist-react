@@ -13,11 +13,10 @@ import {gridFindField} from '@xh/hoist/desktop/cmp/grid';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import './BaseMembers.scss';
 import {toolbar} from '@xh/hoist/desktop/cmp/toolbar';
-import {tag} from '@xh/hoist/kit/blueprint';
 import classNames from 'classnames';
 import {filter, keyBy, partition, sortBy, uniq, uniqBy} from 'lodash';
 import type {HoistRole, UserSource} from '../../Types';
-import {BaseMembersModel} from './BaseMembersModel';
+import {BaseMembersModel, roleTag} from './BaseMembersModel';
 
 export const userMembers = hoistCmp.factory({
     className: 'xh-admin-members',
@@ -69,14 +68,13 @@ class UserMembersModel extends BaseMembersModel {
                 ),
                 children: isThisRole ? (directoryGroupDisplayName ?? '<Direct>') : role,
                 title: isThisRole ? (directoryGroup ?? '<Direct>') : role,
-                minimal: true,
                 onDoubleClick: () => !isThisRole && this.roleModel.selectRoleAsync(role)
             };
         });
 
         return hbox({
             className: 'roles-renderer',
-            children: uniqBy(tagSpecs, 'children').map(it => tag(it))
+            children: uniqBy(tagSpecs, 'children').map(it => roleTag(it))
         });
     };
 

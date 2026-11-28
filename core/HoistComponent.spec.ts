@@ -124,7 +124,7 @@ describe('hoistCmp', () => {
         });
 
         it('passes $items through as a regular prop', () => {
-            // For components with an `items` prop of their own, e.g. Blueprint's OverflowList.
+            // For components with an `items` prop of their own, e.g. Hoist's internal overflowList.
             render(tagList({$items: ['Equities', 'Rates']}));
 
             expect(texts('.test-tag')).toEqual(['Equities', 'Rates']);

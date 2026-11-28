@@ -17,7 +17,6 @@ import {hoistCmp} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import type {NumericPrecision, Precision, ZeroPad} from '@xh/hoist/format';
 import {fmtNumber, parseNumber} from '@xh/hoist/format';
-import {numericInput} from '@xh/hoist/kit/blueprint';
 import {wait} from '@xh/hoist/promise';
 import {TEST_ID, throwIf, withDefault} from '@xh/hoist/utils/js';
 import {getLayoutProps, useComposedRefs, useOnMount} from '@xh/hoist/utils/react';
@@ -25,6 +24,7 @@ import type {Property} from 'csstype';
 import {clamp, debounce, isNaN, isNil, isNumber, round} from 'lodash';
 import type {KeyboardEventHandler, ReactElement, ReactNode, Ref} from 'react';
 import {useLayoutEffect} from 'react';
+import {numericInput} from './impl/NumericInput';
 
 export interface NumberInputProps
     extends HoistProps, LayoutProps, StyleProps, HoistInputProps, PasswordManagerSupportProps {
@@ -111,11 +111,7 @@ export interface NumberInputProps
 /**
  * Number input, with optional support for formatting of display value, shorthand units, and more.
  *
- * This component is built on the Blueprint NumericInput and gets default increment/decrement
- * functionality from that component, based on the three stepSize props.
- *
- * This Hoist component hides the up/down buttons by default but keeps the keyboard handling.
- * Users can use the following keys to increment/decrement:
+ * Users can use the following keys to increment/decrement, based on the three stepSize props:
  *
  *      ↑/↓           by one step
  *      Shift + ↑/↓   by one major step
@@ -284,17 +280,14 @@ const cmp = hoistCmp.factory<NumberInputModel>(({model, className, ...props}, re
     // Native listener, as React's onBeforeInput does not fire for deletes.
     useOnMount(() => model.inputEl?.addEventListener('beforeinput', model.onBeforeInput));
 
-    // BP bases expected precision off of dps in minorStepSize, if specified.
-    // The default BP value of 0.1 for this prop emits a console warning any time the input
-    // value extends beyond 1 dp. Re-default here to sync with our `precision` prop.
-    // See https://blueprintjs.com/docs/#core/components/numeric-input.numeric-precision
+    // Alt + arrow keys step by minorStepSize, which also sets the precision of stepped values.
+    // Default it from the `precision` prop, so stepping keeps the value's decimal places.
     const {precision} = model,
         majorStepSize = props.majorStepSize,
         minorStepSize = precision
             ? withDefault(props.minorStepSize, round(Math.pow(10, -precision), precision))
             : null;
 
-    // Render BP input.
     return numericInput({
         value: renderValue,
         allowNumericCharactersOnly: !props.enableShorthandUnits && !props.displayWithCommas,

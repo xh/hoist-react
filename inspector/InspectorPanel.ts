@@ -5,6 +5,7 @@
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
 import {hframe} from '@xh/hoist/cmp/layout';
+import {portalContainerProvider} from '@xh/hoist/cmp/popover/impl/PortalContainerProvider';
 import {creates, hoistCmp, XH} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
@@ -12,7 +13,6 @@ import {Icon} from '@xh/hoist/icon';
 import {InspectorModel} from '@xh/hoist/inspector/InspectorModel';
 import {instancesPanel} from '@xh/hoist/inspector/instances/InstancesPanel';
 import {statsPanel} from '@xh/hoist/inspector/stats/StatsPanel';
-import {portalProvider} from '@xh/hoist/kit/blueprint';
 import {createPortal} from 'react-dom';
 import './Inspector.scss';
 
@@ -91,10 +91,10 @@ const inspectorView = hoistCmp.factory<InspectorModel>({
             children: hframe(statsPanel(), instancesPanel())
         });
 
-        // When popped out, redirect Blueprint portals (tooltips, popovers, dialogs) into the
-        // child window, alongside the Inspector itself.
+        // When popped out, redirect portals (popovers, tooltips and dialogs) into the child window,
+        // alongside the Inspector itself.
         return windowContainer
-            ? portalProvider({portalContainer: windowContainer, children: ret})
+            ? portalContainerProvider({container: windowContainer, children: ret})
             : ret;
     }
 });

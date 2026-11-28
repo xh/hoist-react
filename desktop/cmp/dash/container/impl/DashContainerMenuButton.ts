@@ -4,10 +4,10 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
+import {popover} from '@xh/hoist/cmp/popover';
 import {hoistCmp} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {Icon} from '@xh/hoist/icon';
-import {popover, Position} from '@xh/hoist/kit/blueprint';
 import {dashContainerContextMenu} from './DashContainerContextMenu';
 
 /**
@@ -24,7 +24,7 @@ export const dashContainerMenuButton = hoistCmp.factory({
         if (dashContainerModel.contentLocked || !dashContainerModel.showMenuButton) return null;
 
         return popover({
-            position: Position.BOTTOM,
+            position: 'bottom',
             children: button({
                 icon: Icon.ellipsisVertical(),
                 className

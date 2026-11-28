@@ -121,7 +121,7 @@ Hoist React builds on a set of third-party libraries that XH selected, combined,
 | MobX         | Flexible, well-balanced state management and smart reactivity                   | [mobx.js.org](https://mobx.js.org/)                 |
 | Rsbuild      | Fast Rspack-based bundler and dev server, with SWC for transpilation            | [rsbuild.rs](https://rsbuild.rs/)                   |
 | AG Grid      | High performance, feature-rich data grid                                        | [ag-grid.com](https://www.ag-grid.com/)             |
-| Blueprint    | General purpose UI toolkit for data-dense desktop webapps                       | [blueprintjs.com](https://blueprintjs.com/)         |
+| Floating UI  | Positioning for popovers, tooltips, menus and dialogs                           | [floating-ui.com](https://floating-ui.com/)         |
 | Highcharts   | Proven, well-rounded charting and visualization library                         | [highcharts.com](https://www.highcharts.com/)       |
 | RGL          | Drag-and-drop grid layout for DashCanvas dashboards                             | [react-grid-layout](https://github.com/react-grid-layout/react-grid-layout) |
 | Router5      | Flexible routing solution                                                       | [router5.js.org](https://router5.js.org/)           |

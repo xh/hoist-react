@@ -4,7 +4,6 @@
  *
  * Copyright © 2026 Extremely Heavy Industries Inc.
  */
-import type {HotkeyConfig} from '@blueprintjs/core/src/hooks/hotkeys/hotkeyConfig';
 import {AppContainerModel} from '@xh/hoist/appcontainer/AppContainerModel';
 import {errorBoundary} from '@xh/hoist/cmp/error/ErrorBoundary';
 import {fragment, frame, vframe, viewport} from '@xh/hoist/cmp/layout';
@@ -31,10 +30,9 @@ import {pinPadImpl} from '@xh/hoist/desktop/cmp/pinpad/impl/PinPad';
 import {storeFilterFieldImpl} from '@xh/hoist/desktop/cmp/store/impl/StoreFilterField';
 import {tabContainerImpl} from '@xh/hoist/desktop/cmp/tab/impl/TabContainer';
 import {zoneMapperDialog as zoneMapper} from '@xh/hoist/desktop/cmp/zoneGrid/impl/ZoneMapperDialog';
-import {useContextMenu, useHotkeys} from '@xh/hoist/desktop/hooks';
+import {type HotkeyConfig, useContextMenu, useHotkeys} from '@xh/hoist/desktop/hooks';
 import {DynamicTabSwitcherModel, installDesktopImpls} from '@xh/hoist/dynamics/desktop';
 import {inspectorPanel} from '@xh/hoist/inspector/InspectorPanel';
-import {blueprintProvider} from '@xh/hoist/kit/blueprint';
 import {consumeEvent} from '@xh/hoist/utils/js';
 import {elementFromContent, useOnMount} from '@xh/hoist/utils/react';
 import {isEmpty} from 'lodash';
@@ -43,6 +41,8 @@ import {aboutDialog} from './AboutDialog';
 import {appBanner} from './AppBanner';
 import {exceptionDialog} from './ExceptionDialog';
 import {feedbackDialog} from './FeedbackDialog';
+import {hotkeysDialog} from './HotkeysDialog';
+import {installFocusStyle} from './impl/FocusStyle';
 import {impersonationBar} from './ImpersonationBar';
 import {lockoutPanel} from './LockoutPanel';
 import {loginPanel} from './LoginPanel';
@@ -76,6 +76,10 @@ installDesktopImpls({
     pdfViewerToolbarImpl,
     sparklineTooltipImpl
 });
+
+// Show focus outlines only to keyboard users, once per page.
+installFocusStyle();
+
 /**
  * Top-level wrapper for Desktop applications.
  *
@@ -93,7 +97,7 @@ export const AppContainer = hoistCmp({
     render({model}) {
         useOnMount(() => model.initAsync());
 
-        return blueprintProvider(
+        return fragment(
             errorBoundary({
                 modelConfig: {
                     errorHandler: {
@@ -171,6 +175,7 @@ const appContainerView = hoistCmp.factory({
             aboutDialog(),
             changelogDialog(),
             feedbackDialog(),
+            hotkeysDialog(),
             optionsDialog()
         );
 

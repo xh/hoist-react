@@ -15,10 +15,10 @@ import {markdown} from '@xh/hoist/cmp/markdown';
 import type {HoistProps} from '@xh/hoist/core';
 import {hoistCmp, uses, XH} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
+import {dialog} from '@xh/hoist/desktop/cmp/dialog';
 import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {fmtDate} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
-import {dialog} from '@xh/hoist/kit/blueprint';
 import type {ChangelogCategory, ChangelogVersion} from '@xh/hoist/svc';
 
 import './ChangelogDialog.scss';

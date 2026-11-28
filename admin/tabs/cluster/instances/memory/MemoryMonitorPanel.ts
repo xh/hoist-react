@@ -9,6 +9,7 @@ import {MemoryMonitorModel} from '@xh/hoist/admin/tabs/cluster/instances/memory/
 import {chart} from '@xh/hoist/cmp/chart';
 import {grid, gridCountLabel} from '@xh/hoist/cmp/grid';
 import {code, filler, fragment, hbox, hspacer, span, vframe} from '@xh/hoist/cmp/layout';
+import {popover} from '@xh/hoist/cmp/popover';
 import {creates, hoistCmp} from '@xh/hoist/core';
 import {button, exportButton} from '@xh/hoist/desktop/cmp/button';
 import {errorMessage} from '@xh/hoist/cmp/error';
@@ -17,7 +18,7 @@ import {toolbar, toolbarSeparator} from '@xh/hoist/desktop/cmp/toolbar';
 import {fmtDate} from '@xh/hoist/format';
 import {Icon} from '@xh/hoist/icon';
 import {isEmpty, isNil} from 'lodash';
-import {menu, menuItem, popover} from '@xh/hoist/kit/blueprint';
+import {menu} from '@xh/hoist/desktop/cmp/menu';
 
 export const memoryMonitorPanel = hoistCmp.factory({
     model: creates(MemoryMonitorModel),
@@ -113,12 +114,10 @@ const instanceSelect = hoistCmp.factory<MemoryMonitorModel>({
                 title: 'Past Instances',
                 compactHeader: true,
                 children: menu({
-                    children: pastInstances.map(it =>
-                        menuItem({
-                            text: instanceDisplay({instance: it}),
-                            onClick: () => (model.pastInstance = it)
-                        })
-                    )
+                    menuItems: pastInstances.map(it => ({
+                        text: instanceDisplay({instance: it}),
+                        actionFn: () => (model.pastInstance = it)
+                    }))
                 })
             })
         });

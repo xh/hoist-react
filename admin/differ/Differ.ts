@@ -14,7 +14,7 @@ import {panel} from '@xh/hoist/desktop/cmp/panel';
 import {recordActionBar} from '@xh/hoist/desktop/cmp/record';
 import {toolbar, toolbarSep} from '@xh/hoist/desktop/cmp/toolbar';
 import {Icon} from '@xh/hoist/icon/Icon';
-import {dialog} from '@xh/hoist/kit/blueprint';
+import {dialog} from '@xh/hoist/desktop/cmp/dialog';
 import {pluralize} from '@xh/hoist/utils/js';
 import {identity, startCase} from 'lodash';
 import {storeFilterField} from '../../cmp/store';

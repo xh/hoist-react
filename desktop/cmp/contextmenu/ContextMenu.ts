@@ -7,7 +7,7 @@
 import {hoistCmp, type HoistProps, type MenuContext, type MenuItemLike} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
 import {parseMenuItems} from '@xh/hoist/desktop/cmp/menu/impl/MenuItems';
-import {menu as bpMenu} from '@xh/hoist/kit/blueprint';
+import {menuList} from '@xh/hoist/desktop/cmp/menu/impl/MenuImpl';
 import {isEmpty} from 'lodash';
 
 export interface ContextMenuProps extends HoistProps {
@@ -30,6 +30,6 @@ export const [ContextMenu, contextMenu] = hoistCmp.withFactory<ContextMenuProps>
 
     render({menuItems, context}) {
         const items = parseMenuItems(menuItems, {context});
-        return isEmpty(items) ? null : bpMenu(items);
+        return isEmpty(items) ? null : menuList(items);
     }
 });

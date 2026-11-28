@@ -6,12 +6,12 @@
  */
 
 import {div, hbox, span, vbox} from '@xh/hoist/cmp/layout';
+import {popover} from '@xh/hoist/cmp/popover';
 import {hoistCmp, uses} from '@xh/hoist/core';
 import {button} from '@xh/hoist/desktop/cmp/button';
 import {formField} from '@xh/hoist/desktop/cmp/form';
 import {select, textInput} from '@xh/hoist/desktop/cmp/input';
 import {Icon} from '@xh/hoist/icon';
-import {popover} from '@xh/hoist/kit/blueprint';
 import type {ReactNode} from 'react';
 import {groupPathBreadcrumb} from '../GroupPathBreadcrumb';
 import type {GroupPathOption} from '../Utils';

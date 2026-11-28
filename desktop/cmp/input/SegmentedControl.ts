@@ -15,12 +15,13 @@ import {div} from '@xh/hoist/cmp/layout';
 import type {HoistProps, Intent} from '@xh/hoist/core';
 import {hoistCmp} from '@xh/hoist/core';
 import '@xh/hoist/desktop/register';
-import {bpSegmentedControl} from '@xh/hoist/kit/blueprint';
 import {computed} from '@xh/hoist/mobx';
 import {getLayoutProps, getNonLayoutProps} from '@xh/hoist/utils/react';
 import {TEST_ID} from '@xh/hoist/utils/js';
 import classNames from 'classnames';
 import {filter, isObject} from 'lodash';
+import type {KeyboardEvent, ReactElement, ReactNode} from 'react';
+import {createElement as h, useRef} from 'react';
 import './SegmentedControl.scss';
 
 export interface SegmentedControlProps extends HoistProps, HoistInputProps {
@@ -86,8 +87,6 @@ export interface SegmentedControlProps extends HoistProps, HoistInputProps {
  * Similar to ButtonGroupInput but driven by an `options` prop (like Select/RadioInput)
  * rather than Button children, and with stronger visual differentiation between selected
  * and unselected states.
- *
- * Built on Blueprint's SegmentedControl component.
  */
 export const [SegmentedControl, segmentedControl] = hoistCmp.withFactory<SegmentedControlProps>({
     displayName: 'SegmentedControl',
@@ -101,13 +100,6 @@ export const [SegmentedControl, segmentedControl] = hoistCmp.withFactory<Segment
 //-----------------------
 // Implementation
 //-----------------------
-
-/**
- * Key handed to the Blueprint control when no option is selected. Option keys are always
- * `String(index)`, so this cannot collide with a real option - and unlike a nullish value, it
- * keeps Blueprint from falling back to its own internal selection state. See usage note below.
- */
-const NO_SELECTION_KEY = '__xh_no_selection__';
 
 interface NormalizedOption extends SegmentedControlOption {
     label: string;
@@ -143,8 +135,7 @@ class SegmentedControlModel extends HoistInputModel {
 
     /**
      * Key of the option matching the current render value, or null if no option matches -
-     * including whenever the bound value is itself null. Note this is the model's own view of
-     * the selection: the key actually handed to Blueprint is resolved at its point of use below.
+     * including whenever the bound value is itself null.
      */
     @computed
     get selectedKey(): string | null {
@@ -173,7 +164,7 @@ class SegmentedControlModel extends HoistInputModel {
 
 const cmp = hoistCmp.factory<SegmentedControlModel>(({model, className, ...props}, ref) => {
     const {
-        // HoistInput props - exclude from passthrough to BP
+        // HoistInput props - exclude from passthrough to the segments
         bind,
         disabled,
         onChange,
@@ -193,8 +184,8 @@ const cmp = hoistCmp.factory<SegmentedControlModel>(({model, className, ...props
         showOptionDividers = 'auto',
         testId,
         domAttrs,
-        // Remainder passed to BP SegmentedControl
-        ...bpProps
+        // Remainder passed to the segments
+        ...segmentProps
     } = getNonLayoutProps(props);
 
     // 'auto' dividers track the empty state - shown only while nothing is selected.
@@ -203,7 +194,7 @@ const cmp = hoistCmp.factory<SegmentedControlModel>(({model, className, ...props
     // Resolve the effective intent per option (own intent wins over control-level default),
     // applied via a per-button className that our SCSS keys its solid/hint coloring off of.
     const defaultIntent = intent && intent !== 'none' ? intent : null,
-        bpOptions = model.normalizedOptions.map(opt => {
+        segmentOptions = model.normalizedOptions.map(opt => {
             const optIntent = opt.intent ?? defaultIntent,
                 optTestId = opt.testId ?? (testId ? `${testId}-${String(opt.value)}` : null);
             return {
@@ -233,20 +224,125 @@ const cmp = hoistCmp.factory<SegmentedControlModel>(({model, className, ...props
         ...getLayoutProps(props),
         [TEST_ID]: props.testId,
         ...domAttrs,
-        children: bpSegmentedControl({
-            ...bpProps,
+        children: segmentedControlImpl({
+            ...segmentProps,
             fill,
             size: compact ? 'small' : undefined,
-            options: bpOptions,
-            // Blueprint resolves its selection as `value ?? internalState`, where the internal
-            // state is set on every click even when controlled. Passing a nullish value for a
-            // selection matching no option would fall back to the last-clicked segment,
-            // leaving it highlighted after the bound value is cleared. Pass a sentinel key
-            // instead, keeping the control fully controlled - Blueprint handles a value matching
-            // no option natively (see `isAnySelected`) and emits no warning.
-            value: model.selectedKey ?? NO_SELECTION_KEY,
+            options: segmentOptions,
+            value: model.selectedKey,
             onValueChange: model.onValueChange,
             disabled
         })
     });
+});
+
+//------------------------
+// Segments
+//------------------------
+interface SegmentSpec {
+    value: string;
+    label?: ReactNode;
+    icon?: ReactElement;
+    disabled?: boolean;
+    className?: string;
+    [attr: string]: any;
+}
+
+interface SegmentedControlImplProps extends HoistProps {
+    options: SegmentSpec[];
+    value: string;
+    onValueChange: (value: string) => void;
+    disabled?: boolean;
+    fill?: boolean;
+    inline?: boolean;
+    size?: 'small';
+    [attr: string]: any;
+}
+
+/**
+ * The segments, as a radio group of buttons. Arrow keys move the selection, and only the selected
+ * segment is in the tab order. Renders the same elements and class names as Blueprint's
+ * `SegmentedControl`, so its styles and app CSS keyed to them apply.
+ */
+const segmentedControlImpl = hoistCmp.factory<SegmentedControlImplProps>({
+    displayName: 'SegmentedControlImpl',
+    model: false,
+    observer: false,
+
+    render({options, value, onValueChange, disabled, fill, inline, size, ...rest}) {
+        const groupRef = useRef<HTMLDivElement>(null),
+            isAnySelected = options.some(it => it.value === value);
+
+        const onKeyDown = (e: KeyboardEvent) => {
+            const direction = ['ArrowLeft', 'ArrowUp'].includes(e.key)
+                ? -1
+                : ['ArrowRight', 'ArrowDown'].includes(e.key)
+                  ? 1
+                  : 0;
+            const focused = (document.activeElement as HTMLElement)?.closest('button');
+            if (!direction || !focused) return;
+            const buttons = Array.from(
+                    groupRef.current.querySelectorAll<HTMLButtonElement>('button:not(:disabled)')
+                ),
+                idx = buttons.indexOf(focused);
+            if (idx < 0) return;
+            e.preventDefault();
+            const next = buttons[(idx + direction + buttons.length) % buttons.length];
+            next.click();
+            next.focus();
+        };
+
+        return h(
+            'div',
+            {
+                ...rest,
+                ref: groupRef,
+                role: 'radiogroup',
+                onKeyDown,
+                className: classNames('bp6-segmented-control', {
+                    'bp6-fill': fill,
+                    'bp6-inline': inline
+                })
+            },
+            ...options.map(
+                (
+                    {value: optValue, label, icon, disabled: optDisabled, className, ...attrs},
+                    idx
+                ) => {
+                    const isSelected = optValue === value,
+                        isDisabled = optDisabled || disabled,
+                        text = label ?? optValue;
+                    return h(
+                        'button',
+                        {
+                            ...attrs,
+                            key: optValue,
+                            type: 'button',
+                            role: 'radio',
+                            'aria-checked': isSelected,
+                            tabIndex:
+                                !isDisabled && (isSelected || (idx === 0 && !isAnySelected))
+                                    ? 0
+                                    : -1,
+                            disabled: isDisabled,
+                            className: classNames(
+                                'bp6-button',
+                                {
+                                    'bp6-disabled': isDisabled,
+                                    'bp6-small': size === 'small',
+                                    'bp6-minimal': !isSelected
+                                },
+                                className
+                            ),
+                            onClick: () => onValueChange(optValue)
+                        },
+                        icon ?? null,
+                        text == null || text === ''
+                            ? null
+                            : h('span', {className: 'bp6-button-text'}, text)
+                    );
+                }
+            )
+        );
+    }
 });
