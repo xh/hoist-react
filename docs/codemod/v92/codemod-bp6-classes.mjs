@@ -17,6 +17,10 @@
  *   3. A `bp6-button` after `bp6-segmented-control` in the same selector is a SegmentedControl
  *      option, and becomes `xh-segmented-control__option`, with its modifiers.
  *
+ *   4. Hoist's own classes renamed in v92 are renamed everywhere they appear, in stylesheets and
+ *      class strings: `xh-segmented-control-option`  →  `xh-segmented-control__option`, and its
+ *      modifiers and label.
+ *
  * Everything else is reported, not rewritten, with the file and line:
  *   - a generic modifier with no component class in its compound, such as `&.bp6-minimal` nested
  *     under a component rule or `bp6-active` alone in a class string;
@@ -28,7 +32,8 @@
  *   - a `bp6-` class the rewrite did not reach, such as one in a string nested inside a template
  *     literal;
  *   - a Blueprint custom property, such as `var(--bp-intent-primary-rest)`. Hoist no longer
- *     defines them - use a value or an `--xh-*` variable.
+ *     defines them - use a value or an `--xh-*` variable;
+ *   - a Hoist class removed in v92, such as `xh-toolbar__separator`.
  * The upgrade notes' mapping table lists the Hoist name for each reported class.
  *
  * Markdown files are never rewritten. The script lists their lines that mention a `bp6-` class.
@@ -147,7 +152,7 @@ const COMPONENTS = {
     'tab-indicator': ['xh-tab-list__indicator'],
     'navbar': ['xh-appbar'],
     'navbar-group': ['xh-appbar__group', {'align-left': 'xh-appbar__group--left', 'align-right': 'xh-appbar__group--right'}],
-    'navbar-divider': ['xh-appbar-separator'],
+    'navbar-divider': ['xh-separator'],
     'overflow-list': ['xh-overflow-list'],
     'overflow-list-spacer': ['xh-overflow-list__spacer'],
     'dark': ['xh-dark'],
@@ -164,6 +169,22 @@ const AMBIGUOUS = {
     'overlay-scroll-container': '`xh-dialog__overlay` on a Dialog, `xh-overlay--scroll-container` on an Overlay',
     'heading': '`xh-dialog__title` on a dialog title, `xh-menu-header__title` on a menu heading'
 };
+
+// Hoist's own classes renamed in v92, rewritten wherever they appear.
+const HOIST_RENAMES = {
+    'xh-segmented-control-option': 'xh-segmented-control__option',
+    'xh-segmented-control-option--selected': 'xh-segmented-control__option--selected',
+    'xh-segmented-control-option__label': 'xh-segmented-control__option-text',
+    ...Object.fromEntries(INTENTS.map(i => [`xh-segmented-control-option--${i}`, `xh-segmented-control__option--intent-${i}`]))
+};
+const HOIST_RENAMED = new RegExp(`(?<![\\w-])(${Object.keys(HOIST_RENAMES).join('|')})(?![\\w-])`, 'g');
+const renameHoistClasses = line => line.replace(HOIST_RENAMED, name => HOIST_RENAMES[name]);
+
+// Hoist's own classes removed in v92, reported with a hint.
+const HOIST_REMOVED = {
+    'xh-toolbar__separator': 'Toolbar separators are now a shared `xh-separator` - target `.xh-toolbar .xh-separator`'
+};
+const HOIST_REMOVED_RE = new RegExp(`(?<![\\w-])(${Object.keys(HOIST_REMOVED).join('|')})(?![\\w-])`, 'g');
 
 // Generic modifiers - renamed only beside a component class in the same compound selector.
 const MODIFIERS = new Set([
@@ -306,32 +327,37 @@ async function processFile(file) {
     const isStyle = STYLE_EXTS.has(ext), isCode = CODE_EXTS.has(ext), isDoc = DOC_EXTS.has(ext);
     if (!isStyle && !isCode && !isDoc) return 0;
     const text = await fs.readFile(file, 'utf8');
-    if (!/bp6-|--bp-/.test(text)) return 0;
+    if (!/bp6-|--bp-|xh-segmented-control-option|xh-toolbar__separator/.test(text)) return 0;
     const lines = text.split('\n');
     const segState = {stack: [], sel: ''};
     let changed = 0;
-    lines.forEach((line, i) => {
+    lines.forEach((original, i) => {
         if (isDoc) {
-            if (/bp6-/.test(line)) note(file, i + 1, line, 'mentions a `bp6-` class');
+            if (/bp6-/.test(original)) note(file, i + 1, original, 'mentions a `bp6-` class');
             return;
         }
+        const line = renameHoistClasses(original);
         // Scan every style line, so the block stack stays in step with the file's braces.
         const nestedOption = isStyle && scanSegmentBlock(rewriteSegmentOption(line), segState);
+        for (const [, name] of line.matchAll(HOIST_REMOVED_RE)) note(file, i + 1, line, `\`${name}\` is gone. ${HOIST_REMOVED[name]}`);
         if (/var\(--bp6?-/.test(line)) note(file, i + 1, line, 'reads a Blueprint custom property, which Hoist no longer defines');
-        if (!line.includes('bp6-')) return;
-        if (nestedOption) {
-            note(file, i + 1, line, '`bp6-button` inside a `bp6-segmented-control` block is a SegmentedControl option - use `xh-segmented-control__option`, and see the upgrade notes for its modifiers');
-            return;
+        let out = line;
+        if (line.includes('bp6-')) {
+            if (nestedOption) {
+                note(file, i + 1, line, '`bp6-button` inside a `bp6-segmented-control` block is a SegmentedControl option - use `xh-segmented-control__option`, and see the upgrade notes for its modifiers');
+            } else {
+                const r = isStyle ? rewriteStyleLine(line) : rewriteCodeLine(line);
+                out = r.out;
+                // Also report any bp6- class left in place that the rewrite did not see, such as one
+                // in a string nested inside a template literal.
+                const left = [...out.matchAll(/(?<![\w-])bp6-([\w-]+)/g)].map(m => m[1]);
+                for (const name of new Set([...r.unresolved, ...left])) note(file, i + 1, out, explain(name));
+            }
         }
-        const {out, unresolved} = isStyle ? rewriteStyleLine(line) : rewriteCodeLine(line);
-        if (out !== line) {
+        if (out !== original) {
             lines[i] = out;
             changed++;
         }
-        // Also report any bp6- class left in place that the rewrite did not see, such as one in a
-        // string nested inside a template literal.
-        const left = [...out.matchAll(/(?<![\w-])bp6-([\w-]+)/g)].map(m => m[1]);
-        for (const name of new Set([...unresolved, ...left])) note(file, i + 1, out, explain(name));
     });
     if (changed && !dry) await fs.writeFile(file, lines.join('\n'));
     return changed;

@@ -83,14 +83,6 @@
 .xh-appbar__group.xh-appbar__group--right {
   float: right;
 }
-.xh-appbar-separator {
-  border-left: 1px solid rgba(17, 20, 24, 0.15);
-  height: 20px;
-  margin: 0 8px;
-}
-.xh-dark .xh-appbar-separator {
-  border-left-color: rgba(255, 255, 255, 0.2);
-}
 .xh-overflow-list {
   display: flex;
   flex-wrap: nowrap;
@@ -119,8 +111,12 @@
   // Curiously, Admin Log Viewer would cause appbar to shrink without min-height
   min-height: var(--xh-appbar-height);
 
-  .xh-appbar-separator {
-    border-left-color: var(--xh-toolbar-separator-color);
+  // A separator is a shared Separator, drawn as a short rule in the toolbar's color.
+  .xh-separator {
+    --xh-separator-border-color: var(--xh-toolbar-separator-color);
+    align-self: center;
+    height: 20px;
+    margin: 0 8px;
   }
 
   > * {
@@ -132,7 +128,7 @@
     overflow: hidden;
     height: var(--xh-appbar-height);
 
-    .xh-appbar-separator {
+    .xh-separator {
       margin: 0 var(--xh-spacing);
     }
 
@@ -155,11 +151,11 @@
 
     &.xh-appbar__group--right {
       // Apply standardized spacing to extra appBar items, excepting dividers and xh-no-pad elements.
-      > *:not(.xh-appbar-separator):not(.xh-no-pad) {
+      > *:not(.xh-separator):not(.xh-no-pad) {
         margin-left: var(--xh-spacing);
       }
 
-      .xh-appbar-separator {
+      .xh-separator {
         margin-right: 0;
       }
     }

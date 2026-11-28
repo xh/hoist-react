@@ -45,6 +45,33 @@ describe('codemod-bp6-classes', () => {
         );
     });
 
+    it('renames the segmented control option classes Hoist renamed', () => {
+        const {read} = run({
+            'src/app.scss':
+                '.xh-segmented-control-option.xh-segmented-control-option--selected { color: red; }\n' +
+                '.xh-segmented-control-option--danger .xh-segmented-control-option__label { color: red; }\n',
+            'src/Panel.ts': "el.querySelector('.xh-segmented-control-option--primary');\n"
+        });
+        expect(read('src/app.scss')).toBe(
+            '.xh-segmented-control__option.xh-segmented-control__option--selected { color: red; }\n' +
+                '.xh-segmented-control__option--intent-danger .xh-segmented-control__option-text { color: red; }\n'
+        );
+        expect(read('src/Panel.ts')).toBe(
+            "el.querySelector('.xh-segmented-control__option--intent-primary');\n"
+        );
+    });
+
+    it('maps the navbar divider to the shared separator, and reports the removed toolbar separator', () => {
+        const {read, output} = run({
+            'src/app.scss':
+                '.bp6-navbar-divider { color: red; }\n' + '.xh-toolbar__separator { color: red; }\n'
+        });
+        expect(read('src/app.scss')).toBe(
+            '.xh-separator { color: red; }\n' + '.xh-toolbar__separator { color: red; }\n'
+        );
+        expect(output).toContain('app.scss:2  `xh-toolbar__separator` is gone.');
+    });
+
     it('keeps the weight of a paired selector by repeating the class', () => {
         const {read} = run({'src/app.scss': '.xh-button.bp6-button { color: red; }\n'});
         expect(read('src/app.scss')).toBe('.xh-button.xh-button { color: red; }\n');
