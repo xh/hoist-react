@@ -32,4 +32,5 @@
   neutral border.
 * `FormField` labels are now a little smaller and heavier than the value, in a softer color.
 * Text inputs, text areas and selects show a stronger outline on hover.
+* The focus ring is now a solid 2px ring in one blue that meets 3:1 contrast in both themes.
 * The `colors` tree style now fills expanded parent rows only, as the `highlights` style does.

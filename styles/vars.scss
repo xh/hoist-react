@@ -485,10 +485,10 @@ body {
   //------------------------
   // Focus indicator outline for interactive components - apps can set `--xh-focus-outline: 0;` to
   // disable completely. Note form inputs provide their own dedicated props.
-  --xh-focus-outline-width: 0.5px;
-  --xh-focus-outline-offset: -1px;
-  --xh-focus-outline-color: rgba(19, 124, 189, 0.6);
-  --xh-focus-outline: #{(var(--xh-focus-outline-width) auto var(--xh-focus-outline-color))};
+  --xh-focus-outline-width: 2px;
+  --xh-focus-outline-offset: -2px;
+  --xh-focus-outline-color: oklch(from var(--xh-intent-primary) 0.6 max(c, 0.13) h);
+  --xh-focus-outline: #{(var(--xh-focus-outline-width) solid var(--xh-focus-outline-color))};
 
 
   //------------------------
@@ -535,7 +535,7 @@ body {
   --xh-form-field-box-shadow-color-bottom: oklch(0.78 calc(0.016 * var(--xh-neutral-tint)) var(--xh-neutral-hue));
   --xh-form-field-box-shadow-color-top: oklch(0.78 calc(0.016 * var(--xh-neutral-tint)) var(--xh-neutral-hue));
   --xh-form-field-focused-border-color: var(--xh-focus-outline-color);
-  --xh-form-field-focused-box-shadow: #{inset 0 0 0 1px var(--xh-form-field-focused-border-color), inset 0 1px 1px var(--xh-form-field-focused-border-color)};
+  --xh-form-field-focused-box-shadow: #{inset 0 0 0 2px var(--xh-form-field-focused-border-color)};
   --xh-form-field-hover-box-shadow: inset 0 0 0 1px color-mix(in oklch, var(--xh-form-field-box-shadow-color-top), var(--xh-text-color) 30%);
 
   // Label styling - common to all variants
